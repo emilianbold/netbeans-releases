@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
@@ -154,13 +153,10 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     /** Whether it's explicit or automatic query. Changed in AWT only. */
     private boolean explicitQuery = false;
     
-    private boolean tabCompletionWaiting = false;
-    private LinkedList<KeyEvent> waitingEvents = new LinkedList<KeyEvent>();
-    
     private WeakReference<CompletionItem> lastSelectedItem = null;
     
-    /** Ending offset of the recent insertion or removal. */
-    private int modEndOffset;
+    /** Ending offset of the recent autopopup modification. */
+    private int autoModEndOffset;
 
     private CompletionImpl() {
         Registry.addChangeListener(this);
@@ -235,7 +231,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
 
         if (activeProviders != null) {
             try {
-                modEndOffset = e.getOffset() + e.getLength();
+                int modEndOffset = e.getOffset() + e.getLength();
                 if (getActiveComponent().getSelectionStart() != modEndOffset)
                     return;
 
@@ -248,6 +244,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                     }
                     if (completionResultNull && (type & CompletionProvider.COMPLETION_QUERY_TYPE) != 0 &&
                             CompletionSettings.INSTANCE.completionAutoPopup()) {
+                        autoModEndOffset = modEndOffset;
                         showCompletion(false, true, CompletionProvider.COMPLETION_QUERY_TYPE);
                     }
 
@@ -270,8 +267,6 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         if (!SwingUtilities.isEventDispatchThread()) {
             return;
         }
-        // Removals covered by caretUpdate()
-        modEndOffset = e.getOffset();
     }
     
     public void changedUpdate(javax.swing.event.DocumentEvent e) {
@@ -289,9 +284,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                 localCompletionResult = completionResult;
             }
             if ((completionAutoPopupTimer.isRunning() || localCompletionResult != null)
-                && !layout.isCompletionVisible()
-                && e.getDot() != modEndOffset
-            ) {
+                && (!layout.isCompletionVisible() || layout.getSelectedCompletionItem() == null)
+                && e.getDot() != autoModEndOffset) {
                 hideCompletion(false);
             }
 
@@ -463,13 +457,6 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     private void dispatchKeyEvent(KeyEvent e) {
         if (e == null)
             return;
-        synchronized (this) {
-            if (tabCompletionWaiting) {
-                waitingEvents.add(e);
-                e.consume();
-                return;
-            }
-        }
         KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
         Object obj = inputMap.get(ks);
         if (obj != null) {
@@ -500,15 +487,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
             }
             if (e.getKeyCode() == KeyEvent.VK_TAB) {
                 e.consume();
-                Result localCompletionResult;
-                synchronized (this) {
-                    localCompletionResult = completionResult;
-                }
-                if (!isAllResultsFinished(localCompletionResult.getResultSets())) {
-                    tabCompletionWaiting = true;
-                } else {
-                    insertCommonPrefix();
-                }
+                insertCommonPrefix();
                 return;
             }
         }
@@ -576,10 +555,6 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         synchronized (this) {
             oldCompletionResult = completionResult;
             completionResult = null;
-            if (tabCompletionWaiting) {
-                tabCompletionWaiting = false;
-                waitingEvents.clear();
-            }
         }
         if (oldCompletionResult != null) {
             oldCompletionResult.cancel();
@@ -644,21 +619,6 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 }
             }
         }
-        KeyEvent e;
-        while((e = getTabCompletionWaiting()) != null) {
-            e = new KeyEvent((Component)e.getSource(), e.getID(), e.getWhen(), e.getModifiers(), e.getKeyCode(), e.getKeyChar(), e.getKeyLocation());
-            c.dispatchEvent(e);
-        }
-    }
-    
-    private synchronized KeyEvent getTabCompletionWaiting() {
-        KeyEvent e = null;
-        if (tabCompletionWaiting && !waitingEvents.isEmpty()) {
-            e = waitingEvents.removeFirst();
-            if (waitingEvents.isEmpty())
-                tabCompletionWaiting = false;
-        }
-        return e;
     }
     
     /**
@@ -1119,15 +1079,6 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 if (finishedResult.getResultId() == localCompletionResult) {
                     if (isAllResultsFinished(localCompletionResult.getResultSets())) {
                         requestShowCompletionPane(localCompletionResult);
-                        synchronized (this) {
-                            if (tabCompletionWaiting) {
-                                SwingUtilities.invokeLater(new Runnable() {
-                                    public void run() {
-                                        insertCommonPrefix();
-                                    }
-                                });
-                            }
-                        }
                     }
                 }
                 break;
