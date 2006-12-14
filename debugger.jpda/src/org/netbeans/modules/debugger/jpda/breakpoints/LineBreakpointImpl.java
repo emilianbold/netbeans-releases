@@ -110,16 +110,10 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             logger.warning("Class name not defined for breakpoint "+breakpoint);
             return ;
         }
-        // HACK
-        // EditorContext does not provide the real class name, it does not
-        // provide anonymous inner classes. Therefore we need to add a request
-        // for className$ as well.
-
         logger.fine("LineBreakpoint "+breakpoint+" - setting request for "+className);
         setClassRequests (
             new String[] {
-                className,
-                className + "$*", // innerclasses
+                className // The class name is correct even for inner classes now
             }, 
             new String [0],
             ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
@@ -183,7 +177,9 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             List locations = locationsOfLineInClass(referenceType, stratum,
                                                     sourceName, bpSourcePath,
                                                     lineNumber, reason);
-            if (locations.isEmpty()) {
+            /* Obsolete, no special handling of inner classes, referenceType is
+               the correct class now.
+             if (locations.isEmpty()) {
                 // add lines from innerclasses
                 Iterator i = referenceType.nestedTypes ().iterator ();
                 while (i.hasNext ()) {
@@ -195,7 +191,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                         break;
                     }
                 }
-            }
+            }*/
             if (locations.isEmpty() && reason[0] == null) {
                 reason[0] = "No executable location available at line "+lineNumber;
             }
