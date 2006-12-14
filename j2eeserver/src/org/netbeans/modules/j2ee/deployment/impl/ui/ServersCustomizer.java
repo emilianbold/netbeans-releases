@@ -79,6 +79,7 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
         // set the preferred width, height is not very important here
         servers.setPreferredSize(new Dimension(200,200));
         this.initialInstance = initialInstance;
+        setPreferredSize(MINIMUM_SIZE);
     }
     
     
@@ -132,19 +133,20 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
         cards = new javax.swing.JPanel();
+        messageArea = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         serverName = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         serverType = new javax.swing.JTextField();
         clientArea = new javax.swing.JPanel();
-        messageArea = new javax.swing.JPanel();
         serversLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
-        getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/deployment/impl/ui/Bundle").getString("ASCN_ServerManager"));
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_ServerCustomizer"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/deployment/impl/ui/Bundle"); // NOI18N
+        getAccessibleContext().setAccessibleName(bundle.getString("ASCN_ServerManager")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_ServerCustomizer")); // NOI18N
         servers.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         servers.setPreferredSize(new java.awt.Dimension(220, 400));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -157,10 +159,10 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 12, 6, 6);
         add(servers, gridBagConstraints);
-        servers.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCN_InstalledServers"));
-        servers.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_InstalledServers"));
+        servers.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCN_InstalledServers")); // NOI18N
+        servers.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_InstalledServers")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(addButton, NbBundle.getMessage(ServersCustomizer.class, "CTL_AddServer"));
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, NbBundle.getMessage(ServersCustomizer.class, "CTL_AddServer")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addServer(evt);
@@ -172,10 +174,11 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 12, 0);
         add(addButton, gridBagConstraints);
-        addButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCN_AddServer"));
-        addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_AddServer"));
+        addButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCN_AddServer")); // NOI18N
+        addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_AddServer")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(ServersCustomizer.class, "CTL_Remove"));
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(ServersCustomizer.class, "CTL_Remove")); // NOI18N
+        removeButton.setEnabled(false);
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeServer(evt);
@@ -187,20 +190,24 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 12, 6);
         add(removeButton, gridBagConstraints);
-        removeButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCN_Remove"));
-        removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_Remove"));
+        removeButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCN_Remove")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_Remove")); // NOI18N
 
         cards.setLayout(new java.awt.CardLayout());
+
+        messageArea.setLayout(new java.awt.GridBagLayout());
+
+        cards.add(messageArea, "card3");
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setLabelFor(serverName);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(ServersCustomizer.class, "CTL_ServerName"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(ServersCustomizer.class, "CTL_ServerName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         jPanel1.add(jLabel1, gridBagConstraints);
-        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCN_ServerName"));
-        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_ServerName"));
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCN_ServerName")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_ServerName")); // NOI18N
 
         serverName.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -210,17 +217,17 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         jPanel1.add(serverName, gridBagConstraints);
-        serverName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCN_ServerName"));
-        serverName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_ServerName"));
+        serverName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCN_ServerName")); // NOI18N
+        serverName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_ServerName")); // NOI18N
 
         jLabel2.setLabelFor(serverType);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(ServersCustomizer.class, "CTL_ServerType"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(ServersCustomizer.class, "CTL_ServerType")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 12, 0);
         jPanel1.add(jLabel2, gridBagConstraints);
-        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCN_ServerType"));
-        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_Server Type"));
+        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCN_ServerType")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_Server Type")); // NOI18N
 
         serverType.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -230,8 +237,8 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 12, 0);
         jPanel1.add(serverType, gridBagConstraints);
-        serverType.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCN_ServerType"));
-        serverType.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_Server Type"));
+        serverType.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCN_ServerType")); // NOI18N
+        serverType.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_Server Type")); // NOI18N
 
         clientArea.setLayout(new java.awt.GridBagLayout());
 
@@ -246,10 +253,6 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
 
         cards.add(jPanel1, "card2");
 
-        messageArea.setLayout(new java.awt.GridBagLayout());
-
-        cards.add(messageArea, "card3");
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -262,15 +265,15 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
         add(cards, gridBagConstraints);
 
         serversLabel.setLabelFor(servers);
-        org.openide.awt.Mnemonics.setLocalizedText(serversLabel, org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "CTL_Servers"));
+        org.openide.awt.Mnemonics.setLocalizedText(serversLabel, org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "CTL_Servers")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(serversLabel, gridBagConstraints);
-        serversLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "LBL_Servers"));
-        serversLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/deployment/impl/ui/Bundle").getString("ACSD_ServerList"));
+        serversLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "LBL_Servers")); // NOI18N
+        serversLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ServerList")); // NOI18N
 
     }// </editor-fold>//GEN-END:initComponents
     
@@ -338,7 +341,7 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
                 }
             } else {
                 removeButton.setEnabled(false);
-                ((CardLayout)cards.getLayout()).last(cards);
+                ((CardLayout)cards.getLayout()).first(cards);
                 return;
             }
             
@@ -371,7 +374,7 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
                 }
             }
             CardLayout cl = (CardLayout)cards.getLayout();
-            cl.first(cards);
+            cl.last(cards);
         }
     
     private static void addComponent(Container container, Component component) {
