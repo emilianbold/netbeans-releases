@@ -20,6 +20,8 @@
 package org.netbeans.modules.websvc.core.jaxws;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
+import org.netbeans.modules.websvc.core.ProjectClientViewProvider;
 import org.netbeans.modules.websvc.core.jaxws.nodes.JaxWsClientRootNode;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientViewImpl;
@@ -29,7 +31,7 @@ import org.openide.nodes.Node;
  *
  * @author mkuchtiak
  */
-public class ProjectJAXWSClientView implements JAXWSClientViewImpl {
+public class ProjectJAXWSClientView implements JAXWSClientViewImpl, ProjectClientViewProvider {
     
     /** Creates a new instance of ProjectJAXWSView */
     public ProjectJAXWSClientView() {
@@ -42,6 +44,14 @@ public class ProjectJAXWSClientView implements JAXWSClientViewImpl {
             if (model != null) {
                 return new JaxWsClientRootNode(model,project.getProjectDirectory());
             }
+        }
+        return null;
+    }
+    
+    public Node createClientView(Project project) {
+        JAXWSClientSupport support = JAXWSClientSupport.getJaxWsClientSupport(project.getProjectDirectory());
+        if (support!=null && support.getServiceClients().size()>0) {
+            return createJAXWSClientView(project);
         }
         return null;
     }

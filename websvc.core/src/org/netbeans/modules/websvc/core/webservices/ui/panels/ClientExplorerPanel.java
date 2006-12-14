@@ -29,6 +29,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientView;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
+import org.netbeans.modules.websvc.core.ProjectClientView;
 import org.netbeans.modules.websvc.core.jaxws.JaxWsUtils;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 
@@ -135,36 +136,36 @@ public class ClientExplorerPanel extends JPanel implements ExplorerManager.Provi
             if (srcFileProject!=null && JaxWsUtils.isProjectReferenceable (projects[i], srcFileProject)) {
                 LogicalViewProvider logicalProvider = (LogicalViewProvider)projects[i].getLookup().lookup(LogicalViewProvider.class);
                 if (logicalProvider!=null) {
-                    Node rootNode = logicalProvider.createLogicalView();
-                    
-                    boolean jaxWsServices=false;
-                    Node servicesNode = JAXWSClientView.getJAXWSClientView().createJAXWSClientView(projects[i]);
+                    Node rootNode = logicalProvider.createLogicalView();                   
+                    //boolean jaxWsServices=false;
+                    Node servicesNode = ProjectClientView.createClientView(projects[i]);
+                    //Node servicesNode = JAXWSClientView.getJAXWSClientView().createJAXWSClientView(projects[i]);
                     if (servicesNode!=null) {
                         Children children = new Children.Array();
                         Node[] nodes= servicesNode.getChildren().getNodes();
                         if (nodes!=null && nodes.length>0) {
-                            jaxWsServices=true;
+                            //jaxWsServices=true;
                             Node[] filterNodes = new Node[nodes.length];
                             for (int j=0;j<nodes.length;j++) filterNodes[j] = new FilterNode(nodes[j]);
                             children.add(filterNodes);
                             projectNodeList.add(new ProjectNode(children, rootNode));
                         }
                     }
-                    if (!jaxWsServices && srcFileProject==projects[i]) {
-                        FileObject wsdlFolder = WebServicesClientSupport.getWebServicesClientSupport(srcFileObject).getWsdlFolder();
-                        servicesNode = WebServicesClientView.getWebServicesClientView(srcFileObject).createWebServiceClientView(wsdlFolder);
-                        if (servicesNode!=null) {
-                            Children children = new Children.Array();
-                            Node[] nodes= servicesNode.getChildren().getNodes();
-                            if (nodes!=null && nodes.length>0) {
-                                jaxWsServices=true;
-                                Node[] filterNodes = new Node[nodes.length];
-                                for (int j=0;j<nodes.length;j++) filterNodes[j] = new FilterNode(nodes[j]);
-                                children.add(filterNodes);
-                                projectNodeList.add(new ProjectNode(children, rootNode));
-                            }
-                        }
-                    }
+//                    if (!jaxWsServices && srcFileProject==projects[i]) {
+//                        FileObject wsdlFolder = WebServicesClientSupport.getWebServicesClientSupport(srcFileObject).getWsdlFolder();
+//                        servicesNode = WebServicesClientView.getWebServicesClientView(srcFileObject).createWebServiceClientView(wsdlFolder);
+//                        if (servicesNode!=null) {
+//                            Children children = new Children.Array();
+//                            Node[] nodes= servicesNode.getChildren().getNodes();
+//                            if (nodes!=null && nodes.length>0) {
+//                                jaxWsServices=true;
+//                                Node[] filterNodes = new Node[nodes.length];
+//                                for (int j=0;j<nodes.length;j++) filterNodes[j] = new FilterNode(nodes[j]);
+//                                children.add(filterNodes);
+//                                projectNodeList.add(new ProjectNode(children, rootNode));
+//                            }
+//                        }
+//                    }
                 }
             }
 
