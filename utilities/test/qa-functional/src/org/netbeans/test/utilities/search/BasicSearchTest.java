@@ -37,6 +37,7 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.test.utilities.operators.SearchResultsOperator;
 import org.netbeans.test.utilities.testcase.Utilities;
 
 /**
@@ -83,6 +84,13 @@ public class BasicSearchTest extends NbTestCase {
                 new JComboBoxOperator.JComboBoxFinder());
         jcbo.enterText("class"); //enter 'class' in search comboBox and press [Enter]
 
+        SearchResultsOperator sro = new SearchResultsOperator();
+        assertTrue("Junit Output window should be visible", sro.isVisible());
+        System.out.println("## Search output opened");
+        Utilities.takeANap(1000);
+        sro.close();
+        assertFalse("Search window is visible," +
+                "should be closed", sro.isShowing());
     }
     
     

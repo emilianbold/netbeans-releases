@@ -58,29 +58,6 @@ public class SearchResultsOperator extends TopComponentOperator {
     }
     
     /**
-     * Returns operator of Statistics Panel
-     * @return the operator of statistics panel 
-     */ 
-    public StatisticsPanelOperator getLeftPanelOperator() {
-        return new StatisticsPanelOperator();
-    }
-    
-    /**
-     * Test whether the Results Filter toggle button is enabled
-     * @return true if the button os enabled
-     */ 
-    public boolean isFilterButtonEnabled() {
-        return (new JToggleButtonOperator(new StatisticsPanelOperator(), 0).isEnabled());
-    }
-    
-    /**
-     * Pushes Filter Button
-     */
-    public void pushFilterButton() {
-        new JToggleButtonOperator(new StatisticsPanelOperator(), 0).push();
-    }
-    
-    /**
      * SubChooser to determine ResultsWindow TopComponent
      * Used in constructor.
      */
