@@ -95,7 +95,7 @@ Microsystems, Inc. All Rights Reserved.
         <font style="bold"/>
     </fontcolor>
     <fontcolor name="el-numeric-literals" foreColor="ff780000" bgColor="fffdf2c4" default="default"/>
-    <fontcolor name="el-operator" foreColor="black" bgColor="fffdf2c4" default="default"/>
+    <fontcolor name="el-operators" foreColor="black" bgColor="fffdf2c4" default="default"/>
     <fontcolor name="el-string" foreColor="ff99006b" bgColor="fffdf2c4" default="default"/>
     <fontcolor name="el-tag-lib-prefix" foreColor="blue" bgColor="fffdf2c4" default="default">
         <font style="bold"/>
