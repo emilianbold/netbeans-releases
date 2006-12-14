@@ -39,7 +39,7 @@ public interface Constants {
     
     static final String MAP_RESOURCES = "com.sun.appserv:type=resources,category=config";//NOI18N               
     
-    static final String MAP_JVMOptions = "ias:type=java-config,config=server-config,category=config"; //NOI18N
+    static final String MAP_JVMOptions = "com.sun.appserv:type=java-config,config=server-config,category=config"; //NOI18N
     static final String DEBUG_OPTIONS = "debug-options"; //NOI18N
     static final String JAVA_HOME = "java-home"; //NOI18N 
     static final String DEBUG_OPTIONS_ADDRESS = "address="; //NOI18N 

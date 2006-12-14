@@ -277,7 +277,7 @@ public class Util {
     }
     
     public static String[] getResourcesNames(String query, String keyProperty, ServerInterface mejb) throws Exception {
-        String MAP_RESOURCES = "ias:type=resources,category=config";
+        String MAP_RESOURCES = "com.sun.appserv:type=resources,category=config";
         ObjectName objName = new ObjectName(MAP_RESOURCES);
         ObjectName[] beans = (ObjectName[])mejb.invoke(objName, query, null, null);
         String[] resNames = new String[beans.length];

@@ -871,7 +871,7 @@ public class ResourceUtils implements WizardConstants{
     
     private static List getResourceNames(SunDeploymentManagerInterface eightDM, String query, String keyProperty){
         List resList = new ArrayList();
-        String MAP_RESOURCES = "ias:type=resources,category=config";//NOI18N
+        String MAP_RESOURCES = "com.sun.appserv:type=resources,category=config";//NOI18N
         try{
             ServerInterface mejb = (ServerInterface)eightDM.getManagement();
             ObjectName objName = new ObjectName(MAP_RESOURCES);

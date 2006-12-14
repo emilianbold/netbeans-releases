@@ -598,7 +598,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                         // server
                         
                         try{
-                            Object configDir = getManagement().invoke(new javax.management.ObjectName("ias:type=domain,category=config"),"getConfigDir", null, null);
+                            Object configDir = getManagement().invoke(new javax.management.ObjectName("com.sun.appserv:type=domain,category=config"),"getConfigDir", null, null);
                             if (configDir==null){
                                 mmm=null;
                                 return null;
