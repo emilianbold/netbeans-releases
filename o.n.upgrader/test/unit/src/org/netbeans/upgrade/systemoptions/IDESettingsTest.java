@@ -35,7 +35,7 @@ public class IDESettingsTest extends BasicTestForImport {
             "WWWBrowser",
             "confirmDelete",
             "homePage",
-            "modulesSortMode",
+            "modulesSortMode", // ignored
             "proxyNonProxyHosts",
             "proxyType",
             "showFileExtensions",
@@ -72,11 +72,6 @@ public class IDESettingsTest extends BasicTestForImport {
     public void testHomePage() throws Exception {
         //java.lang.String
         assertProperty("homePage","http://www.netbeans.org/");
-    }
-    
-    public void testModulesSortMode() throws Exception {
-        //java.lang.Integer
-        assertProperty("modulesSortMode","5");
     }
     
     public void testProxyType() throws Exception{
