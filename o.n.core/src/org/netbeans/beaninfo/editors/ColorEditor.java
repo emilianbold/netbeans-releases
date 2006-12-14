@@ -587,7 +587,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
 
 
     /** Color belonging to palette and keeping its ID. */
-    private static class SuperColor extends Color {
+    static class SuperColor extends Color {
         /** generated Serialized Version UID */
         static final long serialVersionUID = 6147637669184334151L;
 
