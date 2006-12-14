@@ -341,7 +341,6 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../tasklist/docscan</project>
                 <project>../tasklist/suggestions</project>
                 <project>../tomcatint/tomcat5</project>
-                <project>../tomcatint/tomcat5/bundled</project>
                 <project>../usersguide</project>
                 <project>../usersguide/j2seexamples</project>
                 <project>../utilities</project>
