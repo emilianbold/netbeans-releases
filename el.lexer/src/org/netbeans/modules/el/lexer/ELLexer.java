@@ -886,4 +886,7 @@ public class ELLexer implements Lexer<ELTokenId> {
         return tokenFactory.createToken(tokenId);
     }
     
+    public void release() {
+    }
+
 }

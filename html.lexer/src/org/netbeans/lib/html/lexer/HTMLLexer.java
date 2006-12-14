@@ -719,4 +719,7 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
         return tokenFactory.createToken(tokenId);
     }
     
+    public void release() {
+    }
+
 }

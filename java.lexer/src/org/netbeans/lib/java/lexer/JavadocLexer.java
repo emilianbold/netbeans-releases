@@ -111,4 +111,7 @@ public class JavadocLexer implements Lexer<JavadocTokenId> {
         return tokenFactory.createToken(id);
     }
 
+    public void release() {
+    }
+
 }

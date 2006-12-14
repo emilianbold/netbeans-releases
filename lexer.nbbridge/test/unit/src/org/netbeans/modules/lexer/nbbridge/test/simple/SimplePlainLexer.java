@@ -96,4 +96,7 @@ final class SimplePlainLexer implements Lexer<SimplePlainTokenId> {
         return null; // always in default state after token recognition
     }
     
+    public void release() {
+    }
+
 }

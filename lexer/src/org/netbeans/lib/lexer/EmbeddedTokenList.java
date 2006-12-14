@@ -115,6 +115,8 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
             }
             token = lexerInputOperation.nextToken();
         }
+        lexerInputOperation.release();
+        lexerInputOperation = null;
 
         trimToSize(); // Compact storage
         if (laState != null)

@@ -136,4 +136,14 @@ public interface Lexer<T extends TokenId> {
      */
     Object state();
 
+    /**
+     * Infrastructure calls this method when it no longer needs this lexer for lexing
+     * so it becomes unused.
+     * <br/>
+     * If lexer instances are cached and reused later
+     * then this method should first release all the references that might cause
+     * memory leaks and then add this unused lexer to the cache.
+     */
+    void release();
+    
 }

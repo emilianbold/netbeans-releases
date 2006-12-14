@@ -897,4 +897,8 @@ public class XMLLexer implements Lexer<XMLTokenId> {
     private boolean isAF(int ch) {
         return( (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') );
     }
+
+    public void release() {
+    }
+
 }

@@ -99,6 +99,9 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
         return state;
     }
 
+    public void release() {
+    }
+
     
     // Cookie implementation ...................................................
     

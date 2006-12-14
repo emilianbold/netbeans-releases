@@ -105,4 +105,7 @@ public class JavaStringLexer implements Lexer<JavaStringTokenId> {
         return tokenFactory.createToken(id);
     }
 
+    public void release() {
+    }
+
 }

@@ -187,6 +187,9 @@ final class TokenDumpLexer implements Lexer<TokenDumpTokenId> {
         return tokenFactory.createToken(id);
     }
     
+    public void release() {
+    }
+
     private static final class UnicodeCharValueProvider implements TokenPropertyProvider {
         
         static final UnicodeCharValueProvider INSTANCE = new UnicodeCharValueProvider();

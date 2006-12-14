@@ -1,4 +1,4 @@
 OpenIDE-Module: org.netbeans.modules.lexer/2
 OpenIDE-Module-Localizing-Bundle: org/netbeans/lib/lexer/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.11.0
+OpenIDE-Module-Specification-Version: 1.12.0
 OpenIDE-Module-Recommends: org.netbeans.spi.lexer.LanguageProvider

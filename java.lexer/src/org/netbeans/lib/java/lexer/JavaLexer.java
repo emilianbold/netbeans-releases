@@ -933,4 +933,7 @@ public class JavaLexer implements Lexer<JavaTokenId> {
                 : tokenFactory.createToken(id);
     }
     
+    public void release() {
+    }
+
 }

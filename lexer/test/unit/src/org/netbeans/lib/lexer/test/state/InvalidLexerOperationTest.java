@@ -17,6 +17,7 @@ import javax.swing.text.Document;
 import junit.framework.TestCase;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -54,7 +55,6 @@ public class InvalidLexerOperationTest extends TestCase {
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         TokenSequence<? extends TokenId> ts = hi.tokenSequence();
 
-        ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, StateTokenId.A, "a", 0);
         assertEquals(LexerTestUtilities.lookahead(ts), 0);
@@ -68,6 +68,52 @@ public class InvalidLexerOperationTest extends TestCase {
         } catch (IllegalStateException e) {
             // Expected fail of lexer
         }
+    }
+
+    public void testBatchLexerRelease() throws Exception {
+        String text = "ab";
+        InputAttributes attrs = new InputAttributes();
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, StateTokenId.language(),
+                null, attrs);
+        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, StateTokenId.A, "a", 0);
+        assertTrue(ts.moveNext());
+        LanguagePath lp = LanguagePath.get(StateTokenId.language());
+        assertFalse(Boolean.TRUE.equals(attrs.getValue(lp, "lexerRelease")));
+        LexerTestUtilities.assertTokenEquals(ts, StateTokenId.BMULTI, "b", 1);
+        assertFalse(ts.moveNext());
+        assertTrue(Boolean.TRUE.equals(attrs.getValue(lp, "lexerRelease")));
+
+    }
+
+    public void testIncLexerRelease() throws Exception {
+        Document doc = new ModificationTextDocument();
+        // Assign a language to the document
+        InputAttributes attrs = new InputAttributes();
+        doc.putProperty(InputAttributes.class, attrs);
+        
+        // Insert initial text into document
+        String text = "ab";
+        doc.insertString(0, text, null);
+        // Put the language now into the document so that lexing starts from scratch
+        doc.putProperty(Language.class, StateTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        TokenSequence<? extends TokenId> ts = hi.tokenSequence();
+
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, StateTokenId.A, "a", 0);
+        LanguagePath lp = LanguagePath.get(StateTokenId.language());
+        assertFalse(Boolean.TRUE.equals(attrs.getValue(lp, "lexerRelease")));
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts, StateTokenId.BMULTI, "b", 1);
+        assertFalse(ts.moveNext());
+        assertTrue(Boolean.TRUE.equals(attrs.getValue(lp, "lexerRelease")));
+        attrs.setValue(lp, "lexerRelease", Boolean.FALSE, false);
+
+        // Do modification and check lexer release after it
+        doc.insertString(1, "b", null);
+        assertTrue(Boolean.TRUE.equals(attrs.getValue(lp, "lexerRelease")));
     }
 
 }

@@ -50,4 +50,7 @@ final class SimpleCharLexer implements Lexer<SimpleCharTokenId> {
         return null; // always in default state after token recognition
     }
     
+    public void release() {
+    }
+
 }

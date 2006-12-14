@@ -97,4 +97,11 @@ final class StateLexer implements Lexer<StateTokenId> {
         return tokenFactory.createToken(id);
     }
     
+    public void release() {
+        InputAttributes attrs = info.inputAttributes();
+        if (attrs != null) {
+            attrs.setValue(StateTokenId.language(), "lexerRelease", Boolean.TRUE, false);
+        }
+    }
+
 }

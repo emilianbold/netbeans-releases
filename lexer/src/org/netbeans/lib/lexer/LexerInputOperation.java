@@ -366,4 +366,8 @@ public abstract class LexerInputOperation<T extends TokenId> implements CharProv
         return tokenList.inputAttributes();
     }
     
+    public final void release() {
+        lexer.release();
+    }
+    
 }

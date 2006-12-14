@@ -423,6 +423,7 @@ public final class TokenListUpdater {
                     }
                 }
             } while (relex);
+            lexerInputOperation.release();
         }
 
         // Now ensure that the original tokens will be replaced by the relexed ones.

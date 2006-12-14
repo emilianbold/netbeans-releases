@@ -168,6 +168,7 @@ extends ArrayList<Object> implements TokenList<T> {
                             lexerInputOperation.lexerState());
                 }
             } else { // no more tokens from lexer
+                lexerInputOperation.release();
                 lexerInputOperation = null;
                 trimToSize();
             }

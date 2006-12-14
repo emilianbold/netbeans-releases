@@ -53,4 +53,7 @@ final class TextAsSingleTokenLexer implements Lexer<TextAsSingleTokenTokenId> {
         }
     }
     
+    public void release() {
+    }
+
 }

@@ -154,6 +154,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
                 laState = laState.add(lexerInputOperation.lookahead(),
                         lexerInputOperation.lexerState());
             } else { // no more tokens from lexer
+                lexerInputOperation.release();
                 lexerInputOperation = null;
                 trimToSize();
                 laState.trimToSize();
@@ -281,6 +282,9 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
     }
     
     public void refreshLexerInputOperation() {
+        // Only called when !isFullyLexed() but "inited" might be false => must check "!= null"
+        if (lexerInputOperation != null)
+            lexerInputOperation.release();
         int lastTokenIndex = tokenCountCurrent() - 1;
         int endOffset = (lastTokenIndex >= 0)
                 ? tokenOffset(lastTokenIndex) + existingToken(lastTokenIndex).length()

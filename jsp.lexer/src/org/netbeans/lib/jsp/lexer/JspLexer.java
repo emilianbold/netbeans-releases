@@ -994,7 +994,9 @@ public class JspLexer implements Lexer<JspTokenId> {
         }
         return tokenFactory.createToken(tokenId);
     }
-    
-    
+
+    public void release() {
+    }
+
 }
 
