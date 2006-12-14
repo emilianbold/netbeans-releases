@@ -111,6 +111,8 @@ public final class ElementUtilities {
                 case FIELD:
                     return env.getFieldDoc((VarSymbol)element);
                 case METHOD:
+                    if (element.getEnclosingElement().getKind() == ElementKind.ANNOTATION_TYPE)
+                        return env.getAnnotationTypeElementDoc((MethodSymbol)element);
                     return env.getMethodDoc((MethodSymbol)element);
                 case CONSTRUCTOR:
                     return env.getConstructorDoc((MethodSymbol)element);

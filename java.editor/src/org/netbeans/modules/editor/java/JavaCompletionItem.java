@@ -1668,6 +1668,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return elem.getSimpleName() + "="; //NOI18N
         }
         
+        public CompletionTask createDocumentationTask() {
+            return JavaCompletionProvider.createDocTask(ElementHandle.create(elem));
+        }
+
         protected ImageIcon getIcon(){
             if (icon == null) icon = new ImageIcon(org.openide.util.Utilities.loadImage(ATTRIBUTE));
             return icon;            
