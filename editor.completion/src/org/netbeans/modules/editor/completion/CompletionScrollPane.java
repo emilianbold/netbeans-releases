@@ -229,7 +229,7 @@ public class CompletionScrollPane extends JScrollPane {
         public void actionPerformed(ActionEvent actionEvent) {
             switch (action) {
 		case ACTION_ESCAPE:
-		    CompletionImpl.get().hideCompletion();
+		    CompletionImpl.get().hideCompletion(false);
 		    break;
                 case ACTION_COMPLETION_UP:
                     view.up();

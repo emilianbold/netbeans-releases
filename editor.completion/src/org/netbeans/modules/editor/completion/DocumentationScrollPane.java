@@ -437,7 +437,7 @@ public class DocumentationScrollPane extends JScrollPane {
         public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
             switch (action) {
 		case ACTION_JAVADOC_ESCAPE:
-		    CompletionImpl.get().hideDocumentation();
+		    CompletionImpl.get().hideDocumentation(false);
 		    break;
                 case ACTION_JAVADOC_BACK:
                     backHistory();

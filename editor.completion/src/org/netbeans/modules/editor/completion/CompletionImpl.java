@@ -292,7 +292,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                 && !layout.isCompletionVisible()
                 && e.getDot() != modEndOffset
             ) {
-                hideCompletion();
+                hideCompletion(false);
             }
 
             completionRefresh();
@@ -325,8 +325,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     
     public void hideAll() {
         hideToolTip();
-        hideCompletion();
-        hideDocumentation();
+        hideCompletion(true);
+        hideDocumentation(true);
     }
 
     /**
@@ -496,7 +496,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
             } else if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_DOWN
                     || e.getKeyCode() == KeyEvent.VK_PAGE_UP || e.getKeyCode() == KeyEvent.VK_PAGE_DOWN
                     || e.getKeyCode() == KeyEvent.VK_HOME || e.getKeyCode() == KeyEvent.VK_END) {
-                hideCompletion();                
+                hideCompletion(false);                
             }
             if (e.getKeyCode() == KeyEvent.VK_TAB) {
                 e.consume();
@@ -767,25 +767,29 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
      * May be called from any thread. The UI changes will be rescheduled into AWT.
      */
     public boolean hideCompletion() {
+        return hideCompletion(true);
+    }
+    
+    public boolean hideCompletion(boolean completionOnly) {
         completionCancel();
         // Invoke hideCompletionPane() in AWT
         if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(new ParamRunnable(ParamRunnable.HIDE_COMPLETION_PANE));
+            SwingUtilities.invokeLater(new ParamRunnable(ParamRunnable.HIDE_COMPLETION_PANE, completionOnly));
             return false;
         } else { // in AWT
-            return hideCompletionPane();
+            return hideCompletionPane(completionOnly);
         }
     }
     
     /**
      * Hide the completion pane. This must be called in AWT thread.
      */
-    private boolean hideCompletionPane() {
+    private boolean hideCompletionPane(boolean completionOnly) {
         completionAutoPopupTimer.stop(); // Ensure the popup timer gets stopped
         pleaseWaitTimer.stop();
         boolean hidePerformed = layout.hideCompletion();
-        if (hidePerformed && CompletionSettings.INSTANCE.documentationAutoPopup()) {
-            hideDocumentation();
+        if (!completionOnly && hidePerformed && CompletionSettings.INSTANCE.documentationAutoPopup()) {
+            hideDocumentation(true);
         }
         return hidePerformed;
     }
@@ -887,26 +891,30 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
      * May be called from any thread. The UI changes will be rescheduled into AWT.
      */
     public boolean hideDocumentation() {
+        return hideDocumentation(true);
+    }
+    
+    boolean hideDocumentation(boolean documentationOnly) {
         documentationCancel();
         // Invoke hideDocumentationPane() in AWT
         if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(new ParamRunnable(ParamRunnable.HIDE_DOCUMENTATION_PANE));
+            SwingUtilities.invokeLater(new ParamRunnable(ParamRunnable.HIDE_DOCUMENTATION_PANE, documentationOnly));
             return false;
         } else { // in AWT
-            return hideDocumentationPane();
+            return hideDocumentationPane(documentationOnly);
         }
     }
     
     /**
      * May be called in AWT only.
      */
-    boolean hideDocumentationPane() {
+    boolean hideDocumentationPane(boolean documentationOnly) {
         // Ensure the documentation popup timer is stopped
         docAutoPopupTimer.stop();
         boolean hidePerformed = layout.hideDocumentation();
  // Also hide completion if documentation pops automatically
-        if (hidePerformed && CompletionSettings.INSTANCE.documentationAutoPopup()) {
-            hideCompletion();
+        if (!documentationOnly && hidePerformed && CompletionSettings.INSTANCE.documentationAutoPopup()) {
+            hideCompletion(true);
         }
         return hidePerformed;
     }
@@ -1253,17 +1261,21 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         private static final int HIDE_TOOL_TIP_PANE = 5;
         
         private final int opCode;
-        private final boolean explicitQuery;
+        private final boolean explicit;
         private final boolean delayQuery;
         private final int type;
         
         ParamRunnable(int opCode) {
-            this(opCode, false, false, CompletionProvider.COMPLETION_QUERY_TYPE);
+            this(opCode, false);
         }
         
-        ParamRunnable(int opCode, boolean explicitQuery, boolean delayQuery, int type) {
+        ParamRunnable(int opCode, boolean explicit) {
+            this(opCode, explicit, false, CompletionProvider.COMPLETION_QUERY_TYPE);
+        }
+
+        ParamRunnable(int opCode, boolean explicit, boolean delayQuery, int type) {
             this.opCode = opCode;
-            this.explicitQuery = explicitQuery;
+            this.explicit = explicit;
             this.delayQuery = delayQuery;
             this.type = type;
         }
@@ -1283,11 +1295,11 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                     break;
                     
                 case HIDE_COMPLETION_PANE:
-                    hideCompletionPane();
+                    hideCompletionPane(explicit);
                     break;
 
                 case HIDE_DOCUMENTATION_PANE:
-                    hideDocumentationPane();
+                    hideDocumentationPane(explicit);
                     break;
                     
                 case HIDE_TOOL_TIP_PANE:
