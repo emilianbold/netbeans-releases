@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.websvc.jaxrpc.nodes;
 
+import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientViewImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
@@ -38,6 +39,10 @@ public class PrototypeWebServicesClientView implements WebServicesClientViewImpl
 	}
 	
 	public Node createWebServiceClientView(Project p) {
+        WebServicesClientSupport support = WebServicesClientSupport.getWebServicesClientSupport(p.getProjectDirectory());
+        if (support!=null) {
+            return createWebServiceClientView(support.getWsdlFolder());
+        }
 		return null;
 	}
 
