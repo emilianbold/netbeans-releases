@@ -30,7 +30,7 @@ public class JaxWsInvokeOperation implements InvokeOperationCookie {
      * Adds a WS invocation to the class
      */
     public void invokeOperation(int targetSourceType, Node targetNode, Node serviceOperationNode) {
-        JaxWsCodeGenerator.insertMethodCall(getCurrentDataObject(targetNode), targetNode, serviceOperationNode);
+        JaxWsCodeGenerator.insertMethodCall(targetSourceType, getCurrentDataObject(targetNode), targetNode, serviceOperationNode);
     }
     
     private DataObject getCurrentDataObject(Node n) {

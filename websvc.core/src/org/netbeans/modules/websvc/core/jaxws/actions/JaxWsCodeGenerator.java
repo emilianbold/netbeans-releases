@@ -49,6 +49,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.modules.websvc.core.InvokeOperationCookie;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import static com.sun.source.tree.Tree.Kind.*;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -292,9 +293,9 @@ public class JaxWsCodeGenerator {
             "'}'\n" + //NOI18N
             "%>\n"; //NOI18N
     
-    public static void insertMethodCall(DataObject dataObj, Node sourceNode, Node operationNode) {
+    public static void insertMethodCall(int targetSourceType, DataObject dataObj, Node sourceNode, Node operationNode) {
         EditorCookie cookie = (EditorCookie)sourceNode.getCookie(EditorCookie.class);
-        boolean inJsp = cookie!=null && "text/x-jsp".equals(cookie.getDocument().getProperty("mimeType")); //NOI18N
+        boolean inJsp = InvokeOperationCookie.TARGET_SOURCE_JSP==targetSourceType;
         // First, collect name of method, port, and service:
         
         Node serviceNode, portNode, wsdlNode;
