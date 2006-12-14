@@ -38,6 +38,7 @@ public class clear_Frame extends java.awt.Frame {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         popupMenu1 = new java.awt.PopupMenu();
         label1 = new java.awt.Label();
         button1 = new java.awt.Button();
@@ -55,13 +56,12 @@ public class clear_Frame extends java.awt.Frame {
 
         popupMenu1.setLabel("PopupMenu");
 
-        setLayout(new java.awt.FlowLayout());
-
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 exitForm(evt);
             }
         });
+        setLayout(new java.awt.FlowLayout());
 
         label1.setText("label1");
         add(label1);
@@ -71,22 +71,15 @@ public class clear_Frame extends java.awt.Frame {
 
         textField1.setText("textField1");
         add(textField1);
-
         add(textArea1);
 
         checkbox1.setLabel("checkbox1");
         add(checkbox1);
-
         add(choice1);
-
         add(list1);
-
         add(scrollbar1);
-
         add(scrollPane1);
-
         add(panel1);
-
         add(canvas1);
 
         menu1.setLabel("Menu");
