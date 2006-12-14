@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Stack;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToolTip;
@@ -421,12 +422,9 @@ public final class CompletionLayout {
     private static final class TipPopup extends CompletionLayoutPopup {
         
         protected void show(JToolTip toolTip, int anchorOffset) {
-            Dimension lastSize;
+            JComponent lastComponent = null;
             if (isVisible()) { // tooltip already visible
-                lastSize = getContentComponent().getSize();
-                resetPreferredSize();
-            } else { // documentation not visible yet
-                lastSize = new Dimension(0, 0);
+                lastComponent = getContentComponent();
             }
             
             setContentComponent(toolTip);
@@ -434,7 +432,7 @@ public final class CompletionLayout {
 
             // Check whether doc is visible and if so then display
             // on the opposite side
-            if (!getPreferredSize().equals(lastSize)) { // preferred sizes differ
+            if (lastComponent != toolTip) {
                 getLayout().updateLayout(this);
             }
 	}

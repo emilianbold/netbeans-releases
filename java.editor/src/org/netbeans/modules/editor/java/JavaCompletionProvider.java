@@ -275,7 +275,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                 return false;
             } else if (queryType == TOOLTIP_QUERY_TYPE) {
                 try {
-                    if (newOffset - caretOffset > 0)
+                    if (newOffset == caretOffset)
+                        filterPrefix = EMPTY;
+                    else if (newOffset - caretOffset > 0)
                         filterPrefix = component.getDocument().getText(caretOffset, newOffset - caretOffset);
                     else if (newOffset - caretOffset < 0)
                         filterPrefix = component.getDocument().getText(newOffset, caretOffset - newOffset);
