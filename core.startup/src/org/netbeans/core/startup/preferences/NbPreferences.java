@@ -101,6 +101,8 @@ public abstract class NbPreferences extends AbstractPreferences {
     
     @Override
     public void put(String key, String value) {
+        String oldValue = getSpi(key);
+        if (value.equals(oldValue)) {return;}
         try {
             super.put(key, value);
         } catch (IllegalArgumentException iae) {

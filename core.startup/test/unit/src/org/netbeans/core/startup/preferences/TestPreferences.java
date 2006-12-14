@@ -19,7 +19,12 @@
 
 package org.netbeans.core.startup.preferences;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Logger;
+import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.NodeChangeEvent;
 import java.util.prefs.NodeChangeListener;
@@ -193,6 +198,74 @@ public class TestPreferences extends NbPreferencesTest.TestBasicSetup {
         pref.put("key1", "value1");
         assertEquals("value1",pref.get("key1", null));
     }
+    
+    public void testPut2()  throws Exception {
+        final Object sync = getEventQueueSync();
+        Preferences pref = getPreferencesNode();
+        assertNotNull(pref);
+        final List l = new ArrayList();
+        assertNull(pref.get("key1", null));
+        PreferenceChangeListener pl = new PreferenceChangeListener(){
+            public void preferenceChange(PreferenceChangeEvent evt) {
+                synchronized(sync) {
+                    l.add(evt.getNewValue());
+                    sync.notifyAll();
+                }
+            }
+        };
+        pref.addPreferenceChangeListener(pl);
+        try {
+            pref.put("key1", "value1");
+            assertEquals("value1",pref.get("key1", null));            
+            synchronized(sync) {
+                sync.wait(5000);
+                assertEquals(1, l.size());
+            }
+            assertEquals("value1",l.get(0));
+            l.clear();
+            
+            pref.put("key1", "value2");
+            assertEquals("value2",pref.get("key1", null));
+            synchronized(sync) {
+                sync.wait(5000);
+                assertEquals(1, l.size());
+            }
+            assertEquals("value2",l.get(0));
+            l.clear();
+            
+            pref.put("key1", "value2");
+            assertEquals("value2",pref.get("key1", null));
+            synchronized(sync) {
+                sync.wait(5000);
+                assertEquals(0, l.size());
+            }
+            l.clear();
+            
+            pref.put("key1", "value2");
+            assertEquals("value2",pref.get("key1", null));
+            synchronized(sync) {
+                sync.wait(5000);
+                assertEquals(0, l.size());
+            }
+            l.clear();
+            
+        } finally {
+            pref.removePreferenceChangeListener(pl);
+        }
+    }
+    
+    private Object getEventQueueSync() {
+        try {
+            Field f = AbstractPreferences.class.getDeclaredField("eventQueue");
+            f.setAccessible(true);
+            return f.get(null);
+            
+        } catch (Exception ex) {
+            Logger.getLogger("global").log(java.util.logging.Level.SEVERE,ex.getMessage(), ex);
+        }
+        return null;
+    }
+    
     
     
     public void testRemove() {
