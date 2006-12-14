@@ -90,20 +90,29 @@ public class GlobalSourceForBinaryImplTest extends TestBase {
     }
     
     public void testResolveSpecialNBSrcPaths() throws Exception {
-        //        assertResolved("testtools/modules/ext/nbjunit.jar", "xtest/nbjunit/src");
-        //        assertResolved("testtools/modules/ext/nbjunit-ide.jar", "xtest/nbjunit/src");
-        if (!file("performance").isDirectory()) {
-            System.err.println("Skipping testResolveSpecialNBSrcPaths since performance is not checked out");
-            return;
-        }
-        assertRoot(Util.urlForJar(file("xtest/lib/insanelib.jar")),
-                FileUtil.toFileObject(file("performance/insanelib/src")));
-        File jarFile = new File(file("nbbuild/netbeans"), "extra/modules/ext/insanelib.jar");
-        if (jarFile.exists()) {
-            assertResolved("extra/modules/ext/insanelib.jar", "performance/insanelib/src");
-        } else {
-            assertEquals("no resolved root", 0,
-                    SourceForBinaryQuery.findSourceRoots(Util.urlForJar(jarFile)).getRoots().length);
+        String[] srcDirs = {"xtest/nbjunit/src",
+                            "xtest/nbjunit/ide/src",
+                            "performance/insanelib/src"};
+        String[] xtestJars = {"xtest/lib/nbjunit.jar",
+                            "xtest/lib/nbjunit-ide.jar",
+                            "xtest/lib/insanelib.jar"};
+        String[] ideJars = {"testtools/modules/org-netbeans-modules-nbjunit.jar",
+                            "testtools/modules/org-netbeans-modules-nbjunit-ide.jar",
+                            "testtools/modules/ext/insanelib.jar"};
+        for (int i = 0; i < srcDirs.length; i++) {
+            if(!file(srcDirs[i]).isDirectory()) {
+                System.err.println("Skipping testResolveSpecialNBSrcPaths since "+srcDirs[i]+" is not checked out");
+                continue;
+            }
+            assertRoot(Util.urlForJar(file(xtestJars[i])),
+                    FileUtil.toFileObject(file(srcDirs[i])));
+            File jarFile = new File(file("nbbuild/netbeans"), ideJars[i]);
+            if (jarFile.exists()) {
+                assertResolved(ideJars[i], srcDirs[i]);
+            } else {
+                assertEquals("no resolved root", 0,
+                        SourceForBinaryQuery.findSourceRoots(Util.urlForJar(jarFile)).getRoots().length);
+            }
         }
     }
     

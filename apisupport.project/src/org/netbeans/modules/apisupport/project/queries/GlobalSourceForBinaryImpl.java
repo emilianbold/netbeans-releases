@@ -76,7 +76,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                     if (binaryRootS.endsWith("/xtest/lib/nbjunit.jar!/")) { // NOI18N
                         result = new URL(binaryRootS.substring("jar:".length(), binaryRootS.length() - "/xtest/lib/nbjunit.jar!/".length()) + "/xtest/nbjunit/src/"); // NOI18N
                     } else if (binaryRootS.endsWith("/xtest/lib/nbjunit-ide.jar!/")) { // NOI18N
-                        result = new URL(binaryRootS.substring("jar:".length(), binaryRootS.length() - "/xtest/lib/nbjunit-ide.jar!/".length()) + "/xtest/nbjunit/src/"); // NOI18N
+                        result = new URL(binaryRootS.substring("jar:".length(), binaryRootS.length() - "/xtest/lib/nbjunit-ide.jar!/".length()) + "/xtest/nbjunit/ide/src/"); // NOI18N
                     } else if (binaryRootS.endsWith("/xtest/lib/insanelib.jar!/")) { // NOI18N
                         result = new URL(binaryRootS.substring("jar:".length(), binaryRootS.length() - "/xtest/lib/insanelib.jar!/".length()) + "/performance/insanelib/src/"); // NOI18N
                     } else {
@@ -245,10 +245,10 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
         String binaryRootS = binaryRoot.toExternalForm();
         String result = null;
         if (binaryRootS.startsWith("jar:file:")) { // NOI18N
-            if (binaryRootS.endsWith("/modules/ext/nbjunit.jar!/")) { // NOI18N
+            if (binaryRootS.endsWith("/modules/org-netbeans-modules-nbjunit.jar!/")) { // NOI18N
                 result = "xtest/nbjunit/src/"; // NOI18N
-            } else if (binaryRootS.endsWith("/modules/ext/nbjunit-ide.jar!/")) { // NOI18N
-                result = "xtest/nbjunit/src/"; // NOI18N
+            } else if (binaryRootS.endsWith("/modules/org-netbeans-modules-nbjunit-ide.jar!/")) { // NOI18N
+                result = "xtest/nbjunit/ide/src/"; // NOI18N
             } else if (binaryRootS.endsWith("/modules/ext/insanelib.jar!/")) { // NOI18N
                 result = "performance/insanelib/src/"; // NOI18N
             } else {
