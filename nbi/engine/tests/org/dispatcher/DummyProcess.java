@@ -71,6 +71,7 @@ public class DummyProcess implements Process {
       }
     }
     isProcessed = false;
+    interrupted = false;
     workingEndTime = System.currentTimeMillis();
   }
   

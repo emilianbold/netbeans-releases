@@ -81,6 +81,25 @@ public class DispatcherTest extends MyTestCase {
     assertEquals(0, dispatcher.waitingCount());
   }
   
+  public void testReuseThreadWorker() {
+    final ProcessDispatcher dispatcher = new RoundRobinDispatcher(50, 1);
+    final DummyProcess dummy = new DummyProcess();
+    dispatcher.schedule(dummy);
+    dispatcher.start();
+    longSleep();
+    dummy.terminate();
+    shortSleep();
+    assertFalse(dummy.isProcessed());
+    Thread worker = dummy.getWorker();
+    assertTrue(worker.isAlive());
+    dispatcher.schedule(dummy);
+    longSleep();
+    assertTrue(dummy.isProcessed());
+    assertEquals(worker, dummy.getWorker());
+    dispatcher.stop();
+    assertFalse(dummy.isProcessed());
+  }
+  
   private void longSleep() {
     try {
       Thread.sleep(300);

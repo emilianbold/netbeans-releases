@@ -65,4 +65,6 @@ public class WorkersPool {
     else if (NEW == worker.getState()) freeWorkers.offer(worker);
     notify();
   }
+  
+  public synchronized void stopWaitingWorkers(){}
 }
