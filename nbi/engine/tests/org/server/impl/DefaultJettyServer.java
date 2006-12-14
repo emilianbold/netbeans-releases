@@ -18,30 +18,38 @@
  *
  * $Id$
  */
-package org;
+package org.server.impl;
 
-import junit.framework.TestSuite;
-import org.connector.ConnectionConfiguratorTest;
-import org.connector.ConnectorTest;
-import org.connector.ProxySelectorTest;
-import org.connector.ProxyTest;
-import org.util.DomVisitorTest;
+import org.*;
+import org.mortbay.jetty.Handler;
+import org.mortbay.jetty.Server;
+import org.mortbay.jetty.handler.DefaultHandler;
+import org.mortbay.jetty.handler.ResourceHandler;
+import org.server.*;
 
 /**
  *
  * @author Danila_Dugurov
  */
-public class RunAllSuite extends TestSuite {
-    
-    public RunAllSuite() {
-        addTestSuite(ProxyTest.class);
-        addTestSuite(ProxySelectorTest.class);
-        addTestSuite(ConnectionConfiguratorTest.class);
-        addTestSuite(ConnectorTest.class);
-        addTestSuite(DomVisitorTest.class);
-        //addTestSuite(WindowsRegistryTest.class);
-        //todo: dinamic add test case without manual registration
-    }
-    //this done only becouse without it netbeans faild to run tests
-      public void testFake() {}
+public class DefaultJettyServer extends AbstractServer {
+  
+  private Server httpServer;
+  
+  public DefaultJettyServer(String testDataPath, int serverPort) {
+    super(testDataPath, serverPort);
+  }
+  
+  public void start() throws Exception {
+    if (httpServer == null) httpServer = new Server(serverPort);
+    if (httpServer.isRunning()) return;
+    final ResourceHandler handler = new ResourceHandler();
+    handler.setResourceBase(testDataPath);
+    httpServer.setHandlers(new Handler[]{handler, new DefaultHandler()});
+    httpServer.start();
+  }
+  
+  public void stop() throws Exception {
+    if (httpServer == null && httpServer.isStopped()) return;
+    httpServer.stop();
+  }
 }

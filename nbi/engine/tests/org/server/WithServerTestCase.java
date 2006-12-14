@@ -21,6 +21,7 @@
 package org.server;
 
 import org.*;
+import org.server.impl.DefaultJettyServer;
 
 /**
  *
@@ -31,7 +32,7 @@ import org.*;
  */
 public class WithServerTestCase extends MyTestCase {
   
-  private final DefaultServer server = new DefaultServer("testData", 8080);
+  private final AbstractServer server = new DefaultJettyServer("testData", 8080);
   private final TestDataGenerator dataGenerator = new TestDataGenerator("testData");
   
   protected void setUp() throws Exception {
