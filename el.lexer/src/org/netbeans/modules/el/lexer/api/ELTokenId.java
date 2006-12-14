@@ -28,54 +28,54 @@ import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
- * Token ids of Expression Language
+ * Token IDs of Expression Language
  *
  * @author Petr Pisl
- * @author Marek Fukala
+ * @author Marek.Fukala@Sun.COM
  */
 public enum ELTokenId implements TokenId {
     
     //operators
-    LT("<", "el-operator"),
-    GT(">", "el-operator"),
-    DOT(".", "el-operator"),
-    COMMA(",", "el-operator"),
-    QUESTION("?", "el-operator"),
-    PLUS("+", "el-operator"),
-    MINUS("-", "el-operator"),
-    MUL("*", "el-operator"),
-    DIV("/", "el-operator"),
-    MOD("%", "el-operator"),
-    EQ_EQ("==", "el-operator"),
-    LT_EQ("<=", "el-operator"),
-    GT_EQ(">=", "el-operator"),
-    NOT_EQ("!=", "el-operator"),
-    AND_AND("&&", "el-operator"),
-    OR_OR("||", "el-operator"),
-    COLON(":", "el-operator"),
-    NOT("!", "el-operator"),
-    LPAREN("(", "el-operator"),
-    RPAREN(")", "el-operator"),
-    LBRACKET("[", "el-operator"),
-    RBRACKET("]", "el-operator"),
+    LT("<", ELTokenCategories.OPERATORS.categoryName),
+    GT(">", ELTokenCategories.OPERATORS.categoryName),
+    DOT(".", ELTokenCategories.OPERATORS.categoryName),
+    COMMA(",", ELTokenCategories.OPERATORS.categoryName),
+    QUESTION("?", ELTokenCategories.OPERATORS.categoryName),
+    PLUS("+", ELTokenCategories.OPERATORS.categoryName),
+    MINUS("-", ELTokenCategories.OPERATORS.categoryName),
+    MUL("*", ELTokenCategories.OPERATORS.categoryName),
+    DIV("/", ELTokenCategories.OPERATORS.categoryName),
+    MOD("%", ELTokenCategories.OPERATORS.categoryName),
+    EQ_EQ("==", ELTokenCategories.OPERATORS.categoryName),
+    LT_EQ("<=", ELTokenCategories.OPERATORS.categoryName),
+    GT_EQ(">=", ELTokenCategories.OPERATORS.categoryName),
+    NOT_EQ("!=", ELTokenCategories.OPERATORS.categoryName),
+    AND_AND("&&", ELTokenCategories.OPERATORS.categoryName),
+    OR_OR("||", ELTokenCategories.OPERATORS.categoryName),
+    COLON(":", ELTokenCategories.OPERATORS.categoryName),
+    NOT("!", ELTokenCategories.OPERATORS.categoryName),
+    LPAREN("(", ELTokenCategories.OPERATORS.categoryName),
+    RPAREN(")", ELTokenCategories.OPERATORS.categoryName),
+    LBRACKET("[", ELTokenCategories.OPERATORS.categoryName),
+    RBRACKET("]", ELTokenCategories.OPERATORS.categoryName),
     
     //keywords
-    AND_KEYWORD("and", "el-keyword"),
-    DIV_KEYWORD("div", "el-keyword"),
-    EMPTY_KEYWORD("empty", "el-keyword"),
-    EQ_KEYWORD("eq", "el-keyword"),
-    FALSE_KEYWORD("false", "el-keyword"),
-    GE_KEYWORD("ge", "el-keyword"),
-    GT_KEYWORD("gt", "el-keyword"),
-    INSTANCEOF_KEYWORD("instanceof", "el-keyword"),
-    LE_KEYWORD("le", "el-keyword"),
-    LT_KEYWORD("lt", "el-keyword"),
-    MOD_KEYWORD("mod", "el-keyword"),
-    NE_KEYWORD("ne", "el-keyword"),
-    NOT_KEYWORD("not", "el-keyword"),
-    NULL_KEYWORD("null", "el-keyword"),
-    OR_KEYWORD("or", "el-keyword"),
-    TRUE_KEYWORD("true", "el-keyword"),
+    AND_KEYWORD("and", ELTokenCategories.KEYWORDS.categoryName),
+    DIV_KEYWORD("div", ELTokenCategories.KEYWORDS.categoryName),
+    EMPTY_KEYWORD("empty", ELTokenCategories.KEYWORDS.categoryName),
+    EQ_KEYWORD("eq", ELTokenCategories.KEYWORDS.categoryName),
+    FALSE_KEYWORD("false", ELTokenCategories.KEYWORDS.categoryName),
+    GE_KEYWORD("ge", ELTokenCategories.KEYWORDS.categoryName),
+    GT_KEYWORD("gt", ELTokenCategories.KEYWORDS.categoryName),
+    INSTANCEOF_KEYWORD("instanceof", ELTokenCategories.KEYWORDS.categoryName),
+    LE_KEYWORD("le", ELTokenCategories.KEYWORDS.categoryName),
+    LT_KEYWORD("lt", ELTokenCategories.KEYWORDS.categoryName),
+    MOD_KEYWORD("mod", ELTokenCategories.KEYWORDS.categoryName),
+    NE_KEYWORD("ne", ELTokenCategories.KEYWORDS.categoryName),
+    NOT_KEYWORD("not", ELTokenCategories.KEYWORDS.categoryName),
+    NULL_KEYWORD("null", ELTokenCategories.KEYWORDS.categoryName),
+    OR_KEYWORD("or", ELTokenCategories.KEYWORDS.categoryName),
+    TRUE_KEYWORD("true", ELTokenCategories.KEYWORDS.categoryName),
     
     //literals
     WHITESPACE(null, "el-whitespace"),
@@ -102,6 +102,26 @@ public enum ELTokenId implements TokenId {
     INVALID_OCTAL_LITERAL(null, "el-invalid-octal-literal"),
     INVALID_CHAR(null, "el-invalid-char");
     
+    
+    /** EL token categories enum.*/
+    public static enum ELTokenCategories {
+        
+        /** Token category for EL keywords like and, false etc. */
+        KEYWORDS("el-keyword"),
+        /** Token category for EL operators like ==, => etc. */
+        OPERATORS("el-operators"),
+        /** Token category for EL numeric literals. */
+        NUMERIC_LITERALS("el-numeric-literals"),
+        /** Token category for EL errors. */
+        ERRORS("el-error");
+        
+        private final String categoryName;
+        
+        ELTokenCategories(String categoryName) {
+            this.categoryName = categoryName;
+        }
+        
+    }
     
     private final String fixedText; // Used by lexer for production of flyweight tokens
     
@@ -140,13 +160,17 @@ public enum ELTokenId implements TokenId {
         protected Map<String,Collection<ELTokenId>> createTokenCategories() {
             Map<String,Collection<ELTokenId>> cats = new HashMap<String,Collection<ELTokenId>>();
             
-            cats.put("el-numeric-literals", EnumSet.of(
+            cats.put(ELTokenCategories.NUMERIC_LITERALS.categoryName, EnumSet.of(
                     ELTokenId.INT_LITERAL,
                     ELTokenId.LONG_LITERAL,
                     ELTokenId.HEX_LITERAL,
                     ELTokenId.OCTAL_LITERAL,
                     ELTokenId.FLOAT_LITERAL,
                     ELTokenId.DOUBLE_LITERAL));
+            
+            cats.put(ELTokenCategories.ERRORS.categoryName, EnumSet.of(
+                    ELTokenId.INVALID_OCTAL_LITERAL,
+                    ELTokenId.INVALID_CHAR));
             
             return cats;
         }
@@ -158,7 +182,7 @@ public enum ELTokenId implements TokenId {
         
         @Override
         public LanguageEmbedding<? extends TokenId> embedding(
-        Token<ELTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+                Token<ELTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             return null; // No embedding
         }
         
