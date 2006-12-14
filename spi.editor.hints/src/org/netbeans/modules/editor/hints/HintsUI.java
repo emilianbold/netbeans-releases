@@ -29,6 +29,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
@@ -52,9 +53,7 @@ import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.Annotatable;
 import org.openide.text.Annotation;
-import org.openide.text.Line;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -86,6 +85,7 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
     private Popup listPopup;
     private JLabel hintIcon;
     private ScrollCompletionPane hintListComponent;
+    private JLabel errorTooltip;
     
     /** Creates a new instance of HintsUI */
     private HintsUI() {
@@ -165,8 +165,14 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
         Toolkit.getDefaultToolkit().removeAWTEventListener(this);
         if (listPopup != null) {
             listPopup.hide();
-            hintListComponent.getView().removeMouseListener(this);
+            if (hintListComponent != null) {
+                hintListComponent.getView().removeMouseListener(this);
+            }
+            if (errorTooltip != null) {
+                errorTooltip.removeMouseListener(this);
+            }
             hintListComponent = null;
+            errorTooltip = null;
             listPopup = null;
             if (hintIcon != null)
                 hintIcon.setToolTipText(NbBundle.getMessage(HintsUI.class, "HINT_Bulb")); // NOI18N
@@ -269,36 +275,37 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
 
         this.hints = fixes;
         
-//        if (fixes.isEmpty()) {
-//            //show tooltip:
-//            EditorUI eui = Utilities.getEditorUI(component);
-//
-//            if (eui instanceof ExtEditorUI) {
-//                ((ExtEditorUI) eui).getToolTipSupport().setToolTipText(description);
-//            }
-//
-//            return ;
-//        }
-
+        Point p = new Point(position);
+        SwingUtilities.convertPointToScreen(p, comp);
+        
         if (hintIcon != null)
             hintIcon.setToolTipText(null);
         // be sure that hint will hide when popup is showing
         ToolTipManager.sharedInstance().setEnabled(false);
         ToolTipManager.sharedInstance().setEnabled(true);
-        assert hintListComponent == null;
-        hintListComponent = 
-                new ScrollCompletionPane(comp, fixes, null, null);
-        
-        hintListComponent.getView().addMouseListener (this);
-        hintListComponent.setName(POPUP_NAME);
         Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.MOUSE_EVENT_MASK);
-                
-        Point p = new Point(position);
-        SwingUtilities.convertPointToScreen(p, comp);
         
-        assert listPopup == null;
-        listPopup = getPopupFactory().getPopup(
-                comp, hintListComponent, p.x, p.y);
+        if (!fixes.isComputed() || fixes.getFixes().isEmpty()) {
+            //show tooltip:
+            assert listPopup == null;
+            errorTooltip = new JLabel("<html>" + translate(description)); // NOI18N
+            errorTooltip.setBorder(new LineBorder(Color.BLACK));
+            errorTooltip.addMouseListener(this);
+            
+            listPopup = getPopupFactory().getPopup(
+                    comp, errorTooltip, p.x, p.y);
+        } else {
+            assert hintListComponent == null;
+            hintListComponent =
+                    new ScrollCompletionPane(comp, fixes, null, null);
+            
+            hintListComponent.getView().addMouseListener (this);
+            hintListComponent.setName(POPUP_NAME);
+            assert listPopup == null;
+            listPopup = getPopupFactory().getPopup(
+                    comp, hintListComponent, p.x, p.y);
+        }
+        
         listPopup.show();
     }
     
@@ -416,6 +423,13 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
             return;
         }
         boolean bulbShowing = hintIcon != null && hintIcon.isShowing();
+        boolean errorTooltipShowing = errorTooltip != null && errorTooltip.isShowing();
+        
+        if (errorTooltipShowing) {
+            //any key should disable the errorTooltip:
+            removePopup();
+            return ;
+        }
         boolean popupShowing = hintListComponent != null && hintListComponent.isShowing();
         if ( e.getKeyCode() == KeyEvent.VK_ENTER ) {
             if (   e.getModifiersEx() == (KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK)
@@ -571,4 +585,15 @@ public class HintsUI implements MouseListener, KeyListener, ChangeListener, AWTE
         }
     }
 
+    private static String[] c = new String[] {"&", "<", ">", "\n", "\""}; // NOI18N
+    private static String[] tags = new String[] {"&amp;", "&lt;", "&gt;", "<br>", "&quot;"}; // NOI18N
+    
+    private String translate(String input) {
+        for (int cntr = 0; cntr < c.length; cntr++) {
+            input = input.replaceAll(c[cntr], tags[cntr]);
+        }
+        
+        return input;
+    }
+    
 }
