@@ -612,7 +612,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
 
         Lookup nodeLookup = null;
         DataObject dobj = (c != null) ? NbEditorUtilities.getDataObject(c.getDocument()) : null;
-        if (dobj != null){
+        if (dobj != null && dobj.isValid()) {
             nodeLookup = dobj.getNodeDelegate().getLookup();
         }
 
