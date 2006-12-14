@@ -27,11 +27,11 @@ import org.*;
  * @author Danila_Dugurov
  */
 /**
- *this test case which invoke test server and generate test data offcouse if wasn't generated yet.
+ *this test case which invoke test server and generate test data, offcouse if wasn't generated yet.
  */
 public class WithServerTestCase extends MyTestCase {
   
-  private final DefaultServer server = new DefaultServer("testData", 1234);
+  private final DefaultServer server = new DefaultServer("testData", 8080);
   private final TestDataGenerator dataGenerator = new TestDataGenerator("testData");
   
   protected void setUp() throws Exception {
