@@ -23,7 +23,7 @@ import org.netbeans.api.visual.widget.Widget;
 import java.awt.*;
 
 /**
- * This interfaces provides a resizing strategy.
+ * This interface provides a resizing strategy.
  *
  * @author David Kaspar
  */

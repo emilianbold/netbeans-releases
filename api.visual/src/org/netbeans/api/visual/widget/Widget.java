@@ -86,8 +86,9 @@ public class Widget {
     private Border border;
     private Layout layout;
     private Point preferredLocation;
-    private Rectangle minimumBounds;
-    private Rectangle maximumBounds;
+    private Dimension minimumSize;
+    private Dimension maximumSize;
+    private Dimension preferredSize;
     private Rectangle preferredBounds;
     private boolean checkClipping;
 
@@ -458,35 +459,60 @@ public class Widget {
     }
 
     /**
-     * Returns a minimum bounds of the widget.
-     * @return the minimum bounds; if null, then no minumum bounds are set.
+     * Returns a minimum size of the widget.
+     * @return the minimum size; if null, then no minumum size are set.
      */
-    public final Rectangle getMinimumBounds () {
-        return minimumBounds != null ? new Rectangle (minimumBounds) : null;
+    public final Dimension getMinimumSize () {
+        return minimumSize != null ? new Dimension (minimumSize) : null;
     }
 
     /**
-     * Sets a minumum bounds of the widget
-     * @param minimumBounds the minimumBounds; if null, then minimum bounds are unset.
+     * Sets a minumum size of the widget
+     * @param minimumSize the minimum size; if null, then minimum size are unset.
      */
-    public final void setMinimumBounds (Rectangle minimumBounds) {
-        this.minimumBounds = minimumBounds;
+    public final void setMinimumSize (Dimension minimumSize) {
+        if (GeomUtil.equals (this.minimumSize, minimumSize))
+            return;
+        this.minimumSize = minimumSize;
+        revalidate ();
     }
 
     /**
-     * Returns a maximum bounds of the widget.
-     * @return the maximum bounds; if null, then no maximum bounds are set.
+     * Returns a maximum size of the widget.
+     * @return the maximum size; if null, then no maximum size are set.
      */
-    public final Rectangle getMaximumBounds () {
-        return maximumBounds != null ? new Rectangle (maximumBounds) : null;
+    public final Dimension getMaximumSize () {
+        return maximumSize != null ? new Dimension (maximumSize) : null;
     }
 
     /**
-     * Sets a maximum bounds of the widget
-     * @param maximumBounds the maximum bounds; if null, then maximum bounds are unset.
+     * Sets a maximum size of the widget
+     * @param maximumSize the maximum size; if null, then maximum size are unset.
      */
-    public final void setMaximumBounds (Rectangle maximumBounds) {
-        this.maximumBounds = maximumBounds;
+    public final void setMaximumSize (Dimension maximumSize) {
+        if (GeomUtil.equals (this.maximumSize, maximumSize))
+            return;
+        this.maximumSize = maximumSize;
+        revalidate ();
+    }
+
+    /**
+     * Returns a preferred size of the widget.
+     * @return the preferred size; if null, then no preferred size are set.
+     */
+    public final Dimension getPreferredSize () {
+        return preferredSize != null ? new Dimension (preferredSize) : null;
+    }
+
+    /**
+     * Sets a preferred size of the widget
+     * @param preferredSize the preferred size; if null, then preferred size are unset.
+     */
+    public final void setPreferredSize (Dimension preferredSize) {
+        if (GeomUtil.equals (this.preferredSize, preferredSize))
+            return;
+        this.preferredSize = preferredSize;
+        revalidate ();
     }
 
     /**
@@ -517,7 +543,7 @@ public class Widget {
     }
 
     /**
-     * Returns a preferred bounds. If no preferred bounds are set, then it returns a preferred bounds
+     * Returns a preferred bounds relatively to the location of the widget. If no preferred bounds are set, then it returns a preferred bounds
      * that are calculated from the calculateClientArea method of this widget and location and bounds of the children widgets.
      * This calculated bounds are processed by the minimum and maximum bounds too.
      * @return the preferred bounds
@@ -530,11 +556,23 @@ public class Widget {
             if (calculatedPreferredBounds == null)
                 calculatedPreferredBounds = calculatePreferredBounds ();
             rect = new Rectangle (calculatedPreferredBounds);
+            if (preferredSize != null) {
+                rect.width = preferredSize.width;
+                rect.height = preferredSize.height;
+            }
         }
-        if (minimumBounds != null)
-            rect.add (minimumBounds);
-        if (maximumBounds != null)
-            rect.intersection (maximumBounds);
+        if (minimumSize != null) {
+            if (rect.width < minimumSize.width)
+                rect.width = minimumSize.width;
+            if (rect.height < minimumSize.height)
+                rect.height = minimumSize.height;
+        }
+        if (maximumSize != null) {
+            if (rect.width > maximumSize.width)
+                rect.width = maximumSize.width;
+            if (rect.height > maximumSize.height)
+                rect.height = maximumSize.height;
+        }
         return rect;
     }
 
@@ -563,7 +601,7 @@ public class Widget {
     }
 
     /**
-     * Sets a preferred bounds.
+     * Sets a preferred bounds that are specified relatively to the location of the widget.
      * @param preferredBounds the preferred bounds; if null, then the preferred bounds are unset
      */
     public final void setPreferredBounds (Rectangle preferredBounds) {

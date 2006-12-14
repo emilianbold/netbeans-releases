@@ -118,20 +118,20 @@ public class SwingScrollWidget extends Widget {
         } else {
             Dimension size = view.getBounds ().getSize ();
 
-            Rectangle minimumBounds = getMinimumBounds ();
-            if (minimumBounds != null) {
-                if (size.width < minimumBounds.width)
-                    size.width = minimumBounds.width;
-                if (size.height < minimumBounds.height)
-                    size.height = minimumBounds.height;
+            Dimension minimumSize = getMinimumSize ();
+            if (minimumSize != null) {
+                if (size.width < minimumSize.width)
+                    size.width = minimumSize.width;
+                if (size.height < minimumSize.height)
+                    size.height = minimumSize.height;
             }
 
-            Rectangle maximumBounds = getMaximumBounds ();
-            if (maximumBounds != null) {
-                if (size.width > maximumBounds.width)
-                    size.width = maximumBounds.width;
-                if (size.height > maximumBounds.height)
-                    size.height = maximumBounds.height;
+            Dimension maximumSize = getMaximumSize ();
+            if (maximumSize != null) {
+                if (size.width > maximumSize.width)
+                    size.width = maximumSize.width;
+                if (size.height > maximumSize.height)
+                    size.height = maximumSize.height;
             }
 
             return size;

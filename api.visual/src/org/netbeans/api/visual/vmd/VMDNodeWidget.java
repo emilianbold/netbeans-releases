@@ -77,7 +77,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
         setOpaque (false);
         setBorder (BORDER_NODE);
         setLayout (LayoutFactory.createVerticalLayout ());
-        setMinimumBounds (new Rectangle (0, 0, 128, 0));
+        setMinimumSize (new Dimension (128, 8));
 
         header = new Widget (scene);
         header.setBorder (BORDER);
