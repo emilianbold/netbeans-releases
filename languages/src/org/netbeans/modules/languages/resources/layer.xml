@@ -61,11 +61,6 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
     </folder>
-    <folder name="OptionsDialog">
-        <folder name="PreviewExamples">
-            <file name="PHPExample" url="PHPExample"/>
-        </folder>
-    </folder> 
   
     <folder name="Loaders">
         <folder name="Languages">
@@ -110,14 +105,6 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="MIMEResolver">
             <file name="Languagesresolver.xml" url="Languagesresolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.Bundle"/>
-            </file>
-        </folder>
-    </folder>
-    <folder name="Templates">
-        <folder name="Other">
-            <file name="LanguagesTemplate.php" url="LanguagesTemplate.php">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.Bundle"/>
-                <attr name="template" boolvalue="true"/>
             </file>
         </folder>
     </folder>
