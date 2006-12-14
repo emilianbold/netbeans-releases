@@ -19,12 +19,19 @@
 
 package org.netbeans.modules.languages.javascript;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
-import javax.swing.JEditorPane;
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineFactory;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
@@ -34,6 +41,7 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.languages.Cookie;
 import org.netbeans.modules.languages.LibrarySupport;
 import org.netbeans.modules.languages.SyntaxCookie;
@@ -42,14 +50,18 @@ import org.netbeans.modules.languages.parser.ASTNode;
 import org.netbeans.modules.languages.parser.PTPath;
 import org.netbeans.modules.languages.parser.SToken;
 import org.netbeans.modules.languages.parser.TokenInput;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
-import org.openide.util.Lookup;
-import org.openide.windows.TopComponent;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 
 
 /**
@@ -251,6 +263,7 @@ public class JavaScript {
         NbEditorDocument doc = (NbEditorDocument)comp.getDocument();
         int position = comp.getCaretPosition();
         PTPath path = node.findPath(position);
+        if (path == null) return false;
         for (Iterator iter = path.iterator(); iter.hasNext(); ) {
             Object obj = iter.next();
             if (!(obj instanceof ASTNode))
@@ -262,6 +275,37 @@ public class JavaScript {
         } // for
         return false;
     }
+    
+    public static void performRun (ASTNode node, JTextComponent comp) {
+        ScriptEngineManager manager = new ScriptEngineManager ();
+        ScriptEngine engine = manager.getEngineByMimeType ("text/javascript");
+        Document doc = comp.getDocument ();
+        DataObject dob = NbEditorUtilities.getDataObject (doc);
+        String name = dob.getPrimaryFile ().getNameExt ();
+        SaveCookie saveCookie = (SaveCookie) dob.getLookup ().lookup (SaveCookie.class);
+        if (saveCookie != null)
+            try {
+                saveCookie.save ();
+            } catch (IOException ex) {
+                ErrorManager.getDefault ().notify (ex);
+            }
+        try {
+            ScriptContext context = engine.getContext ();
+            InputOutput io = IOProvider.getDefault ().getIO ("Run " + name, false);
+            context.setWriter (io.getOut ());
+            context.setErrorWriter (io.getErr ());
+            context.setReader (io.getIn ());
+            io.select ();
+            Object o = engine.eval (doc.getText (0, doc.getLength ()));
+            if (o != null)
+                DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Message ("Result: " + o));
+        } catch (BadLocationException ex) {
+            ErrorManager.getDefault ().notify (ex);
+        } catch (ScriptException ex) {
+            DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Message (ex.getMessage ()));
+        }
+    }
+
     
     // helper methods ..........................................................
     

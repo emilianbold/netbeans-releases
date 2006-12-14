@@ -396,3 +396,12 @@ ACTION:delete_method {
     enabled:org.netbeans.modules.languages.javascript.JavaScript.enabledDeleteCurrentMethod;
     explorer:"false";
 }
+
+ACTION:run_script {
+    name:"Run";
+    performer:org.netbeans.modules.languages.javascript.JavaScript.performRun;
+    enabled:"true";
+    explorer:"false";
+}
+
+
