@@ -288,6 +288,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../java/source/preprocessorbridge</project>
                 <project>../javacvs/cvsmodule</project>
                 <project>../javacvs/libmodule</project>
+                <project>../javadoc</project>
                 <project>../junit</project>
                 <project>../lexer</project>
                 <project>../lexer/editorbridge</project>
