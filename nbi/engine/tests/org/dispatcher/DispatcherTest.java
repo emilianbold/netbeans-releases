@@ -95,7 +95,7 @@ public class DispatcherTest extends MyTestCase {
     dispatcher.schedule(dummy);
     longSleep();
     assertTrue(dummy.isProcessed());
-    assertEquals(worker, dummy.getWorker());
+    assertEquals(worker, dummy.getWorker());//key line in this test
     dispatcher.stop();
     assertFalse(dummy.isProcessed());
   }

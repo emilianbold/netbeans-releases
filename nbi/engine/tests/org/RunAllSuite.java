@@ -25,6 +25,7 @@ import org.connector.ConnectionConfiguratorTest;
 import org.connector.ConnectorTest;
 import org.connector.ProxySelectorTest;
 import org.connector.ProxyTest;
+import org.dispatcher.DispatcherTest;
 import org.util.DomVisitorTest;
 
 /**
@@ -38,6 +39,7 @@ public class RunAllSuite extends TestSuite {
         addTestSuite(ProxySelectorTest.class);
         addTestSuite(ConnectionConfiguratorTest.class);
         addTestSuite(ConnectorTest.class);
+        addTestSuite(DispatcherTest.class);
         addTestSuite(DomVisitorTest.class);
         //addTestSuite(WindowsRegistryTest.class);
         //todo: dinamic add test case without manual registration
