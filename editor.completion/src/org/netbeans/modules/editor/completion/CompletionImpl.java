@@ -157,6 +157,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     
     /** Ending offset of the recent autopopup modification. */
     private int autoModEndOffset;
+    
+    private boolean pleaseWaitDisplayed = false;
 
     private CompletionImpl() {
         Registry.addChangeListener(this);
@@ -201,6 +203,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                 }
                 layout.showCompletion(Collections.singletonList(waitText),
                         null, -1, CompletionImpl.this, false);
+                pleaseWaitDisplayed = true;
             }
         });
         pleaseWaitTimer.setRepeats(false);
@@ -284,7 +287,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                 localCompletionResult = completionResult;
             }
             if ((completionAutoPopupTimer.isRunning() || localCompletionResult != null)
-                && (!layout.isCompletionVisible() || layout.getSelectedCompletionItem() == null)
+                && (!layout.isCompletionVisible() || pleaseWaitDisplayed)
                 && e.getDot() != autoModEndOffset) {
                 hideCompletion(false);
             }
@@ -527,6 +530,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         } else {
             completionCancel();
             layout.showCompletion(Collections.singletonList(NO_SUGGESTIONS), null, -1, CompletionImpl.this, false);
+            pleaseWaitDisplayed = false;
         }
     }
 
@@ -707,6 +711,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 }
 
                 layout.showCompletion(noSuggestions ? Collections.singletonList(NO_SUGGESTIONS) : sortedResultItems, displayTitle, displayAnchorOffset, CompletionImpl.this, allowFallbacks && queryType == CompletionProvider.COMPLETION_QUERY_TYPE);
+                pleaseWaitDisplayed = false;
 
                 // Show documentation as well if set by default
                 if (CompletionSettings.INSTANCE.documentationAutoPopup()) {
@@ -748,6 +753,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         completionAutoPopupTimer.stop(); // Ensure the popup timer gets stopped
         pleaseWaitTimer.stop();
         boolean hidePerformed = layout.hideCompletion();
+        pleaseWaitDisplayed = false;
         if (!completionOnly && hidePerformed && CompletionSettings.INSTANCE.documentationAutoPopup()) {
             hideDocumentation(true);
         }
