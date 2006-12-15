@@ -64,7 +64,9 @@ public class LineBreakpointTest extends NbTestCase {
             LineBreakpoint lb1 = LineBreakpoint.create (TEST_APP, 32);
             LineBreakpoint lb2 = LineBreakpoint.create (TEST_APP, 37);
             LineBreakpoint lb3 = LineBreakpoint.create (TEST_APP, 109);
+            lb3.setPreferredClassName("org.netbeans.api.debugger.jpda.testapps.LineBreakpoint$Inner");
             LineBreakpoint lb4 = LineBreakpoint.create (TEST_APP, 92);
+            lb4.setPreferredClassName("org.netbeans.api.debugger.jpda.testapps.LineBreakpoint$InnerStatic");
             LineBreakpoint lb5 = LineBreakpoint.create (TEST_APP, 41);
 
             DebuggerManager dm = DebuggerManager.getDebuggerManager ();
@@ -213,6 +215,11 @@ public class LineBreakpointTest extends NbTestCase {
     DebuggerStartException {
         JPDASupport.removeAllBreakpoints ();
         LineBreakpoint lb = LineBreakpoint.create (TEST_APP, line);
+        if (73 <= line && line <= 98) {
+            lb.setPreferredClassName("org.netbeans.api.debugger.jpda.testapps.LineBreakpoint$InnerStatic");
+        } else if (100 <= line && line <= 115) {
+            lb.setPreferredClassName("org.netbeans.api.debugger.jpda.testapps.LineBreakpoint$Inner");
+        }
         lb.setCondition (condition);
         TestBreakpointListener tbl = new TestBreakpointListener 
             (lb, conditionResult);
