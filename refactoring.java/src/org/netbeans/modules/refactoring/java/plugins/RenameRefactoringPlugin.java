@@ -405,7 +405,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             for (ModificationResult result:results) {
                 for (FileObject jfo : result.getModifiedFileObjects()) {
                     for (Difference dif: result.getDifferences(jfo)) {
-                        elements.add(refactoring,DiffElement.create(dif, jfo, result.getNewSource(jfo)));
+                        elements.add(refactoring,DiffElement.create(dif, jfo));
                     }
                 }
             }
