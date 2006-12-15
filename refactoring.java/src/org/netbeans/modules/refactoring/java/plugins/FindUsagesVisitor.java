@@ -47,6 +47,8 @@ public class FindUsagesVisitor extends SearchVisitor {
     }
     
     private void addIfMatch(TreePath path, Tree tree, Element elementToFind) {
+        if (workingCopy.getTreeUtilities().isSynthetic(path))
+            return ;
         Element el = workingCopy.getTrees().getElement(path);
         if (el==null)
             return;

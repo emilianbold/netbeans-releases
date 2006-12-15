@@ -42,20 +42,24 @@ public class CopyTransformer extends SearchVisitor {
     
     @Override
     public Tree visitCompilationUnit(CompilationUnitTree tree, Element p) {
-        if (insertImport) {
-            Element el = workingCopy.getTrees().getElement(getCurrentPath());
-            Tree tree2 = make.insertCompUnitImport(tree, 0, make.Import(make.Identifier(oldPackage), false));
-            workingCopy.rewrite(tree, tree2);
+        if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+            if (insertImport) {
+                Element el = workingCopy.getTrees().getElement(getCurrentPath());
+                Tree tree2 = make.insertCompUnitImport(tree, 0, make.Import(make.Identifier(oldPackage), false));
+                workingCopy.rewrite(tree, tree2);
+            }
         }
         return super.visitCompilationUnit(tree, p);
     }         
 
     @Override
     public Tree visitClass(ClassTree tree, Element p) {
-        //if (tree.getSimpleName().toString().equals(workingCopy.getFileObject().getName())) {
+        if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+            //if (tree.getSimpleName().toString().equals(workingCopy.getFileObject().getName())) {
             Tree nju = make.setLabel(tree, newName);
             workingCopy.rewrite(tree, nju);
-        //}
+            //}
+        }
         return null;
     }
     

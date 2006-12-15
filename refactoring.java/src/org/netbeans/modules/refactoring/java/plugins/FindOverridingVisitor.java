@@ -38,10 +38,12 @@ public class FindOverridingVisitor extends SearchVisitor {
 
     @Override
     public Tree visitMethod(MethodTree node, Element elementToFind) {
-        ExecutableElement el = (ExecutableElement) workingCopy.getTrees().getElement(getCurrentPath());
-
-        if (workingCopy.getElements().overrides(el, (ExecutableElement) elementToFind, (TypeElement) el.getEnclosingElement())) {
-            addUsage(getCurrentPath());
+        if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+            ExecutableElement el = (ExecutableElement) workingCopy.getTrees().getElement(getCurrentPath());
+            
+            if (workingCopy.getElements().overrides(el, (ExecutableElement) elementToFind, (TypeElement) el.getEnclosingElement())) {
+                addUsage(getCurrentPath());
+            }
         }
         return super.visitMethod(node, elementToFind);
     }

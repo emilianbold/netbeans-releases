@@ -37,6 +37,9 @@ public class FindSubtypesVisitor extends SearchVisitor {
 
     @Override
     public Tree visitClass(ClassTree node, Element elementToFind) {
+        if (workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+            return super.visitClass(node, elementToFind);
+        }
         if (recursive) {
             if (workingCopy.getTypes().isSubtype(workingCopy.getTrees().getTypeMirror(getCurrentPath()), elementToFind.asType())) {
                 addUsage(getCurrentPath());

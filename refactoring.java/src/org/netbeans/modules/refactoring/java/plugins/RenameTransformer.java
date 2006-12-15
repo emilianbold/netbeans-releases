@@ -50,6 +50,8 @@ public class RenameTransformer extends SearchVisitor {
     }
     
     private void renameUsageIfMatch(TreePath path, Tree tree, Element elementToFind) {
+        if (workingCopy.getTreeUtilities().isSynthetic(path))
+            return;
         Element el = workingCopy.getTrees().getElement(path);
         if (el==null)
             return;
@@ -84,6 +86,8 @@ public class RenameTransformer extends SearchVisitor {
     }
     
     private void renameDeclIfMatch(TreePath path, Tree tree, Element elementToFind) {
+        if (workingCopy.getTreeUtilities().isSynthetic(path))
+            return;
         Element el = workingCopy.getTrees().getElement(path);
         if (elementToFind.equals(el)) {
             Tree nju = make.setLabel(tree, newName);

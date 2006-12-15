@@ -51,34 +51,39 @@ public class MoveTransformer extends SearchVisitor {
     
     @Override
     public Tree visitMemberSelect(MemberSelectTree node, Element p) {
-        Element el = workingCopy.getTrees().getElement(getCurrentPath());
-        if (el!=null) {
-            if (isElementMoving(el)) {
-                Tree nju = make.MemberSelect(make.Identifier(move.getTargetPackageName(move.filesToMove.get(index))), el);
-                workingCopy.rewrite(node, nju);
+        if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+            Element el = workingCopy.getTrees().getElement(getCurrentPath());
+            if (el!=null) {
+                if (isElementMoving(el)) {
+                    Tree nju = make.MemberSelect(make.Identifier(move.getTargetPackageName(move.filesToMove.get(index))), el);
+                    workingCopy.rewrite(node, nju);
+                }
             }
         }
         return super.visitMemberSelect(node, p);
     }
     
     
-    @Override 
+    @Override
     public Tree visitIdentifier(IdentifierTree node, Element p) {
-        Element el = workingCopy.getTrees().getElement(getCurrentPath());
-        if (el!=null) {
-            if (!isThisFileMoving) {
-                if (isElementMoving(el)) {
-                    elementsToImport.add(el);
-                }
-            } else {
-                if (!isThisFileReferencingOldPackage && (!isElementMoving(el) && isTopLevelClass(el)) && getPackageOf(el).toString().equals(RetoucheUtils.getPackageName(workingCopy.getFileObject().getParent()))) {
-                    isThisFileReferencingOldPackage = true;
+        if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+            Element el = workingCopy.getTrees().getElement(getCurrentPath());
+            if (el!=null) {
+                if (!isThisFileMoving) {
+                    if (isElementMoving(el)) {
+                        elementsToImport.add(el);
+                    }
+                } else {
+                    if (!isThisFileReferencingOldPackage && (!isElementMoving(el) && isTopLevelClass(el)) && getPackageOf(el).toString().equals(RetoucheUtils.getPackageName(workingCopy.getFileObject().getParent()))) {
+                        isThisFileReferencingOldPackage = true;
+                    }
                 }
             }
         }
         
         return super.visitIdentifier(node, p);
     }
+    
     private PackageElement getPackageOf(Element el) {
         //return workingCopy.getElements().getPackageOf(el);
         while (el.getKind() != ElementKind.PACKAGE) 
@@ -125,6 +130,9 @@ public class MoveTransformer extends SearchVisitor {
     @Override
     public Tree visitCompilationUnit(CompilationUnitTree node, Element p) {
         Tree result = super.visitCompilationUnit(node, p);
+        if (workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+            return result;
+        }
         if (isThisFileMoving) {
             //change package statement
             workingCopy.rewrite(node.getPackageName(), make.Identifier(move.getTargetPackageName(workingCopy.getFileObject())));

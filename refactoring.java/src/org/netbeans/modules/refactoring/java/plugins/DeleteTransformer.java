@@ -50,6 +50,9 @@ public class DeleteTransformer extends SearchVisitor {
     }
     
     private void deleteDeclIfMatch(Tree tree, Element elementToFind) {
+        if (workingCopy.getTreeUtilities().isSynthetic(getCurrentPath()))
+            return ;
+        
         Element el = workingCopy.getTrees().getElement(getCurrentPath());
         if (elementToFind.equals(el)) {
             Tree parent = getCurrentPath().getParentPath().getLeaf();
@@ -65,5 +68,4 @@ public class DeleteTransformer extends SearchVisitor {
             addUsage(getCurrentPath());
         }
     }
-    
 }
