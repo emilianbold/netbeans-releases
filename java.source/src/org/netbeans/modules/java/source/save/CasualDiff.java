@@ -34,7 +34,6 @@ import org.netbeans.jackpot.model.CommentHandler;
 import org.netbeans.jackpot.model.CommentSet;
 import org.netbeans.jackpot.model.ASTModel;
 import org.netbeans.jackpot.query.Query;
-
 import com.sun.tools.javac.code.*;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.*;
@@ -51,8 +50,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.jackpot.engine.SourceReader;
 import org.netbeans.jackpot.engine.SourceRewriter;
 import org.netbeans.jackpot.engine.StringSourceRewriter;
 import org.netbeans.jackpot.engine.JavaFormatOptions;
@@ -75,9 +72,7 @@ public class CasualDiff {
     private WorkingCopy workingCopy;
     private TokenSequence<JavaTokenId> tokenSequence;
     private SourceRewriter output;
-    private int currentPos;
     private String origText;
-    private SourceReader reader;
     private VeryPretty printer;
     private int pointer;
     private Context context;
@@ -95,8 +90,6 @@ public class CasualDiff {
         this.tokenSequence = workingCopy.getTokenHiearchy().tokenSequence();
         this.output = new StringSourceRewriter();
         this.origText = workingCopy.getText();
-        currentPos = 0;
-        reader = new SourceReader(origText.toCharArray());
         this.context = context;
         printer = new VeryPretty(context, JavaFormatOptions.getDefault());
     }
@@ -1977,6 +1970,11 @@ public class CasualDiff {
             }
         }
         
+        @Override
+        public int hashCode() {
+            return data.hashCode();
+        }
+        
         String data;
         int end;
         int start;
@@ -2040,7 +2038,7 @@ public class CasualDiff {
                     builder.append(lines2[i].data);
                 }
                 printLines(addStart, addEnd, ">", lines2);
-                append(Diff.insert(delEnd == Difference.NONE ? lines2[addStart].start : lines1[delEnd].end,
+                append(Diff.insert(delEnd == Difference.NONE ? lines1[delStart].start : lines1[delEnd].end,
                         builder.toString(), null, "", LineInsertionType.NONE));
             }
         }
