@@ -20,6 +20,7 @@
 package org.netbeans.modules.debugger.jpda.ui.models;
 
 import java.util.WeakHashMap;
+import javax.security.auth.Refreshable;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
@@ -80,6 +81,9 @@ public class VariablesTableModel implements TableModel, Constants {
             if (row instanceof javax.swing.JToolTip) {
                 row = ((javax.swing.JToolTip) row).getClientProperty("getShortDescription");
                 if (row instanceof Variable) {
+                    if (row instanceof Refreshable && !((Refreshable) row).isCurrent()) {
+                        return "";
+                    }
                     return ((Variable) row).getType();
                 }
             }
