@@ -90,9 +90,10 @@ public class TreeNode extends AbstractNode implements Highlight {
 
     private TreePath tree;
     private CompilationInfo info;
+    private boolean synthetic;
     
     public static Node getTree(CompilationInfo info, TreePath tree) {
-        List<Node> result = new ArrayList();
+        List<Node> result = new ArrayList<Node>();
         
         new FindChildrenTreeVisitor(info).scan(tree, result);
         
@@ -104,10 +105,31 @@ public class TreeNode extends AbstractNode implements Highlight {
         super(nodes.isEmpty() ? Children.LEAF: new NodeChilren(nodes));
         this.tree = tree;
         this.info = info;
+        this.synthetic = info.getTreeUtilities().isSynthetic(tree);
         setDisplayName(tree.getLeaf().getKind().toString() + ":" + tree.getLeaf().toString());
         setIconBaseWithExtension("org/netbeans/modules/java/debug/resources/tree.png");
     }
 
+    @Override
+    public String getHtmlDisplayName() {
+        if (synthetic) {
+            return "<html><font color='#808080'>" + translate(getDisplayName());
+        }
+        
+        return null;
+    }
+            
+    private static String[] c = new String[] {"&", "<", ">", "\""}; // NOI18N
+    private static String[] tags = new String[] {"&amp;", "&lt;", "&gt;", "&quot;"}; // NOI18N
+    
+    private String translate(String input) {
+        for (int cntr = 0; cntr < c.length; cntr++) {
+            input = input.replaceAll(c[cntr], tags[cntr]);
+        }
+        
+        return input;
+    }
+    
     public int getStart() {
         return (int)info.getTrees().getSourcePositions().getStartPosition(tree.getCompilationUnit(), tree.getLeaf());
     }
