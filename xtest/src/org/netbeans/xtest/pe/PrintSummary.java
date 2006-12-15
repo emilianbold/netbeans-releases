@@ -71,6 +71,7 @@ public class PrintSummary extends Task {
             report = XTestResultsReport.loadFromFile(reportFile);                        
         } catch (IOException ioe) {
             log("Unable to load results, caught IOException :"+ioe);
+            log("WARNING: Probably no testbag corresponds to given attributes.");
             return;
         } catch (ClassNotFoundException cnfe) {            
             log("Unable to load results, caught ClassNotFoundException :"+cnfe);
