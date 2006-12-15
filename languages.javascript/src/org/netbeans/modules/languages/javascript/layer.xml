@@ -19,6 +19,32 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <folder name="Templates">
+        <attr name="API_Support/Scripting" boolvalue="true"/>
+        <folder name="Scripting">
+            <file name="EmptyJavaScript.js" url="EmptyJavaScript.js">
+                <attr name="template" boolvalue="true" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/EmptyJavaScriptFileDescription.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/JavaScript.png"/>
+                <attr name="templateCategory" stringvalue="simple-files"/>
+            </file>            
+            <file name="JavaScriptMethod.js" url="JavaScriptMethod.js">
+                <attr name="template" boolvalue="true" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/JavaScriptMethoidFileDescription.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/JavaScript.png"/>
+                <attr name="templateCategory" stringvalue="simple-files"/>
+            </file>            
+            <file name="JavaScriptObject.js" url="JavaScriptObject.js">
+                <attr name="template" boolvalue="true" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/JavaScriptObjectFileDescription.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/javascript/JavaScript.png"/>
+                <attr name="templateCategory" stringvalue="simple-files"/>
+            </file>            
+        </folder>
+    </folder>
     <folder name="Services">
         <folder name="MIMEResolver">
             <file name="JavaScript.xml" url="JavaScript.xml">
