@@ -125,5 +125,7 @@ public class CreateProjectVersionedDirTest extends JellyTestCase {
         new NewProjectWizardOperator().finish();
         // wait classpath scanning finished
         ProjectSupport.waitScanFinished();
+        
+        TestKit.closeProject(PROJECT_NAME);
     }
 }

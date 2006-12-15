@@ -147,8 +147,9 @@ public class SearchHistoryUITest extends JellyTestCase{
         sho.setFrom("1");
         sho.setTo("2");
         
-        //TestKit.removeAllData(PROJECT_NAME);
         stream.flush();
         stream.close();
+        
+        TestKit.closeProject(PROJECT_NAME);
     }
 }

@@ -9,7 +9,6 @@
 
 package org.netbeans.test.subversion.main.commit;
 
-import com.sun.corba.se.impl.util.Version;
 import java.io.File;
 import java.io.PrintStream;
 import javax.swing.table.TableModel;
@@ -186,9 +185,10 @@ public class CommitDataTest extends JellyTestCase {
             tee = (TimeoutExpiredException) e;
         }
         assertNotNull("There shouldn't be any table in Versioning view", tee);
-        TestKit.removeAllData("JavaApp");
         stream.flush();
         stream.close();
+        
+        TestKit.closeProject(PROJECT_NAME);
     }
  
     public void testCommitPackage() throws Exception {
@@ -293,6 +293,8 @@ public class CommitDataTest extends JellyTestCase {
         //TestKit.removeAllData(PROJECT_NAME);
         stream.flush();
         stream.close();
+        
+        TestKit.closeProject(PROJECT_NAME);
     }
     
     public void testRecognizeMimeType() throws Exception {
@@ -423,5 +425,7 @@ public class CommitDataTest extends JellyTestCase {
         //TestKit.removeAllData(PROJECT_NAME);
         stream.flush();
         stream.close();
+        
+        TestKit.closeProject(PROJECT_NAME);
     }
 }

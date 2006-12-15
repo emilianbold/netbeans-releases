@@ -117,5 +117,7 @@ public class SearchRevisionsTest extends JellyTestCase {
         
         stream.flush();
         stream.close();
+        
+        TestKit.closeProject(PROJECT_NAME);
     }
 }

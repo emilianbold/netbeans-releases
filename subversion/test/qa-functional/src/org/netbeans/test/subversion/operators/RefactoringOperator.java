@@ -39,7 +39,7 @@ public class RefactoringOperator extends TopComponentOperator {
     
     public JButtonOperator btDoRefactoring() {
         if (_btDoRefactoring == null) {
-            _btDoRefactoring = new JButtonOperator(this, "Do Refactoring");
+            _btDoRefactoring = new JButtonOperator(this, "Refactor");
         }
         return _btDoRefactoring;
     }

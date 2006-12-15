@@ -162,6 +162,8 @@ public class ExportDiffPatchTest extends JellyTestCase {
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
         stream.flush();
         stream.close();
+        
+        TestKit.closeProject(PROJECT_NAME);
     }
     
 }

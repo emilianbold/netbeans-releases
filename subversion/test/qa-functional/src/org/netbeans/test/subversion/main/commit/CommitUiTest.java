@@ -68,11 +68,11 @@ public class CommitUiTest extends JellyTestCase{
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CommitUiTest("testInvokeClose"));
+        suite.addTest(new CommitUiTest("testInvokeCloseCommit"));
         return suite;
     }
     
-    public void testInvokeClose() throws Exception {
+    public void testInvokeCloseCommit() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         TestKit.closeProject(PROJECT_NAME);
@@ -123,6 +123,8 @@ public class CommitUiTest extends JellyTestCase{
         
         co.verify();
         co.cancel();
-        //TestKit.removeAllData(PROJECT_NAME);        
+        //TestKit.removeAllData(PROJECT_NAME);      
+        
+        TestKit.closeProject(PROJECT_NAME);
     }
 }

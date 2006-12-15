@@ -172,6 +172,8 @@ public class DeleteTest extends JellyTestCase {
             e = ex;
         }
         assertNull("Reverted file should be visible!!!", e);
+        
+        TestKit.closeProject(PROJECT_NAME);
     }
     
     public void testDeleteCommit() throws Exception {
@@ -268,5 +270,7 @@ public class DeleteTest extends JellyTestCase {
             e = ex;
         }
         assertNotNull("Deleteted file should be visible!!!", e);
+        
+        TestKit.closeProject(PROJECT_NAME);
     }
 }

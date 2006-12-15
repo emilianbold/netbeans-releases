@@ -145,9 +145,10 @@ public class CopyTest extends JellyTestCase {
         status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
         assertEquals("Wrong annotation of node!!!", "[release01]", status);
         //to do 
-        TestKit.removeAllData("JavaApp");
         stream.flush();
         stream.close();
+        
+        TestKit.closeProject(PROJECT_NAME);
     }
     
     public void testCreateNewCopy() throws Exception {
@@ -259,8 +260,9 @@ public class CopyTest extends JellyTestCase {
         status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
         assertEquals("Wrong annotation of node!!!", TestKit.UPTODATE_STATUS, status);
         
-        //TestKit.removeAllData(PROJECT_NAME);
         stream.flush();
         stream.close();
+        
+        TestKit.closeProject(PROJECT_NAME);
     }
 }

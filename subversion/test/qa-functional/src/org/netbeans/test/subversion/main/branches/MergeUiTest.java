@@ -69,11 +69,11 @@ public class MergeUiTest extends JellyTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new MergeUiTest("testInvokeClose"));
+        suite.addTest(new MergeUiTest("testInvokeCloseMerge"));
         return suite;
     }
     
-    public void testInvokeClose() throws Exception {
+    public void testInvokeCloseMerge() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         TestKit.closeProject(PROJECT_NAME);
@@ -144,6 +144,6 @@ public class MergeUiTest extends JellyTestCase {
         assertEquals("Wrong folder selection!!!", "tags", moo.getRepositoryFolder());
         moo.cancel();
         
-        //TestKit.removeAllData(PROJECT_NAME);
+        TestKit.closeProject(PROJECT_NAME);
     }
 }

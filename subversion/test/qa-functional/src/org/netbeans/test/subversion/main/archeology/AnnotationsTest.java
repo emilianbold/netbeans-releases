@@ -123,8 +123,9 @@ public class AnnotationsTest extends JellyTestCase {
         node.performPopupAction("Subversion|Show Annotations");
         oto.waitText("Annotating... finished.");
         
-        //TestKit.removeAllData(PROJECT_NAME);
         stream.flush();
         stream.close();
+        
+        TestKit.closeProject(PROJECT_NAME);
     }
 }

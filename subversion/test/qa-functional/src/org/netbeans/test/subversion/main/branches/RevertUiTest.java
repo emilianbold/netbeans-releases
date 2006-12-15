@@ -66,11 +66,11 @@ public class RevertUiTest extends JellyTestCase{
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new RevertUiTest("testInvokeClose"));
+        suite.addTest(new RevertUiTest("testInvokeCloseRevert"));
         return suite;
     }
     
-    public void testInvokeClose() throws Exception {
+    public void testInvokeCloseRevert() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         TestKit.closeProject(PROJECT_NAME);
@@ -154,6 +154,6 @@ public class RevertUiTest extends JellyTestCase{
         assertNotNull("Components shouldn't be accessed", tee);
         
         rmo.cancel();
-        //TestKit.removeAllData(PROJECT_NAME);
+        TestKit.closeProject(PROJECT_NAME);
     }
 }

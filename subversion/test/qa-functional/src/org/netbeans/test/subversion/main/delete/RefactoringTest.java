@@ -193,6 +193,7 @@ public class RefactoringTest extends JellyTestCase {
             e = ex;
         }
         assertNotNull("Unexpected behavior - File shouldn't be in explorer!!!", e);
-        
+     
+        TestKit.closeProject(PROJECT_NAME);
     }
 }

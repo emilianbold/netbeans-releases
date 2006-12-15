@@ -171,10 +171,11 @@ public class IgnoreTest extends JellyTestCase {
         TableModel model = vo.tabFiles().getModel();
         assertEquals("Versioning view should be empty", 1, model.getRowCount());
         assertEquals("File should be listed in Versioning view", "NewClass.java", model.getValueAt(0, 0).toString());
-        
-        //TestKit.removeAllData(PROJECT_NAME);
+     
         stream.flush();
         stream.close();
+        
+        TestKit.closeProject(PROJECT_NAME);
     }
     
     public void testIgnoreUnignorePackage() throws Exception {
@@ -277,9 +278,10 @@ public class IgnoreTest extends JellyTestCase {
         assertEquals("Versioning view should be empty", 1, model.getRowCount());
         assertEquals("Package should be listed in Versioning view", "xx", model.getValueAt(0, 0).toString());
         
-        //TestKit.removeAllData(PROJECT_NAME);
         stream.flush();
         stream.close();
+        
+        TestKit.closeProject(PROJECT_NAME);
     }
     
     public void testIgnoreUnignoreFilePackage() throws Exception {
@@ -377,9 +379,10 @@ public class IgnoreTest extends JellyTestCase {
         }
         int result = TestKit.compareThem(expected, actual, false);
         assertEquals("Wrong records in Versioning view", 2, result);
-        TestKit.removeAllData(PROJECT_NAME);
         stream.flush();
         stream.close();
+        
+        TestKit.closeProject(PROJECT_NAME);
     }
     
     public void testFinalRemove() throws Exception {

@@ -118,9 +118,7 @@ public class CheckoutContentTest extends JellyTestCase {
         ProjectSupport.waitScanFinished();
         Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
         
-        //TestKit.removeAllData(PROJECT_NAME); 
-        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
+        TestKit.closeProject(PROJECT_NAME); 
     }
     
     public void testCheckoutContent() throws Exception {
@@ -159,9 +157,7 @@ public class CheckoutContentTest extends JellyTestCase {
         JButtonOperator create = new JButtonOperator(nbdialog, "Create Project...");
         JButtonOperator close = new JButtonOperator(nbdialog, "Close");
         close.push();
-        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
-        //ProjectSupport.waitScanFinished();
-        //Node projNode = new Node(new ProjectsTabOperator().tree(), "JavaApp");
+        
+        TestKit.closeProject(PROJECT_NAME);
     }
 }

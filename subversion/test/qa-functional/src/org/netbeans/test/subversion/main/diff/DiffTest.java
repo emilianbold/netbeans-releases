@@ -169,5 +169,7 @@ public class DiffTest extends JellyTestCase {
         //TestKit.removeAllData(PROJECT_NAME);
         stream.flush();
         stream.close();
+        
+        TestKit.closeProject(PROJECT_NAME);
     }
 }

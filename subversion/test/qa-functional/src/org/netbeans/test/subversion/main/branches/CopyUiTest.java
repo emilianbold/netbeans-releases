@@ -68,11 +68,11 @@ public class CopyUiTest extends JellyTestCase{
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CopyUiTest("testInvokeClose")); 
+        suite.addTest(new CopyUiTest("testInvokeCloseCopy")); 
         return suite;
     }
     
-    public void testInvokeClose() throws Exception{
+    public void testInvokeCloseCopy() throws Exception{
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         TestKit.closeProject(PROJECT_NAME);
@@ -127,6 +127,6 @@ public class CopyUiTest extends JellyTestCase{
         assertEquals("New folder for copy purpose wasn't created", "branches/release01-" + PROJECT_NAME, cto.getRepositoryFolder());
        
         cto.cancel();
-        //TestKit.removeAllData(PROJECT_NAME); 
+        TestKit.closeProject(PROJECT_NAME); 
     }
 }

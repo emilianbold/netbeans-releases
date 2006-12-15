@@ -66,11 +66,11 @@ public class SwitchUiTest extends JellyTestCase{
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new SwitchUiTest("testInvokeClose"));
+        suite.addTest(new SwitchUiTest("testInvokeCloseSwitch"));
         return suite;
     }
     
-    public void testInvokeClose() throws Exception {
+    public void testInvokeCloseSwitch() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         TestKit.closeProject(PROJECT_NAME);
@@ -107,6 +107,6 @@ public class SwitchUiTest extends JellyTestCase{
         assertEquals("Folder wasn't created", "branches", so.getRepositoryFolder());
         
         so.cancel();
-        //TestKit.removeAllData(PROJECT_NAME); 
+        TestKit.closeProject(PROJECT_NAME);
     }
 }

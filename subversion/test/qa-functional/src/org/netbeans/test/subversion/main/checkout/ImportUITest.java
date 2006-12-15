@@ -145,7 +145,8 @@ public class ImportUITest extends JellyTestCase {
         //System.out.println("Issue should be fixed: http://www.netbeans.org/issues/show_bug.cgi?id=76165!!!");
         assertTrue("Finish button should be enabled", ftiso.btFinish().isEnabled());
         iwo.cancel();
-        //TestKit.removeAllData(PROJECT_NAME);
+        
+        TestKit.closeProject(PROJECT_NAME);
     }
     
     public void testRepositoryFolderLoad() throws Exception {
@@ -217,7 +218,8 @@ public class ImportUITest extends JellyTestCase {
         assertEquals("Wrong folder selection!!!", "branches/release_01/" + PROJECT_NAME, ftiso.getRepositoryFolder());
         
         iwo.cancel();
-        //TestKit.removeAllData(PROJECT_NAME);
+        
+        TestKit.closeProject(PROJECT_NAME);
     }
     
     public void testCommitStep() throws Exception {
@@ -267,7 +269,8 @@ public class ImportUITest extends JellyTestCase {
         cso.selectCommitAction("test", "Add Directory");
         cso.selectCommitAction("test", "Exclude from Commit");
         iwo.cancel();
-        //TestKit.removeAllData(PROJECT_NAME);        
+        
+        TestKit.closeProject(PROJECT_NAME);      
     }
     
     public void testStopProcess() throws Exception {
@@ -317,6 +320,6 @@ public class ImportUITest extends JellyTestCase {
         rso = new RepositoryStepOperator();
         rso.verify();
         
-        //TestKit.removeAllData(PROJECT_NAME);
+        TestKit.closeProject(PROJECT_NAME);
     }
 }
