@@ -21,6 +21,7 @@ package org.netbeans.modules.httpserver;
 
 import java.awt.Component;
 import javax.swing.*;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 /**
@@ -60,8 +61,7 @@ class GrantAccessPanel extends javax.swing.JPanel {
         localTopMessage.setText(lTopMessage.toString());
         add(localTopMessage, java.awt.BorderLayout.NORTH);
         
-        jCheckBox1.setMnemonic(NbBundle.getMessage (GrantAccessPanel.class, "CTL_DNSTDNT_Mnemonic").charAt (0));
-        jCheckBox1.setText(NbBundle.getMessage (GrantAccessPanel.class, "CTL_DNSTDNT"));
+        Mnemonics.setLocalizedText(jCheckBox1, NbBundle.getMessage (GrantAccessPanel.class, "CTL_DNSTDNT"));
         jCheckBox1.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (GrantAccessPanel.class, "ACSD_CTL_DNSTDNT"));
         add(jCheckBox1, java.awt.BorderLayout.SOUTH);
     }
