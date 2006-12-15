@@ -46,6 +46,12 @@ public class FindUsagesVisitor extends SearchVisitor {
         return super.visitMemberSelect(node, p);
     }
     
+    @Override
+    public Tree visitNewClass(NewClassTree node, Element p) {
+        addIfMatch(getCurrentPath(), node,p);
+        return super.visitNewClass(node, p);
+    }
+    
     private void addIfMatch(TreePath path, Tree tree, Element elementToFind) {
         if (workingCopy.getTreeUtilities().isSynthetic(path))
             return ;
