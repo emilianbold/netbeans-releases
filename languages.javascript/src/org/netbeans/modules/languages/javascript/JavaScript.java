@@ -20,18 +20,14 @@
 package org.netbeans.modules.languages.javascript;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.io.Writer;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineFactory;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
@@ -277,35 +273,103 @@ public class JavaScript {
     }
     
     public static void performRun (ASTNode node, JTextComponent comp) {
-        ScriptEngineManager manager = new ScriptEngineManager ();
-        ScriptEngine engine = manager.getEngineByMimeType ("text/javascript");
-        Document doc = comp.getDocument ();
-        DataObject dob = NbEditorUtilities.getDataObject (doc);
-        String name = dob.getPrimaryFile ().getNameExt ();
-        SaveCookie saveCookie = (SaveCookie) dob.getLookup ().lookup (SaveCookie.class);
-        if (saveCookie != null)
-            try {
-                saveCookie.save ();
-            } catch (IOException ex) {
-                ErrorManager.getDefault ().notify (ex);
-            }
+        ClassLoader cl = JavaScript.class.getClassLoader ();
         try {
-            ScriptContext context = engine.getContext ();
+//        ScriptEngineManager manager = new ScriptEngineManager ();
+//        ScriptEngine engine = manager.getEngineByMimeType ("text/javascript");
+            Class managerClass = cl.loadClass ("javax.script.ScriptEngineManager");
+            Object manager = managerClass.newInstance();
+            Method getEngineByMimeType = managerClass.getMethod ("getEngineByMimeType", new Class[] {String.class});
+            Object engine = getEngineByMimeType.invoke (manager, new Object[] {"text/javascript"});
+            
+            Document doc = comp.getDocument ();
+            DataObject dob = NbEditorUtilities.getDataObject (doc);
+            String name = dob.getPrimaryFile ().getNameExt ();
+            SaveCookie saveCookie = (SaveCookie) dob.getLookup ().lookup (SaveCookie.class);
+            if (saveCookie != null)
+                try {
+                    saveCookie.save ();
+                } catch (IOException ex) {
+                    ErrorManager.getDefault ().notify (ex);
+                }
+            
+//            ScriptContext context = engine.getContext ();
+            Class engineClass = cl.loadClass ("javax.script.ScriptEngine");
+            Method getContext = engineClass.getMethod ("getContext", new Class[] {});
+            Object context = getContext.invoke (engine, new Object[] {});
+            
             InputOutput io = IOProvider.getDefault ().getIO ("Run " + name, false);
-            context.setWriter (io.getOut ());
-            context.setErrorWriter (io.getErr ());
-            context.setReader (io.getIn ());
+            
+//            context.setWriter (io.getOut ());
+//            context.setErrorWriter (io.getErr ());
+//            context.setReader (io.getIn ());
+            Class contextClass = cl.loadClass("javax.script.ScriptContext");
+            Method setWriter = contextClass.getMethod ("setWriter", new Class[] {Writer.class});
+            Method setErrorWriter = contextClass.getMethod ("setErrorWriter", new Class[] {Writer.class});
+            Method setReader = contextClass.getMethod ("setReader", new Class[] {Reader.class});
+            setWriter.invoke (context, new Object[] {io.getOut ()});
+            setErrorWriter.invoke (context, new Object[] {io.getErr ()});
+            setReader.invoke (context, new Object[] {io.getIn ()});
+            
             io.select ();
-            Object o = engine.eval (doc.getText (0, doc.getLength ()));
+            
+//            Object o = engine.eval (doc.getText (0, doc.getLength ()));
+            Method eval = engineClass.getMethod ("eval", new Class[] {String.class});
+            Object o = eval.invoke (engine, new Object[] {doc.getText (0, doc.getLength ())});
+            
             if (o != null)
                 DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Message ("Result: " + o));
-        } catch (BadLocationException ex) {
-            ErrorManager.getDefault ().notify (ex);
-        } catch (ScriptException ex) {
-            DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Message (ex.getMessage ()));
+            
+        } catch (Exception ex) {
+            try {
+                Class scriptExceptionClass = cl.loadClass("javax.script.ScriptException");
+                if (scriptExceptionClass.isAssignableFrom (ex.getClass ()))
+                    DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Message (ex.getMessage ()));
+                else
+                    ErrorManager.getDefault ().notify (ex);
+            } catch (Exception ex2) {
+                ErrorManager.getDefault ().notify (ex2);
+            }
         }
+//        ScriptEngineManager manager = new ScriptEngineManager ();
+//        ScriptEngine engine = manager.getEngineByMimeType ("text/javascript");
+//        Document doc = comp.getDocument ();
+//        DataObject dob = NbEditorUtilities.getDataObject (doc);
+//        String name = dob.getPrimaryFile ().getNameExt ();
+//        SaveCookie saveCookie = (SaveCookie) dob.getLookup ().lookup (SaveCookie.class);
+//        if (saveCookie != null)
+//            try {
+//                saveCookie.save ();
+//            } catch (IOException ex) {
+//                ErrorManager.getDefault ().notify (ex);
+//            }
+//        try {
+//            ScriptContext context = engine.getContext ();
+//            InputOutput io = IOProvider.getDefault ().getIO ("Run " + name, false);
+//            context.setWriter (io.getOut ());
+//            context.setErrorWriter (io.getErr ());
+//            context.setReader (io.getIn ());
+//            io.select ();
+//            Object o = engine.eval (doc.getText (0, doc.getLength ()));
+//            if (o != null)
+//                DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Message ("Result: " + o));
+//        } catch (BadLocationException ex) {
+//            ErrorManager.getDefault ().notify (ex);
+//        } catch (ScriptException ex) {
+//            DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Message (ex.getMessage ()));
+//        }
     }
 
+    public static boolean enabledRun (ASTNode node, JTextComponent comp) {
+        try {
+            ClassLoader cl = JavaScript.class.getClassLoader ();
+            Class managerClass = cl.loadClass ("javax.script.ScriptEngineManager");
+
+            return managerClass != null;
+        } catch (ClassNotFoundException ex) {
+            return false;
+        }
+    }
     
     // helper methods ..........................................................
     

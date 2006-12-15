@@ -400,7 +400,7 @@ ACTION:delete_method {
 ACTION:run_script {
     name:"Run";
     performer:org.netbeans.modules.languages.javascript.JavaScript.performRun;
-    enabled:"true";
+    enabled:org.netbeans.modules.languages.javascript.JavaScript.enabledRun;
     explorer:"false";
 }
 
