@@ -69,7 +69,7 @@ Microsystems, Inc. All Rights Reserved.
                 urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/XMLServiceDataIcon.png"/> 
          </file>
           <!--  EJB Web Service --> 
-          <file name="EjbWebService.java" url="EjbWebService.template"/>
+          <file name="EjbWebService.java" url="nbres:/org/netbeans/modules/websvc/core/dev/resources/EjbWebService.template"/>
 
          <file name="WebServiceFromWSDL.java">
              <attr name="template" boolvalue="true"/>
