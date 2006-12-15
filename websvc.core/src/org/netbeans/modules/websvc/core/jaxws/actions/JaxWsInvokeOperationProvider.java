@@ -19,7 +19,11 @@
 
 package org.netbeans.modules.websvc.core.jaxws.actions;
 
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.websvc.core.InvokeOperationActionProvider;
 import org.netbeans.modules.websvc.core.InvokeOperationCookie;
@@ -30,15 +34,28 @@ public class JaxWsInvokeOperationProvider implements InvokeOperationActionProvid
 	public InvokeOperationCookie getInvokeOperationCookie(Project project) {
         ProjectInfo projectInfo = new ProjectInfo(project);
         int projectType = projectInfo.getProjectType();
-        if ((projectType == ProjectInfo.JSE_PROJECT_TYPE && Util.isSourceLevel16orHigher(project)) ||
-                ((Util.isJavaEE5orHigher(project) &&
-                (projectType == ProjectInfo.WEB_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE))) ||
+        if ((projectType == ProjectInfo.JSE_PROJECT_TYPE && isJaxWsLibraryOnClasspath(project)) ||
+                (Util.isJavaEE5orHigher(project) && (projectType == ProjectInfo.WEB_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE)) ||
                 (projectInfo.isJwsdpSupported())
                 ) {
             return new JaxWsInvokeOperation(project);
         }
         return null;
     }
+    
+    private boolean isJaxWsLibraryOnClasspath(Project project) {
+        //test on WsImport class
+        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        ClassPath classPath;
+        if (sgs.length > 0) {
+            classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
+            if (classPath != null) {
+                return (classPath.findResource("com/sun/tools/ws/ant/WsImport.class") !=null); //NOI18N
+            }
+        }
+        return false;
+    }
+
 
 
 }
