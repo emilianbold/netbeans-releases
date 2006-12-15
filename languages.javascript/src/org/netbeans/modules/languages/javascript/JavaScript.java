@@ -22,6 +22,7 @@ package org.netbeans.modules.languages.javascript;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -311,6 +312,8 @@ public class JavaScript {
             setErrorWriter.invoke (context, new Object[] {io.getErr ()});
             setReader.invoke (context, new Object[] {io.getIn ()});
             
+            io.getOut().reset ();
+            io.getErr ().reset ();
             io.select ();
             
 //            Object o = engine.eval (doc.getText (0, doc.getLength ()));
@@ -320,16 +323,20 @@ public class JavaScript {
             if (o != null)
                 DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Message ("Result: " + o));
             
-        } catch (Exception ex) {
+        } catch (InvocationTargetException ex) {
             try {
                 Class scriptExceptionClass = cl.loadClass("javax.script.ScriptException");
-                if (scriptExceptionClass.isAssignableFrom (ex.getClass ()))
-                    DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Message (ex.getMessage ()));
+                if (ex.getCause () != null && 
+                    scriptExceptionClass.isAssignableFrom (ex.getCause ().getClass ())
+                )
+                    DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Message (ex.getCause ().getMessage ()));
                 else
                     ErrorManager.getDefault ().notify (ex);
             } catch (Exception ex2) {
                 ErrorManager.getDefault ().notify (ex2);
             }
+        } catch (Exception ex) {
+            ErrorManager.getDefault ().notify (ex);
         }
 //        ScriptEngineManager manager = new ScriptEngineManager ();
 //        ScriptEngine engine = manager.getEngineByMimeType ("text/javascript");
