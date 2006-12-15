@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.JButton;
 import javax.swing.table.AbstractTableModel;
@@ -35,6 +33,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.db.sql.execute.ColumnDef;
 import org.netbeans.modules.db.sql.execute.FetchLimitHandler;
 import org.netbeans.modules.db.sql.execute.ResultSetTableModelSupport;
+import org.openide.awt.Mnemonics;
 
 /**
  * TableModel based on a ResultSet. 
@@ -106,21 +105,21 @@ public class ResultSetTableModel extends AbstractTableModel {
     private static final class FetchLimitHandlerImpl implements FetchLimitHandler {
         
         public int fetchLimitReached(int fetchCount) {
-            JButton fetchYes = new JButton(NbBundle.getMessage(SQLResultPanel.class, "LBL_FetchYes"));
-            fetchYes.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SQLResultPanel.class, "ACSD_FetchYes"));
-            fetchYes.setMnemonic(NbBundle.getMessage(SQLResultPanel.class, "MNE_FetchYes").charAt(0));
+            JButton fetchYes = new JButton();
+            Mnemonics.setLocalizedText(fetchYes, NbBundle.getMessage(ResultSetTableModel.class, "LBL_FetchYes"));
+            fetchYes.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ResultSetTableModel.class, "ACSD_FetchYes"));
             
-            JButton fetchAll = new JButton(NbBundle.getMessage(SQLResultPanel.class, "LBL_FetchAll"));
-            fetchAll.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SQLResultPanel.class, "ACSD_FetchAll"));
-            fetchAll.setMnemonic(NbBundle.getMessage(SQLResultPanel.class, "MNE_FetchAll").charAt(0));
+            JButton fetchAll = new JButton();
+            Mnemonics.setLocalizedText(fetchAll, NbBundle.getMessage(ResultSetTableModel.class, "LBL_FetchAll"));
+            fetchAll.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ResultSetTableModel.class, "ACSD_FetchAll"));
             
-            JButton fetchNo = new JButton(NbBundle.getMessage(SQLResultPanel.class, "LBL_FetchNo"));
-            fetchNo.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SQLResultPanel.class, "ACSD_FetchNo"));
-            fetchNo.setMnemonic(NbBundle.getMessage(SQLResultPanel.class, "MNE_FetchNo").charAt(0));
+            JButton fetchNo = new JButton();
+            Mnemonics.setLocalizedText(fetchNo, NbBundle.getMessage(ResultSetTableModel.class, "LBL_FetchNo"));
+            fetchNo.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ResultSetTableModel.class, "ACSD_FetchNo"));
             
-            String title = NbBundle.getMessage(SQLResultPanel.class, "LBL_FetchNextTitle");
-            Integer[] args = new Integer[] { new Integer(fetchCount), new Integer(SQLOptions.getDefault().getFetchStep()) };
-            String message = MessageFormat.format(NbBundle.getMessage(SQLResultPanel.class, "LBL_FetchNextMessage"), args);
+            String title = NbBundle.getMessage(ResultSetTableModel.class, "LBL_FetchNextTitle");
+            String message = NbBundle.getMessage(ResultSetTableModel.class, "LBL_FetchNextMessage", 
+                    new Object[] { new Integer(fetchCount), new Integer(SQLOptions.getDefault().getFetchStep()) });
             
             NotifyDescriptor desc = new NotifyDescriptor(message, title, NotifyDescriptor.YES_NO_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE, new Object[] { fetchYes, fetchAll , fetchNo }, NotifyDescriptor.CANCEL_OPTION);
             Object ret = DialogDisplayer.getDefault().notify(desc);
