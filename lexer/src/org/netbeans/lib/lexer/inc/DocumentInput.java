@@ -50,10 +50,10 @@ extends MutableTextInput<D> implements DocumentListener {
     
     public static <D extends Document> DocumentInput<D> get(D doc) {
         @SuppressWarnings("unchecked")
-        DocumentInput<D> di = (DocumentInput<D>)doc.getProperty(DocumentInput.class);
+        DocumentInput<D> di = (DocumentInput<D>)doc.getProperty(MutableTextInput.class);
         if (di == null) {
             di = new DocumentInput<D>(doc);
-            doc.putProperty(DocumentInput.class, di);
+            doc.putProperty(MutableTextInput.class, di);
         }
         return di;
     }
