@@ -26,17 +26,20 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import javax.swing.JEditorPane;
 import javax.swing.text.JTextComponent;
-
 import javax.servlet.jsp.tagext.*;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.HTMLCompletionQuery;
-
+import org.netbeans.modules.web.core.syntax.deprecated.ELTokenContext;
+import org.netbeans.modules.web.core.syntax.deprecated.JspDirectiveTokenContext;
+import org.netbeans.modules.web.core.syntax.deprecated.JspMultiTokenContext;
+import org.netbeans.modules.web.core.syntax.deprecated.JspTagTokenContext;
 import org.openide.filesystems.FileObject;
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
-
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
-
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.ext.html.HTMLTokenContext;
@@ -50,6 +53,7 @@ import org.openide.text.CloneableEditorSupport;
 /**
  *
  * @author  Petr Jiricka, Petr Nejedly
+ * @author Marek.Fukala@Sun.COM
  */
 public class JspSyntaxSupport extends ExtSyntaxSupport {
     
@@ -1058,6 +1062,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
      * This method is largely a workaround for a bug in getTokenChain().
      * If offset falls right between two items, returns one which is just before
      * offset. If <code>offset == 0</code>, retruns null. */
+    @Deprecated()
     public TokenItem getItemAtOrBefore(int offset) throws BadLocationException {
         TokenItem backItem = null;
         int chainLength = 100;
@@ -1999,6 +2004,22 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     protected TokenID[] getBracketSkipTokens() {
         return JSP_BRACKET_SKIP_TOKENS;
     }
+    
+    public static TokenSequence tokenSequence(TokenHierarchy hi, Language language, int offset) {
+        TokenSequence ts = hi.tokenSequence(language);
+        if(ts == null) {
+            //HTML language is not top level one
+            ts = hi.tokenSequence();
+            int diff = ts.move(offset);
+            if(diff == Integer.MAX_VALUE) {
+                return null; //no token found
+            } else {
+                ts = ts.embedded(language);
+            }
+        }
+        return ts;
+    }
+    
     
     /** Finder for the matching bracket. It gets the original bracket char
      * and searches for the appropriate matching bracket character.

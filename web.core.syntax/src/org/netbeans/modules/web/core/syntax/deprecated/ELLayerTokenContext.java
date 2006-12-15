@@ -17,49 +17,49 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.web.core.xmlsyntax;
+package org.netbeans.modules.web.core.syntax.deprecated;
 
 import org.netbeans.editor.BaseTokenID;
 import org.netbeans.editor.TokenContext;
 import org.netbeans.editor.TokenContextPath;
 
-import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
-
-import org.openide.ErrorManager;
-
 /**
-* Token context for JSP pages with XML content.
+* Various extensions to the displaying of the EL tokens
+* is defined here. The tokens defined here are used
+* by the el-drawing-layer.
 *
-* @author Petr Jiricka
+* @author Petr Pisl
+* @deprecated Will be replaced by Semantic Coloring
 */
-@Deprecated()
-public class JspXMLTokenContext extends TokenContext {
 
-    // Jsp token numericIDs
-    public static final int ERROR_ID              =  1;
+public class ELLayerTokenContext extends TokenContext {
 
-    /** jsp-error token-id */
-    public static final BaseTokenID ERROR = new BaseTokenID("error", ERROR_ID);    // NOI18N
+    // Token category-ids
+
+    // Numeric-ids for token-ids
+    public static final int METHOD_ID     = 1;
+
+
+
+    // Token-ids
+    public static final BaseTokenID METHOD = new BaseTokenID("method", METHOD_ID);
 
     // Context instance declaration
-    public static final JspXMLTokenContext context = new JspXMLTokenContext();
+    public static final ELLayerTokenContext context = new ELLayerTokenContext();
 
     public static final TokenContextPath contextPath = context.getContextPath();
 
-    /** Path for java tokens in jsp */
-    public static final TokenContextPath xmlContextPath
-        = context.getContextPath(XMLDefaultTokenContext.contextPath);
 
-    private JspXMLTokenContext() {
-        super("jsp-", new TokenContext[] {    // NOI18N
-                XMLDefaultTokenContext.context
-            }
-        );
+
+    private ELLayerTokenContext() {
+        super("jsp-el-layer-");
 
         try {
             addDeclaredTokenIDs();
         } catch (Exception e) {
-            ErrorManager.getDefault ().notify(ErrorManager.INFORMATIONAL, e);
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
+                e.printStackTrace();
+            }
         }
 
     }

@@ -29,7 +29,7 @@ import org.netbeans.editor.ext.html.HTMLSyntax;
 import org.netbeans.editor.ext.java.JavaSyntax;
 import org.netbeans.junit.NbTestCase;
 
-import org.netbeans.modules.web.core.syntax.Jsp11Syntax;
+import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
 import org.openide.ErrorManager;
 
 /** Basic jsp multisyntax parser tests.

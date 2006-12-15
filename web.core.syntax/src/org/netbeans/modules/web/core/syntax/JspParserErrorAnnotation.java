@@ -21,14 +21,15 @@ package org.netbeans.modules.web.core.syntax;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Pisl, Marek Fukala
  */
 
 
-import org.netbeans.editor.TokenContextPath;
-import org.netbeans.editor.TokenItem;
+import org.netbeans.api.jsp.lexer.JspTokenId;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
-import org.netbeans.editor.ext.html.HTMLTokenContext;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.web.core.syntax.spi.ErrorAnnotation;
 import org.openide.text.Line;
@@ -39,7 +40,7 @@ public class JspParserErrorAnnotation extends ErrorAnnotation.LineSetAnnotation 
     
     /** Document line where the bug is reported
      */
-    private Line docline;   
+    private Line docline;
     /** Line and column, where the bug is reported
      *
      */
@@ -47,7 +48,7 @@ public class JspParserErrorAnnotation extends ErrorAnnotation.LineSetAnnotation 
     /** The description of the error.
      */
     private final String error;
-    /** The document, where the error is. 
+    /** The document, where the error is.
      */
     private NbEditorDocument document;
     /** Creates a new instance of JspParserErrorAnnotation */
@@ -96,7 +97,6 @@ public class JspParserErrorAnnotation extends ErrorAnnotation.LineSetAnnotation 
         
         ExtSyntaxSupport support = (ExtSyntaxSupport)document.getSyntaxSupport();
         int offset = NbDocument.findLineOffset(document, docline.getLineNumber()) + column+1;  // offset, where the bug is reported
-        TokenItem token = null;
         start = 0;  // column, where the underlining starts on the line, where the bug should be attached. default first column
         string = annTxt.toCharArray();
         end = string.length - 1; // length of the underlining
@@ -106,75 +106,47 @@ public class JspParserErrorAnnotation extends ErrorAnnotation.LineSetAnnotation 
             textOnLine(docline);
             return;
         }
+        TokenHierarchy tokenHierarchy = TokenHierarchy.get(document);
+        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+        if(tokenSequence.move(offset - 1) == Integer.MAX_VALUE) {
+            //no token
+            textOnLine(docline);
+            return ;
+        }
+        start = NbDocument.findLineColumn(document, tokenSequence.token().offset(tokenHierarchy));
+        offset = tokenSequence.token().offset(tokenHierarchy);
         
-        try{
-            token = ((JspSyntaxSupport)support).getTokenChain(offset-1, offset);  // get token on the reported offset
-
-            if (token == null){                 // if no token returned, unerline the whole line
-                textOnLine(docline);
-                return;
+        // Find the start and the end of the appropriate tag or EL
+        if (tokenSequence.token().id() != JspTokenId.EL){
+            // the error is in the tag or directive
+            // find the start of the tag, directive
+            while (!(tokenSequence.token().id() == JspTokenId.SYMBOL
+                    && tokenSequence.token().text().toString().charAt(0) == '<' //directive
+                    || tokenSequence.token().id() == JspTokenId.TAG)  //or jsp tag
+                    && tokenSequence.token().id() != JspTokenId.EOL
+                    && tokenSequence.movePrevious()) {
+                start = NbDocument.findLineColumn(document, tokenSequence.token().offset(tokenHierarchy));
+                offset = tokenSequence.token().offset(tokenHierarchy);
             }
-                
-            start = NbDocument.findLineColumn(document, token.getOffset());
-            offset = token.getOffset();
-
-            TokenContextPath contextPath = token.getTokenContextPath();
-            // Find the start and the end of the appropriate tag or EL 
-            if (contextPath.contains(JspTagTokenContext.contextPath)
-                || contextPath.contains(HTMLTokenContext.contextPath)){
-                // the error is in the tag or directive
-                // find the start of the tag, directive
-                while (token != null && !(token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL_ID
-                        && token.getImage().charAt(0) == '<')) {
-                    token = token.getPrevious();    
-                    if (token != null){
-                        start = NbDocument.findLineColumn(document, token.getOffset());
-                        offset = token.getOffset();
-                    }
-                }
-                
-                // find the end of the tag or directive
-                while (token != null &&  ( token.getTokenID().getNumericID() != JspTagTokenContext.SYMBOL_ID
-                        || token.getImage().charAt(token.getImage().trim().length()-1) != '>')
-                        && token.getTokenID().getNumericID() != JspTagTokenContext.EOL_ID){
-                    token = token.getNext();
-                }
-            }
-            else{
-                // The error is in EL
-                // find the start of the EL
-                while (token != null && (token.getTokenID().getNumericID() != ELTokenContext.EL_DELIM_ID
-                        || token.getImage().charAt(0) != '$')) {
-                    token = token.getPrevious();    
-                    if (token != null){
-                        start = NbDocument.findLineColumn(document, token.getOffset());
-                        offset = token.getOffset();
-                    }
-                }
-                // find the end of the EL
-                while (token != null &&  ( token.getTokenID().getNumericID() != ELTokenContext.EL_DELIM_ID
-                        || token.getImage().charAt(token.getImage().trim().length()-1) != '}')
-                        && token.getTokenID().getNumericID() != ELTokenContext.EOL_ID){
-                    token = token.getNext();
-                }
-                        
-            }
-            if (token != null)
-                end = token.getOffset() + token.getImage().trim().length() - offset;
-            else {
-                while (end >= 0 && end > start && string[end] != ' ') {
-                    end--;
-                }         
-            }
+            
+            // find the end of the tag or directive
+            while ((tokenSequence.token().id() != JspTokenId.SYMBOL
+                    || tokenSequence.token().text().toString().charAt(tokenSequence.token().text().toString().trim().length()-1) != '>')
+                    && tokenSequence.token().id() != JspTokenId.EOL && tokenSequence.moveNext());
+        } else {
+            // The error is in EL - start and offset are set properly - we have one big EL token now in JspLexer
         }
-        catch (javax.swing.text.BadLocationException e){
-            e.printStackTrace(System.out);
-            return;
-        }
-        catch (java.lang.AssertionError e){
-            e.printStackTrace(System.out);
-            return;
-        }
+        
+        end = tokenSequence.token().offset(tokenHierarchy) + tokenSequence.token().length() - offset;
+        
+//            if (token != null)
+//                end = token.getOffset() + token.getImage().trim().length() - offset;
+//            else {
+//                while (end >= 0 && end > start && string[end] != ' ') {
+//                    end--;
+//                }
+//            }
+        
         part=docline.createPart(start, end);//token.getImage().length());
         attach(part);
     }

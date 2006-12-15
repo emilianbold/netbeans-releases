@@ -28,14 +28,17 @@ import javax.servlet.jsp.tagext.TagLibraryInfo;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.jsp.lexer.JspTokenId;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SyntaxSupport;
-import org.netbeans.editor.TokenID;
-import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
 //import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.el.lexer.api.ELTokenId;
 //import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.modules.web.core.syntax.completion.ELExpression;
 //import org.netbeans.modules.web.core.syntax.completion.JMIUtil;
@@ -50,6 +53,7 @@ import org.openide.util.NbBundle;
 /**
  *
  * @author Petr Pisl
+ * @author Marek.Fukala@Sun.COM
  */
 public class JSPHyperlinkProvider implements HyperlinkProvider {
     
@@ -78,61 +82,75 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             BaseDocument bdoc = (BaseDocument) doc;
             JTextComponent target = Utilities.getFocusedComponent();
             
-            if (target == null || target.getDocument() != bdoc)
+            if (target == null || target.getDocument() != bdoc) {
                 return false;
+            }
             
             SyntaxSupport sup = bdoc.getSyntaxSupport();
             JspSyntaxSupport jspSup = (JspSyntaxSupport)sup.get(JspSyntaxSupport.class);
             
-            TokenItem token = jspSup.getTokenChain(offset, offset+1);
-            if (token == null) return false;
-            TokenID tokenID = token.getTokenID();
-            if (tokenID == null) return false;
-            if (token.getImage() == null) return false;
+            TokenHierarchy tokenHierarchy = TokenHierarchy.get(bdoc);
+            TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+            if(tokenSequence.move(offset) == Integer.MAX_VALUE) {
+                return false; //no token found
+            }
+            Token token = tokenSequence.token();
             
-            // is it the static include?
-            if (tokenID.getCategory() != null
-                    && tokenID.getCategory().getNumericID() == JspDirectiveTokenContext.TAG_CATEGORY_ID
-                    && tokenID.getNumericID() == JspDirectiveTokenContext.ATTR_VALUE_ID){
-                while (token != null && token.getTokenID().getCategory().getNumericID() == JspDirectiveTokenContext.TAG_CATEGORY_ID
-                       && token.getTokenID().getNumericID() != JspDirectiveTokenContext.ATTRIBUTE_ID){
-                    token = token.getPrevious();
+            if (token.id() == JspTokenId.ATTR_VALUE){
+                SyntaxElement syntaxElement = jspSup.getElementChain(offset);
+                if(syntaxElement != null) {
+                    if(syntaxElement.getCompletionContext() == JspSyntaxSupport.DIRECTIVE_COMPLETION_CONTEXT) {
+                        // <%@include file="xxx"%> hyperlink usecase
+                        if(((SyntaxElement.Directive)syntaxElement).getName().equals("include")) {
+                            //find attribute name
+                            while (tokenSequence.movePrevious() && tokenSequence.token().id() != JspTokenId.TAG) {
+                                if(tokenSequence.token().id() == JspTokenId.ATTRIBUTE) {
+                                    if(tokenSequence.token().text().toString().equals("file")) {
+                                        return true;
+                                    } else {
+                                        return false;
+                                    }
+                                }
+                                
+                            }
+                        }
+                    }
+                    if(syntaxElement.getCompletionContext() == JspSyntaxSupport.TAG_COMPLETION_CONTEXT) {
+                        //find attribute name
+                        while (tokenSequence.movePrevious() && tokenSequence.token().id() != JspTokenId.TAG) {
+                            if(tokenSequence.token().id() == JspTokenId.ATTRIBUTE) {
+                                String attributeName = tokenSequence.token().text().toString();
+                                String tagName = ((SyntaxElement.Tag)syntaxElement).getName();
+                                
+                                if("jsp:include".equals(tagName) && "page".equals(attributeName)) {
+                                    //<jsp:include page="xxx"/> usecase
+                                    return true;
+                                }
+                                
+                                if("jsp:useBean".equals(tagName) &&
+                                        ("type".equals(attributeName) || "class".equals(attributeName))) {
+                                    //<jsp:useBean class="xxx" type="yyy"/> usecase
+                                    return true;
+                                }
+                            }
+                        }
+                    }
                 }
-                
-                if (token != null && token.getTokenID().getCategory().getNumericID() == JspDirectiveTokenContext.TAG_CATEGORY_ID
-                    && token.getTokenID().getNumericID() == JspDirectiveTokenContext.ATTRIBUTE_ID
-                    && "file".equals(token.getImage().trim())) //NOI18N
-                    return true;
-                
             }
             
-            // is it a forward or dynamic include, class or type in userbean definition?
-            if (tokenID.getNumericID() == JspTagTokenContext.ATTR_VALUE_ID){
-                while (token != null && token.getTokenID().getNumericID() != JspTagTokenContext.ATTRIBUTE_ID
-                       && token.getTokenID().getNumericID() != JspTagTokenContext.TAG_ID
-                       && !(token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL_ID && token.getImage().charAt(0) == '<'))
-                    token = token.getPrevious();
-                
-                if (token != null && token.getTokenID().getNumericID() == JspDirectiveTokenContext.ATTRIBUTE_ID
-                    && "page".equals(token.getImage().trim())){
-                    return true;
-                }
-                if (token != null && token.getTokenID().getNumericID() == JspDirectiveTokenContext.ATTRIBUTE_ID
-                    && ("class".equals(token.getImage().trim()) || "type".equals(token.getImage().trim()))){
-                    return true;
-                }
-            }
-            
-            // is it a bean in EL
-            if (token.getTokenContextPath().contains(ELTokenContext.contextPath)){
+            // is it a bean in EL?
+            tokenSequence.move(offset); //reset tokenSequence
+            TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
+            if (elTokenSequence != null){
                 ELExpression exp = new ELExpression((JspSyntaxSupport)bdoc.getSyntaxSupport());
-                int res = exp.parse(token.getOffset() + token.getImage().length());
-                if (res == ELExpression.EL_START)
-                    res = exp.parse(token.getOffset() + token.getImage().length() + 1);
+                int res = exp.parse(token.offset(tokenHierarchy) + token.length());
+                if (res == ELExpression.EL_START) {
+                    res = res = exp.parse(token.offset(tokenHierarchy) + token.length() + 1);
+                }
                 return res == ELExpression.EL_BEAN;
             }
             // is the a reachable tag file?
-            return (getTagFile(token, jspSup) != null);
+            return (getTagFile(tokenSequence, jspSup) != null);
             
         } catch (BadLocationException e) {
             ErrorManager.getDefault().notify(e);
@@ -155,51 +173,48 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
      *         that should be on a given offset
      */
     public int[] getHyperlinkSpan(Document doc, int offset){
-        if (!(doc instanceof BaseDocument))
+        if (!(doc instanceof BaseDocument)) {
+            return null;
+        }
+        
+        BaseDocument bdoc = (BaseDocument) doc;
+        JTextComponent target = Utilities.getFocusedComponent();
+        
+        if (target == null || target.getDocument() != bdoc)
             return null;
         
-        try {
-            BaseDocument bdoc = (BaseDocument) doc;
-            JTextComponent target = Utilities.getFocusedComponent();
-            
-            if (target == null || target.getDocument() != bdoc)
-                return null;
-            
-            SyntaxSupport sup = bdoc.getSyntaxSupport();
-            JspSyntaxSupport jspSup = (JspSyntaxSupport)sup.get(JspSyntaxSupport.class);
-            
-            TokenItem token = jspSup.getTokenChain(offset, offset+1);
-            if (token == null) return null;
-            TokenID tokenID = token.getTokenID();
-            if (tokenID == null) return null;
-            
-            if (getTagFile(token, jspSup) != null){
-                // a reachable tag file. 
-                return new int[]{token.getOffset(), token.getOffset() + token.getImage().length()-1}; 
+        SyntaxSupport sup = bdoc.getSyntaxSupport();
+        JspSyntaxSupport jspSup = (JspSyntaxSupport)sup.get(JspSyntaxSupport.class);
+        
+        TokenHierarchy tokenHierarchy = TokenHierarchy.get(bdoc);
+        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+        if(tokenSequence.move(offset) == Integer.MAX_VALUE) {
+            return null; //no token found
+        }
+        Token token = tokenSequence.token();
+        
+        if (getTagFile(tokenSequence, jspSup) != null){
+            // a reachable tag file.
+            return new int[]{token.offset(tokenHierarchy), token.offset(tokenHierarchy) + token.length()-1};
+        } else{
+            // is it a bean in EL ?
+            TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
+            if (elTokenSequence != null){
+                ELExpression exp = new ELExpression((JspSyntaxSupport)bdoc.getSyntaxSupport());
+                int res = exp.parse(token.offset(tokenHierarchy) + token.length());
+                if (res == ELExpression.EL_BEAN || res == ELExpression.EL_START )
+                    return new int[] {token.offset(tokenHierarchy), token.offset(tokenHierarchy) + token.length()};
             }
-            else{
-                // is it a bean in EL ?
-                if (token.getTokenContextPath().contains(ELTokenContext.contextPath)){
-                    ELExpression exp = new ELExpression((JspSyntaxSupport)bdoc.getSyntaxSupport());
-                    int res = exp.parse(token.getOffset() + token.getImage().length());
-                    if (res == ELExpression.EL_BEAN || res == ELExpression.EL_START )
-                        return new int[] {token.getOffset(), token.getOffset() + token.getImage().length()};
-                }
-                // dynamic or static include, forward.
-                // remove all white space between the value. 
-                int tokenOffset = 0;
-                String image = token.getImage();
-                while (tokenOffset < image.length() && bdoc.isWhitespace(image.charAt(tokenOffset)))
-                    tokenOffset++;
+            // dynamic or static include, forward.
+            // remove all white space between the value.
+            int tokenOffset = 0;
+            String image = token.text().toString();
+            while (tokenOffset < image.length() && bdoc.isWhitespace(image.charAt(tokenOffset)))
                 tokenOffset++;
-                return new int[]{token.getOffset()+tokenOffset, token.getOffset() + token.getImage().length()-2};
-            }
-            
+            tokenOffset++;
+            return new int[]{token.offset(tokenHierarchy)+tokenOffset, token.offset(tokenHierarchy) + token.length()-2};
         }
-        catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
-            return null;
-        }
+        
     }
     
     /**
@@ -214,7 +229,6 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
      *               the implementations should not depend on it)
      */
     public void performClickAction(Document doc, int offset){
-        TokenItem token = null;
         try {
             BaseDocument bdoc = (BaseDocument) doc;
             JTextComponent target = Utilities.getFocusedComponent();
@@ -225,16 +239,20 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             SyntaxSupport sup = bdoc.getSyntaxSupport();
             JspSyntaxSupport jspSup = (JspSyntaxSupport)sup.get(JspSyntaxSupport.class);
             
-            token = jspSup.getTokenChain(offset, offset+1);
-            
-            if (token == null) return;
+            TokenHierarchy tokenHierarchy = TokenHierarchy.get(bdoc);
+            TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+            if(tokenSequence.move(offset) == Integer.MAX_VALUE) {
+                return; //no token found
+            }
+            Token token = tokenSequence.token();
             
             // is it a bean in EL
-            if (token.getTokenContextPath().contains(ELTokenContext.contextPath)){
+            TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
+            if (elTokenSequence != null){
                 ELExpression exp = new ELExpression((JspSyntaxSupport)bdoc.getSyntaxSupport());
-                int res = exp.parse(token.getOffset() + token.getImage().length());
+                int res = exp.parse(token.offset(tokenHierarchy) + token.length());
                 if (res == ELExpression.EL_START ){
-                    navigateToUserBeanDef(doc, jspSup, target, token.getImage());   
+                    navigateToUserBeanDef(doc, jspSup, target, token.text().toString());
                     return;
                 }
 //                if (res == ELExpression.EL_BEAN){
@@ -247,13 +265,11 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             }
             
             // is ti declaration of userBean?
-            TokenItem userToken = token;
-            while (userToken != null
-                    && userToken.getTokenID().getNumericID() != JspTagTokenContext.TAG_ID
-                    && !"jsp:useBean".equals(userToken.getImage()))
-                userToken = userToken.getPrevious();
-            if (userToken != null && userToken.getTokenID().getNumericID() == JspTagTokenContext.TAG_ID){
-                String className = token.getImage().substring(1, token.getImage().length()-1).trim();
+            while (tokenSequence.token().id() != JspTokenId.TAG && !"jsp:useBean".equals(tokenSequence.token().text().toString()) && tokenSequence.movePrevious());
+            
+            if (tokenSequence.index() != -1 && tokenSequence.token().id() == JspTokenId.TAG){
+                //we are in useBean
+                String className = token.text().toString().substring(1, token.length()-1).trim();
                 DataObject obj = NbEditorUtilities.getDataObject(sup.getDocument());
                 if (obj != null){
 //                    JavaClass bean= JMIUtil.findClass(className, ClassPath.getClassPath(obj.getPrimaryFile(), ClassPath.EXECUTE));
@@ -264,62 +280,61 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
                 }
             }
             
-            FileObject fObj = getTagFile(token, jspSup);
+            tokenSequence.move(offset);//reset tokenSequence
+            FileObject fObj = getTagFile(tokenSequence, jspSup);
             if ( fObj != null)
                 openInEditor(fObj);
             else {
-                String path = token.getImage();
+                String path = token.text().toString();
                 path = path.substring(path.indexOf('"') +1);
                 path = path.substring(0, path.indexOf('"'));
-
+                
                 fObj = getFileObject(doc, path);
                 if (fObj != null) {
                     openInEditor(fObj);
-                }
-                else {
+                } else {
                     // when the file was not found.
                     String msg = NbBundle.getMessage(JSPHyperlinkProvider.class, "LBL_file_not_found", path); //NOI18N
                     org.openide.awt.StatusDisplayer.getDefault().setStatusText(msg);
                 }
-
+                
             }
-        }
-        catch (BadLocationException e) {
+        } catch (BadLocationException e) {
             ErrorManager.getDefault().notify(e);
         }
     }
-
     
-    private FileObject getFileObject (Document doc, String path){
+    
+    private FileObject getFileObject(Document doc, String path){
         //Find out the file object from the document
         DataObject dobj = NbEditorUtilities.getDataObject(doc);
         FileObject fobj = (dobj != null) ? NbEditorUtilities.getDataObject(doc).getPrimaryFile(): null;
-            
+        
         if (fobj != null){
-            return getFileObject (doc, fobj, path);
+            return getFileObject(doc, fobj, path);
         }
         return null;
     }
     /**
      * This method finds the file object according the path or null if the file object doesn't exist.
      * @param doc Document, where user perform the hyperlink action.
-     * @param file 
-     * @param path 
-     * @return 
+     * @param file
+     * @param path
+     * @return
      */
-    private FileObject getFileObject (Document doc,FileObject file, String path){
+    private FileObject getFileObject(Document doc,FileObject file, String path){
         if (path == null)       // it the path is null -> don't find it
             return file;
         path = path.trim();
         FileObject find = file;
         if (!file.isFolder())  // if the file is not folder, get the parent
-                find = file.getParent();
+            find = file.getParent();
         
         if (path.charAt(0) == '/'){  // is the absolute path in the web module?
             find = JspUtils.guessWebModuleRoot(doc, file);  // find the folder, where the absolut path starts
-            if (find == null)       
+            if (find == null)
                 return null;            // we are not able to find out the webmodule root
-
+            
             path = path.substring(1);   // if we have folder, where the webmodule starts, the path can me relative to this folder
         }
         // find relative path to the folder
@@ -349,10 +364,9 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             DataObject dobj = null;
             try{
                 dobj = DataObject.find(fObj);
-            }
-            catch (DataObjectNotFoundException e){
-               ErrorManager.getDefault().notify(e);
-               return; 
+            } catch (DataObjectNotFoundException e){
+                ErrorManager.getDefault().notify(e);
+                return;
             }
             if (dobj != null){
                 Node.Cookie cookie = dobj.getCookie(EditCookie.class);
@@ -362,11 +376,10 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
         }
     }
     
-    private FileObject getTagFile(TokenItem token, JspSyntaxSupport jspSup){
-        if (token != null 
-                    && token.getTokenID().getCategory() == null
-                    && token.getTokenID().getNumericID() == JspTagTokenContext.TAG_ID){
-            String image = token.getImage().trim();
+    private FileObject getTagFile(TokenSequence tokenSequence, JspSyntaxSupport jspSup){
+        Token token = tokenSequence.token();
+        if(token.id() == JspTokenId.TAG) {
+            String image = token.text().toString().trim();
             if (!image.startsWith("jsp:") && image.indexOf(':') != -1){  // NOI18N
                 List l = jspSup.getTags(image);
                 if (l.size() == 1){
@@ -374,7 +387,7 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
                     if (libInfo != null){
                         TagFileInfo fileInfo = libInfo.getTagFile(getTagName(image));
                         if (fileInfo != null)
-                            return getFileObject (jspSup.getDocument(), fileInfo.getPath());
+                            return getFileObject(jspSup.getDocument(), fileInfo.getPath());
                     }
                 }
             }
@@ -382,36 +395,47 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
         return null;
     }
     
-    /* Move the cursor of on the user bean definition.
+    /* Move the cursor to the user bean definition.
      */
     private void navigateToUserBeanDef(Document doc, JspSyntaxSupport jspSup, JTextComponent target, String bean)
-            throws BadLocationException {
+    throws BadLocationException {
         String text = doc.getText(0, doc.getLength());
         int index = text.indexOf(bean);
-        TokenItem token = null;
+        TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+        
         while (index > 0){
-            token = jspSup.getTokenChain(index, index+1);
-            if (token != null && token.getTokenID().getNumericID() == JspTagTokenContext.ATTR_VALUE_ID ){
-                while (token != null
-                        && !(token.getTokenID().getNumericID() == JspTagTokenContext.ATTRIBUTE_ID
-                        && (token.getImage().equals("class") || token.getImage().equals("type")))
-                        && !(token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL_ID
-                        && token.getImage().equals("/>")))
-                    token = token.getNext();
-                if (token != null && token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL_ID)
-                    while (token != null
-                            && !(token.getTokenID().getNumericID() == JspTagTokenContext.ATTRIBUTE_ID
-                            && (token.getImage().equals("class") || token.getImage().equals("type")))
-                            && !(token.getTokenID().getNumericID() != JspTagTokenContext.SYMBOL_ID
-                            && token.getImage().equals("<")))
-                        token = token.getPrevious();
-                if (token != null && token.getTokenID().getNumericID() == JspTagTokenContext.ATTRIBUTE_ID){
-                    while (token != null
-                            && token.getTokenID().getNumericID() != JspTagTokenContext.ATTR_VALUE_ID)
-                        token= token.getNext();
+            if(tokenSequence.move(index) == Integer.MAX_VALUE) {
+                return; //no token found
+            }
+            Token token = tokenSequence.token();
+            
+            if (token.id() == JspTokenId.ATTR_VALUE ){
+                
+                while (!(token.id() == JspTokenId.ATTRIBUTE
+                        && (token.text().toString().equals("class") || token.text().toString().equals("type")))
+                        && !(token.id() == JspTokenId.SYMBOL
+                        && token.text().toString().equals("/>")) && tokenSequence.moveNext()) {
+                    token = tokenSequence.token();
                 }
-                if (token != null && token.getTokenID().getNumericID() == JspTagTokenContext.ATTR_VALUE_ID){
-                    target.setCaretPosition(token.getOffset()+1);
+                
+                if(tokenSequence.index() != -1 && token.id() == JspTokenId.SYMBOL) {
+                    while (!(token.id() == JspTokenId.ATTRIBUTE
+                            && (token.text().toString().equals("class") || token.text().toString().equals("type")))
+                            && !(token.id() != JspTokenId.SYMBOL
+                            && token.text().toString().equals("<")) && tokenSequence.movePrevious()) {
+                        token = tokenSequence.token();
+                    }
+                }
+                
+                if (tokenSequence.index() != -1 && token.id() == JspTokenId.ATTRIBUTE){
+                    while (token.id() != JspTokenId.ATTR_VALUE && tokenSequence.moveNext()) {
+                        token = tokenSequence.token();
+                    }
+                }
+                
+                if (tokenSequence.index() != -1 && token.id() == JspTokenId.ATTR_VALUE){
+                    target.setCaretPosition(token.offset(tokenHierarchy)+1);
                     break;
                 }
             }
@@ -424,19 +448,19 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
 //    public static class OpenJavaItem implements Runnable{
 //        private Object item;
 //        private SyntaxSupport sup;
-//        
+//
 //        OpenJavaItem(Object item, SyntaxSupport sup){
 //            super();
 //            this.item = item;
 //            this.sup = sup;
 //        }
-//        
+//
 //        public void run() {
 //            JspJavaSyntaxSupport javaSup = (JspJavaSyntaxSupport)sup.get(JspJavaSyntaxSupport.class);
 //            if (item != null && javaSup != null) {
 //                String itemDesc = null;
 //                if ((itemDesc = javaSup.openSource(item, true)) != null){
-//                    String msg = NbBundle.getBundle(JSPHyperlinkProvider.class).getString("MSG_source_not_found");                            
+//                    String msg = NbBundle.getBundle(JSPHyperlinkProvider.class).getString("MSG_source_not_found");
 //                    org.openide.awt.StatusDisplayer.getDefault().setStatusText(msg);
 //                }
 //            }

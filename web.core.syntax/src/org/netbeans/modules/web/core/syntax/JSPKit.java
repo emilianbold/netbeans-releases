@@ -19,26 +19,29 @@
 
 package org.netbeans.modules.web.core.syntax;
 
+import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
+import org.netbeans.modules.web.core.syntax.deprecated.ELDrawLayerFactory;
+import org.netbeans.modules.web.core.syntax.formatting.JspFormatter;
 import java.awt.event.ActionEvent;
 import java.beans.*;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.text.*;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.DrawLayer;
 import org.netbeans.editor.DrawLayerFactory;
 import org.netbeans.editor.Syntax;
-import org.netbeans.editor.TokenContextPath;
-import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.Completion;
 import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
-import org.netbeans.editor.ext.html.HTMLTokenContext;
 import org.netbeans.editor.ext.java.JavaSyntax;
-import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.lexer.editorbridge.LexerEditorKit;
@@ -49,7 +52,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Formatter;
@@ -66,8 +68,10 @@ import org.netbeans.api.jsp.lexer.JspTokenId;
 
 /**
  * Editor kit implementation for JSP content type
+ *
  * @author Miloslav Metelka, Petr Jiricka, Yury Kamen
- * @versiob 1.5
+ * @author Marek.Fukala@Sun.COM
+ * @version 1.5
  */
 public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.Provider{
     
@@ -88,7 +92,7 @@ public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
     public static final boolean debug = false;
     
     private static final boolean J2EE_LEXER_COLORING = true;
-
+    
     
     /** Default constructor */
     public JSPKit() {
@@ -129,8 +133,8 @@ public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
 //                    new JavaKit.JavaJMIGotoSourceAction(),
 //                    new JavaKit.JavaJMIGotoDeclarationAction(),
 //                    new JavaKit.JavaGotoSuperImplementation(),
-                    // the jsp editor has own action for switching beetween matching blocks
-                    new MatchBraceAction(ExtKit.matchBraceAction, false),
+            // the jsp editor has own action for switching beetween matching blocks
+            new MatchBraceAction(ExtKit.matchBraceAction, false),
                     new MatchBraceAction(ExtKit.selectionMatchBraceAction, true),
                     new JspGenerateFoldPopupAction(),
                     new CollapseAllCommentsFolds(),
@@ -207,7 +211,7 @@ public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
         if (dobj != null) {
             if (dobj.getPrimaryFile() != null)
                 return new JspSyntaxSupport(doc,
-                    JspContextInfo.getContextInfo(dobj.getPrimaryFile()).getCachedOpenInfo(doc, dobj.getPrimaryFile(), false).isXmlSyntax());
+                        JspContextInfo.getContextInfo(dobj.getPrimaryFile()).getCachedOpenInfo(doc, dobj.getPrimaryFile(), false).isXmlSyntax());
         }
         return new JspSyntaxSupport(doc, false);
         
@@ -263,8 +267,8 @@ public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
     public org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx(JSPKit.class);
     }
-
-        
+    
+    
     /** Implementation of MatchBraceAction, whic move the cursor in the matched block.
      */
     public static class MatchBraceAction extends ExtKit.MatchBraceAction {
@@ -281,10 +285,26 @@ public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
                     Caret caret = target.getCaret();
                     BaseDocument doc = Utilities.getDocument(target);
                     int dotPos = caret.getDot();
+                    dotPos--; //adjust position
                     ExtSyntaxSupport sup = (ExtSyntaxSupport)doc.getSyntaxSupport();
                     
-                    TokenItem token = sup.getTokenChain(dotPos-1, dotPos);
-                    if (token != null && token.getTokenContextPath().contains(JspTagTokenContext.contextPath)) {
+                    TokenHierarchy hi = TokenHierarchy.get(doc);
+                    BaseKit kit = null;
+                    try {
+                        //are we in HTML or Java?
+                        if(JspSyntaxSupport.tokenSequence(hi, HTMLTokenId.language(), dotPos) != null)  {
+                            kit = getKit(getClass().forName("org.netbeans.modules.editor.html.HTMLKit"));      //NOI18N
+                        }
+                        if(JspSyntaxSupport.tokenSequence(hi, JavaTokenId.language(), dotPos) != null)  {
+                            kit = getKit(getClass().forName("org.netbeans.modules.editor.java.JavaKit"));  //NOI18N
+                        }
+                    } catch (java.lang.ClassNotFoundException e){
+                        kit = null;
+                        ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+                    }
+                    
+                    if (kit == null) {
+                        //just JSP - do the JSP brace match
                         if (dotPos > 0) {
                             int[] matchBlk = sup.findMatchingBlock(dotPos - 1, false);
                             if (matchBlk != null) {
@@ -295,28 +315,14 @@ public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
                                 }
                             }
                         }
-                    } else{
-                        BaseKit kit = null;
-                        try {
-                            if (token != null && token.getTokenContextPath().contains(HTMLTokenContext.contextPath)){
-                                kit = getKit(getClass().forName("org.netbeans.modules.editor.html.HTMLKit"));      //NOI18N
-                            } else{
-                                if (token != null && token.getTokenContextPath().contains(JavaTokenContext.contextPath)){
-                                    kit = getKit(getClass().forName("org.netbeans.modules.editor.java.JavaKit"));  //NOI18N
-                                }
-                            }
-                        } catch (java.lang.ClassNotFoundException e){
-                            kit = null;
-                            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+                    } else {
+                        //we are in HTML or Java
+                        Action action = kit.getActionByName(select ? ExtKit.selectionMatchBraceAction : ExtKit.matchBraceAction);
+                        if (action != null && action instanceof ExtKit.MatchBraceAction){
+                            ((ExtKit.MatchBraceAction)action).actionPerformed(evt, target);
+                        } else {
+                            super.actionPerformed(evt, target);
                         }
-                        if (kit != null){
-                            Action action = kit.getActionByName(select ? ExtKit.selectionMatchBraceAction : ExtKit.matchBraceAction);
-                            if (action != null && action instanceof ExtKit.MatchBraceAction){
-                                ((ExtKit.MatchBraceAction)action).actionPerformed(evt, target);
-                                return;
-                            }
-                        }
-                        super.actionPerformed(evt, target);
                     }
                     
                 } catch (BadLocationException e) {
@@ -398,30 +404,33 @@ public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
         }
     }
     
-    private static TokenContextPath getTokenContextPath(Caret caret, Document doc){
-        if (doc instanceof BaseDocument){
-            int dotPos = caret.getDot();
-            ExtSyntaxSupport sup = (ExtSyntaxSupport)((BaseDocument)doc).getSyntaxSupport();
-            if (dotPos>0){
-                try{
-                    TokenItem token = sup.getTokenChain(dotPos-1, dotPos);
-                    if (token != null){
-                        return token.getTokenContextPath();
-                    }
-                }catch(BadLocationException ble){
-                    ErrorManager.getDefault().notify(ErrorManager.WARNING, ble);
-                }
-            }
-        }
-        return null;
-    }
+//    private static TokenContextPath getTokenContextPath(Caret caret, Document doc){
+//        if (doc instanceof BaseDocument){
+//            int dotPos = caret.getDot();
+//            ExtSyntaxSupport sup = (ExtSyntaxSupport)((BaseDocument)doc).getSyntaxSupport();
+//            if (dotPos>0){
+//                try{
+//                    TokenItem token = sup.getTokenChain(dotPos-1, dotPos);
+//                    if (token != null){
+//                        return token.getTokenContextPath();
+//                    }
+//                }catch(BadLocationException ble){
+//                    ErrorManager.getDefault().notify(ErrorManager.WARNING, ble);
+//                }
+//            }
+//        }
+//        return null;
+//    }
     
     public static class JspInsertBreakAction extends InsertBreakAction {
         public void actionPerformed(ActionEvent e, JTextComponent target) {
             if (target!=null){
-                TokenContextPath path = getTokenContextPath(target.getCaret(), target.getDocument());
+                TokenSequence javaTokenSequence = JspSyntaxSupport.tokenSequence(
+                        TokenHierarchy.get(target.getDocument()), 
+                        JavaTokenId.language(), 
+                        target.getCaret().getDot() - 1);
                 
-                if (path != null && path.contains(JavaTokenContext.contextPath)){
+                if (javaTokenSequence != null){
                     JavaKit jkit = (JavaKit)getKit(JavaKit.class);
                     if (jkit!=null){
                         Action action = jkit.getActionByName(DefaultEditorKit.insertBreakAction);
@@ -439,9 +448,12 @@ public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
     public static class JspDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
         public void actionPerformed(ActionEvent e, JTextComponent target) {
             if (target!=null){
-                TokenContextPath path = getTokenContextPath(target.getCaret(), target.getDocument());
+                TokenSequence javaTokenSequence = JspSyntaxSupport.tokenSequence(
+                        TokenHierarchy.get(target.getDocument()), 
+                        JavaTokenId.language(), 
+                        target.getCaret().getDot() - 1);
                 
-                if (path != null && path.contains(JavaTokenContext.contextPath)){
+                if (javaTokenSequence != null){
                     JavaKit jkit = (JavaKit)getKit(JavaKit.class);
                     if (jkit!=null){
                         Action action = jkit.getActionByName(DefaultEditorKit.defaultKeyTypedAction);
@@ -464,9 +476,12 @@ public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
         
         public void actionPerformed(ActionEvent e, JTextComponent target) {
             if (target!=null){
-                TokenContextPath path = getTokenContextPath(target.getCaret(), target.getDocument());
+                TokenSequence javaTokenSequence = JspSyntaxSupport.tokenSequence(
+                        TokenHierarchy.get(target.getDocument()), 
+                        JavaTokenId.language(), 
+                        target.getCaret().getDot() - 1);
                 
-                if (path != null && path.contains(JavaTokenContext.contextPath)){
+                if (javaTokenSequence != null){
                     JavaKit jkit = (JavaKit)getKit(JavaKit.class);
                     if (jkit!=null){
                         Action action = jkit.getActionByName(DefaultEditorKit.deletePrevCharAction);
@@ -482,7 +497,7 @@ public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
     }
     
 //    public static class JspJavaGenerateGotoPopupAction extends JavaKit.JavaGenerateGoToPopupAction {
-//        
+//
 //        protected void addAction(JTextComponent target, JMenu menu,
 //                String actionName) {
 //            BaseKit kit = Utilities.getKit(target);
@@ -494,13 +509,13 @@ public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
 //                        ExtKit.gotoDeclarationAction.equals(actionName) ||
 //                        ExtKit.gotoSuperImplementationAction.equals(actionName))
 //                    a.setEnabled(isJavaContext(target));
-//                
+//
 //                addAction(target, menu, a);
 //            } else { // action-name is null, add the separator
 //                menu.addSeparator();
 //            }
 //        }
-//        
+//
 //        private boolean isJavaContext(JTextComponent target) {
 //            JspSyntaxSupport sup = (JspSyntaxSupport)Utilities.getSyntaxSupport(target);
 //            int carretOffset = target.getCaret().getDot();
@@ -512,22 +527,22 @@ public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
 //                return true;
 //            }
 //        }
-//        
+//
 //    }
     
-     public class JspEditorDocument extends NbEditorDocument {
+    public class JspEditorDocument extends NbEditorDocument {
         public JspEditorDocument(Class kitClass) {
             super(kitClass);
         }
         
-         public boolean addLayer(DrawLayer layer, int visibility) {
-             //filter out the syntax layer adding
-             if(!(layer instanceof DrawLayerFactory.SyntaxLayer)) {
-                 return super.addLayer(layer, visibility);
-             } else {
-                 return false;
-             }
-         }
+        public boolean addLayer(DrawLayer layer, int visibility) {
+            //filter out the syntax layer adding
+            if(!(layer instanceof DrawLayerFactory.SyntaxLayer)) {
+                return super.addLayer(layer, visibility);
+            } else {
+                return false;
+            }
+        }
     }
     
 }

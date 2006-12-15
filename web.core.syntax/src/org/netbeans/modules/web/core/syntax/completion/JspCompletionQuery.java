@@ -22,23 +22,18 @@ package org.netbeans.modules.web.core.syntax.completion;
 import java.util.*;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
-
 import javax.servlet.jsp.tagext.TagInfo;
 import javax.servlet.jsp.tagext.TagAttributeInfo;
-
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.*;
 import org.netbeans.editor.ext.html.HTMLCompletionQuery;
-//import org.netbeans.editor.ext.java.JCExpression;
-//import org.netbeans.editor.ext.java.JavaCompletionQuery;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.web.core.syntax.deprecated.JspTagTokenContext;
 import org.openide.loaders.DataObject;
-
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.core.syntax.*;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo.BeanData;
 import org.openide.loaders.DataObject;
-
 import org.netbeans.api.java.classpath.ClassPath;
 //import org.netbeans.jmi.javamodel.JavaClass;
 //import org.netbeans.jmi.javamodel.Method;

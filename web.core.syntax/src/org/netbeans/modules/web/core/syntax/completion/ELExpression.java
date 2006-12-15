@@ -19,24 +19,19 @@
 
 package org.netbeans.modules.web.core.syntax.completion;
 
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
-import javax.swing.text.BadLocationException;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.editor.TokenItem;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.el.lexer.api.ELTokenId;
 //import org.netbeans.jmi.javamodel.JavaClass;
 //import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.web.core.syntax.ELTokenContext;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
-import org.netbeans.modules.web.jsps.parserapi.PageInfo.BeanData;
-import org.openide.loaders.DataObject;
 
 /**
  *
  * @author Petr Pisl
+ * @author Marek.Fukala@Sun.COM
  */
 
 
@@ -45,7 +40,7 @@ import org.openide.loaders.DataObject;
  *  language.
  */
 public class ELExpression {
-   
+    
     /** it is not Expession Language */
     public static final int NOT_EL = 0;
     /** This is start of an EL expression */
@@ -73,79 +68,83 @@ public class ELExpression {
     /** Parses text before offset in the document. Doesn't parse after offset.
      *  It doesn't parse whole EL expression until ${ or #{, but just simple expression.
      *  For example ${ 2 < bean.start }. If the offset is after bean.start, then only bean.start
-     *  is pardsed.
+     *  is parsed.
      */
     public int parse(int offset){
         String value = null;
         int result = NOT_EL;
         boolean middle;
+        
+        BaseDocument document = sup.getDocument();
+        document.readLock();
         try {
-            TokenItem token = sup.getTokenChain(offset > 0 ? offset-1 : offset, offset > 0 ? offset : offset + 1);
-            TokenItem lastToken = null;
-            // Is the offset in EL?
-            if (token != null && token.getTokenContextPath().contains(ELTokenContext.contextPath)){
-                // Find the start of the expression. It doesn't have to be an EL delimiter (${ #{)
-                // it can be start of the function or start of a simple expression. 
-                while (token != null 
-                        && token.getTokenID().getNumericID() != ELTokenContext.LPAREN_ID
-                        && token.getTokenID().getNumericID() != ELTokenContext.WHITESPACE_ID
-                        && token.getTokenID().getNumericID() != ELTokenContext.EL_DELIM_ID
-                        && (token.getTokenID().getCategory() == null
-                        || (token.getTokenID().getCategory().getNumericID() != ELTokenContext.KEYWORDS_ID
-                        && token.getTokenID().getCategory().getNumericID() != ELTokenContext.NUMERIC_LITERALS_ID))){
-                    if (value == null){
-                        value = token.getImage();
-                        if (token.getTokenID().getNumericID() == ELTokenContext.DOT_ID){
-                            replace="";
-                            middle = true;
-                        }
-                        else if (token.getImage().length() >= (offset-token.getOffset())){
-                            value = value.substring(0, offset-token.getOffset());
-                            replace = value;
-                        }
-                    }
-                    else {
-                        value = token.getImage() + value;
-                        if (token.getTokenID().getNumericID() == ELTokenContext.TAG_LIB_PREFIX_ID)
-                            replace = value;
-                    }
-                    lastToken = token;
-                    token = token.getPrevious();
-                }
-                if (lastToken != null && lastToken.getTokenID().getNumericID() != ELTokenContext.IDENTIFIER_ID
-                        && lastToken.getTokenID().getNumericID() != ELTokenContext.TAG_LIB_PREFIX_ID )
-                    value = null;
-                if (lastToken == null && token != null 
-                        && (token.getTokenID().getNumericID() == ELTokenContext.WHITESPACE_ID
-                        ||token.getTokenID().getNumericID() == ELTokenContext.LPAREN_ID))
-                    result = EL_START;
-                if (lastToken == null && token.getTokenID().getNumericID() == ELTokenContext.EL_DELIM_ID 
-                        && token.getImage().indexOf('{')>0){
-                    value = "";
-                    replace = "";
-                    result = EL_START;
-                }
-//                else 
-//                   if (value != null){
-//                     result = findContext(value);
-//                   } 
+            
+            int tunedOffset = offset > 0 ? offset-1 : offset;
+            
+            TokenHierarchy hi = TokenHierarchy.get(document);
+            TokenSequence ts = JspSyntaxSupport.tokenSequence(hi, ELTokenId.language(), tunedOffset);
+            if(ts == null) {
+                //no EL token sequence
+                return EL_UNKNOWN;
+            }
+            int diff = ts.move(tunedOffset);
+            if(diff == Integer.MAX_VALUE) {
+                return EL_UNKNOWN; //no token found
             }
             
-        } catch (BadLocationException ex) {
-            // TODO inform about this
-            value = null;
+            // Find the start of the expression. It doesn't have to be an EL delimiter (${ #{)
+            // it can be start of the function or start of a simple expression.
+            Token<ELTokenId> token = ts.token();
+            while (token.id() != ELTokenId.LPAREN
+                    && token.id() != ELTokenId.WHITESPACE
+                    && (!token.id().language().nonPrimaryTokenCategories(token.id()).contains(ELTokenId.ELTokenCategories.KEYWORDS.name())
+                    || token.id().language().nonPrimaryTokenCategories(token.id()).contains(ELTokenId.ELTokenCategories.NUMERIC_LITERALS.name()))) {
+                token = ts.token();
+                if (value == null){
+                    value = token.text().toString();
+                    if (token.id() == ELTokenId.DOT){
+                        replace="";
+                        middle = true;
+                    } else if (token.text().length() >= (offset-token.offset(hi))){
+                        value = value.substring(0, offset-token.offset(hi));
+                        replace = value;
+                    }
+                } else {
+                    value = token.text().toString() + value;
+                    if (token.id() == ELTokenId.TAG_LIB_PREFIX)
+                        replace = value;
+                }
+                if(!ts.movePrevious()) {
+                    break; //break the loop, we are on the beginning of the EL token sequence
+                }
+            }
+            if (token.id() != ELTokenId.IDENTIFIER && token.id() != ELTokenId.TAG_LIB_PREFIX ) {
+                value = null;
+            } else if (token.id() == ELTokenId.WHITESPACE || token.id() == ELTokenId.LPAREN) {
+                result = EL_START;
+            }
+
+//fixme: Retouche
+//                else
+//                   if (value != null){
+//                     result = findContext(value);
+//                   }
+            
+        } finally {
+            document.readUnlock();
         }
         expression = value;
         return result;
     }
-    
+
+//fixme: Retouche
 //    /* Returns the JavaClass of the bean which is in the expression. Returns null, when
-//     *  the appropriate class is not found. 
+//     *  the appropriate class is not found.
 //     */
 //    public JavaClass getBean(String elExp){
 //        JavaClass javaClass = null;
 //        DataObject obj = NbEditorUtilities.getDataObject(sup.getDocument());
-//        
+//
 //        if (elExp != null && !elExp.equals("") && obj != null){
 //            if (elExp.indexOf('.')> -1){
 //                String beanName = elExp.substring(0,elExp.indexOf('.'));
@@ -156,17 +155,17 @@ public class ELExpression {
 //                        break;
 //                    }
 //                }
-//            }  
+//            }
 //        }
 //        return javaClass;
 //    }
-//        
+//
 //    /* Returns list of strings in form property name1, property type1 .....
 //     */
 //    public List /*<String>*/ getProperties(String elExp, JavaClass bean){
 //        List properties = new ArrayList();
 //        JavaClass javaClass = findLastJavaClass(elExp, bean);
-//        
+//
 //        if (javaClass != null && !javaClass.getName().equals("java.lang.String")){
 //            Method methods [] = JMIUtil.getMethods(javaClass);
 //            for (int j = 0; j < methods.length; j++) {
@@ -187,8 +186,8 @@ public class ELExpression {
 //        }
 //        return properties;
 //    }
-//    
-//    /*  Returns a JMI object which corresponds to the property in the source file. 
+//
+//    /*  Returns a JMI object which corresponds to the property in the source file.
 //     */
 //    public Object getPropertyDeclaration (String elExp, JavaClass bean){
 //        JavaClass javaClass = findLastJavaClass(elExp, bean);;
@@ -215,15 +214,15 @@ public class ELExpression {
 //        }
 //        return null;
 //    }
-//    
-//    /** Return context, whether the expression is about a bean, implicit object or 
+//
+//    /** Return context, whether the expression is about a bean, implicit object or
 //     *  function.
 //     */
 //    protected int findContext(String expr){
 //        int dotIndex = expr.indexOf('.');
 //        int bracketIndex = expr.indexOf('[');
 //        int value = EL_UNKNOWN;
-//        
+//
 //        if (bracketIndex == -1 && dotIndex > -1){
 //            String first = expr.substring(0, dotIndex);
 //            BeanData[] beans = sup.getBeanData();
@@ -249,11 +248,11 @@ public class ELExpression {
 //        JavaClass javaClass = bean;
 //        if (elExp != null && !elExp.equals("") && elExp.indexOf('.')> -1){
 //            String pos = elExp.substring(elExp.indexOf('.')+1);
-//            
+//
 //            //find the last known class
 //            if (javaClass != null && pos != null && !pos.equals("") && pos.lastIndexOf('.') > - 1){
 //                StringTokenizer st = new StringTokenizer(pos.substring(0, pos.lastIndexOf('.')), ".");
-//                
+//
 //                while(st.hasMoreTokens()){
 //                    String text = st.nextToken();
 //                    if (javaClass != null){
@@ -283,13 +282,13 @@ public class ELExpression {
     public String getExpression() {
         return expression;
     }
-
+    
     public void setExpression(String expression) {
         this.expression = expression;
     }
-
+    
     public String getReplace() {
         return replace;
     }
-
+    
 }

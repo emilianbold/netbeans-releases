@@ -36,6 +36,7 @@ import org.netbeans.modules.web.core.syntax.JSPKit;
 
 /** Initializer class for settings of JSP editor with XML content. */
 
+@Deprecated()
 public class JspXMLSettingsInitializer extends Settings.AbstractInitializer {
 
     /** Name assigned to initializer */
@@ -47,60 +48,60 @@ public class JspXMLSettingsInitializer extends Settings.AbstractInitializer {
 
     public void updateSettingsMap (Class kitClass, Map settingsMap) {
         // Jsp Colorings
-        if (kitClass == BaseKit.class) {
-            new JspXMLTokenColoringInitializer().updateSettingsMap(kitClass, settingsMap);
-        }
-
-        // Jsp Settings
-        if (kitClass == JSPKit.class) {
-            
-            SettingsUtil.updateListSetting(settingsMap, SettingsNames.TOKEN_CONTEXT_LIST,
-                new TokenContext[] { JspXMLTokenContext.context });
-        }
+//        if (kitClass == BaseKit.class) {
+//            new JspXMLTokenColoringInitializer().updateSettingsMap(kitClass, settingsMap);
+//        }
+//
+//        // Jsp Settings
+//        if (kitClass == JSPKit.class) {
+//            
+//            SettingsUtil.updateListSetting(settingsMap, SettingsNames.TOKEN_CONTEXT_LIST,
+//                new TokenContext[] { JspXMLTokenContext.context });
+//        }
     }
 
-    static class JspXMLTokenColoringInitializer
-    extends SettingsUtil.TokenColoringInitializer {
-
-        private Coloring errorColoring = new Coloring(null, Color.red, null);
-
-        private Font italicFont = SettingsDefaults.defaultFont.deriveFont (Font.ITALIC);
-
-        public JspXMLTokenColoringInitializer() {
-            super(JspXMLTokenContext.context);
-        }
-
-        public Object getTokenColoring(TokenContextPath tokenContextPath,
-        TokenCategory tokenIDOrCategory, boolean printingSet) {
-
-            if (tokenContextPath == JspXMLTokenContext.contextPath) {
-                 if (!printingSet) {
-                      switch (tokenIDOrCategory.getNumericID()) {
-                           case JspXMLTokenContext.ERROR_ID:
-                               return errorColoring;
-                      }
-
-                } else { // printing set
-                     return SettingsUtil.defaultPrintColoringEvaluator;
-                }
-
-            } else if (tokenContextPath == JspXMLTokenContext.xmlContextPath) {
-                // XML token colorings
-                if (!printingSet) {
-                    return new SettingsUtil.TokenColoringEvaluator(
-                        tokenContextPath.getParent().getFullTokenName(tokenIDOrCategory),
-                        null, printingSet);
-
-                } else { // printing set
-                     return SettingsUtil.defaultPrintColoringEvaluator;
-                }
-            }
-
-            return null;
-
-        }
-
-    }
+//    static class JspXMLTokenColoringInitializer
+//    extends SettingsUtil.TokenColoringInitializer {
+//
+//        private Coloring errorColoring = new Coloring(null, Color.red, null);
+//
+//        private Font italicFont = SettingsDefaults.defaultFont.deriveFont (Font.ITALIC);
+//
+//        public JspXMLTokenColoringInitializer() {
+//            super(JspXMLTokenContext.context);
+//        }
+//
+//        public Object getTokenColoring(TokenContextPath tokenContextPath,
+//        TokenCategory tokenIDOrCategory, boolean printingSet) {
+//
+//            if (tokenContextPath == JspXMLTokenContext.contextPath) {
+//                 if (!printingSet) {
+//                      switch (tokenIDOrCategory.getNumericID()) {
+//                           case JspXMLTokenContext.ERROR_ID:
+//                               return errorColoring;
+//                      }
+//
+//                } else { // printing set
+//                     return SettingsUtil.defaultPrintColoringEvaluator;
+//                }
+//
+//            } else if (tokenContextPath == JspXMLTokenContext.xmlContextPath) {
+//                // XML token colorings
+//                if (!printingSet) {
+//                    return new SettingsUtil.TokenColoringEvaluator(
+//                        tokenContextPath.getParent().getFullTokenName(tokenIDOrCategory),
+//                        null, printingSet);
+//
+//                } else { // printing set
+//                     return SettingsUtil.defaultPrintColoringEvaluator;
+//                }
+//            }
+//
+//            return null;
+//
+//        }
+//
+//    }
 
 }
 

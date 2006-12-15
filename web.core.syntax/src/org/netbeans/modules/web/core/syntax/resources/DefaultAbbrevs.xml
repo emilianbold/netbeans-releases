@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE abbrevs PUBLIC "-//NetBeans//DTD Editor Abbreviations settings 1.0//EN"
+                         "http://www.netbeans.org/dtds/EditorAbbreviations-1_0.dtd">
+<abbrevs>
+    <abbrev key="ag">application.getAttribute(&quot;|&quot;)</abbrev>
+    <abbrev key="ap">application.setAttribute(&quot;|&quot;, )</abbrev>
+    <abbrev key="ar">application.removeAttribute(&quot;|&quot;)</abbrev>
+    <abbrev key="cfgi">config.getInitParameter(&quot;|&quot;)</abbrev>
+    <abbrev key="jspf">&lt;jsp:forward page=&quot;|&quot;/></abbrev>
+    <abbrev key="jspg">&lt;jsp:getProperty name=&quot;|&quot; property=&quot;&quot;/></abbrev>
+    <abbrev key="jspi">&lt;jsp:include page=&quot;|&quot;/></abbrev>
+    <abbrev key="jspp">&lt;jsp:plugin type=&quot;|&quot; code=&quot;&quot; codebase=&quot;&quot;>\n&lt;/jsp:plugin></abbrev>
+    <abbrev key="jsps">&lt;jsp:setProperty name=&quot;|&quot; property=&quot;&quot;/></abbrev>
+    <abbrev key="jspu">&lt;jsp:useBean id=&quot;|&quot; type=&quot;&quot;/></abbrev>
+    <abbrev key="oup">out.print(&quot;|&quot;)</abbrev>
+    <abbrev key="oupl">out.println(&quot;|&quot;)</abbrev>
+    <abbrev key="pcg">pageContext.getAttribute(&quot;|&quot;)</abbrev>
+    <abbrev key="pcgn">pageContext.getAttributeNamesInScope(|)</abbrev>
+    <abbrev key="pcgs">pageContext.getAttributesScope(&quot;|&quot;)</abbrev>
+    <abbrev key="pcr">pageContext.removeAttribute(&quot;|&quot;)</abbrev>
+    <abbrev key="pcs">pageContext.setAttribute(&quot;|&quot;, )</abbrev>
+    <abbrev key="pg">&lt;%@page |%></abbrev>
+    <!-- default is true so false is only meaningful value -->
+    <abbrev key="pga">&lt;%@page autoFlush=&quot;false&quot;%></abbrev>
+    <abbrev key="pgb">&lt;%@page buffer=&quot;|kb&quot;%></abbrev>
+    <abbrev key="pgc">&lt;%@page contentType=&quot;|&quot;%></abbrev>
+    <abbrev key="pgerr">&lt;%@page errorPage=&quot;|&quot;%></abbrev>
+    <abbrev key="pgex">&lt;%@page extends=&quot;|&quot;%></abbrev>
+    <abbrev key="pgie">&lt;%@page isErrorPage=&quot;true&quot;%></abbrev>
+    <abbrev key="pgim">&lt;%@page import=&quot;|&quot;%></abbrev>
+    <abbrev key="pgin">&lt;%@page info=&quot;|&quot;%></abbrev>
+    <abbrev key="pgit">&lt;%@page isThreadSafe=&quot;false&quot;%></abbrev>
+    <!-- only defined and required value this attribute is 'java' -->
+    <abbrev key="pgl">&lt;%@page language=&quot;java&quot;%></abbrev>
+    <!-- default is true so false is only meaningful value -->
+    <abbrev key="pgs">&lt;%@page session=&quot;false&quot;%></abbrev>
+    <abbrev key="rg">request.getParameter(&quot;|&quot;)</abbrev>
+    <abbrev key="sg">session.getAttribute(&quot;|&quot;)</abbrev>
+    <abbrev key="sp">session.setAttribute(&quot;|&quot;, )</abbrev>
+    <abbrev key="sr">session.removeAttribute(&quot;|&quot;)</abbrev>
+    <abbrev key="tglb">&lt;%@taglib uri=&quot;|&quot;%></abbrev>
+</abbrevs>
+

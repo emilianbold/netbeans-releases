@@ -29,6 +29,8 @@ import org.netbeans.editor.LocaleSupport;
 /**
  * @author Petr Jiricka
  */
+
+@Deprecated()
 public class RestoreIEColoring {
 
     public void addInitializer () {

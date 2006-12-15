@@ -24,14 +24,11 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.editor.TokenItem;
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.core.syntax.ELTokenContext;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.completion.ELExpression;
-//import org.netbeans.modules.web.core.syntax.completion.JMIUtil;
+import org.netbeans.modules.web.core.syntax.deprecated.ELTokenContext;
 import org.netbeans.modules.web.jsf.config.model.ManagedBean;
 import org.openide.loaders.DataObject;
 

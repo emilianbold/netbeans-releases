@@ -23,18 +23,10 @@ import java.util.*;
 import java.beans.*;
 import javax.swing.text.JTextComponent;
 import javax.swing.ImageIcon;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-
 import org.netbeans.editor.ext.CompletionQuery;
-//import org.netbeans.editor.ext.java.JavaCompletionQuery;
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.jmi.javamodel.JavaPackage;
 import org.netbeans.modules.editor.NbEditorUtilities;
-//import org.netbeans.modules.editor.java.JMIUtils;
-//import org.netbeans.modules.editor.java.NbJMIResultItem;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
-
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -134,10 +126,6 @@ public class AttrSupports extends Object {
     
     /** Support for code completing of package and class. */
     public static class PackageClassSupport extends AttributeValueSupport.Default {
-        /** Index where to start substitution */
-        private int itemOffset;
-        /** Length of currently substituted text */
-        private int itemLength;
         
         public PackageClassSupport(boolean tag, String longName, String attrName) {
             super(tag, longName, attrName);
@@ -226,8 +214,8 @@ public class AttrSupports extends Object {
                 
                 if (className != null) {
                     try {
-                        FileObject fo = NbEditorUtilities.getDataObject( sup.getDocument()).getPrimaryFile();
-                        ClassLoader cld = JspUtils.getModuleClassLoader( sup.getDocument(), fo);
+                        FileObject fileObject = NbEditorUtilities.getDataObject( sup.getDocument()).getPrimaryFile();
+                        ClassLoader cld = JspUtils.getModuleClassLoader( sup.getDocument(), fileObject);
                         Class beanClass = Class.forName(className, false, cld);
                         Introspector.flushFromCaches(beanClass);
                         BeanInfo benInfo = Introspector.getBeanInfo(beanClass);
@@ -239,9 +227,9 @@ public class AttrSupports extends Object {
                                 list.add(properties[j].getName());
                         }
                     } catch (ClassNotFoundException e) {
-                        // do nothing
+                        //do nothing
                     } catch (IntrospectionException e) {
-                        // do nothing
+                        //do nothing
                     }
                 }
             }
@@ -268,9 +256,9 @@ public class AttrSupports extends Object {
         }
         
         protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
-            List l = possibleValues(sup, item, true);
-            l.add(0, "*");  // NOI18N
-            return l;
+            List list = possibleValues(sup, item, true);
+            list.add(0, "*");  // NOI18N
+            return list;
         }
         
     }
@@ -282,18 +270,18 @@ public class AttrSupports extends Object {
         }
         
         protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
-            List l = new ArrayList();
-            Map m = sup.getTagLibraryMappings();
-            if (m != null) {
-                Iterator it = m.keySet().iterator();
-                for (; it.hasNext(); ) {
-                    String s = (String)it.next();
-                    l.add(s);
+            List list = new ArrayList();
+            Map map = sup.getTagLibraryMappings();
+            if (map != null) {
+                Iterator iterator = map.keySet().iterator();
+                while(iterator.hasNext()) {
+                    String s = (String)iterator.next();
+                    list.add(s);
                 }
             }
             // sort alphabetically
-            Collections.sort(l);
-            return l;
+            Collections.sort(list);
+            return list;
         }
         
     }

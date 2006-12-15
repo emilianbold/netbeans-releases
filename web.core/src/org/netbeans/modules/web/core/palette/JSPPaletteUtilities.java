@@ -23,13 +23,13 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.jsp.lexer.JspTokenId;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
-import org.netbeans.editor.TokenItem;
-import org.netbeans.editor.ext.html.HTMLTokenContext;
-import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
-import org.netbeans.modules.web.core.syntax.JspTagTokenContext;
-
 
 /**
  *
@@ -37,32 +37,43 @@ import org.netbeans.modules.web.core.syntax.JspTagTokenContext;
  */
 public final class JSPPaletteUtilities {
     
-    public static int wrapTags(JspSyntaxSupport sup, int start, int end, BaseDocument doc) {
-        
+    //marekf: who calls this???? It seems the method is not used and was the only reason of having impl. dep. on web/jspsyntax, grrrr.
+    public static int wrapTags(int start, int end, BaseDocument doc) {
         try {
-            TokenItem token = sup.getTokenChain(start, start + 1);
-
-            if (token == null)
-                return end;
-
-            while (token.getOffset() < end) { // interested only in the tokens inside the body
-                token = token.getNext();
-                if (token == null)
-                    break;
-                if (token.getImage().startsWith("<") &&
-                    token.getTokenID() == JspTagTokenContext.SYMBOL ||
-                    token.getTokenID() == HTMLTokenContext.TAG_OPEN_SYMBOL
-                   ) // it's '<' token
-                {
-                    int offset = token.getOffset();
+            TokenHierarchy th = TokenHierarchy.get(doc);
+            TokenSequence jspTs = th.tokenSequence();
+            if(jspTs.move(start) == Integer.MAX_VALUE) {
+                return end; //no token in sequence
+            }
+            Token token = jspTs.token();
+            //wrap JSP tags
+            while (token.offset(th) < end && jspTs.moveNext()) { // interested only in the tokens inside the body
+                token = jspTs.token();
+                if (token.text().toString().startsWith("<") && token.id() == JspTokenId.SYMBOL) {
+                    // it's '<' token
+                    int offset = token.offset(th);
                     doc.insertString(offset, "\n", null);   // insert a new-line before '<'
                     end++;  // remember new body end
-                    token = sup.getTokenChain(offset + 1, offset + 2); // create new token chain reflecting changed document
                 }
             }
-            
+            //wrap HTML tags
+            TokenSequence htmlTs = th.tokenSequence(HTMLTokenId.language());
+            if(htmlTs == null || htmlTs.move(start) == Integer.MAX_VALUE) {
+                return end; //no token in sequence
+            }
+            while (token.offset(th) < end && htmlTs.moveNext()) { // interested only in the tokens inside the body
+                token = htmlTs.token();
+                if (token.text().toString().startsWith("<") && token.id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
+                    // it's '<' token
+                    int offset = token.offset(th);
+                    doc.insertString(offset, "\n", null);   // insert a new-line before '<'
+                    end++;  // remember new body end
+                }
+            }
         } catch (IllegalStateException ise) {
+            //ignore
         } catch (BadLocationException ble) {
+            //ignore
         }
         
         return end;

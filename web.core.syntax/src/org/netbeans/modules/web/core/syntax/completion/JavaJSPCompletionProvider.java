@@ -22,9 +22,10 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.editor.TokenItem;
+import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.java.JavaCompletionProvider;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -41,34 +42,30 @@ import static org.netbeans.modules.web.core.syntax.completion.VirtualJavaFromJSP
  * @author Tomasz.Slota@Sun.COM
  */
 public class JavaJSPCompletionProvider implements CompletionProvider {
-    private JavaCompletionProvider javaCompletionProvider = new JavaCompletionProvider();
-
+    private final JavaCompletionProvider javaCompletionProvider = new JavaCompletionProvider();
+    
     public CompletionTask createTask(int queryType, final JTextComponent component) {
         if ((queryType & COMPLETION_QUERY_TYPE) == 0){
             return null;
         }
-
-        try {
-            JspSyntaxSupport sup = (JspSyntaxSupport)Utilities.getSyntaxSupport(component);
-            TokenItem ti = sup.getItemAtOrBefore(component.getCaret().getDot());
-            //delegate to java cc provider if the context is really java code
-            if(ti != null && ti.getTokenContextPath().contains(JavaTokenContext.contextPath)){
-                return new AsyncCompletionTask(new EmbeddedJavaCompletionQuery(component, queryType), component);
-            }
-
-        }catch(BadLocationException ex) {
-            ex.printStackTrace();
+        
+        //delegate to java cc provider if the context is really java code
+        int offset = component.getCaret().getDot();
+        TokenHierarchy tokenHierarchy = TokenHierarchy.get(Utilities.getDocument(component));
+        TokenSequence tokenSequence = JspSyntaxSupport.tokenSequence(tokenHierarchy, JavaTokenId.language(), offset);
+        if(tokenSequence != null) {
+            return new AsyncCompletionTask(new EmbeddedJavaCompletionQuery(component, queryType), component);
+        } else {
+            //not java context =>
+            return null;
         }
-
-        //not java context =>
-        return null;
     }
-
+    
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         return javaCompletionProvider.getAutoQueryTypes(component, typedText);
     }
-
-
+    
+    
     static class EmbeddedJavaCompletionQuery extends AsyncCompletionQuery {
         protected int queryType;
         protected JTextComponent component;
@@ -77,29 +74,29 @@ public class JavaJSPCompletionProvider implements CompletionProvider {
             this.queryType = queryType;
             this.component = component;
         }
-
+        
         protected FakedJavaClass getFakedJavaClass(Document doc, int caretOffset){
             JspSyntaxSupport sup = (JspSyntaxSupport)Utilities.getSyntaxSupport(component);
             VirtualJavaFromJSPCreator javaCreator = new VirtualJavaFromJSPCreator(sup, doc);
-
+            
             try{
                 javaCreator.process(caretOffset);
                 String dummyJavaClass = javaCreator.getDummyJavaClassBody();
-
+                
                 FakedJavaClass fakedJavaClass = new FakedJavaClass(dummyJavaClass, javaCreator.getShiftedOffset());
-
+                
                 return fakedJavaClass;
             } catch (BadLocationException ex) {
                 java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
                         ex.getMessage(),
                         ex);
-            };
-
+            }
+            
             return null;
         }
         
         protected void query(CompletionResultSet resultSet, Document doc,
-                             int caretOffset) {
+                int caretOffset) {
             FakedJavaClass fakedJavaClass = getFakedJavaClass(doc, caretOffset);
             List<? extends CompletionItem> items = VirtualJavaFromJSPCreator.delegatedQuery(fakedJavaClass,
                     doc, caretOffset, queryType);
@@ -110,6 +107,6 @@ public class JavaJSPCompletionProvider implements CompletionProvider {
         
         
     }
-
+    
 }
 

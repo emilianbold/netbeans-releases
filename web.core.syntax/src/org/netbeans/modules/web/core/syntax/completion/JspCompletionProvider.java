@@ -22,18 +22,19 @@ package org.netbeans.modules.web.core.syntax.completion;
 import java.net.URL;
 import java.util.List;
 import javax.swing.Action;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.ext.html.HTMLCompletionQuery;
 import org.netbeans.editor.ext.html.HTMLCompletionQuery.HTMLResultItem;
-import org.netbeans.editor.ext.html.HTMLTokenContext;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -45,7 +46,7 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 
 /** JSP completion provider implementation
  *
- * @author marek.fukala@sun.com
+ * @author Marek.Fukala@Sun.COM
  */
 public class JspCompletionProvider implements CompletionProvider {
     
@@ -197,14 +198,20 @@ public class JspCompletionProvider implements CompletionProvider {
         //test whether we are just in text and eventually close the opened completion
         //this is handy after end tag autocompletion when user doesn't complete the
         //end tag and just types a text
-        JspSyntaxSupport sup = (JspSyntaxSupport)doc.getSyntaxSupport().get(JspSyntaxSupport.class);
-        try {
-            TokenItem ti = sup.getTokenChain(caretOffset <= 0 ? 0 : caretOffset - 1, caretOffset);
-            if(ti != null && ti.getTokenID() == HTMLTokenContext.TEXT && !ti.getImage().startsWith("<") && !ti.getImage().startsWith("&")) {
+        int adjustedOffset = caretOffset == 0 ? 0 : caretOffset - 1;
+        
+        TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+        TokenSequence tokenSequence = JspSyntaxSupport.tokenSequence(tokenHierarchy, HTMLTokenId.language(), adjustedOffset);
+        if(tokenSequence != null) {
+            int diff = tokenSequence.move(adjustedOffset);
+            if(diff >= tokenSequence.token().length() || diff == Integer.MAX_VALUE) {
+                return; //no token found
+            }
+            
+            Token tokenItem = tokenSequence.token();
+            if(tokenItem.id() == HTMLTokenId.TEXT && !tokenItem.text().toString().startsWith("<") && !tokenItem.text().toString().startsWith("&")) {
                 hideCompletion();
             }
-        }catch(BadLocationException e) {
-            //do nothing
         }
     }
     
