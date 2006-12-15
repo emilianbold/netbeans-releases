@@ -74,6 +74,8 @@ public class Widget {
     private List<Widget> children;
     private List<Widget> childrenUm;
 
+    private HashMap<Widget,Object> constraints;
+
     private WidgetAction.Chain actionsChain;
     private HashMap<String, WidgetAction.Chain> toolsActions = EMPTY_HASH_MAP;
 
@@ -112,7 +114,6 @@ public class Widget {
      * Creates a new widget which will be used in a specified scene.
      * @param scene the scene where the widget is going to be used
      */
-    // TODO - replace Scene parameter with an interface
     public Widget (Scene scene) {
         if (scene == null)
             scene = (Scene) this;
@@ -177,6 +178,15 @@ public class Widget {
      * @param child the child widget to be added
      */
     public final void addChild (Widget child) {
+        addChild (child, null);
+    }
+
+    /**
+     * Adds a child widget as the last one.
+     * @param child the child widget to be added
+     * @param constraint the constraint assigned to the child widget
+     */
+    public final void addChild (Widget child, Object constraint) {
         assert child.parentWidget == null;
         Widget widget = this;
         while (widget != null) {
@@ -185,6 +195,7 @@ public class Widget {
         }
         children.add(child);
         child.parentWidget = this;
+        setChildConstraint (child, constraint);
         child.revalidate();
         revalidate ();
     }
@@ -195,10 +206,21 @@ public class Widget {
      * @param child the child widget
      */
     public final void addChild (int index, Widget child) {
+        addChild (index, child, null);
+    }
+
+    /**
+     * Adds a child at a specified index
+     * @param index the index (the child is added before the one that is not the index place)
+     * @param child the child widget
+     * @param constraint the constraint assigned to the child widget
+     */
+    public final void addChild (int index, Widget child, Object constraint) {
         assert child.parentWidget == null;
         children.add (index, child);
         child.parentWidget = this;
         child.revalidate ();
+        setChildConstraint (child, constraint);
         revalidate ();
     }
 
@@ -208,6 +230,7 @@ public class Widget {
      */
     public final void removeChild (Widget child) {
         assert child.parentWidget == this;
+        setChildConstraint (child, null);
         child.parentWidget = null;
         children.remove (child);
         child.revalidate ();
@@ -278,6 +301,32 @@ public class Widget {
         children.add (0, this);
         revalidate ();
         parentWidget.revalidate ();
+    }
+
+    /**
+     * Returns constraint assigned to a specified child widget.
+     * @param child the child widget
+     * @return the constraint
+     */
+    public final Object getChildConstraint (Widget child) {
+        return constraints != null ? constraints.get (child) : null;
+    }
+
+    /**
+     * Assigns a constraint to a child widget.
+     * @param child the child widget
+     * @param constraint the constraint
+     */
+    public final void setChildConstraint (Widget child, Object constraint) {
+        assert children.contains (child);
+        if (constraint == null) {
+            if (constraints != null)
+                constraints.remove (child);
+            return;
+        }
+        if (constraints == null)
+            constraints = new HashMap<Widget, Object> ();
+        constraints.put (child, constraint);
     }
 
     /**
