@@ -104,13 +104,20 @@ public class Package extends Task {
                     writer.write("md5=\"" + entry.getMd5() + "\" ");
                     writer.write("crc32=\"" + entry.getCrc32() + "\" ");
                     writer.write("sha1=\"" + entry.getSha1() + "\" ");
-                    writer.write("packed-jar=\"" + entry.isPackedJarFile() + "\" ");
-                    writer.write("signed-jar=\"" + entry.isSignedJarFile() + "\" ");
+                    writer.write("jar=\"" + entry.isJarFile() + "\"");
+                    if (entry.isJarFile()) {
+                        writer.write(" packed-jar=\"" + entry.isPackedJarFile() + "\" ");
+                        writer.write("signed-jar=\"" + entry.isSignedJarFile() + "\"");
+                    }
                 }
                 writer.write(">" + entry.getName() + "</entry>\n");
             }
             writer.write("</files-list>\n");
             
+            writer.flush();
+            writer.close();
+            
+            output.flush();
             output.close();
         } catch (IOException e) {
             throw new BuildException(e);
@@ -140,24 +147,31 @@ public class Package extends Task {
                 entry = new FileEntry(child, name);
                 
                 if (entry.isJarFile() && !entry.isSignedJarFile()) {
-                    File temp   = new File(child.getPath() + ".tmp");
+                    File backup = new File(child.getPath() + ".bak");
                     File packed = new File(child.getPath() + ".pack.gz");
                     
-                    if (AntUtils.pack(child, packed) && 
-                            AntUtils.unpack(child, temp) && 
-                            AntUtils.verify(temp)) {
-                        child.delete();
-                        temp.delete();
-                        
-                        child = packed;
+                    AntUtils.copy(child, backup);
+                    
+                    if (AntUtils.pack(child, packed) &&
+                            AntUtils.unpack(packed, child) &&
+                            AntUtils.verify(child)) {
                         name  = packed.getPath().
                                 substring(offset + 1).replace('\\', '/');
                         
-                        entry.setName(name);
+                        entry = new FileEntry(child, name);
+                        entry.setJarFile(true);
                         entry.setPackedJarFile(true);
+                        entry.setSignedJarFile(false);
+                        
+                        child.delete();
+                        backup.delete();
+                        
+                        child = packed;
                     } else {
+                        AntUtils.copy(backup, child);
+                        
                         packed.delete();
-                        temp.delete();
+                        backup.delete();
                     }
                 }
                 

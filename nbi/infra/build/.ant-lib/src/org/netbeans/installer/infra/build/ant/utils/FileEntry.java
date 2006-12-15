@@ -32,7 +32,8 @@ public class FileEntry {
     
     private boolean directory = false;
     private boolean empty = false;
-    private boolean jarFile = false;
+    
+    private boolean jarFile       = false;
     private boolean packedJarFile = false;
     private boolean signedJarFile = false;
     
@@ -59,10 +60,11 @@ public class FileEntry {
             }
             
             this.lastModified  = file.lastModified();
-            this.name          = name;
         }  else {
             this.empty = AntUtils.isEmpty(file);
         }
+        
+        this.name          = name;
     }
     
     public long getSize() {

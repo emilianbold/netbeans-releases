@@ -37,7 +37,8 @@ public class FileEntry {
     
     private boolean directory = false;
     private boolean empty = false;
-    private boolean jarFile = false;
+    
+    private boolean jarFile       = false;
     private boolean packedJarFile = false;
     private boolean signedJarFile = false;
     
@@ -47,8 +48,27 @@ public class FileEntry {
     
     private String name = null;
     
-    public FileEntry() {
+    public FileEntry(Element element) {
+        String type = element.getAttribute("type");
         
+        if (type.equals("directory")) {
+            setDirectory(true);
+            setEmpty(Boolean.parseBoolean(element.getAttribute("is-empty")));
+        } else {
+            setDirectory(false);
+            
+            setSize(new Long(element.getAttribute("size")));
+            setLastModified(new Long(element.getAttribute("modified")));
+            setMd5(element.getAttribute("md5"));
+            setCrc32(element.getAttribute("crc32"));
+            setSha1(element.getAttribute("sha1"));
+            
+            setJarFile(new Boolean(element.getAttribute("jar")));
+            setPackedJarFile(new Boolean(element.getAttribute("packed-jar")));
+            setSignedJarFile(new Boolean(element.getAttribute("signed-jar")));
+        }
+        
+        setName(element.getTextContent());
     }
     
     public FileEntry(File file, String name) throws IOException, NoSuchAlgorithmException {
@@ -62,17 +82,16 @@ public class FileEntry {
             this.crc32 = FileUtils.getFileCRC32String(file);
             
             this.jarFile = FileUtils.isJarFile(file);
-            
             if (jarFile) {
                 this.packedJarFile = false; // we cannot determine this
                 this.signedJarFile = FileUtils.isSigned(file);
             }
-            
-            this.lastModified  = file.lastModified();
-            this.name          = name;
         }  else {
             this.empty = FileUtils.isEmpty(file);
         }
+        
+        this.lastModified  = file.lastModified();
+        this.name = name;
     }
     
     public long getSize() {
@@ -171,29 +190,6 @@ public class FileEntry {
         this.name = name;
     }
     
-    public FileEntry loadFromDom(Element element) throws ParseException {
-        String type = element.getAttribute("type");
-        
-        if (type.equals("directory")) {
-            setDirectory(true);
-            setEmpty(Boolean.parseBoolean(element.getAttribute("is-empty")));
-        } else {
-            setDirectory(false);
-            
-            setSize(Long.parseLong(element.getAttribute("size")));
-            setLastModified(Long.parseLong(element.getAttribute("modified")));
-            setMd5(element.getAttribute("md5"));
-            setCrc32(element.getAttribute("crc32"));
-            setSha1(element.getAttribute("sha1"));
-            setPackedJarFile(Boolean.parseBoolean(element.getAttribute("packed-jar")));
-            setSignedJarFile(Boolean.parseBoolean(element.getAttribute("signed-jar")));
-        }
-        
-        setName(element.getTextContent());
-        
-        return this;
-    }
-    
     public Element saveToDom(Element element) {
         if (isDirectory()) {
             element.setAttribute("type", "directory");
@@ -206,6 +202,7 @@ public class FileEntry {
             element.setAttribute("md5", ""+ getMd5());
             element.setAttribute("crc32", ""+ getCrc32());
             element.setAttribute("sha1", ""+ getSha1());
+            element.setAttribute("jar", ""+ isJarFile());
             element.setAttribute("packed-jar", ""+ isPackedJarFile());
             element.setAttribute("signed-jar", ""+ isSignedJarFile());
         }

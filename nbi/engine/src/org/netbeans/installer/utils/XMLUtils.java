@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Result;
@@ -291,6 +292,19 @@ public abstract class XMLUtils {
         return properties;
     }
     
+    public static Document getEmptyDocument(String tagName) throws XMLException {
+        try {
+            final Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().getDOMImplementation().createDocument("", "files-list", null);
+            
+            document.renameNode(document.getDocumentElement(), null, tagName);
+            
+            return document;
+        } catch (ParserConfigurationException e) {
+            throw new XMLException("Cannot create a document", e);
+        }
+    }
+    
+    // parsing //////////////////////////////////////////////////////////////////////
     public static Dependency parseDependency(Element element) throws ParseException {
         try {
             DependencyType type    = DependencyType.parseDependencyType(element.getNodeName());

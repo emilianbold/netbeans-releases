@@ -40,14 +40,18 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.netbeans.installer.utils.exceptions.NativeException;
+import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.ErrorLevel;
+import org.netbeans.installer.utils.helper.FileEntry;
+import org.netbeans.installer.utils.helper.FilesList;
+import org.netbeans.installer.utils.progress.CompositeProgress;
+import org.netbeans.installer.utils.progress.Progress;
 
 /**
  *
@@ -56,15 +60,15 @@ import org.netbeans.installer.utils.helper.ErrorLevel;
 public final class FileUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final int    BUFFER_SIZE = 4096;
+    public static final int    BUFFER_SIZE    = 4096;
     
-    public static final String SLASH       = "/";
-    public static final String METAINF     = "META-INF";
+    public static final String SLASH          = "/";
+    public static final String METAINF_MASK   = "META-INF.*";
     
     private static final String JAR_EXTENSION = ".jar";
     
-    private static final String SUN_MICR_RSA = "META-INF/SUN_MICR.RSA";
-    private static final String SUN_MICR_SF  = "META-INF/SUN_MICR.SF";
+    private static final String SUN_MICR_RSA  = "META-INF/SUN_MICR.RSA";
+    private static final String SUN_MICR_SF   = "META-INF/SUN_MICR.SF";
     
     /////////////////////////////////////////////////////////////////////////////////
     // Static
@@ -275,14 +279,14 @@ public final class FileUtils {
     }
     
     public static void deleteFile(File file) throws IOException {
-        deleteFile(file, true);
+        deleteFile(file, false);
     }
     
-    public static void deleteFile(File file, boolean followLinks) throws IOException {
+    public static void deleteFile(File file, boolean recurse) throws IOException {
         if(SystemUtils.isDeletingAllowed(file)) {
             String type = "";
             if (file.isDirectory()) {
-                if (followLinks) {
+                if (recurse) {
                     for(File child: file.listFiles()) {
                         deleteFile(child, true);
                     }
@@ -519,141 +523,130 @@ public final class FileUtils {
         return canAccessFile(file,false);
     }
     
-    public static void unzip(File file, File directory) throws IOException {
-        unzip(file, directory, false);
-    }
-    
-    public static List<File> unzip(File source, File destination, boolean unpack) throws IOException {
-        final List<File> files = new LinkedList<File>();
-        final ZipFile    zip   = new ZipFile(source);
+    public static List<File> unzip(File source, File target) throws IOException {
+        final ZipFile zip = new ZipFile(source);
         
         try {
-            if (destination.exists() && destination.isFile()) {
-                throw new IOException("Directory is an existing file, cannot unzip.");
-            }
-            
-            if (!destination.exists() && !destination.mkdirs()) {
-                throw new IOException("Cannot create directory");
-            }
-            
-            Enumeration<? extends ZipEntry> entries = (Enumeration<? extends ZipEntry>) zip.entries();
-            while (entries.hasMoreElements()) {
-                ZipEntry entry = entries.nextElement();
-                
-                File file = new File(destination, entry.getName());
-                
-                InputStream  in  = null;
-                OutputStream out = null;
-                if (entry.getName().endsWith(SLASH)) {
-                    if (file.exists() && !file.isDirectory()) {
-                        throw new IOException("An entry directory exists and is not a directory");
-                    }
-                    if (!file.exists() && !file.mkdirs()) {
-                        throw new IOException("Cannot create an entry directory.");
-                    }
-                } else {
-                    if (file.exists() && !file.isFile()) {
-                        throw new IOException("An entry file exists and is not a file");
-                    }
-                    if (!file.getParentFile().exists() && !file.getParentFile().mkdirs()) {
-                        throw new IOException("Cannot create an entry parent directory.");
-                    }
-                    
-                    try {
-                        in  = zip.getInputStream(entry);
-                        out = new FileOutputStream(file);
-                        
-                        StreamUtils.transferData(in, out);
-                    } finally {
-                        if (in != null)  in.close();
-                        if (out != null) out.close();
-                    }
-                }
-                
-                if (file.getName().endsWith(".pack.gz")) {
-                    file = unpack(file);
-                }
-                
-                file.setLastModified(entry.getTime());
-                
-                files.add(file);
-            }
+            return extract(zip, target, null, new Progress());
         } finally {
-            if (zip != null) zip.close();
+            zip.close();
         }
-        
-        return files;
     }
     
-    public static File unpack(File source) throws IOException {
-        String path   = source.getAbsolutePath();
-        File   target = new File(path.substring(0, path.length() - 8));
+    public static List<File> unjar(File source, File target) throws IOException {
+        final JarFile jar = new JarFile(source);
         
+        try {
+            return extract(jar, target, METAINF_MASK, new Progress());
+        } finally {
+            jar.close();
+        }
+    }
+    
+    public static FilesList unjarList(File source, File target, Progress progress) throws IOException, XMLException, NoSuchAlgorithmException {
+        LogManager.logIndent("unjarring file " + source.getAbsolutePath());
+        
+        final JarFile jar      = new JarFile(source);
+        final File    metaInf  = new File(target, "META-INF");
+        final File    listFile = new File(metaInf, "files.list");
+        
+        final CompositeProgress overallProgress     = new CompositeProgress();
+        final Progress          extractionProgress  = new Progress();
+        final Progress          decompressProgress  = new Progress();
+        
+        overallProgress.addChild(extractionProgress, 60);
+        overallProgress.addChild(decompressProgress, 40);
+        overallProgress.synchronizeTo(progress);
+        overallProgress.synchronizeDetails(true);
+        
+        try {
+            List<File> extracted = extract(jar, target, "META-INF/(?!files.list$).*", extractionProgress);
+            
+            if (listFile.exists()) {
+                FilesList list = new FilesList(target, listFile);
+                
+                for (File file: extracted) {
+                    if (!list.contains(file)) {
+                        list.add(file);
+                    }
+                }
+                
+                if (list.contains(listFile)) {
+                    list.remove(listFile);
+                    deleteFile(listFile);
+                }
+                if (list.contains(metaInf)) {
+                    list.remove(metaInf);
+                    deleteFile(metaInf);
+                }
+                
+                int total   = list.getEntries().size();
+                int current = 0;
+                
+                for (FileEntry entry: list.getEntries()) {
+                    current++;
+                    decompressProgress.setPercentage(Progress.COMPLETE * current / total);
+                    
+                    if (entry.isPackedJarFile()) {
+                        File packed   = list.getFile(entry).getAbsoluteFile();
+                        File unpacked = null;
+                        
+                        decompressProgress.setDetail("Decompressing " + packed);
+                        
+                        LogManager.log("decompressing " + packed);
+                        
+                        unpacked = unpack(packed);
+                        
+                        entry.setPackedJarFile(false);
+                        entry.setName(list.getName(unpacked));
+                        
+                        deleteFile(packed);
+                    }
+                }
+                
+                return list;
+            } else {
+                return new FilesList(target, extracted);
+            }
+        } finally {
+            jar.close();
+            
+            LogManager.unindent();
+        }
+    }
+    
+    public static File pack(File source) throws IOException {
+        final String name = source.getName();
+        final File target = new File(source.getParentFile(),
+                name + ".pack.gz");
+        
+        return pack(source, target);
+    }
+    
+    public static File pack(File source, File target) throws IOException {
         SystemUtils.executeCommand(
-                SystemUtils.getUnpacker().getAbsolutePath(),
+                SystemUtils.getPacker().getAbsolutePath(),
                 source.getAbsolutePath(),
                 target.getAbsolutePath());
         
         return target;
     }
     
-    public static void unjar(File file, File directory) throws IOException {
-        JarFile jar = new JarFile(file);
+    public static File unpack(File source) throws IOException {
+        final String name = source.getName();
+        final File target = new File(source.getParentFile(),
+                name.substring(0, name.length() - ".pack.gz".length()));
         
-        if (directory.exists() && directory.isFile()) {
-            throw new IOException("Directory is an existing file, cannot unjar.");
-        }
+        return unpack(source, target);
+    }
+    
+    public static File unpack(File source, File target) throws IOException {
+        SystemUtils.executeCommand(
+                SystemUtils.getUnpacker().getAbsolutePath(),
+                source.getAbsolutePath(),
+                target.getAbsolutePath());
         
-        if (!directory.exists() && !directory.mkdirs()) {
-            throw new IOException("Cannot create directory");
-        }
-        
-        Enumeration<JarEntry> entries = (Enumeration<JarEntry>) jar.entries();
-        while (entries.hasMoreElements()) {
-            JarEntry entry = entries.nextElement();
-            
-            if (entry.getName().startsWith(METAINF)) {
-                continue;
-            }
-            
-            File entryFile = new File(directory, entry.getName());
-            
-            InputStream  in  = null;
-            OutputStream out = null;
-            if (entry.getName().endsWith(SLASH)) {
-                if (entryFile.exists() && !entryFile.isDirectory()) {
-                    throw new IOException("An entry directory exists and is not a directory");
-                }
-                if (!entryFile.exists() && !entryFile.mkdirs()) {
-                    throw new IOException("Cannot create an entry directory.");
-                }
-            } else {
-                if (entryFile.exists() && !entryFile.isFile()) {
-                    throw new IOException("An entry file exists and is not a file");
-                }
-                if (!entryFile.getParentFile().exists() && !entryFile.getParentFile().mkdirs()) {
-                    throw new IOException("Cannot create an entry parent directory.");
-                }
-                
-                try {
-                    in  = jar.getInputStream(entry);
-                    out = new FileOutputStream(entryFile);
-                    
-                    StreamUtils.transferData(in, out);
-                } finally {
-                    if (in != null) {
-                        in.close();
-                    }
-                    if (out != null) {
-                        out.close();
-                    }
-                }
-            }
-            
-            entryFile.setLastModified(entry.getTime());
-        }
-        
-        jar.close();
+        return target;
     }
     
     public static String getJarAttribute(File file, String name) throws IOException {
@@ -806,6 +799,126 @@ public final class FileUtils {
             }
         } else {
             LogManager.log(ErrorLevel.DEBUG, "Java Level Access: FALSE");
+            return false;
+        }
+    }
+    
+    private static List<File> extract(ZipFile zip, File target, String excludes, Progress progress) throws IOException {
+        final List<File> list = new LinkedList<File>();
+        
+        // first some basic validation of the destination directory
+        if (target.exists() && target.isFile()) {
+            throw new IOException("Directory is an existing file, cannot unjar.");
+        }
+        if (!target.exists() && !mkdirs(target, list)) {
+            throw new IOException("Cannot create directory");
+        }
+        
+        Enumeration<? extends ZipEntry> entries;
+        
+        int total     = 0;
+        int extracted = 0;
+        
+        // then we count the entries, to correctly display progress
+        entries = (Enumeration<? extends ZipEntry>) zip.entries();
+        while (entries.hasMoreElements()) {
+            total++;
+            entries.nextElement();
+        }
+        
+        // and only after that we actually extract them
+        entries = (Enumeration<? extends ZipEntry>) zip.entries();
+        while (entries.hasMoreElements()) {
+            ZipEntry entry = entries.nextElement();
+            
+            // increase the extracted files count and update the progress percentage
+            extracted++;
+            progress.setPercentage(Progress.COMPLETE * extracted / total);
+            
+            // if the entry name matches the excludes pattern, we skip it
+            if ((excludes != null) && entry.getName().matches(excludes)) {
+                continue;
+            }
+            
+            // create the target file for this entry
+            File file = new File(target, entry.getName()).getAbsoluteFile();
+            
+            // set the progress detail (only if the entry will be actually
+            // extracted)
+            progress.setDetail("Extracting " + file);
+            
+            LogManager.log("extracting " + file);
+            if (entry.getName().endsWith(SLASH)) {
+                // some validation (this is a directory entry and thus an existing 
+                // file will definitely break things)
+                if (file.exists() && !file.isDirectory()) {
+                    throw new IOException(
+                            "An entry directory exists and is not a directory");
+                }
+                
+                // if the directory does not exist, it will be created and added to 
+                // the extracted files list (if it exists already, it will not 
+                // appear in the list)
+                if (!file.exists()) {
+                    if (!mkdirs(file, list)) {
+                        throw new IOException("Cannot create an entry directory.");
+                    }
+                }
+            } else {
+                // some validation of the file's parent directory
+                File parent = file.getParentFile();
+                if (!parent.exists() && !mkdirs(parent, list)) {
+                    throw new IOException("Cannot create an entry parent directory.");
+                }
+                
+                // some validation of the file itself
+                if (file.exists() && !file.isFile()) {
+                    throw new IOException("An entry file exists and is not a file");
+                }
+                
+                // actual data transfer
+                InputStream  in  = null;
+                OutputStream out = null;
+                try {
+                    in  = zip.getInputStream(entry);
+                    out = new FileOutputStream(file);
+                    
+                    StreamUtils.transferData(in, out);
+                } finally {
+                    if (in != null) {
+                        in.close();
+                    }
+                    if (out != null) {
+                        out.close();
+                    }
+                }
+                
+                // as opposed to directories, we always add files to the list, as 
+                // even if they exist, they will be overwritten
+                list.add(file);
+            }
+            
+            // correct the entry's modification time, so it corresponds to the real
+            // time of the file in archive
+            file.setLastModified(entry.getTime());
+        }
+        
+        zip.close();
+        
+        return list;
+    }
+    
+    private static boolean mkdirs(File file, List<File> list) {
+        if (!file.getParentFile().exists()) {
+            if (!mkdirs(file.getParentFile(), list)) {
+                return false;
+            }
+        }
+        
+        if (file.mkdir()) {
+            list.add(file);
+            return true;
+        } else {
             return false;
         }
     }

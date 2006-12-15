@@ -197,8 +197,8 @@ public class LogManager {
     }
     
     public static synchronized void logUnindent(String message) {
-        log(message);
         unindent();
+        log(message);
     }
     
     public static File getLogFile() {

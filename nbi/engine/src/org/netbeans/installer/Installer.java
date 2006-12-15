@@ -494,16 +494,15 @@ public class Installer {
     }
     
     private void setLookAndFeel() {
-        LogManager.log(MESSAGE, "setting the look and feel");
-        LogManager.indent();
+        LogManager.logIndent("setting the look and feel");
         
         String className = System.getProperty(NBI_LOOK_AND_FEEL_CLASS_NAME_PROPERTY);
         if (className == null) {
-            LogManager.log(MESSAGE, "custom look and feel class name was not specified, using system default");
+            LogManager.log("... custom look and feel class name was not specified, using system default");
             className = DEFAULT_NBI_LOOK_AND_FEEL_CLASS_NAME;
         }
         
-        LogManager.log(MESSAGE, "... class name: " + className);
+        LogManager.log("... class name: " + className);
         
         try {
             JFrame.setDefaultLookAndFeelDecorated(true);
@@ -518,8 +517,7 @@ public class Installer {
             ErrorManager.notify(WARNING, "Could not set the look and feel.", e);
         }
         
-        LogManager.unindent();
-        LogManager.log(MESSAGE, "... finished setting the look and feel");
+        LogManager.logUnindent("... finished setting the look and feel");
     }
     
     private void cacheEngineLocally() {

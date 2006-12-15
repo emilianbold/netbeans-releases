@@ -228,6 +228,14 @@ public final class SystemUtils {
         return new File(System.getProperty("java.home"));
     }
     
+    public static File getPacker() {
+        if (isWindows()) {
+            return new File(getCurrentJavaHome(), "bin/pack200.exe");
+        } else {
+            return new File(getCurrentJavaHome(), "bin/pack200");
+        }
+    }
+    
     public static File getUnpacker() {
         if (isWindows()) {
             return new File(getCurrentJavaHome(), "bin/unpack200.exe");
