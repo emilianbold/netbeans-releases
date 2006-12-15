@@ -26,6 +26,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.websvc.core.ClientCreator;
+import org.netbeans.modules.websvc.core.ClientWizardProperties;
 import org.netbeans.modules.websvc.core.CreatorProvider;
 import org.netbeans.modules.websvc.core.testutils.RepositoryImpl;
 import org.openide.WizardDescriptor;
@@ -61,9 +62,9 @@ public class WebServiceClientCreatorTest extends NbTestCase {
         assert p != null : "null Project";
         wd = new WizardDescriptor(new Panel[] {new WebServiceClientWizardDescriptor()});
           
-        wd.putProperty(WizardProperties.JAX_VERSION, WizardProperties.JAX_WS);
-        wd.putProperty(WizardProperties.WSDL_FILE_PATH, FileUtil.normalizeFile(new File(getDataDir(), "wsdl/MyWebService.wsdl")).getAbsolutePath());
-        wd.putProperty(WizardProperties.WSDL_PACKAGE_NAME, "client.jaxws");
+        wd.putProperty(ClientWizardProperties.JAX_VERSION, ClientWizardProperties.JAX_WS);
+        wd.putProperty(ClientWizardProperties.WSDL_FILE_PATH, FileUtil.normalizeFile(new File(getDataDir(), "wsdl/MyWebService.wsdl")).getAbsolutePath());
+        wd.putProperty(ClientWizardProperties.WSDL_PACKAGE_NAME, "client.jaxws");
         ClientCreator creator = CreatorProvider.getClientCreator(p, wd);
         if (creator!=null) {        
             try {
