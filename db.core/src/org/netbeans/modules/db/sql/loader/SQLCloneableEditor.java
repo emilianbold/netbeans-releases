@@ -304,8 +304,8 @@ public class SQLCloneableEditor extends CloneableEditor {
         }
 
         public void execute() {
-            String text = (String)Mutex.EVENT.readAccess(new Mutex.Action() {
-                public Object run() {
+            String text = Mutex.EVENT.readAccess(new Mutex.Action<String>() {
+                public String run() {
                     return getText(getEditorPane());
                 }
             });
@@ -314,8 +314,8 @@ public class SQLCloneableEditor extends CloneableEditor {
 
         public void executeSelection() {
             final int[] offsets = new int[2];
-            String text = (String)Mutex.EVENT.readAccess(new Mutex.Action() {
-                public Object run() {
+            String text = Mutex.EVENT.readAccess(new Mutex.Action<String>() {
+                public String run() {
                     JEditorPane editorPane = getEditorPane();
                     int startOffset = editorPane.getSelectionStart();
                     int endOffset = editorPane.getSelectionEnd();
@@ -338,8 +338,8 @@ public class SQLCloneableEditor extends CloneableEditor {
         }
 
         public boolean isSelection() {
-            Boolean result = (Boolean)Mutex.EVENT.readAccess(new Mutex.Action() {
-                public Object run() {
+            Boolean result = Mutex.EVENT.readAccess(new Mutex.Action<Boolean>() {
+                public Boolean run() {
                     JEditorPane editorPane = getEditorPane();
                     return Boolean.valueOf(editorPane.getSelectionStart() < editorPane.getSelectionEnd());
                 }

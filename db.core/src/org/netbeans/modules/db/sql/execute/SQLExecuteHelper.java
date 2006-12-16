@@ -53,10 +53,10 @@ public final class SQLExecuteHelper {
         
         boolean cancelled = false;
         
-        List/*<StatementInfo>*/ statements = getStatements(sqlScript, startOffset, endOffset);
+        List<StatementInfo> statements = getStatements(sqlScript, startOffset, endOffset);
         boolean computeResults = statements.size() == 1;
         
-        List/*<SQLExecutionResult>*/ resultList = new ArrayList();
+        List<SQLExecutionResult> resultList = new ArrayList<SQLExecutionResult>();
         long totalExecutionTime = 0;
         
         for (Iterator i = statements.iterator(); i.hasNext();) {
@@ -155,12 +155,12 @@ public final class SQLExecuteHelper {
         return new int[] { type, concurrency };
     }
     
-    private static List/*<StatementInfo>*/ getStatements(String script, int startOffset, int endOffset) {
-        List allStatements = split(script);
+    private static List<StatementInfo> getStatements(String script, int startOffset, int endOffset) {
+        List<StatementInfo> allStatements = split(script);
         if (startOffset == 0 && endOffset == script.length()) {
             return allStatements;
         }
-        List statements = new ArrayList();
+        List<StatementInfo> statements = new ArrayList<StatementInfo>();
         for (Iterator i = allStatements.iterator(); i.hasNext();) {
             StatementInfo stmt = (StatementInfo)i.next();
             if (startOffset == endOffset) {
@@ -178,7 +178,7 @@ public final class SQLExecuteHelper {
         return Collections.unmodifiableList(statements);
     }
     
-    static List/*<StatementInfo>*/ split(String script) {
+    static List<StatementInfo> split(String script) {
         return new SQLSplitter(script).getStatements();
     }
     
@@ -196,7 +196,7 @@ public final class SQLExecuteHelper {
         private int sqlLength;
         
         private StringBuffer statement = new StringBuffer();
-        private List/*<String>*/ statements = new ArrayList();
+        private List<StatementInfo> statements = new ArrayList<StatementInfo>();
         
         private int pos = 0;
         private int line = -1;
@@ -358,7 +358,7 @@ public final class SQLExecuteHelper {
             statements.add(info);
         }
         
-        public List/*<StatementInfo>*/ getStatements() {
+        public List<StatementInfo> getStatements() {
             return Collections.unmodifiableList(statements);
         }
     }

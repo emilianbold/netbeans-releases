@@ -48,7 +48,7 @@ public class ResultSetTableModelSupport {
      * Holds the ColumnTypeDef for all the types in java.sql.Types.
      * Not private because of unit tests.
      */
-    static final Map/*<Integer,ColumnTypeDef>*/ TYPE_TO_DEF = new HashMap();
+    static final Map<Integer,ColumnTypeDef> TYPE_TO_DEF = new HashMap<Integer,ColumnTypeDef>();
     
     /**
      * The default implementation of ColumnTypeDef used for SQL types for which
@@ -61,38 +61,38 @@ public class ResultSetTableModelSupport {
         
         ColumnTypeDef booleanTypeDef = new GenericWritableColumnDef(Boolean.class);
         
-        TYPE_TO_DEF.put(new Integer(Types.BOOLEAN), booleanTypeDef);
-        TYPE_TO_DEF.put(new Integer(Types.BIT), booleanTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.BOOLEAN), booleanTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.BIT), booleanTypeDef);
         
         ColumnTypeDef integerTypeDef = new GenericWritableColumnDef(Integer.class);
         
-        TYPE_TO_DEF.put(new Integer(Types.TINYINT), integerTypeDef);
-        TYPE_TO_DEF.put(new Integer(Types.SMALLINT), integerTypeDef);
-        TYPE_TO_DEF.put(new Integer(Types.INTEGER), integerTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.TINYINT), integerTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.SMALLINT), integerTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.INTEGER), integerTypeDef);
         
         ColumnTypeDef charTypeDef = new GenericWritableColumnDef(String.class);
         
-        TYPE_TO_DEF.put(new Integer(Types.CHAR), charTypeDef);
-        TYPE_TO_DEF.put(new Integer(Types.VARCHAR), charTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.CHAR), charTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.VARCHAR), charTypeDef);
         
         ColumnTypeDef longTypeDef = new GenericWritableColumnDef(Long.class);
         
-        TYPE_TO_DEF.put(new Integer(Types.BIGINT), longTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.BIGINT), longTypeDef);
         
         ColumnTypeDef floatTypeDef = new GenericWritableColumnDef(Double.class);
         
-        TYPE_TO_DEF.put(new Integer(Types.FLOAT), floatTypeDef);
-        TYPE_TO_DEF.put(new Integer(Types.DOUBLE), floatTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.FLOAT), floatTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.DOUBLE), floatTypeDef);
         
         ColumnTypeDef decimalTypeDef = new GenericWritableColumnDef(BigDecimal.class);
         
-        TYPE_TO_DEF.put(new Integer(Types.REAL), decimalTypeDef);
-        TYPE_TO_DEF.put(new Integer(Types.NUMERIC), decimalTypeDef);
-        TYPE_TO_DEF.put(new Integer(Types.DECIMAL), decimalTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.REAL), decimalTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.NUMERIC), decimalTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.DECIMAL), decimalTypeDef);
         
         ColumnTypeDef dateTypeDef = new GenericWritableColumnDef(Date.class);
         
-        TYPE_TO_DEF.put(new Integer(Types.DATE), dateTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.DATE), dateTypeDef);
         
         // TIME type must displayed as time -- issue 72607
         
@@ -108,12 +108,12 @@ public class ResultSetTableModelSupport {
             }
         };
         
-        TYPE_TO_DEF.put(new Integer(Types.TIME), timeTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.TIME), timeTypeDef);
         
         // TIMESTAMP type -- ensure that it is displayed as date and time
         // issue 64165, issue 70521
         
-        TYPE_TO_DEF.put(new Integer(Types.TIMESTAMP), new ColumnTypeDef() {
+        TYPE_TO_DEF.put(Integer.valueOf(Types.TIMESTAMP), new ColumnTypeDef() {
             public boolean isWritable() {
                 return true;
             }
@@ -140,9 +140,9 @@ public class ResultSetTableModelSupport {
             }
         };
         
-        TYPE_TO_DEF.put(new Integer(Types.BINARY), binaryTypeDef);
-        TYPE_TO_DEF.put(new Integer(Types.VARBINARY), binaryTypeDef);
-        TYPE_TO_DEF.put(new Integer(Types.LONGVARBINARY), binaryTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.BINARY), binaryTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.VARBINARY), binaryTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.LONGVARBINARY), binaryTypeDef);
         
         // blob type -- we can't edit it, and 
         // we display it like "0xdeadbeef..."
@@ -159,7 +159,7 @@ public class ResultSetTableModelSupport {
             }
         };
         
-        TYPE_TO_DEF.put(new Integer(Types.BLOB), blobTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.BLOB), blobTypeDef);
         
         // long varchar type -- we don't retrieve the full contents (it is too
         // long), and we display only the first n characters
@@ -176,7 +176,7 @@ public class ResultSetTableModelSupport {
             }
         };
         
-        TYPE_TO_DEF.put(new Integer(Types.LONGVARCHAR), longVarCharTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.LONGVARCHAR), longVarCharTypeDef);
         
         // clob type -- we don't retrieve the full contents (it is are too
         // long), and we display only the first n characters
@@ -193,7 +193,7 @@ public class ResultSetTableModelSupport {
             }
         };
         
-        TYPE_TO_DEF.put(new Integer(Types.CLOB), clobTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.CLOB), clobTypeDef);
         
         // other types -- we can hardly edit them
         
@@ -209,14 +209,14 @@ public class ResultSetTableModelSupport {
             }
         };
         
-        TYPE_TO_DEF.put(new Integer(Types.NULL), otherTypeDef);
-        TYPE_TO_DEF.put(new Integer(Types.OTHER), otherTypeDef);
-        TYPE_TO_DEF.put(new Integer(Types.JAVA_OBJECT), otherTypeDef);
-        TYPE_TO_DEF.put(new Integer(Types.DISTINCT), otherTypeDef);
-        TYPE_TO_DEF.put(new Integer(Types.STRUCT), otherTypeDef);
-        TYPE_TO_DEF.put(new Integer(Types.ARRAY), otherTypeDef);
-        TYPE_TO_DEF.put(new Integer(Types.REF), otherTypeDef);
-        TYPE_TO_DEF.put(new Integer(Types.DATALINK), otherTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.NULL), otherTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.OTHER), otherTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.JAVA_OBJECT), otherTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.DISTINCT), otherTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.STRUCT), otherTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.ARRAY), otherTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.REF), otherTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(Types.DATALINK), otherTypeDef);
     }
     
     /**
@@ -419,7 +419,7 @@ public class ResultSetTableModelSupport {
      * Not private because of unit tests.
      */
     static ColumnTypeDef getColumnTypeDef(int type) {
-        ColumnTypeDef result = (ColumnTypeDef)TYPE_TO_DEF.get(new Integer(type));
+        ColumnTypeDef result = (ColumnTypeDef)TYPE_TO_DEF.get(Integer.valueOf(type));
         if (result != null) {
             return result;
         }
@@ -436,9 +436,9 @@ public class ResultSetTableModelSupport {
      * Returns a List of ColumnDef objects or null if the calling thread was
      * interrupted.
      */
-    public static List/*<ColumnDef>*/ createColumnDefs(ResultSetMetaData rsmd) throws SQLException {
+    public static List<ColumnDef> createColumnDefs(ResultSetMetaData rsmd) throws SQLException {
         int count = rsmd.getColumnCount();
-        List columns = new ArrayList(count);
+        List<ColumnDef> columns = new ArrayList<ColumnDef>(count);
 
         for (int i = 1; i <= count; i++) {
             if (Thread.currentThread().isInterrupted()) {
@@ -468,8 +468,8 @@ public class ResultSetTableModelSupport {
         return columns;
     }
     
-    public static List/*<List>*/ retrieveRows(ResultSet rs, ResultSetMetaData rsmd, FetchLimitHandler handler) throws SQLException, IOException {
-        List rows = new ArrayList();
+    public static List<List<Object>> retrieveRows(ResultSet rs, ResultSetMetaData rsmd, FetchLimitHandler handler) throws SQLException, IOException {
+        List<List<Object>> rows = new ArrayList<List<Object>>();
         int columnCount = rsmd.getColumnCount();
         int fetchLimit = handler.getFetchLimit();
 
@@ -486,7 +486,7 @@ public class ResultSetTableModelSupport {
                 }
             }
 
-            List row = new ArrayList();
+            List<Object> row = new ArrayList<Object>();
             for (int i = 1; i <= columnCount; i++) {
                 if (Thread.currentThread().isInterrupted()) {
                     return null;

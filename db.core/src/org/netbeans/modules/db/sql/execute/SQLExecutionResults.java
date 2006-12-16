@@ -32,20 +32,20 @@ import org.openide.ErrorManager;
  */
 public class SQLExecutionResults {
     
-    private final List/*<SQLExecutionResult>*/ results;
+    private final List<SQLExecutionResult> results;
     
-    public SQLExecutionResults(List/*<SQLExecutionResult>*/ results) {
+    public SQLExecutionResults(List<SQLExecutionResult> results) {
         this.results = Collections.unmodifiableList(results);
     }
     
-    public List/*<SQLExecutionResult>*/ getResults() {
+    public List<SQLExecutionResult> getResults() {
         return results;
     }
     
     public void close() {
-        for (Iterator i = results.iterator(); i.hasNext();) {
+        for (Iterator<SQLExecutionResult> i = results.iterator(); i.hasNext();) {
             try {
-                ((SQLExecutionResult)i.next()).close();
+                i.next().close();
             } catch (SQLException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
@@ -57,8 +57,7 @@ public class SQLExecutionResults {
     }
     
     public boolean hasExceptions() {
-        for (Iterator i = results.iterator(); i.hasNext();) {
-            SQLExecutionResult result = (SQLExecutionResult)i.next();
+        for (SQLExecutionResult result: results) {
             if (result.getException() != null) {
                 return true;
             }

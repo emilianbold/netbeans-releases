@@ -460,8 +460,8 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
                     LOGGER.log(ErrorManager.INFORMATIONAL, "Executing against " + dbconn); // NOI18N
                 }
 
-                Mutex.EVENT.readAccess(new Mutex.Action() {
-                    public Object run() {
+                Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
+                    public Void run() {
                         ConnectionManager.getDefault().showConnectionDialog(dbconn);
                         return null;
                     }
@@ -477,8 +477,8 @@ public class SQLEditorSupport extends DataEditorSupport implements OpenCookie, E
 
                 // need to save the document, otherwise the Line.Set.getOriginal mechanism does not work
                 try {
-                    Mutex.EVENT.readAccess(new Mutex.ExceptionAction() {
-                        public Object run() throws Exception {
+                    Mutex.EVENT.readAccess(new Mutex.ExceptionAction<Void>() {
+                        public Void run() throws Exception {
                             parent.saveDocument();
                             return null;
                         }
