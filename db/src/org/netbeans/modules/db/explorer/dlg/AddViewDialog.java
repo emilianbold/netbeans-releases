@@ -28,13 +28,12 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.NotifyDescriptor;
-
 import org.netbeans.lib.ddl.impl.CreateView;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.lib.ddl.*;
-
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.*;
+import org.openide.awt.Mnemonics;
 
 public class AddViewDialog {
     boolean result = false;
@@ -53,8 +52,8 @@ public class AddViewDialog {
 
             // Index name
 
-            JLabel label = new JLabel(bundle.getString("AddViewName")); //NOI18N
-            label.setDisplayedMnemonic(bundle.getString("AddViewName_Mnemonic").charAt(0));
+            JLabel label = new JLabel();
+            Mnemonics.setLocalizedText(label, bundle.getString("AddViewName"));
             label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddViewNameA11yDesc"));
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
@@ -79,8 +78,8 @@ public class AddViewDialog {
 
             // Items list title
 
-            label = new JLabel(bundle.getString("AddViewLabel")); //NOI18N
-            label.setDisplayedMnemonic(bundle.getString("AddViewLabel_Mnemonic").charAt(0));
+            label = new JLabel();
+            Mnemonics.setLocalizedText(label, bundle.getString("AddViewLabel"));
             label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddViewLabelA11yDesc"));
             con.weightx = 0.0;
             con.anchor = GridBagConstraints.WEST;

@@ -27,8 +27,8 @@ import org.openide.util.NbBundle;
 import javax.swing.border.EmptyBorder;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-
 import org.netbeans.modules.db.explorer.*;
+import org.openide.awt.Mnemonics;
 
 /**
 * @author Slavek Psenicka
@@ -44,7 +44,9 @@ public class LabeledTextFieldDialog {
     final String original_notes;
     private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
-    public LabeledTextFieldDialog(String title, String lab, String notes) {
+    public LabeledTextFieldDialog(String notes) {
+        String title = bundle.getString("RecreateTableRenameTable");
+        String lab = bundle.getString("RecreateTableNewName");
         original_notes = notes;
         try {
             JPanel pane = new JPanel();
@@ -55,9 +57,9 @@ public class LabeledTextFieldDialog {
 
             // Title
 
-            label = new JLabel(lab);
+            label = new JLabel();
+            Mnemonics.setLocalizedText(label, lab);
             label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_RecreateTableNewNameA11yDesc"));  // NOI18N
-            label.setDisplayedMnemonic(bundle.getString("RecreateTableNewName_Mnemonic").charAt(0));  // NOI18N
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             con.gridx = 0;
@@ -81,9 +83,9 @@ public class LabeledTextFieldDialog {
 
             // Descr.
 
-            JLabel desc = new JLabel(bundle.getString("RecreateTableRenameNotes")); // NOI18N
+            JLabel desc = new JLabel();
+            Mnemonics.setLocalizedText(desc, bundle.getString("RecreateTableRenameNotes"));
             desc.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_RecreateTableRenameNotesA11yDesc"));  // NOI18N
-            desc.setDisplayedMnemonic(bundle.getString("RecreateTableRenameNotes_Mnemonic").charAt(0));  // NOI18N
             con.anchor = GridBagConstraints.WEST;
             con.gridx = 0;
             con.gridy = 2;
@@ -117,8 +119,8 @@ public class LabeledTextFieldDialog {
             pane.add(spane);
             
             // edit button
-            edButton = new JButton(bundle.getString("EditCommand")); // NOI18N
-            edButton.setMnemonic(bundle.getString("EditCommand_Mnemonic").charAt(0));  // NOI18N
+            edButton = new JButton();
+            Mnemonics.setLocalizedText(edButton, bundle.getString("EditCommand")); // NOI18N
             edButton.setToolTipText(bundle.getString("ACS_EditCommandA11yDesc"));  // NOI18N
             con.fill = GridBagConstraints.WEST;
             con.weighty = 0.0;
@@ -132,8 +134,7 @@ public class LabeledTextFieldDialog {
                 public void actionPerformed(ActionEvent event) {
                     if(edButton.getText().startsWith(bundle.getString("EditCommand"))) { // NOI18N
                         // set to edit 
-                        edButton.setText(bundle.getString("ReloadCommand")); // NOI18N
-                        edButton.setMnemonic(bundle.getString("ReloadCommand_Mnemonic").charAt(0));  // NOI18N
+                        Mnemonics.setLocalizedText(edButton, bundle.getString("ReloadCommand"));
                         edButton.setToolTipText(bundle.getString("ACS_ReloadCommandA11yDesc"));  // NOI18N
                         notesarea.setEditable( true );
                         notesarea.setEnabled(true);
@@ -143,8 +144,7 @@ public class LabeledTextFieldDialog {
                         field.setBackground(label.getBackground()); // grey
                     } else {
                         // reload script from file
-                        edButton.setText(bundle.getString("EditCommand")); // NOI18N
-                        edButton.setMnemonic(bundle.getString("EditCommand_Mnemonic").charAt(0));  // NOI18N
+                        Mnemonics.setLocalizedText(edButton, bundle.getString("EditCommand"));
                         edButton.setToolTipText(bundle.getString("ACS_EditCommandA11yDesc"));  // NOI18N
                         notesarea.setText(original_notes);
                         notesarea.setEditable( false );

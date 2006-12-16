@@ -24,17 +24,14 @@ import java.awt.event.*;
 import java.io.InputStream;
 import java.util.*;
 import java.text.MessageFormat;
-
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.*;
-
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.lib.ddl.impl.CreateTable;
 import org.netbeans.lib.ddl.util.CommandBuffer;
@@ -43,6 +40,7 @@ import org.netbeans.lib.ddl.util.PListReader;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.util.TextFieldValidator;
 import org.netbeans.modules.db.util.ValidableTextField;
+import org.openide.awt.Mnemonics;
 import org.openide.util.Utilities;
 
 public class CreateTableDialog {
@@ -91,8 +89,8 @@ public class CreateTableDialog {
      
             // Table name field
 
-            label = new JLabel(bundle.getString("CreateTableName")); // NOI18N
-            label.setDisplayedMnemonic(bundle.getString("CreateTableName_Mnemonic").charAt(0));
+            label = new JLabel();
+            Mnemonics.setLocalizedText(label, bundle.getString("CreateTableName")); // NOI18N
             label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CreateTableNameA11yDesc"));
             constr.anchor = GridBagConstraints.WEST;
             constr.weightx = 0.0;
@@ -119,8 +117,8 @@ public class CreateTableDialog {
 
             // Table owner combo
 
-            label = new JLabel(bundle.getString("CreateTableOwner")); // NOI18N
-            label.setDisplayedMnemonic(bundle.getString("CreateTableOwner_Mnemonic").charAt(0));
+            label = new JLabel();
+            Mnemonics.setLocalizedText(label, bundle.getString("CreateTableOwner")); // NOI18N
             label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CreateTableOwnerA11yDesc"));
             constr.anchor = GridBagConstraints.WEST;
             constr.weightx = 0.0;
@@ -210,8 +208,8 @@ public class CreateTableDialog {
 
             // Button add column
 
-            addbtn = new JButton(bundle.getString("CreateTableAddButtonTitle")); // NOI18N
-            addbtn.setMnemonic(bundle.getString("CreateTableAddButtonTitle_Mnemonic").charAt(0));
+            addbtn = new JButton();
+            Mnemonics.setLocalizedText(addbtn, bundle.getString("CreateTableAddButtonTitle")); // NOI18N
             addbtn.setToolTipText(bundle.getString("ACS_CreateTableAddButtonTitleA11yDesc"));
             btnpane.add(addbtn);
             addbtn.addActionListener(new ActionListener() {
@@ -228,8 +226,8 @@ public class CreateTableDialog {
 
             // Button delete column
 
-            delbtn = new JButton(bundle.getString("CreateTableRemoveButtonTitle")); // NOI18N
-            delbtn.setMnemonic(bundle.getString("CreateTableRemoveButtonTitle_Mnemonic").charAt(0));
+            delbtn = new JButton();
+            Mnemonics.setLocalizedText(delbtn, bundle.getString("CreateTableRemoveButtonTitle")); // NOI18N
             delbtn.setToolTipText(bundle.getString("ACS_CreateTableRemoveButtonTitleA11yDesc"));
             btnpane.add(delbtn);
             delbtn.addActionListener(new ActionListener() {

@@ -121,18 +121,16 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
 
         setLayout(new java.awt.GridBagLayout());
 
-        userLabel.setDisplayedMnemonic(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectDialogUserName_Mnemonic").charAt(0));
         userLabel.setLabelFor(userTextField);
-        userLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectDialogUserName"));
+        org.openide.awt.Mnemonics.setLocalizedText(userLabel, NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectDialogUserName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(userLabel, gridBagConstraints);
 
-        passwordLabel.setDisplayedMnemonic(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectDialogPassword_Mnemonic").charAt(0));
         passwordLabel.setLabelFor(passwordField);
-        passwordLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectDialogPassword"));
+        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectDialogPassword")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -141,9 +139,8 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(passwordLabel, gridBagConstraints);
 
-        passwordCheckBox.setMnemonic(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectDialogRememberPassword_Mnemonic").charAt(0));
-        passwordCheckBox.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectDialogRememberPassword"));
-        passwordCheckBox.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectDialogRememberPasswordA11yDesc"));
+        org.openide.awt.Mnemonics.setLocalizedText(passwordCheckBox, NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectDialogRememberPassword")); // NOI18N
+        passwordCheckBox.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectDialogRememberPasswordA11yDesc")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -152,7 +149,7 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         add(passwordCheckBox, gridBagConstraints);
 
-        passwordField.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectDialogPasswordTextFieldA11yDesc"));
+        passwordField.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectDialogPasswordTextFieldA11yDesc")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -160,7 +157,7 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         add(passwordField, gridBagConstraints);
 
-        userTextField.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectDialogUserNameTextFieldA11yDesc"));
+        userTextField.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectDialogUserNameTextFieldA11yDesc")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -168,16 +165,15 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
         gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 11);
         add(userTextField, gridBagConstraints);
 
+        connectProgressPanel.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yDesc")); // NOI18N
         connectProgressPanel.setLayout(new java.awt.BorderLayout(0, 5));
 
-        connectProgressPanel.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yDesc"));
-        progressMessageLabel.setText(" ");
+        org.openide.awt.Mnemonics.setLocalizedText(progressMessageLabel, " ");
         connectProgressPanel.add(progressMessageLabel, java.awt.BorderLayout.NORTH);
-
-        progressContainerPanel.setLayout(new java.awt.BorderLayout());
 
         progressContainerPanel.setMinimumSize(new java.awt.Dimension(20, 20));
         progressContainerPanel.setPreferredSize(new java.awt.Dimension(20, 20));
+        progressContainerPanel.setLayout(new java.awt.BorderLayout());
         connectProgressPanel.add(progressContainerPanel, java.awt.BorderLayout.CENTER);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -190,9 +186,7 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
         add(connectProgressPanel, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

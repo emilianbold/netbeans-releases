@@ -68,6 +68,7 @@ import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.ConnectionNode;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.util.Lookup;
@@ -133,9 +134,9 @@ public class DataViewWindow extends TopComponent {
         subcon.gridwidth = 3;
         subcon.insets = new Insets (0, 0, 5, 0);
         subcon.anchor = GridBagConstraints.SOUTH;
-        JLabel queryLabel = new JLabel(bundle.getString("QueryLabel")); //NOI18N
-        queryLabel.setDisplayedMnemonic(bundle.getString("QueryLabel_Mnemonic").charAt(0)); //NOI18N
-        queryLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewQueryLabelA11yDesc")); //NOI18N
+        JLabel queryLabel = new JLabel();
+        Mnemonics.setLocalizedText(queryLabel, bundle.getString("QueryLabel"));
+        queryLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewQueryLabelA11yDesc"));
         sublayout.setConstraints(queryLabel, subcon);
         subpane.add(queryLabel);
 
@@ -169,8 +170,8 @@ public class DataViewWindow extends TopComponent {
         subcon.gridwidth = 1;
         subcon.insets = new Insets (0, 0, 5, 5);
         subcon.anchor = GridBagConstraints.CENTER;
-        JLabel comboLabel = new JLabel(bundle.getString("HistoryLabel")); //NOI18N
-        comboLabel.setDisplayedMnemonic(bundle.getString("HistoryLabel_Mnemonic").charAt(0)); //NOI18N
+        JLabel comboLabel = new JLabel();
+        Mnemonics.setLocalizedText(comboLabel, bundle.getString("HistoryLabel")); //NOI18N
         comboLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewHistoryLabelA11yDesc")); //NOI18N
         sublayout.setConstraints(comboLabel, subcon);
         subpane.add(comboLabel);
@@ -208,9 +209,9 @@ public class DataViewWindow extends TopComponent {
         subcon.insets = new Insets (0, 0, 5, 0);
         subcon.fill = GridBagConstraints.HORIZONTAL;
         subcon.anchor = GridBagConstraints.SOUTH;
-        final JButton fetchbtn = new JButton(bundle.getString("ExecuteButton")); //NOI18N
+        final JButton fetchbtn = new JButton();
+        Mnemonics.setLocalizedText(fetchbtn, bundle.getString("ExecuteButton"));
         fetchbtn.setToolTipText(bundle.getString("ACS_ExecuteButtonA11yDesc")); //NOI18N
-        fetchbtn.setMnemonic(bundle.getString("ExecuteButton_Mnemonic").charAt(0)); //NOI18N
         sublayout.setConstraints(fetchbtn, subcon);
         subpane.add(fetchbtn);
         fetchbtn.addActionListener(new ActionListener() {
@@ -258,8 +259,8 @@ public class DataViewWindow extends TopComponent {
         subcon2.gridwidth = 1;
         subcon2.insets = new Insets (5, 0, 0, 0);
         subcon2.anchor = GridBagConstraints.SOUTH;
-        JLabel tableLabel = new JLabel(bundle.getString("ResultsLabel")); //NOI18N
-        tableLabel.setDisplayedMnemonic(bundle.getString("ResultsLabel_Mnemonic").charAt(0)); //NOI18N
+        JLabel tableLabel = new JLabel();
+        Mnemonics.setLocalizedText(tableLabel, bundle.getString("ResultsLabel"));
         tableLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewResultsLabelA11yDesc")); //NOI18N
         sublayout2.setConstraints(tableLabel, subcon2);
         subpane2.add(tableLabel);
@@ -722,18 +723,18 @@ public class DataViewWindow extends TopComponent {
                 String cancel = bundle.getString("DataViewCancelButton"); //NOI18N
                 String nextset = bundle.getString("DataViewNextFetchButton"); //NOI18N
                 String allset = bundle.getString("DataViewAllFetchButton"); //NOI18N
-
-                JButton fetchNext = new JButton(nextset);
+                
+                JButton fetchNext = new JButton();
+                Mnemonics.setLocalizedText(fetchNext, nextset);
                 fetchNext.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewNextFetchButtonA11yDesc")); //NOI18N
-                fetchNext.setMnemonic(bundle.getString("FetchNextFetchButton_Mnemonic").charAt(0)); //NOI18N
 
-                JButton fetchAll = new JButton(allset);
+                JButton fetchAll = new JButton();
+                Mnemonics.setLocalizedText(fetchAll, allset);
                 fetchAll.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewAllFetchButtonA11yDesc")); //NOI18N
-                fetchAll.setMnemonic(bundle.getString("FetchAllFetchButton_Mnemonic").charAt(0)); //NOI18N
 
-                JButton no = new JButton(cancel);
+                JButton no = new JButton();
+                Mnemonics.setLocalizedText(no, cancel);
                 no.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewCancelButtonA11yDesc")); //NOI18N
-                no.setMnemonic(bundle.getString("FetchCancelButton_Mnemonic").charAt(0)); //NOI18N
                 
                 String message;
                 NotifyDescriptor ndesc;
@@ -747,12 +748,11 @@ public class DataViewWindow extends TopComponent {
 
                     // Catch row count
                     if (++rcounter >= limit) {
-                        String[] arr = new String[] {
-                            (new Integer(rcounter)).toString(),
-                            (new Integer(step)).toString()
-                        };
                         
-                        message = MessageFormat.format(bundle.getString("DataViewMessage"), arr); //NOI18N
+                        message = MessageFormat.format(bundle.getString("DataViewMessage"), new Object[] {
+                            new Integer(rcounter),
+                            new Integer(step)
+                        }); //NOI18N
                         ndesc = new NotifyDescriptor(message, bundle.getString("FetchDataTitle"), NotifyDescriptor.YES_NO_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE, new Object[] {fetchNext, fetchAll, no}, NotifyDescriptor.CANCEL_OPTION); //NOI18N
                         
                         ret = DialogDisplayer.getDefault().notify(ndesc);

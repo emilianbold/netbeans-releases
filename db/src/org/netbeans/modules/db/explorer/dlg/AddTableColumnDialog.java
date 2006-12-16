@@ -24,20 +24,18 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.beans.*;
-
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.db.explorer.DatabaseException;
-
 import org.openide.*;
 import org.openide.util.NbBundle;
-
 import org.netbeans.lib.ddl.impl.*;
 import org.netbeans.lib.ddl.util.*;
 import org.netbeans.modules.db.util.*;
 import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.nodes.*;
+import org.openide.awt.Mnemonics;
 
 public class AddTableColumnDialog {
     boolean result = false;
@@ -69,8 +67,8 @@ public class AddTableColumnDialog {
 
             // Column name
 
-            label = new JLabel(bundle.getString("AddTableColumnName")); //NOI18N
-            label.setDisplayedMnemonic(bundle.getString("AddTableColumnName_Mnemonic").charAt(0));
+            label = new JLabel();
+            Mnemonics.setLocalizedText(label, bundle.getString("AddTableColumnName")); //NOI18N
             label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddTableColumnNameA11yDesc"));
             con = new GridBagConstraints ();
             con.gridx = 0;
@@ -115,8 +113,8 @@ public class AddTableColumnDialog {
             item.setProperty(ColumnItem.TYPE, ttab.elementAt(0));
             dmodel.addRow(item);
 
-            label = new JLabel(bundle.getString("AddTableColumnType")); //NOI18N
-            label.setDisplayedMnemonic(bundle.getString("AddTableColumnType_Mnemonic").charAt(0));
+            label = new JLabel();
+            Mnemonics.setLocalizedText(label, bundle.getString("AddTableColumnType")); //NOI18N
             label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddTableColumnTypeA11yDesc"));
             con = new GridBagConstraints ();
             con.gridx = 0;
@@ -148,8 +146,8 @@ public class AddTableColumnDialog {
 
             // Column size
 
-            label = new JLabel(bundle.getString("AddTableColumnSize")); //NOI18N
-            label.setDisplayedMnemonic(bundle.getString("AddTableColumnSize_Mnemonic").charAt(0));
+            label = new JLabel();
+            Mnemonics.setLocalizedText(label, bundle.getString("AddTableColumnSize")); //NOI18N
             label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddTableColumnSizeA11yDesc"));
             con = new GridBagConstraints ();
             con.gridx = 0;
@@ -181,8 +179,8 @@ public class AddTableColumnDialog {
 
             // Column scale
 
-            label = new JLabel(bundle.getString("AddTableColumnScale")); //NOI18N
-            label.setDisplayedMnemonic(bundle.getString("AddTableColumnScale_Mnemonic").charAt(0));
+            label = new JLabel();
+            Mnemonics.setLocalizedText(label, bundle.getString("AddTableColumnScale")); //NOI18N
             label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddTableColumnScaleA11yDesc"));
             con = new GridBagConstraints ();
             con.gridx = 2;
@@ -214,8 +212,8 @@ public class AddTableColumnDialog {
 
             // Column default value
 
-            label = new JLabel(bundle.getString("AddTableColumnDefault")); //NOI18N
-            label.setDisplayedMnemonic(bundle.getString("AddTableColumnDefault_Mnemonic").charAt(0));
+            label = new JLabel();
+            Mnemonics.setLocalizedText(label, bundle.getString("AddTableColumnDefault")); //NOI18N
             label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddTableColumnDefaultA11yDesc"));
             con = new GridBagConstraints ();
             con.gridx = 0;
@@ -264,10 +262,10 @@ public class AddTableColumnDialog {
             con.insets = new java.awt.Insets (0, 0, 0, 0);
             con.weightx = 0.0;
             con.weighty = 0.0;
-            pkcheckbox = new JCheckBox(" "+bundle.getString("AddTableColumnConstraintPKTitle")); //NOI18N
+            pkcheckbox = new JCheckBox();
+            Mnemonics.setLocalizedText(ixcheckbox, bundle.getString("AddTableColumnConstraintPKTitle")); //NOI18N
             pkcheckbox.setName(ColumnItem.PRIMARY_KEY);
             pkcheckbox.addActionListener(cbxlistener);
-            pkcheckbox.setMnemonic(bundle.getString("AddTableColumnConstraintPKTitle_Mnemonic").charAt(0));
             pkcheckbox.setToolTipText(bundle.getString("ACS_AddTableColumnConstraintPKTitleA11yDesc"));
             subpane.add(pkcheckbox, con);
 
@@ -280,10 +278,10 @@ public class AddTableColumnDialog {
             con.insets = new java.awt.Insets (0, 12, 0, 0);
             con.weightx = 0.0;
             con.weighty = 0.0;
-            uniquecheckbox = new JCheckBox(" "+bundle.getString("AddTableColumnConstraintUniqueTitle")); //NOI18N
+            uniquecheckbox = new JCheckBox();
+            Mnemonics.setLocalizedText(uniquecheckbox, bundle.getString("AddTableColumnConstraintUniqueTitle")); //NOI18N
             uniquecheckbox.setName(ColumnItem.UNIQUE);
             uniquecheckbox.addActionListener(cbxlistener);
-            uniquecheckbox.setMnemonic(bundle.getString("AddTableColumnConstraintUniqueTitle_Mnemonic").charAt(0));
             uniquecheckbox.setToolTipText(bundle.getString("ACS_AddTableColumnConstraintUniqueTitleA11yDesc"));
             subpane.add(uniquecheckbox, con);
 
@@ -296,10 +294,10 @@ public class AddTableColumnDialog {
             con.insets = new java.awt.Insets (0, 12, 0, 0);
             con.weightx = 0.0;
             con.weighty = 0.0;
-            nullcheckbox = new JCheckBox(" "+bundle.getString("AddTableColumnConstraintNullTitle")); //NOI18N
+            nullcheckbox = new JCheckBox();
+            Mnemonics.setLocalizedText(nullcheckbox, bundle.getString("AddTableColumnConstraintNullTitle")); //NOI18N
             nullcheckbox.setName(ColumnItem.NULLABLE);
             nullcheckbox.addActionListener(cbxlistener);
-            nullcheckbox.setMnemonic(bundle.getString("AddTableColumnConstraintNullTitle_Mnemonic").charAt(0));
             nullcheckbox.setToolTipText(bundle.getString("ACS_AddTableColumnConstraintNullTitleA11yDesc"));
             subpane.add(nullcheckbox, con);
 
@@ -346,10 +344,10 @@ public class AddTableColumnDialog {
             con.insets = new java.awt.Insets (12, 0, 0, 0);
             con.weightx = 0.0;
             con.weighty = 0.0;
-            ixcheckbox = new JCheckBox(" "+bundle.getString("AddTableColumnIndexName")); //NOI18N
+            ixcheckbox = new JCheckBox();
+            Mnemonics.setLocalizedText(ixcheckbox, bundle.getString("AddTableColumnIndexName")); //NOI18N
             ixcheckbox.setName(ColumnItem.INDEX);
             ixcheckbox.addActionListener(cbxlistener);
-            ixcheckbox.setMnemonic(bundle.getString("AddTableColumnIndexName_Mnemonic").charAt(0));
             ixcheckbox.setToolTipText(bundle.getString("ACS_AddTableColumnIndexNameA11yDesc"));
             pane.add(ixcheckbox, con);
 
@@ -415,10 +413,10 @@ public class AddTableColumnDialog {
             con.insets = new java.awt.Insets (12, 0, 0, 0);
             con.weightx = 0.0;
             con.weighty = 0.0;
-            checkcheckbox = new JCheckBox(" "+bundle.getString("AddTableColumnConstraintCheckTitle")); //NOI18N
+            checkcheckbox = new JCheckBox();
+            Mnemonics.setLocalizedText(checkcheckbox, bundle.getString("AddTableColumnConstraintCheckTitle")); //NOI18N
             checkcheckbox.setName(ColumnItem.CHECK);
             checkcheckbox.addActionListener(cbxlistener);
-            checkcheckbox.setMnemonic(bundle.getString("AddTableColumnCheckTitle_Mnemonic").charAt(0));
             checkcheckbox.setToolTipText(bundle.getString("ACS_AddTableColumnCheckTitleA11yDesc"));
             pane.add(checkcheckbox, con);
 

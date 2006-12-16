@@ -101,12 +101,14 @@ public class SchemaPanel extends javax.swing.JPanel {
         progressMessageLabel = new javax.swing.JLabel();
         progressContainerPanel = new javax.swing.JPanel();
 
+        FormListener formListener = new FormListener();
+
         setLayout(new java.awt.GridBagLayout());
 
         commentTextArea.setEditable(false);
         commentTextArea.setFont(javax.swing.UIManager.getFont("Label.font"));
         commentTextArea.setLineWrap(true);
-        commentTextArea.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("MSG_SchemaPanelComment"));
+        commentTextArea.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("MSG_SchemaPanelComment")); // NOI18N
         commentTextArea.setWrapStyleWord(true);
         commentTextArea.setDisabledTextColor(javax.swing.UIManager.getColor("Label.foreground"));
         commentTextArea.setEnabled(false);
@@ -117,9 +119,8 @@ public class SchemaPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(commentTextArea, gridBagConstraints);
 
-        schemaLabel.setDisplayedMnemonic(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("SchemaDialogText_Mnemonic").charAt(0));
         schemaLabel.setLabelFor(schemaComboBox);
-        schemaLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("SchemaDialogText"));
+        org.openide.awt.Mnemonics.setLocalizedText(schemaLabel, NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("SchemaDialogText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -128,7 +129,7 @@ public class SchemaPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(schemaLabel, gridBagConstraints);
 
-        schemaComboBox.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_SchemaDialogTextComboBoxA11yDesc"));
+        schemaComboBox.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_SchemaDialogTextComboBoxA11yDesc")); // NOI18N
         schemaComboBox.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -139,15 +140,9 @@ public class SchemaPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         add(schemaComboBox, gridBagConstraints);
 
-        schemaButton.setMnemonic(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("SchemaDialogGetButton_Mnemonic").charAt(0));
-        schemaButton.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("SchemaDialogGetButton"));
-        schemaButton.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_GetSchemasButtonA11yDesc"));
-        schemaButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                schemaButtonActionPerformed(evt);
-            }
-        });
-
+        org.openide.awt.Mnemonics.setLocalizedText(schemaButton, NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("SchemaDialogGetButton")); // NOI18N
+        schemaButton.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_GetSchemasButtonA11yDesc")); // NOI18N
+        schemaButton.addActionListener(formListener);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -156,16 +151,15 @@ public class SchemaPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         add(schemaButton, gridBagConstraints);
 
+        connectProgressPanel.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yDesc")); // NOI18N
         connectProgressPanel.setLayout(new java.awt.BorderLayout(0, 5));
 
-        connectProgressPanel.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yDesc"));
-        progressMessageLabel.setText(" ");
+        org.openide.awt.Mnemonics.setLocalizedText(progressMessageLabel, " ");
         connectProgressPanel.add(progressMessageLabel, java.awt.BorderLayout.NORTH);
-
-        progressContainerPanel.setLayout(new java.awt.BorderLayout());
 
         progressContainerPanel.setMinimumSize(new java.awt.Dimension(20, 20));
         progressContainerPanel.setPreferredSize(new java.awt.Dimension(20, 20));
+        progressContainerPanel.setLayout(new java.awt.BorderLayout());
         connectProgressPanel.add(progressContainerPanel, java.awt.BorderLayout.CENTER);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -177,9 +171,18 @@ public class SchemaPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
         add(connectProgressPanel, gridBagConstraints);
-
     }
-    // </editor-fold>//GEN-END:initComponents
+
+    // Code for dispatching events from components to event handlers.
+
+    private class FormListener implements java.awt.event.ActionListener {
+        FormListener() {}
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            if (evt.getSource() == schemaButton) {
+                SchemaPanel.this.schemaButtonActionPerformed(evt);
+            }
+        }
+    }// </editor-fold>//GEN-END:initComponents
 
     private void schemaButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_schemaButtonActionPerformed
         schemaComboBox.setEnabled(false);

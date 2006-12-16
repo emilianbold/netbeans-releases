@@ -144,11 +144,12 @@ public class AddDriverDialog extends javax.swing.JPanel {
         progressMessageLabel = new javax.swing.JLabel();
         progressContainerPanel = new javax.swing.JPanel();
 
+        FormListener formListener = new FormListener();
+
         setLayout(new java.awt.GridBagLayout());
 
-        drvListLabel.setDisplayedMnemonic(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverFile_Mnemonic").charAt(0));
         drvListLabel.setLabelFor(drvList);
-        drvListLabel.setText(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverFile"));
+        org.openide.awt.Mnemonics.setLocalizedText(drvListLabel, NbBundle.getBundle(BUNDLE).getString("AddDriverDriverFile")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -170,14 +171,8 @@ public class AddDriverDialog extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 11);
         add(drvListScrollPane, gridBagConstraints);
 
-        browseButton.setMnemonic(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverAdd_Mnemonic").charAt(0));
-        browseButton.setText(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverAdd"));
-        browseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseButtonActionPerformed(evt);
-            }
-        });
-
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, NbBundle.getBundle(BUNDLE).getString("AddDriverDriverAdd")); // NOI18N
+        browseButton.addActionListener(formListener);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
@@ -186,14 +181,8 @@ public class AddDriverDialog extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 11);
         add(browseButton, gridBagConstraints);
 
-        removeButton.setMnemonic(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverRemove_Mnemonic").charAt(0));
-        removeButton.setText(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverRemove"));
-        removeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeButtonActionPerformed(evt);
-            }
-        });
-
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, NbBundle.getBundle(BUNDLE).getString("AddDriverDriverRemove")); // NOI18N
+        removeButton.addActionListener(formListener);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -202,9 +191,8 @@ public class AddDriverDialog extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 11);
         add(removeButton, gridBagConstraints);
 
-        drvClassLabel.setDisplayedMnemonic(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverClass_Mnemonic").charAt(0));
         drvClassLabel.setLabelFor(drvClassComboBox);
-        drvClassLabel.setText(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverClass"));
+        org.openide.awt.Mnemonics.setLocalizedText(drvClassLabel, NbBundle.getBundle(BUNDLE).getString("AddDriverDriverClass")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -213,12 +201,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
         add(drvClassLabel, gridBagConstraints);
 
         drvClassComboBox.setEditable(true);
-        drvClassComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                drvClassComboBoxActionPerformed(evt);
-            }
-        });
-
+        drvClassComboBox.addActionListener(formListener);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -226,14 +209,8 @@ public class AddDriverDialog extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 12);
         add(drvClassComboBox, gridBagConstraints);
 
-        findButton.setMnemonic(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverFind_Mnemonic").charAt(0));
-        findButton.setText(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverFind"));
-        findButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                findButtonActionPerformed(evt);
-            }
-        });
-
+        org.openide.awt.Mnemonics.setLocalizedText(findButton, NbBundle.getBundle(BUNDLE).getString("AddDriverDriverFind")); // NOI18N
+        findButton.addActionListener(formListener);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
@@ -241,16 +218,14 @@ public class AddDriverDialog extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 11);
         add(findButton, gridBagConstraints);
 
-        nameLabel.setDisplayedMnemonic(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverName_Mnemonic").charAt(0));
         nameLabel.setLabelFor(nameTextField);
-        nameLabel.setText(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverName"));
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, NbBundle.getBundle(BUNDLE).getString("AddDriverDriverName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 12);
         add(nameLabel, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -259,7 +234,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 12);
         add(nameTextField, gridBagConstraints);
 
-        progressMessageLabel.setText(" ");
+        org.openide.awt.Mnemonics.setLocalizedText(progressMessageLabel, " ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -269,10 +244,9 @@ public class AddDriverDialog extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 12);
         add(progressMessageLabel, gridBagConstraints);
 
-        progressContainerPanel.setLayout(new java.awt.BorderLayout());
-
         progressContainerPanel.setMinimumSize(new java.awt.Dimension(20, 20));
         progressContainerPanel.setPreferredSize(new java.awt.Dimension(20, 20));
+        progressContainerPanel.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -281,9 +255,27 @@ public class AddDriverDialog extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(progressContainerPanel, gridBagConstraints);
-
     }
-    // </editor-fold>//GEN-END:initComponents
+
+    // Code for dispatching events from components to event handlers.
+
+    private class FormListener implements java.awt.event.ActionListener {
+        FormListener() {}
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            if (evt.getSource() == browseButton) {
+                AddDriverDialog.this.browseButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == removeButton) {
+                AddDriverDialog.this.removeButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == drvClassComboBox) {
+                AddDriverDialog.this.drvClassComboBoxActionPerformed(evt);
+            }
+            else if (evt.getSource() == findButton) {
+                AddDriverDialog.this.findButtonActionPerformed(evt);
+            }
+        }
+    }// </editor-fold>//GEN-END:initComponents
 
     private void drvClassComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_drvClassComboBoxActionPerformed
         if (!customizer)

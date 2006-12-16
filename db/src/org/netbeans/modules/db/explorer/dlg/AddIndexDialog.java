@@ -28,14 +28,13 @@ import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
-
 import org.netbeans.lib.ddl.impl.CreateIndex;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.lib.ddl.*;
-
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.*;
+import org.openide.awt.Mnemonics;
 
 public class AddIndexDialog {
     boolean result = false;
@@ -55,8 +54,8 @@ public class AddIndexDialog {
 
             // Index name
 
-            JLabel label = new JLabel(bundle.getString("AddIndexName")); //NOI18N
-            label.setDisplayedMnemonic(bundle.getString("AddIndexName_Mnemonic").charAt(0));
+            JLabel label = new JLabel();
+            Mnemonics.setLocalizedText(label, bundle.getString("AddIndexName")); //NOI18N
             label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddIndexNameA11yDesc"));
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
@@ -96,8 +95,8 @@ public class AddIndexDialog {
             con.gridx = 1;
             con.gridy = 1;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
-            cbx_uq = new JCheckBox(bundle.getString("Unique"));
-            cbx_uq.setMnemonic(bundle.getString("Unique_Mnemonic").charAt(0));
+            cbx_uq = new JCheckBox();
+            Mnemonics.setLocalizedText(cbx_uq, bundle.getString("Unique"));
             cbx_uq.setToolTipText(bundle.getString("ACS_UniqueA11yDesc"));
             label_uq.setLabelFor(cbx_uq);
             layout.setConstraints(cbx_uq, con);

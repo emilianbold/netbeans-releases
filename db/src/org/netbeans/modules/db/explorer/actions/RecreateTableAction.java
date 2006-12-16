@@ -96,7 +96,7 @@ public class RecreateTableAction extends DatabaseAction {
                     cmd.setObjectOwner((String) info.get(DatabaseNodeInfo.SCHEMA));
                     String newtab = cmd.getObjectName();
                     String msg = cmd.getCommand();
-                    LabeledTextFieldDialog dlg = new LabeledTextFieldDialog(bundle().getString("RecreateTableRenameTable"), bundle().getString("RecreateTableNewName"), msg); //NOI18N
+                    LabeledTextFieldDialog dlg = new LabeledTextFieldDialog(msg); //NOI18N
                     dlg.setStringValue(newtab);
                     boolean noResult = true;
                     while(noResult) {
