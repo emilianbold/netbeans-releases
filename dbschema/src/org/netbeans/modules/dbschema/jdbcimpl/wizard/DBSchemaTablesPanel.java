@@ -79,12 +79,6 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
 
         initComponents();
         initAccessibility();
-        jLabelAvailableTables.setDisplayedMnemonic(bundle.getString("AvailableTables_Mnemonic").charAt(0)); //NOI18N
-        jLabelSelectedTables.setDisplayedMnemonic(bundle.getString("SelectedTables_Mnemonic").charAt(0)); //NOI18N
-        jButtonAdd.setMnemonic(bundle.getString("AddButton_Mnemonic").charAt(0)); //NOI18N
-        jButtonRemove.setMnemonic(bundle.getString("RemoveButton_Mnemonic").charAt(0)); //NOI18N
-        jButtonAddAll.setMnemonic(bundle.getString("AddAllButton_Mnemonic").charAt(0)); //NOI18N
-        jButtonRemoveAll.setMnemonic(bundle.getString("RemoveAllButton_Mnemonic").charAt(0)); //NOI18N
 
         jListAvailableTables.registerKeyboardAction(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -394,17 +388,19 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
         jListSelectedTables = new javax.swing.JList();
         jLabelNote = new javax.swing.JLabel();
 
-        setLayout(new java.awt.GridBagLayout());
+        FormListener formListener = new FormListener();
 
         setPreferredSize(new java.awt.Dimension(400, 199));
+        setLayout(new java.awt.GridBagLayout());
+
         jLabelAvailableTables.setLabelFor(jListAvailableTables);
-        jLabelAvailableTables.setText(bundle.getString("AvailableTables"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelAvailableTables, bundle.getString("AvailableTables")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabelAvailableTables, gridBagConstraints);
 
-        jListAvailableTables.setToolTipText(bundle.getString("ACS_AvailableTablesListA11yDesc"));
+        jListAvailableTables.setToolTipText(bundle.getString("ACS_AvailableTablesListA11yDesc")); // NOI18N
         jListAvailableTables.setModel(new SortedListModel());
         jScrollPaneAvailableTables.setViewportView(jListAvailableTables);
 
@@ -419,26 +415,16 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
 
         jPanelButtons.setLayout(new java.awt.GridBagLayout());
 
-        jButtonAdd.setToolTipText(bundle.getString("ACS_AddButtonA11yDesc"));
-        jButtonAdd.setText(bundle.getString("AddButton"));
-        jButtonAdd.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtonAddActionPerformed(evt);
-            }
-        });
-
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonAdd, bundle.getString("AddButton")); // NOI18N
+        jButtonAdd.setToolTipText(bundle.getString("ACS_AddButtonA11yDesc")); // NOI18N
+        jButtonAdd.addActionListener(formListener);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanelButtons.add(jButtonAdd, gridBagConstraints);
 
-        jButtonRemove.setToolTipText(bundle.getString("ACS_RemoveButtonA11yDesc"));
-        jButtonRemove.setText(bundle.getString("RemoveButton"));
-        jButtonRemove.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtonRemoveActionPerformed(evt);
-            }
-        });
-
+        jButtonRemove.setToolTipText(bundle.getString("ACS_RemoveButtonA11yDesc")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonRemove, bundle.getString("RemoveButton")); // NOI18N
+        jButtonRemove.addActionListener(formListener);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -446,14 +432,9 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         jPanelButtons.add(jButtonRemove, gridBagConstraints);
 
-        jButtonAddAll.setToolTipText(bundle.getString("ACS_AddAllButtonA11yDesc"));
-        jButtonAddAll.setText(bundle.getString("AddAllButton"));
-        jButtonAddAll.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtonAddAllActionPerformed(evt);
-            }
-        });
-
+        jButtonAddAll.setToolTipText(bundle.getString("ACS_AddAllButtonA11yDesc")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddAll, bundle.getString("AddAllButton")); // NOI18N
+        jButtonAddAll.addActionListener(formListener);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -461,14 +442,9 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
         gridBagConstraints.insets = new java.awt.Insets(17, 0, 0, 0);
         jPanelButtons.add(jButtonAddAll, gridBagConstraints);
 
-        jButtonRemoveAll.setToolTipText(bundle.getString("ACS_RemoveAllButtonA11yDesc"));
-        jButtonRemoveAll.setText(bundle.getString("RemoveAllButton"));
-        jButtonRemoveAll.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtonRemoveAllActionPerformed(evt);
-            }
-        });
-
+        jButtonRemoveAll.setToolTipText(bundle.getString("ACS_RemoveAllButtonA11yDesc")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonRemoveAll, bundle.getString("RemoveAllButton")); // NOI18N
+        jButtonRemoveAll.addActionListener(formListener);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -484,7 +460,7 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
         add(jPanelButtons, gridBagConstraints);
 
         jLabelSelectedTables.setLabelFor(jListSelectedTables);
-        jLabelSelectedTables.setText(bundle.getString("SelectedTables"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelSelectedTables, bundle.getString("SelectedTables")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
@@ -493,7 +469,7 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
         add(jLabelSelectedTables, gridBagConstraints);
 
         jListSelectedTables.setModel(new SortedListModel());
-        jListSelectedTables.setToolTipText(bundle.getString("ACS_SelectedTablesListA11yDesc"));
+        jListSelectedTables.setToolTipText(bundle.getString("ACS_SelectedTablesListA11yDesc")); // NOI18N
         jScrollPaneSelectedTables.setViewportView(jListSelectedTables);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -505,7 +481,7 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 11);
         add(jScrollPaneSelectedTables, gridBagConstraints);
 
-        jLabelNote.setText(bundle.getString("FKReferenceNote"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelNote, bundle.getString("FKReferenceNote")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -513,7 +489,26 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         add(jLabelNote, gridBagConstraints);
+    }
 
+    // Code for dispatching events from components to event handlers.
+
+    private class FormListener implements java.awt.event.ActionListener {
+        FormListener() {}
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            if (evt.getSource() == jButtonAdd) {
+                DBSchemaTablesPanel.this.jButtonAddActionPerformed(evt);
+            }
+            else if (evt.getSource() == jButtonRemove) {
+                DBSchemaTablesPanel.this.jButtonRemoveActionPerformed(evt);
+            }
+            else if (evt.getSource() == jButtonAddAll) {
+                DBSchemaTablesPanel.this.jButtonAddAllActionPerformed(evt);
+            }
+            else if (evt.getSource() == jButtonRemoveAll) {
+                DBSchemaTablesPanel.this.jButtonRemoveAllActionPerformed(evt);
+            }
+        }
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonRemoveAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRemoveAllActionPerformed

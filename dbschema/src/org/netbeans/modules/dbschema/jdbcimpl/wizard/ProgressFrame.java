@@ -44,7 +44,6 @@ public class ProgressFrame extends javax.swing.JFrame {
         propertySupport = new PropertyChangeSupport(this);
         
         initComponents ();
-//        okButton.setMnemonic(bundle.getString("Close_Mnemonic").charAt(0)); //NOI18N
         this.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_ProgressFrameTabA11yDesc"));  // NOI18N
         okButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CancelButtonA11yDesc"));  // NOI18N
         
