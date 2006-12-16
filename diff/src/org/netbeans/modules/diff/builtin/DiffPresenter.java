@@ -108,8 +108,6 @@ public class DiffPresenter extends javax.swing.JPanel {
         }
         initComponents();
         initMyComponents();
-        providerLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "LBL_Provider_Mnemonic").charAt(0));  // NOI18N
-        visualizerLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "LBL_Visualizer_Mnemonic").charAt(0));  // NOI18N
         providerLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "ACS_ProviderA11yDesc"));  // NOI18N
         visualizerLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "ACS_VisualizerA11yDesc"));  // NOI18N
     }
