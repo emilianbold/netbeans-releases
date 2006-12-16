@@ -95,7 +95,7 @@ public class AddDriverAction extends DatabaseAction {
             Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
             descriptor.setClosingOptions(closingOptions);
             dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-            dialog.show();
+            dialog.setVisible(true);
         }
     }
 }
