@@ -561,7 +561,7 @@ public class HttpServerSettings {
     static synchronized BeanNode createViewNode() {
         if (view == null) {
             try {
-                view = new BeanNode(HttpServerSettings.getDefault());
+                view = new BeanNode<HttpServerSettings>(HttpServerSettings.getDefault());
             }
             catch (IntrospectionException ex) {
                 Logger.getLogger(HttpServerSettings.class.getName()).log(Level.INFO, null, ex);
