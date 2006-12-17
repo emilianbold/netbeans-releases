@@ -48,9 +48,9 @@ public final class ClassDataObject extends MultiDataObject {
         return new JavaNode (this, false);
     }
 
-    public @Override Cookie getCookie(Class type) {
+    public @Override <T extends Cookie> T getCookie(Class<T> type) {
         if (type.isAssignableFrom(OpenSourceCookie.class)) {
-            return new OpenSourceCookie();
+            return type.cast(new OpenSourceCookie());
         } else {
             return super.getCookie (type);
         }
@@ -84,7 +84,7 @@ public final class ClassDataObject extends MultiDataObject {
                 }
                 if (resource !=null ) {
                     DataObject sourceFile = DataObject.find(resource);
-                    OpenCookie oc = (OpenCookie) sourceFile.getCookie(OpenCookie.class);
+                    OpenCookie oc = sourceFile.getCookie(OpenCookie.class);
                     if (oc != null) {
                         oc.open();
                     } else {

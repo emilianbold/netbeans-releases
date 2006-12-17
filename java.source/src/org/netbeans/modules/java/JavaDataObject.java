@@ -58,10 +58,9 @@ public final class JavaDataObject extends MultiDataObject {
         return JavaDataSupport.createJavaNode(getPrimaryFile());
     }
 
-    public @Override Cookie getCookie(Class type) {
-        
+    public @Override <T extends Cookie> T getCookie(Class<T> type) {
         if (type.isAssignableFrom(JavaEditorSupport.class)) {
-            return createJavaEditorSupport ();
+            return type.cast(createJavaEditorSupport ());
         }
         return super.getCookie(type);
     }
@@ -177,7 +176,7 @@ public final class JavaDataObject extends MultiDataObject {
     {
         JavaSource javaSource = JavaSource.forFileObject (fileToUpdate);
 
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
