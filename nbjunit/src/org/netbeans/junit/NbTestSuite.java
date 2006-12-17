@@ -110,7 +110,7 @@ public class NbTestSuite extends TestSuite implements NbTest {
         
     /** Factory method to create a special execution suite that not only
      * executes the tests but also measures the times each execution took.
-     * It then compares the times and files if the difference is too big.
+     * It then compares the times and fails if the difference is too big.
      * Test tests can be executed more times to eliminate the effect
      * of GC and hotspot compiler.
      *
@@ -125,7 +125,7 @@ public class NbTestSuite extends TestSuite implements NbTest {
     /** Factory method to create a special execution suite that not only
      * executes the tests but also measures the times each execution took.
      * It then compares the times devided by the size of query 
-     * and files if the difference is too big.
+     * and fails if the difference is too big.
      * Test tests can be executed more times to eliminate the effect
      * of GC and hotspot compiler.
      *
