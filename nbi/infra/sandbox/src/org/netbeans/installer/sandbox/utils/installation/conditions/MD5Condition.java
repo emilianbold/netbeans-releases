@@ -36,7 +36,7 @@ public class MD5Condition implements FileCondition {
     public boolean accept(InstallationFileObject fo) {
         boolean result = false;
         try {            
-            result =  (fo.getMD5() == FileUtils.getFileMD5String(fo.getFile()));
+            result =  (fo.getMD5() == FileUtils.getMd5String(fo.getFile()));
         } catch (IOException ex) {
             LogManager.log(ErrorLevel.WARNING,ex);
         } catch (NoSuchAlgorithmException ex) {

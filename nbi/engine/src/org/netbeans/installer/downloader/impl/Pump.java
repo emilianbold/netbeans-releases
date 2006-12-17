@@ -173,7 +173,7 @@ public class Pump implements Process {
         in = connection.getInputStream();
         final String md5 = StreamUtils.readStream(in).toString();
         try {
-          return md5.equals(FileUtils.getFileMD5String(pumping().outputFile()));
+          return md5.equals(FileUtils.getMd5String(pumping().outputFile()));
         } catch (NoSuchAlgorithmException ex) {
           LogManager.log("checksum algorithm not supported", ex);
         }

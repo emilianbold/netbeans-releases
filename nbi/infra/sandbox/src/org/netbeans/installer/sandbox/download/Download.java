@@ -292,7 +292,7 @@ public class Download {
             
             try {
                 String crc32 = FileUtils.readFile(DownloadManager.getInstance().download(uri.toString() + ".crc32", verificationOptions)).trim();
-                if (!crc32.equals(FileUtils.getFileCRC32String(tempFile))) {
+                if (!crc32.equals(FileUtils.getCrc32String(tempFile))) {
                     LogManager.log(ErrorLevel.ERROR, "... download failed -- crc32 verification failed");
                     notifyDownloadListeners(DownloadState.FAILED, "CRC32 Checksum verification failed for the downloaded file", null);
                     return;
@@ -309,7 +309,7 @@ public class Download {
             
             try {
                 String md5 = FileUtils.readFile(DownloadManager.getInstance().download(uri.toString() + ".md5", verificationOptions)).trim();
-                if (!md5.equals(FileUtils.getFileMD5String(tempFile))) {
+                if (!md5.equals(FileUtils.getMd5String(tempFile))) {
                     LogManager.log(ErrorLevel.ERROR, "... download failed -- md5 verification failed");
                     notifyDownloadListeners(DownloadState.FAILED, "MD5 Checksum verification failed for the downloaded file", null);
                     return;

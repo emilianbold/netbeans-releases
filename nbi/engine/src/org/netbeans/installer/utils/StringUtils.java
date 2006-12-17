@@ -352,7 +352,7 @@ public abstract class StringUtils {
         return builder.toString();
     }
     
-    public static String escapeForRE(String string) {
+    public static String escapeRegExp(String string) {
         return string.replace(BACK_SLASH, BACK_SLASH + BACK_SLASH);
     }
     

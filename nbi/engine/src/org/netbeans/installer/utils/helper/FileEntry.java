@@ -77,9 +77,9 @@ public class FileEntry {
         if (!directory) {
             this.size  = file.length();
             
-            this.md5   = FileUtils.getFileMD5String(file);
-            this.sha1  = FileUtils.getFileSHA1String(file);
-            this.crc32 = FileUtils.getFileCRC32String(file);
+            this.md5   = FileUtils.getMd5String(file);
+            this.sha1  = FileUtils.getSha1String(file);
+            this.crc32 = FileUtils.getCrc32String(file);
             
             this.jarFile = FileUtils.isJarFile(file);
             if (jarFile) {

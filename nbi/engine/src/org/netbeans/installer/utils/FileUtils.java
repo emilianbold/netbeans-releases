@@ -21,6 +21,7 @@
 package org.netbeans.installer.utils;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileFilter;
@@ -32,6 +33,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
@@ -65,10 +67,10 @@ public final class FileUtils {
     public static final String SLASH          = "/";
     public static final String METAINF_MASK   = "META-INF.*";
     
-    private static final String JAR_EXTENSION = ".jar";
+    public static final String JAR_EXTENSION = ".jar";
     
-    private static final String SUN_MICR_RSA  = "META-INF/SUN_MICR.RSA";
-    private static final String SUN_MICR_SF   = "META-INF/SUN_MICR.SF";
+    public static final String SUN_MICR_RSA  = "META-INF/SUN_MICR.RSA";
+    public static final String SUN_MICR_SF   = "META-INF/SUN_MICR.SF";
     
     /////////////////////////////////////////////////////////////////////////////////
     // Static
@@ -89,51 +91,55 @@ public final class FileUtils {
         }
     }
     
-    public static void writeFile(File file, CharSequence string) throws IOException {
-        writeFile(file, string, false);
+    public static List<File> writeFile(File file, CharSequence string) throws IOException {
+        return writeFile(file, string, Charset.defaultCharset().name(), false);
     }
     
-    public static void appendFile(File file, CharSequence string) throws IOException {
-        writeFile(file, string, true);
+    public static List<File> writeFile(File file, CharSequence string, String charset) throws IOException {
+        return writeFile(file, string, charset, false);
     }
     
-    public static void writeFile(File file, CharSequence string, boolean append) throws IOException {
-        if (!file.exists()) {
-            if (!file.getParentFile().exists()) {
-                file.getParentFile().mkdirs();
-            }
-            file.createNewFile();
-        }
+    public static List<File> appendFile(File file, CharSequence string) throws IOException {
+        return writeFile(file, string, Charset.defaultCharset().name(), true);
+    }
+    
+    public static List<File> appendFile(File file, CharSequence string, String charset) throws IOException {
+        return writeFile(file, string, charset, true);
+    }
+    
+    public static List<File> writeFile(File file, CharSequence string, boolean append) throws IOException {
+        return writeFile(
+                file,
+                string,
+                Charset.defaultCharset().name(),
+                append);
+    }
+    
+    public static List<File> writeFile(File file, CharSequence string, String charset, boolean append) throws IOException {
+        return writeFile(
+                file,
+                new ByteArrayInputStream(string.toString().getBytes(charset)),
+                append);
+    }
+    
+    public static List<File> writeFile(File file, InputStream input) throws IOException {
+        return writeFile(file, input, false);
+    }
+    
+    public static List<File> appendFile(File file, InputStream input) throws IOException {
+        return writeFile(file, input, true);
+    }
+    
+    public static List<File> writeFile(File file, InputStream input, boolean append) throws IOException {
+        List<File> list = new LinkedList<File>();
         
-        FileOutputStream output = null;
-        try {
-            output = new FileOutputStream(file, append);
-            output.write(string.toString().getBytes());
-        } finally {
-            if (output != null) {
-                try {
-                    output.close();
-                } catch (IOException e) {
-                    ErrorManager.notify(ErrorLevel.DEBUG, e);
-                }
-            }
-        }
-    }
-    
-    public static void writeFile(File file, InputStream input) throws IOException {
-        writeFile(file, input, false);
-    }
-    
-    public static void appendFile(File file, InputStream input) throws IOException {
-        writeFile(file, input, true);
-    }
-    
-    public static void writeFile(File file, InputStream input, boolean append) throws IOException {
         if (!file.exists()) {
             if (!file.getParentFile().exists()) {
-                file.getParentFile().mkdirs();
+                list.addAll(mkdirs(file.getParentFile()));
             }
+            
             file.createNewFile();
+            list.add(file);
         }
         
         FileOutputStream output = null;
@@ -149,6 +155,8 @@ public final class FileUtils {
                 }
             }
         }
+        
+        return list;
     }
     
     public static Date getLastModified(File f) {
@@ -180,7 +188,7 @@ public final class FileUtils {
         return -1;
     }
     
-    public static long getFileCRC32(File file) throws IOException {
+    public static long getCrc32(File file) throws IOException {
         CRC32 crc = new CRC32();
         
         InputStream input = null;
@@ -202,11 +210,27 @@ public final class FileUtils {
         return crc.getValue();
     }
     
-    public static String getFileCRC32String(File file) throws IOException {
-        return Long.toString(getFileCRC32(file));
+    public static String getCrc32String(File file) throws IOException {
+        return Long.toString(getCrc32(file));
     }
     
-    public static byte[] getFileDigest(File file, String algorithm) throws IOException, NoSuchAlgorithmException {
+    public static byte[] getMd5(File file) throws IOException, NoSuchAlgorithmException {
+        return getDigest(file, "MD5");
+    }
+    
+    public static String getMd5String(File file) throws IOException, NoSuchAlgorithmException {
+        return StringUtils.asHexString(getMd5(file));
+    }
+    
+    public static byte[] getSha1(File file) throws IOException, NoSuchAlgorithmException {
+        return getDigest(file, "SHA1");
+    }
+    
+    public static String getSha1String(File file) throws IOException, NoSuchAlgorithmException {
+        return StringUtils.asHexString(getSha1(file));
+    }
+    
+    public static byte[] getDigest(File file, String algorithm) throws IOException, NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance(algorithm);
         md.reset();
         
@@ -229,22 +253,6 @@ public final class FileUtils {
         return md.digest();
     }
     
-    public static byte[] getFileMD5(File file) throws IOException, NoSuchAlgorithmException {
-        return getFileDigest(file, "MD5");
-    }
-    
-    public static String getFileMD5String(File file) throws IOException, NoSuchAlgorithmException {
-        return StringUtils.asHexString(getFileMD5(file));
-    }
-    
-    public static byte[] getFileSHA1(File file) throws IOException, NoSuchAlgorithmException {
-        return getFileDigest(file, "SHA1");
-    }
-    
-    public static String getFileSHA1String(File file) throws IOException, NoSuchAlgorithmException {
-        return StringUtils.asHexString(getFileSHA1(file));
-    }
-    
     public static String readFirstLine(File file) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
         try {
@@ -264,18 +272,26 @@ public final class FileUtils {
         return list;
     }
     
-    public static void writeStringList(File file, List<String> list) throws IOException {
-        writeStringList(file, list, false);
+    public static List<File> writeStringList(File file, List<String> list) throws IOException {
+        return writeStringList(file, list, Charset.defaultCharset().name(), false);
     }
     
-    public static void writeStringList(File file, List<String> list, boolean append) throws IOException {
+    public static List<File> writeStringList(File file, List<String> list, String charset) throws IOException {
+        return writeStringList(file, list, charset, false);
+    }
+    
+    public static List<File> writeStringList(File file, List<String> list, boolean append) throws IOException {
+        return writeStringList(file, list, Charset.defaultCharset().name(), append);
+    }
+    
+    public static List<File> writeStringList(File file, List<String> list, String charset, boolean append) throws IOException {
         StringBuilder builder = new StringBuilder();
         
         for(String string : list) {
-            builder.append(string).append(System.getProperty("line.separator"));
+            builder.append(string).append(SystemUtils.getLineSeparator());
         }
         
-        writeFile(file, builder, append);
+        return writeFile(file, builder, charset, append);
     }
     
     public static void deleteFile(File file) throws IOException {
@@ -283,7 +299,7 @@ public final class FileUtils {
     }
     
     public static void deleteFile(File file, boolean recurse) throws IOException {
-        if(SystemUtils.isDeletingAllowed(file)) {
+        if (SystemUtils.isDeletingAllowed(file)) {
             String type = "";
             if (file.isDirectory()) {
                 if (recurse) {
@@ -292,29 +308,29 @@ public final class FileUtils {
                     }
                 }
                 
-                type = "directory"; //NOI18N
-            }  else {
-                type = "file"; //NOI18N
+                type = "directory";
+            } else {
+                type = "file";
             }
             
-            LogManager.log(ErrorLevel.MESSAGE, "    deleting " + type + ": " + file); //NOI18N
+            LogManager.log("    deleting " + type + ": " + file);
             
             if (!file.exists()) {
-                LogManager.log(ErrorLevel.MESSAGE, "    ... " + type + " does not exist"); //NOI18N
-            }
-            if (!file.delete()) {
-                file.deleteOnExit();
+                LogManager.log("    ... " + type + " does not exist");
+            } else {
+                if (!file.delete()) {
+                    file.deleteOnExit();
+                }
             }
         }
     }
     
     public static void deleteFile(File file, String mask) throws IOException {
         if (file.isDirectory()) {
-            
             for(File child: file.listFiles(new MaskFileFilter(mask))) {
                 deleteFile(child, mask);
             }
-        }  else {
+        } else {
             if (file.getName().matches(mask)) {
                 deleteFile(file);
             }
@@ -327,28 +343,21 @@ public final class FileUtils {
         }
     }
     
-    public static void deleteEmptyParents(File directory) {
-        if (directory == null) {
-            return;
-        }
-        if(!directory.exists() || directory.isFile()) {
-            deleteEmptyParents(directory.getParentFile());
-        } else if(directory.isDirectory()) {
-            File parent = directory;
+    public static void deleteEmptyParents(File file) throws IOException {
+        if (!file.exists() || file.isFile()) {
+            deleteEmptyParents(file.getParentFile());
+        } else if (file.isDirectory()) {
+            File parent = file;
             while (parent != null && isEmpty(parent) && parent.exists()) {
-                directory = parent;
+                file = parent;
                 parent = parent.getParentFile();
-                directory.delete();
+                deleteFile(parent);
             }
         }
     }
     
     public static File createTempFile() throws IOException {
-        File file = File.createTempFile("nbi-", ".tmp");
-        
-        file.deleteOnExit();
-        
-        return file;
+        return createTempFile(SystemUtils.getTempDirectory());
     }
     
     public static File createTempFile(File parent) throws IOException {
@@ -371,26 +380,26 @@ public final class FileUtils {
         modifyFile(file, token, replacement, false);
     }
     
-    public static void modifyFile(File file, String token, Object replacement, boolean useRE) throws IOException {
+    public static void modifyFile(File file, String token, Object replacement, boolean regexp) throws IOException {
         Map<String, Object> replacementMap = new HashMap<String, Object>();
         
         replacementMap.put(token, replacement);
         
-        modifyFile(file, replacementMap, useRE);
+        modifyFile(file, replacementMap, regexp);
     }
     
-    public static void modifyFile(File file, Map<String, Object> replacementMap) throws IOException {
-        modifyFile(file, replacementMap, false);
+    public static void modifyFile(File file, Map<String, Object> map) throws IOException {
+        modifyFile(file, map, false);
     }
     
-    public static void modifyFile(File file, Map<String, Object> replacementMap, boolean useRE) throws IOException {
+    public static void modifyFile(File file, Map<String, Object> map, boolean regexp) throws IOException {
         if (!file.exists()) {
             return;
         }
         
         if (file.isDirectory()) {
             for(File child: file.listFiles()) {
-                modifyFile(child, replacementMap, useRE);
+                modifyFile(child, map, regexp);
             }
         }  else {
             // if the file is larger than 100 Kb - skip it
@@ -401,17 +410,17 @@ public final class FileUtils {
             String originalContents = readFile(file);
             
             String modifiedContents = new String(originalContents);
-            for(String token : replacementMap.keySet()) {
+            for(String token : map.keySet()) {
                 String replacement;
                 
-                Object object = replacementMap.get(token);
+                Object object = map.get(token);
                 if (object instanceof File) {
                     replacement = ((File) object).getAbsolutePath();
                 }  else {
                     replacement = object.toString();
                 }
                 
-                if (useRE) {
+                if (regexp) {
                     modifiedContents = Pattern.compile(token, Pattern.MULTILINE).matcher(modifiedContents).replaceAll(replacement);
                 }  else {
                     modifiedContents = modifiedContents.toString().replace(token, replacement);
@@ -419,82 +428,94 @@ public final class FileUtils {
             }
             
             if (!modifiedContents.equals(originalContents)) {
-                LogManager.log(ErrorLevel.MESSAGE, "    modifying file: " + file.getAbsolutePath());
+                LogManager.log("    modifying file: " + file.getAbsolutePath());
                 writeFile(file, modifiedContents);
             }
         }
     }
     
-    public static void modifyFiles(List<File> files, Map<String, Object> replacementMap, boolean useRE) throws IOException {
-        for(File file : files) {
-            modifyFile(file, replacementMap, useRE);
+    public static void modifyFiles(List<File> files, Map<String, Object> map, boolean regexp) throws IOException {
+        for (File file: files) {
+            modifyFile(file, map, regexp);
         }
     }
     
-    public static void moveFile(File source, File destination) throws IOException {
-        copyFile(source, destination);
-        deleteFile(source);
+    public static List<File> moveFile(File source, File target) throws IOException {
+        List<File> list = new LinkedList<File>();
+        
+        if (!source.renameTo(target)) {
+            list = copyFile(source, target);
+            deleteFile(source);
+        }
+        
+        return list;
     }
     
-    public static void copyFile(File source, File destination) throws IOException {
-        copyFile(source, destination, false);
+    public static List<File> copyFile(File source, File target) throws IOException {
+        return copyFile(source, target, false);
     }
     
-    public static void copyFile(File source, File destination, boolean recurse) throws IOException {
+    public static List<File> copyFile(File source, File target, boolean recurse) throws IOException {
+        List<File> list = new LinkedList<File>();
+        
         if (!source.exists()) {
-            LogManager.log(ErrorLevel.MESSAGE, "    ... " + source + " does not exist"); //NOI18N
-            return;
+            LogManager.log("    ... " + source + " does not exist");
+            return list;
         }
         
         if (source.isFile()) {
-            LogManager.log(ErrorLevel.MESSAGE, "    copying file: " + source + " to: " + destination);//NOI18N
+            LogManager.log("    copying file: " + source + " to: " + target);
             
             if (!source.canRead()) {
                 throw new IOException("source is not readable");
             }
             
-            if (destination.exists() && !destination.isFile()) {
+            if (target.exists() && !target.isFile()) {
                 throw new IOException("destination is not a file");
             }
             
-            File parent = destination.getParentFile();
-            if (!parent.exists() && !parent.mkdirs()) {
-                throw new IOException("destination parent cannot be created");
+            File parent = target.getParentFile();
+            if (!parent.exists()) {
+                list.addAll(mkdirs(parent));
             }
             
-            if (!destination.exists() && !destination.createNewFile()) {
+            if (!target.exists() && !target.createNewFile()) {
                 throw new IOException("destination cannot be created");
             }
             
-            if (!destination.canWrite()) {
+            if (!target.canWrite()) {
                 throw new IOException("desctination is not writable");
             }
             
-            FileInputStream inputStream = new FileInputStream(source);
-            FileOutputStream outputStream = new FileOutputStream(destination);
+            FileInputStream  in = new FileInputStream(source);
+            FileOutputStream out = new FileOutputStream(target);
             try {
-                StreamUtils.transferData(inputStream, outputStream);
+                StreamUtils.transferData(in, out);
+                list.add(target);
             } finally {
                 try {
-                    outputStream.close();
-                } catch (IOException ignored){}
+                    out.close();
+                } catch (IOException e) {
+                    LogManager.log(ErrorLevel.DEBUG, e);
+                }
                 try {
-                    inputStream.close();
-                } catch (IOException ignored){}
+                    in.close();
+                } catch (IOException e) {
+                    LogManager.log(ErrorLevel.DEBUG, e);
+                }
             }
         }  else {
-            LogManager.log(ErrorLevel.MESSAGE, "    copying directory: " + source + " to: " + destination + (recurse ? " with recursion" : ""));//NOI18N
-            if (!destination.mkdirs()) {
-                LogManager.log(ErrorLevel.MESSAGE, "    ... cannot create " + destination); //NOI18N
-                return;
-            }
+            LogManager.log("    copying directory: " + source + " to: " + target + (recurse ? " with recursion" : ""));
             
+            list.addAll(mkdirs(target));
             if (recurse) {
-                for(File file : source.listFiles()) {
-                    copyFile(file, new File(destination, file.getName()), recurse);
+                for (File file: source.listFiles()) {
+                    copyFile(file, new File(target, file.getName()), recurse);
                 }
             }
         }
+        
+        return list;
     }
     
     public static boolean isEmpty(File file) {
@@ -523,6 +544,45 @@ public final class FileUtils {
         return canAccessFile(file,false);
     }
     
+    public static boolean isJarFile(File file) {
+        if (file.getName().endsWith(JAR_EXTENSION)) {
+            JarFile jar = null;
+            try {
+                jar = new JarFile(file);
+                return true;
+            } catch (IOException e) {
+                LogManager.log(ErrorLevel.DEBUG, e);
+                return false;
+            } finally {
+                if (jar != null) {
+                    try {
+                        jar.close();
+                    } catch (IOException e) {
+                        LogManager.log(ErrorLevel.DEBUG, e);
+                    }
+                }
+            }
+        } else {
+            return false;
+        }
+    }
+    
+    public static boolean isSigned(File file) throws IOException {
+        JarFile jar = new JarFile(file);
+        
+        try {
+            if (jar.getEntry(SUN_MICR_RSA) == null) {
+                return false;
+            }
+            if (jar.getEntry(SUN_MICR_SF) == null) {
+                return false;
+            }
+            return true;
+        } finally {
+            jar.close();
+        }
+    }
+    
     public static List<File> unzip(File source, File target) throws IOException {
         final ZipFile zip = new ZipFile(source);
         
@@ -543,7 +603,7 @@ public final class FileUtils {
         }
     }
     
-    public static FilesList unjarList(File source, File target, Progress progress) throws IOException, XMLException, NoSuchAlgorithmException {
+    public static FilesList unjarWithList(File source, File target, Progress progress) throws IOException, XMLException, NoSuchAlgorithmException {
         LogManager.logIndent("unjarring file " + source.getAbsolutePath());
         
         final JarFile jar      = new JarFile(source);
@@ -616,18 +676,13 @@ public final class FileUtils {
     }
     
     public static File pack(File source) throws IOException {
-        final String name = source.getName();
         final File target = new File(source.getParentFile(),
-                name + ".pack.gz");
+                source.getName() + ".pack.gz");
         
-        return pack(source, target);
-    }
-    
-    public static File pack(File source, File target) throws IOException {
         SystemUtils.executeCommand(
                 SystemUtils.getPacker().getAbsolutePath(),
-                source.getAbsolutePath(),
-                target.getAbsolutePath());
+                target.getAbsolutePath(),
+                source.getAbsolutePath());
         
         return target;
     }
@@ -637,10 +692,6 @@ public final class FileUtils {
         final File target = new File(source.getParentFile(),
                 name.substring(0, name.length() - ".pack.gz".length()));
         
-        return unpack(source, target);
-    }
-    
-    public static File unpack(File source, File target) throws IOException {
         SystemUtils.executeCommand(
                 SystemUtils.getUnpacker().getAbsolutePath(),
                 source.getAbsolutePath(),
@@ -659,43 +710,20 @@ public final class FileUtils {
         }
     }
     
-    public static boolean isJarFile(File file) {
-        if (file.getName().endsWith(JAR_EXTENSION)) {
-            JarFile jar = null;
-            try {
-                jar = new JarFile(file);
-                return true;
-            } catch (IOException e) {
-                e.printStackTrace();
-                return false;
-            } finally {
-                if (jar != null) {
-                    try {
-                        jar.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        } else {
-            return false;
-        }
-    }
-    
-    public static boolean isSigned(File file) throws IOException {
-        JarFile jar = new JarFile(file);
+    public static List<File> mkdirs(File file) throws IOException {
+        List<File> list = new LinkedList<File>();
         
-        try {
-            if (jar.getEntry(SUN_MICR_RSA) == null) {
-                return false;
-            }
-            if (jar.getEntry(SUN_MICR_SF) == null) {
-                return false;
-            }
-            return true;
-        } finally {
-            jar.close();
+        if (!file.getParentFile().exists()) {
+            list.addAll(mkdirs(file.getParentFile()));
         }
+        
+        if (file.mkdir()) {
+            list.add(file);
+        } else {
+            throw new IOException("Cannot create directory " + file);
+        }
+        
+        return list;
     }
     
     // private //////////////////////////////////////////////////////////////////////
@@ -741,7 +769,7 @@ public final class FileUtils {
                 try {
                     stream.close();
                 } catch (IOException ex) {
-                    LogManager.log(ErrorLevel.MESSAGE, ex);
+                    LogManager.log(ex);
                 }
             }
         }
@@ -783,7 +811,7 @@ public final class FileUtils {
             } catch (NativeException ex) {
                 // most probably there is smth wrong with OS
                 //LogManager.log(ErrorLevel.DEBUG, "OS Level Access File: ERROR!!!");
-                LogManager.log(ErrorLevel.MESSAGE, ex);
+                LogManager.log(ex);
             }
             //LogManager.unindent();
             if(!result) { // some limitations by OS
@@ -810,8 +838,8 @@ public final class FileUtils {
         if (target.exists() && target.isFile()) {
             throw new IOException("Directory is an existing file, cannot unjar.");
         }
-        if (!target.exists() && !mkdirs(target, list)) {
-            throw new IOException("Cannot create directory");
+        if (!target.exists()) {
+            list.addAll(mkdirs(target));
         }
         
         Enumeration<? extends ZipEntry> entries;
@@ -849,26 +877,24 @@ public final class FileUtils {
             
             LogManager.log("extracting " + file);
             if (entry.getName().endsWith(SLASH)) {
-                // some validation (this is a directory entry and thus an existing 
+                // some validation (this is a directory entry and thus an existing
                 // file will definitely break things)
                 if (file.exists() && !file.isDirectory()) {
                     throw new IOException(
                             "An entry directory exists and is not a directory");
                 }
                 
-                // if the directory does not exist, it will be created and added to 
-                // the extracted files list (if it exists already, it will not 
+                // if the directory does not exist, it will be created and added to
+                // the extracted files list (if it exists already, it will not
                 // appear in the list)
                 if (!file.exists()) {
-                    if (!mkdirs(file, list)) {
-                        throw new IOException("Cannot create an entry directory.");
-                    }
+                    list.addAll(mkdirs(file));
                 }
             } else {
                 // some validation of the file's parent directory
                 File parent = file.getParentFile();
-                if (!parent.exists() && !mkdirs(parent, list)) {
-                    throw new IOException("Cannot create an entry parent directory.");
+                if (!parent.exists()) {
+                    list.addAll(mkdirs(parent));
                 }
                 
                 // some validation of the file itself
@@ -893,7 +919,7 @@ public final class FileUtils {
                     }
                 }
                 
-                // as opposed to directories, we always add files to the list, as 
+                // as opposed to directories, we always add files to the list, as
                 // even if they exist, they will be overwritten
                 list.add(file);
             }
@@ -906,21 +932,6 @@ public final class FileUtils {
         zip.close();
         
         return list;
-    }
-    
-    private static boolean mkdirs(File file, List<File> list) {
-        if (!file.getParentFile().exists()) {
-            if (!mkdirs(file.getParentFile(), list)) {
-                return false;
-            }
-        }
-        
-        if (file.mkdir()) {
-            list.add(file);
-            return true;
-        } else {
-            return false;
-        }
     }
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -937,7 +948,7 @@ public final class FileUtils {
      * @author Kirill Sorokin
      */
     private static class MaskFileFilter implements FileFilter {
-        private String mask = ".*";                 //NOI18N
+        private String mask = ".*";
         
         /**
          * Creates a new instance of MaskFileFilter.

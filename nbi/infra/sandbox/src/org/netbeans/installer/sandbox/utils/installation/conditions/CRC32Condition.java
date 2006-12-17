@@ -35,7 +35,7 @@ public class CRC32Condition implements FileCondition {
     public boolean accept(InstallationFileObject fo) {
         boolean result = false;
         try {
-            result =  (fo.getCRC32() == FileUtils.getFileCRC32String(fo.getFile()));
+            result =  (fo.getCRC32() == FileUtils.getCrc32String(fo.getFile()));
         } catch (IOException ex) {
             LogManager.log(ErrorLevel.WARNING,ex);
         } finally {

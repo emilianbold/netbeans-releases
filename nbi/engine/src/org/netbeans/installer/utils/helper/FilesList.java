@@ -88,6 +88,12 @@ public class FilesList {
             add(entry);
         }
     }
+
+    public void add(final List<File> list) throws IOException, NoSuchAlgorithmException {
+        for (File file: list) {
+            add(file);
+        }
+    }
     
     public File getFile(FileEntry entry) {
         return new File(directory, entry.getName());

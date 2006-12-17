@@ -144,22 +144,23 @@ public abstract class UnixNativeUtils extends NativeUtils {
     }
     
     public File createShortcut(Shortcut shortcut, ShortcutLocationType locationType) throws NativeException {
-        final File shortcutFile = getShortcutLocation(shortcut, locationType);
+        final File          file     = getShortcutLocation(shortcut, locationType);
         final StringBuilder contents = new StringBuilder();
+        final String        nl       = SystemUtils.getLineSeparator();
         
-        contents.append("[Desktop Entry]").append(SystemUtils.getLineSeparator());
-        contents.append("Encoding=UTF-8").append(SystemUtils.getLineSeparator());
+        contents.append("[Desktop Entry]").append(nl);
+        contents.append("Encoding=UTF-8").append(nl);
         
-        contents.append("Name=" + shortcut.getName()).append(SystemUtils.getLineSeparator());
-        contents.append("Exec=" + shortcut.getExecutable()).append(SystemUtils.getLineSeparator());
+        contents.append("Name=" + shortcut.getName()).append(nl);
+        contents.append("Exec=" + shortcut.getExecutable()).append(nl);
         
         try {
-            FileUtils.writeFile(shortcutFile, contents);
+            FileUtils.writeFile(file, contents);
         } catch (IOException e) {
             throw new NativeException("Cannot create shortcut", e);
         }
         
-        return shortcutFile;
+        return file;
     }
     
     public void removeShortcut(Shortcut shortcut, ShortcutLocationType locationType, boolean cleanupParents) throws NativeException {

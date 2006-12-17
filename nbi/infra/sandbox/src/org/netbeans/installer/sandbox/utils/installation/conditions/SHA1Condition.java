@@ -37,7 +37,7 @@ public class SHA1Condition implements FileCondition {
     public boolean accept(InstallationFileObject fo) {
         boolean result = false;
         try {
-            result =  (fo.getSHA1() == FileUtils.getFileSHA1String(fo.getFile()));
+            result =  (fo.getSHA1() == FileUtils.getSha1String(fo.getFile()));
         } catch (IOException ex) {
             LogManager.log(ErrorLevel.WARNING,ex);
         } catch (NoSuchAlgorithmException ex) {

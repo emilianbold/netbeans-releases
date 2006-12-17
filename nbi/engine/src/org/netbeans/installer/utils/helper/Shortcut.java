@@ -58,26 +58,22 @@ public class Shortcut {
         this.names = names;
     }
     
-    public String getName(final Locale locale) {
-        return names.get(locale);
-    }
-    
     public String getName() {
         return getName(Locale.getDefault());
     }
     
-    public void addName(final String name, final Locale locale) {
-        names.put(locale, name);
-    }
-    
     public void setName(final String name) {
-        addName(name, Locale.getDefault());
+        setName(name, Locale.getDefault());
     }
     
-    public void removeName(final Locale locale) {
-        if (locale.equals(Locale.getDefault())) {
-            throw new IllegalArgumentException("Removing of name for default locale is not supported");
-        }  else {
+    public String getName(final Locale locale) {
+        return names.get(locale);
+    }
+    
+    public void setName(final String name, final Locale locale) {
+        if (name != null) {
+            names.put(locale, name);
+        } else {
             names.remove(locale);
         }
     }
@@ -90,24 +86,20 @@ public class Shortcut {
         this.descriptions = comments;
     }
     
-    public String getDescription(final Locale locale) {
-        return descriptions.get(locale);
-    }
-    
     public String getDescription() {
         return descriptions.get(Locale.getDefault());
     }
     
-    public void addDescription(final String description, final Locale locale) {
-        descriptions.put(locale, description);
-    }
-    
     public void setDescription(final String description) {
-        addDescription(description, Locale.getDefault());
+        setDescription(description, Locale.getDefault());
     }
     
-    public void removeDescription(final Locale locale) {
-        descriptions.remove(locale);
+    public String getDescription(final Locale locale) {
+        return descriptions.get(locale);
+    }
+    
+    public void setDescription(final String description, final Locale locale) {
+        descriptions.put(locale, description);
     }
     
     public String getRelativePath() {

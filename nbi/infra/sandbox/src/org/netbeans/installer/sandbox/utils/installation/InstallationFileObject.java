@@ -147,7 +147,7 @@ public class InstallationFileObject {
     public void setCRC32(File file) {
         try {
             if(file!=null && file.exists()&& file.isFile()) {
-                setCRC32(FileUtils.getFileCRC32String(file));
+                setCRC32(FileUtils.getCrc32String(file));
             }
         } catch (IOException ex) {
             LogManager.log(ErrorLevel.WARNING,ex);
@@ -164,7 +164,7 @@ public class InstallationFileObject {
     public void setMD5(File file) {
         try {
             if(file!=null && file.exists()&& file.isFile()) {
-                setMD5(FileUtils.getFileMD5String(file));
+                setMD5(FileUtils.getMd5String(file));
             }
         } catch (IOException ex) {
             LogManager.log(ErrorLevel.WARNING,ex);
@@ -186,7 +186,7 @@ public class InstallationFileObject {
     public void setSHA1(File file) {
         try {
             if(file!=null && file.exists()&& file.isFile()) {
-                setSHA1(FileUtils.getFileSHA1String(file));
+                setSHA1(FileUtils.getSha1String(file));
             }
         } catch (IOException ex) {
             LogManager.log(ErrorLevel.WARNING,ex);

@@ -233,15 +233,12 @@ public class WindowsNativeUtils extends NativeUtils {
     }
     
     public File getShortcutLocation(Shortcut shortcut, ShortcutLocationType locationType) throws NativeException {
-        String shortcutPath = shortcut.getRelativePath();
-        if (shortcutPath == null) {
-            shortcutPath = "";
+        String path = shortcut.getRelativePath();
+        if (path == null) {
+            path = "";
         }
         
-        String shortcutFileName = shortcut.getFileName();
-        if (shortcutFileName == null) {
-            shortcutFileName = shortcut.getName() + ".lnk";
-        }
+        String fileName = shortcut.getName() + ".lnk";
         
         final String allUsersRootPath = SystemUtils.getEnvironmentVariable("allusersprofile");
         
@@ -252,7 +249,7 @@ public class WindowsNativeUtils extends NativeUtils {
                     userDesktop = SystemUtils.getUserHomeDirectory() + File.separator + "Desktop";
                 }
                 
-                return new File(userDesktop, shortcutFileName);
+                return new File(userDesktop, fileName);
                 
             case ALL_USERS_DESKTOP:
                 String commonDesktop = registry.getStringValue(HKLM, SHELL_FOLDERS_KEY, "Common Desktop", false);
@@ -260,7 +257,7 @@ public class WindowsNativeUtils extends NativeUtils {
                     commonDesktop = allUsersRootPath + File.separator + "Desktop";
                 }
                 
-                return new File(commonDesktop, shortcutFileName);
+                return new File(commonDesktop, fileName);
                 
             case CURRENT_USER_START_MENU:
                 String userStartMenu = registry.getStringValue(HKCU, SHELL_FOLDERS_KEY, "Programs", false);
@@ -268,7 +265,7 @@ public class WindowsNativeUtils extends NativeUtils {
                     userStartMenu = SystemUtils.getUserHomeDirectory() + File.separator + "Start Menu" + File.separator + "Programs";
                 }
                 
-                return new File(userStartMenu, shortcutPath + File.separator + shortcutFileName);
+                return new File(userStartMenu, path + File.separator + fileName);
                 
             case ALL_USERS_START_MENU:
                 String commonStartMenu = registry.getStringValue(HKLM, SHELL_FOLDERS_KEY, "Common Programs", false);
@@ -276,7 +273,7 @@ public class WindowsNativeUtils extends NativeUtils {
                     commonStartMenu = SystemUtils.getUserHomeDirectory() + File.separator + "Start Menu" + File.separator + "Programs";
                 }
                 
-                return new File(commonStartMenu, shortcutPath + File.separator + shortcutFileName);
+                return new File(commonStartMenu, path + File.separator + fileName);
         }
         
         return null;

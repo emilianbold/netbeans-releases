@@ -74,14 +74,14 @@ public final class SystemUtils {
         
         // N for Name
         try {
-            parsedString = parsedString.replaceAll("(?<!\\\\)\\$N\\{install\\}", StringUtils.escapeForRE(getDefaultApplicationsLocation().getAbsolutePath()));
+            parsedString = parsedString.replaceAll("(?<!\\\\)\\$N\\{install\\}", StringUtils.escapeRegExp(getDefaultApplicationsLocation().getAbsolutePath()));
         } catch (NativeException e) {
             ErrorManager.notify(ErrorLevel.ERROR, "Cannot obtain default applications location", e);
         }
         
-        parsedString = parsedString.replaceAll("(?<!\\\\)\\$N\\{home\\}", StringUtils.escapeForRE(getUserHomeDirectory().getAbsolutePath()));
-        parsedString = parsedString.replaceAll("(?<!\\\\)\\$N\\{temp\\}", StringUtils.escapeForRE(getTempDirectory().getAbsolutePath()));
-        parsedString = parsedString.replaceAll("(?<!\\\\)\\$N\\{current\\}", StringUtils.escapeForRE(getCurrentDirectory().getAbsolutePath()));
+        parsedString = parsedString.replaceAll("(?<!\\\\)\\$N\\{home\\}", StringUtils.escapeRegExp(getUserHomeDirectory().getAbsolutePath()));
+        parsedString = parsedString.replaceAll("(?<!\\\\)\\$N\\{temp\\}", StringUtils.escapeRegExp(getTempDirectory().getAbsolutePath()));
+        parsedString = parsedString.replaceAll("(?<!\\\\)\\$N\\{current\\}", StringUtils.escapeRegExp(getCurrentDirectory().getAbsolutePath()));
         
         Matcher matcher;
         
