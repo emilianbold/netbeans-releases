@@ -212,8 +212,8 @@ public class WorkingCopy extends CompilationController {
 
     /**@inheritDoc*/
     @Override
-    public TokenHierarchy getTokenHiearchy() {
-        return this.delegate.getTokenHiearchy();
+    public TokenHierarchy getTokenHierarchy() {
+        return this.delegate.getTokenHierarchy();
     }
     
     /**

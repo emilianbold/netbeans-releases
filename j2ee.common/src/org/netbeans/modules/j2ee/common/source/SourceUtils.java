@@ -197,7 +197,7 @@ public class SourceUtils {
         for (Element element : getTypeElement().getEnclosedElements()) {
             if (element.getKind() == ElementKind.CONSTRUCTOR) {
                 ExecutableElement constructor = (ExecutableElement)element;
-                if (constructor.getParameters().size() == 0 && !elementUtils.isSyntetic(constructor)) {
+                if (constructor.getParameters().size() == 0 && !elementUtils.isSynthetic(constructor)) {
                     return constructor;
                 }
             }

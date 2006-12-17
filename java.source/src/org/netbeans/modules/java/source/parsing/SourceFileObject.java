@@ -115,7 +115,7 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
         }
     }
     
-    public TokenHierarchy getTokenHiearchy() throws IOException {
+    public TokenHierarchy getTokenHierarchy() throws IOException {
         if (tokens == null)
             getCharContentImpl();
         

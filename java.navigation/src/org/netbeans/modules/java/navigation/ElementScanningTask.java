@@ -117,7 +117,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         }
         
         public Void visitType(TypeElement e, Description p) {
-            if ( !canceled  && !info.getElementUtilities().isSyntetic(e) ) {            
+            if ( !canceled  && !info.getElementUtilities().isSynthetic(e) ) {            
                 
                 Description d = new Description(p.ui);
                 d.kind = e.getKind();
@@ -137,7 +137,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         }
         
         public Void visitVariable(VariableElement e, Description p) {
-            if ( !canceled && !info.getElementUtilities().isSyntetic(e) && 
+            if ( !canceled && !info.getElementUtilities().isSynthetic(e) && 
                 ( e.getKind() == ElementKind.FIELD || e.getKind() == ElementKind.ENUM_CONSTANT ) ) {
                 Description d = new Description(p.ui);
                 d.kind = e.getKind();
@@ -156,7 +156,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         }
         
         public Void visitExecutable(ExecutableElement e, Description p) {
-            if ( !canceled  && !info.getElementUtilities().isSyntetic(e) ) {
+            if ( !canceled  && !info.getElementUtilities().isSynthetic(e) ) {
                 Description d = new Description(p.ui);                
                 d.kind = e.getKind();
                 d.modifiers = e.getModifiers();

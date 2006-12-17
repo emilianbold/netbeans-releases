@@ -129,7 +129,7 @@ abstract class PositionEstimator {
             size = oldL.size();
             matrix = new int[size+1][3];
             matrix[size] = new int[] { -1, -1, -1 };
-            seq = copy.getTokenHiearchy().tokenSequence();
+            seq = copy.getTokenHierarchy().tokenSequence();
             SourcePositions positions = copy.getTrees().getSourcePositions();
             CompilationUnitTree compilationUnit = copy.getCompilationUnit();
             int i = 0;
@@ -248,7 +248,7 @@ abstract class PositionEstimator {
             int size = oldL.size();
             matrix = new int[size+1][5];
             matrix[size] = new int[] { -1, -1, -1, -1, -1 };
-            seq = copy.getTokenHiearchy().tokenSequence();
+            seq = copy.getTokenHierarchy().tokenSequence();
             SourcePositions positions = copy.getTrees().getSourcePositions();
             CompilationUnitTree compilationUnit = copy.getCompilationUnit();
             int i = 0;
@@ -323,7 +323,7 @@ abstract class PositionEstimator {
             int size = oldL.size();
             matrix = new int[size+1][5];
             matrix[size] = new int[] { -1, -1, -1, -1, -1 };
-            seq = copy.getTokenHiearchy().tokenSequence();
+            seq = copy.getTokenHierarchy().tokenSequence();
             SourcePositions positions = copy.getTrees().getSourcePositions();
             CompilationUnitTree compilationUnit = copy.getCompilationUnit();
             int i = 0;
@@ -406,7 +406,7 @@ abstract class PositionEstimator {
             int size = oldL.size();
             matrix = new int[size+1][5];
             matrix[size] = new int[] { -1, -1, -1, -1, -1 };
-            TokenSequence<JavaTokenId> seq = copy.getTokenHiearchy().tokenSequence();
+            TokenSequence<JavaTokenId> seq = copy.getTokenHierarchy().tokenSequence();
             int i = 0;
             SourcePositions positions = copy.getTrees().getSourcePositions();
             CompilationUnitTree compilationUnit = copy.getCompilationUnit();

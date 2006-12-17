@@ -1075,7 +1075,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             boolean afterLt = false;
             int openLtNum = 0;
             JavaTokenId lastNonWhitespaceTokenId = null;
-            TokenSequence<JavaTokenId> ts = controller.getTokenHiearchy().tokenSequence(JavaTokenId.language());
+            TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
             if (ts.move(expEndPos) > 0)
                 ts.moveNext();
             do {
@@ -1687,7 +1687,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 if (it.hasNext()) {
                     t = it.next();
                 } else {
-                    TokenSequence<JavaTokenId> ts = controller.getTokenHiearchy().tokenSequence(JavaTokenId.language());
+                    TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
                     ts.move((int)env.getSourcePositions().getStartPosition(env.getRoot(), est));
                     ts.movePrevious();
                     switch (ts.token().id()) {
@@ -3195,7 +3195,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         }
         
         private TokenSequence<JavaTokenId> findLastNonWhitespaceToken(Env env, int startPos, int endPos) {
-            TokenSequence<JavaTokenId> ts = env.getController().getTokenHiearchy().tokenSequence(JavaTokenId.language());
+            TokenSequence<JavaTokenId> ts = env.getController().getTokenHierarchy().tokenSequence(JavaTokenId.language());
             if (ts.move(endPos) == 0)
                 ts.movePrevious();
             do {
@@ -3332,7 +3332,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             int offset = caretOffset;
             String prefix = null;
             if (upToOffset) {
-                TokenSequence<JavaTokenId> ts = controller.getTokenHiearchy().tokenSequence(JavaTokenId.language());
+                TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
                 if (ts.moveNext()) { //check for empty file
                     if (ts.move(offset) == 0)
                         ts.movePrevious();

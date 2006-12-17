@@ -150,7 +150,7 @@ public class GoToSupport {
                         return;
                     }
                     
-                    if (controller.getElementUtilities().isSyntetic(el) && el.getKind() == ElementKind.CONSTRUCTOR) {
+                    if (controller.getElementUtilities().isSynthetic(el) && el.getKind() == ElementKind.CONSTRUCTOR) {
                         //check for annonymous innerclasses:
                         el = handlePossibleAnnonymousInnerClass(controller, el);
                     }

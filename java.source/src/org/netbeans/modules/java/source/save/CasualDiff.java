@@ -87,7 +87,7 @@ public class CasualDiff {
         model = ASTService.instance(context);
         undo = UndoListService.instance(context);
         this.workingCopy = workingCopy;
-        this.tokenSequence = workingCopy.getTokenHiearchy().tokenSequence();
+        this.tokenSequence = workingCopy.getTokenHierarchy().tokenSequence();
         this.output = new StringSourceRewriter();
         this.origText = workingCopy.getText();
         this.context = context;

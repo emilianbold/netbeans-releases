@@ -60,7 +60,7 @@ public class CompareTreeTest extends GeneratorTest {
             public void cancel() {
             }
             public void run(CompilationController cc) {
-                cut[0] = cc.getTokenHiearchy();
+                cut[0] = cc.getTokenHierarchy();
             }
         });
         process(
@@ -82,7 +82,7 @@ public class CompareTreeTest extends GeneratorTest {
             public void cancel() {
             }
             public void run(CompilationController cc) {
-                cut[1] = cc.getTokenHiearchy();
+                cut[1] = cc.getTokenHierarchy();
             }
         });
         Map<Object, CharSequence[]> result = TreeChecker.compareTokens(cut[0], cut[1]);
@@ -98,7 +98,7 @@ public class CompareTreeTest extends GeneratorTest {
             public void cancel() {
             }
             public void run(CompilationController cc) {
-                cut[0] = cc.getTokenHiearchy();
+                cut[0] = cc.getTokenHierarchy();
             }
         },true);
         process(
@@ -117,7 +117,7 @@ public class CompareTreeTest extends GeneratorTest {
             public void cancel() {
             }
             public void run(CompilationController cc) {
-                cut[1] = cc.getTokenHiearchy();
+                cut[1] = cc.getTokenHierarchy();
             }
         },true);
         Map<Object, CharSequence[]> result = TreeChecker.compareTokens(cut[0], cut[1]);

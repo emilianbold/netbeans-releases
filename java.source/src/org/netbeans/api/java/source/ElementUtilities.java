@@ -79,7 +79,7 @@ public final class ElementUtilities {
      *  @param element to check
      *  @return true if and only if the given element is syntetic, false otherwise
      */
-    public boolean isSyntetic(Element element) {
+    public boolean isSynthetic(Element element) {
         return delegate.isSynthetic(element);
     }
     

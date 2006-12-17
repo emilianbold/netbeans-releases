@@ -264,7 +264,7 @@ public final class TreeUtilities {
         int start = (int)sourcePositions.getStartPosition(info.getCompilationUnit(), tree);
         int end   = (int)sourcePositions.getEndPosition(info.getCompilationUnit(), tree);
         
-        return info.getTokenHiearchy().tokenSequence(JavaTokenId.language()).subSequence(start, end);
+        return info.getTokenHierarchy().tokenSequence(JavaTokenId.language()).subSequence(start, end);
     }
     
     public boolean isAccessible(Scope scope, Element member, TypeMirror type) {

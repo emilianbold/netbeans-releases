@@ -325,7 +325,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
         
         public void checkInitialFold() {
             try {
-                TokenHierarchy th = info.getTokenHiearchy();
+                TokenHierarchy th = info.getTokenHierarchy();
                 TokenSequence<JavaTokenId>  ts = th.tokenSequence(JavaTokenId.language());
                 
                 while (ts.moveNext()) {
@@ -361,7 +361,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
             if (start == (-1))
                 return ;
             
-            TokenHierarchy th = info.getTokenHiearchy();
+            TokenHierarchy th = info.getTokenHierarchy();
             TokenSequence<JavaTokenId>  ts = th.tokenSequence(JavaTokenId.language());
             
             if (ts.move(start) == Integer.MAX_VALUE) {

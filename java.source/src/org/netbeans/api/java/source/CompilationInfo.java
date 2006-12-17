@@ -115,12 +115,12 @@ public class CompilationInfo {
         }
     }
     
-    public TokenHierarchy getTokenHiearchy() {
+    public TokenHierarchy getTokenHierarchy() {
         if (this.jfo == null) {
             throw new IllegalStateException ();
         }
         try {
-            return ((SourceFileObject) this.jfo).getTokenHiearchy();
+            return ((SourceFileObject) this.jfo).getTokenHierarchy();
         } catch (IOException ioe) {
             //Should never happen
             ErrorManager.getDefault().notify(ioe);

@@ -128,7 +128,7 @@ public class SourceUtilsTest extends NbTestCase {
                 SourceUtils srcUtils = SourceUtils.newInstance(controller);
                 ExecutableElement constructor = srcUtils.getNoArgConstructor();
                 assertNotNull(constructor);
-                assertFalse(controller.getElementUtilities().isSyntetic(constructor));
+                assertFalse(controller.getElementUtilities().isSynthetic(constructor));
             }
         });
 
