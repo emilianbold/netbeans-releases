@@ -24,6 +24,7 @@ import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -43,6 +44,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
@@ -1053,6 +1055,37 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
                 handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getDetail()), EnumSet.of(UseTypes.READ));
             
             return super.visitAssert(tree, null);
+        }
+        
+        @Override
+        public Void visitCase(CaseTree tree, EnumSet<UseTypes> p) {
+            if (tree.getExpression() != null && tree.getExpression().getKind() == Kind.IDENTIFIER) {
+                handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getExpression()), EnumSet.of(UseTypes.READ));
+            }
+            
+            return super.visitCase(tree, null);
+        }
+        
+        @Override
+        public Void visitThrow(ThrowTree tree, EnumSet<UseTypes> p) {
+            if (tree.getExpression() != null && tree.getExpression().getKind() == Kind.IDENTIFIER) {
+                handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getExpression()), EnumSet.of(UseTypes.READ));
+            }
+            
+            return super.visitThrow(tree, p);
+        }
+
+        @Override
+        public Void visitTypeParameter(TypeParameterTree tree, EnumSet<UseTypes> p) {
+            for (Tree bound : tree.getBounds()) {
+                if (bound.getKind() == Kind.IDENTIFIER) {
+                    TreePath tp = new TreePath(getCurrentPath(), bound);
+                    
+                    handlePossibleIdentifier(tp, EnumSet.of(UseTypes.CLASS_USE));
+                    resolveType(tp);
+                }
+            }
+            return super.visitTypeParameter(tree, p);
         }
         
         private void resolveType(TreePath type) {

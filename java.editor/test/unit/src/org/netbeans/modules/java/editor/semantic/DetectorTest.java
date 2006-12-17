@@ -248,6 +248,18 @@ public class DetectorTest extends TestBase {
         performTest("UnresolvableImportsAreNotUnused");
     }
     
+    public void testEnums() throws Exception {
+        performTest("Enums");
+    }
+    
+    public void testReadUseThrow() throws Exception {
+        performTest("ReadUseThrow");
+    }
+    
+    public void testGenericBoundIsClassUse() throws Exception {
+        performTest("GenericBoundIsClassUse");
+    }
+    
     private void performTest(String fileName) throws Exception {
         performTest(fileName, new Performer() {
             public Collection<Highlight> compute(CompilationController parameter, Document doc) {

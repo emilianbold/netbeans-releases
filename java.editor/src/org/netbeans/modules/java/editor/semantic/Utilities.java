@@ -68,10 +68,15 @@ public class Utilities {
     }
 
     private static int[] findIdentifierSpanImpl(Tree decl, Tree lastLeft, List<? extends Tree> firstRight, String name, CompilationUnitTree cu, SourcePositions positions, Document doc) {
-        int start = lastLeft != null ? (int)positions.getEndPosition(cu, lastLeft) : (int) positions.getStartPosition(cu, decl);
+        int declStart = (int) positions.getStartPosition(cu, decl);
+        int start = lastLeft != null ? (int)positions.getEndPosition(cu, lastLeft) : declStart;
         
-        if (start == (-1))
-            return NO_SPAN;
+        if (start == (-1)) {
+            start = declStart;
+            if (start == (-1)) {
+                return NO_SPAN;
+            }
+        }
         
         try {
             int end = (int)positions.getEndPosition(cu, decl);
@@ -82,7 +87,7 @@ public class Utilities {
 
                 int proposedEnd = (int)positions.getStartPosition(cu, t);
 
-                if (proposedEnd < end)
+                if (proposedEnd != (-1) && proposedEnd < end)
                     end = proposedEnd;
             }
 
@@ -233,6 +238,9 @@ public class Utilities {
             }
             
             String name = ((ClassTree) leaf).getSimpleName().toString();
+            
+            if (name.length() == 0)
+                return NO_SPAN;
             
             try {
                 String text = doc.getText(start, end - start);
