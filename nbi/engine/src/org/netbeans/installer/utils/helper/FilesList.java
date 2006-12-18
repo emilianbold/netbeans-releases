@@ -149,4 +149,8 @@ public class FilesList {
             return name;
         }
     }
+    
+    public void normalize() {
+        
+    }
 }
