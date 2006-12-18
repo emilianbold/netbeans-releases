@@ -126,7 +126,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                         }
                     } else {
                         //get type references from index
-                        set.addAll(idx.getResources(ElementHandle.create((TypeElement) el), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                        set.addAll(idx.getResources(ElementHandle.create((TypeElement) el), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
                     }
                 } else if (el.getKind() == ElementKind.METHOD && isFindOverridingMethods()) {
                     //Find overriding methods
