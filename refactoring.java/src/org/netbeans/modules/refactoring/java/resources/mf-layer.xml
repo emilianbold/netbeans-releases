@@ -74,5 +74,9 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
   </folder> 
-    
+  <folder name="Services">
+      <folder name="org-netbeans-modules-refactoring">
+          <file name="options"/>
+      </folder>
+  </folder>
 </filesystem>
