@@ -90,7 +90,7 @@ public class WSCompletionProvider implements CompletionProvider {
 //                resultSet.addAllItems(res.getData());
 //                // queryResult = res;
 //            }
-//            resultSet.finish();
+              resultSet.finish();
         }
         
         protected void prepareQuery(JTextComponent component) {
