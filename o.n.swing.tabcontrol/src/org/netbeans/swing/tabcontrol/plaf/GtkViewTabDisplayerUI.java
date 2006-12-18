@@ -95,7 +95,7 @@ public final class GtkViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
     public Dimension getPreferredSize(JComponent c) {
         FontMetrics fm = getTxtFontMetrics();
         int height = fm == null ?
-                19 : fm.getAscent() + 2 * fm.getDescent() + 5;
+                19 : fm.getAscent() + 2 * fm.getDescent() + 3;
         Insets insets = c.getInsets();
         prefSize.height = height + insets.bottom + insets.top;
         return prefSize;
@@ -146,7 +146,7 @@ public final class GtkViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             if( null != buttons ) {
                 Dimension buttonsSize = buttons.getPreferredSize();
                 txtWidth = width - (buttonsSize.width + ICON_X_PAD + 2*TXT_X_PAD);
-                buttons.setLocation(x + txtWidth + 2 * TXT_X_PAD, y + (height - buttonsSize.height)/2 + (TXT_Y_PAD / 2));
+                buttons.setLocation(x + txtWidth + 2 * TXT_X_PAD, y + (height - buttonsSize.height)/2 + (TXT_Y_PAD / 2) + 1);
             }
         } else {
             txtWidth = width - 2 * TXT_X_PAD;
@@ -192,7 +192,7 @@ public final class GtkViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             x, y, width, height);
         } else {
             paintTabBackgroundNative(g, 0, 0,
-            x, y + 2, width, height - 2);
+            x, y + 1, width, height - 1);
         }        
     }
 
