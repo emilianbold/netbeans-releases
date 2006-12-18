@@ -155,6 +155,7 @@ public class LanguagesManager {
                 addListener (fo);
                 Language l = NBSLanguageReader.readLanguage (fo, mimeType);
                 initLanguage (l);
+                //l.print ();
                 mimeTypeToLanguage.put (mimeType, l);
             } catch (ParseException ex) {
                 mimeTypeToLanguage.put (mimeType, ex);

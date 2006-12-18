@@ -79,7 +79,6 @@ public class JavaScript {
             input.next (1).getMimeType (), 
             "RegularExpression", 
             100, 
-            parent,
             input.next (1).getOffset ()
         );
         parent.addNode (nnode);

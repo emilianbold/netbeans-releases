@@ -159,7 +159,7 @@ public class LLSyntaxAnalyser {
                                 stack.push (it);
                                 stack.push (node);
                             } else {
-                                ASTNodeImpl nnode = new ASTNodeImpl (mimeType, rule.getNT (), newRule, node, offset);
+                                ASTNodeImpl nnode = new ASTNodeImpl (mimeType, rule.getNT (), newRule, offset);
                                 if (node != null) {
                                     node.addNode (nnode);
                                     stack.push (it);
@@ -219,7 +219,6 @@ public class LLSyntaxAnalyser {
             node == null ? "?" : node.getMimeType (), 
             "ERROR", 
             -2, 
-            node, 
             offset
         );
         if (node != null)
@@ -301,13 +300,11 @@ public class LLSyntaxAnalyser {
             String      mimeType, 
             String      nt, 
             int         rule, 
-            ASTNode     parent, 
             int         offset
         ) {
             this.mimeType = mimeType;
             this.nt =       nt;
             this.rule =     rule;
-            this.parent =   parent;
             this.offset =   offset;
             children =      new ArrayList ();
         }
@@ -316,16 +313,20 @@ public class LLSyntaxAnalyser {
             String      mimeType, 
             String      nt, 
             int         rule, 
-            ASTNode     parent, 
             List        children,
             int         offset
         ) {
-            this.mimeType = mimeType;
-            this.nt =       nt;
-            this.rule =     rule;
-            this.parent =   parent;
-            this.children = children;
-            this.offset =   offset;
+            this (mimeType, nt, rule, offset);
+            Iterator it = children.iterator ();
+            while (it.hasNext ()) {
+                Object o = it.next ();
+                if (o instanceof SToken)
+                    addToken ((SToken) o);
+                else
+                    addNode ((ASTNodeImpl) o);
+            }
+                
+            
         }
 
         public String getMimeType () {
@@ -351,6 +352,9 @@ public class LLSyntaxAnalyser {
         public void addNode (ASTNode n) {
             if (n == null)
                 throw new NullPointerException ();
+            if (((ASTNodeImpl) n).parent != null)
+                throw new IllegalArgumentException ();
+            ((ASTNodeImpl) n).parent = this;
             children.add (n);
         }
         

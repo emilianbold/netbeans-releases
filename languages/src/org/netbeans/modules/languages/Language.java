@@ -27,6 +27,7 @@ import javax.swing.text.StyleConstants;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import org.netbeans.modules.languages.parser.Parser.Rule;
 
 
 /**
@@ -386,6 +387,22 @@ public class Language {
             m.put (mimeType, mm);
         }
         return mm;
+    }
+    
+    void print () {
+        System.out.println("\nPrint " + mimeType);
+        System.out.println("Tokens:");
+        Iterator it = parserRules.iterator ();
+        while (it.hasNext ()) {
+            Rule r = (Rule) it.next ();
+            System.out.println("  " + r);
+        }
+        System.out.println("Grammar Rules:");
+        it = getAnalyser ().getRules ().iterator ();
+        while (it.hasNext ()) {
+            LLSyntaxAnalyser.Rule r = (LLSyntaxAnalyser.Rule) it.next ();
+            System.out.println("  " + r);
+        }
     }
     
     
