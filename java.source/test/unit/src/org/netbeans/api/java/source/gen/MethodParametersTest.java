@@ -18,15 +18,14 @@
  */
 package org.netbeans.api.java.source.gen;
 
-import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.VariableTree;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import javax.lang.model.element.Modifier;
-import org.netbeans.api.java.source.TestUtilities;
-import org.netbeans.jackpot.transform.Transformer;
+import com.sun.source.tree.*;
+import org.netbeans.api.java.source.*;
 import org.netbeans.junit.NbTestSuite;
+import static org.netbeans.api.java.source.JavaSource.*;
 
 /**
  * Tests method parameters.
@@ -58,12 +57,6 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
             "}\n"
             );
         String golden =
-//            "package hierbas.del.litoral;\n\n" +
-//            "import java.io.File;\n\n" +
-//            "public class Test {\n" +
-//            "    public void taragui(final File elaborada, File marcela, long c, String s, File cedron) {\n" +
-//            "    }\n" +
-//            "}\n";
             "package hierbas.del.litoral;\n\n" +
             "import java.io.File;\n\n" +
             "public class Test {\n" +
@@ -71,12 +64,19 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree clazz = (ClassTree) typeDecl;
+                        MethodTree node = (MethodTree) clazz.getMembers().get(1);
                         MethodTree copy = make.insertMethodParameter(
                             node, 0,
                             make.Variable(
@@ -115,13 +115,17 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
                                 null
                             )
                         );
-                        changes.rewrite(node, copy);
+                        workingCopy.rewrite(node, copy);
                     }
-                    return null;
                 }
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -143,12 +147,19 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree clazz = (ClassTree) typeDecl;
+                        MethodTree node = (MethodTree) clazz.getMembers().get(1);
                         MethodTree copy = make.insertMethodParameter(
                             node, 0,
                             make.Variable(
@@ -161,13 +172,17 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
                                 null
                             )
                         );
-                        changes.rewrite(node, copy);
+                        workingCopy.rewrite(node, copy);
                     }
-                    return null;
                 }
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -189,12 +204,19 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree clazz = (ClassTree) typeDecl;
+                        MethodTree node = (MethodTree) clazz.getMembers().get(1);
                         MethodTree copy = make.insertMethodParameter(
                             node, 0,
                             make.Variable(
@@ -207,13 +229,17 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
                                 null
                             )
                         );
-                        changes.rewrite(node, copy);
+                        workingCopy.rewrite(node, copy);
                     }
-                    return null;
                 }
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -235,22 +261,33 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree clazz = (ClassTree) typeDecl;
+                        MethodTree node = (MethodTree) clazz.getMembers().get(1);
                         MethodTree copy = make.removeMethodParameter(
                             node, 0
                         );
-                        changes.rewrite(node, copy);
+                        workingCopy.rewrite(node, copy);
                     }
-                    return null;
                 }
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -272,22 +309,33 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree clazz = (ClassTree) typeDecl;
+                        MethodTree node = (MethodTree) clazz.getMembers().get(1);
                         MethodTree copy = make.removeMethodParameter(
                             node, 1
                         );
-                        changes.rewrite(node, copy);
+                        workingCopy.rewrite(node, copy);
                     }
-                    return null;
                 }
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -302,12 +350,6 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
             "}\n"
             );
         String golden =
-//            "package hierbas.del.litoral;\n\n" +
-//            "import java.io.File;\n\n" +
-//            "public class Test {\n" +
-//            "    public void taragui(int para) {\n" +
-//            "    }\n" +
-//            "}\n";
             "package hierbas.del.litoral;\n\n" +
             "import java.io.File;\n\n" +
             "public class Test {\n" +
@@ -315,21 +357,32 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree clazz = (ClassTree) typeDecl;
+                        MethodTree node = (MethodTree) clazz.getMembers().get(1);
                         MethodTree copy = make.removeMethodParameter(node, 1);
                         copy = make.removeMethodParameter(copy, 1);
-                        changes.rewrite(node, copy);
+                        workingCopy.rewrite(node, copy);
                     }
-                    return null;
                 }
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -344,12 +397,6 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
             "}\n"
             );
         String golden =
-//            "package hierbas.del.litoral;\n\n" +
-//            "import java.io.File;\n\n" +
-//            "public class Test {\n" +
-//            "    public void taragui(int sugerimos) {\n" +
-//            "    }\n" +
-//            "}\n";
             "package hierbas.del.litoral;\n\n" +
             "import java.io.File;\n\n" +
             "public class Test {\n" +
@@ -357,21 +404,32 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree clazz = (ClassTree) typeDecl;
+                        MethodTree node = (MethodTree) clazz.getMembers().get(1);
                         MethodTree copy = make.removeMethodParameter(node, 0);
                         copy = make.removeMethodParameter(copy, 0);
-                        changes.rewrite(node, copy);
+                        workingCopy.rewrite(node, copy);
                     }
-                    return null;
                 }
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -393,22 +451,33 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree clazz = (ClassTree) typeDecl;
+                        MethodTree node = (MethodTree) clazz.getMembers().get(1);
                         VariableTree vt = node.getParameters().get(0);
                         MethodTree copy = make.removeMethodParameter(node, 0);
                         copy = make.addMethodParameter(copy, vt);
-                        changes.rewrite(node, copy);
+                        workingCopy.rewrite(node, copy);
                     }
-                    return null;
                 }
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
