@@ -100,7 +100,9 @@ public final class EmbeddingContainer<T extends TokenId> {
             @SuppressWarnings("unchecked")
             LanguageEmbedding<ET> embedding = (LanguageEmbedding<ET>) LexerUtilsConstants.findEmbedding(
                     token, languagePath, tokenList.inputAttributes());
-            if (embedding != null && (language == null || language == embedding.language())) {
+            if (embedding != null && (language == null || language == embedding.language())
+                    && embedding.startSkipLength() + embedding.endSkipLength() <= token.length()
+            ) {
                 if (ec == null) {
                     ec = new EmbeddingContainer<T>(token);
                     tokenList.wrapToken(index, ec);
@@ -172,6 +174,8 @@ public final class EmbeddingContainer<T extends TokenId> {
                 tokenList.wrapToken(index, ec);
             }
 
+            if (startSkipLength + endSkipLength > token.length()) // Check for appropriate size
+                return false;
             // Add the new embedding as the first one in the single-linked list
             LanguageEmbedding<ET> embedding = LanguageEmbedding.create(embeddedLanguage,
                 startSkipLength, endSkipLength, joinSections);
