@@ -18,46 +18,24 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<mconfig name="tomcatint-tomcat5 unit test config">
-
+<mconfig name="tomcatint-tomcat5 unit test config"
+    
     <!-- stable testbag  -->
-    <testbag testattribs="stable" executor="ide" name="stable tests (ide)">
+    <testbag testattribs="stable" executor="unit-executor" name="stable tests (no ide)">
         <testset dir="unit/src">
             <patternset>
-               <include name="**/*Test.class"/>
-               <exclude name="**/DeploymentTest.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-
-    <!-- stable testbag  -->
-    <testbag testattribs="stablecode" executor="code" name="stable tests (no ide)">
-        <testset dir="unit/src">
-            <patternset>
+                <include name="**/*Test.class"/>
             </patternset>
         </testset>
     </testbag>
     
-    
-    <!-- testbag with failing test (just one method)  -->
-    <testbag testattribs="failing" executor="code" name="failing tests (no ide)" resultsprocessor="unit">
-        <testset dir="unit/src">
-            <patternset> 
-            </patternset>
-        </testset>
-    </testbag>
     
     <!-- code excecutor - use this one if you plan to run your tests in standard 
                           JVM. You can also write your own executor, which will 
                           then call this one. It is handy when some servers (e.g. rmi registry)
                           have to be started before tests are run and stopped after
                           the run. -->
-    <executor name="code" antfile="build-unit.xml" target="run-unit-test" />
-    
-    <!-- ide executor - use this one if you plan to run your tests inside IDE (internally).
-                        Similarly as with code executor, you can create your own to 
-                        prepare some neccessary stuff before running tests. -->
-    <executor name="ide" antfile="build-unit.xml" target="runidetest"/>
+    <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test" />
     
     <!-- default compiler -->
     <compiler name="unit-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
