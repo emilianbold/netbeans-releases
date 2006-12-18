@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.jackpot.engine.SourceRewriter;
 import org.netbeans.jackpot.engine.StringSourceRewriter;
 import org.netbeans.jackpot.engine.JavaFormatOptions;
@@ -2014,25 +2015,138 @@ public class CasualDiff {
             String to = toString(addStart, addEnd);
             char type = delEnd != Difference.NONE && addEnd != Difference.NONE ? 'c' : (delEnd == Difference.NONE ? 'a' : 'd');
 
-            System.out.println(from + type + to);
-
-            if (delEnd != Difference.NONE) {
-                printLines(delStart, delEnd, "<", lines1);
-                if (addEnd != Difference.NONE) {
-                    System.out.println("---");
+            if (logDiffs) {
+                System.out.println(from + type + to);
+                if (delEnd != Difference.NONE) {
+                    printLines(delStart, delEnd, "<", lines1);
+                    if (addEnd != Difference.NONE) {
+                        System.out.println("---");
+                    }
                 }
-                append(Diff.delete(lines1[delStart].start, lines1[delEnd].end));
+                if (addEnd != Difference.NONE) {
+                    printLines(addStart, addEnd, ">", lines2);
+                }
             }
-            if (addEnd != Difference.NONE) {
+            // addition
+            if (type == 'a') {
                 StringBuilder builder = new StringBuilder();
                 for (int i = addStart; i <= addEnd; i++) {
                     builder.append(lines2[i].data);
                 }
-                printLines(addStart, addEnd, ">", lines2);
                 append(Diff.insert(delEnd == Difference.NONE ? lines1[delStart].start : lines1[delEnd].end,
                         builder.toString(), null, "", LineInsertionType.NONE));
             }
+            
+            // deletion
+            else if (type == 'd') {
+                append(Diff.delete(lines1[delStart].start, lines1[delEnd].end));
+            }
+            
+            // change
+            else { // type == 'c'
+                StringBuilder builder = new StringBuilder();
+                for (int i = delStart; i <= delEnd; i++) {
+                    builder.append(lines1[i].data);
+                }
+                String match1 = builder.toString();
+                builder = new StringBuilder();
+                for (int i = addStart; i <= addEnd; i++) {
+                    builder.append(lines2[i].data);
+                }
+                String match2 = builder.toString();
+                makeTokenListMatch(match1, match2, lines1[delStart].start);
+                
+//                append(Diff.delete(lines1[delStart].start, lines1[delEnd].end));
+//                StringBuilder builder = new StringBuilder();
+//                for (int i = addStart; i <= addEnd; i++) {
+//                    builder.append(lines2[i].data);
+//                }
+//                append(Diff.insert(delEnd == Difference.NONE ? lines1[delStart].start : lines1[delEnd].end,
+//                        builder.toString(), null, "", LineInsertionType.NONE));
+            }
+                    
         }
+        return null;
+    }
+    
+    /**
+     * Temporary logging variable - just for debugging reason during development.
+     */
+    private static boolean logDiffs = false;
+    
+    public List<Diff> makeTokenListMatch(String text1, String text2, int currentPos) {
+        if (logDiffs) System.out.println("----- token match for change -");
+        TokenSequence<JavaTokenId> seq1 = TokenHierarchy.create(text1, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
+        TokenSequence<JavaTokenId> seq2 = TokenHierarchy.create(text2, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
+        List<Line> list1 = new ArrayList<Line>();
+        List<Line> list2 = new ArrayList<Line>();
+        while (seq1.moveNext()) {
+            String data = seq1.token().text().toString();
+            list1.add(new Line(data, seq1.offset(), seq1.offset() + data.length()));
+        }
+        while (seq2.moveNext()) {
+            String data = seq2.token().text().toString();
+            list2.add(new Line(data, seq2.offset(), seq2.offset() + data.length()));
+        }
+        Line[] lines1 = list1.toArray(new Line[list1.size()]);
+        Line[] lines2 = list2.toArray(new Line[list2.size()]);
+        
+        List diffs = new ComputeDiff(lines1, lines2).diff();
+        for (Object o : diffs) {
+            Difference diff     = (Difference)o; // generify
+            int delStart = diff.getDeletedStart();
+            int delEnd   = diff.getDeletedEnd();
+            int addStart = diff.getAddedStart();
+            int addEnd   = diff.getAddedEnd();
+            
+            String from = toString(delStart, delEnd);
+            String to = toString(addStart, addEnd);
+            char type = delEnd != Difference.NONE && addEnd != Difference.NONE ? 'c' : (delEnd == Difference.NONE ? 'a' : 'd');
+
+            if (logDiffs) {
+                System.out.println(from + type + to);
+                if (delEnd != Difference.NONE) {
+                    printTokens(delStart, delEnd, "<", lines1);
+                    if (addEnd != Difference.NONE) {
+                        System.out.println("---");
+                    }
+                }
+                if (addEnd != Difference.NONE) {
+                    printTokens(addStart, addEnd, ">", lines2);
+                }
+            }
+            // addition
+            if (type == 'a') {
+                StringBuilder builder = new StringBuilder();
+                for (int i = addStart; i <= addEnd; i++) {
+                    builder.append(lines2[i].data);
+                }
+                append(Diff.insert(currentPos + (delEnd == Difference.NONE ? lines1[delStart].start : lines1[delEnd].end),
+                        builder.toString(), null, "", LineInsertionType.NONE));
+            }
+            
+            // deletion
+            else if (type == 'd') {
+                append(Diff.delete(currentPos + lines1[delStart].start, currentPos + lines1[delEnd].end));
+            }
+            
+            // change
+            else { // type == 'c'
+                StringBuilder builder = new StringBuilder();
+                /*for (int i = delStart; i <= delEnd; i++) {
+                    builder.append(lines1[i].data);
+                }*/
+                append(Diff.delete(currentPos + lines1[delStart].start, currentPos + lines1[delEnd].end));
+                //builder = new StringBuilder();
+                for (int i = addStart; i <= addEnd; i++) {
+                    builder.append(lines2[i].data);
+                }
+                append(Diff.insert(currentPos + (delEnd == Difference.NONE ? lines1[delStart].start : lines1[delEnd].end),
+                        builder.toString(), null, "", LineInsertionType.NONE));
+            }
+                    
+        }
+        if (logDiffs) System.out.println("----- end token match -");
         return null;
     }
     
@@ -2050,9 +2164,15 @@ public class CasualDiff {
         return buf.toString();
     }
     
-    protected void printLines(int start, int end, String ind, Line[] lines) {
+    private void printLines(int start, int end, String ind, Line[] lines) {
         for (int lnum = start; lnum <= end; ++lnum) {
             System.out.print(ind + " " + lines[lnum]);
+        }
+    }
+    
+    private void printTokens(int start, int end, String ind, Line[] lines) {
+        for (int lnum = start; lnum <= end; ++lnum) {
+            System.out.println(ind + " '" + lines[lnum] + "'");
         }
     }
 }
