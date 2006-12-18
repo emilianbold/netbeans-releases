@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import java.util.StringTokenizer;
 import org.ini4j.Ini;
 import org.netbeans.modules.subversion.util.FileUtils;
@@ -848,14 +847,11 @@ public class SvnConfigFiles {
      *
      */
     private static String getAPPDATA() {
+        String appdata = "";
         if(Utilities.isWindows()) {
-            String appdata = System.getProperty("Env-APPDATA"); // should work on XP // NOI18N
-            if(appdata == null || appdata.trim().equals("")) { // NOI18N
-                appdata = getWindowsProperty("APPDATA"); // NOI18N
-            }
-            return appdata;
+            appdata = System.getenv("APPDATA");// NOI18N
         }
-        return ""; // NOI18N
+        return appdata!= null? appdata: "";
     }
 
     /**
@@ -864,9 +860,9 @@ public class SvnConfigFiles {
      */
     private static String getGlobalAPPDATA() {
         if(Utilities.isWindows()) {
-            String globalProfile = System.getProperty("Env-ALLUSERSPROFILE"); // should work on XP  // NOI18N
+            String globalProfile = System.getenv("ALLUSERSPROFILE");                       // NOI18N
             if(globalProfile == null || globalProfile.trim().equals("")) {                          // NOI18N
-                globalProfile = getWindowsProperty("ALLUSERSPROFILE");                              // NOI18N
+                globalProfile = "";
             }
             String appdataPath = WINDOWS_USER_APPDATA;
             if(appdataPath == null || appdataPath.equals("")) {                                     // NOI18N
@@ -887,30 +883,6 @@ public class SvnConfigFiles {
             }
             return globalProfile + "/" + appdata;                                                   // NOI18N
         }
-        return "";                                                                                  // NOI18N
-    }
-    
-    /**
-     * Returns a the value for the given specified windows env variable
-     */
-    private static String getWindowsProperty(String propertyKey) {
-        Process p = null;
-        Properties propVals = new Properties();
-        Runtime r = Runtime.getRuntime();
-        try {
-            p = r.exec("cmd /C set");                                                               // NOI18N
-            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            String line;
-            while((line = br.readLine()) != null) {
-                int index = line.indexOf('=');
-                String key = line.substring(0, index);
-                String value = line.substring(index + 1);
-                propVals.setProperty(key, value);
-            }    
-            return propVals.getProperty(propertyKey);
-        } catch (Exception e) {
-            ErrorManager.getDefault().notify(e); 
-        } 
         return "";                                                                                  // NOI18N
     }
     
