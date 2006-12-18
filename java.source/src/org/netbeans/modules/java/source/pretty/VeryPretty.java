@@ -1578,7 +1578,8 @@ public class VeryPretty extends JCTree.Visitor {
 	    print("\"" + Convert.quote((String) tree.value) + "\"");
 	    break;
           case BOOLEAN:
-            print(((Number)tree.value).intValue() == 1 ? "true" : "false");
+            // print(((Number)tree.value).intValue() == 1 ? "true" : "false");
+            print(tree.value.toString());
             break;
           case BOT:
             print("null");

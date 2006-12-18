@@ -70,7 +70,6 @@ public class BodyStatementTest extends GeneratorTest {
             "}\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        
         CancellableTask task = new CancellableTask<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
@@ -106,7 +105,67 @@ public class BodyStatementTest extends GeneratorTest {
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
-        
+    }
+    
+    /**
+     * Adds 'System.err.println(true);' statement to the method body. 
+     */
+    public void testBooleanLiteral() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.*;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        ;\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.*;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        ;\n" +
+            "    System.err.println(true);\n" + 
+            "}\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                
+                // finally, find the correct body and rewrite it.
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                ExpressionStatementTree statement = make.ExpressionStatement(
+                    make.MethodInvocation(
+                        Collections.<ExpressionTree>emptyList(),
+                        make.MemberSelect(
+                            make.MemberSelect(
+                                make.Identifier("System"),
+                                "err"
+                            ),
+                            "println"
+                        ),
+                        Collections.singletonList(
+                            make.Literal(Boolean.TRUE)
+                        )
+                    )
+                );
+                BlockTree copy = make.addBlockStatement(method.getBody(), statement);
+                workingCopy.rewrite(method.getBody(), copy);
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
     }
     
     // methods not used in this test.
