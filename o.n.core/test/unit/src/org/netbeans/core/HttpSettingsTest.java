@@ -34,7 +34,7 @@ import org.openide.util.NbPreferences;
  * @see http://www.netbeans.org/issues/show_bug.cgi?id=51641
  */
 public class HttpSettingsTest extends NbTestCase {
-    boolean isWaiting = false;
+    volatile boolean isWaiting = false;
     private static String SYSTEM_PROXY_HOST = "system.cache.org";
     private static String SYSTEM_PROXY_PORT = "777";
     private static String USER_PROXY_HOST = "my.webcache";
