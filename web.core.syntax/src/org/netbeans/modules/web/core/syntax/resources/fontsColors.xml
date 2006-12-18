@@ -21,11 +21,11 @@ Microsystems, Inc. All Rights Reserved.
 
 <fontscolors>
     <!-- html tokens coloring - temporary hack - the Lexer draw layer requires this so far -->
-    <fontcolor name="html-argument" foreColor="ff007c00" default="identifier"/>
+    <fontcolor name="html-argument" foreColor="ff007c00" default="default"/>
     <fontcolor name="html-block-comment" foreColor="gray" default="comment"/>
     <fontcolor name="html-character" foreColor="ffb20000" default="char"/>
     <fontcolor name="html-error" foreColor="black" bgColor="pink" default="error"/>
-    <fontcolor name="html-operator" foreColor="ff007c00" default="operator"/>
+    <fontcolor name="html-operator" foreColor="ff007c00" default="default"/>
     <fontcolor name="html-sgml-comment" foreColor="gray" default="comment"/>
     <fontcolor name="html-sgml-declaration" foreColor="ffbf9221" default="default"/>
     <fontcolor name="html-tag" foreColor="blue" default="default"/>
@@ -36,22 +36,18 @@ Microsystems, Inc. All Rights Reserved.
     <!-- end of hack -->
     
     <!-- html tokens coloring - temporary hack - the Lexer draw layer requires this so far -->
-    <!--<fontcolor name="java-annotation" foreColor="ff006f00" bgColor="fffdf2c4" default="default"/>
-    <fontcolor name="java-block-comment" foreColor="ff737373" bgColor="fffdf2c4" default="default"/>
-    <fontcolor name="java-char-literal" foreColor="ff006f00" bgColor="fffdf2c4" default="default"/>
-    <fontcolor name="java-errors" foreColor="black" bgColor="pink" default="default"/>
-    <fontcolor name="java-identifier" bgColor="fffdf2c4" default="default"/>
-    <fontcolor name="java-keywords" foreColor="ff000099" bgColor="fffdf2c4" default="default">
-        <font style="bold"/>
-    </fontcolor>
-    <fontcolor name="java-layer-method" bgColor="fffdf2c4" default="default">
-        <font style="bold"/>
-    </fontcolor>
-    <fontcolor name="java-line-comment" foreColor="ff737373" bgColor="fffdf2c4" default="default"/>
-    <fontcolor name="java-numeric-literals" foreColor="ff780000" bgColor="fffdf2c4" default="default"/>
-    <fontcolor name="java-operators" bgColor="fffdf2c4" default="default"/>
-    <fontcolor name="java-string-literal" foreColor="ff99006b" bgColor="fffdf2c4" default="default"/>
-    <fontcolor name="java-whitespace" bgColor="fffdf2c4" default="default"/>-->
+    <!-- JavaTokenId categories -->
+    <fontcolor name="character" bgColor="fffdf2c4" default="char"/>
+    <fontcolor name="errors" bgColor="fffdf2c4" default="error"/>
+    <fontcolor name="identifier" bgColor="fffdf2c4" default="identifier"/>
+    <fontcolor name="keyword" bgColor="fffdf2c4" default="keyword"/>
+    <fontcolor name="literal" bgColor="fffdf2c4" default="keyword" />
+    <fontcolor name="comment" bgColor="fffdf2c4" default="comment"/>
+    <fontcolor name="number" bgColor="fffdf2c4" default="number"/>
+    <fontcolor name="operator" bgColor="fffdf2c4" default="operator"/>
+    <fontcolor name="string" bgColor="fffdf2c4" default="string"/>
+    <fontcolor name="whitespace" bgColor="fffdf2c4" default="whitespace"/>
+    <fontcolor name="separator" bgColor="fffdf2c4" default="separator"/>
     <!-- end of hack -->
     
     <!-- JSP tokens -->
@@ -73,7 +69,7 @@ Microsystems, Inc. All Rights Reserved.
         <font style="bold"/>
     </fontcolor>
     <fontcolor name="text" bgColor="fff2fd" default="default"/>
-    <fontcolor name="whitespace" foreColor="black" bgColor="ffeff0eb" default="default">
+    <fontcolor name="jsp-whitespace" foreColor="black" bgColor="ffeff0eb" default="default">
         <font style="bold"/>
     </fontcolor>
     <fontcolor name="scriptlet" bgColor="fffdf2c4" default="default"/>

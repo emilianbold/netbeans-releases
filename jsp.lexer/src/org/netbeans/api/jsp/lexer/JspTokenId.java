@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
 import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
@@ -53,7 +54,7 @@ public enum JspTokenId implements TokenId {
     ATTRIBUTE("attribute-name"),
     ATTR_VALUE("attribute-value"),
     EOL("EOL"),
-    WHITESPACE("whitespace"),
+    WHITESPACE("jsp-whitespace"), //coloring workaround - prefix must be removed once the coloring is fully constructed based on language path
     EL("expression-language");
     
 
@@ -103,20 +104,9 @@ public enum JspTokenId implements TokenId {
                     int endSkipLength = token.length() > 2 ? 1 : 0;
                     return LanguageEmbedding.create(ELTokenId.language(), startSkipLength, endSkipLength);
                     
-//                case SCRIPTLET:
-//                    return new LanguageEmbedding() {
-//                        public LanguageDescription language() {
-//                            return JavaLanguage.description();
-//                        }
-//
-//                        public int startSkipLength() {
-//                            return 0;
-//                        }
-//
-//                        public int endSkipLength() {
-//                            return 0;
-//                        }
-//                    };
+                case SCRIPTLET:
+                    return LanguageEmbedding.create(JavaTokenId.language(), 0, 0);
+                    
                 default:
                     return null;
             }
