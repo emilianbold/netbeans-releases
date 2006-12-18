@@ -113,6 +113,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
                 }
             });
         }
+        content.add(new EditWSAttributesCookieImpl(this, jaxWsModel));
     }
     
     public String getShortDescription() {
@@ -160,14 +161,15 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
     void changeIcon() {
         fireIconChange();
     }
-    
+    /*
     public Node.Cookie getCookie(Class type){
+        System.out.println("getCookie "+type+":"+type.getName());
         if(type == EditWSAttributesCookie.class){
             return new EditWSAttributesCookieImpl(this, jaxWsModel); //NOI18N
         }
         return super.getCookie(type);
     }
-    
+    */
     private EditCookie getEditCookie() {
         try {
             FileObject wsdlFo =

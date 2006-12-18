@@ -21,8 +21,6 @@ package org.netbeans.modules.websvc.core.wseditor.support;
 
 import java.util.Collection;
 import java.util.Set;
-import org.netbeans.modules.websvc.core.jaxws.nodes.JaxWsClientNode;
-import org.netbeans.modules.websvc.core.jaxws.nodes.JaxWsNode;
 import org.netbeans.modules.websvc.core.wseditor.spi.WSEditorProvider;
 import org.netbeans.modules.websvc.core.wseditor.spi.WSEditorProviderRegistry;
 import org.openide.nodes.Node;
@@ -30,36 +28,26 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.actions.CookieAction;
+import org.openide.util.actions.NodeAction;
 
-public final class WSEditAttributesAction extends CookieAction {
+public final class WSEditAttributesAction extends NodeAction {
     
     protected void performAction(Node[] activatedNodes) {
         if (activatedNodes.length == 1) {
-            final EditWSAttributesCookie cookie = (EditWSAttributesCookie)activatedNodes[0].getCookie(EditWSAttributesCookie.class);
-            Runnable task = new Runnable() {
-                public void run() {
-                    if(cookie != null) {
+            final EditWSAttributesCookie cookie = activatedNodes[0].getLookup().lookup(EditWSAttributesCookie.class);
+            if (cookie!=null) {
+                Runnable task = new Runnable() {
+                    public void run() {
                         cookie.openWSAttributesEditor();
                     }
-                }
-            };
-            RequestProcessor.getDefault().post(task, 10);
+                };
+                RequestProcessor.getDefault().post(task, 10);
+            }
         }
-    }
-    
-    protected int mode() {
-        return CookieAction.MODE_EXACTLY_ONE;
     }
     
     public String getName() {
         return NbBundle.getMessage(WSEditAttributesAction.class, "CTL_WSEditAttributesAction");
-    }
-    
-    protected Class[] cookieClasses() {
-        return new Class[] {
-            EditWSAttributesCookie.class
-        };
     }
     
     public HelpCtx getHelpCtx() {

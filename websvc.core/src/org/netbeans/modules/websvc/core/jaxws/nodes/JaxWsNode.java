@@ -121,14 +121,8 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
         content.add(this);
         content.add(service);
         content.add(srcRoot);
+        content.add(new EditWSAttributesCookieImpl(this, jaxWsModel));
         project = FileOwnerQuery.getOwner(srcRoot);
-    }
-    
-    public Node.Cookie getCookie(Class type){
-        if(type == EditWSAttributesCookie.class){
-            return new EditWSAttributesCookieImpl(this, jaxWsModel);
-        }
-        return super.getCookie(type);
     }
     
     public String getDisplayName() {
