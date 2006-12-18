@@ -94,15 +94,11 @@ public final class DefaultHandle extends Object implements Node.Handle {
                 return null;
             }
 
-            if (parentNode.getChildren().findChild(childPath) != node) {
-                if (Logger.getAnonymousLogger().isLoggable(Level.WARNING)) {
-                    Logger.getAnonymousLogger().warning(
-                        "WARNING: parent could not find own child in DefaultHandle.createHandle\n\tnode=" + node +
-                        "\n\tparentNode=" + parentNode + "\n\tchildPath=" + childPath + "\n\tfound child=" +
-                        parentNode.getChildren().findChild(childPath)
-                    );
-                }
-
+            Node foundChild = parentNode.getChildren().findChild(childPath);
+            if (foundChild != node) {
+                Logger.getLogger(DefaultHandle.class.getName()).log(Level.WARNING,
+                        "parent could not find own child: node={0} parentNode={1} childPath={2} foundChild={3}",
+                        new Object[] {node, parentNode, childPath, foundChild});
                 return null;
             }
 
