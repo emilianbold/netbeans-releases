@@ -202,5 +202,68 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </executeTests>
     </target>
+
+    <!-- ====================== -->
+    <!-- Run IDE with AppServer -->
+    <!-- ====================== -->
+    
+    <!--  Run IDE with special property pointing to Sun Application server installation.
+          AppServer has to be installed at expected location and if there exist
+          a cleaning script, default domain is deleted and re-created.  -->
+    <target name="runidetest-with-appserver" depends="set-appserver-path,clean-appserver-domain">
+        <antcall target="runidetest">
+            <param name="xtest.ide.commandline.suffix" value="-J-Dcom.sun.aas.installRoot=&quot;${j2ee.appserver.path}&quot;"/>
+        </antcall>   
+    </target>
+
+    <target name="set-appserver-path" unless="j2ee.appserver.path">
+        <condition property="j2ee.appserver.path" value="e:\\space\\AppServer">
+            <os family="windows"/>
+        </condition>
+        <condition property="j2ee.appserver.path" value="/space/appserver">
+            <os family="unix"/>
+        </condition>
+        <available file="${j2ee.appserver.path}/domains/domain1" property="j2ee.appserver.present"/>
+        <fail unless="j2ee.appserver.present" message="AppServer was not found in ${j2ee.appserver.path}. Set property j2ee.appserver.path to point to AppServer installation directory."/>
+    </target>
+
+    <!-- Stop all running domains, clear and create default AppServer domain. -->
+    <target name="clean-appserver-domain" depends="-init-clean-appserver-domain, -run-clean-appserver-domain, -inform-user"/>
+        
+    <target name="-init-clean-appserver-domain">
+        <condition property="windows">
+            <os family="windows" />
+        </condition>
+        <condition property="unix">
+            <os family="unix" />
+        </condition>
+        <condition property="clean.script.exec" value="e:\\space\\scripts\\cleanAS.bat">
+            <os family="windows" />
+        </condition>
+        <condition property="clean.script.exec" value="/space/scripts/cleanAS.sh">
+            <os family="unix" />
+        </condition>
+        <available file="${clean.script.exec}" property="clean.script.exists" type="file"/>
+    </target>
+    
+    <target name="-run-clean-domain-windows" if="windows">
+        <exec executable="${clean.script.exec}"/>
+    </target>
+    
+    <target name="-run-clean-domain-unix" if="unix">
+        <exec executable="sh" >
+            <arg value="${clean.script.exec}"/>
+        </exec>
+    </target>
+
+    <target name="-run-clean-appserver-domain" if="clean.script.exists">
+        <echo>Cleaning default domains...</echo>
+        <antcall target="-run-clean-domain-windows" inheritall="true"/>
+        <antcall target="-run-clean-domain-unix" inheritall="true"/>
+    </target>
+    
+    <target name="-inform-user" unless="clean.script.exists">
+        <echo>Continuing with default domain, data in this domain will be modified....</echo>
+    </target>
 </project>
 
