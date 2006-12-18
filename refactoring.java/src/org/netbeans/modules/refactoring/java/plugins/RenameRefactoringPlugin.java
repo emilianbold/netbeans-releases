@@ -96,7 +96,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             if (result != null) {
                 return result;
             }
-            FileObject file = treePathHandle.getFileObject();
+            FileObject file = SourceUtils.getFile(el, info.getClasspathInfo());
             if (FileUtil.getArchiveFile(file)!= null) { //NOI18N
                 return createProblem(result, true, getCannotRename(file));
             }
@@ -169,7 +169,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
     }
     
     private static final String getCannotRename(FileObject r) {
-        return new MessageFormat(NbBundle.getMessage(RenameRefactoring.class, "ERR_CannotRenameFile")).format(new Object[] {r.getName()});
+        return new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_CannotRenameFile")).format(new Object[] {r.getNameExt()});
     }
     
     public Problem fastCheckParameters() {

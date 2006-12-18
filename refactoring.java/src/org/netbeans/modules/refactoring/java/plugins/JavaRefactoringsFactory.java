@@ -40,7 +40,8 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
             }
         } else if (refactoring instanceof RenameRefactoring) {
             Object o = ((RenameRefactoring) refactoring).getRefactoredObject();
-            if (o instanceof TreePathHandle || o instanceof FileObject && RetoucheUtils.isRefactorable(((FileObject) o))) {
+            if (o instanceof TreePathHandle || o instanceof FileObject && 
+                    RetoucheUtils.isJavaFile((FileObject)o)) {
                 //rename java file, class, method etc..
                 return new RenameRefactoringPlugin((RenameRefactoring)refactoring);
             } else if (o instanceof FileObject && RetoucheUtils.isOnSourceClasspath((FileObject)o) && ((FileObject)o).isFolder()) {
