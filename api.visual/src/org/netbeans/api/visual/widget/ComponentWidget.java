@@ -36,7 +36,7 @@ import java.awt.event.ComponentListener;
  */
 // TODO - addComponentResizeListener
 // TODO - fix calculateClientArea method - use convertViewToScene instead
-public final class ComponentWidget extends Widget {
+public class ComponentWidget extends Widget {
 
     private Component component;
     private boolean componentAdded;
