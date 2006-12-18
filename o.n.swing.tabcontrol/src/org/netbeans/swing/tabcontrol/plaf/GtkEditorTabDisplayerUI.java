@@ -78,7 +78,7 @@ public final class GtkEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI 
         if (g != null) {
             FontMetrics fm = g.getFontMetrics(displayer.getFont());
             Insets ins = getTabAreaInsets();
-            prefHeight = fm.getHeight() + ins.top + ins.bottom + 12;
+            prefHeight = fm.getHeight() + ins.top + ins.bottom + 8;
         }
         return new Dimension(displayer.getWidth(), prefHeight);
     }

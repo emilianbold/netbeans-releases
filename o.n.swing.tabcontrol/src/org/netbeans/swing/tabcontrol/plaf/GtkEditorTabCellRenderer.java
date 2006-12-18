@@ -68,6 +68,10 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
     }    
 
     protected int getCaptionYAdjustment() {
+        return 2;
+    }
+    
+    protected int getIconYAdjustment() {
         return 0;
     }
 
@@ -118,7 +122,7 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
             rect.x = bounds.x + bounds.width - 10;
             rect.width = 5;
 
-            rect.y += (rect.height / 2) - 2;
+            rect.y += (rect.height / 2);
             rect.height = 5;
         }
 
@@ -162,7 +166,7 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
                 p.getBounds().x, p.getBounds().y, p.getBounds().width, p.getBounds().height);
             } else {
                 paintTabBackground(g, 0, 0,
-                p.getBounds().x, p.getBounds().y + 2, p.getBounds().width, p.getBounds().height - 2);
+                p.getBounds().x, p.getBounds().y + 1, p.getBounds().width, p.getBounds().height - 1);
             }
             
             if (!supportsCloseButton((JComponent)c)) {
@@ -263,7 +267,7 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
                 p.getBounds().x, p.getBounds().y, p.getBounds().width, p.getBounds().height);
             } else {
                 paintTabBackground(g, 0, 0,
-                p.getBounds().x, p.getBounds().y + 2, p.getBounds().width, p.getBounds().height - 2);
+                p.getBounds().x, p.getBounds().y + 1, p.getBounds().width, p.getBounds().height - 1);
             }
         }
 
@@ -325,7 +329,7 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
                 p.getBounds().x, p.getBounds().y, p.getBounds().width, p.getBounds().height);
             } else {
                 paintTabBackground(g, 0, 0,
-                p.getBounds().x, p.getBounds().y + 2, p.getBounds().width, p.getBounds().height - 2);
+                p.getBounds().x, p.getBounds().y + 1, p.getBounds().width, p.getBounds().height - 1);
             }
         }
 
