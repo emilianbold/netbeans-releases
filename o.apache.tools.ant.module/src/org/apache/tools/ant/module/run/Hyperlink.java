@@ -98,7 +98,9 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
     void destroy() {
         doDetach();
         dead = true;
-        liveLine = null;
+        synchronized (hyperlinks) {
+            liveLine = null;
+        }
     }
     
     public void outputLineAction(OutputEvent ev) {
@@ -156,16 +158,27 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
     private Line updateLines(EditorCookie ed) {
         Line.Set lineset = ed.getLineSet();
         synchronized (hyperlinks) {
+            assert line1 != -1;
             boolean ran = false;
+            boolean encounteredThis = false;
+            boolean modifiedThis = false;
             if (liveLine == null) {
                 ran = true;
                 for (Hyperlink h : hyperlinks) {
+                    if (h == this) {
+                        encounteredThis = true;
+                    }
                     if (h.liveLine == null && h.url.equals(url) && h.line1 != -1) {
-                        h.liveLine = lineset.getOriginal(h.line1 - 1);
+                        Line l = lineset.getOriginal(h.line1 - 1);
+                        assert l != null : h;
+                        h.liveLine = l;
+                        if (h == this) {
+                            modifiedThis = true;
+                        }
                     }
                 }
             }
-            assert liveLine != null : ran;
+            assert liveLine != null : "this=" + this + " ran=" + ran + " encounteredThis=" + encounteredThis + " modifiedThis=" + modifiedThis;
             return liveLine;
         }
     }
@@ -281,7 +294,9 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
     
     public void outputLineCleared(OutputEvent ev) {
         doDetach();
-        liveLine = null;
+        synchronized (hyperlinks) {
+            liveLine = null;
+        }
     }
     
     public void propertyChange(PropertyChangeEvent ev) {
