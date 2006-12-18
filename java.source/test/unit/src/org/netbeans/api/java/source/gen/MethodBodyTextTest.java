@@ -18,23 +18,19 @@
  */
 package org.netbeans.api.java.source.gen;
 
-import com.sun.corba.se.impl.util.Utility;
-import com.sun.org.apache.bcel.internal.classfile.JavaClass;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ModifiersTree;
-import com.sun.tools.javac.code.TypeTags;
-import javax.lang.model.element.Modifier;
+import java.io.IOException;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
+import com.sun.source.tree.*;
 import junit.textui.TestRunner;
-import org.netbeans.jackpot.transform.Transformer;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TestUtilities;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.classfile.Method;
 import org.openide.filesystems.FileStateInvalidException;
 
 /**
@@ -42,7 +38,7 @@ import org.openide.filesystems.FileStateInvalidException;
  *
  * @author Pavel Flaska
   */
-public class MethodBodyTextTest extends GeneratorTest {
+public class MethodBodyTextTest extends GeneratorTestMDRCompat {
     
     /** Creates a new instance of MethodBodyTextTest */
     public MethodBodyTextTest(String name) {
@@ -50,7 +46,11 @@ public class MethodBodyTextTest extends GeneratorTest {
     }
     
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite(MethodBodyTextTest.class);
+        NbTestSuite suite = new NbTestSuite();
+//        suite.addTestSuite(MethodBodyTextTest.class);
+        suite.addTest(new MethodBodyTextTest("testSetBodyText"));
+        suite.addTest(new MethodBodyTextTest("testCreateWithBodyText"));
+        suite.addTest(new MethodBodyTextTest("testModifyBodyText"));
         return suite;
     }
     
@@ -61,28 +61,52 @@ public class MethodBodyTextTest extends GeneratorTest {
     
     public void testSetBodyText() throws java.io.IOException, FileStateInvalidException {
         System.err.println("testSetBodyText");
-        process(
-            new MutableTransformer<Void, Object>() {
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("method".contentEquals(node.getName())) {
-                       setMethodBody(node, "{ System.err.println(\"Nothing.\"); }");
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree clazz = (ClassTree) typeDecl;
+                        MethodTree node = (MethodTree) clazz.getMembers().get(1);
+                        //if ("method".contentEquals(node.getName())) {
+                        BlockTree newBody = make.createMethodBody(node, "{ System.err.println(\"Nothing.\"); }");
+                        workingCopy.rewrite(node.getBody(), newBody);
                     }
-                    return null;
                 }
             }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        String golden = TestUtilities.copyFileToString(
+            getFile(getGoldenDir(), getGoldenPckg() + "testSetBodyText_MethodBodyTextTest.pass")
         );
-        assertFiles("testSetBodyText_MethodBodyTextTest.pass");
+        assertEquals(golden, res);
     }
     
     public void testCreateWithBodyText() throws java.io.IOException, FileStateInvalidException {
-        process(
-            new MutableTransformer<Void, Object>() {
-                public Void visitClass(ClassTree node, Object p) {
-                    super.visitClass(node, p);
-                    StringBuffer body = new StringBuffer();
-                    body.append("{ System.out.println(\"Again Nothing\"); }");
-                    MethodTree method = Method(
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree clazz = (ClassTree) typeDecl;
+                        StringBuffer body = new StringBuffer();
+                        body.append("{ System.out.println(\"Again Nothing\"); }");
+                        MethodTree method = make.Method(
                             make.Modifiers(Collections.singleton(Modifier.PUBLIC)),
                             "method2",
                             make.PrimitiveType(TypeKind.VOID),
@@ -91,31 +115,56 @@ public class MethodBodyTextTest extends GeneratorTest {
                             Collections.EMPTY_LIST,
                             body.toString(),
                             null
-                            );
-                    ClassTree clazz = make.addClassMember(node, method);
-                    changes.rewrite(node, clazz);
-                    return null;
+                        );
+                        ClassTree copy = make.addClassMember(clazz, method);
+                        workingCopy.rewrite(clazz, copy);
+                    }
                 }
             }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        String golden = TestUtilities.copyFileToString(
+            getFile(getGoldenDir(), getGoldenPckg() + "testCreateWithBodyText_MethodBodyTextTest.pass")
         );
-        assertFiles("testCreateWithBodyText_MethodBodyTextTest.pass");
+        assertEquals(golden, res);
     }
     
     public void testModifyBodyText() throws java.io.IOException, FileStateInvalidException {
         System.err.println("testModifyBodyText");
-        process(
-            new MutableTransformer<Void, Object>() {
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("method2".equals(node.getName().toString())) {
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree clazz = (ClassTree) typeDecl;
+                        MethodTree node = (MethodTree) clazz.getMembers().get(1);
+                        //if ("method2".equals(node.getName().toString())) {
                         String body = "{ List l; }";
-                        setMethodBody(node, body);
+                        BlockTree copy = make.createMethodBody(node, body);
+                        workingCopy.rewrite(node.getBody(), copy);
                     }
-                    return null;
                 }
             }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        String golden = TestUtilities.copyFileToString(
+            getFile(getGoldenDir(), getGoldenPckg() + "testModifyBodyText_MethodBodyTextTest.pass")
         );
-        assertFiles("testModifyBodyText_MethodBodyTextTest.pass");
+        assertEquals(golden, res);
     }
     
     public static void main(String[] args) {
