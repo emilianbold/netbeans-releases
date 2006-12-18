@@ -31,7 +31,7 @@ import java.awt.event.ItemListener;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.websvc.core.jaxws.JaxWsUtils;
+import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.customization.model.CustomizationComponentFactory;
 import org.netbeans.modules.websvc.customization.model.JavaClass;
 import org.netbeans.modules.websvc.customization.model.ServiceCustomization;

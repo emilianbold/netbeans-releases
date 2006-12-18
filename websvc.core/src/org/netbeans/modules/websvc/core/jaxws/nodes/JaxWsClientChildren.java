@@ -41,7 +41,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
-import org.netbeans.modules.websvc.core.jaxws.JaxWsUtils;
+import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;

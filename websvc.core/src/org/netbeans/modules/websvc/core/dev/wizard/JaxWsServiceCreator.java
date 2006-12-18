@@ -41,7 +41,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.core.ServiceCreator;
-import org.netbeans.modules.websvc.core.jaxws.JaxWsUtils;
+import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -394,18 +394,27 @@ public class JaxWsServiceCreator implements ServiceCreator {
             WsdlModeler wsdlModeler = (WsdlModeler) wiz.getProperty(WizardProperties.WSDL_MODELER);
             // don't set the packageName for modeler (use the default one generated from target Namespace)
             wsdlModeler.generateWsdlModel(new WsdlModelListener() {
+
                 public void modelCreated(WsdlModel model) {
                     WsdlService service1 = model.getServiceByName(service.getName());
                     WsdlPort port1 = service1.getPortByName(port.getName());
+
                     port1.setSOAPVersion(port.getSOAPVersion());
                     FileObject targetFolder = Templates.getTargetFolder(wiz);
                     String targetName = Templates.getTargetName(wiz);
+
                     try {
-                        JaxWsUtils.generateJaxWsImplementationClass(projectInfo.getProject(), targetFolder, targetName, wsdlURL, service1, port1);
+                        JaxWsUtils.generateJaxWsImplementationClass(projectInfo.getProject(),
+                                                                 targetFolder,
+                                                                 targetName,
+                                                                 wsdlURL,
+                                                                 service1, port1);
                         handle.finish();
-                    } catch (Exception ex) {
+                    }
+                    catch (Exception ex) {
                         handle.finish();
-                        ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+                        ErrorManager.getDefault().notify(ErrorManager.EXCEPTION,
+                                                         ex);
                     }
                 }
             });

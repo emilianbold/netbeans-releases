@@ -34,7 +34,7 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
-import org.netbeans.modules.websvc.core.jaxws.JaxWsUtils;
+import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.customization.model.JavaMethod;
 import org.netbeans.modules.websvc.customization.model.PortCustomization;
 import org.netbeans.modules.websvc.customization.model.Provider;

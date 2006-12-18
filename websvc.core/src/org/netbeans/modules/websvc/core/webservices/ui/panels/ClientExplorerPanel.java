@@ -30,7 +30,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientView;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.core.ProjectClientView;
-import org.netbeans.modules.websvc.core.jaxws.JaxWsUtils;
+import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 
 import org.openide.DialogDescriptor;

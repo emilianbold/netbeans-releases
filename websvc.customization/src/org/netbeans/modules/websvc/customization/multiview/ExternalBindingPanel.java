@@ -142,7 +142,7 @@ public class ExternalBindingPanel extends SaveableSectionInnerPanel {
                     
                     DataObject dobj = DataObject.find(copiedBinding);
                     String relativePath = panel.getRelativePathToWsdl();
-                    boolean changed = org.netbeans.modules.websvc.core.jaxws.JaxWsUtils.addRelativeWsdlLocation(copiedBinding, relativePath);
+                    boolean changed = org.netbeans.modules.websvc.core.JaxWsUtils.addRelativeWsdlLocation(copiedBinding, relativePath);
                     if(changed){
                         if(dobj != null){
                             SaveCookie sc = (SaveCookie)dobj.getCookie(SaveCookie.class);

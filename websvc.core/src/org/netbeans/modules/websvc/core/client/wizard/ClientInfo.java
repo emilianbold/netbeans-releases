@@ -52,7 +52,7 @@ import org.netbeans.modules.websvc.core.webservices.ui.panels.WebProxySetter;
 import org.netbeans.modules.websvc.core.WsdlRetriever;
 import org.netbeans.modules.websvc.core.WsdlRetriever;
 import org.netbeans.modules.websvc.core.jaxws.JaxWsExplorerPanel;
-import org.netbeans.modules.websvc.core.jaxws.JaxWsUtils;
+import org.netbeans.modules.websvc.core.JaxWsUtils;
 //import org.netbeans.modules.websvc.core.webservices.action.JaxRpcWsdlCookie;
 
 import org.openide.DialogDescriptor;

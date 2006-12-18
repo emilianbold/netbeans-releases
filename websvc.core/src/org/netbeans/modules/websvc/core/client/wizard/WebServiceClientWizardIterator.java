@@ -26,7 +26,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.websvc.core.ClientCreator;
 import org.netbeans.modules.websvc.core.CreatorProvider;
-import org.netbeans.modules.websvc.core.jaxws.JaxWsUtils;
+import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 

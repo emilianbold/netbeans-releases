@@ -23,7 +23,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.websvc.core.jaxws.JaxWsUtils;
+import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsCodeGenerator;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;

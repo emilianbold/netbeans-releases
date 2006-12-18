@@ -34,7 +34,7 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.websvc.core.jaxws.JaxWsUtils;
+import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.customization.model.CustomizationComponentFactory;
 import org.netbeans.modules.websvc.customization.model.DefinitionsCustomization;
 import org.netbeans.modules.websvc.customization.model.EnableAsyncMapping;
