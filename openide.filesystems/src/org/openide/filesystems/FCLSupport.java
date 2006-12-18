@@ -19,6 +19,7 @@
 package org.openide.filesystems;
 
 import java.util.List;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -73,36 +74,29 @@ class FCLSupport {
     }
 
     final static void dispatchEvent(FileChangeListener fcl, FileEvent fe, int operation) {
-        switch (operation) {
-        case FCLSupport.DATA_CREATED:
-            fcl.fileDataCreated(fe);
-
-            break;
-
-        case FCLSupport.FOLDER_CREATED:
-            fcl.fileFolderCreated(fe);
-
-            break;
-
-        case FCLSupport.FILE_CHANGED:
-            fcl.fileChanged(fe);
-
-            break;
-
-        case FCLSupport.FILE_DELETED:
-            fcl.fileDeleted(fe);
-
-            break;
-
-        case FCLSupport.FILE_RENAMED:
-            fcl.fileRenamed((FileRenameEvent) fe);
-
-            break;
-
-        case FCLSupport.ATTR_CHANGED:
-            fcl.fileAttributeChanged((FileAttributeEvent) fe);
-
-            break;
+        try {
+            switch (operation) {
+                case FCLSupport.DATA_CREATED:
+                    fcl.fileDataCreated(fe);
+                    break;
+                case FCLSupport.FOLDER_CREATED:
+                    fcl.fileFolderCreated(fe);
+                    break;
+                case FCLSupport.FILE_CHANGED:
+                    fcl.fileChanged(fe);
+                    break;
+                case FCLSupport.FILE_DELETED:
+                    fcl.fileDeleted(fe);
+                    break;
+                case FCLSupport.FILE_RENAMED:
+                    fcl.fileRenamed((FileRenameEvent) fe);
+                    break;
+                case FCLSupport.ATTR_CHANGED:
+                    fcl.fileAttributeChanged((FileAttributeEvent) fe);
+                    break;
+            }
+        } catch (RuntimeException x) {
+            Exceptions.printStackTrace(x);
         }
     }
 
