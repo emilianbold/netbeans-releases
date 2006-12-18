@@ -120,8 +120,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                                         EnumSet.of(ClassIndex.SearchScope.SOURCE)));
                             }
                             for (ElementHandle<TypeElement> e : result) {
-                                set.add(SourceUtils.getFile(e.resolve(info),
-                                        cpInfo));
+                                FileObject fo = SourceUtils.getFile(e, cpInfo);
+                                assert fo != null: "issue 90196" ;
+                                set.add(fo);
                             }
                         }
                     } else {
