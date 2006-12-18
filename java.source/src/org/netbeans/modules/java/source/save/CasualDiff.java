@@ -1980,36 +1980,27 @@ public class CasualDiff {
         int start;
     }
     
-    public List<Diff> makeListMatch(String text1, String text2) {
-        Line[] lines1;
-        Line[] lines2;
-        System.err.println("Using new line sequence comparing...");
-        char[] chars1 = text1.toCharArray();
-        char[] chars2 = text2.toCharArray();
-        List<Line> a = new ArrayList<Line>();
-        List<Line> b = new ArrayList<Line>();
+    private List<Line> getLines(String text) {
+        char[] chars = text.toCharArray();
+        List<Line> list = new ArrayList<Line>();
         int pointer = 0;
-        for (int i = 0; i < chars1.length; i++) {
-            if (chars1[i] == '\n') {
-                a.add(new Line(new String(chars1, pointer, i-pointer+1), pointer, i+1));
+        for (int i = 0; i < chars.length; i++) {
+            if (chars[i] == '\n') {
+                list.add(new Line(new String(chars, pointer, i-pointer+1), pointer, i+1));
                 pointer = i+1;
             }
         }
-        if (pointer < chars1.length) {
-            a.add(new Line(new String(chars1, pointer, chars1.length-pointer), pointer, chars1.length));
+        if (pointer < chars.length) {
+            list.add(new Line(new String(chars, pointer, chars.length-pointer), pointer, chars.length));
         }
-        pointer = 0;
-        for (int i = 0; i < chars2.length; i++) {
-            if (chars2[i] == '\n') {
-                b.add(new Line(new String(chars2, pointer, i-pointer+1), pointer, i+1));
-                pointer = i+1;
-            }
-        }
-        if (pointer < chars2.length) {
-            b.add(new Line(new String(chars2, pointer, chars2.length-pointer), pointer, chars2.length));
-        }
-        lines1 = a.toArray(new Line[a.size()]);
-        lines2 = b.toArray(new Line[b.size()]);
+        return list;
+    }
+    
+    public List<Diff> makeListMatch(String text1, String text2) {
+        List<Line> list1 = getLines(text1);
+        List<Line> list2 = getLines(text2);
+        Line[] lines1 = list1.toArray(new Line[list1.size()]);
+        Line[] lines2 = list2.toArray(new Line[list2.size()]);
         
         List diffs = new ComputeDiff(lines1, lines2).diff();
         for (Object o : diffs) {
@@ -2019,9 +2010,9 @@ public class CasualDiff {
             int addStart = diff.getAddedStart();
             int addEnd   = diff.getAddedEnd();
             
-            String from     = toString(delStart, delEnd);
-            String to       = toString(addStart, addEnd);
-            String type     = delEnd != Difference.NONE && addEnd != Difference.NONE ? "c" : (delEnd == Difference.NONE ? "a" : "d");
+            String from = toString(delStart, delEnd);
+            String to = toString(addStart, addEnd);
+            char type = delEnd != Difference.NONE && addEnd != Difference.NONE ? 'c' : (delEnd == Difference.NONE ? 'a' : 'd');
 
             System.out.println(from + type + to);
 
