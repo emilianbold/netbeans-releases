@@ -23,6 +23,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.*;
+import java.util.HashSet;
 import javax.lang.model.element.*;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
@@ -108,22 +109,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                             set.addAll(idx.getResources(ElementHandle.create((TypeElement)el), searchKind,EnumSet.of(ClassIndex.SearchScope.SOURCE)));
                         } else {
                             //itererate implementors recursively
-                            LinkedList<ElementHandle<TypeElement>> elements = new LinkedList(idx.getElements(ElementHandle.create((TypeElement) el),
-                                    EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
-                                    EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-                            HashSet<ElementHandle> result = new HashSet();
-                            while(!elements.isEmpty()) {
-                                ElementHandle<TypeElement> next = elements.removeFirst();
-                                result.add(next);
-                                elements.addAll(idx.getElements(next,
-                                        EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
-                                        EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-                            }
-                            for (ElementHandle<TypeElement> e : result) {
-                                FileObject fo = SourceUtils.getFile(e, cpInfo);
-                                assert fo != null: "issue 90196" ;
-                                set.add(fo);
-                            }
+                            set.addAll(getImplementorsRecursive(idx, cpInfo, (TypeElement)el));
                         }
                     } else {
                         //get type references from index
@@ -132,7 +118,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                 } else if (el.getKind() == ElementKind.METHOD && isFindOverridingMethods()) {
                     //Find overriding methods
                     TypeElement type = (TypeElement) el.getEnclosingElement();
-                    set.addAll(idx.getResources(ElementHandle.create((TypeElement)el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                    set.addAll(getImplementorsRecursive(idx, cpInfo, type));
                 } 
                 if (el.getKind() == ElementKind.METHOD && isFindUsages()) {
                     //get method references for method and for all it's overriders
@@ -161,6 +147,27 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
             source.runUserActionTask(task, true);
         } catch (IOException ioe) {
             throw (RuntimeException) new RuntimeException().initCause(ioe);
+        }
+        return set;
+    }
+    
+    private Set<FileObject> getImplementorsRecursive(ClassIndex idx, ClasspathInfo cpInfo, TypeElement el) {
+        Set<FileObject> set = new HashSet<FileObject>();
+        LinkedList<ElementHandle<TypeElement>> elements = new LinkedList(idx.getElements(ElementHandle.create(el),
+                EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
+                EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+        HashSet<ElementHandle> result = new HashSet();
+        while(!elements.isEmpty()) {
+            ElementHandle<TypeElement> next = elements.removeFirst();
+            result.add(next);
+            elements.addAll(idx.getElements(next,
+                    EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
+                    EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+        }
+        for (ElementHandle<TypeElement> e : result) {
+            FileObject fo = SourceUtils.getFile(e, cpInfo);
+            assert fo != null: "issue 90196" ;
+            set.add(fo);
         }
         return set;
     }
