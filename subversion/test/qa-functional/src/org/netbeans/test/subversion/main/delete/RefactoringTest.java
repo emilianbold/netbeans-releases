@@ -14,6 +14,7 @@ import java.io.PrintStream;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -81,6 +82,7 @@ public class RefactoringTest extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
         TestKit.closeProject(PROJECT_NAME);
+        OutputOperator.invoke();
         JTableOperator table;
         stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
         VersioningOperator vo = VersioningOperator.invoke();
@@ -125,16 +127,17 @@ public class RefactoringTest extends JellyTestCase {
         NbDialogOperator dialog = new NbDialogOperator("Rename");
         JTextFieldOperator txt = new JTextFieldOperator(dialog);
         txt.setText("javaapp_ren");
-        JButtonOperator btn = new JButtonOperator(dialog, "Next");
+        JButtonOperator btn = new JButtonOperator(dialog, "Refactor");
         btn.push();
+        dialog.waitClosed();
+        Thread.sleep(2000);
 
-        RefactoringOperator ro = new RefactoringOperator();
+        /*RefactoringOperator ro = new RefactoringOperator();
         ro.doRefactoring();
-        //Thread.sleep(1000);
         NbDialogOperator ndo = new NbDialogOperator("Refactoring");
         ndo.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         ndo.waitClosed();
-        Thread.sleep(2000);
+        Thread.sleep(2000);*/
         
         vo = VersioningOperator.invoke();
         String[] expected = new String[] {"Main.java", "Main.java", "javaapp_ren"};
