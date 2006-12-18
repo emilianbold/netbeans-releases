@@ -143,7 +143,7 @@ public class CvsModuleConfig {
             ExtSettings extSettings = rootSettings.extSettings;
             if (extSettings != null) {
                 if (extSettings.extUseInternalSsh == false && extSettings.extCommand == null) {
-                    extSettings.extCommand = System.getProperty("Env-CVS_RSH"); // NOI18N
+                    extSettings.extCommand = System.getenv("CVS_RSH"); // NOI18N
                 }
                 return extSettings;
             }
@@ -152,7 +152,7 @@ public class CvsModuleConfig {
         // hardcoded default value
         ExtSettings defaults = new ExtSettings();
         defaults.extRememberPassword = false;
-        defaults.extCommand = System.getProperty("Env-CVS_RSH"); // NOI18N
+        defaults.extCommand = System.getenv("CVS_RSH"); // NOI18N
         defaults.extUseInternalSsh = true;
         defaults.extPassword = null;
         return defaults;

@@ -357,7 +357,8 @@ public class ClientRuntime {
                 // I prefer the cvs style, see issue #62683 for details.
 
                 String command = extSettings.extCommand;
-                String cvs_server = System.getProperty("Env-CVS_SERVER", "cvs") + " server";  // NOI18N
+                String cvs_server = System.getenv("CVS_SERVER");
+                cvs_server = cvs_server != null? cvs_server + " server": "cvs server";  // NOI18N
                 String userOption = ""; // NOI18N
                 if ( userName != null ) {
                     userOption = " -l " + userName;  // NOI18N

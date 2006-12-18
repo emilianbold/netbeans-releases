@@ -42,7 +42,8 @@ import org.openide.util.NbBundle;
  */
 public class SSHConnection extends AbstractConnection {
 
-    private static final String CVS_SERVER_COMMAND = System.getProperty("Env-CVS_SERVER", "cvs") + " server";  // NOI18N
+    private static final String CVS_SERVER_COMMAND = System.getenv("CVS_SERVER") != null?
+        System.getenv("CVS_SERVER") + " server": "cvs server";  // NOI18N
 
     private final SocketFactory socketFactory;
     private final String host;

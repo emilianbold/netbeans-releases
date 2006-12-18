@@ -268,7 +268,8 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
                                 if ( userName != null) {
                                     userOption = " -l " + userName;  // NOI18N
                                 }
-                                String cvs_server = System.getProperty("Env-CVS_SERVER", "cvs") + " server";  // NOI18N
+                                String cvs_server = System.getenv("CVS_SERVER") != null?
+                                    System.getenv("CVS_SERVER") + " server": "cvs server";  // NOI18N
                                 command += " " + host + userOption + " " + cvs_server; // NOI18N
                                 ExtConnection econnection = new ExtConnection(command);
                                 econnection.setRepository(root.getRepository());
