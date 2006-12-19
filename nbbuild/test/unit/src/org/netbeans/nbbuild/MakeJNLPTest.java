@@ -62,7 +62,7 @@ public class MakeJNLPTest extends NbTestCase {
 
         File parent = simpleJar.getParentFile ();
         File output = new File(parent, "output");
-        File ks = genereteKeystore("jnlp", "netbeans-test");
+        File ks = generateKeystore("jnlp", "netbeans-test");
         
         java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
@@ -177,7 +177,7 @@ public class MakeJNLPTest extends NbTestCase {
         w.close();
 
         File output = new File(getWorkDir(), "output");
-        File ks = genereteKeystore("jnlp", "netbeans-test");
+        File ks = generateKeystore("jnlp", "netbeans-test");
         
         java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
@@ -304,7 +304,7 @@ public class MakeJNLPTest extends NbTestCase {
         
         
         File output = new File(parent, "output");
-        File ks = genereteKeystore("jnlp", "netbeans-test");
+        File ks = generateKeystore("jnlp", "netbeans-test");
         
         java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
@@ -389,7 +389,7 @@ public class MakeJNLPTest extends NbTestCase {
 
         File parent = simpleJar.getParentFile ();
         File output = new File(parent, "output");
-        File ks = genereteKeystore("jnlp", "netbeans-test");
+        File ks = generateKeystore("jnlp", "netbeans-test");
         
         java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
@@ -478,7 +478,7 @@ public class MakeJNLPTest extends NbTestCase {
     }
 
     public void testGenerateJNLPAndSignedJarForModuleWithClassPathAndSignedJar() throws Exception {
-        File ks = genereteKeystore("external", "netbeans-test");
+        File ks = generateKeystore("external", "netbeans-test");
         
         File ext = doClassPathModuleCheck(
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
@@ -565,7 +565,7 @@ public class MakeJNLPTest extends NbTestCase {
 
         File parent = simpleJar.getParentFile ();
         File output = new File(parent, "output");
-        File ks = genereteKeystore("jnlp", "netbeans-test");
+        File ks = generateKeystore("jnlp", "netbeans-test");
         
         java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
@@ -685,7 +685,7 @@ public class MakeJNLPTest extends NbTestCase {
         assertEquals("Both modules in the same dir", module.getParentFile(), nonModule.getParentFile());
         
         File output = new File(getWorkDir(), "output");
-        File ks = genereteKeystore("jnlp", "netbeans-test");
+        File ks = generateKeystore("jnlp", "netbeans-test");
         
         java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (script);
         try {
@@ -738,7 +738,7 @@ public class MakeJNLPTest extends NbTestCase {
         File parent = simpleJar.getParentFile ();
         
         File output = new File(parent, "output");
-        File ks = genereteKeystore("jnlp", "netbeans-test");
+        File ks = generateKeystore("jnlp", "netbeans-test");
         
         java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (script);
         PublicPackagesInProjectizedXMLTest.execute (f, new String[] { 
@@ -802,7 +802,7 @@ public class MakeJNLPTest extends NbTestCase {
         return f;
     }
     
-    private final File genereteKeystore(String alias, String password) throws Exception {
+    private final File generateKeystore(String alias, String password) throws Exception {
         Error lastEx = null;
         for (int i = 0; i < 10; i++) {
             File where = new File(getWorkDir(), "key" + i + ".ks");
