@@ -93,7 +93,7 @@ public final class SessionEJBWizard implements WizardDescriptor.InstantiatingIte
                 ejbPanel.isStateful(), 
                 isSimplified, 
                 true, // TODO: UI - add checkbox for creation of business interface
-                true // TODO: UI - add checkbox for option XML (not annotation) usage
+                !isSimplified // TODO: UI - add checkbox for option XML (not annotation) usage
                 );
         FileObject fileObject = sessionGenerator.generateSessionBean(model);
         return Collections.singleton(fileObject);

@@ -45,9 +45,10 @@ public final class SessionGenerator {
     private static final String EJB21_REMOTE = "Templates/J2EE/EJB21/SessionRemote.java"; // NOI18N
     private static final String EJB21_REMOTEHOME = "Templates/J2EE/EJB21/SessionRemoteHome.java"; // NOI18N
     
-    private static final String EJB30_EJBCLASS = "TODO"; // NOI18N
-    private static final String EJB30_LOCAL = "TODO"; // NOI18N
-    private static final String EJB30_REMOTE = "TODO"; // NOI18N
+    private static final String EJB30_STATELESS_EJBCLASS = "Templates/J2EE/EJB30/StatelessEjbClass.java"; // NOI18N
+    private static final String EJB30_STATEFUL_EJBCLASS = "Templates/J2EE/EJB30/StatefulEjbClass.java"; // NOI18N
+    private static final String EJB30_LOCAL = "Templates/J2EE/EJB30/SessionLocal.java"; // NOI18N
+    private static final String EJB30_REMOTE = "Templates/J2EE/EJB30/SessionRemote.java"; // NOI18N
 
     private final EJBNameOptions ejbNameOptions;
     
@@ -63,11 +64,37 @@ public final class SessionGenerator {
     }
     
     public FileObject generateSessionBean(Model model) throws IOException {
+        FileObject resultFileObject = null;
         if (model.isSimplified) {
-            return generateEJB30Classes(model);
+            resultFileObject = generateEJB30Classes(model);
+            
+            //put these lines in a common function at the appropriate place after EA1
+            //something like public EjbJar getEjbJar()
+            //This method will be used whereever we construct/get DD object graph to ensure
+            //corresponding config listners attached to it.
+            Project project = FileOwnerQuery.getOwner(model.pkg);
+            J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+            j2eeModuleProvider.getConfigSupport().ensureConfigurationReady();
+
+            if (model.isXmlBased) {
+                generateEJB30Xml(model);
+            }
         } else {
-            return generateEJB21Classes(model);
+            resultFileObject = generateEJB21Classes(model);
+
+            //put these lines in a common function at the appropriate place after EA1
+            //something like public EjbJar getEjbJar()
+            //This method will be used whereever we construct/get DD object graph to ensure
+            //corresponding config listners attached to it.
+            Project project = FileOwnerQuery.getOwner(model.pkg);
+            J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+            j2eeModuleProvider.getConfigSupport().ensureConfigurationReady();
+
+            if (model.isXmlBased) {
+                generateEJB21Xml(model);
+            }
         }
+        return resultFileObject;
     }
 
     private FileObject generateEJB21Classes(Model model) throws IOException {
@@ -86,25 +113,14 @@ public final class SessionGenerator {
             localHomeName = ejbNameOptions.getSessionLocalHomePrefix() + model.ejbClassName + ejbNameOptions.getSessionLocalHomeSuffix();
             GenerationUtils.createClass(EJB21_LOCALHOME, model.pkg, localHomeName, null);
         }
-
-        //put these lines in a common function at the appropriate place after EA1
-        //something like public EjbJar getEjbJar()
-        //This method will be used whereever we construct/get DD object graph to ensure
-        //corresponding config listners attached to it.
-        Project project = FileOwnerQuery.getOwner(model.pkg);
-        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
-        j2eeModuleProvider.getConfigSupport().ensureConfigurationReady();
-        
-        if (model.isXmlBased) {
-            generateEJB21Xml(model);
-        }
         return ejbClassFO;
     }
     
     private FileObject generateEJB30Classes(Model model) throws IOException {
         ejbName = ejbNameOptions.getSessionEjbNamePrefix() + model.ejbClassName + ejbNameOptions.getSessionEjbNameSuffix();
         ejbClassName = ejbNameOptions.getSessionEjbClassPrefix() + model.ejbClassName + ejbNameOptions.getSessionEjbClassSuffix();
-        FileObject ejbClassFO = GenerationUtils.createClass(EJB30_EJBCLASS,  model.pkg, ejbClassName, null);
+        String ejbClassTemplateName = model.isStateful ? EJB30_STATEFUL_EJBCLASS : EJB30_STATELESS_EJBCLASS;
+        FileObject ejbClassFO = GenerationUtils.createClass(ejbClassTemplateName,  model.pkg, ejbClassName, null);
         if (model.hasRemote) {
             remoteName = ejbNameOptions.getSessionRemotePrefix() + model.ejbClassName + ejbNameOptions.getSessionRemoteSuffix();
             GenerationUtils.createClass(EJB30_REMOTE,  model.pkg, remoteName, null);
@@ -112,18 +128,6 @@ public final class SessionGenerator {
         if (model.hasLocal) {
             localName = ejbNameOptions.getSessionLocalPrefix() + model.ejbClassName + ejbNameOptions.getSessionLocalSuffix();
             GenerationUtils.createClass(EJB30_LOCAL, model.pkg, localName, null);
-        }
-
-        //put these lines in a common function at the appropriate place after EA1
-        //something like public EjbJar getEjbJar()
-        //This method will be used whereever we construct/get DD object graph to ensure
-        //corresponding config listners attached to it.
-        Project project = FileOwnerQuery.getOwner(model.pkg);
-        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
-        j2eeModuleProvider.getConfigSupport().ensureConfigurationReady();
-        
-        if (model.isXmlBased) {
-            generateEJB30Xml(model);
         }
         return ejbClassFO;
     }

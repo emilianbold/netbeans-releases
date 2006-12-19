@@ -1,0 +1,24 @@
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package Templates.J2EE.EJB30;
+
+import javax.ejb.Stateless;
+
+/**
+ *
+ * @author __USER__
+ */
+@Stateless
+public class __NAME__ {
+    
+    // Add business logic below. (Right-click in editor and choose
+    // "EJB Methods > Add Business Method" or "Web Service > Add Operation")
+    
+}
