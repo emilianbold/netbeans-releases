@@ -44,8 +44,10 @@ import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Position;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -78,6 +80,8 @@ public class CasualDiff {
     private int pointer;
     private Context context;
 
+    private Map<Integer, String> diffInfo = new HashMap<Integer, String>();
+    
     /** provided for test only */
     public CasualDiff() {
     }
@@ -109,6 +113,7 @@ public class CasualDiff {
             td.diffTree(oldTree, newTree);
             String resultSrc = td.output.toString();
             td.makeListMatch(td.workingCopy.getText(), resultSrc);
+            td.workingCopy.getCommandEnvironment().getApplicationContext().setResult(td.diffInfo, "user-info");
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -288,6 +293,7 @@ public class CasualDiff {
         if (nameChanged(oldT.name, newT.name)) {
             printer.print(origText.substring(localPointer, insertHint));
             printer.print(newT.name);
+            diffInfo.put(insertHint, "Change class name");
             localPointer = insertHint += oldT.name.length();
             origClassName = oldT.name;
         } else {

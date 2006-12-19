@@ -25,12 +25,13 @@ import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.util.Context;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.util.Elements;
@@ -40,7 +41,6 @@ import javax.swing.text.Document;
 import javax.swing.text.Position.Bias;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
-
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.jackpot.model.ChangeSet;
@@ -53,7 +53,6 @@ import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.builder.DefaultEnvironment;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.modules.java.source.save.Commit;
-
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -103,7 +102,7 @@ public class WorkingCopy extends CompilationController {
     
     // API of the class --------------------------------------------------------
 
-    CommandEnvironment getCommandEnvironment() {
+    public CommandEnvironment getCommandEnvironment() {
         return ce;
     }
 
@@ -315,7 +314,16 @@ public class WorkingCopy extends CompilationController {
                 public void close() throws IOException {}
             }, true);
         }
+
+        private Map<Integer, String> userInfo = Collections.<Integer, String>emptyMap();
         
+        @Override
+        public void setResult(Object result, String title) {
+            if ("user-info".equals(title)) {
+                userInfo = Map.class.cast(result);
+            }
+        }
+
         public SourceRewriter getSourceRewriter(JavaFileObject sourcefile) throws IOException {
             return new Rewriter();
         }
@@ -341,7 +349,7 @@ public class WorkingCopy extends CompilationController {
                     diff.kind = Difference.Kind.CHANGE;
                     diff.newText = s;
                 } else {
-                    diffs.add(new Difference(Difference.Kind.INSERT, ces.createPositionRef(offset, Bias.Forward), ces.createPositionRef(offset, Bias.Forward), null, s));
+                    diffs.add(new Difference(Difference.Kind.INSERT, ces.createPositionRef(offset, Bias.Forward), ces.createPositionRef(offset, Bias.Forward), null, s, userInfo.get(offset)));
                 }
             }
             
@@ -352,7 +360,7 @@ public class WorkingCopy extends CompilationController {
                     diff.kind = Difference.Kind.CHANGE;
                     diff.oldText = new String(buf);
                 } else {
-                    diffs.add(new Difference(Difference.Kind.REMOVE, ces.createPositionRef(offset, Bias.Forward), ces.createPositionRef(offset + buf.length, Bias.Forward), new String(buf), null));
+                    diffs.add(new Difference(Difference.Kind.REMOVE, ces.createPositionRef(offset, Bias.Forward), ces.createPositionRef(offset + buf.length, Bias.Forward), new String(buf), null, userInfo.get(offset)));
                 }
                 offset += buf.length;
             }

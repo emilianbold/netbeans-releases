@@ -166,15 +166,21 @@ public final class ModificationResult {
         PositionRef endPos;
         String oldText;
         String newText;
+        String description;
         private boolean excluded;
 
-        Difference(Kind kind, PositionRef startPos, PositionRef endPos, String oldText, String newText) {
+        Difference(Kind kind, PositionRef startPos, PositionRef endPos, String oldText, String newText, String description) {
             this.kind = kind;
             this.startPos = startPos;
             this.endPos = endPos;
             this.oldText = oldText;
             this.newText = newText;
+            this.description = description;
             this.excluded = false;
+        }
+        
+        Difference(Kind kind, PositionRef startPos, PositionRef endPos, String oldText, String newText) {
+            this(kind, startPos, endPos, oldText, newText, null);
         }
         
         public Kind getKind() {
@@ -208,7 +214,10 @@ public final class ModificationResult {
         public String toString() {
             return kind + "<" + startPos.getOffset() + ", " + endPos.getOffset() + ">: " + oldText + " -> " + newText;
         }
-
+        public String getDescription() {
+            return description;
+        }
+        
         public static enum Kind {
             INSERT,
             REMOVE,
