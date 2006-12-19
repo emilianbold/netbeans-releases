@@ -63,7 +63,7 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
      */
     public static <D extends Document> TokenHierarchy<D> get(D doc) {
         DocumentInput<D> di = DocumentInput.get(doc);
-        return (di != null) ? di.tokenHierarchyControl().tokenHierarchy() : null;
+        return di.tokenHierarchyControl().tokenHierarchy();
     }
     
     /**
