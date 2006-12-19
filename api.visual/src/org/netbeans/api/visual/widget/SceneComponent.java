@@ -141,7 +141,10 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
 
     public void mouseMoved (MouseEvent e) {
         MouseContext context = new MouseContext ();
-        resolveContext (scene, scene.convertViewToScene (e.getPoint ()), context);
+        Point point = scene.convertViewToScene (e.getPoint ());
+//        Point sceneLocation = scene.getLocation ();
+//        point.translate (sceneLocation.x, sceneLocation.y);
+        resolveContext (scene, point, context);
         context.commit (this);
         processLocationOperator (Operator.MOUSE_MOVED, new WidgetAction.WidgetMouseEvent (++ eventIDcounter, e));
     }
@@ -200,18 +203,22 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
         event.setPoint (scene.convertViewToScene (event.getPoint ()));
 
         WidgetAction.State state;
+        Point location;
         String tool = scene.getActiveTool ();
 
         if (lockedAction != null) {
-            Point location = lockedWidget.convertSceneToLocal (new Point ());
+            location = lockedWidget.convertSceneToLocal (new Point ());
             event.translatePoint (location.x, location.y);
             state = operator.operate (lockedAction, lockedWidget, event);
             event.translatePoint (- location.x, - location.y);
 
-            if (! state.isConsumed ())
+            if (! state.isConsumed ()) {
+                location = scene.getLocation ();
+                event.translatePoint (location.x, location.y);
                 state = processLocationOperator (operator, tool, scene, event);
+            }
         } else {
-            Point location = scene.getLocation ();
+            location = scene.getLocation ();
             event.translatePoint (location.x, location.y);
             state = processLocationOperator (operator, tool, scene, event);
         }
@@ -399,23 +406,25 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
     }
 
     private boolean resolveContext (Widget widget, Point point, MouseContext context) {
-        Point location = widget.getLocation ();
-        point.translate (- location.x, - location.y);
+//        Point location = widget.getLocation ();
+//        point.translate (- location.x, - location.y);
 
         if (widget.getBounds ().contains (point)) {
             List<Widget> children = widget.getChildren ();
             for (int i = children.size () - 1; i >= 0; i --) {
                 Widget child = children.get (i);
-                if (resolveContext (child, point, context)) {
-                    point.translate (location.x, location.y);
+                Point location = child.getLocation ();
+                point.translate (- location.x, - location.y);
+                boolean resolved = resolveContext (child, point, context);
+                point.translate (location.x, location.y);
+                if (resolved)
                     return true;
-                }
             }
             if (widget.isHitAt (point))
                 context.update (widget);
         }
 
-        point.translate (location.x, location.y);
+//        point.translate (location.x, location.y);
         return false;
     }
 
