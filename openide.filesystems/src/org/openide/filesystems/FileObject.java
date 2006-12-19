@@ -389,7 +389,7 @@ public abstract class FileObject extends Object implements Serializable {
     * @param fe the event to fire in this object
     */
     protected void fireFileDataCreatedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
-        dispatchEvent(FCLSupport.DATA_CREATED, en, fe);
+        dispatchEvent(FCLSupport.Op.DATA_CREATED, en, fe);
     }
 
     /** Fire folder creation event.
@@ -397,7 +397,7 @@ public abstract class FileObject extends Object implements Serializable {
     * @param fe the event to fire in this object
     */
     protected void fireFileFolderCreatedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
-        dispatchEvent(FCLSupport.FOLDER_CREATED, en, fe);
+        dispatchEvent(FCLSupport.Op.FOLDER_CREATED, en, fe);
     }
 
     /** Fire file change event.
@@ -405,7 +405,7 @@ public abstract class FileObject extends Object implements Serializable {
     * @param fe the event to fire in this object
     */
     protected void fireFileChangedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
-        dispatchEvent(FCLSupport.FILE_CHANGED, en, fe);
+        dispatchEvent(FCLSupport.Op.FILE_CHANGED, en, fe);
     }
 
     /** Fire file deletion event.
@@ -413,7 +413,7 @@ public abstract class FileObject extends Object implements Serializable {
     * @param fe the event to fire in this object
     */
     protected void fireFileDeletedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
-        dispatchEvent(FCLSupport.FILE_DELETED, en, fe);
+        dispatchEvent(FCLSupport.Op.FILE_DELETED, en, fe);
     }
 
     /** Fire file attribute change event.
@@ -421,7 +421,7 @@ public abstract class FileObject extends Object implements Serializable {
     * @param fe the event to fire in this object
     */
     protected void fireFileAttributeChangedEvent(Enumeration<FileChangeListener> en, FileAttributeEvent fe) {
-        dispatchEvent(FCLSupport.ATTR_CHANGED, en, fe);
+        dispatchEvent(FCLSupport.Op.ATTR_CHANGED, en, fe);
     }
 
     /** Fire file rename event.
@@ -429,12 +429,12 @@ public abstract class FileObject extends Object implements Serializable {
     * @param fe the event to fire in this object
     */
     protected void fireFileRenamedEvent(Enumeration<FileChangeListener> en, FileRenameEvent fe) {
-        dispatchEvent(FCLSupport.FILE_RENAMED, en, fe);
+        dispatchEvent(FCLSupport.Op.FILE_RENAMED, en, fe);
     }
 
     /** Puts the dispatch event into the filesystem.
     */
-    private final void dispatchEvent(int op, Enumeration<FileChangeListener> en, FileEvent fe) {
+    private final void dispatchEvent(FCLSupport.Op op, Enumeration<FileChangeListener> en, FileEvent fe) {
         try {
             FileSystem fs = getFileSystem();
             fs.dispatchEvent(new ED(op, en, fe));
@@ -804,7 +804,7 @@ public abstract class FileObject extends Object implements Serializable {
     interface PriorityFileChangeListener extends FileChangeListener {}
 
     private class ED extends FileSystem.EventDispatcher {
-        private int op;
+        private FCLSupport.Op op;
         private Enumeration<FileChangeListener> en;
         final private List<FileChangeListener> fsList;
         final private List<FileChangeListener> repList;
@@ -812,7 +812,7 @@ public abstract class FileObject extends Object implements Serializable {
         
         private FileEvent fe;
 
-        public ED(int op, Enumeration<FileChangeListener> en, FileEvent fe) {
+        public ED(FCLSupport.Op op, Enumeration<FileChangeListener> en, FileEvent fe) {
             this.op = op;
             this.en = en;
             this.fe = fe;
@@ -832,15 +832,15 @@ public abstract class FileObject extends Object implements Serializable {
         }
 
         public ED(Enumeration<FileChangeListener> en, FileEvent fe) {
-            this(-1, en, fe);
+            this(null, en, fe);
         }
 
         /** @param onlyPriority if true then invokes only priority listeners
          *  else all listeners are invoked.
          */
         protected void dispatch(boolean onlyPriority) {
-            if (this.op == -1) {
-                this.op = fe.getFile().isFolder() ? FCLSupport.FOLDER_CREATED : FCLSupport.DATA_CREATED;
+            if (this.op == null) {
+                this.op = fe.getFile().isFolder() ? FCLSupport.Op.FOLDER_CREATED : FCLSupport.Op.DATA_CREATED;
             }
 
             LinkedList<FileChangeListener> newEnum = new LinkedList<FileChangeListener>(); // later lazy                
@@ -867,7 +867,7 @@ public abstract class FileObject extends Object implements Serializable {
             boolean transmit = false;
             if (fo != null) {
                 switch (op) {
-                    case FCLSupport.FILE_CHANGED:
+                    case FILE_CHANGED:
                         transmit = fo.equals(fe.getSource());
                         break;
                     default: 

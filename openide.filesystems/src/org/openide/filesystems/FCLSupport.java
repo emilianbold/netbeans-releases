@@ -27,12 +27,7 @@ import org.openide.util.Exceptions;
  * @author  rm111737
  */
 class FCLSupport {
-    public static final int DATA_CREATED = 0;
-    public static final int FOLDER_CREATED = 1;
-    public static final int FILE_CHANGED = 2;
-    public static final int FILE_DELETED = 3;
-    public static final int FILE_RENAMED = 4;
-    public static final int ATTR_CHANGED = 5;
+    enum Op {DATA_CREATED, FOLDER_CREATED, FILE_CHANGED, FILE_DELETED, FILE_RENAMED, ATTR_CHANGED}
 
     /** listeners */
     ListenerList<FileChangeListener> listeners;
@@ -57,7 +52,7 @@ class FCLSupport {
         }
     }
 
-    final void dispatchEvent(FileEvent fe, int operation) {
+    final void dispatchEvent(FileEvent fe, Op operation) {
         List<FileChangeListener> fcls;
 
         synchronized (this) {
@@ -73,27 +68,29 @@ class FCLSupport {
         }
     }
 
-    final static void dispatchEvent(FileChangeListener fcl, FileEvent fe, int operation) {
+    final static void dispatchEvent(FileChangeListener fcl, FileEvent fe, Op operation) {
         try {
             switch (operation) {
-                case FCLSupport.DATA_CREATED:
+                case DATA_CREATED:
                     fcl.fileDataCreated(fe);
                     break;
-                case FCLSupport.FOLDER_CREATED:
+                case FOLDER_CREATED:
                     fcl.fileFolderCreated(fe);
                     break;
-                case FCLSupport.FILE_CHANGED:
+                case FILE_CHANGED:
                     fcl.fileChanged(fe);
                     break;
-                case FCLSupport.FILE_DELETED:
+                case FILE_DELETED:
                     fcl.fileDeleted(fe);
                     break;
-                case FCLSupport.FILE_RENAMED:
+                case FILE_RENAMED:
                     fcl.fileRenamed((FileRenameEvent) fe);
                     break;
-                case FCLSupport.ATTR_CHANGED:
+                case ATTR_CHANGED:
                     fcl.fileAttributeChanged((FileAttributeEvent) fe);
                     break;
+                default:
+                    throw new AssertionError(operation);
             }
         } catch (RuntimeException x) {
             Exceptions.printStackTrace(x);
