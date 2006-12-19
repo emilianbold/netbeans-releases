@@ -37,7 +37,6 @@ import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.helper.MutualHashMap;
 import org.netbeans.installer.utils.helper.MutualMap;
 import org.netbeans.installer.utils.helper.ThreadUtil;
-import org.netbeans.installer.utils.installation.conditions.TrueCondition;
 import org.omg.CORBA.Current;
 
 /**
