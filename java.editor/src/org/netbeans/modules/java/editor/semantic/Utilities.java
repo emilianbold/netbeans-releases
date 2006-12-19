@@ -38,7 +38,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
-import org.openide.ErrorManager;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +49,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import org.netbeans.modules.editor.highlights.spi.Highlight;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -57,6 +57,9 @@ import org.openide.text.NbDocument;
  */
 public class Utilities {
     
+    private static final Logger LOG = Logger.getLogger(Utilities.class.getName());
+    
+    @Deprecated
     private static final boolean DEBUG = false;
     
     private static final int[] NO_SPAN = {-1, -1};
@@ -126,7 +129,7 @@ public class Utilities {
                 return new int[] {start + index, start + index + name.length()};
             }
         } catch (BadLocationException e) {
-            Logger.getLogger(Utilities.class.getName()).log(Level.WARNING, null, e);
+            LOG.log(Level.INFO, null, e);
         }
         
         return NO_SPAN;
@@ -165,8 +168,8 @@ public class Utilities {
                 return new int[] {start + index, start + index + member.length()};
             }
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().annotate(e, ErrorManager.UNKNOWN, "start=" + start + ", endPosition=" + endPosition, null, null, null);
-            ErrorManager.getDefault().notify(e);
+            BadLocationException ex = Exceptions.attachMessage(e, "start=" + start + ", endPosition=" + endPosition);
+            LOG.log(Level.INFO, null, ex);
         }
         
         return NO_SPAN;
@@ -260,7 +263,7 @@ public class Utilities {
                 
                 start += index;
             } catch (BadLocationException e) {
-                ErrorManager.getDefault().notify(e);
+                LOG.log(Level.INFO, null, e);
             }
             
             int exactEnd   = start + name.length();
@@ -313,7 +316,7 @@ public class Utilities {
             
             return start + index;
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+            LOG.log(Level.INFO, null, e);
         }
         
         return (-1);
@@ -360,7 +363,7 @@ public class Utilities {
             if (text.charAt(0) == '}')
                 return end - 1;
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+            LOG.log(Level.INFO, null, e);
         }
         
         return (-1);
