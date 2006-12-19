@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.uihandler;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -34,7 +36,7 @@ import java.util.logging.LogRecord;
 public class UIHandler extends Handler {
     private final Queue<LogRecord> logs;
     private final boolean exceptionOnly;
-
+    private static PropertyChangeSupport SUPPORT = new PropertyChangeSupport(UIHandler.class);
     private static int MAX_LOGS = 1000;
     
     public UIHandler(Queue<LogRecord> l, boolean exceptionOnly) {
@@ -43,6 +45,11 @@ public class UIHandler extends Handler {
         this.exceptionOnly = exceptionOnly;
     }
 
+    static void registerCallback(PropertyChangeListener l) {
+        SUPPORT.addPropertyChangeListener(l);
+    }
+    
+    
     public void publish(LogRecord record) {
         if (exceptionOnly && record.getThrown() == null) {
             return;
@@ -58,6 +65,8 @@ public class UIHandler extends Handler {
                 logs.add(record);
             }
         }
+        
+        SUPPORT.firePropertyChange(null, null, null);
         
         if (
             exceptionOnly &&

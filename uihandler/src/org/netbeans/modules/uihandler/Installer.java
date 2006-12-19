@@ -114,6 +114,10 @@ public class Installer extends ModuleInstall {
         all.removeHandler(handler);
     }
     
+    public static int getLogsSize() {
+        return logs.size();
+    }
+    
     public static List<LogRecord> getLogs() {
         synchronized (UIHandler.class) {
             return new ArrayList<LogRecord>(logs);
@@ -367,7 +371,7 @@ public class Installer extends ModuleInstall {
                 if (uri != null && uri.length() > 0) {
                     url = new URL(uri); // NOI18N
                     URLConnection conn = url.openConnection();
-                    conn.setReadTimeout(2000);
+                    conn.setReadTimeout(5000);
                     File tmp = File.createTempFile("uigesture", ".html");
                     tmp.deleteOnExit();
                     FileOutputStream os = new FileOutputStream(tmp);
