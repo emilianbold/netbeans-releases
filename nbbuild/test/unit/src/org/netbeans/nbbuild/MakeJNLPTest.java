@@ -18,6 +18,7 @@
  */
 
 package org.netbeans.nbbuild;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -27,6 +28,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -35,9 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.netbeans.junit.*;
-
+import org.netbeans.junit.NbTestCase;
 
 /** Is generation of Jnlp files correct?
  *
@@ -201,7 +201,7 @@ public class MakeJNLPTest extends NbTestCase {
         String[] files = output.list();
         assertEquals("It has two files plus localized ones", 7, files.length);
         
-        HashSet setFiles = new HashSet(Arrays.asList(files));
+        Set<String> setFiles = new HashSet<String>(Arrays.asList(files));
        
         if (!setFiles.contains("org-netbeans-modules-autoupdate.jar")) fail("org-netbeans-modules-autoupdate.jar shall be there: " + setFiles);
         if (!setFiles.contains("org-netbeans-modules-autoupdate.jnlp")) fail("org-my-module.jnlp shall be there: " + setFiles);
@@ -328,7 +328,7 @@ public class MakeJNLPTest extends NbTestCase {
         String[] files = output.list();
         assertEquals("It has two files plus localized ones", 5, files.length);
         
-        HashSet setFiles = new HashSet(Arrays.asList(files));
+        Set<String> setFiles = new HashSet<String>(Arrays.asList(files));
        
         if (!setFiles.contains("0.jar")) fail("0.jar shall be there: " + setFiles);
         if (!setFiles.contains("org-my-module.jnlp")) fail("org-my-module.jnlp shall be there: " + setFiles);
