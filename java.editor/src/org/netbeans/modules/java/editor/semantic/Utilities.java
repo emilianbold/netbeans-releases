@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.logging.Level;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
@@ -42,6 +43,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
@@ -90,6 +92,10 @@ public class Utilities {
                 if (proposedEnd != (-1) && proposedEnd < end)
                     end = proposedEnd;
             }
+            
+            if (end == (-1)) {
+                return NO_SPAN;
+            }
 
             if (start > end) {
                 //may happend in case:
@@ -120,7 +126,7 @@ public class Utilities {
                 return new int[] {start + index, start + index + name.length()};
             }
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+            Logger.getLogger(Utilities.class.getName()).log(Level.WARNING, null, e);
         }
         
         return NO_SPAN;

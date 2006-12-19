@@ -26,6 +26,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -258,6 +262,22 @@ public class DetectorTest extends TestBase {
     
     public void testGenericBoundIsClassUse() throws Exception {
         performTest("GenericBoundIsClassUse");
+    }
+    
+    public void testBLE91246() throws Exception {
+        final boolean wasThrown[] = new boolean[1];
+        Logger.getLogger(Utilities.class.getName()).addHandler(new Handler() {
+            public void publish(LogRecord lr) {
+                if (lr.getThrown() != null && lr.getThrown().getClass() == BadLocationException.class) {
+                    wasThrown[0] = true;
+                }
+            }
+            public void close() {}
+            public void flush() {}
+        });
+        performTest("BLE91246");
+        
+        assertFalse("BLE was not thrown", wasThrown[0]);
     }
     
     private void performTest(String fileName) throws Exception {
