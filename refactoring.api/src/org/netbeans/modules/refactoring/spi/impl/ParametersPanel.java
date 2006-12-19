@@ -644,6 +644,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             label.setText(" "); // NOI18N
             innerPanel.setBorder(null);
             next.setEnabled(true);
+            previewButton.setEnabled(true);
             return;
         }
         innerPanel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.gray));
@@ -657,11 +658,13 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     
     private void displayError(String error) {
         next.setEnabled(false);
+        previewButton.setEnabled(false);
         label.setText("<html><font color=\"red\">" + NbBundle.getMessage(ParametersPanel.class, "LBL_Error") + ": </font>" + error + "</html>"); //NOI18N
     }
     
     private void displayWarning(String warning) {
         next.setEnabled(true);
+        previewButton.setEnabled(true);
         label.setText("<html><font color=\"red\">" + NbBundle.getMessage(ParametersPanel.class, "LBL_Warning") + ": </font>" + warning + "</html>"); //NOI18N
     }
     
