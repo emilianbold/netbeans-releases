@@ -328,12 +328,15 @@ PropertyChangeListener, KeyListener, CaretListener {
     private void showSurroundWithHint(int offset) {
         if (surrounsWithFixes == null)
             surrounsWithFixes = SurroundWithFix.getFixes(component);
-        try {
-            Position pos = doc.createPosition(offset);
-            errorDescription = ErrorDescriptionFactory.createErrorDescription(Severity.HINT, SURROUND_WITH, surrounsWithFixes, doc, pos, pos);
-            HintsController.setErrors(doc, SURROUND_WITH, Collections.singleton(errorDescription));
-        } catch (BadLocationException ble) {
-            Logger.getLogger("global").log(Level.WARNING, ble.getMessage(), ble);
+        
+        if (!surrounsWithFixes.isEmpty()) {
+            try {
+                Position pos = doc.createPosition(offset);
+                errorDescription = ErrorDescriptionFactory.createErrorDescription(Severity.HINT, SURROUND_WITH, surrounsWithFixes, doc, pos, pos);
+                HintsController.setErrors(doc, SURROUND_WITH, Collections.singleton(errorDescription));
+            } catch (BadLocationException ble) {
+                Logger.getLogger("global").log(Level.WARNING, ble.getMessage(), ble);
+            }
         }
     }
 

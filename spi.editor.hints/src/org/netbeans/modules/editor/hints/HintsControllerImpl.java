@@ -44,6 +44,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.EditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
@@ -173,22 +174,37 @@ public final class HintsControllerImpl {
         
         EditorCookie ec = od.getCookie(EditorCookie.class);
         
-        if (!(ec instanceof CloneableEditorSupport)) {
-            return null;
+        if (ec instanceof CloneableEditorSupport) {
+            final CloneableEditorSupport ces = (CloneableEditorSupport) ec;
+            
+            final PositionRef[] refs = new PositionRef[2];
+            
+            doc.render(new Runnable() {
+                public void run() {
+                    refs[0] = ces.createPositionRef(start.getOffset(), Position.Bias.Forward);
+                    refs[1] = ces.createPositionRef(end.getOffset(), Position.Bias.Backward);
+                }
+            });
+            
+            return new PositionBounds(refs[0], refs[1]);
         }
         
-        final CloneableEditorSupport ces = (CloneableEditorSupport) ec;
+        if (ec instanceof EditorSupport) {
+            final EditorSupport es = (EditorSupport) ec;
+            
+            final PositionRef[] refs = new PositionRef[2];
+            
+            doc.render(new Runnable() {
+                public void run() {
+                    refs[0] = es.createPositionRef(start.getOffset(), Position.Bias.Forward);
+                    refs[1] = es.createPositionRef(end.getOffset(), Position.Bias.Backward);
+                }
+            });
+            
+            return new PositionBounds(refs[0], refs[1]);
+        }
         
-        final PositionRef[] refs = new PositionRef[2];
-        
-        doc.render(new Runnable() {
-            public void run() {
-                refs[0] = ces.createPositionRef(start.getOffset(), Position.Bias.Forward);
-                refs[1] = ces.createPositionRef(end.getOffset(), Position.Bias.Backward);
-            }
-        });
-        
-        return new PositionBounds(refs[0], refs[1]);
+        return null;
     }
 
     public static PositionBounds linePart(FileObject file, int start, int end) {

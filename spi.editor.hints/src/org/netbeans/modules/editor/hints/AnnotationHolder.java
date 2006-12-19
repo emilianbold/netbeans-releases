@@ -575,7 +575,14 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener 
                 }
             }
             
+            List<ErrorDescription> validatedErrors = new ArrayList<ErrorDescription>();
+            
             for (ErrorDescription ed : errors) {
+                if (ed.getRange() == null)
+                    continue;
+                
+                validatedErrors.add(ed);
+                
                 List<Integer> lines = new ArrayList<Integer>();
                 int startLine = ed.getRange().getBegin().getLine();
                 int endLine = ed.getRange().getEnd().getLine();
@@ -601,7 +608,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener 
             }
             
             layersErrors.clear();
-            layersErrors.addAll(errors);
+            layersErrors.addAll(validatedErrors);
             
             for (Integer line : primaryLines) {
                 updateAnnotationOnLine(line);

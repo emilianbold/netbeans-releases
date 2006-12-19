@@ -22,12 +22,15 @@ package org.netbeans.modules.editor.hints;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.highlights.spi.Highlight;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.editor.hints.ErrorDescriptionTestSupport;
+import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileLock;
@@ -44,6 +47,7 @@ public class AnnotationHolderTest extends NbTestCase {
     
     private FileObject file;
     private Document doc;
+    private EditorCookie ec;
     
     /** Creates a new instance of AnnotationHolderTest */
     public AnnotationHolderTest(String name) {
@@ -59,8 +63,8 @@ public class AnnotationHolderTest extends NbTestCase {
         writeIntoFile(file, "01234567890123456789");
         
         DataObject od = DataObject.find(file);
-        EditorCookie ec = (EditorCookie) od.getCookie(EditorCookie.class);
         
+        ec = od.getCookie(EditorCookie.class);
         doc = ec.openDocument();
     }
     
@@ -245,6 +249,23 @@ public class AnnotationHolderTest extends NbTestCase {
         assertEquals(AnnotationHolder.COLORINGS.get(Severity.ERROR), h1.getColoring());
         assertEquals(AnnotationHolder.COLORINGS.get(Severity.WARNING), h2.getColoring());
         assertEquals(AnnotationHolder.COLORINGS.get(Severity.WARNING), h3.getColoring());
+    }
+    
+    public void testNullSpan() throws Exception {
+        ErrorDescription ed1 = ErrorDescriptionFactory.createErrorDescription(Severity.ERROR, "1", file, 3, 5);
+        ErrorDescription ed2 = ErrorDescriptionTestSupport.createErrorDescription(file, "", Severity.DISABLED, ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList()), null);
+        ErrorDescription ed3 = ErrorDescriptionFactory.createErrorDescription(Severity.WARNING, "2", file, 1, 7);
+        
+        ec.open();
+        
+        AnnotationHolder.getInstance(file).setErrorDescriptions("foo", Arrays.asList(ed1, ed2, ed3));
+        
+        ec.close();
+    }
+    
+    @Override 
+    protected boolean runInEQ() {
+        return true;
     }
     
     private void writeIntoFile(FileObject file, String what) throws Exception {
