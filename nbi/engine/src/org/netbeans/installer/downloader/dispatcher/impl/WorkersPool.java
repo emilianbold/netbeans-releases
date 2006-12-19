@@ -29,25 +29,25 @@ import java.util.LinkedList;
  */
 public class WorkersPool {
 
-  private final int poolSize;
+  private final int size;
 
   private int inUse;
   private Queue<Worker> freeWorkers = new LinkedList<Worker>();
 
   public WorkersPool(int poolSize) {
-    this.poolSize = poolSize;
+    this.size = poolSize;
   }
   
-  public int poolSize() {
-    return poolSize;
+  public int size() {
+    return size;
   }
 
   //noblocking
   public synchronized Worker tryAcquire() {
-    if (inUse == poolSize) return null;
+    if (inUse == size) return null;
     inUse++;
     final Worker worker = freeWorkers.poll();
-    return worker != null ? worker : new Worker();
+    return worker != null && worker.isAlive() ? worker : new Worker();
   }
 
   public synchronized Worker acquire() throws InterruptedException {

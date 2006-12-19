@@ -102,7 +102,7 @@ public class ConnectorTest extends WithServerTestCase {
     try {
       connection = connector.establishConnection(smallest);
       connection.getInputStream().close();
-      fail();
+      fail();//what's the matter?It's seems to me that sometimes for localhost java URLConnection just ignor proxy as argument.
     } catch (IOException ex) {
       System.out.println(ex.getMessage());
     }

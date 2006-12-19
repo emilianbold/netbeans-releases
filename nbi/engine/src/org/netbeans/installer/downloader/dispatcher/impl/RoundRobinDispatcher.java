@@ -33,9 +33,11 @@ import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.helper.MutualHashMap;
 import org.netbeans.installer.utils.helper.MutualMap;
 import org.netbeans.installer.utils.helper.ThreadUtil;
+import org.netbeans.installer.utils.installation.conditions.TrueCondition;
 import org.omg.CORBA.Current;
 
 /**
@@ -54,7 +56,7 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
   private final BlockingQueue<Worker> workingQueue;
   private final Queue<Process> waitingQueue;
   private final MutualMap<Process, Worker> proc2Worker;
-  private final Set<Process> processes = new HashSet<Process>();
+  private Set<Worker> makedToStop = new HashSet<Worker>();
   
   private Thread dispatcherThread;
   private Terminator terminator = new Terminator();
@@ -75,14 +77,17 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
   
   public synchronized boolean schedule(Process process) {
     synchronized (waitingQueue) {
-      if (processes.contains(process)) return false;
       waitingQueue.offer(process);
-      processes.add(process);
     }
     return true;
   }
   
   public synchronized void terminate(Process process) {
+    synchronized (waitingQueue) {
+      if (waitingQueue.remove(process)) return;
+    }
+    final Worker stoped = proc2Worker.get(process);
+    makedToStop.add(stoped);
     terminateInternal(process);
   }
   
@@ -95,39 +100,31 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
   }
   
   private void terminateInternal(Process process) {
-    synchronized (waitingQueue) {
-      if (waitingQueue.contains(process)) {
-        waitingQueue.remove(process);
-        return;
-      }
-    }
     final Worker worker = proc2Worker.get(process);
     if (worker == null) return;
-    synchronized (worker) {
-      if (worker.isFree()) return;
-      worker.resume();
-      if (!terminator.isAlive()) terminator.start();
-      worker.interrupt();
-      terminator.terminate(process);
-      ThreadUtil.sleep(timeQuantum);
-      if (terminator.isBusy()) {
-        terminator.stop();
-        terminator = new Terminator();
-      }
-      if (!worker.isFree()) worker.stop();
+    if (worker.isFree()) return;
+    if (!terminator.isAlive()) terminator.start();
+    terminator.terminate(process);
+    ThreadUtil.sleep(timeQuantum);
+    if (terminator.isBusy()) {
+      terminator.stop();
+      terminator = new Terminator();
     }
+    if (!worker.isFree()) worker.stop();
+    proc2Worker.remove(process);
+    pool.release(worker);
   }
   
   public synchronized boolean isActive() {
     return isActive;
   }
   
-  //for tracknig perpose no synchronization so no sure of correctness
+//for tracknig perpose no synchronization so no sure of correctness
   public int activeCount() {
     return proc2Worker.size();
   }
   
-  //for tracknig perpose no synchronization so no sure of correctness
+//for tracknig perpose no synchronization so no sure of correctness
   public int waitingCount() {
     return waitingQueue.size();
   }
@@ -144,12 +141,13 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
     if (!isActive) return;
     dispatcherThread.interrupt();
     try {
-      dispatcherThread.join(timeQuantum * pool.poolSize() + pollingTime);
+      dispatcherThread.join(timeQuantum * pool.size() + pollingTime);
     } catch (InterruptedException exit) {
     } finally {
       //this condition mustn't happens to true
       if (dispatcherThread.isAlive()) dispatcherThread.stop();
     }
+    waitingQueue.clear();
     isActive = false;
   }
   
@@ -161,8 +159,12 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
         if (Thread.interrupted()) break;
         try {
           current = workingQueue.poll(pollingTime, TimeUnit.MILLISECONDS);
-          if (invokeCurrent())
-            Thread.sleep(timeQuantum);
+          if (current == null || makedToStop.contains(current)) {
+            filWorkingQueue();
+            continue;
+          }
+          invokeCurrent();
+          Thread.sleep(timeQuantum);
           suspendCurrent();
           if (factor != LoadFactor.FULL) {
             Thread.sleep(quantumToSkip.get(factor) * timeQuantum);
@@ -176,18 +178,12 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
     }
     
     private void terminateAll() {
-      for (Process process: processes.toArray(new Process[0])) {
-        terminateInternal(process);
-        proc2Worker.remove(process);
-        processes.remove(process);
+      for (Worker worker: workingQueue.toArray(new Worker[0])) {
+        terminateInternal(proc2Worker.reversedGet(worker));
       }
     }
     
-    private boolean invokeCurrent() {
-      if (current == null) {
-        filWorkingQueue();
-        return false;
-      }
+    private void invokeCurrent() {
       switch (current.getState()) {
         case NEW:
           current.start();
@@ -195,31 +191,28 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
         case RUNNABLE:
           current.resume();
           break;
+        case TERMINATED: break;
         default:
           current.resume();
-          //temrorary while blocking queue not impl.
-          return true;
+          //temprorary while blocking queue not impl.
       }
-      return true;
     }
     
     private void suspendCurrent() {
-      final Worker current = this.current;
       if (current == null) return;
-      synchronized (current) {
-        current.suspend();
-        if (current.isAlive() && !current.isFree()) {
-          workingQueue.offer(current);
-        } else {
-          processes.remove(proc2Worker.reversedRemove(current));
-          pool.release(current);
-        }
+      if (makedToStop.contains(current)) return;
+      current.suspend();
+      if (current.isAlive() && !current.isFree()) {
+        workingQueue.offer(current);
+      } else {
+        proc2Worker.reversedRemove(current);
+        pool.release(current);
       }
       filWorkingQueue();
     }
     
     private void filWorkingQueue() {
-      if (waitingQueue.size() == 0) return;
+      if (waitingQueue.size() == 0 || workingQueue.remainingCapacity() == 0) return;
       synchronized (waitingQueue) {
         while (workingQueue.remainingCapacity() > 0) {
           final Process process = waitingQueue.poll();
@@ -227,13 +220,14 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
           final Worker worker = pool.tryAcquire();
           worker.setCurrent(process);
           proc2Worker.put(process, worker);
+          makedToStop.remove(worker);
           workingQueue.add(worker);
         }
       }
     }
   }
   
-  //cool name. don't you think so?
+//cool name. don't you think so?
   private class Terminator extends Thread {
     
     private Process current;
@@ -245,23 +239,30 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
     
     public synchronized void terminate(Process process) {
       current = process;
-      notify();
+      notifyAll();
     }
     
     public void run() {
       while (true) {
-        try {
-          synchronized (this) {
-            if (current == null)
+        synchronized (this) {
+          try {
+            Thread.interrupted();
+            if (current == null) {
               wait();
-          }
-          current.terminate();
-          synchronized (this) {
+              if (current == null) continue;
+            }
+            final Worker worker = proc2Worker.get(current);
+            worker.resume();
+            worker.interrupt();
+            try {
+              current.terminate();
+            } catch (Exception ignored) {//may be log?
+            }
             current = null;
+          } catch (InterruptedException exit) {
+            LogManager.log("terminator interrupted");
+            break;
           }
-        } catch (InterruptedException exit) {
-          System.out.println("terminator interrupted");
-          break;
         }
       }
     }

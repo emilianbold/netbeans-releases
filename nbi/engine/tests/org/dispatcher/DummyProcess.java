@@ -36,6 +36,14 @@ public class DummyProcess implements Process {
   
   private long workingStartTime = 0;
   private long workingEndTime = 0;
+
+  private int id;
+  
+  public DummyProcess() {}
+  
+  public DummyProcess(int id) {
+    this.id = id;
+  }
   
   public Thread getWorker() {
     return worker;
@@ -76,9 +84,9 @@ public class DummyProcess implements Process {
   }
   
   public void terminate() {
-    System.out.println("here");
     interrupted = true;
     workingEndTime = System.currentTimeMillis();
-    worker.interrupt();
+    if (worker != null) worker.interrupt();
+    else System.out.println("worker: " + null);
   }
 }

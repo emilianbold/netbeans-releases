@@ -24,6 +24,7 @@ public interface ProcessDispatcher {
 
     boolean schedule(Process process);
 
+    @Deprecated
     void terminate(Process process);
     
     void setLoadFactor(LoadFactor factor);
