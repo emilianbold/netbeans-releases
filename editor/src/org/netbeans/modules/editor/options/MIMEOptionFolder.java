@@ -64,7 +64,6 @@ import org.openide.filesystems.Repository;
 
 public class MIMEOptionFolder{
     
-    private String mime;
     private Map files = new HashMap(5);
     private BaseOptions base;
     private DataFolder folder;
@@ -90,8 +89,6 @@ public class MIMEOptionFolder{
          */
         
         base = bean;
-        mime=BaseOptions.BASE.equals(base.getTypeName())? "text/base" : BaseKit.getKit(base.getKitClass()).getContentType(); //NOI18N
-        if (mime == null) mime = base.getTypeName();
         loadAllFiles();
     }
     
