@@ -84,7 +84,7 @@ public class CreateDatabaseTest  extends DbJellyTestCase {
         suite.addTest(new CreateDatabaseTest("testStopServer"));        
         TestSetup setup=new TestSetup(suite){
            public void setUp() throws Exception {
-               init();
+              // init();
            } 
            
         };

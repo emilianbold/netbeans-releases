@@ -116,10 +116,10 @@ public class DerbyDatabaseTest extends DbJellyTestCase {
     }
 
     private static void init() throws Exception {
-        location=System.getProperty("derby.path");
-        String systemHome=System.getProperty("xtest.tmpdir");
-        DerbyOptions.getDefault().setLocation(location);
-        DerbyOptions.getDefault().setSystemHome(systemHome);
+        location=DerbyOptions.getDefault().getLocation();
+        //String systemHome=System.getProperty("xtest.tmpdir");
+        //DerbyOptions.getDefault().setLocation(location);
+        //DerbyOptions.getDefault().setSystemHome(systemHome);
         
     }
     
