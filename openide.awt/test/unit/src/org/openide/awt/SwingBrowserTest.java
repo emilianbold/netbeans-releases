@@ -142,8 +142,8 @@ public class SwingBrowserTest extends TestCase {
         waitForLoading(url, f, impl);
     }
 
-    public void testDeadlockWithMustang() throws Exception {
-        System.out.println("testDeadlockWithMustang");
+    public void testDeadlockWithJdk6() throws Exception {
+        System.out.println("testDeadlockWithJdk6");
         // simulates another problem in 71450
         // fails on JDK6.0 b99 (passes on JDK6b92 or JDK5u9)
         final HtmlBrowser.Impl impl = new SwingBrowserImpl();

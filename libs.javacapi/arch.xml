@@ -48,7 +48,7 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="arch-overall">
   <p>
    This is a wrapper module for the public API which is implemented by the
-   javac compiler in Java 6 (Mustang).  This API is defined by JSR 198, JSR
+   javac compiler in Java 6.  This API is defined by JSR 198, JSR
    269, and the com.sun.source.tree API.
   </p>
  </answer>
@@ -151,8 +151,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-where">
   <defaultanswer generate='none' />
-  The source code for the javac public API is distributed with the Java 6
-  (Mustang) JDK in its src.zip file.
+  The source code for the javac public API is distributed with JDK 6
+  in its src.zip file.
  </answer>
 
 

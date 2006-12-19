@@ -44,7 +44,7 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
     private interface BrowseInvoker {
         void browse(URI uri) throws IOException;
     }
-    private static BrowseInvoker MUSTANG_DESKTOP_BROWSE;
+    private static BrowseInvoker JDK_6_DESKTOP_BROWSE;
     static {
         try {
           if (Boolean.getBoolean("java.net.useSystemProxies") && Utilities.isUnix()) {
@@ -65,7 +65,7 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
                 Logger.getLogger(SystemDefaultBrowser.class.getName()).log(Level.FINE, "java.awt.Desktop found, isSupported(Action.BROWSE) returned "+b);
                 if (b.booleanValue()) {
                     final Method browse = desktop.getMethod("browse", new Class[] {URI.class}); // NOI18N
-                    MUSTANG_DESKTOP_BROWSE = new BrowseInvoker() {
+                    JDK_6_DESKTOP_BROWSE = new BrowseInvoker() {
                         public void browse(URI uri) throws IOException {
                             try {
                                 browse.invoke(desktopInstance, new Object[] {uri});
@@ -82,7 +82,7 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
           }
         } catch (ClassNotFoundException e) {
             // JDK 5, ignore
-            Logger.getLogger(SystemDefaultBrowser.class.getName()).log(Level.FINE, "java.awt.Desktop class not found, disabling Mustang browse functionality");
+            Logger.getLogger(SystemDefaultBrowser.class.getName()).log(Level.FINE, "java.awt.Desktop class not found, disabling JDK 6 browse functionality");
         } catch (Exception e) {
             Logger.getLogger(SystemDefaultBrowser.class.getName()).log(Level.WARNING, null, e);
         }
@@ -93,7 +93,7 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
      *          false in all other cases.
      */
     public static Boolean isHidden () {
-        return Boolean.valueOf(!Utilities.isWindows() && MUSTANG_DESKTOP_BROWSE == null);
+        return Boolean.valueOf(!Utilities.isWindows() && JDK_6_DESKTOP_BROWSE == null);
     }
     
     /** Creates new ExtWebBrowser */
@@ -106,8 +106,8 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
      * @return browserImpl implementation of browser.
      */
     public HtmlBrowser.Impl createHtmlBrowserImpl() {
-        if (MUSTANG_DESKTOP_BROWSE != null) {
-            return new MustangBrowserImpl();
+        if (JDK_6_DESKTOP_BROWSE != null) {
+            return new Jdk6BrowserImpl();
         } else if (Utilities.isWindows ()) {
             return new NbDdeBrowserImpl(this);
         } else {
@@ -137,7 +137,7 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
      * @return process descriptor that allows to start browser.
      */
     protected NbProcessDescriptor defaultBrowserExecutable () {
-        if (!Utilities.isWindows() || MUSTANG_DESKTOP_BROWSE != null) {
+        if (!Utilities.isWindows() || JDK_6_DESKTOP_BROWSE != null) {
             return new NbProcessDescriptor("", ""); // NOI18N
         }
         
@@ -165,10 +165,10 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
         return p;
     }
     
-    private static final class MustangBrowserImpl extends ExtBrowserImpl {
+    private static final class Jdk6BrowserImpl extends ExtBrowserImpl {
         
-        public MustangBrowserImpl() {
-            assert MUSTANG_DESKTOP_BROWSE != null;
+        public Jdk6BrowserImpl() {
+            assert JDK_6_DESKTOP_BROWSE != null;
         }
         
         public void setURL(URL url) {
@@ -176,7 +176,7 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
             try {
 		URI uri = extURL.toURI();
                 Logger.getLogger(SystemDefaultBrowser.class.getName()).fine("Calling java.awt.Desktop.browse("+uri+")");
-                MUSTANG_DESKTOP_BROWSE.browse(uri);
+                JDK_6_DESKTOP_BROWSE.browse(uri);
             } catch (URISyntaxException e) {
                 assert false : e;
             } catch (IOException e) {

@@ -290,7 +290,7 @@ public class XMLUtilTest extends NbTestCase {
     
     /** cf. #62006 */
     public void testIndentation2() throws Exception {
-        // XXX currently it seems that the Tiger/Mustang serializer adds an extra \n after DOCTYPE, for no apparent reason!
+        // XXX currently it seems that the JDK 5/6 serializer adds an extra \n after DOCTYPE, for no apparent reason!
         // While the Mantis serializer inserts a useless line break in the middle...
         // so we don't check formatting on that part.
         // Also serializers may arbitrarily reorder the doctype, so don't even look at it (just make sure it is there).

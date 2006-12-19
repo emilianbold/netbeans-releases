@@ -139,7 +139,7 @@ final class ReadWriteLockWrapper implements DuplexLock {
     }
 
     public boolean canRead() {
-        // XXX in Mustang can just use: return lock.getReadHoldCount() > 0;
+        // XXX in JDK 6 can just use: return lock.getReadHoldCount() > 0;
         return reading.get() > 0;
     }
 
