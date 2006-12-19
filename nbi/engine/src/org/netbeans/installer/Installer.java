@@ -445,6 +445,24 @@ public class Installer {
                 LogManager.unindent();
                 continue;
             }
+            
+            if (arguments[i].equalsIgnoreCase("--platform")) {
+                LogManager.log(MESSAGE, "parsing command line parameter \"--platform\"");
+                LogManager.indent();
+                
+                if (i < arguments.length - 1) {
+                    String value = arguments[i + 1];
+                    
+                    System.setProperty(ProductRegistry.TARGET_PLATFORM_PROPERTY, value);
+                    
+                    i = i + 1;
+                } else {
+                    ErrorManager.notify(WARNING, "required parameter missing for command line argument \"--platform\". Should be \"--platform <target-platform>\".");
+                }
+                
+                LogManager.unindent();
+                continue;
+            }
         }
         
         if (arguments.length == 0) {

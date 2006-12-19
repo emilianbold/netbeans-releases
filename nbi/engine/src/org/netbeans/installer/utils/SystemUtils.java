@@ -512,7 +512,19 @@ public final class SystemUtils {
                 (getCurrentPlatform() == Platform.MACOS_X_PPC);
     }
     
-// native accessor //////////////////////////////////////////////////////////////
+    public static boolean intersects(List<? extends Object> list1, List<? extends Object> list2) {
+        for (int i = 0; i < list1.size(); i++) {
+            for (int j = 0; j < list2.size(); j++) {
+                if (list1.get(i).equals(list2.get(j))) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+    
+    // native accessor //////////////////////////////////////////////////////////////
     public static synchronized NativeUtils getNativeUtils() {
         if (nativeUtils == null) {
             nativeUtils = NativeUtils.getInstance();
