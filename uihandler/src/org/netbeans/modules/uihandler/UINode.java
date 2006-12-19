@@ -36,6 +36,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -44,9 +45,10 @@ import org.openide.util.NbBundle;
 final class UINode extends AbstractNode implements VisualData {
     private static final SimpleFormatter FORMATTER = new SimpleFormatter();
     private LogRecord log;
+    private String htmlKey;
 
     private UINode(LogRecord r, Children ch) {
-        super(ch);
+        super(ch, Lookups.fixed(r));
         log = r;
         setName(r.getMessage());
         if (r.getResourceBundle() != null) {
@@ -74,6 +76,7 @@ final class UINode extends AbstractNode implements VisualData {
         
         if (ch != Children.LEAF) {
             setIconBaseWithExtension("org/netbeans/modules/uihandler/exception.gif");
+            htmlKey = "HTML_exception";
         }
         
         if ("UI_ACTION_BUTTON_PRESS".equals(r.getMessage())) { // NOI18N
@@ -81,18 +84,27 @@ final class UINode extends AbstractNode implements VisualData {
             String thru = (String)r.getParameters()[1];
             if (thru.contains("Toolbar") || r.getParameters()[0] instanceof JButton) {
                 setIconBaseWithExtension("org/netbeans/modules/uihandler/toolbars.gif");
+                htmlKey = "HTML_toolbar";
             } else if (thru.contains("MenuItem")) {
                 setIconBaseWithExtension("org/netbeans/modules/uihandler/menus.gif");
+                htmlKey = "HTML_menu";
             }
         } else if ("UI_ACTION_KEY_PRESS".equals(r.getMessage())) { // NOI18N
             setDisplayName(Actions.cutAmpersand((String)r.getParameters()[4]));
             setIconBaseWithExtension("org/netbeans/modules/uihandler/key.png");
+            htmlKey = "HTML_key";
+        } else if ("UI_ACTION_EDITOR".equals(r.getMessage())) { // NOI18N
+            setDisplayName(Actions.cutAmpersand((String)r.getParameters()[4]));
+            setIconBaseWithExtension("org/netbeans/modules/uihandler/key.png");
+            htmlKey = "HTML_key";
         } else if ("UI_ENABLED_MODULES".equals(r.getMessage())) { // NOI18N
             setDisplayName(NbBundle.getMessage(UINode.class, "MSG_EnabledModules"));
             setIconBaseWithExtension("org/netbeans/modules/uihandler/module.gif");
+            htmlKey = null;
         } else if ("UI_DISABLED_MODULES".equals(r.getMessage())) { // NOI18N
             setDisplayName(NbBundle.getMessage(UINode.class, "MSG_DisabledModules"));
             setIconBaseWithExtension("org/netbeans/modules/uihandler/module.gif");
+            htmlKey = null;
         }
             
         
@@ -125,6 +137,15 @@ final class UINode extends AbstractNode implements VisualData {
     
     public String getMessage() {
         return FORMATTER.format(log);
+    }
+    
+    @Override
+    public String getHtmlDisplayName() {
+        if (htmlKey == null) {
+            return null;
+        } else {
+            return NbBundle.getMessage(UINode.class, htmlKey, getDisplayName());
+        }
     }
     
     static Node create(LogRecord r) {

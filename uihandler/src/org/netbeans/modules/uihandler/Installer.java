@@ -247,7 +247,7 @@ public class Installer extends ModuleInstall {
             }
             return b.getActionCommand();
         }
-        return (String)res;
+        return res instanceof String ? (String)res : null;
     }
 
     static URL uploadLogs(URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs) throws IOException {

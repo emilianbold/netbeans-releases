@@ -20,6 +20,7 @@
 package org.netbeans.modules.uihandler;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -34,6 +35,9 @@ import org.openide.util.NbBundle;
  *
  */
 public class EnabledModulesCollector implements Deactivated {
+    private List<ModuleInfo> previouslyEnabled = Collections.emptyList();
+    private List<ModuleInfo> previouslyDisabled = Collections.emptyList();
+    
     
     /** Creates a new instance of EnabledModulesCollector */
     public EnabledModulesCollector() {
@@ -49,12 +53,17 @@ public class EnabledModulesCollector implements Deactivated {
                 disabled.add(m);
             }
         }
+
+        List<ModuleInfo> newEnabled = new ArrayList<ModuleInfo>(enabled);
+        newEnabled.removeAll(previouslyEnabled);
+        List<ModuleInfo> newDisabled = new ArrayList<ModuleInfo>(disabled);
+        newDisabled.removeAll(previouslyDisabled);
         
-        {
+        if (!newEnabled.isEmpty()) {
             LogRecord rec = new LogRecord(Level.CONFIG, "UI_ENABLED_MODULES");
-            String[] enabledNames = new String[enabled.size()];
+            String[] enabledNames = new String[newEnabled.size()];
             int i = 0;
-            for (ModuleInfo m : enabled) {
+            for (ModuleInfo m : newEnabled) {
                 enabledNames[i++] = m.getCodeName();
             }
             rec.setParameters(enabledNames);
@@ -62,11 +71,11 @@ public class EnabledModulesCollector implements Deactivated {
             rec.setResourceBundle(NbBundle.getBundle(EnabledModulesCollector.class));
             uiLogger.log(rec);
         }
-        if (!disabled.isEmpty()) {
+        if (!newDisabled.isEmpty()) {
             LogRecord rec = new LogRecord(Level.CONFIG, "UI_DISABLED_MODULES");
-            String[] disabledNames = new String[disabled.size()];
+            String[] disabledNames = new String[newDisabled.size()];
             int i = 0;
-            for (ModuleInfo m : disabled) {
+            for (ModuleInfo m : newDisabled) {
                 disabledNames[i++] = m.getCodeName();
             }
             rec.setParameters(disabledNames);
@@ -74,6 +83,9 @@ public class EnabledModulesCollector implements Deactivated {
             rec.setResourceBundle(NbBundle.getBundle(EnabledModulesCollector.class));
             uiLogger.log(rec);
         }
+        
+        previouslyEnabled = enabled;
+        previouslyDisabled = disabled;
     }
     
 }
