@@ -203,11 +203,11 @@ public final class MessageGenerator {
     
     public static final class Model {
         
-        private final String ejbClassName;
-        private final FileObject pkg;
-        private final boolean isQueue;
-        private final boolean isSimplified;
-        private final boolean isXmlBased;
+        final String ejbClassName;
+        final FileObject pkg;
+        final boolean isQueue;
+        final boolean isSimplified;
+        final boolean isXmlBased;
 
         public static Model create(String ejbClassName, FileObject pkg, boolean isQueue, boolean isSimplified, boolean isXmlBased) {
             return new Model(ejbClassName, pkg, isQueue, isSimplified, isXmlBased);

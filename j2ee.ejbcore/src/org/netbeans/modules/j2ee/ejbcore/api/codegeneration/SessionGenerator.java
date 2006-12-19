@@ -203,14 +203,14 @@ public final class SessionGenerator {
     /** immutable model of data entered in wizard */
     public static final class Model {
         
-        private final String ejbClassName;
-        private final FileObject pkg;
-        private final boolean hasRemote;
-        private final boolean hasLocal;
-        private final boolean isStateful;
-        private final boolean isSimplified;
-        private final boolean hasBusinessInterface;
-        private final boolean isXmlBased;
+        final String ejbClassName;
+        final FileObject pkg;
+        final boolean hasRemote;
+        final boolean hasLocal;
+        final boolean isStateful;
+        final boolean isSimplified;
+        final boolean hasBusinessInterface;
+        final boolean isXmlBased;
         
         public static Model create(String ejbClassName, FileObject pkg, boolean hasRemote, boolean hasLocal, boolean isStateful, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased) {
             return new Model(ejbClassName, pkg, hasRemote, hasLocal, isStateful, isSimplified, hasBusinessInterface, isXmlBased);
