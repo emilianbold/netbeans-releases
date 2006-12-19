@@ -27,12 +27,13 @@ import java.util.Set;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.DelegatingWizardDescriptorPanel;
-import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -67,26 +68,27 @@ public final class MessageEJBWizard implements WizardDescriptor.InstantiatingIte
         ejbPanel = new MessageEJBWizardPanel(wiz);
         WizardDescriptor.Panel p = new ValidatingPanel(JavaTemplates.createPackageChooser(project,sourceGroups, ejbPanel, true));
         JComponent c = (JComponent) p.getComponent ();
-        Util.changeLabelInComponent(c, NbBundle.getMessage(Util.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"), NbBundle.getMessage(MessageEJBWizard.class, "LBL_EJB_Name") );
-        Util.hideLabelAndLabelFor(c, NbBundle.getMessage(Util.class, "LBL_JavaTargetChooserPanelGUI_CreatedFile_Label"));
+        Util.changeLabelInComponent(c, NbBundle.getMessage(MessageEJBWizard.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"), NbBundle.getMessage(MessageEJBWizard.class, "LBL_EJB_Name") );
+        Util.hideLabelAndLabelFor(c, NbBundle.getMessage(MessageEJBWizard.class, "LBL_JavaTargetChooserPanelGUI_CreatedFile_Label"));
         panels = new WizardDescriptor.Panel[] {p};
         Utils.mergeSteps(wiz, panels, SESSION_STEPS);
     }
 
     public Set instantiate() throws IOException {
         FileObject pkg = Templates.getTargetFolder(wiz);
-        String ejbName = Templates.getTargetName(wiz);
-        Project project = Templates.getProject(wiz);
-        FileObject result = null;
+        EjbJar ejbModule = EjbJar.getEjbJar(pkg);
         
-        MessageGenerator generator = new MessageGenerator();
-        try {
-            result = generator.generate(ejbName, pkg, ejbPanel, project);
-        } catch (VersionNotSupportedException vnse) {
-            IOException ioe = new IOException();
-            ioe.initCause(vnse);
-            throw ioe;
-        }
+        // TODO: UI - add checkbox for Java EE 5 to create also EJB 2.1 style EJBs
+        boolean isSimplified = ejbModule.getJ2eePlatformVersion().equals(J2eeModule.JAVA_EE_5);
+        MessageGenerator.Model model = MessageGenerator.Model.create(
+                Templates.getTargetName(wiz),
+                pkg,
+                ejbPanel.isQueue(),
+                isSimplified,
+                !isSimplified // TODO: UI - add checkbox for option XML (not annotation) usage
+                );
+        MessageGenerator generator = MessageGenerator.create(model);
+        FileObject result = generator.generate();
         return result == null ? Collections.EMPTY_SET : Collections.singleton(result);
     }
 

@@ -84,7 +84,6 @@ public final class SessionEJBWizard implements WizardDescriptor.InstantiatingIte
         EjbJar ejbModule = EjbJar.getEjbJar(pkg);
         // TODO: UI - add checkbox for Java EE 5 to create also EJB 2.1 style EJBs
         boolean isSimplified = ejbModule.getJ2eePlatformVersion().equals(J2eeModule.JAVA_EE_5);
-        SessionGenerator sessionGenerator = new SessionGenerator();
         SessionGenerator.Model model = SessionGenerator.Model.create(
                 Templates.getTargetName(wiz), 
                 pkg, 
@@ -95,8 +94,9 @@ public final class SessionEJBWizard implements WizardDescriptor.InstantiatingIte
                 true, // TODO: UI - add checkbox for creation of business interface
                 !isSimplified // TODO: UI - add checkbox for option XML (not annotation) usage
                 );
-        FileObject fileObject = sessionGenerator.generateSessionBean(model);
-        return Collections.singleton(fileObject);
+        SessionGenerator sessionGenerator = SessionGenerator.create(model);
+        FileObject result = sessionGenerator.generate();
+        return result == null ? Collections.<FileObject>emptySet() : Collections.singleton(result);
     }
 
     public void addChangeListener(ChangeListener listener) {

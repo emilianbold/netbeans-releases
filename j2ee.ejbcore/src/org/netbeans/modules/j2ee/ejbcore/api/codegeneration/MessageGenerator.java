@@ -19,272 +19,208 @@
 
 package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.TypeParameterTree;
-import com.sun.source.tree.VariableTree;
-import com.sun.source.util.Trees;
 import java.io.IOException;
-import java.util.Collections;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.common.source.GenerationUtils;
+import org.netbeans.modules.j2ee.dd.api.common.MessageDestination;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfig;
+import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfigProperty;
+import org.netbeans.modules.j2ee.dd.api.ejb.AssemblyDescriptor;
+import org.netbeans.modules.j2ee.dd.api.ejb.ContainerTransaction;
+import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
+import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
+import org.netbeans.modules.j2ee.dd.api.ejb.Method;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.MessageEJBWizardPanel;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 
 /**
+ * Generator of MessageDriven EJBs for EJB 2.1 and 3.0
  *
- * @author Chris Webster
  * @author Martin Adamek
  */
-public class MessageGenerator {
-    private EjbGenerationUtil genUtil = new EjbGenerationUtil();
-    private static final String MESSAGE_TEMPLATE = EjbGenerationUtil.TEMPLATE_BASE+"MessageBean.xml"; //NOI18N
+public final class MessageGenerator {
+
+    private static final String EJB21_EJBCLASS = "Templates/J2EE/EJB21/MessageDrivenEjbClass.java"; // NOI18N
+    private static final String EJB30_QUEUE_EJBCLASS = "Templates/J2EE/EJB30/MessageDrivenQueueEjbClass.java"; // NOI18N
+    private static final String EJB30_TOPIC_EJBCLASS = "Templates/J2EE/EJB30/MessageDrivenTopicEjbClass.java"; // NOI18N
+
+    private final Model model;
+    private final EJBNameOptions ejbNameOptions;
+    private final String ejbName;
+    private final String ejbClassName;
     
-    public FileObject generate(String ejbName, FileObject pkg, MessageEJBWizardPanel wizardPanel, Project project) throws IOException, VersionNotSupportedException {
-        boolean ejb30 = false;
-        try {
-            org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(pkg);
-            ejb30 = EjbJar.VERSION_3_0.equals(DDProvider.getDefault().getMergedDDRoot(ejbModule.getMetadataUnit()).getVersion().toString());
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
-        }
-        if (ejb30) {
-            return generateEjb3(ejbName, pkg, ((MessageEJBWizardPanel) wizardPanel).isQueue(), project);
-        } else {
-            return generateEjb21(ejbName, pkg, ((MessageEJBWizardPanel) wizardPanel).isQueue(), project);
-        }
+    public static MessageGenerator create(Model model) {
+        return new MessageGenerator(model);
     }
     
-    private FileObject generateEjb21(String ejbName, FileObject pkg, boolean isQueue, Project project) throws IOException, VersionNotSupportedException {
-        //TODO: RETOUCHE
-//        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(pkg);
-//        EjbJar ejbJar = DDProvider.getDefault().getMergedDDRoot(ejbModule.getMetadataUnit());
-//        
-//        ejbName = EjbGenerationUtil.uniqueSingleEjbName(ejbName, ejbJar);
-//        
-//        //TODO: RETOUCHE remove XSLT generation
-//        
-//        String pkgName = genUtil.getSelectedPackageName(pkg, project);
-//        Bean b = genUtil.getDefaultBean();
-//        b.setCommentDataEjbName(ejbName + "Bean");
-//        b.setClassname(true);
-//        b.setClassnameName(EjbGenerationUtil.getBeanClassName(ejbName)); //NOI18N
-//        if (pkgName!=null) {
-//            b.setClassnamePackage(pkgName);
-//        }
-//        
-//        // generate bean class
-//        String beanClass = genUtil.generateBeanClass(MESSAGE_TEMPLATE, b, pkgName, pkg);
-//        
-//        ///
-//        J2eeModuleProvider pwm = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-//        pwm.getConfigSupport().ensureConfigurationReady();
-//        ///
-//        
-//        EnterpriseBeans beans = ejbJar.getEnterpriseBeans();
-//        MessageDriven mb = null;
-//        if (beans == null) {
-//            beans  = ejbJar.newEnterpriseBeans();
-//            ejbJar.setEnterpriseBeans(beans);
-//        }
-//        mb = beans.newMessageDriven();
-//        ActivationConfig config = mb.newActivationConfig();
-//        ActivationConfigProperty destProp = config.newActivationConfigProperty();
-//        destProp.setActivationConfigPropertyName("destinationType"); // NOI18N
-//        ActivationConfigProperty ackProp = config.newActivationConfigProperty();
-//        ackProp.setActivationConfigPropertyName("acknowledgeMode"); // NOI18N
-//        ackProp.setActivationConfigPropertyValue("Auto-acknowledge"); // NOI18N
-//        config.addActivationConfigProperty(ackProp);
-//        if (isQueue) {
-//            String queue = "javax.jms.Queue"; // NOI18N
-//            mb.setMessageDestinationType(queue);
-//            destProp.setActivationConfigPropertyValue(queue);
-//        } else {
-//            String topic = "javax.jms.Topic"; // NOI18N
-//            mb.setMessageDestinationType(topic);
-//            destProp.setActivationConfigPropertyValue(topic);
-//            ActivationConfigProperty durabilityProp = config.newActivationConfigProperty();
-//            durabilityProp.setActivationConfigPropertyName("subscriptionDurability"); // NOI18N
-//            durabilityProp.setActivationConfigPropertyValue("Durable"); // NOI18N
-//            config.addActivationConfigProperty(durabilityProp);
-//            
-//            ActivationConfigProperty clientIdProp = config.newActivationConfigProperty();
-//            clientIdProp.setActivationConfigPropertyName("clientId"); // NOI18N
-//            clientIdProp.setActivationConfigPropertyValue(ejbName + "Bean"); // NOI18N
-//            config.addActivationConfigProperty(clientIdProp);
-//            
-//            ActivationConfigProperty subscriptionNameProp = config.newActivationConfigProperty();
-//            subscriptionNameProp.setActivationConfigPropertyName("subscriptionName"); // NOI18N
-//            subscriptionNameProp.setActivationConfigPropertyValue(ejbName + "Bean"); // NOI18N
-//            config.addActivationConfigProperty(subscriptionNameProp);
-//            
-//        }
-//        config.addActivationConfigProperty(destProp);
-//        mb.setActivationConfig(config);
-//        mb.setEjbName(ejbName + "Bean");
-//        mb.setDisplayName(ejbName+"MDB");
-//        mb.setEjbClass(beanClass);
-//        mb.setTransactionType(MessageDriven.TRANSACTION_TYPE_CONTAINER);
-//        
-//        beans.addMessageDriven(mb);
-//        // add transaction requirements
-//        AssemblyDescriptor ad = ejbJar.getSingleAssemblyDescriptor();
-//        if (ad == null) {
-//            ad = ejbJar.newAssemblyDescriptor();
-//            ejbJar.setAssemblyDescriptor(ad);
-//        }
-//        MessageDestination md = ad.newMessageDestination();
-//        String ejbNameBase = EjbGenerationUtil.getEjbNameBase(mb.getEjbName());
-//        String destinationLink = ejbNameBase+"Destination"; //NOI18N
-//        md.setDisplayName("Destination for " + ejbNameBase);
-//        md.setMessageDestinationName(destinationLink);
-//        ad.addMessageDestination(md);
-//        
-//        mb.setMessageDestinationLink(destinationLink);
-//        ContainerTransaction ct = ad.newContainerTransaction();
-//        ct.setTransAttribute("Required"); //NOI18N
-//        org.netbeans.modules.j2ee.dd.api.ejb.Method m = ct.newMethod();
-//        m.setEjbName(ejbName + "Bean");
-//        m.setMethodName("*"); //NOI18N
-//        ct.addMethod(m);
-//        ad.addContainerTransaction(ct);
-//        ejbJar.write(ejbModule.getDeploymentDescriptor());
-//        pwm.getConfigSupport().ensureResourceDefinedForEjb(ejbName + "Bean", "message-driven"); //NOI18N
-//        
-//        // use simple names in all generated classes, use imports
-//        FileObject beanFO = pkg.getFileObject(EjbGenerationUtil.getBaseName(mb.getEjbClass()), "java"); // NOI18N
-//        return beanFO;
-        return null;
+    private MessageGenerator(Model model) {
+        this.model = model;
+        ejbNameOptions = new EJBNameOptions();
+        ejbName = ejbNameOptions.getMessageDrivenEjbNamePrefix() + model.ejbClassName + ejbNameOptions.getMessageDrivenEjbNameSuffix();
+        ejbClassName = ejbNameOptions.getMessageDrivenEjbClassPrefix() + model.ejbClassName + ejbNameOptions.getMessageDrivenEjbClassSuffix();
     }
     
-    private FileObject generateEjb3(final String name, FileObject pkg, boolean isQueue, final Project project) throws IOException {
-        final FileObject fo = GenerationUtils.createClass(pkg, name, null);
-        JavaSource javaSource = JavaSource.forFileObject(fo);
-        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
-            public void run(WorkingCopy workingCopy) throws Exception {
-                workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
-                GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy);
-                TreeMaker treeMaker = workingCopy.getTreeMaker();
-                Trees trees = workingCopy.getTrees();
-                TypeElement javaClass = generationUtils.getTypeElement();
-                ClassTree clazz = trees.getTree(javaClass);
-
-                TypeElement implementsElement = workingCopy.getElements().getTypeElement("javax.jms.MessageListener");
-                ExpressionTree implementsClause = treeMaker.QualIdent(implementsElement);
-                ClassTree modifiedClazz = treeMaker.addClassImplementsClause(clazz, implementsClause);
-                workingCopy.rewrite(clazz, modifiedClazz);
-                
-                //TODO: RETOUCHE set all annotation for MessageDriven
-//                AttributeValue mappedNameAttibuteValue = JMIGenerationUtil.createAttributeValue(javaClass, "mappedName", "jms/" + name);
-//                
-//                // ActivationConfigProperty
-//                List<Annotation> activationConfigSubAnnotations = new ArrayList<Annotation>();
-//                AttributeValue[] attributes;
-//                // acknowledgeMode
-//                attributes = new AttributeValue[] {
-//                    JMIGenerationUtil.createAttributeValue(javaClass, "propertyName", "acknowledgeMode"),
-//                            JMIGenerationUtil.createAttributeValue(javaClass, "propertyValue", "Auto-acknowledge")
-//                };
-//                activationConfigSubAnnotations.add(JMIGenerationUtil.createAnnotation(javaClass, "javax.ejb.ActivationConfigProperty", Arrays.asList(attributes)));
-//                if (isQueue) {
-//                    // destinationType
-//                    attributes = new AttributeValue[] {
-//                        JMIGenerationUtil.createAttributeValue(javaClass, "propertyName", "destinationType"),
-//                                JMIGenerationUtil.createAttributeValue(javaClass, "propertyValue", "javax.jms.Queue")
-//                    };
-//                    activationConfigSubAnnotations.add(JMIGenerationUtil.createAnnotation(javaClass, "javax.ejb.ActivationConfigProperty", Arrays.asList(attributes)));
-//                } else {
-//                    // destinationType
-//                    attributes = new AttributeValue[] {
-//                        JMIGenerationUtil.createAttributeValue(javaClass, "propertyName", "destinationType"),
-//                                JMIGenerationUtil.createAttributeValue(javaClass, "propertyValue", "javax.jms.Topic")
-//                    };
-//                    activationConfigSubAnnotations.add(JMIGenerationUtil.createAnnotation(javaClass, "javax.ejb.ActivationConfigProperty", Arrays.asList(attributes)));
-//                    // subscriptionDurability
-//                    attributes = new AttributeValue[] {
-//                        JMIGenerationUtil.createAttributeValue(javaClass, "propertyName", "subscriptionDurability"),
-//                                JMIGenerationUtil.createAttributeValue(javaClass, "propertyValue", "Durable")
-//                    };
-//                    activationConfigSubAnnotations.add(JMIGenerationUtil.createAnnotation(javaClass, "javax.ejb.ActivationConfigProperty", Arrays.asList(attributes)));
-//                    
-//                    // not recognized by EJB 3.0 schema, but needed when subscriptionDurability=Durable
-//                    // client id
-//                    attributes = new AttributeValue[] {
-//                        JMIGenerationUtil.createAttributeValue(javaClass, "propertyName", "clientId"),
-//                                JMIGenerationUtil.createAttributeValue(javaClass, "propertyValue", name)
-//                    };
-//                    activationConfigSubAnnotations.add(JMIGenerationUtil.createAnnotation(javaClass, "javax.ejb.ActivationConfigProperty", Arrays.asList(attributes)));
-//                    // subscriptionName
-//                    attributes = new AttributeValue[] {
-//                        JMIGenerationUtil.createAttributeValue(javaClass, "propertyName", "subscriptionName"),
-//                                JMIGenerationUtil.createAttributeValue(javaClass, "propertyValue", name)
-//                    };
-//                    activationConfigSubAnnotations.add(JMIGenerationUtil.createAnnotation(javaClass, "javax.ejb.ActivationConfigProperty", Arrays.asList(attributes)));
-//                }
-//                AttributeValue activationConfigAttributeValue = JMIGenerationUtil.createAttributeValue(javaClass, "activationConfig", activationConfigSubAnnotations);
-//                
-//                List messageDrivenAttributes = new ArrayList(2);
-//                messageDrivenAttributes.add(mappedNameAttibuteValue);
-//                messageDrivenAttributes.add(activationConfigAttributeValue);
-//                Annotation messageDrivenAnnotation = JMIGenerationUtil.createAnnotation(javaClass, "javax.ejb.MessageDriven", messageDrivenAttributes);
-//                javaClass.getAnnotations().add(messageDrivenAnnotation);
-
-                VariableTree paramTree = treeMaker.Variable(
-                        treeMaker.Modifiers(Collections.<Modifier>emptySet()),
-                        "message",
-                        trees.getTree(workingCopy.getElements().getTypeElement("javax.jms.Message")),
-                        null
-                        );
-                MethodTree resultTree = treeMaker.Method(
-                        treeMaker.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC)),
-                        "onMessage",
-                        treeMaker.PrimitiveType(TypeKind.VOID),
-                        Collections.<TypeParameterTree>emptyList(),
-                        Collections.<VariableTree>singletonList(paramTree),
-                        Collections.<ExpressionTree>emptyList(),
-                        treeMaker.Block(Collections.<StatementTree>emptyList(), false),
-                        null
-                        );
-                modifiedClazz = treeMaker.addClassMember(clazz, resultTree);
-                workingCopy.rewrite(clazz, modifiedClazz);
-                
-                // Create server resources for this bean.
-                //
-                // !PW Posted via RequestProcessor for now because the merged annotion provider
-                // does not have any information for this bean if this is invoked syncronously.
-                // We need to find a more stable mechanism for the, perhaps new API that directly
-                // accepts the annotation reference created above.  This construct is too fragile.
-                //
-                // Note: Even with 1s (1000ms) delay, sometimes the data was still not available.
-                //
-                final J2eeModuleProvider pwm = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-                final String ejbName = name;
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        if(pwm != null) {
-                            pwm.getConfigSupport().ensureResourceDefinedForEjb(ejbName, "message-driven"); //NOI18N
-                        }
-                    }
-                }, 2000);
+    public FileObject generate() throws IOException {
+        FileObject resultFileObject = null;
+        if (model.isSimplified) {
+            resultFileObject = generateEJB30Classes(model);
+            if (model.isXmlBased) {
+                generateEJB30Xml(model);
             }
-        });
-        return fo;
+        } else {
+            resultFileObject = generateEJB21Classes(model);
+            if (model.isXmlBased) {
+                try {
+                    generateEJB21Xml(model);
+                } catch (VersionNotSupportedException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
+            }
+        }
+        return resultFileObject;
+    }
+    
+    private FileObject generateEJB21Classes(Model model) throws IOException {
+        FileObject resultFileObject = GenerationUtils.createClass(EJB21_EJBCLASS,  model.pkg, ejbClassName, null);
+        ///
+        Project project = FileOwnerQuery.getOwner(model.pkg);
+        J2eeModuleProvider pwm = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        pwm.getConfigSupport().ensureConfigurationReady();
+        ///
+        return resultFileObject;
+    }
+    
+    private FileObject generateEJB30Classes(Model model) throws IOException {
+        String ejbClassTemplate = model.isQueue ? EJB30_QUEUE_EJBCLASS : EJB30_TOPIC_EJBCLASS;
+        FileObject resultFileObject = GenerationUtils.createClass(ejbClassTemplate,  model.pkg, ejbClassName, null);
+                
+        // Create server resources for this bean.
+        //
+        // !PW Posted via RequestProcessor for now because the merged annotion provider
+        // does not have any information for this bean if this is invoked syncronously.
+        // We need to find a more stable mechanism for the, perhaps new API that directly
+        // accepts the annotation reference created above.  This construct is too fragile.
+        //
+        // Note: Even with 1s (1000ms) delay, sometimes the data was still not available.
+        //
+        Project project = FileOwnerQuery.getOwner(model.pkg);
+        final J2eeModuleProvider pwm = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                if(pwm != null) {
+                    pwm.getConfigSupport().ensureResourceDefinedForEjb(ejbName, "message-driven"); //NOI18N
+                }
+            }
+        }, 2000);
+        
+        return resultFileObject;
+    }
+    
+    private void generateEJB21Xml(Model model) throws IOException, VersionNotSupportedException {
+        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(model.pkg);
+        org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = DDProvider.getDefault().getMergedDDRoot(ejbModule.getMetadataUnit());
+        EnterpriseBeans beans = ejbJar.getEnterpriseBeans();
+        MessageDriven messageDriven = null;
+        if (beans == null) {
+            beans  = ejbJar.newEnterpriseBeans();
+            ejbJar.setEnterpriseBeans(beans);
+        }
+        messageDriven = beans.newMessageDriven();
+        ActivationConfig config = messageDriven.newActivationConfig();
+        ActivationConfigProperty destProp = config.newActivationConfigProperty();
+        destProp.setActivationConfigPropertyName("destinationType"); // NOI18N
+        ActivationConfigProperty ackProp = config.newActivationConfigProperty();
+        ackProp.setActivationConfigPropertyName("acknowledgeMode"); // NOI18N
+        ackProp.setActivationConfigPropertyValue("Auto-acknowledge"); // NOI18N
+        config.addActivationConfigProperty(ackProp);
+        if (model.isQueue) {
+            String queue = "javax.jms.Queue"; // NOI18N
+            messageDriven.setMessageDestinationType(queue);
+            destProp.setActivationConfigPropertyValue(queue);
+        } else {
+            String topic = "javax.jms.Topic"; // NOI18N
+            messageDriven.setMessageDestinationType(topic);
+            destProp.setActivationConfigPropertyValue(topic);
+            ActivationConfigProperty durabilityProp = config.newActivationConfigProperty();
+            durabilityProp.setActivationConfigPropertyName("subscriptionDurability"); // NOI18N
+            durabilityProp.setActivationConfigPropertyValue("Durable"); // NOI18N
+            config.addActivationConfigProperty(durabilityProp);
+            
+            ActivationConfigProperty clientIdProp = config.newActivationConfigProperty();
+            clientIdProp.setActivationConfigPropertyName("clientId"); // NOI18N
+            clientIdProp.setActivationConfigPropertyValue(ejbName); // NOI18N
+            config.addActivationConfigProperty(clientIdProp);
+            
+            ActivationConfigProperty subscriptionNameProp = config.newActivationConfigProperty();
+            subscriptionNameProp.setActivationConfigPropertyName("subscriptionName"); // NOI18N
+            subscriptionNameProp.setActivationConfigPropertyValue(ejbName); // NOI18N
+            config.addActivationConfigProperty(subscriptionNameProp);
+            
+        }
+        config.addActivationConfigProperty(destProp);
+        messageDriven.setActivationConfig(config);
+        messageDriven.setEjbName(ejbName);
+        messageDriven.setDisplayName(ejbName); // TODO: add "MDB" suffix?
+        messageDriven.setEjbClass(ejbClassName);
+        messageDriven.setTransactionType(MessageDriven.TRANSACTION_TYPE_CONTAINER);
+        
+        beans.addMessageDriven(messageDriven);
+        // add transaction requirements
+        AssemblyDescriptor assemblyDescriptor = ejbJar.getSingleAssemblyDescriptor();
+        if (assemblyDescriptor == null) {
+            assemblyDescriptor = ejbJar.newAssemblyDescriptor();
+            ejbJar.setAssemblyDescriptor(assemblyDescriptor);
+        }
+        MessageDestination messageDestination = assemblyDescriptor.newMessageDestination();
+        String destinationLink = model.ejbClassName + "Destination"; //NOI18N
+        messageDestination.setDisplayName("Destination for " + model.ejbClassName);
+        messageDestination.setMessageDestinationName(destinationLink);
+        assemblyDescriptor.addMessageDestination(messageDestination);
+        
+        messageDriven.setMessageDestinationLink(destinationLink);
+        ContainerTransaction containerTransaction = assemblyDescriptor.newContainerTransaction();
+        containerTransaction.setTransAttribute("Required"); //NOI18N
+        Method method = containerTransaction.newMethod();
+        method.setEjbName(ejbName);
+        method.setMethodName("*"); //NOI18N
+        containerTransaction.addMethod(method);
+        assemblyDescriptor.addContainerTransaction(containerTransaction);
+        ejbJar.write(ejbModule.getDeploymentDescriptor());
+        Project project = FileOwnerQuery.getOwner(model.pkg);
+        J2eeModuleProvider pwm = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        pwm.getConfigSupport().ensureResourceDefinedForEjb(ejbName, "message-driven"); //NOI18N
+    }
+    
+    private void generateEJB30Xml(Model model) throws IOException {
+        throw new UnsupportedOperationException("Method not implemented yet.");
+    }
+    
+    public static final class Model {
+        
+        private final String ejbClassName;
+        private final FileObject pkg;
+        private final boolean isQueue;
+        private final boolean isSimplified;
+        private final boolean isXmlBased;
+
+        public static Model create(String ejbClassName, FileObject pkg, boolean isQueue, boolean isSimplified, boolean isXmlBased) {
+            return new Model(ejbClassName, pkg, isQueue, isSimplified, isXmlBased);
+        }
+        
+        private Model(String ejbClassName, FileObject pkg, boolean isQueue, boolean isSimplified, boolean isXmlBased) {
+            this.ejbClassName = ejbClassName;
+            this.pkg = pkg;
+            this.isQueue = isQueue;
+            this.isSimplified = isSimplified;
+            this.isXmlBased = isXmlBased;
+        }
+        
     }
     
 }
