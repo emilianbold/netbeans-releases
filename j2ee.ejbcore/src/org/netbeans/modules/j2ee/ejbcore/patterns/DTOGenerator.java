@@ -23,7 +23,6 @@ import java.io.IOException;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmrField;
 import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.EjbGenerationUtil;
-import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.gen.Bean;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -35,7 +34,6 @@ public class DTOGenerator {
     private static final String DTO_TEMPLATE = EjbGenerationUtil.TEMPLATE_BASE + "DTO.xml"; //NOI18N
     private static final String DTO_SUFIX = "DTO"; //NOI18N
     private int indexField;
-    private Bean b;
     private DTOHelper dtoHelp;
     
     /* Return the string with first capital character
@@ -55,7 +53,9 @@ public class DTOGenerator {
      */
     //TODO good candidate to Util class
     private static String getDTOName(String beanName){
-        return EjbGenerationUtil.getEjbNameBase(beanName) + DTO_SUFIX;
+//        return EjbGenerationUtil.getEjbNameBase(beanName) + DTO_SUFIX;
+        //TODO: RETOUCHE
+        return null;
     }
     
     /* Return DTO full name from bean name
@@ -85,25 +85,26 @@ public class DTOGenerator {
             pkg = EjbGenerationUtil.getPackageFileObject(dtoHelp.getSourceGroup(),pkgName, dtoHelp.getProject());
         }
         String dtoName = dtoHelp.getEntityName();
-        b = genUtil.getDefaultBean();
-        b.setClassname(true);
-        b.setClassnameName(getDTOName(dtoName));
-        b.setCommentDataEjbName(dtoHelp.getLocalName());
-        if(pkgName != null){
-            b.setClassnamePackage(pkgName);
-        }
-        b.setKey(true);  // this is needed for equals() and to hashCode() meth. generation
-        b.setKeyFullname(getDTOFullName(pkgName, dtoName));
-        // add CMP Fields
-        CmpField[] cmps = dtoHelp.getCmpFields();
-        addCmpFields(cmps);
-        // add CMR Fields
-        if(generateCmrFields) {
-            CmrField[] cmrs = dtoHelp.getCmrFields();
-            if(cmrs != null) addCmrFields(cmrs);
-        }
-        // generate DTO
-        genUtil.generateBeanClass(DTO_TEMPLATE, b, pkgName, pkg, true);
+        //TODO: RETOUCHE
+//        b = genUtil.getDefaultBean();
+//        b.setClassname(true);
+//        b.setClassnameName(getDTOName(dtoName));
+//        b.setCommentDataEjbName(dtoHelp.getLocalName());
+//        if(pkgName != null){
+//            b.setClassnamePackage(pkgName);
+//        }
+//        b.setKey(true);  // this is needed for equals() and to hashCode() meth. generation
+//        b.setKeyFullname(getDTOFullName(pkgName, dtoName));
+//        // add CMP Fields
+//        CmpField[] cmps = dtoHelp.getCmpFields();
+//        addCmpFields(cmps);
+//        // add CMR Fields
+//        if(generateCmrFields) {
+//            CmrField[] cmrs = dtoHelp.getCmrFields();
+//            if(cmrs != null) addCmrFields(cmrs);
+//        }
+//        // generate DTO
+//        genUtil.generateBeanClass(DTO_TEMPLATE, b, pkgName, pkg, true);
     }
     
     /* Add Cm field (CMR or CMP) to bean
@@ -112,10 +113,11 @@ public class DTOGenerator {
      * @param cmFieldClassname field class name, e.g. java.util.Collection, String, ...
      */
     private void addField(int index, String fieldName, String cmFieldClassName){
-        b.addCmField(true);
-        b.setCmFieldMethodName(index, toFirstUpper(fieldName));
-        b.setCmFieldClassname(index, cmFieldClassName);
-        b.addCmFieldName(fieldName);
+        //TODO: RETOUCHE
+//        b.addCmField(true);
+//        b.setCmFieldMethodName(index, toFirstUpper(fieldName));
+//        b.setCmFieldClassname(index, cmFieldClassName);
+//        b.addCmFieldName(fieldName);
     }
     
     /* Method adds CMP fields to the bean
@@ -127,7 +129,8 @@ public class DTOGenerator {
             if(cmps[i] != null ) {
                 fieldName = cmps[i].getFieldName();
                 addField(indexField, fieldName, dtoHelp.getFieldType(fieldName));
-                b.setCmFieldInKey(indexField, fieldName);
+                //TODO: RETOUCHE
+//                b.setCmFieldInKey(indexField, fieldName);
                 indexField++;
             }
         }
@@ -159,12 +162,13 @@ public class DTOGenerator {
                 }
                 
                 addField(fieldIndex, fieldName, fieldClassName);
-                b.setCmFieldCmrField(fieldIndex, cmFieldCmrField);
-                // TODO change this hack. We should change the bean.dtd or something else
-                if(isMultiplicity) {
-                    b.setCmFieldCascadeDelete(fieldIndex,
-                            getDTOName(dtoHelp.findEntityNameByLocalInt(cmFieldCmrField)));
-                }
+                //TODO: RETOUCHE
+//                b.setCmFieldCmrField(fieldIndex, cmFieldCmrField);
+//                // TODO change this hack. We should change the bean.dtd or something else
+//                if(isMultiplicity) {
+//                    b.setCmFieldCascadeDelete(fieldIndex,
+//                            getDTOName(dtoHelp.findEntityNameByLocalInt(cmFieldCmrField)));
+//                }
             }
         }
     } 

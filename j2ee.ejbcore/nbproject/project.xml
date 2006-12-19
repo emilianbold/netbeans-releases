@@ -386,7 +386,6 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.j2ee.ddloaders</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <package>org.netbeans.modules.j2ee.ejbcore.api.codegeneration</package>
-                <package>org.netbeans.modules.j2ee.ejbcore.api.dd</package>
                 <package>org.netbeans.modules.j2ee.ejbcore.api.methodcontroller</package>
                 <package>org.netbeans.modules.j2ee.ejbcore.api.ui</package>
                 <package>org.netbeans.modules.j2ee.ejbcore.spi</package>

@@ -19,46 +19,14 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp;
 
-import java.beans.PropertyChangeListener;
-import java.io.OutputStream;
-import java.text.MessageFormat;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Map;
 import java.util.Set;
-import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
-import org.netbeans.modules.j2ee.dd.api.ejb.AssemblyDescriptor;
-import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
-import org.netbeans.modules.j2ee.dd.api.ejb.CmrField;
-import org.netbeans.modules.j2ee.dd.api.ejb.ContainerTransaction;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelation;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelationshipRole;
-import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
-import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
-import org.netbeans.modules.j2ee.dd.api.ejb.MethodParams;
-import org.netbeans.modules.j2ee.dd.api.ejb.Query;
-import org.netbeans.modules.j2ee.dd.api.ejb.QueryMethod;
-import org.netbeans.modules.j2ee.dd.api.ejb.RelationshipRoleSource;
-import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
-import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.EjbGenerationUtil;
-import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp.CMPMapping;
-import org.netbeans.modules.j2ee.ejbcore.spi.ProjectPropertiesSupport;
-import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.gen.Bean;
-import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.gen.Method;
-import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.gen.Methods;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -66,9 +34,6 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import java.io.IOException;
 import java.util.List;
-import java.util.ArrayList;
-import org.openide.loaders.TemplateWizard;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -94,33 +59,37 @@ public class CmpGenerator /*implements PersistenceGenerator */{
     }
     
     private String generateLocal(String pkg, FileObject foPkg, String className, String ejbName) throws IOException {
-        className = EjbGenerationUtil.getBaseName(className);
-        Methods genData = new Methods();
-        genData.setClassname(className);
-        genData.setEjbName(ejbName);
-        genData.setPackage(pkg);
-        genData.setGenInterface("local");
-        return genHelper.genClass(EjbGenerationUtil.INTERFACE_TEMPLATE, foPkg, genData, false);
+//        className = EjbGenerationUtil.getBaseName(className);
+//        Methods genData = new Methods();
+//        genData.setClassname(className);
+//        genData.setEjbName(ejbName);
+//        genData.setPackage(pkg);
+//        genData.setGenInterface("local");
+//        return genHelper.genClass(EjbGenerationUtil.INTERFACE_TEMPLATE, foPkg, genData, false);
+        //TODO: RETOUCHE
+        return null;
     }
     
     private String generateLocalHome(String pkg, FileObject foPkg, String className, String local, String ejbName, String keyClass) throws IOException {
-        className = EjbGenerationUtil.getBaseName(className);
-        Methods genData = new Methods();
-        genData.setClassname(className);
-        genData.setEjbName(ejbName);
-        genData.setPackage(pkg);
-        genData.setGenInterface("local-home");
-        Method findByPrimaryKey = new Method();
-        findByPrimaryKey.setName("findByPrimaryKey");
-        findByPrimaryKey.addException(true);
-        findByPrimaryKey.addExceptionType("javax.ejb.FinderException");
-        findByPrimaryKey.addParam(true);
-        findByPrimaryKey.addParamName("key");
-        findByPrimaryKey.addParamType(keyClass);
-        findByPrimaryKey.setLocalReturn(local);
-        genData.addMethod(findByPrimaryKey);
-        
-        return genHelper.genClass(EjbGenerationUtil.INTERFACE_TEMPLATE, foPkg, genData, false);
+//        className = EjbGenerationUtil.getBaseName(className);
+//        Methods genData = new Methods();
+//        genData.setClassname(className);
+//        genData.setEjbName(ejbName);
+//        genData.setPackage(pkg);
+//        genData.setGenInterface("local-home");
+//        Method findByPrimaryKey = new Method();
+//        findByPrimaryKey.setName("findByPrimaryKey");
+//        findByPrimaryKey.addException(true);
+//        findByPrimaryKey.addExceptionType("javax.ejb.FinderException");
+//        findByPrimaryKey.addParam(true);
+//        findByPrimaryKey.addParamName("key");
+//        findByPrimaryKey.addParamType(keyClass);
+//        findByPrimaryKey.setLocalReturn(local);
+//        genData.addMethod(findByPrimaryKey);
+//        
+//        return genHelper.genClass(EjbGenerationUtil.INTERFACE_TEMPLATE, foPkg, genData, false);
+        //TODO: RETOUCHE
+        return null;
     }
 
     //TODO: RETOUCHE

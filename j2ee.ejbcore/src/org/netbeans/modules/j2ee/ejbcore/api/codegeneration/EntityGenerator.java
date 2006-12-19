@@ -21,10 +21,6 @@ package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 
 import java.io.IOException;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
-import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
-import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.gen.Bean;
-import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.gen.Method;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -148,60 +144,43 @@ public class EntityGenerator {
 
     }
     
-    private void populateCMP(Bean genData, Entity e) {
-        genData.addCmField(true);
-        genData.setCmFieldMethodName(0, "Key");
-        genData.setCmFieldClassname(0, this.primaryKeyFQN);
-        genData.addCmFieldName("key");
-        e.setPersistenceType(Entity.PERSISTENCE_TYPE_CONTAINER);
-        CmpField f = e.newCmpField();
-        f.setFieldName(genData.getCmFieldName(0));
-        e.addCmpField(f);
-        e.setPrimkeyField(genData.getCmFieldName(0));
-        e.setAbstractSchemaName(EjbGenerationUtil.getEjbNameBase(e.getEjbName()));
-    }
-
-    private void populateBMP(Entity e) {
-        e.setPersistenceType(Entity.PERSISTENCE_TYPE_BEAN);
-    }
-
-    protected Method[] getPrimaryMethods(String local, String remote) {
-        // findByPrimaryKey method
-        Method find = new Method();
-        find.setName("findByPrimaryKey");
-        if(local != null) {
-            find.setLocalReturn(local);
-        }
-        if(remote != null) {
-            find.setRemoteReturn(remote);
-        }
-        find.addParam(true);
-        find.addParamName("key");
-        find.addParamType(this.primaryKeyFQN);
-        find.addException(true);
-        find.addExceptionType("javax.ejb.FinderException");
-        
-        if (isCMP) {
-            // create method
-            Method create = new Method();
-            create.setName("create");
-            if(local != null) {
-                create.setLocalReturn(local);
-            }
-            if(remote != null) {
-                create.setRemoteReturn(remote);
-            }
-            create.addParam(true);
-            create.addParamName("key");
-            create.addParamType(this.primaryKeyFQN);
-            create.addException(true);
-            create.addExceptionType("javax.ejb.CreateException");
-
-            return new Method[] {find, create};
-        }
-        
-        return new Method[] {find};
-    }
+//    protected MethodMo[] getPrimaryMethods(String local, String remote) {
+//        // findByPrimaryKey method
+//        Method find = new Method();
+//        find.setName("findByPrimaryKey");
+//        if(local != null) {
+//            find.setLocalReturn(local);
+//        }
+//        if(remote != null) {
+//            find.setRemoteReturn(remote);
+//        }
+//        find.addParam(true);
+//        find.addParamName("key");
+//        find.addParamType(this.primaryKeyFQN);
+//        find.addException(true);
+//        find.addExceptionType("javax.ejb.FinderException");
+//        
+//        if (isCMP) {
+//            // create method
+//            Method create = new Method();
+//            create.setName("create");
+//            if(local != null) {
+//                create.setLocalReturn(local);
+//            }
+//            if(remote != null) {
+//                create.setRemoteReturn(remote);
+//            }
+//            create.addParam(true);
+//            create.addParamName("key");
+//            create.addParamType(this.primaryKeyFQN);
+//            create.addException(true);
+//            create.addExceptionType("javax.ejb.CreateException");
+//
+//            return new Method[] {find, create};
+//        }
+//        
+//        return new Method[] {find};
+//    }
 
     public void setCMP(boolean cmp) {
         isCMP = cmp;

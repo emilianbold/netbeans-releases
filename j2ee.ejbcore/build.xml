@@ -18,40 +18,5 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="netbeans" name="j2ee/ejbcore">
-
     <import file="../../nbbuild/templates/projectized.xml"/>
-
-    <property name="ejbcodegenroot" location="src/org/netbeans/modules/j2ee/ejbcore/ejb/wizard/gen"/>
-
-    <target name="s2beansgen">
-          <taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
-	      <classpath>
-		    <pathelement path="${schema2beans/rt.dir}/modules/org-netbeans-modules-schema2beans.jar" />
-		    <pathelement path="${nb_all}/schema2beans/dev/schema2beansdev.jar" />
-		    <pathelement path="${nb_all}/schema2beans/anttask/s2banttask.jar"/>
-	      </classpath>
-         </taskdef>
-	 <mkdir dir="${ejbcodegenroot}"/>
-     	 <schema2beans schema="src/org/netbeans/modules/j2ee/ejbcore/ejb/wizard/xsl/BeanCreation.dtd"
-		package="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.gen"
-		rootDir="src"
-		outputType="javabeans"
-		attrProp="true"
-		standalone="true"/>
-	 <schema2beans schema="src/org/netbeans/modules/j2ee/ejbcore/ejb/wizard/xsl/InterfaceCreation.dtd"
-		package="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.gen"
-		rootDir="src"
-		outputType="javabeans"
-		attrProp="true"
-		standalone="true"/>
-    </target>
-    
-    <target depends="init,s2beansgen" name="compile">
-	<antcall target="projectized-common.compile"/>
-    </target>
-
-    <target name="clean" depends="projectized-common.clean">
-        <delete dir="${ejbcodegenroot}"/>
-    </target>
-
 </project>
