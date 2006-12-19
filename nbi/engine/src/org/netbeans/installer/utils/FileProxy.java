@@ -137,7 +137,9 @@ public class FileProxy {
           file = new File(parent, fileName + "." + i);
         }
         file.createNewFile();
-        file.deleteOnExit();
+        if (deleteOnExit) {
+            file.deleteOnExit();
+        }
         final InputStream resource = (loader != null ? loader: getClass().getClassLoader()).getResourceAsStream(uri.getSchemeSpecificPart());
         out = new FileOutputStream(file);
         if (resource == null) throw new DownloadException("resource:" + uri + "not found");
