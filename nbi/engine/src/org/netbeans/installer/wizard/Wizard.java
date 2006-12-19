@@ -156,6 +156,10 @@ public class Wizard {
         }
     }
     
+    public static WizardExecutionMode getExecutionMode() {
+        return executionMode;
+    }
+    
     private static List<WizardComponent> loadWizardComponents(Element element, ClassLoader loader) throws InitializationException {
         List<WizardComponent> components = new ArrayList<WizardComponent>();
         
@@ -239,10 +243,10 @@ public class Wizard {
     
     // wizard lifecycle control methods /////////////////////////////////////////////
     public void open() {
-        frame = new WizardFrame();
-        
         switch (executionMode) {
             case GUI:
+                frame = new WizardFrame();
+                
                 SwingUtilities.invokeLater(new Runnable(){
                     public void run() {
                         frame.setVisible(true);
@@ -263,6 +267,7 @@ public class Wizard {
         switch (executionMode) {
             case GUI:
                 frame.setVisible(false);
+                frame.dispose();
                 break;
             case SILENT:
                 // we don't have to initialize anything for silent mode
@@ -272,8 +277,6 @@ public class Wizard {
                         "happened - we have an execution mode which is not " +
                         "in its enum");
         }
-        
-        frame.dispose();
     }
     
     // component flow control methods ///////////////////////////////////////////////

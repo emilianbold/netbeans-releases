@@ -34,6 +34,7 @@ import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 
 import org.netbeans.installer.wizard.Wizard;
+import org.netbeans.installer.wizard.WizardExecutionMode;
 import org.netbeans.installer.wizard.conditions.TrueCondition;
 import org.netbeans.installer.wizard.conditions.WizardCondition;
 
@@ -161,7 +162,9 @@ public abstract class WizardPanel extends JPanel implements WizardComponent {
         defaultInitialize();
         initialize();
         
-        getWizard().getFrame().setWizardPanel(this);
+        if (Wizard.getExecutionMode() == WizardExecutionMode.GUI) {
+            getWizard().getFrame().setWizardPanel(this);
+        }
     }
     
     protected final Wizard getWizard() {
@@ -169,19 +172,35 @@ public abstract class WizardPanel extends JPanel implements WizardComponent {
     }
     
     protected final NbiButton getHelpButton() {
-        return getWizard().getFrame().getContentPane().getHelpButton();
+        if (Wizard.getExecutionMode() == WizardExecutionMode.GUI) {
+            return getWizard().getFrame().getContentPane().getHelpButton();
+        } else {
+            return new NbiButton();
+        }
     }
     
     protected final NbiButton getBackButton() {
-        return wizard.getFrame().getContentPane().getBackButton();
+        if (Wizard.getExecutionMode() == WizardExecutionMode.GUI) {
+            return wizard.getFrame().getContentPane().getBackButton();
+        } else {
+            return new NbiButton();
+        }
     }
     
     protected final NbiButton getNextButton() {
-        return wizard.getFrame().getContentPane().getNextButton();
+        if (Wizard.getExecutionMode() == WizardExecutionMode.GUI) {
+            return wizard.getFrame().getContentPane().getNextButton();
+        } else {
+            return new NbiButton();
+        }
     }
     
     protected final NbiButton getCancelButton() {
-        return wizard.getFrame().getContentPane().getCancelButton();
+        if (Wizard.getExecutionMode() == WizardExecutionMode.GUI) {
+            return wizard.getFrame().getContentPane().getCancelButton();
+        } else {
+            return new NbiButton();
+        }
     }
     
     // helper methods for working with properties ///////////////////////////////////
