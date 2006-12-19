@@ -68,8 +68,7 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
             panel = new CopyClassPanel(parent,
                     getName() + " - " + resource.getName(), 
                     RetoucheUtils.getPackageName(target), 
-                    target,
-                    resource.getName());
+                    target);
             panel.setCombosEnabled(!(targetFolder!=null));
         }
         return panel;
