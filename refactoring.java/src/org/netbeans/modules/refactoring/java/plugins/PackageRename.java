@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.StringTokenizer;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -26,6 +27,7 @@ import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
@@ -35,6 +37,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.text.PositionBounds;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -73,6 +76,21 @@ public class PackageRename implements RefactoringPluginFactory{
         }
         
         public Problem fastCheckParameters() {
+            String newName = refactoring.getNewName();
+            if (!RetoucheUtils.isValidPackageName(newName)) {
+                String msg = new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_InvalidPackage")).format(
+                        new Object[] {newName}
+                );
+                return new Problem(true, msg);
+            }
+            
+            ClassPath projectClassPath = ClassPath.getClassPath(((NonRecursiveFolder) refactoring.getRefactoredObject()).getFolder(), ClassPath.SOURCE);
+            if (projectClassPath.findResource(newName.replace('.','/'))!=null) {
+                String msg = new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class,"ERR_PackageExists")).format(
+                        new Object[] {newName}
+                );
+                return new Problem(true, msg);
+            }
             return null;
         }
         

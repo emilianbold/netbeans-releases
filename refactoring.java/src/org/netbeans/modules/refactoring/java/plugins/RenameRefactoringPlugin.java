@@ -203,31 +203,6 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             return result;
         }
         
-        if (kind == ElementKind.PACKAGE) {
-            if (doCheckName) {
-//                JavaPackage pckg = (JavaPackage) jmiObject;
-//                String fullName = pckg.getName();
-//                String name;
-//                int last = fullName.lastIndexOf('.');
-//                if (last > 0) {
-//                    name = fullName.substring(0,last+1) + newName;
-//                } else {
-//                    name = newName;
-//                }
-//                if (originalFolder != null) {
-//                    ClassPath projectClassPath = ClassPath.getClassPath(originalFolder, ClassPath.SOURCE);
-//                    if (projectClassPath.findResource(name.replace('.','/'))!=null) {
-//                        String msg = new MessageFormat(getString("ERR_PackageExists")).format(
-//                            new Object[] {newName}
-//                        );
-//                        result = createProblem(result, true, msg);
-//                    }
-//                }
-            }
-            
-            return result;
-        }
-        
         if (kind.isClass()) {
             if (doCheckName) {
                 TypeElement type = (TypeElement) el;
