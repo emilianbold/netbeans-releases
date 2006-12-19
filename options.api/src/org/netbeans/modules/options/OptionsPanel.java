@@ -75,7 +75,7 @@ public class OptionsPanel extends JPanel {
     private JLabel lTitle;
     private JPanel pTitle;    
 
-    private Map buttons = new LinkedHashMap();    
+    private Map<String, CategoryButton> buttons = new LinkedHashMap<String, CategoryButton>();    
     private final boolean isMac = UIManager.getLookAndFeel ().getID ().equals ("Aqua");    
     private Color selected = isMac ? new Color(221, 221, 221) : new Color (193, 210, 238);
     private Color selectedB = isMac ? new Color(183, 183, 183) : new Color (149, 106, 197);
@@ -324,7 +324,7 @@ public class OptionsPanel extends JPanel {
             removeButton ((CategoryButton) it.next ());
         }
         pCategories2.removeAll ();
-        buttons = new LinkedHashMap();
+        buttons = new LinkedHashMap<String, CategoryButton>();
         
         // add new buttons
         String[] names = model.getCategoryIDs();

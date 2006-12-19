@@ -20,14 +20,18 @@
 package org.netbeans.modules.options;
 
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.SynchronousQueue;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import org.netbeans.spi.options.OptionsCategory;
@@ -47,40 +51,37 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Radek Matous
  */
 public final class CategoryModel implements LookupListener {
-    private final RequestProcessor RP = new RequestProcessor();
-    
+    private static Reference<CategoryModel> INSTANCE = new WeakReference<CategoryModel>(new CategoryModel());
+    private final RequestProcessor RP = new RequestProcessor();    
     private static String currentCategoryID = null;
     private String highlitedCategoryID = null;    
     private boolean categoriesValid = true;
-    private final Map/**<String, CategoryItem>*/ id2Category = Collections.synchronizedMap(new LinkedHashMap());
+    private final Map<String, CategoryModel.Category> id2Category = 
+            Collections.synchronizedMap(new LinkedHashMap<String, CategoryModel.Category>());
     private MasterLookup masterLookup;
     private final RequestProcessor.Task masterLookupTask = RP.create(new Runnable() {
         public void run() {
-            //SwingUtilities.invokeLater(new Runnable() {
-                //public void run() {
-                    String[] categoryIDs = getCategoryIDs();
-                    List all = new ArrayList();
-                    for (int i = 0; i < categoryIDs.length; i++) {
-                        Category item = getCategory(categoryIDs[i]);
-                        Lookup lkp = item.getLookup();
-                        assert lkp != null;
-                        if (lkp != Lookup.EMPTY) {
-                            all.add(lkp);
-                        }
-                    }
-                    getMasterLookup().setLookups(all);                    
-                //}
-            //});            
+            String[] categoryIDs = getCategoryIDs();
+            List<Lookup> all = new ArrayList<Lookup>();
+            for (int i = 0; i < categoryIDs.length; i++) {
+                Category item = getCategory(categoryIDs[i]);
+                Lookup lkp = item.getLookup();
+                assert lkp != null;
+                if (lkp != Lookup.EMPTY) {
+                    all.add(lkp);
+                }
+            }
+            getMasterLookup().setLookups(all);
         }
     },true);
     private final RequestProcessor.Task categoryTask = RP.create(new Runnable() {
         public void run() {
-            Map all = loadOptionsCategories();       
-            Map temp = new LinkedHashMap();
-            for (Iterator it = all.entrySet().iterator(); it.hasNext();) {
-                Map.Entry entry = (Map.Entry) it.next();
-                OptionsCategory oc = (OptionsCategory)entry.getValue();
-                String id = (String)entry.getKey();
+            Map<String, OptionsCategory> all = loadOptionsCategories();       
+            Map<String, CategoryModel.Category> temp = new LinkedHashMap<String, CategoryModel.Category>();
+            for (Iterator<Map.Entry<String, OptionsCategory>> it = all.entrySet().iterator(); it.hasNext();) {
+                Map.Entry<String, OptionsCategory> entry = it.next();
+                OptionsCategory oc = entry.getValue();
+                String id = entry.getKey();
                 Category cat = new Category(id, oc);
                 temp.put(cat.getID(), cat);
             }
@@ -94,8 +95,13 @@ public final class CategoryModel implements LookupListener {
         categoryTask.schedule(0);
     }
         
-    static CategoryModel getInstance() {
-        return new CategoryModel();
+    public static CategoryModel getInstance() {
+        CategoryModel retval = (CategoryModel)INSTANCE.get();
+        if (retval == null) {
+            retval = new CategoryModel();
+            INSTANCE = new WeakReference<CategoryModel>(retval);
+        }
+        return retval;
     }
     
     boolean needsReinit() {
@@ -117,9 +123,14 @@ public final class CategoryModel implements LookupListener {
         categoryTask.waitFinished();
     }
         
-    String getCurrentCategoryID() {
+    public String getCurrentCategoryID() {
         return verifyCategoryID(currentCategoryID);
     }
+    
+    public void setCurrentCategoryID(String categoryID) {
+        currentCategoryID = verifyCategoryID(categoryID);
+    }
+    
 
     String getHighlitedCategoryID() {
         return verifyCategoryID(highlitedCategoryID);
@@ -140,10 +151,10 @@ public final class CategoryModel implements LookupListener {
         return categoryID == null ? -1 : Arrays.asList(getCategoryIDs()).indexOf(categoryID);
     }
     
-    String[] getCategoryIDs() {
+    public String[] getCategoryIDs() {
         categoryTask.waitFinished();
-        Set keys = id2Category.keySet();        
-        return (String[])keys.toArray(new String[keys.size()]);
+        Set<String> keys = id2Category.keySet();        
+        return keys.toArray(new String[keys.size()]);
     }
     
     Category getCurrent() {
@@ -246,25 +257,26 @@ public final class CategoryModel implements LookupListener {
         return masterLookup;
     }
     
-    private Map loadOptionsCategories() {
+    private Map<String, OptionsCategory> loadOptionsCategories() {
         FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("OptionsDialog");// NOI18N
         if (fo != null) {
             Lookup lookup = new FolderLookup(DataFolder.findFolder(fo),null).getLookup();//NOI18N
-            Lookup.Result result = lookup.lookup(new Lookup.Template(OptionsCategory.class));
+            Lookup.Result<OptionsCategory> result = lookup.lookup(new Lookup.Template<OptionsCategory>(OptionsCategory.class));
             result.addLookupListener(this);
-            Map m = new LinkedHashMap();
-            for (Iterator it = result.allItems().iterator(); it.hasNext();) {
-                Lookup.Item item = (Lookup.Item) it.next();
+            Map<String, OptionsCategory> m = new LinkedHashMap<String, OptionsCategory>();
+            for (Iterator<? extends Lookup.Item<OptionsCategory>> it = result.allItems().iterator(); it.hasNext();) {
+                Lookup.Item<OptionsCategory> item = it.next();
                 m.put(item.getId(), item.getInstance());                
             }
             return Collections.unmodifiableMap(m);
         }
-        return Collections.EMPTY_MAP;
+        return Collections.<String, OptionsCategory>emptyMap();
     }
 
     public void resultChanged(LookupEvent ev) {
         synchronized(CategoryModel.class) {
             categoriesValid = false;
+            INSTANCE = new WeakReference<CategoryModel>(new CategoryModel());
         }
     }
     
@@ -291,7 +303,7 @@ public final class CategoryModel implements LookupListener {
         }
                 
         private void setCurrent() {
-            currentCategoryID = getID();
+            setCurrentCategoryID(getID());
         }
 
         private void setHighlited() {
@@ -386,8 +398,8 @@ public final class CategoryModel implements LookupListener {
     }
     
     private class MasterLookup extends ProxyLookup {
-        private void setLookups(List lookups) {
-            setLookups((Lookup[])lookups.toArray(new Lookup[lookups.size()]));
+        private void setLookups(List<Lookup> lookups) {
+            setLookups(lookups.toArray(new Lookup[lookups.size()]));
         }
         protected void beforeLookup(Lookup.Template template) {
             super.beforeLookup(template);

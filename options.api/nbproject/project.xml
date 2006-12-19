@@ -101,8 +101,9 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>
-                </module-dependencies>
+            </module-dependencies>
             <public-packages>
+                <package>org.netbeans.api.options</package>
                 <package>org.netbeans.spi.options</package>
             </public-packages>
         </data>

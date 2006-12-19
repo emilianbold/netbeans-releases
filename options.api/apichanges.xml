@@ -49,6 +49,19 @@ Microsystems, Inc. All Rights Reserved.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="OptionsDisplayerAPI">
+        <api name="OptionsAPI"/>
+        <summary>API to open the options dialog with some category pre-selected</summary>
+        <version major="1" minor="5"/>        
+        <date day="19" month="12" year="2006"/>
+        <author login="rmatous"/>
+        <compatibility addition="yes"/>        
+        <description>
+            Added API to open the options dialog with some category pre-selected.
+        </description>
+        <class package="org.netbeans.api.options" name="OptionsDisplayer"/>                
+        <issue number="74855"/>
+    </change>        
     <change>
         <api name="OptionsAPI"/>
         <summary>Options Dialog API integrated.</summary>

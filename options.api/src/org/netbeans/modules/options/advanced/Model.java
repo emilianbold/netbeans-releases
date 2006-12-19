@@ -48,15 +48,15 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public final class Model extends TabbedPanelModel {
     
-    private Map/*<String,AdvancedOption>*/ categoryToOption = new HashMap();
-    private Map         categoryToPanel = new HashMap ();
-    private Map         categoryToController = new HashMap ();
-    private Lookup      masterLookup;
+    private Map<String,AdvancedOption> categoryToOption = new HashMap<String,AdvancedOption>();
+    private Map<String, JComponent> categoryToPanel = new HashMap<String, JComponent> ();
+    private Map<String, OptionsPanelController> categoryToController = new HashMap<String, OptionsPanelController>();
+    private Lookup masterLookup;
 
     
     public List getCategories () {
         init ();
-        List l = new ArrayList (categoryToOption.keySet ());
+        List<String> l = new ArrayList<String>(categoryToOption.keySet ());
         Collections.sort(l, Collator.getInstance());
         return l;
     }
@@ -127,10 +127,10 @@ public final class Model extends TabbedPanelModel {
     }
     
     Lookup getLookup () {
-        List lookups = new ArrayList ();
-        Iterator it = categoryToController.values ().iterator ();
+        List<Lookup> lookups = new ArrayList<Lookup> ();
+        Iterator<OptionsPanelController> it = categoryToController.values ().iterator ();
         while (it.hasNext ())
-            lookups.add (((OptionsPanelController) it.next ()).getLookup ());
+            lookups.add (it.next ().getLookup ());
         return new ProxyLookup 
             ((Lookup[]) lookups.toArray (new Lookup [lookups.size ()]));
     }
@@ -156,12 +156,11 @@ public final class Model extends TabbedPanelModel {
         FileObject fo = Repository.getDefault ().getDefaultFileSystem ().
             findResource ("OptionsDialog/Advanced");
         if (fo == null) return;
-        Lookup lookup = new FolderLookup (DataFolder.findFolder (fo)).
-            getLookup ();
-        Iterator it = lookup.lookup (new Lookup.Template (AdvancedOption.class)).
-            allInstances ().iterator ();
+        Lookup lookup = new FolderLookup (DataFolder.findFolder (fo)).getLookup ();
+        Iterator<? extends AdvancedOption> it = lookup.lookup (new Lookup.Template<AdvancedOption> (AdvancedOption.class)).
+                allInstances ().iterator ();
         while (it.hasNext ()) {
-            AdvancedOption option = (AdvancedOption) it.next ();
+            AdvancedOption option = it.next ();
             categoryToOption.put (option.getDisplayName (), option);
         }
     }
