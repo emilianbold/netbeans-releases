@@ -39,26 +39,39 @@ function update_engine() {
 }
 
 function update_current_registry() {
-    var select = document.getElementById("registries-select");
+    var platformsSelect  = document.getElementById("platforms-select");
+    var registriesSelect = document.getElementById("registries-select");
     
-    if (select != null) {
-        var registry = select.options[select.selectedIndex].value;
+    if ((platformsSelect != null) && (registriesSelect != null)) {
+        var platform = platformsSelect.options[platformsSelect.selectedIndex].value;
+        var registry = registriesSelect.options[registriesSelect.selectedIndex].value;
+        
         document.forms["Form"].registry.value = registry;
         
-        for (i = 0; i < select.options.length; i++) {
-            var value = select.options[i].value;
+        for (i = 0; i < registriesSelect.options.length; i++) {
+            var value = registriesSelect.options[i].value;
             document.getElementById("registry-" + value).style.display = "none";
         }
         
         document.getElementById("registry-" + registry).style.display = "block";
         
-        document.forms["Form"].fallback.value = document.forms["Form"].fallback_base.value + "?registry=" + registry;
+        document.forms["Form"].fallback.value = document.forms["Form"].fallback_base.value + "?registry=" + registry + "&platform=" + platform;
     } else {
         document.forms["Form"].fallback.value = document.forms["Form"].fallback_base.value;
     }
 }
 
-function remove_component(uid, version) {
+function update_target_platform() {
+    var platformsSelect  = document.getElementById("platforms-select");
+    var registriesSelect = document.getElementById("registries-select");
+    
+    var platform = platformsSelect.options[platformsSelect.selectedIndex].value;
+    var registry = registriesSelect.options[registriesSelect.selectedIndex].value;
+    
+    window.location = document.forms["Form"].fallback_base.value + "?registry=" + registry + "&platform=" + platform;
+}
+
+function remove_component(uid, version, platforms) {
     var action;
     if (version == "null") {
         action = "remove-group";
@@ -66,24 +79,27 @@ function remove_component(uid, version) {
         action = "remove-component";
     }
     
-    document.forms["Form"].action        = action;
-    document.forms["Form"].uid.value     = uid;
-    document.forms["Form"].version.value = version;
+    document.forms["Form"].action          = action;
+    document.forms["Form"].uid.value       = uid;
+    document.forms["Form"].version.value   = version;
+    document.forms["Form"].platforms.value = platforms;
     document.forms["Form"].submit();
 }
 
-function add_component(uid, version) {
-    document.forms["Form"].action        = "update-component";
-    document.forms["Form"].uid.value     = uid;
-    document.forms["Form"].version.value = version;
+function add_component(uid, version, platforms) {
+    document.forms["Form"].action          = "update-component";
+    document.forms["Form"].uid.value       = uid;
+    document.forms["Form"].version.value   = version;
+    document.forms["Form"].platforms.value = platforms;
     
     show_form_archive();
 }
 
-function add_group(uid, version) {
-    document.forms["Form"].action        = "update-group";
-    document.forms["Form"].uid.value     = uid;
-    document.forms["Form"].version.value = version;
+function add_group(uid, version, platforms) {
+    document.forms["Form"].action          = "update-group";
+    document.forms["Form"].uid.value       = uid;
+    document.forms["Form"].version.value   = version;
+    document.forms["Form"].platforms.value = platforms;
     
     show_form_archive();
 }

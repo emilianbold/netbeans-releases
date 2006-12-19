@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.URLEncoder;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.servlet.ServletException;
@@ -12,10 +13,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.netbeans.installer.infra.server.ejb.Manager;
+import org.netbeans.installer.infra.server.ejb.ManagerException;
 import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.product.ProductGroup;
 import org.netbeans.installer.product.ProductTreeNode;
 import org.netbeans.installer.utils.StreamUtils;
+import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.exceptions.ParseException;
+import org.netbeans.installer.utils.helper.Platform;
 
 /**
  *
@@ -33,63 +39,126 @@ public class CreateBundle extends HttpServlet {
         
         PrintWriter out = response.getWriter();
         
-        out.println("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
-        out.println("<html>");
-        out.println("    <head>");
-        out.println("        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>");
-        out.println("        <title>Registries Manager</title>");
-        out.println("        <link rel=\"stylesheet\" href=\"css/main.css\" type=\"text/css\"/>");
-        out.println("        <script src=\"js/main.js\" type=\"text/javascript\"></script>");
-        out.println("    </head>");
-        out.println("    <body>");
-        out.println("        <p>");
-        out.println("            Select the components that you would like to include in the bundle and click Next.");
-        out.println("        </p>");
-        out.println("        <form name=\"Form\" action=\"create-bundle\" method=\"post\">");
-        
-        for (String registry: registries) {
-            out.println("            <input type=\"hidden\" name=\"registry\" value=\"" + registry + "\"/>");
+        try {
+            String userAgent = request.getHeader("User-Agent");
+            
+            Platform platform = SystemUtils.getCurrentPlatform();
+            if (userAgent.contains("Windows")) {
+                platform = Platform.WINDOWS;
+            }
+            if (userAgent.contains("PPC Mac OS")) {
+                platform = Platform.MACOS_X_PPC;
+            }
+            if (userAgent.contains("Intel Mac OS")) {
+                platform = Platform.MACOS_X_X86;
+            }
+            if (userAgent.contains("Linux")) {
+                platform = Platform.LINUX;
+            }
+            if (userAgent.contains("SunOS i86pc")) {
+                platform = Platform.SOLARIS_X86;
+            }
+            if (userAgent.contains("SunOS sun4u")) {
+                platform = Platform.SOLARIS_X86;
+            }
+            
+            
+            if (request.getParameter("platform") != null) {
+                try {
+                    platform = StringUtils.parsePlatform(request.getParameter("platform"));
+                } catch (ParseException e) {
+                    e.printStackTrace(out);
+                }
+            }
+            
+            out.println("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
+            out.println("<html>");
+            out.println("    <head>");
+            out.println("        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>");
+            out.println("        <title>Registries Manager</title>");
+            out.println("        <link rel=\"stylesheet\" href=\"admin/css/main.css\" type=\"text/css\"/>");
+            out.println("        <script src=\"js/main.js\" type=\"text/javascript\"></script>");
+            out.println("    </head>");
+            out.println("    <body>");
+            out.println("        <p>");
+            out.println("            Select the components that you would like to include in the bundle and click Next.");
+            out.println("        </p>");
+            out.println("        <form name=\"Form\" action=\"create-bundle\" method=\"post\">");
+            
+            String registriesUrl = "";
+            
+            for (String registry: registries) {
+                registriesUrl += "&registry=" + URLEncoder.encode(registry, "UTF-8");
+                out.println("            <input type=\"hidden\" name=\"registry\" value=\"" + registry + "\"/>");
+            }
+            out.println("            <input type=\"hidden\" name=\"registries\" value=\"" + registriesUrl + "\"/>");
+            out.println("            <input type=\"hidden\" name=\"platform\" value=\"" + platform + "\"/>");
+            
+            out.println("        <select id=\"platforms-select\" onchange=\"update_target_platform()\">");
+            for (Platform temp: Platform.values()) {
+                out.println("            <option value=\"" + temp.getName() + "\"" + (temp.equals(platform) ? " selected" : "") + ">" + temp.getDisplayName() + "</option>");
+            }
+            out.println("        </select>");
+            
+            out.println("        <div class=\"registry\">");
+            buildRegistryTable(out, manager.getRoot(platform, registries), platform);
+            out.println("        </div>");
+            
+            out.println("            <input type=\"submit\" value=\"Create Bundle\"/>");
+            
+            out.println("        </form>");
+            out.println("        <br/>");
+            out.println("        <p class=\"small\">" + userAgent + "</p>");
+            out.println("    </body>");
+            out.println("</html>");
+        } catch (ManagerException e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            e.printStackTrace(out);
         }
         
-        out.println("        <div class=\"registry\">");
-        buildRegistryTable(out, manager.getRoot(registries));
-        out.println("        </div>");
-        
-        out.println("            <input type=\"submit\" value=\"Create Bundle\"/>");
-            
-        out.println("        </form>");
-        out.println("    </body>");
-        out.println("</html>");
         
         out.close();
     }
     
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String[] registries = request.getParameterValues("registry");
-        String[] components = request.getParameterValues("component");
-        
-        response.setContentType("application/octet-stream");
-        response.setHeader("Content-Disposition", "attachment; filename=nbi-bundle.jar");
-        
-        final InputStream  input  = new FileInputStream(manager.createBundle(registries, components));
-        final OutputStream output = response.getOutputStream();
-        
-        StreamUtils.transferData(input, output);
-        
-        input.close();
-        output.close();
+        try {
+            String[] registries = request.getParameterValues("registry");
+            String[] components = request.getParameterValues("component");
+            Platform platform = StringUtils.parsePlatform(request.getParameter("platform"));
+            
+            final InputStream  input  = new FileInputStream(manager.createBundle(platform, registries, components));
+            final OutputStream output = response.getOutputStream();
+            
+            response.setContentType("application/octet-stream");
+            response.setHeader("Content-Disposition", "attachment; filename=nbi-bundle.jar");
+            
+            StreamUtils.transferData(input, output);
+            
+            input.close();
+            output.close();
+        } catch (ParseException e) {
+            e.printStackTrace(response.getWriter());
+        } catch (ManagerException e) {
+            e.printStackTrace(response.getWriter());
+        }
     }
     
-    private void buildRegistryTable(PrintWriter out, ProductTreeNode root) {
+    private void buildRegistryTable(PrintWriter out, ProductTreeNode root, Platform platform) {
         out.println("            <table class=\"registry\">");
         
-        buildRegistryNodes(out, root.getChildren());
+        buildRegistryNodes(out, root.getChildren(), platform);
         
         out.println("            </table>");
     }
     
-    private void buildRegistryNodes(PrintWriter out, List<ProductTreeNode> nodes) {
+    private void buildRegistryNodes(PrintWriter out, List<ProductTreeNode> nodes, Platform platform) {
         for (ProductTreeNode node: nodes) {
+            if (node instanceof ProductComponent) {
+                if (!((ProductComponent) node).getSupportedPlatforms().contains(platform)) {
+                    continue;
+                }
+            }
+            
             String icon        = null;
             String displayName = node.getDisplayName();
             String treeHandle  = null;
@@ -97,7 +166,7 @@ public class CreateBundle extends HttpServlet {
             if (node.getIconUri() == null) {
                 icon = "img/default-icon.png";
             } else {
-                icon = node.getIconUri();
+                icon = node.getIconUri().getRemoteUri().toString();
             }
             
             if (node.getChildren().size() > 0) {
@@ -106,20 +175,28 @@ public class CreateBundle extends HttpServlet {
                 treeHandle  = "img/tree-handle-empty.png";
             }
             
-            String uid     = node.getUid();
-            String version = null;
-            String type    = null;
+            String id          = null;
+            
+            String uid         = node.getUid();
+            String version     = null;
+            String type        = null;
+            String platforms   = null;
+            String title       = "";
             
             if (node instanceof ProductComponent) {
-                version = ((ProductComponent) node).getVersion().toString();
-                type    = "component";
+                version   = ((ProductComponent) node).getVersion().toString();
+                platforms = StringUtils.asString(((ProductComponent) node).getSupportedPlatforms(), " ");
+                title     = StringUtils.asString(((ProductComponent) node).getSupportedPlatforms());
+                type      = "component";
+                
+                id = uid + "_" + version + "_" + platforms.replace(" ", "_") + "_" + type;
             }
             
             if (node instanceof ProductGroup) {
                 type = "group";
+                
+                id = uid + "_" + type;
             }
-            
-            String id = uid + "-" + version + "-" + type;
             
             out.println("                <tr id=\"" + id + "\">");
             
@@ -130,7 +207,7 @@ public class CreateBundle extends HttpServlet {
             } else {
                 out.println("                    <td class=\"checkbox\"></td>");
             }
-            out.println("                    <td class=\"display-name\">" + displayName + "</td>");
+            out.println("                    <td class=\"display-name\" title=\"" + title + "\">" + displayName + "</td>");
             
             out.println("                </tr>");
             
@@ -140,7 +217,7 @@ public class CreateBundle extends HttpServlet {
                 out.println("                    <td class=\"tree-handle\"></td>");
                 out.println("                    <td colspan=\"3\" class=\"children\">");
                 out.println("                    <table class=\"registry\">");
-                buildRegistryNodes(out, node.getChildren());
+                buildRegistryNodes(out, node.getChildren(), platform);
                 out.println("                    </table>");
                 out.println("                    </td>");
                 

@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.netbeans.installer.infra.server.ejb.Manager;
+import org.netbeans.installer.infra.server.ejb.ManagerException;
 import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.StringUtils;
 
@@ -24,23 +25,28 @@ public class GetEngine extends HttpServlet {
     private Manager manager;
     
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        File engine = manager.getEngine();
-        
-        response.setContentType("application/java-archive");
-        
-        response.setHeader("Content-Disposition",
-                "attachment; filename=nbi-engine.jar");
-        response.setHeader("Content-Length",
-                Long.toString(engine.length()));
-        response.setHeader("Last-Modified",
-                StringUtils.httpFormat(new Date(engine.lastModified())));
-        
-        final InputStream  input  = new FileInputStream(engine);
-        final OutputStream output = response.getOutputStream();
-        
-        StreamUtils.transferData(input, output);
-        
-        input.close();
-        output.close();
+        try {
+            File engine = manager.getEngine();
+            
+            response.setContentType("application/java-archive");
+            
+            response.setHeader("Content-Disposition",
+                    "attachment; filename=nbi-engine.jar");
+            response.setHeader("Content-Length",
+                    Long.toString(engine.length()));
+            response.setHeader("Last-Modified",
+                    StringUtils.httpFormat(new Date(engine.lastModified())));
+            
+            final InputStream  input  = new FileInputStream(engine);
+            final OutputStream output = response.getOutputStream();
+            
+            StreamUtils.transferData(input, output);
+            
+            input.close();
+            output.close();
+        } catch (ManagerException e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            e.printStackTrace(response.getWriter());
+        }
     }
 }

@@ -18,6 +18,7 @@
  */
 package org.netbeans.installer.infra.build.ant;
 
+import java.net.URLEncoder;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
@@ -30,6 +31,8 @@ public class SetProperty extends Task {
     private String source   = null;
     private String value    = null;
             
+    private boolean uri     = false;
+    
     // setters //////////////////////////////////////////////////////////////////////
     public void setProperty(final String property) {
         this.property = property;
@@ -47,11 +50,14 @@ public class SetProperty extends Task {
     public void execute() throws BuildException {
         Project project = getProject();
         
+        String newValue = null;
+        
         if (source != null) {
-            project.setProperty(property, 
-                    project.replaceProperties(project.getProperty(source)));
+            newValue = project.replaceProperties(project.getProperty(source));
         } else {
-            project.setProperty(property, value);
+            newValue = project.replaceProperties(value);
         }
+        
+        project.setProperty(property, newValue);
     }
 }

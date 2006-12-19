@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.netbeans.installer.infra.server.ejb.Manager;
+import org.netbeans.installer.infra.server.ejb.ManagerException;
 import org.netbeans.installer.utils.FileUtils;
 
 /**
@@ -38,39 +39,42 @@ public class RunCommand extends HttpServlet {
     
     protected void doPost(HttpServletRequest request, 
             HttpServletResponse response) throws IOException {
-        String command  = (String) request.getAttribute("command");
+        String command   = (String) request.getAttribute("command");
         
-        String registry = null;
-        String uid      = null;
-        String version  = null;
-        File   archive  = null;
+        String registry  = null;
+        String uid       = null;
+        String version   = null;
+        String platforms = null;
+        File   archive   = null;
         
-        String fallback = null;
+        String fallback  = null;
         
         try {
             if (isMultiPartFormData(request)) {
                 Map<String, Object> parameters = getParameters(request);
                 
-                registry = (String) parameters.get("registry");
+                registry  = (String) parameters.get("registry");
                 
-                uid      = (String) parameters.get("uid");
-                version  = (String) parameters.get("version");
+                uid       = (String) parameters.get("uid");
+                version   = (String) parameters.get("version");
+                platforms = (String) parameters.get("platforms");
                 
-                archive  = (File) parameters.get("archive");
+                archive   = (File) parameters.get("archive");
                 
-                fallback = (String) parameters.get("fallback");
+                fallback  = (String) parameters.get("fallback");
             } else {
-                registry = request.getParameter("registry");
+                registry  = request.getParameter("registry");
                 
-                uid      = request.getParameter("uid");
-                version  = request.getParameter("version");
+                uid       = request.getParameter("uid");
+                version   = request.getParameter("version");
+                platforms = request.getParameter("platforms");
                 
-                fallback = request.getParameter("fallback");
+                fallback  = request.getParameter("fallback");
             }
             
             String getFilePrefix = null;
             if (registry != null) {
-                getFilePrefix = getHostUrl(request) + "/nbi/get-file?registry=" +
+                getFilePrefix = getHostUrl(request) + "/nbi/milestone07/get-file?registry=" +
                         URLEncoder.encode(registry, "UTF-8") + "&file=";
             }
             
@@ -87,15 +91,15 @@ public class RunCommand extends HttpServlet {
             }
             
             if (command.equals("update-component")) {
-                manager.updateComponent(registry, archive, uid, version, getFilePrefix);
+                manager.updateComponent(registry, archive, uid, version, platforms, getFilePrefix);
             }
             
             if (command.equals("remove-component")) {
-                manager.removeComponent(registry, uid, version);
+                manager.removeComponent(registry, uid, version, platforms);
             }
             
             if (command.equals("update-group")) {
-                manager.updateGroup(registry, archive, uid, version, getFilePrefix);
+                manager.updateGroup(registry, archive, uid, version, platforms, getFilePrefix);
             }
             
             if (command.equals("remove-group")) {
@@ -113,8 +117,8 @@ public class RunCommand extends HttpServlet {
                 response.setStatus(HttpServletResponse.SC_SEE_OTHER);
                 response.setHeader("Location", fallback);
             }
-        } catch (IOException e) {
-            e.printStackTrace(new PrintWriter(response.getWriter()));
+        } catch (ManagerException e) {
+            e.printStackTrace(response.getWriter());
             
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }

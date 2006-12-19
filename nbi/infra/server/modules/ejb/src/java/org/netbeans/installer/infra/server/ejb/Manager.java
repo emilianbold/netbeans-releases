@@ -3,11 +3,11 @@ package org.netbeans.installer.infra.server.ejb;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import javax.ejb.Local;
 import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.product.ProductTreeNode;
+import org.netbeans.installer.utils.helper.Platform;
 
 /**
  * This is the business interface for RegistryManager enterprise bean.
@@ -16,10 +16,11 @@ import org.netbeans.installer.product.ProductTreeNode;
 public interface Manager {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final File   ROOT            = new File("D:\\temp\\nbi-server");
+    public static final File   ROOT            = new File("/export/nbi/data/milestone07");
     public static final File   TEMP            = new File(ROOT, "temp");
     public static final File   REGISTRIES      = new File(ROOT, "registries");
     public static final File   UPLOADS         = new File(TEMP, "uploads");
+    public static final File   BUNDLES         = new File(TEMP, "bundles");
     public static final File   NBI             = new File(TEMP, ".nbi");
     
     public static final File   REGISTRIES_LIST = new File(ROOT, "registries.list");
@@ -30,37 +31,35 @@ public interface Manager {
     public static final String REGISTRY_XML    = "registry.xml";
     
     // registry operations //////////////////////////////////////////////////////////
-    void addRegistry(String registry) throws IOException;
+    void addRegistry(String registry) throws ManagerException;
     
-    void removeRegistry(String registry) throws IOException;
+    void removeRegistry(String registry) throws ManagerException;
     
-    String getRegistry(String name) throws IOException;
+    String getRegistry(String name) throws ManagerException;
     
-    List<String> getRegistries() throws IOException;
+    List<String> getRegistries() throws ManagerException;
     
     // engine operations ////////////////////////////////////////////////////////////
-    File getEngine() throws IOException;
+    File getEngine() throws ManagerException;
     
-    void updateEngine(File engine) throws IOException;
+    void updateEngine(File engine) throws ManagerException;
     
     // component operations /////////////////////////////////////////////////////////
-    void updateComponent(String name, File archive, String parentUid,
-            String parentVersion, String uriPrefix) throws IOException;
+    void updateComponent(String name, File archive, String parentUid, String parentVersion, String parentPlatforms, String uriPrefix) throws ManagerException;
     
-    void removeComponent(String name, String uid, String version) throws IOException;
+    void removeComponent(String name, String uid, String version, String platforms) throws ManagerException;
     
     // group operations /////////////////////////////////////////////////////////////
-    void updateGroup(String name, File archive, String parentUid,
-            String parentVersion, String uriPrefix) throws IOException;
+    void updateGroup(String name, File archive, String parentUid, String parentVersion, String parentPlatforms, String uriPrefix) throws ManagerException;
     
-    void removeGroup(String name, String uid) throws IOException;
+    void removeGroup(String name, String uid) throws ManagerException;
     
     // miscellanea //////////////////////////////////////////////////////////////////
-    File getFile(String name, String file) throws IOException;
+    File getFile(String name, String file) throws ManagerException;
     
-    ProductTreeNode getRoot(String... names) throws IOException;
+    ProductTreeNode getRoot(Platform platform, String... names) throws ManagerException;
     
-    List<ProductComponent> getComponents(String... names) throws IOException;
+    List<ProductComponent> getComponents(Platform platform, String... names) throws ManagerException;
     
-    File createBundle(String[] names, String[] components) throws IOException;
+    File createBundle(Platform platform, String[] names, String[] components) throws ManagerException;
 }

@@ -8,6 +8,14 @@ function create_bundle() {
     document.forms.Form.submit();
 }
 
+function update_target_platform() {
+    var platformsSelect  = document.getElementById("platforms-select");
+    
+    var platform = platformsSelect.options[platformsSelect.selectedIndex].value;
+    
+    window.location = "create-bundle?platform=" + platform + "&" + document.forms.Form.registries.value;
+}
+
 function _expand(id) {
     var row = document.getElementById(id);
     

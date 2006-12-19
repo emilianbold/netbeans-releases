@@ -27,14 +27,17 @@ import org.netbeans.installer.product.ProductTreeNode;
 import org.netbeans.installer.product.filters.TrueFilter;
 import org.netbeans.installer.product.utils.Status;
 import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.XMLUtils;
 import org.netbeans.installer.utils.applications.JDKUtils;
 import org.netbeans.installer.utils.exceptions.FinalizationException;
 import org.netbeans.installer.utils.exceptions.InitializationException;
+import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.helper.ExtendedURI;
+import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.progress.Progress;
 import org.w3c.dom.Document;
@@ -58,6 +61,7 @@ public class ManagerBean implements Manager {
             TEMP.mkdirs();
             REGISTRIES.mkdirs();
             UPLOADS.mkdirs();
+            BUNDLES.mkdirs();
             NBI.mkdirs();
             
             if (!REGISTRIES_LIST.exists()) {
@@ -74,11 +78,13 @@ public class ManagerBean implements Manager {
                     Installer.IGNORE_LOCK_FILE_PROPERTY, "true");
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (ManagerException e) {
+            e.printStackTrace();
         }
     }
     
     // registry operations //////////////////////////////////////////////////////////
-    public void addRegistry(String name) throws IOException {
+    public void addRegistry(String name) throws ManagerException {
         if (registries.get(name) == null) {
             registries.put(name, initializeRegistry(name));
         }
@@ -86,16 +92,21 @@ public class ManagerBean implements Manager {
         saveRegistriesList();
     }
     
-    public void removeRegistry(String name) throws IOException {
-        if (registries.get(name) != null) {
-            FileUtils.deleteFile(registries.get(name));
-            registries.remove(name);
+    public void removeRegistry(String name) throws ManagerException {
+        try {
+            if (registries.get(name) != null) {
+                FileUtils.deleteFile(registries.get(name));
+                registries.remove(name);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new ManagerException("Could not load registry", e);
         }
         
         saveRegistriesList();
     }
     
-    public String getRegistry(String name) throws IOException {
+    public String getRegistry(String name) throws ManagerException {
         if (registries.get(name) == null) {
             addRegistry(name);
         }
@@ -103,26 +114,40 @@ public class ManagerBean implements Manager {
         final File registryDir = registries.get(name);
         final File registryXml = new File(registryDir, REGISTRY_XML);
         
-        return FileUtils.readFile(registryXml);
+        try {
+            return FileUtils.readFile(registryXml);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new ManagerException("Could not load registry", e);
+        }
     }
     
-    public List<String> getRegistries() throws IOException {
+    public List<String> getRegistries() throws ManagerException {
         return new ArrayList<String>(registries.keySet());
     }
     
     // engine operations ////////////////////////////////////////////////////////////
-    public File getEngine() throws IOException {
+    public File getEngine() throws ManagerException {
         return ENGINE;
     }
     
-    public void updateEngine(File engine) throws IOException {
+    public void updateEngine(File engine) throws ManagerException {
+        deleteBundles();
+        
         ENGINE.delete();
         
-        FileUtils.moveFile(engine, ENGINE);
+        try {
+            FileUtils.moveFile(engine, ENGINE);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new ManagerException("Could not load registry", e);
+        }
     }
     
     // component operations /////////////////////////////////////////////////////////
-    public void updateComponent(String name, File archive, String uid, String version, String uriPrefix) throws IOException {
+    public void updateComponent(String name, File archive, String parentUid, String parentVersion, String parentPlatforms, String uriPrefix) throws ManagerException {
+        deleteBundles();
+        
         if (registries.get(name) == null) {
             addRegistry(name);
         }
@@ -143,26 +168,34 @@ public class ManagerBean implements Manager {
             FileUtils.unjar(archive, componentsDir);
             
             FileUtils.modifyFile(descriptor,
-                    "(\\<icon.*\\>)resource:(.*\\<\\/icon\\>)",
+                    "(\\>)resource:(.*?\\<\\/)",
                     "$1" + componentsDir.toURI() + "$2", true);
             
             final ProductComponent component = new ProductComponent().loadFromDom(
                     XMLUtils.loadXMLDocument(descriptor).getDocumentElement());
-            final ProductComponent existing = registry.getProductComponent(
-                    component.getUid(), component.getVersion());
             
-            if (existing != null) {
-                existing.getParent().removeChild(existing);
-                
+            final List<ProductComponent> existingComponents =
+                    registry.getProductComponents(
+                    component.getUid(),
+                    component.getVersion(),
+                    component.getSupportedPlatforms());
+            
+            if (existingComponents != null) {
                 Queue<ProductTreeNode> nodes = new LinkedList<ProductTreeNode>();
-                nodes.offer(existing);
+                
+                for (ProductComponent existing: existingComponents) {
+                    existing.getParent().removeChild(existing);
+                    nodes.offer(existing);
+                }
                 
                 while(nodes.peek() != null) {
                     ProductTreeNode node = nodes.poll();
                     
                     if (node instanceof ProductComponent) {
                         ProductComponent temp = (ProductComponent) node;
-                        FileUtils.deleteFile(new File(componentsDir, temp.getUid() + "/" + temp.getVersion()));
+                        FileUtils.deleteFile(new File(
+                                componentsDir,
+                                temp.getUid() + "/" + temp.getVersion() + "/" + StringUtils.asString(temp.getSupportedPlatforms(), " ")));
                     }
                     
                     if (node instanceof ProductGroup) {
@@ -180,54 +213,73 @@ public class ManagerBean implements Manager {
                 FileUtils.unjar(archive, componentsDir);
             }
             
-            ProductTreeNode parent =
-                    registry.getProductComponent(uid, new Version(version));
-            if (parent == null) {
-                parent = registry.getProductGroup(uid);
+            ProductTreeNode parent;
+            
+            List<ProductComponent> parents = null;
+            if (!parentVersion.equals("null") && !parentPlatforms.equals("null")) {
+                parents = registry.getProductComponents(
+                        parentUid,
+                        new Version(parentVersion),
+                        StringUtils.parsePlatforms(parentPlatforms));
+            }
+            if (parents == null) {
+                parent = registry.getProductGroup(parentUid);
                 if (parent == null) {
                     parent = registry.getProductTreeRoot();
                 }
+            } else {
+                parent = parents.get(0);
             }
             
             parent.addChild(component);
             
             for (ExtendedURI uri: component.getConfigurationLogicUris()) {
                 string = uri.getRemoteUri().getSchemeSpecificPart();
+                string = string.substring(componentsDir.toURI().getSchemeSpecificPart().length());
                 string = URLEncoder.encode("components/" + string, "UTF-8");
                 uri.setLocalUri(new URI(uriPrefix + string));
             }
             
             for (ExtendedURI uri: component.getInstallationDataUris()) {
                 string = uri.getRemoteUri().getSchemeSpecificPart();
+                string = string.substring(componentsDir.toURI().getSchemeSpecificPart().length());
                 string = URLEncoder.encode("components/" + string, "UTF-8");
                 uri.setLocalUri(new URI(uriPrefix + string));
             }
             
-            string = new URI(component.getIconUri()).getSchemeSpecificPart();
+            string = component.getIconUri().getRemoteUri().getSchemeSpecificPart();
             string = string.substring(componentsDir.toURI().getSchemeSpecificPart().length());
             string = URLEncoder.encode("components/" + string, "UTF-8");
-            component.setIconUri(uriPrefix + string);
+            component.getIconUri().setLocalUri(new URI(uriPrefix + string));
             
-            registry.saveProductRegistry(registryXml, new TrueFilter());
+            registry.saveProductRegistry(registryXml, new IconCorrectingFilter());
             
             archive.delete();
             descriptor.delete();
         } catch (InitializationException e) {
             e.printStackTrace();
-            throw new IOException("Could not update component");
+            throw new ManagerException("Could not update component", e);
         } catch (XMLException e) {
             e.printStackTrace();
-            throw new IOException("Could not update component");
+            throw new ManagerException("Could not update component", e);
         } catch (URISyntaxException e) {
             e.printStackTrace();
-            throw new IOException("Could not update component");
+            throw new ManagerException("Could not update component", e);
         } catch (FinalizationException e) {
             e.printStackTrace();
-            throw new IOException("Could not update component");
+            throw new ManagerException("Could not update component", e);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            throw new ManagerException("Could not update component", e);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new ManagerException("Could not load registry", e);
         }
     }
     
-    public void removeComponent(String name, String uid, String version) throws IOException {
+    public void removeComponent(String name, String uid, String version, String platforms) throws ManagerException {
+        deleteBundles();
+        
         if (registries.get(name) == null) {
             addRegistry(name);
         }
@@ -240,14 +292,13 @@ public class ManagerBean implements Manager {
         try {
             final ProductRegistry registry = new ProductRegistry(registryXml);
             
-            final ProductComponent existing = registry.getProductComponent(
-                    uid, new Version(version));
+            final List<ProductComponent> existing = registry.getProductComponents(uid, new Version(version), StringUtils.parsePlatforms(platforms));
             
             if (existing != null) {
-                existing.getParent().removeChild(existing);
+                existing.get(0).getParent().removeChild(existing.get(0));
                 
                 Queue<ProductTreeNode> nodes = new LinkedList<ProductTreeNode>();
-                nodes.offer(existing);
+                nodes.offer(existing.get(0));
                 
                 while(nodes.peek() != null) {
                     ProductTreeNode node = nodes.poll();
@@ -271,15 +322,23 @@ public class ManagerBean implements Manager {
             registry.saveProductRegistry(registryXml, new TrueFilter());
         } catch (InitializationException e) {
             e.printStackTrace();
-            throw new IOException("Could not remove component");
+            throw new ManagerException("Could not remove component", e);
         } catch (FinalizationException e) {
             e.printStackTrace();
-            throw new IOException("Could not remove component");
+            throw new ManagerException("Could not remove component", e);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            throw new ManagerException("Could not update component", e);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new ManagerException("Could not load registry", e);
         }
     }
     
     // group operations /////////////////////////////////////////////////////////////
-    public void updateGroup(String name, File archive, String uid, String version, String uriPrefix) throws IOException {
+    public void updateGroup(String name, File archive, String parentUid, String parentVersion, String parentPlatforms, String uriPrefix) throws ManagerException {
+        deleteBundles();
+        
         if (registries.get(name) == null) {
             addRegistry(name);
         }
@@ -300,7 +359,7 @@ public class ManagerBean implements Manager {
             FileUtils.unjar(archive, groupsDir);
             
             FileUtils.modifyFile(descriptor,
-                    "(\\<icon.*\\>)resource:(.*\\<\\/icon\\>)",
+                    "(\\>)resource:(.*?\\<\\/)",
                     "$1" + groupsDir.toURI() + "$2", true);
             
             final ProductGroup group = new ProductGroup().loadFromDom(
@@ -337,42 +396,59 @@ public class ManagerBean implements Manager {
                 FileUtils.unjar(archive, groupsDir);
             }
             
-            ProductTreeNode parent =
-                    registry.getProductComponent(uid, new Version(version));
-            if (parent == null) {
-                parent = registry.getProductGroup(uid);
+            ProductTreeNode parent;
+            
+            List<ProductComponent> parents = null;
+            if (!parentVersion.equals("null") && !parentPlatforms.equals("null")) {
+                parents = registry.getProductComponents(
+                        parentUid,
+                        new Version(parentVersion),
+                        StringUtils.parsePlatforms(parentPlatforms));
+            }
+            if (parents == null) {
+                parent = registry.getProductGroup(parentUid);
                 if (parent == null) {
                     parent = registry.getProductTreeRoot();
                 }
+            } else {
+                parent = parents.get(0);
             }
             
             parent.addChild(group);
             
-            string = new URI(group.getIconUri()).getSchemeSpecificPart();
+            string = group.getIconUri().getRemoteUri().getSchemeSpecificPart();
             string = string.substring(groupsDir.toURI().getSchemeSpecificPart().length());
             string = URLEncoder.encode("groups/" + string, "UTF-8");
-            group.setIconUri(uriPrefix + string);
+            group.getIconUri().setLocalUri(new URI(uriPrefix + string));
             
-            registry.saveProductRegistry(registryXml, new TrueFilter());
+            registry.saveProductRegistry(registryXml, new IconCorrectingFilter());
             
             archive.delete();
             descriptor.delete();
         } catch (InitializationException e) {
             e.printStackTrace();
-            throw new IOException("Could not update group");
+            throw new ManagerException("Could not update group", e);
         } catch (XMLException e) {
             e.printStackTrace();
-            throw new IOException("Could not update group");
+            throw new ManagerException("Could not update group", e);
         } catch (URISyntaxException e) {
             e.printStackTrace();
-            throw new IOException("Could not update group");
+            throw new ManagerException("Could not update group", e);
         } catch (FinalizationException e) {
             e.printStackTrace();
-            throw new IOException("Could not update group");
+            throw new ManagerException("Could not update group", e);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            throw new ManagerException("Could not update component", e);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new ManagerException("Could not load registry", e);
         }
     }
     
-    public void removeGroup(String name, String uid) throws IOException {
+    public void removeGroup(String name, String uid) throws ManagerException {
+        deleteBundles();
+        
         if (registries.get(name) == null) {
             addRegistry(name);
         }
@@ -415,15 +491,18 @@ public class ManagerBean implements Manager {
             registry.saveProductRegistry(registryXml, new TrueFilter());
         } catch (InitializationException e) {
             e.printStackTrace();
-            throw new IOException("Could not remove component");
+            throw new ManagerException("Could not remove component", e);
         } catch (FinalizationException e) {
             e.printStackTrace();
-            throw new IOException("Could not remove component");
+            throw new ManagerException("Could not remove component", e);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new ManagerException("Could not load registry", e);
         }
     }
     
     // miscellanea //////////////////////////////////////////////////////////////////
-    public File getFile(String name, String file) throws IOException {
+    public File getFile(String name, String file) throws ManagerException {
         if (registries.get(name) == null) {
             addRegistry(name);
         }
@@ -433,7 +512,7 @@ public class ManagerBean implements Manager {
         return new File(registryDir, file);
     }
     
-    public ProductTreeNode getRoot(String... names) throws IOException {
+    public ProductTreeNode getRoot(Platform platform, String... names) throws ManagerException {
         if (names.length > 0) {
             List<File> files = new LinkedList<File>();
             
@@ -447,17 +526,17 @@ public class ManagerBean implements Manager {
             }
             
             try {
-                return new ProductRegistry(files).getProductTreeRoot();
+                return new ProductRegistry(platform, files).getProductTreeRoot();
             } catch (InitializationException e) {
                 e.printStackTrace();
-                throw new IOException("Could not load registry");
+                throw new ManagerException("Could not load registry", e);
             }
         }
         
         return null;
     }
     
-    public List<ProductComponent> getComponents(String... names) throws IOException {
+    public List<ProductComponent> getComponents(Platform platform, String... names) throws ManagerException {
         List<ProductComponent> components = new LinkedList<ProductComponent>();
         
         if (names.length > 0) {
@@ -473,21 +552,31 @@ public class ManagerBean implements Manager {
             }
             
             try {
-                components.addAll(new ProductRegistry(files).
+                components.addAll(new ProductRegistry(platform, files).
                         queryComponents(new TrueFilter()));
             } catch (InitializationException e) {
                 e.printStackTrace();
-                throw new IOException("Could not load registry");
+                throw new ManagerException("Could not load registry", e);
             }
         }
         
         return components;
     }
     
-    public File createBundle(String[] names, String[] components) throws IOException {
+    public File createBundle(Platform platform, String[] names, String[] components) throws ManagerException {
+        String key = "";
+        for (String component: components) {
+            key += component + ";";
+        }
+        key += platform.toString();
+        
+        if (bundles.get(key) != null) {
+            return bundles.get(key);
+        }
+        
         try {
             File statefile = FileUtils.createTempFile(TEMP, false);
-            File bundle    = FileUtils.createTempFile(TEMP, false);
+            File bundle    = FileUtils.createTempFile(BUNDLES, false);
             
             File javaHome  = new File(System.getProperty("java.home"));
             
@@ -504,7 +593,7 @@ public class ManagerBean implements Manager {
             }
             remote = remote.trim();
             
-            ProductRegistry registry = new ProductRegistry(files);
+            ProductRegistry registry = new ProductRegistry(platform, files);
             for (String string: components) {
                 String[] parts = string.split(",");
                 
@@ -523,52 +612,69 @@ public class ManagerBean implements Manager {
                     statefile.getAbsolutePath(),
                     "--create-bundle",
                     bundle.getAbsolutePath(),
-                    "--ignore-lock");
+                    "--ignore-lock",
+                    "--platform",
+                    platform.toString());
             
             statefile.delete();
             
             if (results.getErrorCode() != 0) {
-                throw new IOException("Could not load registry");
+                throw new ManagerException("Could not create bundle - error in running the engine");
             }
+            
+            bundles.put(key, bundle);
             
             return bundle;
         } catch (InitializationException e) {
             e.printStackTrace();
-            throw new IOException("Could not load registry");
+            throw new ManagerException("Could not load registry", e);
         } catch (FinalizationException e) {
             e.printStackTrace();
-            throw new IOException("Could not load registry");
+            throw new ManagerException("Could not load registry", e);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new ManagerException("Could not load registry", e);
         }
     }
     
     // private //////////////////////////////////////////////////////////////////////
-    private void loadRegistriesList() throws IOException {
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(new FileInputStream(REGISTRIES_LIST)));
-        
-        String line = null;
-        while ((line = reader.readLine()) != null) {
-            line = line.trim();
-            registries.put(line, initializeRegistry(line));
-        }
-        
-        reader.close();
-    }
-    
-    private void saveRegistriesList() throws IOException {
-        PrintWriter writer = new PrintWriter(
-                new OutputStreamWriter(new FileOutputStream(REGISTRIES_LIST)));
-        
+    private void loadRegistriesList() throws ManagerException {
         try {
-            for (String key: registries.keySet()) {
-                writer.println(key);
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(new FileInputStream(REGISTRIES_LIST)));
+            
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                registries.put(line, initializeRegistry(line));
             }
-        } finally {
-            writer.close();
+            
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new ManagerException("Could not load registry", e);
         }
     }
     
-    private File initializeRegistry(String name) throws IOException {
+    private void saveRegistriesList() throws ManagerException {
+        try {
+            PrintWriter writer = new PrintWriter(
+                    new OutputStreamWriter(new FileOutputStream(REGISTRIES_LIST)));
+            
+            try {
+                for (String key: registries.keySet()) {
+                    writer.println(key);
+                }
+            } finally {
+                writer.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new ManagerException("Could not load registry", e);
+        }
+    }
+    
+    private File initializeRegistry(String name) throws ManagerException {
         File directory   = new File(REGISTRIES, name);
         File registryxml = new File(directory, REGISTRY_XML);
         
@@ -581,10 +687,17 @@ public class ManagerBean implements Manager {
                 XMLUtils.saveXMLDocument(document, registryxml);
             } catch (XMLException e) {
                 e.printStackTrace();
-                throw new IOException("Cannot initialize registry");
+                throw new ManagerException("Cannot initialize registry", e);
             }
         }
         
         return directory;
+    }
+    
+    private void deleteBundles() throws ManagerException {
+        for (String key: bundles.keySet()) {
+            bundles.get(key).delete();
+            bundles.remove(key);
+        }
     }
 }

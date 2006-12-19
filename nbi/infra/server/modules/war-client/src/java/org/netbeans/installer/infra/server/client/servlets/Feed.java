@@ -10,8 +10,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.netbeans.installer.infra.server.ejb.Manager;
+import org.netbeans.installer.infra.server.ejb.ManagerException;
 import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.SystemUtils;
 
 /**
  *
@@ -26,28 +28,33 @@ public class Feed extends HttpServlet {
         final PrintWriter out        = response.getWriter();
         final String[]    registries = request.getParameterValues("registry");
         
-        List<ProductComponent> components;
-        String                 feedType;
-        
-        // if the user did not specify any registry to look for the components,
-        // we cannot guess for him - will return an empty feed
-        if ((registries == null) || (registries.length == 0)) {
-            components = new ArrayList<ProductComponent>();
-        } else {
-            components = manager.getComponents(registries);
-        }
-        
-        feedType = request.getParameter("feed-type");
-        if (feedType == null) {
-            feedType = "rss-2.0";
-        }
-        
-        response.setContentType("text/xml");
-        
-        out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-        
-        if (feedType.equals("rss-2.0")) {
-            buildRss(components, out);
+        try {
+            List<ProductComponent> components;
+            String                 feedType;
+            
+            // if the user did not specify any registry to look for the components,
+            // we cannot guess for him - will return an empty feed
+            if ((registries == null) || (registries.length == 0)) {
+                components = new ArrayList<ProductComponent>();
+            } else {
+                components = manager.getComponents(SystemUtils.getCurrentPlatform(), registries);
+            }
+            
+            feedType = request.getParameter("feed-type");
+            if (feedType == null) {
+                feedType = "rss-2.0";
+            }
+            
+            response.setContentType("text/xml");
+            
+            out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+            
+            if (feedType.equals("rss-2.0")) {
+                buildRss(components, out);
+            }
+        } catch (ManagerException e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            e.printStackTrace(out);
         }
         
         out.close();
