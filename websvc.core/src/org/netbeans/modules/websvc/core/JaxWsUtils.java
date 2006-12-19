@@ -70,6 +70,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import java.util.Iterator;
 
 /**
  *
@@ -266,9 +267,10 @@ public class JaxWsUtils {
                         }
                         
                         // create exceptions
-                        List<String> exceptions = operation.getExceptions();
+                        Iterator<String> exceptions = operation.getExceptions();
                         List<ExpressionTree> exc = new ArrayList<ExpressionTree>();
-                        for (String exception:exceptions) {
+                        while (exceptions.hasNext()) {
+                            String exception = exceptions.next();
                             TypeElement excEl = workingCopy.getElements().getTypeElement(exception);
                             exc.add(make.QualIdent(excEl));
                         }
@@ -289,7 +291,7 @@ public class JaxWsUtils {
                                 null // default value - not applicable here, used by annotations
                         );
                         
-                        modifiedClass =  make.addClassMember(modifiedClass, method);
+                        modifiedClass =  make.addClassMember(modifiedClass, method); 
                     }
                     workingCopy.rewrite(javaClass, modifiedClass);
                 }

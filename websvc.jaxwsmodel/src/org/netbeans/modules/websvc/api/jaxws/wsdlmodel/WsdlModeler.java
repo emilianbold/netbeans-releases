@@ -19,31 +19,32 @@
 
 package org.netbeans.modules.websvc.api.jaxws.wsdlmodel;
 
-import com.sun.tools.ws.processor.ProcessorOptions;
-import com.sun.tools.ws.processor.config.Configuration;
-import com.sun.tools.ws.processor.config.WSDLModelInfo;
-import com.sun.tools.ws.processor.config.parser.CustomizationParser;
 import com.sun.tools.ws.processor.model.Model;
 import com.sun.tools.ws.processor.modeler.wsdl.WSDLModeler;
-import com.sun.tools.ws.processor.util.ClientProcessorEnvironment;
-import com.sun.tools.ws.processor.util.ProcessorEnvironment;
+import com.sun.tools.ws.wscompile.AbortException;
+import com.sun.tools.ws.wscompile.BadCommandLineException;
+import com.sun.tools.ws.wscompile.ErrorReceiver;
+import com.sun.tools.ws.wscompile.WsimportOptions;
 import com.sun.xml.ws.util.JAXWSUtils;
+import java.io.File;
 import java.net.URL;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.xml.resolver.CatalogManager;
 import org.apache.xml.resolver.tools.CatalogResolver;
-import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.xml.sax.EntityResolver;
+import org.xml.sax.SAXParseException;
 
 /**
  *
  * @author mkuchtiak
  */
 public class WsdlModeler {
-
+    
     private WsdlModel wsdlModel;
     private WSDLModeler ideWSDLModeler;
     private URL wsdlUrl;
@@ -55,17 +56,15 @@ public class WsdlModeler {
     private List modelListeners;
     RequestProcessor.Task task;
     int listenersSize;
-
+    
     protected Properties properties;
-    protected ProcessorEnvironment environment;
-    protected Configuration configuration;
     
     private Throwable creationException;
     /** Creates a new instance of WsdlModeler */
     WsdlModeler(URL wsdlUrl) {
         this.wsdlUrl=wsdlUrl;
         modelListeners=new ArrayList();
-        task = RequestProcessor.getDefault().create(new Runnable () {
+        task = RequestProcessor.getDefault().create(new Runnable() {
             public void run() {
                 generateWsdlModel();
                 synchronized (this) {
@@ -75,28 +74,28 @@ public class WsdlModeler {
             }
         },true);
         task.addTaskListener(new TaskListener(){
-           public void taskFinished(Task task) {
-               // remove all listeners or reschedule task for listeners that were added at the at last moment
-               synchronized (this) {
-                   int size = modelListeners.size();
-                   if (size>0) {
-                       if (size==listenersSize) removeListeners();
-                       else {
-                           for (int i=listenersSize-1;i>=0;i--) {
-                               modelListeners.remove(i);
-                           }
-                           ((RequestProcessor.Task)task).schedule(0);
-                       }
-                   }
-               }
-           }
+            public void taskFinished(Task task) {
+                // remove all listeners or reschedule task for listeners that were added at the at last moment
+                synchronized (this) {
+                    int size = modelListeners.size();
+                    if (size>0) {
+                        if (size==listenersSize) removeListeners();
+                        else {
+                            for (int i=listenersSize-1;i>=0;i--) {
+                                modelListeners.remove(i);
+                            }
+                            ((RequestProcessor.Task)task).schedule(0);
+                        }
+                    }
+                }
+            }
         });
     }
     
     public void setPackageName(String packageName) {
         this.packageName=packageName;
     }
-   
+    
     public String getPackageName() {
         return packageName;
     }
@@ -128,16 +127,16 @@ public class WsdlModeler {
     public Throwable getCreationException() {
         return creationException;
     }
-
+    
     public WsdlModel getWsdlModel() {
         return wsdlModel;
     }
     
     public WsdlModel getAndWaitForWsdlModel() {
-        if (getWsdlModel()==null) generateWsdlModel();  
+        if (getWsdlModel()==null) generateWsdlModel();
         return wsdlModel;
     }
-
+    
     public void generateWsdlModel(WsdlModelListener listener) {
         generateWsdlModel(listener,false);
     }
@@ -154,37 +153,37 @@ public class WsdlModeler {
             }
         }
     }
-
+    
     private synchronized void generateWsdlModel() {
+        WsimportOptions options = new WsimportOptions();
         properties = new Properties();
         bindingFiles = new HashSet<String>();
         if (bindings!=null) {
             for (int i=0;i<bindings.length;i++) {
-                bindingFiles.add(JAXWSUtils.absolutize(bindings[i].toExternalForm()));
+                try {
+                    options.addBindings(JAXWSUtils.absolutize(bindings[i].toExternalForm()));
+                } catch (BadCommandLineException ex) {
+                    Logger.getLogger(this.getClass().getName()).log(Level.FINE, "WsdlModeler.generateWsdlModel", ex); //NOI18N
+                }
             }
         }
-        properties.put(ProcessorOptions.BINDING_FILES, bindingFiles);
-        properties.put(ProcessorOptions.VALIDATE_WSDL_PROPERTY, true);
-        properties.put(ProcessorOptions.USE_WSI_BASIC_PROFILE, false);
-        properties.setProperty(ProcessorOptions.EXTENSION,"true");
         try {
-            environment = createEnvironment();
-            configuration = createConfiguration();
+            options.addWSDL(new File(wsdlUrl.toURI()));
+            options.compatibilityMode = WsimportOptions.EXTENSION;
+            
             if (packageName!=null) {
-                properties.setProperty(ProcessorOptions.DEFAULT_PACKAGE, packageName);
-                configuration.getModelInfo().setDefaultJavaPackage(packageName);
+                options.defaultPackage = packageName;
             }
             if(catalog != null) {
                 CatalogManager manager = new CatalogManager(null);
                 manager.setCatalogFiles(catalog.toExternalForm());
                 entityResolver = new CatalogResolver(manager);
-                configuration.getModelInfo().setEntityResolver(entityResolver);
+                options.entityResolver = entityResolver;
             }
-            ideWSDLModeler = 
-                    new WSDLModeler((WSDLModelInfo)configuration.getModelInfo(),properties);
+            ideWSDLModeler =
+                    new WSDLModeler(options, new IdeErrorReceiver());
             Model tmpModel = ideWSDLModeler.buildModel();
-            //Model tmpModel = configuration.getModelInfo().buildModel(properties);
-
+            
             if (tmpModel!=null) {
                 wsdlModel=new WsdlModel(tmpModel);
                 creationException=null;
@@ -192,9 +191,9 @@ public class WsdlModeler {
         } catch (Exception ex){
             wsdlModel=null;
             creationException=ex;
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,ex);
+            Logger.getLogger(this.getClass().getName()).log(Level.FINE, "WsdlModeler.generateWsdlModel", ex); //NOI18N
         }
-
+        
     }
     
     private synchronized void addWsdlModelListener(WsdlModelListener listener) {
@@ -212,30 +211,21 @@ public class WsdlModeler {
         }
     }
     
-    protected Configuration createConfiguration() throws Exception {
-        if (environment == null)
-            environment = createEnvironment();
-        List<String> inputFiles = new ArrayList<String>();
-        inputFiles.add(JAXWSUtils.absolutize(wsdlUrl.toExternalForm()));
-        
-        IdeCustomizationParser parser = new IdeCustomizationParser(entityResolver, environment, properties);
-        
-        return parser.parse(inputFiles);
-    }
-    
-    private ProcessorEnvironment createEnvironment() throws Exception {
-        ProcessorEnvironment env = new ClientProcessorEnvironment(System.out, null, null);
-        return env;
-    }
-    
-    private class IdeCustomizationParser extends CustomizationParser {
-
-        public IdeCustomizationParser(EntityResolver entityResolver, ProcessorEnvironment env, Properties options) {
-            super(entityResolver,env,options);
+    private class IdeErrorReceiver extends ErrorReceiver{
+        public void warning(SAXParseException sAXParseException) throws AbortException {
         }
         
-        protected Configuration  parse(List <String> inputFiles) throws Exception {
-            return super.parse(inputFiles);
+        public void info(SAXParseException sAXParseException) {
+            System.out.println("info");
         }
-    }  
+        
+        public void fatalError(SAXParseException sAXParseException) throws AbortException {
+            System.out.println("fatalError");
+        }
+        
+        public void error(SAXParseException sAXParseException) throws AbortException {
+            System.out.println("error");
+        }
+        
+    }
 }

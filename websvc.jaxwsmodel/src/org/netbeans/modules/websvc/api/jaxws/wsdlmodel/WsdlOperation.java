@@ -79,8 +79,8 @@ public class WsdlOperation {
         return wsdlParameters;
     }
     
-    public List<String> getExceptions() {
-        return operation.getJavaMethod().getExceptionsList();
+    public Iterator<String> getExceptions() {
+        return operation.getJavaMethod().getExceptions();
     }
     
     public int getOperationType() {
