@@ -13,15 +13,20 @@ p {
     background-color:   #fcfcfc;
 }
 
+p.small {
+    font-size:          10px;
+}
+
 div.top-menu {
-    width:              700px;
+    width:              680px;
     margin:             0px 0px 10px 0px;
     padding:            5px 10px 5px 10px;
     border:             1px solid #c0c0c0;
     background-color:   #fcfcfc;
 }
 
-select#registries-select {
+select#registries-select, select#platforms-select {
+    display:            block;
     margin:             10px 0px 10px 0px;
     width:              700px;
 }
@@ -63,6 +68,7 @@ table.registry td.display-name {
     padding:            2px 5px 2px 5px;
     font-family:        Tahoma, Arial, sans-serif;
     font-size:          12px;
+    cursor:             default;
 }
 
 table.registry td.option {

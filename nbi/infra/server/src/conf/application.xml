@@ -4,13 +4,13 @@
   <module>
     <web>
       <web-uri>war-admin.war</web-uri>
-      <context-root>/nbi-admin</context-root>
+      <context-root>/nbi/milestone07/admin</context-root>
     </web>
   </module>
   <module>
     <web>
       <web-uri>war-client.war</web-uri>
-      <context-root>/nbi</context-root>
+      <context-root>/nbi/milestone07</context-root>
     </web>
   </module>
   <module>
