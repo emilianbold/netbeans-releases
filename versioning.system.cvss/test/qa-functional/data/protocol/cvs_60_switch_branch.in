@@ -1,0 +1,76 @@
+I LOVE YOU
+Valid-requests Root Valid-responses valid-requests Command-prep Referrer Repository Directory Relative-directory Max-dotdot Static-directory Sticky Entry Kopt Checkin-time Modified Is-modified UseUnchanged Unchanged Notify Hostname LocalDir Questionable Argument Argumentx Global_option Gzip-stream wrapper-sendme-rcsOptions Set Gssapi-authenticate expand-modules ci co update diff log rlog list rlist global-list-quiet ls add remove update-patches gzip-file-contents status rdiff tag rtag import admin export history release watch-on watch-off watch-add watch-remove watchers editors edit init annotate rannotate noop version
+ok
+Clear-static-directory ./
+ForImport/
+Set-sticky ./
+ForImport/
+TMyNewBranch
+Template ./
+ForImport/
+0
+E cvs update: Updating .
+Checked-in ./
+ForImport/build.xml
+/build.xml/1.1.1.1///TMyNewBranch
+Checked-in ./
+ForImport/manifest.mf
+/manifest.mf/1.1.1.1///TMyNewBranch
+Set-sticky ./
+ForImport/
+TMyNewBranch
+Clear-static-directory nbproject/
+ForImport/nbproject/
+Set-sticky nbproject/
+ForImport/nbproject/
+TMyNewBranch
+Template nbproject/
+ForImport/nbproject/
+0
+E cvs update: Updating nbproject
+Checked-in nbproject/
+ForImport/nbproject/.cvsignore
+/.cvsignore/1.1.1.1///TMyNewBranch
+Checked-in nbproject/
+ForImport/nbproject/build-impl.xml
+/build-impl.xml/1.1.1.1///TMyNewBranch
+Checked-in nbproject/
+ForImport/nbproject/genfiles.properties
+/genfiles.properties/1.1.1.1///TMyNewBranch
+Checked-in nbproject/
+ForImport/nbproject/project.properties
+/project.properties/1.1.1.1///TMyNewBranch
+Checked-in nbproject/
+ForImport/nbproject/project.xml
+/project.xml/1.1.1.1///TMyNewBranch
+Set-sticky nbproject/
+ForImport/nbproject/
+TMyNewBranch
+Clear-static-directory src/
+ForImport/src/
+Set-sticky src/
+ForImport/src/
+TMyNewBranch
+Template src/
+ForImport/src/
+0
+E cvs update: Updating src
+Set-sticky src/
+ForImport/src/
+TMyNewBranch
+Clear-static-directory src/forimport/
+ForImport/src/forimport/
+Set-sticky src/forimport/
+ForImport/src/forimport/
+TMyNewBranch
+Template src/forimport/
+ForImport/src/forimport/
+0
+E cvs update: Updating src/forimport
+Checked-in src/forimport/
+ForImport/src/forimport/Main.java
+/Main.java/1.1.1.1///TMyNewBranch
+Set-sticky src/forimport/
+ForImport/src/forimport/
+TMyNewBranch
+ok

@@ -1,0 +1,16 @@
+I LOVE YOU
+Valid-requests Root Valid-responses valid-requests Command-prep Referrer Repository Directory Relative-directory Max-dotdot Static-directory Sticky Entry Kopt Checkin-time Modified Is-modified UseUnchanged Unchanged Notify Hostname LocalDir Questionable Argument Argumentx Global_option Gzip-stream wrapper-sendme-rcsOptions Set Gssapi-authenticate expand-modules ci co update diff log rlog list rlist global-list-quiet ls add remove update-patches gzip-file-contents status rdiff tag rtag import admin export history release watch-on watch-off watch-add watch-remove watchers editors edit init annotate rannotate noop version
+ok
+E cvs tag: Tagging .
+M T build.xml
+M T manifest.mf
+E cvs tag: Tagging nbproject
+M T nbproject/.cvsignore
+M T nbproject/build-impl.xml
+M T nbproject/genfiles.properties
+M T nbproject/project.properties
+M T nbproject/project.xml
+E cvs tag: Tagging src
+E cvs tag: Tagging src/forimport
+M T src/forimport/Main.java
+ok

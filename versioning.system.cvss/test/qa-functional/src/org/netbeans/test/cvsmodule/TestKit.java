@@ -1,11 +1,11 @@
-/* 
+/*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -27,7 +27,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+import javax.swing.JCheckBoxMenuItem;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
@@ -36,7 +38,10 @@ import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.JCheckBoxMenuItemOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 /**
@@ -63,7 +68,7 @@ public class TestKit {
         };
         return tmp;
     }
-
+    
     public static void deleteRecursively(File dir) {
         if (dir.isDirectory()) {
             String[] files = dir.list();
@@ -78,8 +83,8 @@ public class TestKit {
         File CVSdir = new File(file, "CVS");
         File Entries = new File(CVSdir, "Entries");
         OutputStream out = new FileOutputStream(Entries);
-        String data = "D\n" + 
-                      "/Main.java/1.1/Wed Sep 14 08:51:41 2005//";
+        String data = "D\n" +
+                "/Main.java/1.1/Wed Sep 14 08:51:41 2005//";
         out.write(data.getBytes("utf8"));
         out.flush();
         out.close();
@@ -91,7 +96,7 @@ public class TestKit {
         out.flush();
         out.close();
         //Repository
-        File Repository = new File(CVSdir, "Repository"); 
+        File Repository = new File(CVSdir, "Repository");
         out = new FileOutputStream(Repository);
         data = "ForImport/src/forimport";
         out.write(data.getBytes("utf8"));
@@ -116,7 +121,7 @@ public class TestKit {
         new NewProjectWizardOperator().finish();
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(project_name);
         // wait classpath scanning finished
-        return file; 
+        return file;
     }
     
     public static void removeAllData(String project_name) {
@@ -127,7 +132,7 @@ public class TestKit {
         cb.setSelected(true);
         ndo.yes();
         ndo.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        ndo.waitClosed(); 
+        ndo.waitClosed();
         //TestKit.deleteRecursively(file);
     }
     
@@ -176,7 +181,7 @@ public class TestKit {
         nfnlso.selectPackage(pack);
         nfnlso.finish();
     }
-
+    
     public static void createNewElementsCommitCvs11(String projectName) {
         String pack = "xx";
         
@@ -234,7 +239,7 @@ public class TestKit {
         nfnlso.selectPackage(pack);
         nfnlso.finish();
     }
-
+    
     public static void createNewElementsCommitCvs12(String projectName) {
         String pack = "aa";
         
@@ -247,7 +252,7 @@ public class TestKit {
         nfnlso.txtObjectName().clearText();
         nfnlso.txtObjectName().typeText("aa");
         nfnlso.finish();
-
+        
         //
         nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
@@ -304,7 +309,7 @@ public class TestKit {
         nfnlso.selectPackage("bb");
         nfnlso.finish();
     }
-
+    
     public static int compareThem(Object[] expected, Object[] actual, boolean sorted) {
         int result = 0;
         if (expected == null || actual == null)
@@ -334,7 +339,7 @@ public class TestKit {
                 }
             }
         }
-        return result; 
+        return result;
     }
     
     public static String getCVSroot(File cvsFolder) {
@@ -348,7 +353,7 @@ public class TestKit {
                 br.close();
             } catch (IOException e) {
                 return "";
-            }    
+            }
         }
         return root;
     }
@@ -366,7 +371,7 @@ public class TestKit {
     
     public static InputStream getStream(String dir, String protocolName) throws Exception {
         File file = new File(dir, protocolName);
-        InputStream in = new FileInputStream(file);    
+        InputStream in = new FileInputStream(file);
         return in;
     }
     
@@ -379,9 +384,28 @@ public class TestKit {
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             
-        }    
+        }
+    }
+    public static String getStatus(String nodeHtmlDisplayName) {
+        if (nodeHtmlDisplayName == null || nodeHtmlDisplayName.length() < 1)
+            return "";
+        String status;
+        int pos1 = nodeHtmlDisplayName.indexOf('[');
+        int pos2 = nodeHtmlDisplayName.indexOf(']');
+        if ((pos1 != -1) && (pos2 != -1))
+            status = nodeHtmlDisplayName.substring(pos1, pos2 + 1);
+        else
+            status = "";
+        return status;
+    }
+    
+    public static void showStatusLabels() {
+        JMenuBarOperator mbo = new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar());
+        JMenuItemOperator mo = mbo.showMenuItem("View|Show CVS Status Labels");
+        JCheckBoxMenuItemOperator cbmio = new JCheckBoxMenuItemOperator((JCheckBoxMenuItem) mo.getSource());
+        if (!cbmio.getState())
+            cbmio.push();
     }
 }
