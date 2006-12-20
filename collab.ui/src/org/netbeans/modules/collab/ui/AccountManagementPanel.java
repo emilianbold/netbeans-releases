@@ -37,11 +37,6 @@ public class AccountManagementPanel extends ExplorerPanel {
     private int width_components = 0;
     private int width_leftcomponent = 0;
 
-    // Variables declaration - do not modify                     
-    private javax.swing.JSplitPane jSplitPane1;
-    private javax.swing.JLabel label;
-    private org.openide.explorer.view.ListView listView1;
-    private org.openide.explorer.propertysheet.PropertySheetView propertySheetView1;
 
     /**
      *
@@ -256,5 +251,10 @@ public class AccountManagementPanel extends ExplorerPanel {
     private void addButtonPressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonPressed
     }//GEN-LAST:event_addButtonPressed
 
-    // End of variables declaration                   
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JLabel label;
+    private org.openide.explorer.view.ListView listView1;
+    private org.openide.explorer.propertysheet.PropertySheetView propertySheetView1;
+    // End of variables declaration//GEN-END:variables
 }

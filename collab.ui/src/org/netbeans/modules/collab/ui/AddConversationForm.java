@@ -43,19 +43,6 @@ public class AddConversationForm extends javax.swing.JPanel implements ListSelec
     private static boolean _isSearching = false;
     private boolean visible;
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton browseBtn;
-    private javax.swing.JTextField conferenceNameField;
-    private javax.swing.JLabel conferenceNameLabel;
-    private javax.swing.JButton findBtn;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JButton removeBtn;
-    private javax.swing.JList resultJList;
-    private javax.swing.JLabel searchMessageLabel;
-    // End of variables declaration//GEN-END:variables
-
     private CollabSession session;
     private Vector result = new Vector();
     private DialogDescriptor descriptor;
@@ -562,4 +549,17 @@ public class AddConversationForm extends javax.swing.JPanel implements ListSelec
     public void valueChanged(ListSelectionEvent e) {
         updateRemoveButtonState();
     }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton browseBtn;
+    private javax.swing.JTextField conferenceNameField;
+    private javax.swing.JLabel conferenceNameLabel;
+    private javax.swing.JButton findBtn;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JButton removeBtn;
+    private javax.swing.JList resultJList;
+    private javax.swing.JLabel searchMessageLabel;
+    // End of variables declaration//GEN-END:variables
 }

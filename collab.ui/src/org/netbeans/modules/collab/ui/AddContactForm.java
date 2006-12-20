@@ -41,34 +41,6 @@ public class AddContactForm extends javax.swing.JPanel implements ListSelectionL
     ////////////////////////////////////////////////////////////////////////////
     // Instance variables
     ////////////////////////////////////////////////////////////////////////////
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel TypeLb;
-    private javax.swing.JLabel addToLbl;
-    private javax.swing.JList contactJList;
-    private javax.swing.JRadioButton containsOptionRadioButton;
-    private javax.swing.JRadioButton endsOptionRadioButton;
-    private javax.swing.JButton findBtn;
-    private javax.swing.JLabel findContactLb;
-    private javax.swing.JTextField findContactTextField;
-    private javax.swing.JComboBox groupComboBox;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JRadioButton nameTypeRadioButton;
-    private javax.swing.ButtonGroup optionsButtonGroup;
-    private javax.swing.JComboBox optionsComboBox;
-    private javax.swing.JLabel optionsLb;
-    private javax.swing.JPanel optionsPanel;
-    private javax.swing.JButton removeBtn;
-    private javax.swing.JPanel resultsPanel1;
-    private javax.swing.JLabel searchMessageLabel;
-    private javax.swing.JPanel searchPanel;
-    private javax.swing.JRadioButton startsOptionRadioButton;
-    private javax.swing.ButtonGroup typeButtonGroup;
-    private javax.swing.JComboBox typeComboBox;
-    private javax.swing.JPanel typePanel;
-    private javax.swing.JRadioButton userIDTypeRadioButton;
-    // End of variables declaration//GEN-END:variables
     private DialogDescriptor dialogDescriptor;
     private ArrayList contactList = new ArrayList();
     private ResourceBundle addContactBundle;
@@ -808,4 +780,33 @@ public class AddContactForm extends javax.swing.JPanel implements ListSelectionL
     public void valueChanged(ListSelectionEvent event) {
         updateRemoveButtonState();
     }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel TypeLb;
+    private javax.swing.JLabel addToLbl;
+    private javax.swing.JList contactJList;
+    private javax.swing.JRadioButton containsOptionRadioButton;
+    private javax.swing.JRadioButton endsOptionRadioButton;
+    private javax.swing.JButton findBtn;
+    private javax.swing.JLabel findContactLb;
+    private javax.swing.JTextField findContactTextField;
+    private javax.swing.JComboBox groupComboBox;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JRadioButton nameTypeRadioButton;
+    private javax.swing.ButtonGroup optionsButtonGroup;
+    private javax.swing.JComboBox optionsComboBox;
+    private javax.swing.JLabel optionsLb;
+    private javax.swing.JPanel optionsPanel;
+    private javax.swing.JButton removeBtn;
+    private javax.swing.JPanel resultsPanel1;
+    private javax.swing.JLabel searchMessageLabel;
+    private javax.swing.JPanel searchPanel;
+    private javax.swing.JRadioButton startsOptionRadioButton;
+    private javax.swing.ButtonGroup typeButtonGroup;
+    private javax.swing.JComboBox typeComboBox;
+    private javax.swing.JPanel typePanel;
+    private javax.swing.JRadioButton userIDTypeRadioButton;
+    // End of variables declaration//GEN-END:variables
 }
