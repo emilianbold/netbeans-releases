@@ -71,7 +71,7 @@ final class XMLUtil extends Object {
         ) throws IOException, SAXException {
         
         int index = (validate ? 0 : 1) + (namespaceAware ? 0 : 2);
-        DocumentBuilder builder = (DocumentBuilder) builderTL[index].get();
+        DocumentBuilder builder = builderTL[index].get();
         if (builder == null) {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setValidating(validate);
