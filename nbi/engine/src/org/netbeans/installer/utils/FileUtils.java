@@ -795,7 +795,12 @@ public final class FileUtils {
         //first of all check java implementation
         //LogManager.log("");
         //LogManager.log( ((isReadNotWrite) ? "READ " : "WRITE ") + "Checking file(dir): " + file);
-        if ((isReadNotWrite) ? file.canRead() : file.canWrite()) {
+        boolean javaAccessCheck = (isReadNotWrite) ? file.canRead() : file.canWrite();        
+        // don`t treat read-only attributes for directories as "can`t write" on windows
+        if(SystemUtils.isWindows() && !isReadNotWrite && file.isDirectory()) {
+            javaAccessCheck = true;
+        }
+        if (javaAccessCheck) {
             boolean result = true;
             boolean needCheckDirectory = true;
             
