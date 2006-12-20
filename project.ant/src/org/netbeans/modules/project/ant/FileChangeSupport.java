@@ -82,7 +82,7 @@ public final class FileChangeSupport {
             throw new IllegalArgumentException("Was not listening to " + path); // NOI18N
         }
         if (!f2H.containsKey(path)) {
-            throw new IllegalArgumentException("Was not listening to " + path); // NOI18N
+            throw new IllegalArgumentException(listener + " was not listening to " + path + "; only to " + f2H.keySet()); // NOI18N
         }
         f2H.remove(path);
     }
