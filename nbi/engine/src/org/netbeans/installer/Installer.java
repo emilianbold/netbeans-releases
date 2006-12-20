@@ -20,22 +20,28 @@
  */
 package org.netbeans.installer;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.product.ProductRegistry;
-import org.netbeans.installer.utils.helper.ErrorLevel;
+import org.netbeans.installer.utils.StreamUtils;
+import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ErrorManager;
-import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
@@ -47,6 +53,7 @@ import static org.netbeans.installer.utils.helper.ErrorLevel.WARNING;
 import static org.netbeans.installer.utils.helper.ErrorLevel.ERROR;
 import static org.netbeans.installer.utils.helper.ErrorLevel.CRITICAL;
 import org.netbeans.installer.wizard.Wizard;
+import org.w3c.dom.Document;
 
 /**
  * The main class of the NBI framework. It represents the installer and
@@ -88,6 +95,11 @@ public class Installer {
     
     public static final String IGNORE_LOCK_FILE_PROPERTY =
             "nbi.ignore.lock.file";
+    
+    private static final String DEFAULT_INSTALLER_MANIFEST =
+            "Manifest-Version: 1.0\n" +
+            "Main-Class: org.netbeans.installer.Installer\n" +
+            "Class-Path: \n";
     
     /** Errorcode to be used at normal exit */
     public static final int NORMAL_ERRORCODE = 0;
@@ -538,6 +550,44 @@ public class Installer {
         LogManager.logUnindent("... finished setting the look and feel");
     }
     
+    private void copyEngineContents(File jarfile, File dest) throws IOException {        
+        JarOutputStream jos = null;
+        
+        try {
+            Manifest mf = new Manifest(new ByteArrayInputStream(
+                    DEFAULT_INSTALLER_MANIFEST.getBytes()));
+            dest.getParentFile().mkdirs();
+            jos = new JarOutputStream(new FileOutputStream(dest),mf);
+            ZipFile zf = new ZipFile(jarfile);
+            Enumeration <? extends ZipEntry> entries = zf.entries();
+            ZipEntry ze;
+            while(entries.hasMoreElements()) {
+                ze = entries.nextElement();
+                if(!ze.getName().startsWith("data/") &&
+                        !ze.getName().startsWith("META-INF/")) {
+                    jos.putNextEntry(ze);
+                    StreamUtils.transferData(zf.getInputStream(ze), jos);
+                }
+            }
+            jos.putNextEntry(new ZipEntry("data/"));
+            jos.putNextEntry(new ZipEntry("data/bundled-product-registry.xml"));
+            Document doc = ProductRegistry.getInstance().getEmptyRegistryDocument();
+            ProductRegistry.getInstance().saveRegistryDocument(doc,jos);            
+        } catch (XMLException ex) {
+            throw new IOException(ex.toString());
+        }  catch (IOException ex) {
+            throw new IOException(ex.toString());
+        } finally {
+            if(jos!=null) {
+                try {
+                    jos.close();
+                } catch (IOException ex) {
+                    LogManager.log(ex);
+                }
+            }
+        }
+    }
+    
     private void cacheEngineJar(File jarfile) throws IOException {
         if(jarfile!=null) {
             String name = "nbi-engine.jar";
@@ -545,7 +595,7 @@ public class Installer {
                     File.separator + name);
             if(jarfile!=null) {
                 if(!jarfile.getAbsolutePath().equals(dest.getAbsolutePath()) && jarfile.exists()) {
-                    FileUtils.copyFile(jarfile,dest);
+                    copyEngineContents(jarfile,dest);
                 }
             }
             cachedEngine = (!dest.exists()) ? null : dest;
@@ -562,7 +612,7 @@ public class Installer {
         String filePrefix = "file:";
         String httpPrefix = "http://";
         String jarSep = "!/";
-                
+        
         try {
             String installerResource = "org/netbeans/installer/Installer.class";
             URL url = this.getClass().getClassLoader().getResource(installerResource);
@@ -575,7 +625,7 @@ public class Installer {
             
             if("jar".equals(url.getProtocol())) {
                 // we run engine from jar, not from .class
-                String path = url.getPath();                
+                String path = url.getPath();
                 if (path != null) {
                     String jarLocation;
                     if (path.startsWith(filePrefix)) {
