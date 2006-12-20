@@ -759,6 +759,7 @@ public class RefactoringPanel extends JPanel { //[retoucher] implements Invalida
         }
         while (!node.isLeaf());
         tree.setSelectionRow(newRow);
+        tree.scrollRowToVisible(newRow);
         CheckNodeListener.findInSource(node);
     }
     
