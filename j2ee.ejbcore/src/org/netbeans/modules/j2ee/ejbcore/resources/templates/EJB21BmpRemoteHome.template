@@ -9,16 +9,18 @@
 
 package Templates.J2EE.EJB21;
 
+import java.rmi.RemoteException;
 import javax.ejb.EJBHome;
+import javax.ejb.FinderException;
 
 /**
  *
  * @author __USER__
  */
 public interface __NAME__ extends EJBHome {
-
+    
 /*
-    __REMOTE_INTERFACE__ create()  throws CreateException, RemoteException;
+    __REMOTE_INTERFACE__ findByPrimaryKey(__PRIMARY_KEY__ key)  throws FinderException, RemoteException;
 */
     
 }

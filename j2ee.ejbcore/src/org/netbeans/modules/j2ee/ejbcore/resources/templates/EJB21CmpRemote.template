@@ -7,18 +7,16 @@
  * and open the template in the editor.
  */
 
-package Templates.J2EE.EJB21;
-
-import javax.ejb.EJBLocalHome;
+import javax.ejb.EJBObject;
 
 /**
  *
  * @author __USER__
  */
-public interface __NAME__ extends EJBLocalHome {
+public interface __NAME__ extends EJBObject {
     
 /*
-    __LOCAL_INTERFACE__ create()  throws CreateException;
+    __PRIMARY_KEY__ getKey() throws RemoteException;
 */
 
 }

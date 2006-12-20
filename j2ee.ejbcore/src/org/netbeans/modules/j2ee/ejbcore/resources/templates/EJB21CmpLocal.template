@@ -9,16 +9,16 @@
 
 package Templates.J2EE.EJB21;
 
-import javax.ejb.EJBLocalHome;
+import javax.ejb.EJBLocalObject;
 
 /**
  *
  * @author __USER__
  */
-public interface __NAME__ extends EJBLocalHome {
-    
-/*
-    __LOCAL_INTERFACE__ create()  throws CreateException;
-*/
+public interface __NAME__ extends EJBLocalObject {
 
+/*
+    __PRIMARY_KEY__ Long getKey();
+*/
+    
 }

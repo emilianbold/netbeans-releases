@@ -34,15 +34,17 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import java.io.IOException;
 import java.util.List;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.PersistenceGenerator;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPHelper;
 
 /**
  *
  * @author Pavel Buzek
  */
-public class CmpGenerator /*implements PersistenceGenerator */{
+public class CmpGenerator implements PersistenceGenerator {
     
-    private static final String KEY_TEMPLATE = EjbGenerationUtil.TEMPLATE_BASE+"Key.xml"; //NOI18N
-    private static final String CMP_TEMPLATE = EjbGenerationUtil.TEMPLATE_BASE+"CMPBean.xml"; //NOI18N
 //    private static final Identifier FINDER_EXCEPTION = Identifier.create("javax.ejb.FinderException"); //NOI18N
     private static final String FINDER_EXCEPTION_CLASS = "javax.ejb.FinderException"; //NOI18N
     private static final List PRIMITIVE_CLASS_NAMES = Arrays.asList(
@@ -400,13 +402,13 @@ public class CmpGenerator /*implements PersistenceGenerator */{
 //            ps.disableSunCmpMappingExclusion();
 //        }
 //    }
-//    
-//    public void generateBeans(final ProgressPanel progressPanel,
-//            final RelatedCMPHelper helper,
-//            final FileObject dbschemaFile,
-//            final ProgressHandle handle,
-//            boolean justTesting) throws IOException {
-//
+    
+    public void generateBeans(final ProgressPanel progressPanel,
+            final RelatedCMPHelper helper,
+            final FileObject dbschemaFile,
+            final ProgressHandle handle,
+            boolean justTesting) throws IOException {
+
 //        disableSunCmpMappingsExclusion();
 //        J2eeModuleProvider pwm = (J2eeModuleProvider) project.getLookup ().lookup (J2eeModuleProvider.class);
 //        pwm.getConfigSupport().ensureConfigurationReady();
@@ -523,9 +525,9 @@ public class CmpGenerator /*implements PersistenceGenerator */{
 //        
 //        transactionHelper.write();
 //        handle.progress(max);
-//    }
-//    
-//    
+    }
+    
+    
 //    /**
 //     * This method is used for testing to allow file differences. 
 //     */
@@ -650,5 +652,9 @@ public class CmpGenerator /*implements PersistenceGenerator */{
 
     public Set createdObjects() {
         return Collections.singleton(ejbModule.getDeploymentDescriptor());
+    }
+
+    public void uninit() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

@@ -19,20 +19,21 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp;
 
-//import org.netbeans.modules.j2ee.persistence.wizard.fromdb.PersistenceGenerator;
-//import org.netbeans.modules.j2ee.persistence.wizard.fromdb.PersistenceGeneratorProvider;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.PersistenceGenerator;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.PersistenceGeneratorProvider;
 
 /**
  *
  * @author Andrei Badea
  */
-public class CmpGeneratorProvider /*implements PersistenceGeneratorProvider */{
+public class CmpGeneratorProvider implements PersistenceGeneratorProvider {
 
     public String getGeneratorType() {
         return "cmp"; // NOI18N
     }
 
-//    public PersistenceGenerator createGenerator() {
-//        return new CmpGenerator();
-//    }
+    public PersistenceGenerator createGenerator() {
+        return new CmpGenerator();
+    }
+
 }

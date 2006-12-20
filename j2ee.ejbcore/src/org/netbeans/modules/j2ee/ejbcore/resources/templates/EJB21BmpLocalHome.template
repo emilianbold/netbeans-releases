@@ -10,6 +10,7 @@
 package Templates.J2EE.EJB21;
 
 import javax.ejb.EJBLocalHome;
+import javax.ejb.FinderException;
 
 /**
  *
@@ -18,7 +19,7 @@ import javax.ejb.EJBLocalHome;
 public interface __NAME__ extends EJBLocalHome {
     
 /*
-    __LOCAL_INTERFACE__ create()  throws CreateException;
+    __LOCAL_INTERFACE__ findByPrimaryKey(__PRIMARY_KEY__ key) throws FinderException;
 */
-
+    
 }

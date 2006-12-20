@@ -1,0 +1,28 @@
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+import java.rmi.RemoteException;
+import javax.ejb.CreateException;
+import javax.ejb.EJBHome;
+import javax.ejb.FinderException;
+
+
+/**
+ *
+ * @author __USER__
+ */
+public interface __NAME__ extends EJBHome {
+    
+/*
+    __REMOTE_INTERFACE__ findByPrimaryKey(__PRIMARY_KEY__ key)  throws FinderException, RemoteException;
+    
+    __REMOTE_INTERFACE__ create(__PRIMARY_KEY__ key)  throws CreateException, RemoteException;
+*/    
+    
+}

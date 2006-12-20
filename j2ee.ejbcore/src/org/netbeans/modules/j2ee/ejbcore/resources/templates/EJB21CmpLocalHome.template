@@ -9,16 +9,20 @@
 
 package Templates.J2EE.EJB21;
 
+import javax.ejb.CreateException;
 import javax.ejb.EJBLocalHome;
+import javax.ejb.FinderException;
 
 /**
  *
  * @author __USER__
  */
 public interface __NAME__ extends EJBLocalHome {
-    
-/*
-    __LOCAL_INTERFACE__ create()  throws CreateException;
-*/
 
+/*    
+    __LOCAL_INTERFACE__ findByPrimaryKey(__PRIMARY_KEY__ key)  throws FinderException;
+    
+    __LOCAL_INTERFACE__ create(__PRIMARY_KEY__ key)  throws CreateException;
+*/    
+    
 }
