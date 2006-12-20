@@ -105,7 +105,7 @@ public abstract class QueueBase implements PumpingsQueue {
         mehtod.invoke(listener, args);
       } catch (IllegalAccessException ignored) {
         LogManager.log(ignored);
-      } catch (InvocationTargetException ignored) {
+      } catch (InvocationTargetException ignored) {//undeline throw an exception.
         LogManager.log(ignored);
       }
     }

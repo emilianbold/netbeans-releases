@@ -92,13 +92,14 @@ public class ChannelUtil {
       public synchronized void flush() throws IOException {
         final int written = this.channel.write((ByteBuffer) buffer.flip(), position);
         position += written;
-        section.shiftOffset(written);
+        if (written > 0) section.shiftOffset(written);
         buffer.rewind();
       }
 
       //on close() thread release channel in any case of exceptions
       public void close() throws IOException {
         try {
+          if (!channel.isOpen()) return;
           flush();
         } finally {
           releaseFile(channel);

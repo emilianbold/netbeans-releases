@@ -37,7 +37,7 @@ public interface PumpingsQueue {
 
     Pumping[] toArray();
 
-    Pumping add(URL url);//output in defualt folder
+    Pumping add(URL url);//output in default folder
     
     Pumping add(URL url, File folder);
 

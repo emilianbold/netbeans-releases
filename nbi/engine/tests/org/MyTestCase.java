@@ -42,7 +42,7 @@ public class MyTestCase extends TestCase {
   }
   
   protected void tearDown() throws Exception {
-    FileUtils.deleteFile(testWD);
-    FileUtils.deleteFile(testOutput);
+    FileUtils.deleteFile(testWD, true);
+    FileUtils.deleteFile(testOutput, true);
   }
 }

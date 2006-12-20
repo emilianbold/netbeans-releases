@@ -25,8 +25,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import org.*;
 import org.netbeans.installer.utils.StreamUtils;
+import org.netbeans.installer.utils.exceptions.UnexpectedExceptionError;
 
 /**
  *
@@ -63,6 +66,18 @@ public class TestDataGenerator {
   static {
     for (int i = 0; i < buffer.length; i++) {
       buffer[i] = MAGIC_BYTE;
+    }
+  }
+  
+  public static final URL[] testUrls = new URL[testFiles.length];
+  
+  static {
+    try {
+      for (int i = 0 ; i < testUrls.length; i++) {
+        testUrls[i] = new URL("http://localhost:" + WithServerTestCase.PORT + "/" + testFiles[i]);
+      }
+    } catch (MalformedURLException mustNotHappend) {
+      throw new UnexpectedExceptionError("wrong urls!", mustNotHappend);
     }
   }
   

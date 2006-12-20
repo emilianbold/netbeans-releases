@@ -37,7 +37,6 @@ import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.helper.MutualHashMap;
 import org.netbeans.installer.utils.helper.MutualMap;
 import org.netbeans.installer.utils.helper.ThreadUtil;
-import org.omg.CORBA.Current;
 
 /**
  * @author Danila_Dugurov
@@ -47,7 +46,7 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
   static {
     quantumToSkip.put(LoadFactor.FULL, (byte)0);
     quantumToSkip.put(LoadFactor.AVERAGE, (byte)2);
-    quantumToSkip.put(LoadFactor.LOW, (byte)5);
+    quantumToSkip.put(LoadFactor.LOW, (byte)4);
   }
   private final int timeQuantum;
   private final int pollingTime;

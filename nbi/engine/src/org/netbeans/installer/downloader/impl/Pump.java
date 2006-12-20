@@ -64,7 +64,7 @@ public class Pump implements Process {
   public void run() {
     if (!initPumping()) return;
     pummping.fireChanges("pumpingUpdate");
-    processPumping();
+    if (!processPumping()) return;
     //verifyPumping();
   }
   
@@ -124,10 +124,12 @@ public class Pump implements Process {
         out = ChannelUtil.channelFragmentAsStream(pummping.outputFile(), section);
         pummping.changeState(Pumping.State.PUMPING);
         StreamUtils.transferData(in, out);
-        out.flush();
-        if (section.length() > 0)
-          if (section.offset() != section.start() + section.length())
+        if (section.length() > 0) {
+          if (section.offset() != section.start() + section.length()) {
+            attemptCount++;
             continue;
+          }
+        }
         pummping.changeState(Pumping.State.FINISHED);
         return true;
       } catch (IOException ex) {
@@ -164,7 +166,7 @@ public class Pump implements Process {
     return true;
   }
   
-  private boolean verifyPumping() {
+ /* private boolean verifyPumping() {
     final URL checksum = URLUtil.create(pummping.realURL().toString() + ".md5");
     int attemptCount = 0;
     while (attemptCount < MAX_ATTEMPT_COUNT) {
@@ -190,7 +192,7 @@ public class Pump implements Process {
       }
     }
     return false;
-  }
+  }*/
   
   public void terminate() {
     if (in != null) try {

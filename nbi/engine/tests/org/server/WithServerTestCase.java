@@ -32,7 +32,9 @@ import org.server.impl.DefaultJettyServer;
  */
 public class WithServerTestCase extends MyTestCase {
   
-  private final AbstractServer server = new DefaultJettyServer("testData", 8080);
+  public static final int PORT = 8080;
+  
+  private final AbstractServer server = new DefaultJettyServer("testData", PORT);
   private final TestDataGenerator dataGenerator = new TestDataGenerator("testData");
   
   protected void setUp() throws Exception {
