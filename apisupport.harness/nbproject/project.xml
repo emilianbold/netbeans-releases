@@ -38,6 +38,7 @@ Microsystems, Inc. All Rights Reserved.
                 <classpath>${jnlp.cp}</classpath>
                 <built-to>build/jnlp-launcher-classes</built-to>
                 <built-to>${cluster}/jnlp/jnlp-launcher.jar</built-to>
+                <source-level>1.5</source-level>
             </extra-compilation-unit>
         </data>
     </configuration>

@@ -25,10 +25,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -41,7 +42,7 @@ import org.netbeans.junit.NbTestCase;
 
 /** Is generation of Jnlp files correct?
  *
- * @author Jaroslav Tulach
+ * @author Jaroslav Tulach, Jesse Glick
  */
 public class MakeJNLPTest extends NbTestCase {
     public MakeJNLPTest (String name) {
@@ -51,7 +52,23 @@ public class MakeJNLPTest extends NbTestCase {
     protected void setUp() throws Exception {
         clearWorkDir();
     }
-    
+
+    private static void assertFilenames(File dir, String... contents) {
+        assertTrue(dir + " is a directory", dir.isDirectory());
+        SortedSet<String> expected = new TreeSet<String>(Arrays.asList(contents));
+        SortedSet<String> actual = new TreeSet<String>();
+        findFilenames(dir, "", actual);
+        assertEquals("correct contents of " + dir, expected/*.toString()*/, actual/*.toString()*/);
+    }
+    private static void findFilenames(File dir, String prefix, Set<String> names) {
+        for (File f : dir.listFiles()) {
+            if (f.isFile()) {
+                names.add(prefix + f.getName());
+            } else if (f.isDirectory()) {
+                findFilenames(f, prefix + f.getName() + "/", names);
+            }
+        }
+    }
     
     public void testGenerateJNLPAndSignedJarForSimpleModule() throws Exception {
         Manifest m;
@@ -80,25 +97,10 @@ public class MakeJNLPTest extends NbTestCase {
         );
         PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
         
-        assertTrue ("Output exists", output.exists ());
-        assertTrue ("Output directory created", output.isDirectory());
-        
-        String[] files = output.list();
-        assertEquals("It has two files", 2, files.length);
-        
-        if (files[0].endsWith("jnlp")) {
-            String fx = files[0];
-            files[0] = files[1];
-            files[1] = fx;
-        }
-        
-        assertEquals("The JAR file is s0.jar", "s0.jar", files[0]);
-        assertEquals("The JNLP file is org-my-module.jnlp", "org-my-module.jnlp", files[1]);
+        assertFilenames(output, "org-my-module.jnlp", "org-my-module/s0.jar");
         
         File jnlp = new File(output, "org-my-module.jnlp");
         String res = ModuleDependenciesTest.readFile (jnlp);
-        
-        
         
         assertTrue ("Component JNLP type: " + res, res.indexOf ("<component-desc/>") >= 0);
         assertTrue ("We support all permitions by default: " + res, res.indexOf ("<all-permissions/>") >= 0);
@@ -111,7 +113,7 @@ public class MakeJNLPTest extends NbTestCase {
         assertEquals("By default the dest directory is $$codebase: ", "$$codebase", base);
 
         CHECK_SIGNED: {
-            File jar = new File(output, files[0]);
+            File jar = new File(output, "org-my-module/s0.jar");
             JarFile signed = new JarFile(jar);
             Enumeration it = signed.entries();
             while (it.hasMoreElements()) {
@@ -195,23 +197,14 @@ public class MakeJNLPTest extends NbTestCase {
         );
         PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
         
-        assertTrue ("Output exists", output.exists ());
-        assertTrue ("Output directory created", output.isDirectory());
+        assertFilenames(output, "org-netbeans-modules-autoupdate.jnlp",
+                "org-netbeans-modules-autoupdate/org-netbeans-modules-autoupdate.jar",
+                "org-netbeans-modules-autoupdate/locale-org-netbeans-modules-autoupdate_zh_CN.jar",
+                "org-netbeans-modules-autoupdate/locale-org-netbeans-modules-autoupdate_ja.jar",
+                "org-netbeans-modules-autoupdate/ext-locale-updater_zh_CN.jar",
+                "org-netbeans-modules-autoupdate/ext-locale-updater_ja.jar",
+                "org-netbeans-modules-autoupdate/ext-updater.jar");
         
-        String[] files = output.list();
-        assertEquals("It has two files plus localized ones", 7, files.length);
-        
-        Set<String> setFiles = new HashSet<String>(Arrays.asList(files));
-       
-        if (!setFiles.contains("org-netbeans-modules-autoupdate.jar")) fail("org-netbeans-modules-autoupdate.jar shall be there: " + setFiles);
-        if (!setFiles.contains("org-netbeans-modules-autoupdate.jnlp")) fail("org-my-module.jnlp shall be there: " + setFiles);
-        if (!setFiles.contains("org-netbeans-modules-autoupdate_zh_CN.jar")) fail("org-netbeans-modules-autoupdate_zh_CN.jar shall be there: " + setFiles);
-        if (!setFiles.contains("org-netbeans-modules-autoupdate_ja.jar")) fail("org-netbeans-modules-autoupdate_ja.jar shall be there: " + setFiles);
-        if (!setFiles.contains("updater_zh_CN.jar")) fail("updater_zh_CN.jar shall be there: " + setFiles);
-        if (!setFiles.contains("updater_ja.jar")) fail("updater_ja.jar shall be there: " + setFiles);
-        if (!setFiles.contains("updater.jar")) fail("updater.jar shall be there: " + setFiles);
-
-
         File jnlp = new File(output, "org-netbeans-modules-autoupdate.jnlp");
         String res = ModuleDependenciesTest.readFile (jnlp);
         
@@ -226,18 +219,15 @@ public class MakeJNLPTest extends NbTestCase {
         
         assertEquals("By default the dest directory is $$codebase: ", "$$codebase", base);
         
-        assertResource(res, "ja", "updater_ja.jar");
-        assertResource(res, "zh_CN", "updater_zh_CN.jar");
-        assertResource(res, "ja", "org-netbeans-modules-autoupdate_ja.jar");
-        assertResource(res, "zh_CN", "org-netbeans-modules-autoupdate_zh_CN.jar");
+        assertResource(res, "ja", "org-netbeans-modules-autoupdate/ext-locale-updater_ja.jar");
+        assertResource(res, "zh_CN", "org-netbeans-modules-autoupdate/ext-locale-updater_zh_CN.jar");
+        assertResource(res, "ja", "org-netbeans-modules-autoupdate/locale-org-netbeans-modules-autoupdate_ja.jar");
+        assertResource(res, "zh_CN", "org-netbeans-modules-autoupdate/locale-org-netbeans-modules-autoupdate_zh_CN.jar");
 
-        CHECK_SIGNED: for (int i = 0; i < files.length; i++) {
-            if (!files[i].endsWith(".jar")) {
+        CHECK_SIGNED: for (File jar : new File(output, "org-netbeans-modules-autoupdate").listFiles()) {
+            if (!jar.getName().endsWith(".jar")) {
                 continue;
             }
-            
-            File jar = new File(output, files[i]);
-
             JarFile signed = new JarFile(jar);
             Enumeration it = signed.entries();
             while (it.hasMoreElements()) {
@@ -250,17 +240,6 @@ public class MakeJNLPTest extends NbTestCase {
         }
         
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     public void testGenerateJNLPAndSignedJarForSimpleLocalizedModule() throws Exception {
         Manifest m;
@@ -321,28 +300,18 @@ public class MakeJNLPTest extends NbTestCase {
             "</project>"
         );
         PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
-        
-        assertTrue ("Output exists", output.exists ());
-        assertTrue ("Output directory created", output.isDirectory());
-        
-        String[] files = output.list();
-        assertEquals("It has two files plus localized ones", 5, files.length);
-        
-        Set<String> setFiles = new HashSet<String>(Arrays.asList(files));
-       
-        if (!setFiles.contains("0.jar")) fail("0.jar shall be there: " + setFiles);
-        if (!setFiles.contains("org-my-module.jnlp")) fail("org-my-module.jnlp shall be there: " + setFiles);
-        if (!setFiles.contains("0_cs.jar")) fail("0_cs.jar shall be there: " + setFiles);
-        if (!setFiles.contains("0_zh_CN.jar")) fail("0_zh_CN.jar shall be there: " + setFiles);
-        if (!setFiles.contains("0_ja.jar")) fail("0_ja.jar shall be there: " + setFiles);
 
+        assertFilenames(output, "org-my-module.jnlp",
+                "org-my-module/0.jar",
+                "org-my-module/locale-0_cs.jar",
+                "org-my-module/locale-0_zh_CN.jar",
+                "org-my-module/locale-0_ja.jar");
 
         File jnlp = new File(output, "org-my-module.jnlp");
         String res = ModuleDependenciesTest.readFile (jnlp);
         
-        
         assertTrue ("Component JNLP type: " + res, res.indexOf ("<component-desc/>") >= 0);
-        assertTrue ("We support all permitions by default: " + res, res.indexOf ("<all-permissions/>") >= 0);
+        assertTrue ("We support all permissions by default: " + res, res.indexOf ("<all-permissions/>") >= 0);
         
         Matcher match = Pattern.compile(".*codebase=['\\\"]([^'\\\"]*)['\\\"]").matcher(res);
         assertTrue("codebase is there", match.find());
@@ -351,17 +320,15 @@ public class MakeJNLPTest extends NbTestCase {
         
         assertEquals("By default the dest directory is $$codebase: ", "$$codebase", base);
         
-        assertResource(res, "cs", "0_cs.jar");
-        assertResource(res, "ja", "0_ja.jar");
-        assertResource(res, "zh_CN", "0_zh_CN.jar");
+        assertResource(res, "cs", "org-my-module/locale-0_cs.jar");
+        assertResource(res, "ja", "org-my-module/locale-0_ja.jar");
+        assertResource(res, "zh_CN", "org-my-module/locale-0_zh_CN.jar");
 
-        CHECK_SIGNED: for (int i = 0; i < files.length; i++) {
-            if (!files[i].endsWith(".jar")) {
+        CHECK_SIGNED: for (File jar : new File(output, "org-my-module").listFiles()) {
+            if (!jar.getName().endsWith(".jar")) {
                 continue;
             }
             
-            File jar = new File(output, files[i]);
-
             JarFile signed = new JarFile(jar);
             Enumeration it = signed.entries();
             while (it.hasMoreElements()) {
@@ -407,25 +374,11 @@ public class MakeJNLPTest extends NbTestCase {
         );
         PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
         
-        assertTrue ("Output exists", output.exists ());
-        assertTrue ("Output directory created", output.isDirectory());
-        
-        String[] files = output.list();
-        assertEquals("It has two files", 2, files.length);
-        
-        if (files[0].endsWith("jnlp")) {
-            String fx = files[0];
-            files[0] = files[1];
-            files[1] = fx;
-        }
-        
-        assertEquals("The JAR file is s0.jar", "s0.jar", files[0]);
-        assertEquals("The JNLP file is org-my-module.jnlp", "org-my-module.jnlp", files[1]);
+        assertFilenames(output, "org-my-module.jnlp",
+                "org-my-module/s0.jar");
         
         File jnlp = new File(output, "org-my-module.jnlp");
         String res = ModuleDependenciesTest.readFile (jnlp);
-        
-        
         
         assertTrue ("Component JNLP type: " + res, res.indexOf ("<component-desc/>") >= 0);
         assertTrue ("We support all permitions by default: " + res, res.indexOf ("<all-permissions/>") >= 0);
@@ -439,7 +392,7 @@ public class MakeJNLPTest extends NbTestCase {
     }
 
     public void testGenerateJNLPAndSignedJarForModuleWithClassPath() throws Exception {
-        File ext = doClassPathModuleCheck(
+        File output = doClassPathModuleCheck(
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -454,14 +407,7 @@ public class MakeJNLPTest extends NbTestCase {
             "</project>"
         );
         
-        File output = ext.getParentFile();
-        String[] files = output.list();
-        assertEquals("It has three files", 3, files.length);
-
-        java.util.Arrays.sort(files);
-        
-        assertEquals("The JNLP file is aaa-my-module.jnlp", "aaa-my-module.jnlp", files[0]);
-        assertEquals("The ext JAR file is there", ext.getName(), files[2]);
+        assertFilenames(output, "aaa-my-module.jnlp", "aaa-my-module/ext-t0.jar", "aaa-my-module/s0.jar");
         
         File jnlp = new File(output, "aaa-my-module.jnlp");
         String res = ModuleDependenciesTest.readFile (jnlp);
@@ -480,7 +426,7 @@ public class MakeJNLPTest extends NbTestCase {
     public void testGenerateJNLPAndSignedJarForModuleWithClassPathAndSignedJar() throws Exception {
         File ks = generateKeystore("external", "netbeans-test");
         
-        File ext = doClassPathModuleCheck(
+        File output = doClassPathModuleCheck(
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -496,7 +442,11 @@ public class MakeJNLPTest extends NbTestCase {
             "</project>"
         );
         
-        JarFile f = new JarFile(ext);
+        assertFilenames(output, "aaa-my-module.jnlp", "aaa-my-module/s0.jar",
+                "aaa-my-module/ext-t0.jar",
+                "aaa-my-module/ext-t0.jnlp");
+        
+        JarFile f = new JarFile(new File(output, "aaa-my-module/ext-t0.jar"));
         Enumeration en = f.entries();
         StringBuffer sb = new StringBuffer();
         int cnt = 0;
@@ -516,37 +466,18 @@ public class MakeJNLPTest extends NbTestCase {
             fail("Signed with wrong file:\n" + sb);
         }
         
-        
-        
-        File output = ext.getParentFile();
-        String[] files = output.list();
-        assertEquals("It has three files", 4, files.length);
-
-        java.util.Arrays.sort(files);
-        
         File jnlp = new File(output, "aaa-my-module.jnlp");
-        
-        String extJnlpName = "aaa-my-module-ext-" + ext.getName();
-        extJnlpName = extJnlpName.replaceAll(".jar", ".jnlp");
-        File extJnlp = new File(output, extJnlpName);
-        
-        
-        assertTrue("The JAR file is s0.jar", new File (output, "s0.jar").exists());
-        assertTrue("The JNLP file is aaa-my-module.jnlp", jnlp.exists());
-        assertTrue("The ext JAR file is there", ext.canRead());
-        assertTrue("The ext jnlp file is there", extJnlp.canRead());
         
         String res = ModuleDependenciesTest.readFile (jnlp);
 
         int first = res.indexOf("jar href");
         assertEquals("Just one jar href ", -1, res.indexOf("jar href", first + 1));
         
-        String extRes = ModuleDependenciesTest.readFile (extJnlp);
+        String extRes = ModuleDependenciesTest.readFile(new File(output, "aaa-my-module/ext-t0.jnlp"));
         
         Matcher m = Pattern.compile("<title>(.*)</title>").matcher(extRes);
         assertTrue("title is there: " + extRes, m.find());
-        String n = ext.getName().replaceAll(".jar", "");
-        assertEquals("Name of file is used for title", n, m.group(1));
+        assertEquals("Name of file is used for title", "t0", m.group(1));
     }
     
     public void testInformationIsTakenFromLocalizedBundle() throws Exception {
@@ -582,21 +513,8 @@ public class MakeJNLPTest extends NbTestCase {
             "</project>"
         );
         PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
-        
-        assertTrue ("Output exists", output.exists ());
-        assertTrue ("Output directory created", output.isDirectory());
-        
-        String[] files = output.list();
-        assertEquals("It has two files", 2, files.length);
-        
-        if (files[0].endsWith("jnlp")) {
-            String fx = files[0];
-            files[0] = files[1];
-            files[1] = fx;
-        }
-        
-        assertEquals("The JAR file is s0.jar", "s0.jar", files[0]);
-        assertEquals("The JNLP file is org-my-module.jnlp", "org-my-module.jnlp", files[1]);
+    
+        assertFilenames(output, "org-my-module.jnlp", "org-my-module/s0.jar");
         
         File jnlp = new File(output, "org-my-module.jnlp");
         String res = ModuleDependenciesTest.readFile (jnlp);
@@ -749,10 +667,7 @@ public class MakeJNLPTest extends NbTestCase {
             "-Dtest.ext=" + extJar
         });
         
-        assertTrue ("Output exists", output.exists ());
-        assertTrue ("Output directory created", output.isDirectory());
-        
-        return new File (output, extJar.getName());
+        return output;
     }
     
     
@@ -835,4 +750,39 @@ public class MakeJNLPTest extends NbTestCase {
         }
         throw lastEx;
     }
+
+    public void testIndirectJars() throws Exception {
+        Manifest m = ModuleDependenciesTest.createManifest();
+        m.getMainAttributes().putValue("OpenIDE-Module", "me");
+        generateJar(new String[0], m);
+        generateJar("lib", new String[0], new Manifest(), null);
+        assertTrue(new File(getWorkDir(), "lib/b0.jar").isFile());
+        File output = new File(getWorkDir(), "output");
+        File ks = generateKeystore("jnlp", "netbeans-test");
+        File f = PublicPackagesInProjectizedXMLTest.extractString(
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+                "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+                "<target name=\"all\" >" +
+                "  <mkdir dir='" + output + "' />" +
+                "  <jnlp dir='" + output + "' alias='jnlp' storepass='netbeans-test' keystore='" + ks + "' >" +
+                "    <modules dir='" + getWorkDir() + "'>" +
+                "      <include name='modules/s0.jar'/>" +
+                "    </modules>" +
+                "    <indirectjars dir='" + getWorkDir() + "'>" +
+                "      <include name='lib/b0.jar'/>" +
+                "    </indirectjars>" +
+                "  </jnlp>" +
+                "</target>" +
+                "</project>"
+                );
+        PublicPackagesInProjectizedXMLTest.execute(f, new String[] { "-verbose" });
+        assertFilenames(output, "me.jnlp", "me/s0.jar", "me/lib-b0.jar");
+        File jnlp = new File(output, "me.jnlp");
+        String res = ModuleDependenciesTest.readFile(jnlp);
+        assertTrue(res, res.contains("me/lib-b0.jar"));
+        JarFile otherJar = new JarFile(new File(output, "me/lib-b0.jar"));
+        assertNotNull(otherJar.getEntry("META-INF/clusterpath/lib/b0.jar"));
+    }
+
 }

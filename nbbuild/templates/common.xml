@@ -259,6 +259,7 @@ Microsystems, Inc. All Rights Reserved.
             <modules dir="${cluster}" >
                 <include name="${module.jar}" />
             </modules>
+            <indirectjars dir="${cluster}" includes="${jnlp.indirect.jars}"/>
         </makejnlp>
     </target>
     

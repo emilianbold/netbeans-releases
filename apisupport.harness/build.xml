@@ -37,7 +37,7 @@ Microsystems, Inc. All Rights Reserved.
  
     <target name="compile-jnlp-launcher" depends="init,compile">
         <mkdir dir="build/jnlp-launcher-classes"/>
-        <javac srcdir="jnlp-src" destdir="build/jnlp-launcher-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4" includeantruntime="false">
+        <javac srcdir="jnlp-src" destdir="build/jnlp-launcher-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.5" includeantruntime="false">
             <classpath>
                 <path path="${jnlp.cp}"/>
             </classpath>

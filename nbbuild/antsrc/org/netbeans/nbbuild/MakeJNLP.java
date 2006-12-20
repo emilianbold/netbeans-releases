@@ -26,12 +26,15 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -46,12 +49,14 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.taskdefs.SignJar;
+import org.apache.tools.ant.taskdefs.Zip;
 import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.ant.types.ZipFileSet;
 import org.xml.sax.SAXException;
 
 /** Generates JNLP files for signed versions of the module JAR files.
  *
- * @author Jaroslav Tulach
+ * @author Jaroslav Tulach, Jesse Glick
  */
 public class MakeJNLP extends Task {
     /** the files to work on */
@@ -116,6 +121,19 @@ public class MakeJNLP extends Task {
         permissions = s;
     }
     
+    private FileSet indirectJars;
+    /**
+     * Other JARs which should be copied into the destination directory and referred to as resources,
+     * even though they are not listed as Class-Path extensions of the module and would not normally
+     * be in its effective classpath. The basedir of the fileset should be a cluster root; for each
+     * such JAR, a file META-INF/clusterpath/$relpath will be inserted in the JAR, where $relpath is the
+     * relative path within the cluster. This permits the JAR to be located at runtime in a flat classpath,
+     * using ClassLoader.getResource.
+     */
+    public void addIndirectJars(FileSet fs) {
+        indirectJars = fs;
+    }
+    
     public void execute() throws BuildException {
         if (target == null) throw new BuildException("Output dir must be provided");
         if (files == null) throw new BuildException("modules must be provided");
@@ -128,6 +146,15 @@ public class MakeJNLP extends Task {
     }
     
     private void generateFiles() throws IOException, BuildException {
+        Set<String> indirectJarPaths = Collections.emptySet();
+        if (indirectJars != null) {
+            DirectoryScanner scan = indirectJars.getDirectoryScanner(getProject());
+            indirectJarPaths = new HashSet<String>();
+            for (String f : scan.getIncludedFiles()) {
+                indirectJarPaths.add(f.replace(File.pathSeparatorChar, '/'));
+            }
+        }
+
         DirectoryScanner scan = files.getDirectoryScanner(getProject());
         for (String f : scan.getIncludedFiles()) {
             File jar = new File (files.getDir(getProject()), f);
@@ -170,10 +197,11 @@ public class MakeJNLP extends Task {
                 shrt = prop.getProperty("OpenIDE-Module-Long-Description", oneline);
             }
             
-            Map<String,List<File>> localizedFiles = verifyExtensions(jar, theJar.getManifest(), dashcnb, codenamebase, verify);
+            Map<String,List<File>> localizedFiles = verifyExtensions(jar, theJar.getManifest(), dashcnb, codenamebase, verify, indirectJarPaths);
             
+            new File(target, dashcnb).mkdir();
 
-            File signed = new File(target, jar.getName());
+            File signed = new File(new File(target, dashcnb), jar.getName());
             File jnlp = new File(target, dashcnb + ".jnlp");
             
             StringWriter writeJNLP = new StringWriter();
@@ -187,9 +215,10 @@ public class MakeJNLP extends Task {
             writeJNLP.write("  </information>\n");
             writeJNLP.write(permissions +"\n");
             writeJNLP.write("  <resources>\n");
-            writeJNLP.write("     <jar href='"); writeJNLP.write(jar.getName()); writeJNLP.write("'/>\n");
+            writeJNLP.write("     <jar href='" + dashcnb + '/' + jar.getName() + "'/>\n");
             
             processExtensions(jar, theJar.getManifest(), writeJNLP, dashcnb, codebase);
+            processIndirectJars(writeJNLP, dashcnb, codebase);
             
             writeJNLP.write("  </resources>\n");
             
@@ -202,13 +231,19 @@ public class MakeJNLP extends Task {
                     writeJNLP.write("  <resources locale='" + locale + "'>\n");
 
                     for (File n : files) {
-                        File t = new File(target, n.getName());
+                        String name = n.getName();
+                        String clusterRootPrefix = jar.getParent() + File.separatorChar;
+                        String absname = n.getAbsolutePath();
+                        if (absname.startsWith(clusterRootPrefix)) {
+                            name = absname.substring(clusterRootPrefix.length()).replace('/', '-');
+                        }
+                        File t = new File(new File(target, dashcnb), name);
                         
                         getSignTask().setJar(n);
                         getSignTask().setSignedjar(t);
                         getSignTask().execute();
                         
-                        writeJNLP.write("     <jar href='"); writeJNLP.write(n.getName()); writeJNLP.write("'/>\n");
+                        writeJNLP.write("    <jar href='" + dashcnb + '/' + name + "'/>\n");
                     }
 
                     writeJNLP.write("  </resources>\n");
@@ -234,7 +269,7 @@ public class MakeJNLP extends Task {
         
     }
     
-    private Map<String,List<File>> verifyExtensions(File f, Manifest mf, String dashcnb, String codebasename, boolean verify) throws IOException, BuildException {
+    private Map<String,List<File>> verifyExtensions(File f, Manifest mf, String dashcnb, String codebasename, boolean verify, Set<String> indirectJarPaths) throws IOException, BuildException {
         Map<String,List<File>> localizedFiles = new HashMap<String,List<File>>();
         
         
@@ -302,6 +337,8 @@ public class MakeJNLP extends Task {
         }
 
         fileToOwningModule.remove("ant/nblib/" + dashcnb + ".jar");
+
+        fileToOwningModule.keySet().removeAll(indirectJarPaths);
         
         if (verifyExcludes != null) {
             StringTokenizer tok = new StringTokenizer(verifyExcludes, ", ");
@@ -352,10 +389,9 @@ public class MakeJNLP extends Task {
     private void processExtensions(File f, Manifest mf, Writer fileWriter, String dashcnb, String codebase) throws IOException, BuildException {
 
         File nblibJar = new File(new File(new File(f.getParentFile().getParentFile(), "ant"), "nblib"), dashcnb + ".jar");
-        //System.err.println(nblibJar + ".isFile=" + nblibJar.isFile());
         if (nblibJar.isFile()) {
-            File ext = new File(target, "ant-nblib-" + nblibJar.getName());
-            fileWriter.write("    <jar href='" + ext.getName() + "'/>\n");
+            File ext = new File(new File(target, dashcnb), "ant-nblib-" + nblibJar.getName());
+            fileWriter.write("    <jar href='" + dashcnb + '/' + ext.getName() + "'/>\n");
             getSignTask().setJar(nblibJar);
             getSignTask().setSignedjar(ext);
             getSignTask().execute();
@@ -379,41 +415,77 @@ public class MakeJNLP extends Task {
                 n = n.substring(0, n.length() - 4);
             }
             
-            if (isSigned (e)) {
+            if (isSigned(e) != null) {
                 Copy copy = (Copy)getProject().createTask("copy");
                 copy.setFile(e);
-                File t = new File(target, e.getName());
+                File t = new File(new File(target, dashcnb), s.replace('/', '-'));
                 copy.setTofile(t);
                 copy.execute();
                 
-                String  extJnlpName = dashcnb + "-ext-" + n + ".jnlp";
-                File jnlp = new File(target, extJnlpName);
+                String extJnlpName = t.getName().replaceFirst("\\.jar$", "") + ".jnlp";
+                File jnlp = new File(new File(target, dashcnb), extJnlpName);
 
                 FileWriter writeJNLP = new FileWriter(jnlp);
                 writeJNLP.write("<?xml version='1.0' encoding='UTF-8'?>\n");
                 writeJNLP.write("<jnlp spec='1.0+' codebase='" + codebase + "' >\n");
                 writeJNLP.write("  <information>\n");
-                writeJNLP.write("   <title>" + n + "</title>\n");
-                writeJNLP.write("   <vendor>NetBeans</vendor>\n");
+                writeJNLP.write("    <title>" + n + "</title>\n");
+                writeJNLP.write("    <vendor>NetBeans</vendor>\n");
                 writeJNLP.write("  </information>\n");
                 writeJNLP.write(permissions +"\n");
                 writeJNLP.write("  <resources>\n");
-                writeJNLP.write("     <jar href='"); writeJNLP.write(e.getName()); writeJNLP.write("'/>\n");
+                writeJNLP.write("    <jar href='" + dashcnb + '/' + t.getName() + "'/>\n");
                 writeJNLP.write("  </resources>\n");
                 writeJNLP.write("  <component-desc/>\n");
                 writeJNLP.write("</jnlp>\n");
                 writeJNLP.close();
                 
-                fileWriter.write("    <extension name='" + e.getName() + "' href='" + extJnlpName + "'/>\n");
+                fileWriter.write("    <extension name='" + e.getName().replaceFirst("\\.jar$", "") + "' href='" + dashcnb + '/' + extJnlpName + "'/>\n");
             } else {
-                File ext = new File(target, e.getName());
+                File ext = new File(new File(target, dashcnb), s.replace('/', '-'));
                 
-                fileWriter.write("    <jar href='" + e.getName() + "'/>\n");
+                fileWriter.write("    <jar href='" + dashcnb + '/' + ext.getName() + "'/>\n");
 
                 getSignTask().setJar(e);
                 getSignTask().setSignedjar(ext);
                 getSignTask().execute();
             }
+        }
+    }
+
+    private void processIndirectJars(Writer fileWriter, String dashcnb, String codebase) throws IOException, BuildException {
+        if (indirectJars == null) {
+            return;
+        }
+        DirectoryScanner scan = indirectJars.getDirectoryScanner(getProject());
+        for (String f : scan.getIncludedFiles()) {
+            File jar = new File(scan.getBasedir(), f);
+            String rel = f.replace(File.separatorChar, '/');
+            String sig = isSigned(jar);
+            // javaws will reject .zip files even with signatures.
+            String rel2 = rel.endsWith(".jar") ? rel : rel.replaceFirst("(\\.zip)?$", ".jar");
+            File ext = new File(new File(target, dashcnb), rel2.replace('/', '-').replaceFirst("^modules-", ""));
+            Zip jartask = (Zip) getProject().createTask("jar");
+            jartask.setDestFile(ext);
+            ZipFileSet zfs = new ZipFileSet();
+            zfs.setSrc(jar);
+            if (sig != null) {
+                // Need to cancel original signature since we are adding one entry to the JAR.
+                zfs.setExcludes("META-INF/" + sig + ".*");
+            }
+            jartask.addZipfileset(zfs);
+            zfs = new ZipFileSet();
+            File blank = File.createTempFile("empty", "");
+            blank.deleteOnExit();
+            zfs.setFile(blank);
+            zfs.setFullpath("META-INF/clusterpath/" + rel);
+            jartask.addZipfileset(zfs);
+            jartask.execute();
+            blank.delete();
+            fileWriter.write("    <jar href='" + dashcnb + '/' + ext.getName() + "'/>\n");
+            getSignTask().setJar(ext);
+            getSignTask().setSignedjar(null);
+            getSignTask().execute();
         }
     }
     
@@ -426,18 +498,22 @@ public class MakeJNLP extends Task {
         return sfile;
     }
     
-    private static boolean isSigned(File f) throws IOException {
+    /** return alias if signed, or null if not */
+    private static String isSigned(File f) throws IOException {
         JarFile jar = new JarFile(f);
-        Enumeration<JarEntry> en = jar.entries();
-        while (en.hasMoreElements()) {
-            JarEntry e = en.nextElement();
-            if (e.getName().endsWith(".SF")) {
-                jar.close();
-                return true;
+        try {
+            Enumeration<JarEntry> en = jar.entries();
+            while (en.hasMoreElements()) {
+                Matcher m = SF.matcher(en.nextElement().getName());
+                if (m.matches()) {
+                    return m.group(1);
+                }
             }
+            return null;
+        } finally {
+            jar.close();
         }
-        jar.close();
-        return false;
     }
+    private static final Pattern SF = Pattern.compile("META-INF/(.+)\\.SF");
     
 }

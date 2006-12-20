@@ -807,6 +807,17 @@ http://www.netbeans.org/download/5_0/jnlp/
 http://www.netbeans.org/download/6_0/jnlp/
 http://deadlock.nbextras.org/hudson/job/javadoc-nbms/lastSuccessfulBuild/artifact/nbbuild/build/jnlp/
 
+jnlp.indirect.jars [since 6.0] - optional pattern of JARs in the cluster to load
+  in JNLP mode even though they are not listed as Class-Path extensions of the
+  module JAR. The module ought not directly refer to classes in these JARs (it
+  could not do so in non-JNLP mode) but it may load them reflectively using
+  InstalledFileLocator using the same path in regular as in JNLP mode. Note that
+  the physical path on disk to the resulting JAR will not necessarily contain
+  the directory prefix that the JAR in the cluster uses, so do not expect that
+  jar.getParentFile() is meaningful. The implementation creates an empty JAR
+  entry META-INF/clusterpath/$path where $path is the ('/'-separated) path
+  within the cluster where the JAR would be found in a normal installation.
+
 jnlp.verify.excludes - the default implementation of "jnlp" task in common.xml
   does verification and compares that all files from module NBM are really
   referenced from the JNLP file. Sometimes not all of them need to be, for
@@ -1182,5 +1193,6 @@ ${nb.bin.dir} and ${nb.lib/ext.dir} were both "lib"!
 ----------------
 Hey Emacs!
 Local Variables:
+mode: text
 fill-column: 80
 End:
