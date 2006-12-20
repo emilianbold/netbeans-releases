@@ -31,9 +31,9 @@ import org.w3c.dom.Element;
 public class FileEntry {
     private long size             = 0;
     
-    private String md5            = null;
-    private String sha1           = null;
-    private String crc32          = null;
+    private String md5            = "";
+    private String sha1           = "";
+    private String crc32          = "";
     
     private boolean directory     = false;
     private boolean empty         = false;
@@ -52,20 +52,23 @@ public class FileEntry {
         String type = element.getAttribute("type");
         
         if (type.equals("directory")) {
-            setDirectory(true);
-            setEmpty(Boolean.parseBoolean(element.getAttribute("is-empty")));
+            directory = true;
+            empty = new Boolean(element.getAttribute("is-empty"));
         } else {
-            setDirectory(false);
+            directory = false;
             
-            setSize(new Long(element.getAttribute("size")));
-            setLastModified(new Long(element.getAttribute("modified")));
-            setMd5(element.getAttribute("md5"));
-            setCrc32(element.getAttribute("crc32"));
-            setSha1(element.getAttribute("sha1"));
+            size  = new Long(element.getAttribute("size"));
+            md5   = element.getAttribute("md5");
+            crc32 = element.getAttribute("crc32");
+            sha1  = element.getAttribute("sha1");
             
-            setJarFile(new Boolean(element.getAttribute("jar")));
-            setPackedJarFile(new Boolean(element.getAttribute("packed-jar")));
-            setSignedJarFile(new Boolean(element.getAttribute("signed-jar")));
+            lastModified = new Long(element.getAttribute("modified"));
+            
+            jarFile = new Boolean(element.getAttribute("jar"));
+            if (jarFile) {
+                packedJarFile = new Boolean(element.getAttribute("packed-jar"));
+                signedJarFile = new Boolean(element.getAttribute("signed-jar"));
+            }
         }
         
         setName(element.getTextContent());
@@ -195,21 +198,21 @@ public class FileEntry {
     public Element saveToDom(Element element) {
         if (isDirectory()) {
             element.setAttribute("type", "directory");
-            element.setAttribute("empty", "" + isEmpty());
+            element.setAttribute("empty", "" + empty);
         } else {
             element.setAttribute("type", "file");
             
-            element.setAttribute("size", ""+ getSize());
-            element.setAttribute("modified", ""+ getLastModified());
-            element.setAttribute("md5", ""+ getMd5());
-            element.setAttribute("crc32", ""+ getCrc32());
-            element.setAttribute("sha1", ""+ getSha1());
-            element.setAttribute("jar", ""+ isJarFile());
-            element.setAttribute("packed-jar", ""+ isPackedJarFile());
-            element.setAttribute("signed-jar", ""+ isSignedJarFile());
+            element.setAttribute("size",       "" + size);
+            element.setAttribute("modified",   "" + lastModified);
+            element.setAttribute("md5",        "" + md5);
+            element.setAttribute("crc32",      "" + crc32);
+            element.setAttribute("sha1",       "" + sha1);
+            element.setAttribute("jar",        "" + jarFile);
+            element.setAttribute("packed-jar", "" + packedJarFile);
+            element.setAttribute("signed-jar", "" + signedJarFile);
         }
         
-        element.setTextContent(getName());
+        element.setTextContent(name);
         
         return element;
     }
