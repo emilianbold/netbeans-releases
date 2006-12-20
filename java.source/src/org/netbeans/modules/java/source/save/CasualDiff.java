@@ -251,8 +251,13 @@ public class CasualDiff {
                 
             // package statement was deleted.    
             case DELETE:
-                output.writeTo(origText.substring(pointer, pointer = getOldPos(oldT.pid)));
-                
+                TokenUtilities.movePrevious(tokenSequence, oldT.pid.getStartPosition());
+                output.writeTo(origText.substring(pointer, tokenSequence.offset()));
+                TokenUtilities.moveNext(tokenSequence, endPos(oldT.pid));
+                pointer = tokenSequence.offset() + 1;
+                break;
+    
+            // package statement was modified.
             case MODIFY:
                 output.writeTo(origText.substring(pointer, getOldPos(oldT.pid)));
                 pointer = endPos(oldT.pid);
