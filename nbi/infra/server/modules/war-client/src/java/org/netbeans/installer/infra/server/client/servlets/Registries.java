@@ -46,7 +46,7 @@ public class Registries extends HttpServlet {
             
             out.println("        <form name=\"Form\" method=\"get\">");
             for (String registry: registries) {
-                out.println("            <input type=\"checkbox\" name=\"registry\" value=\"" + registry + "\"/> " + registry + "<br/>");
+                out.println("            <input type=\"checkbox\" name=\"registry\" value=\"" + registry + "\" checked/> " + registry + "<br/>");
             }
             out.println("            <br/><br/>");
             out.println("            <input type=\"button\" value=\"Install Now\" onclick=\"install_now()\">&nbsp;&nbsp;");
