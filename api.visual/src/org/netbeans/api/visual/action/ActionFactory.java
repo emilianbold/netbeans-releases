@@ -563,6 +563,7 @@ public final class ActionFactory {
     }
 
     /**
+     *
      * Creates a cycle focus action which switches focused object on a object scene.
      * @return the cycle object scene focus action
      */
@@ -591,6 +592,15 @@ public final class ActionFactory {
     public static WidgetAction createForwardKeyEventsAction (Widget forwardToWidget, String forwardToTool) {
         assert forwardToWidget != null;
         return new ForwardKeyEventsAction (forwardToWidget, forwardToTool);
+    }
+
+    /**
+     * Returns an editor controller for a specified inplace-editor-action created by <code>ActionFactory.createInplaceEditorAction</code> method.
+     * @param inplaceEditorAction the inplace-editor action
+     * @return the editor controller
+     */
+    public static InplaceEditorProvider.EditorController getInplaceEditorController (WidgetAction inplaceEditorAction) {
+        return (InplaceEditorProvider.EditorController) inplaceEditorAction;
     }
 
 }
