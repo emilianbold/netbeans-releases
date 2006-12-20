@@ -91,10 +91,10 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
     private int numConflicts;
     private int numUnresolvedConflicts;
     private int currentConflictPos;
-    private List resolvedLeftConflictsLineNumbers = new ArrayList();
-    private List resolvedRightConflictsLineNumbers = new ArrayList();
+    private List<Integer> resolvedLeftConflictsLineNumbers = new ArrayList<Integer>();
+    private List<Integer> resolvedRightConflictsLineNumbers = new ArrayList<Integer>();
 
-    private ArrayList controlListeners = new ArrayList();
+    private ArrayList<ActionListener> controlListeners = new ArrayList<ActionListener>();
     
     private SystemAction[] systemActions = new SystemAction[] { SaveAction.get(SaveAction.class),
                                                                 null,
@@ -502,13 +502,12 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
   }
   
   private void fireControlActionCommand(String command) {
-      ArrayList listeners;
+      ArrayList<ActionListener> listeners;
       synchronized (this) {
-          listeners = new ArrayList(controlListeners);
+          listeners = new ArrayList<ActionListener>(controlListeners);
       }
       ActionEvent evt = new ActionEvent(this, 0, command);
-      for (Iterator it = listeners.iterator(); it.hasNext(); ) {
-          ActionListener l = (ActionListener) it.next();
+      for (ActionListener l: listeners) {
           l.actionPerformed(evt);
       }
   }
@@ -574,16 +573,16 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
         });
     }
     
-    private Hashtable kitActions;
+    private Hashtable<JEditorPane, Hashtable<Object, Action>> kitActions;
             /** Listener for copy action enabling  */
     private PropertyChangeListener copyL;
     private PropertyChangeListener copyP;
     
     private Action getAction (String s, JEditorPane editor) {
         if (kitActions == null) {
-            kitActions = new Hashtable();
+            kitActions = new Hashtable<JEditorPane, Hashtable<Object, Action>>();
         }
-        Hashtable actions = (Hashtable) kitActions.get(editor);
+        Hashtable<Object, Action> actions = kitActions.get(editor);
         if (actions == null) {
             EditorKit kit = editor.getEditorKit();
             if (kit == null) {
@@ -591,13 +590,13 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
             }
             
             Action[] a = kit.getActions ();
-            actions = new Hashtable (a.length);
+            actions = new Hashtable<Object, Action> (a.length);
             int k = a.length;
             for (int i = 0; i < k; i++)
                 actions.put (a[i].getValue (Action.NAME), a[i]);
             kitActions.put(editor, actions);
         }
-        return (Action) actions.get (s);
+        return actions.get (s);
     }
     
     private void editorActivated(final JEditorPane editor) {

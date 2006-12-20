@@ -205,7 +205,7 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
                     char[] buffer = new char[BUFF_LENGTH];
                     StringBuffer outBuffer = new StringBuffer();
                     int length;
-                    List differences = new ArrayList();
+                    List<Difference> differences = new ArrayList<Difference>();
                     while ((length = stdout.read(buffer)) > 0) {
                         for (int i = 0; i < length; i++) {
                             if (buffer[i] == '\n') {
@@ -223,7 +223,7 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
                     if (outBuffer.length() > 0) outputLine(outBuffer.toString(), pattern, differences,
                                                            firstText, secondText);
                     setTextOnLastDifference(differences, firstText, secondText);
-                    ret[0] =  (Difference[]) differences.toArray(new Difference[differences.size()]);
+                    ret[0] =  differences.toArray(new Difference[differences.size()]);
                 } catch (IOException ioex) {
                     ret[0] = (IOException) ErrorManager.getDefault().annotate(ioex,
                             NbBundle.getMessage(CmdlineDiffProvider.class, "runtimeError", cmd));
@@ -250,7 +250,7 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
 
     }
 
-    public static void setTextOnLastDifference(List differences,
+    public static void setTextOnLastDifference(List<Difference> differences,
         StringBuffer firstText, StringBuffer secondText) {
         if (differences.size() > 0) {
             String t1 = firstText.toString();
@@ -270,7 +270,7 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
      * @param elements the elements of output data.
      */
     //private void outputData(String[] elements, List differences) {
-    public static void outputLine(String elements, Pattern pattern, List differences,
+    public static void outputLine(String elements, Pattern pattern, List<Difference> differences,
                                    StringBuffer firstText, StringBuffer secondText) {
         //diffBuffer.append(elements[0]+"\n"); // NOI18N
         //D.deb("diff match: "+elements[0]); // NOI18N

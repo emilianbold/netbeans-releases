@@ -162,6 +162,7 @@ public class DiffComponent extends org.openide.windows.TopComponent {
         insertEmptyLinesNotReported();
     }
 
+    @Deprecated
     public void open(Workspace workspace) {
         super.open(workspace);
         diffPanel.open();
@@ -174,6 +175,7 @@ public class DiffComponent extends org.openide.windows.TopComponent {
     /**
      * Transfer the focus to the diff panel.
      */
+    @Deprecated
     public void requestFocus() {
         super.requestFocus();
         diffPanel.requestFocus();
@@ -182,6 +184,7 @@ public class DiffComponent extends org.openide.windows.TopComponent {
     /**
      * Transfer the focus to the diff panel.
      */
+    @Deprecated
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
         return diffPanel.requestFocusInWindow();
@@ -215,6 +218,7 @@ public class DiffComponent extends org.openide.windows.TopComponent {
      * Override for clean up reasons.
      * Will be moved to the appropriate method when will be made.
      */
+    @Deprecated
     public boolean canClose(Workspace workspace, boolean last) {
         boolean can = super.canClose(workspace, last);
         if (last && can) {

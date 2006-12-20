@@ -243,7 +243,7 @@ public class EncodedReaderFactory {
         }
     }
     
-    private static Method getDeclaredMethod(Class objClass, String name, Class[] args) throws NoSuchMethodException, SecurityException {
+    private static Method getDeclaredMethod(Class<?> objClass, String name, Class[] args) throws NoSuchMethodException, SecurityException {
         try {
             return objClass.getDeclaredMethod(name, args);
         } catch (NoSuchMethodException nsmex) {
@@ -463,7 +463,7 @@ public class EncodedReaderFactory {
                 (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
         Method org_netbeans_modules_java_Util_getFileEncoding = null;
         try {
-            Class c = systemClassLoader.
+            Class<?> c = systemClassLoader.
                     loadClass("org.netbeans.modules.java.Util"); // NOI18N
             org_netbeans_modules_java_Util_getFileEncoding =
                 c.getMethod("getFileEncoding", new Class[] {FileObject.class});

@@ -81,7 +81,7 @@ public class Patch extends Reader {
      * Parse the differences and corresponding file names.
      */
     public static FileDifferences[] parse(Reader source) throws IOException {
-        List fileDifferences = new ArrayList();
+        List<FileDifferences> fileDifferences = new ArrayList<FileDifferences>();
         //int pushBackLimit = DIFFERENCE_DELIMETER.length();
         //PushbackReader recognizedSource = new PushbackReader(source, pushBackLimit);
         Patch.SinglePatchReader patchReader = new Patch.SinglePatchReader(source);
@@ -105,7 +105,7 @@ public class Patch extends Reader {
                 fileDifferences.add(new FileDifferences(fileName[0], fileName[1], diffs));
             }
         }
-        return (FileDifferences[]) fileDifferences.toArray(new FileDifferences[fileDifferences.size()]);
+        return fileDifferences.toArray(new FileDifferences[fileDifferences.size()]);
     }
     
     public int read(char[] cbuf, int off, int length) throws java.io.IOException {
@@ -262,7 +262,7 @@ public class Patch extends Reader {
     
     private static Difference[] parseContextDiff(Reader in) throws IOException {
         BufferedReader br = new BufferedReader(in);
-        ArrayList diffs = new ArrayList();
+        ArrayList<Difference> diffs = new ArrayList<Difference>();
         String line = null;
         do {
             if (line == null || !DIFFERENCE_DELIMETER.equals(line)) {
@@ -279,7 +279,7 @@ public class Patch extends Reader {
                     throw new IOException(nfex.getLocalizedMessage());
                 }
             } else continue;
-            ArrayList firstChanges = new ArrayList(); // List of intervals and texts
+            ArrayList<Object> firstChanges = new ArrayList<Object>(); // List of intervals and texts
             line = fillChanges(firstInterval, br, CONTEXT_MARK2B, firstChanges);
             int[] secondInterval = new int[2];
             if (line != null && line.startsWith(CONTEXT_MARK2B)) {
@@ -289,18 +289,18 @@ public class Patch extends Reader {
                     throw new IOException(nfex.getLocalizedMessage());
                 }
             } else continue;
-            ArrayList secondChanges = new ArrayList(); // List of intervals and texts
+            ArrayList<Object> secondChanges = new ArrayList<Object>(); // List of intervals and texts
             line = fillChanges(secondInterval, br, DIFFERENCE_DELIMETER, secondChanges);
             if (changesCountInvariant(firstChanges, secondChanges) == false) {
                 throw new IOException("Diff file format error. Number of new and old file changes in one hunk must be same!");   // NOI18N
             }
             mergeChanges(firstInterval, secondInterval, firstChanges, secondChanges, diffs);
         } while (line != null);
-        return (Difference[]) diffs.toArray(new Difference[diffs.size()]);
+        return diffs.toArray(new Difference[diffs.size()]);
     }
 
 
-    private static boolean changesCountInvariant(List changes1, List changes2) {
+    private static boolean changesCountInvariant(List<Object> changes1, List<Object> changes2) { // both are Union<int[],String>
         int i1 = 0;
         Iterator it = changes1.iterator();
         while (it.hasNext()) {
@@ -337,7 +337,7 @@ public class Patch extends Reader {
     }
 
     private static String fillChanges(int[] interval, BufferedReader br,
-                                      String untilStartsWith, List changes) throws IOException {
+                                      String untilStartsWith, List<Object/* int[3] or String*/> changes) throws IOException {
         String line = br.readLine();
         for (int pos = interval[0]; pos <= interval[1]; pos++) {
             if (line == null || line.startsWith(untilStartsWith)) break;
@@ -415,7 +415,7 @@ public class Patch extends Reader {
     }
     
     private static void mergeChanges(int[] firstInterval, int[] secondInterval,
-                              List firstChanges, List secondChanges, List diffs) {
+                              List firstChanges, List secondChanges, List<Difference> diffs) {
 
 
         int p1, p2;
@@ -510,7 +510,7 @@ public class Patch extends Reader {
 
     private static Difference[] parseUnifiedDiff(Reader in) throws IOException {
         BufferedReader br = new BufferedReader(in);
-        ArrayList diffs = new ArrayList();
+        List<Difference> diffs = new ArrayList<Difference>();
         String line = null;
         do {
             while (line == null || !(line.startsWith(UNIFIED_MARK) &&
@@ -530,7 +530,7 @@ public class Patch extends Reader {
             }
             line = fillUnidifChanges(intervals, br, diffs);
         } while (line != null);
-        return (Difference[]) diffs.toArray(new Difference[diffs.size()]);
+        return diffs.toArray(new Difference[diffs.size()]);
     }
     
     private static void readUnifiedNums(String str, int off, int[] values) throws NumberFormatException {
@@ -560,7 +560,7 @@ public class Patch extends Reader {
     }
 
     private static String fillUnidifChanges(int[] interval, BufferedReader br,
-                                            List diffs) throws IOException {
+                                            List<Difference> diffs) throws IOException {
         String line = br.readLine();
         int pos1 = interval[0];
         int pos2 = interval[2];
@@ -642,13 +642,13 @@ public class Patch extends Reader {
         StringBuffer firstText = new StringBuffer();
         StringBuffer secondText = new StringBuffer();
         BufferedReader br = new BufferedReader(in);
-        ArrayList diffs = new ArrayList();
+        List<Difference> diffs = new ArrayList<Difference>();
         String line;
         while ((line = br.readLine()) != null) {
             CmdlineDiffProvider.outputLine(line, normRegexp, diffs, firstText, secondText);
         }
         CmdlineDiffProvider.setTextOnLastDifference(diffs, firstText, secondText);
-        return (Difference[]) diffs.toArray(new Difference[diffs.size()]);
+        return diffs.toArray(new Difference[diffs.size()]);
     }
     
     /**

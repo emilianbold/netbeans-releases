@@ -25,13 +25,12 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.List;
 import java.util.Map;
-
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
-
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
@@ -43,9 +42,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.io.ReaderInputStream;
-
 import org.netbeans.api.diff.Difference;
-
 import org.netbeans.modules.diff.builtin.Patch;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -200,9 +197,9 @@ public class PatchAction extends NodeAction {
     }
 
     private void applyFileDiffs(Patch.FileDifferences[] fileDiffs, FileObject fo, String patchContext) {
-        ArrayList notFoundFileNames = new ArrayList();
-        ArrayList appliedFiles = new ArrayList();
-        HashMap backups = new HashMap();
+        ArrayList<String> notFoundFileNames = new ArrayList<String>();
+        ArrayList<FileObject> appliedFiles = new ArrayList<FileObject>();
+        Map<FileObject, FileObject> backups = new HashMap<FileObject, FileObject>();
         boolean patchFailed = false;
         for (int i = 0; i < fileDiffs.length; i++) {
             //System.out.println("applyFileDiffs(): fileName = "+fileDiffs[i].getFileName());
@@ -260,7 +257,7 @@ public class PatchAction extends NodeAction {
             } else {
                 StringBuffer files = new StringBuffer();
                 for (int i = 0; i < notFoundFileNames.size(); i++) {
-                    files.append(notFoundFileNames.get(i).toString());
+                    files.append(notFoundFileNames.get(i));
                     if (i < notFoundFileNames.size() - 1) {
                         files.append(", ");
                     }
@@ -403,10 +400,10 @@ public class PatchAction extends NodeAction {
         //    NbBundle.getMessage(PatchAction.class, "MSG_PatchAppliedSuccessfully")));
     }
 
-    private void showDiffs(ArrayList files, HashMap backups) {
+    private void showDiffs(List<FileObject> files, Map<FileObject, FileObject> backups) {
         for (int i = 0; i < files.size(); i++) {
-            FileObject file = (FileObject) files.get(i);
-            FileObject backup = (FileObject) backups.get(file);
+            FileObject file = files.get(i);
+            FileObject backup = backups.get(file);
             DiffAction.performAction(backup, file, file);
         }
     }
@@ -416,12 +413,12 @@ public class PatchAction extends NodeAction {
      * @param files a list of files, to which the patch was successfully applied
      * @param backups a map of a form original file -> backup file
      */
-    private static void removeBackups(List files, Map backups) {
+    private static void removeBackups(List<FileObject> files, Map<FileObject, FileObject> backups) {
         StringBuffer filenames=new StringBuffer(), 
                      exceptions=new StringBuffer();
         for (int i = 0; i < files.size(); i++) {
-            FileObject targetFileObject = (FileObject) files.get(i);
-            FileObject backup=(FileObject) backups.get(targetFileObject);
+            FileObject targetFileObject = files.get(i);
+            FileObject backup= backups.get(targetFileObject);
 
             // delete files that become empry
             if (targetFileObject.getSize() == 0) {
@@ -439,9 +436,9 @@ public class PatchAction extends NodeAction {
             }
             catch (IOException ex) {
                 filenames.append(FileUtil.getFileDisplayName(backup));
-                filenames.append("\n");
+                filenames.append('\n');
                 exceptions.append(ex.getLocalizedMessage());
-                exceptions.append("\n");
+                exceptions.append('\n');
             }
         }
         if (filenames.length()>0)

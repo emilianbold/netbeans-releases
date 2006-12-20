@@ -110,12 +110,10 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
     }
     
     public DiffViewImpl(StreamSource ss1, StreamSource ss2) throws IOException {
-        Lookup.Result dv = Lookup.getDefault().lookup(new Lookup.Template(DiffVisualizer.class));
-        Collection c = dv.allInstances();
-        for (Iterator i = c.iterator(); i.hasNext();) {
-            Object o = i.next();
-            if (o instanceof GraphicalDiffVisualizer) {
-                GraphicalDiffVisualizer gdv = (GraphicalDiffVisualizer) o;
+        Lookup.Result<DiffVisualizer> dv = Lookup.getDefault().lookup(new Lookup.Template<DiffVisualizer>(DiffVisualizer.class));
+        for (DiffVisualizer diff: dv.allInstances()) {
+            if (diff instanceof GraphicalDiffVisualizer) {
+                GraphicalDiffVisualizer gdv = (GraphicalDiffVisualizer) diff;
                 colorAdded = gdv.getColorAdded();
                 colorChanged = gdv.getColorChanged();
                 colorMissing = gdv.getColorMissing();
@@ -424,7 +422,7 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
             ui2.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
         }
 
-        List actions = new ArrayList(2);
+        List<Action> actions = new ArrayList<Action>(2);
         actions.add(getActionMap().get("jumpNext"));  // NOI18N
         actions.add(getActionMap().get("jumpPrev"));  // NOI18N
         jEditorPane1.setPopupActions(actions);
@@ -441,16 +439,16 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
         onLayoutLine = 0;
     }
 
-    private Hashtable kitActions;
+    private Hashtable<JEditorPane, Hashtable<Object, Action>> kitActions;
             /** Listener for copy action enabling  */
     private PropertyChangeListener copyL;
     private PropertyChangeListener copyP;
     
     private Action getAction (String s, JEditorPane editor) {
         if (kitActions == null) {
-            kitActions = new Hashtable();
+            kitActions = new Hashtable<JEditorPane, Hashtable<Object, Action>>();
         }
-        Hashtable actions = (Hashtable) kitActions.get(editor);
+        Hashtable<Object, Action> actions = kitActions.get(editor);
         if (actions == null) {
             EditorKit kit = editor.getEditorKit();
             if (kit == null) {
@@ -458,13 +456,13 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
             }
             
             Action[] a = kit.getActions ();
-            actions = new Hashtable (a.length);
+            actions = new Hashtable<Object, Action>(a.length);
             int k = a.length;
             for (int i = 0; i < k; i++)
                 actions.put (a[i].getValue (Action.NAME), a[i]);
             kitActions.put(editor, actions);
         }
-        return (Action) actions.get (s);
+        return actions.get (s);
     }
     
     private void editorActivated(final JEditorPane editor) {

@@ -102,7 +102,7 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
     /** Holds value of property lineAscent. */
     private int lineAscent;
     
-    private LinkedList linesList;
+    private LinkedList<String> linesList;
     
     /** Holds value of property activeLine. */
     private int activeLine = -1;
@@ -144,13 +144,13 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
     }
     
     private void createLines() {
-        linesList = new LinkedList();
+        linesList = new LinkedList<String>();
         int lineCnt;
         StyledDocument doc = (StyledDocument)editorPane.getDocument();
         int lastOffset = doc.getEndPosition().getOffset();
         lineCnt = org.openide.text.NbDocument.findLineNumber(doc, lastOffset);            
         for (int i = 0; i < lineCnt; i++) {
-            linesList.add("" + (i + 1));
+            linesList.add(Integer.toString(i + 1));
         }
     }
     
@@ -473,7 +473,7 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
             if (showLineNumbers) {
                 String lineStr = null;
                 if (line < linesList.size()) {
-                    lineStr = (String)linesList.get(line);
+                    lineStr = linesList.get(line);
                 }
                 if (lineStr == null) {
                     lineStr = "";

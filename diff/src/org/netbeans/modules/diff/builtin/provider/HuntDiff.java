@@ -57,10 +57,10 @@ public class HuntDiff {
         for (int i = 1; i <= n; i++) {
             l2s[i] = new Line(i, lines2[i - 1]);
         }
-        Arrays.sort(l2s, 1, n+1, new Comparator() {
+        Arrays.sort(l2s, 1, n+1, new Comparator<Line>() {
             
-            public int compare(Object o1, Object o2) {
-                return ((Line) o1).line.compareTo(((Line) o2).line);
+            public int compare(Line l1, Line l2) {
+                return l1.line.compareTo(l2.line);
             }
 
             public boolean equals(Object obj) {
@@ -101,9 +101,9 @@ public class HuntDiff {
             c = c.c;
         }
         
-        List differences = getDifferences(J, lines1_original, lines2_original);
+        List<Difference> differences = getDifferences(J, lines1_original, lines2_original);
         cleanup(differences);
-        return (Difference[]) differences.toArray(new Difference[0]);
+        return differences.toArray(new Difference[0]);
     }
     
     private static int findAssoc(String line1, Line[] l2s, boolean[] equivalence) {
@@ -189,8 +189,8 @@ public class HuntDiff {
         return k;
     }
     
-    private static List getDifferences(int[] J, String[] lines1, String[] lines2) {
-        List differences = new ArrayList();
+    private static List<Difference> getDifferences(int[] J, String[] lines1, String[] lines2) {
+        List<Difference> differences = new ArrayList<Difference>();
         int n = lines1.length;
         int m = lines2.length;
         int start1 = 1;
@@ -229,10 +229,10 @@ public class HuntDiff {
         return differences;
     }
     
-    private static void cleanup(List diffs) {
+    private static void cleanup(List<Difference> diffs) {
         Difference last = null;
         for (int i = 0; i < diffs.size(); i++) {
-            Difference diff = (Difference) diffs.get(i);
+            Difference diff = diffs.get(i);
             if (last != null) {
                 if (diff.getType() == Difference.ADD && last.getType() == Difference.DELETE ||
                     diff.getType() == Difference.DELETE && last.getType() == Difference.ADD) {

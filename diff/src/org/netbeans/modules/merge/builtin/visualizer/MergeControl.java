@@ -53,7 +53,7 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
     /** The current diff */
     private int currentDiffLine = 0;
     private int[] resultDiffLocations;
-    private Set resolvedConflicts = new HashSet();
+    private Set<Difference> resolvedConflicts = new HashSet<Difference>();
     private StreamSource resultSource;
     
     private boolean firstNewlineIsFake;
@@ -317,7 +317,7 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
         if (MergeDialogComponent.PROP_PANEL_SAVE.equals(propertyChangeEvent.getPropertyName())) {
             MergePanel panel = (MergePanel) propertyChangeEvent.getNewValue();
             if (this.panel == panel) {
-                ArrayList unresolvedConflicts = new ArrayList();//java.util.Arrays.asList(diffs));
+                ArrayList<Difference> unresolvedConflicts = new ArrayList<Difference>();//java.util.Arrays.asList(diffs));
                 int diffLocationShift = 0;
                 for (int i = 0; i < diffs.length; i++) {
                     if (!resolvedConflicts.contains(diffs[i])) {
@@ -335,7 +335,7 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
                     }
                 }
                 try {
-                    panel.writeResult(resultSource.createWriter((Difference[]) unresolvedConflicts.toArray(
+                    panel.writeResult(resultSource.createWriter(unresolvedConflicts.toArray(
                         new Difference[unresolvedConflicts.size()])), firstNewlineIsFake | secondNewlineIsFake);
                     panel.setNeedsSaveState(false);
                 } catch (IOException ioex) {

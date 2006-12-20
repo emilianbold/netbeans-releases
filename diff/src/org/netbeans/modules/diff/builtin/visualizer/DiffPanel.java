@@ -324,16 +324,16 @@ public class DiffPanel extends javax.swing.JPanel implements javax.swing.event.C
         });
     }
     
-    private Hashtable kitActions;
+    private Hashtable<JEditorPane, Hashtable<Object, Action>> kitActions;
             /** Listener for copy action enabling  */
     private PropertyChangeListener copyL;
     private PropertyChangeListener copyP;
     
     private Action getAction (String s, JEditorPane editor) {
         if (kitActions == null) {
-            kitActions = new Hashtable();
+            kitActions = new Hashtable<JEditorPane, Hashtable<Object, Action>>();
         }
-        Hashtable actions = (Hashtable) kitActions.get(editor);
+        Hashtable<Object, Action> actions = kitActions.get(editor);
         if (actions == null) {
             EditorKit kit = editor.getEditorKit();
             if (kit == null) {
@@ -341,13 +341,13 @@ public class DiffPanel extends javax.swing.JPanel implements javax.swing.event.C
             }
             
             Action[] a = kit.getActions ();
-            actions = new Hashtable (a.length);
+            actions = new Hashtable<Object, Action> (a.length);
             int k = a.length;
             for (int i = 0; i < k; i++)
                 actions.put (a[i].getValue (Action.NAME), a[i]);
             kitActions.put(editor, actions);
         }
-        return (Action) actions.get (s);
+        return actions.get (s);
     }
     
     private void editorActivated(final JEditorPane editor) {

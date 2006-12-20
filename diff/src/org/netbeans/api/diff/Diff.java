@@ -39,14 +39,14 @@ public abstract class Diff extends Object {
      * Get the default visual diff presenter.
      */
     public static Diff getDefault() {
-        return (Diff) Lookup.getDefault().lookup(Diff.class);
+        return Lookup.getDefault().lookup(Diff.class);
     }
     
     /**
      * Get all visual diff presenters registered in the system.
      */
-    public static Collection getAll() {
-        return Lookup.getDefault().lookup(new Lookup.Template(Diff.class)).allInstances();
+    public static Collection<? extends Diff> getAll() {
+        return Lookup.getDefault().lookup(new Lookup.Template<Diff>(Diff.class)).allInstances();
     }
     
     /**

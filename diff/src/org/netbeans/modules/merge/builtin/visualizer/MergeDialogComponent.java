@@ -69,7 +69,7 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
     public static final String PROP_ALL_CANCELLED = "allPanelsCancelled"; // NOI18N
     public static final String PROP_PANEL_SAVE = "panelSave"; // NOI18N
     
-    private Map nodesForPanels = new HashMap();
+    private Map<MergePanel, MergeNode> nodesForPanels = new HashMap<MergePanel, MergeNode>();
     
     /** Creates new form MergeDialogComponent */
     public MergeDialogComponent() {
@@ -174,20 +174,21 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
             panels = mergeTabbedPane.getComponents();
         }
         boolean warning = false;
-        ArrayList unsavedPanelNames = new ArrayList();
-        ArrayList saveCookies = new ArrayList();
+        ArrayList<String> unsavedPanelNames = new ArrayList<String>();
+        ArrayList<SaveCookie> saveCookies = new ArrayList<SaveCookie>();
         for (int i = 0; i < panels.length; i++) {
             MergePanel panel = (MergePanel) panels[i];
             if((panel.getNumUnresolvedConflicts() > 0) && (!warning))
                 warning = true;
-            MergeNode node = (MergeNode) nodesForPanels.get(panel);
+            MergeNode node = nodesForPanels.get(panel);
             SaveCookie sc;
-            if ((sc = (SaveCookie) node.getCookie(SaveCookie.class)) != null) {
+            if ((sc = node.getCookie(SaveCookie.class)) != null) {
                 unsavedPanelNames.add(panel.getName());
                 saveCookies.add(sc);
             }
         }
         Object ret;
+        // XXX can format with one format string
         if (unsavedPanelNames.size() == 1) {           
             ret = DialogDisplayer.getDefault().notify(
             new NotifyDescriptor.Confirmation((warning)?NbBundle.getMessage(MergeDialogComponent.class,"SaveFileWarningQuestion",unsavedPanelNames.get(0)):
@@ -210,8 +211,7 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
         }
         if (!NotifyDescriptor.YES_OPTION.equals(ret) && !NotifyDescriptor.NO_OPTION.equals(ret)) return ;
         if (NotifyDescriptor.YES_OPTION.equals(ret) || NotifyDescriptor.OK_OPTION.equals(ret)) {
-            for (Iterator it = saveCookies.iterator(); it.hasNext(); ) {
-                SaveCookie sc = (SaveCookie) it.next();
+            for (SaveCookie sc: saveCookies) {
                 IOException ioException = null;
                 try {
                     sc.save();
@@ -397,7 +397,7 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
     public void stateChanged(javax.swing.event.ChangeEvent changeEvent) {
         MergePanel panel = (MergePanel) mergeTabbedPane.getSelectedComponent();
         if (panel != null) {
-            Node node = (Node) nodesForPanels.get(panel);
+            Node node = nodesForPanels.get(panel);
             if (node != null) {
                 setActivatedNodes(new Node[] { node });
             }
@@ -427,12 +427,12 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
     
     private class MergeNode extends org.openide.nodes.AbstractNode implements PropertyChangeListener, SaveCookie {
         
-        private Reference mergePanelRef;
+        private Reference<MergePanel> mergePanelRef;
         
         public MergeNode(MergePanel panel) {
             super(org.openide.nodes.Children.LEAF);
             panel.addPropertyChangeListener(WeakListeners.propertyChange(this, panel));
-            mergePanelRef = new WeakReference(panel);
+            mergePanelRef = new WeakReference<MergePanel>(panel);
             getCookieSet().add(new CloseCookieImpl());
             //activateSave();
         }
@@ -477,7 +477,7 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
                 } catch (PropertyVetoException vetoEx) {
                     return false;
                 }
-                removeMergePanel((MergePanel) mergePanelRef.get());
+                removeMergePanel(mergePanelRef.get());
                 return true;
             }
         }

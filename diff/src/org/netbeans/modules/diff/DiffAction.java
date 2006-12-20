@@ -113,7 +113,7 @@ public class DiffAction extends NodeAction {
     }
     
     public void performAction(Node[] nodes) {
-        ArrayList fos = new ArrayList();
+        ArrayList<FileObject> fos = new ArrayList<FileObject>();
         for (int i = 0; i < nodes.length; i++) {
             FileObject fo = getFileFromNode(nodes[i]);
             if (fo != null) {
@@ -121,8 +121,8 @@ public class DiffAction extends NodeAction {
             }
         }
         if (fos.size() < 2) return ;
-        final FileObject fo1 = (FileObject) fos.get(0);
-        final FileObject fo2 = (FileObject) fos.get(1);
+        final FileObject fo1 = fos.get(0);
+        final FileObject fo2 = fos.get(1);
         performAction(fo1, fo2);
     }
     
