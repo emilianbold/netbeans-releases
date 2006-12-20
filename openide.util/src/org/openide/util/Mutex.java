@@ -1210,23 +1210,24 @@ public final class Mutex extends Object {
 
         try {
             final List<T> res = new ArrayList<T>(1);
-            EventQueue.invokeAndWait(
-                new Runnable() {
-                    public void run() {
-                        try {
-                            res.add(run.run());
-                        } catch (Exception e) {
-                            arr[0] = e;
-                        } catch (LinkageError e) {
-                            // #20467
-                            arr[0] = e;
-                        } catch (StackOverflowError e) {
-                            // #20467
-                            arr[0] = e;
-                        }
+            class AWTWorker implements Runnable {
+                public void run() {
+                    try {
+                        res.add(run.run());
+                    } catch (Exception e) {
+                        arr[0] = e;
+                    } catch (LinkageError e) {
+                        // #20467
+                        arr[0] = e;
+                    } catch (StackOverflowError e) {
+                        // #20467
+                        arr[0] = e;
                     }
                 }
-            );
+            }
+            
+            AWTWorker w = new AWTWorker();
+            EventQueue.invokeAndWait(w);
 
             if (arr[0] == null) {
                 return res.get(0);
