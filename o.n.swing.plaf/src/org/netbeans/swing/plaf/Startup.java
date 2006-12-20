@@ -126,7 +126,7 @@ public final class Startup {
               //Should get us metal where it doesn't get us GTK
               uiClassName = UIManager.getSystemLookAndFeelClassName();
               
-              //XXX Temporarily disabled GTK by default until JDK 1.5 beta 2
+              // XXX GTK L&F quality still unacceptable; disabled until further notice.
               if (uiClassName.indexOf("gtk") >= 0 && !Boolean.getBoolean("useGtk")) {
                   uiClassName = "javax.swing.plaf.metal.MetalLookAndFeel";
               }
