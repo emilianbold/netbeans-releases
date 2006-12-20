@@ -56,6 +56,15 @@ public class EditorSettingsImpl extends EditorSettings {
     
     {pcs = new PropertyChangeSupport (this);}
     
+    /** The name of the default profile. */
+    public static final String DEFAULT_PROFILE = "NetBeans"; //NOI18N
+    
+    /** The name of the folder within a profile's folder containing 
+     * module installed defaults. 
+     */
+    public static final String DEFAULTS_FOLDER = "Defaults"; //NOI18N
+    
+    static final String COLORING_FILE_NAME = "coloring.xml"; // NOI18N
     static final String HIGHLIGHTING_FILE_NAME = "editorColoring.xml"; // NOI18N
     static final String KEYBINDING_FILE_NAME = "keybindings.xml";      // NOI18N
     static final String ALL_LANGUAGES_FILE_NAME = "defaultColoring.xml"; // NOI18N
@@ -141,10 +150,10 @@ public class EditorSettingsImpl extends EditorSettings {
             currentFontColorProfile = (String) fo.getAttribute 
                 (CURRENT_FONT_COLOR_PROFILE);
             if (currentFontColorProfile == null)
-                currentFontColorProfile = "NetBeans";
+                currentFontColorProfile = DEFAULT_PROFILE;
         }
         if (!getFontColorProfiles ().contains (currentFontColorProfile)) {
-            currentFontColorProfile = "NetBeans";
+            currentFontColorProfile = DEFAULT_PROFILE;
         }
         return currentFontColorProfile;
     }
@@ -189,7 +198,7 @@ public class EditorSettingsImpl extends EditorSettings {
             if (profile.startsWith ("test")) {
                 defaultColors.put (
                     profile,
-                    getDefaultFontColors ("NetBeans")
+                    getDefaultFontColors (DEFAULT_PROFILE)
                 );
             } else {
 
@@ -310,7 +319,7 @@ public class EditorSettingsImpl extends EditorSettings {
             if (profile.startsWith ("test")) {
                 highlightings.put (
                     profile,
-                    getHighlightings ("NetBeans")
+                    getHighlightings (DEFAULT_PROFILE)
                 );
             } else {
                 
@@ -446,7 +455,7 @@ public class EditorSettingsImpl extends EditorSettings {
             FileObject fo = fs.findResource (KEYMAPS_FOLDER);
             currentKeyMapProfile = fo == null ? null : (String) fo.getAttribute (CURRENT_KEYMAP_PROFILE);
             if (currentKeyMapProfile == null)
-                currentKeyMapProfile = "NetBeans";
+                currentKeyMapProfile = DEFAULT_PROFILE;
         }
         return currentKeyMapProfile;
     }
@@ -530,7 +539,7 @@ public class EditorSettingsImpl extends EditorSettings {
     private void init () {
 	fontColorProfiles = new HashMap<String, String>();
 	keyMapProfiles = new HashMap<String, String>();
-	keyMapProfiles.put ("NetBeans", "NetBeans");
+	keyMapProfiles.put (DEFAULT_PROFILE, DEFAULT_PROFILE);
 	mimeToLanguage = new HashMap<String, String>();
         systemFontColorProfiles = new HashSet<String>();
         systemKeymapProfiles = new HashSet<String>();
@@ -548,7 +557,7 @@ public class EditorSettingsImpl extends EditorSettings {
     }
 	
     private void init2 (FileObject fo) {
-        if (fo.getNameExt ().equals ("Defaults") && fo.isFolder () &&
+        if (fo.getNameExt ().equals (DEFAULTS_FOLDER) && fo.isFolder () &&
             fo.getFileObject (HIGHLIGHTING_FILE_NAME) != null
         )
             addFontColorsProfile (fo, true); // Editors/ProfileName/Defaults/editorColoring.xml
@@ -556,11 +565,11 @@ public class EditorSettingsImpl extends EditorSettings {
         if (fo.getNameExt ().equals (HIGHLIGHTING_FILE_NAME))
             addFontColorsProfile (fo, false); // Editors/ProfileName/editorColoring.xml
         else
-        if (fo.getFileObject ("NetBeans/Defaults/coloring.xml") != null)
+        if (fo.getFileObject (DEFAULT_PROFILE + "/" + DEFAULTS_FOLDER + "/" + COLORING_FILE_NAME) != null) //NOI18N
             addMimeType (fo); // Editors/XXX/YYY/NetBeans/Defaults/coloring.xml
         else
-        if (fo.getPath ().endsWith ("text/base") && fo.isFolder ()) {
-            if (fo.getFileObject ("Defaults/" + KEYBINDING_FILE_NAME) != null)
+        if (fo.getPath ().endsWith ("text/base") && fo.isFolder ()) { //NOI18N
+            if (fo.getFileObject (DEFAULTS_FOLDER + "/" + KEYBINDING_FILE_NAME) != null) //NOI18N
                 addKeyMapProfile (fo, true); // Editors/text/base/Defaults/keybindings.xml
             else
             if (fo.getFileObject (KEYBINDING_FILE_NAME) != null)
@@ -572,7 +581,7 @@ public class EditorSettingsImpl extends EditorSettings {
     }
         
     private void init3 (FileObject fo) {
-        if (fo.getFileObject ("Defaults/" + KEYBINDING_FILE_NAME) != null)
+        if (fo.getFileObject (DEFAULTS_FOLDER + "/" + KEYBINDING_FILE_NAME) != null) //NOI18N
             addKeyMapProfile (fo, true); // Editors/text/base/ProfileName/Defaults/keybindings.xml
         else
         if (fo.getFileObject (KEYBINDING_FILE_NAME) != null)
@@ -609,7 +618,7 @@ public class EditorSettingsImpl extends EditorSettings {
     
     private void addKeyMapProfile (FileObject fo, boolean systemProfile) {
         String profile = fo.getNameExt ();
-        if (profile.equals ("base")) profile = "NetBeans";
+        if (profile.equals ("base")) profile = DEFAULT_PROFILE;
         String bundleName = (String) fo.getAttribute 
             ("SystemFileSystem.localizingBundle");
         String locProfile = profile;

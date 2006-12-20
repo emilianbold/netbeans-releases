@@ -51,8 +51,6 @@ import org.openide.util.Utilities;
  */
 public class EditorSettingsStorageTest extends NbTestCase {
 
-    private static final String DEFAULT_PROFILE = "NetBeans";
-    
     public EditorSettingsStorageTest(String testName) {
         super(testName);
     }
@@ -326,7 +324,7 @@ public class EditorSettingsStorageTest extends NbTestCase {
     private void setOneColoring(String mimeType, AttributeSet coloring) {
         String coloringName = (String) coloring.getAttribute(StyleConstants.NameAttribute);
         FontColorSettingsFactory fcsf = EditorSettingsImpl.getDefault().getFontColorSettings(new String [] { mimeType });
-        Collection<AttributeSet> all = new ArrayList<AttributeSet>(fcsf.getAllFontColors(DEFAULT_PROFILE));
+        Collection<AttributeSet> all = new ArrayList<AttributeSet>(fcsf.getAllFontColors(EditorSettingsImpl.DEFAULT_PROFILE));
         
         for(Iterator<AttributeSet> i = all.iterator(); i.hasNext(); ) {
             AttributeSet attribs = (AttributeSet) i.next();
@@ -338,12 +336,12 @@ public class EditorSettingsStorageTest extends NbTestCase {
         }
         
         all.add(coloring);
-        fcsf.setAllFontColors(DEFAULT_PROFILE, all);
+        fcsf.setAllFontColors(EditorSettingsImpl.DEFAULT_PROFILE, all);
     }
 
     private void setOneKeyBinding(String mimeType, MultiKeyBinding keyBinding) {
         KeyBindingSettingsFactory kbsf = EditorSettingsImpl.getDefault().getKeyBindingSettings(new String [] { mimeType });
-        List<MultiKeyBinding> all = new ArrayList<MultiKeyBinding>(kbsf.getKeyBindingDefaults(DEFAULT_PROFILE));
+        List<MultiKeyBinding> all = new ArrayList<MultiKeyBinding>(kbsf.getKeyBindingDefaults(EditorSettingsImpl.DEFAULT_PROFILE));
 
         for(Iterator<MultiKeyBinding> i = all.iterator(); i.hasNext(); ) {
             MultiKeyBinding kb = (MultiKeyBinding) i.next();
@@ -354,7 +352,7 @@ public class EditorSettingsStorageTest extends NbTestCase {
         }
 
         all.add(keyBinding);
-        kbsf.setKeyBindings(DEFAULT_PROFILE, all);
+        kbsf.setKeyBindings(EditorSettingsImpl.DEFAULT_PROFILE, all);
     }
     
     private void checkKeyBinding(MultiKeyBinding kb, String... keyStrokes) {
