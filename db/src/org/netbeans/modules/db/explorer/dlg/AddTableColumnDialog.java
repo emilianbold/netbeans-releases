@@ -263,7 +263,7 @@ public class AddTableColumnDialog {
             con.weightx = 0.0;
             con.weighty = 0.0;
             pkcheckbox = new JCheckBox();
-            Mnemonics.setLocalizedText(ixcheckbox, bundle.getString("AddTableColumnConstraintPKTitle")); //NOI18N
+            Mnemonics.setLocalizedText(pkcheckbox, bundle.getString("AddTableColumnConstraintPKTitle")); //NOI18N
             pkcheckbox.setName(ColumnItem.PRIMARY_KEY);
             pkcheckbox.addActionListener(cbxlistener);
             pkcheckbox.setToolTipText(bundle.getString("ACS_AddTableColumnConstraintPKTitleA11yDesc"));
