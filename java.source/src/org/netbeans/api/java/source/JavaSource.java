@@ -83,6 +83,7 @@ import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.editor.Registry;
+import org.netbeans.jackpot.engine.CommandEnvironment;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.builder.Scanner;
@@ -1420,6 +1421,12 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         public JavacTaskImpl getJavacTask (final CompilationInfo compilationInfo) {
             assert compilationInfo != null;
             return compilationInfo.getJavacTask();
+        }
+        
+        @Override
+        public CommandEnvironment getCommandEnvironment(WorkingCopy copy) {
+            assert copy != null;
+            return copy.getCommandEnvironment();
         }
         
         @Override

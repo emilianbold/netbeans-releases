@@ -27,6 +27,8 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.jackpot.engine.CommandEnvironment;
 import org.openide.ErrorManager;
 
 /**
@@ -63,6 +65,12 @@ public abstract class JavaSourceAccessor {
      * @return {@link JavacTaskImpl} never returns null
      */
     public abstract JavacTaskImpl getJavacTask (CompilationInfo compilationInfo);
+    
+    /** Returns {@link CommandEnvironment} associated with the given {@link WorkingCopy}.
+     * @param copy {@link WorkingCopy} for which {@link CommandEnvironment} should be obtained
+     * @return {@link CommandEnvironment} associated with the given working copy
+     */
+    public abstract CommandEnvironment getCommandEnvironment(WorkingCopy copy);
     
     /**
      * Returns a cached compilation info when available or null

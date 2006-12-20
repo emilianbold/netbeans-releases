@@ -56,6 +56,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.jackpot.engine.SourceRewriter;
 import org.netbeans.jackpot.engine.StringSourceRewriter;
 import org.netbeans.jackpot.engine.JavaFormatOptions;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.modules.java.source.save.ListMatcher;
 import org.netbeans.modules.java.source.save.TreeDiff.LineInsertionType;
@@ -113,7 +114,7 @@ public class CasualDiff {
             td.diffTree(oldTree, newTree);
             String resultSrc = td.output.toString();
             td.makeListMatch(td.workingCopy.getText(), resultSrc);
-            td.workingCopy.getCommandEnvironment().getApplicationContext().setResult(td.diffInfo, "user-info");
+            JavaSourceAccessor.INSTANCE.getCommandEnvironment(td.workingCopy).getApplicationContext().setResult(td.diffInfo, "user-info");
         }
         catch (Exception e) {
             e.printStackTrace();

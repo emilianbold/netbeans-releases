@@ -102,7 +102,7 @@ public class WorkingCopy extends CompilationController {
     
     // API of the class --------------------------------------------------------
 
-    public CommandEnvironment getCommandEnvironment() {
+    CommandEnvironment getCommandEnvironment() {
         return ce;
     }
 
