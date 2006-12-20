@@ -319,7 +319,7 @@ public class ManagerBean implements Manager {
                 }
             }
             
-            registry.saveProductRegistry(registryXml, new TrueFilter());
+            registry.saveProductRegistry(registryXml, new IconCorrectingFilter());
         } catch (InitializationException e) {
             e.printStackTrace();
             throw new ManagerException("Could not remove component", e);
@@ -488,7 +488,7 @@ public class ManagerBean implements Manager {
                 }
             }
             
-            registry.saveProductRegistry(registryXml, new TrueFilter());
+            registry.saveProductRegistry(registryXml, new IconCorrectingFilter());
         } catch (InitializationException e) {
             e.printStackTrace();
             throw new ManagerException("Could not remove component", e);
