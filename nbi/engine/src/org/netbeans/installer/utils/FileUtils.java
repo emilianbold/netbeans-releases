@@ -266,7 +266,7 @@ public final class FileUtils {
     
     public static List<String> readStringList(File file) throws IOException {
         final List<String> list = new LinkedList<String>();
-        for (String line: readFile(file).split("[\n\r]|\r\n")) {
+        for (String line: readFile(file).split("\r\n|\r|\n")) {
             list.add(line);
         }
         return list;
