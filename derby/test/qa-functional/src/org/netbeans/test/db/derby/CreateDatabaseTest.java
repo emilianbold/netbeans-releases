@@ -84,7 +84,7 @@ public class CreateDatabaseTest  extends DbJellyTestCase {
         suite.addTest(new CreateDatabaseTest("testStopServer"));        
         TestSetup setup=new TestSetup(suite){
            public void setUp() throws Exception {
-              // init();
+               init();
            } 
            
         };
@@ -93,9 +93,9 @@ public class CreateDatabaseTest  extends DbJellyTestCase {
     }
     
     public static void init() throws Exception {
-        location=System.getProperty("derby.path");
+       // location=System.getProperty("derby.path");
         String systemHome=System.getProperty("xtest.tmpdir");
-        DerbyOptions.getDefault().setLocation(location);
+      //  DerbyOptions.getDefault().setLocation(location);
         DerbyOptions.getDefault().setSystemHome(systemHome);
     }
     
