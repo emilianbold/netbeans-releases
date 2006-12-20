@@ -107,7 +107,7 @@ $Id$
                                 jar="${basedir}/${dist.jar}"
                                 output="${basedir}/${dist.dir}/${native.launcher.windows.file}"
                                 jvmArguments="${native.launcher.windows.jvmargs}"
-                                jvmNotFoundMessage="${native.launcher.windows.jvmnotfoundmessage}"
+                                i18nDir="${basedir}/${native.launcher.windows.i18n.dir}"
                                 testJVM="${basedir}/${test.jvm.file}"/>
     </target>
 
