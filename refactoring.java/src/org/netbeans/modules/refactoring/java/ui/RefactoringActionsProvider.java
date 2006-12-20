@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -437,6 +438,13 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         TreePath selectedElement = null;
                         cc.toPhase(Phase.RESOLVED);
                         selectedElement = cc.getTreeUtilities().pathFor(caret);
+                        //workaround for issue 89064
+                        if (selectedElement.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
+                            List<? extends Tree> decls = cc.getCompilationUnit().getTypeDecls();
+                            if (!decls.isEmpty()) {
+                                selectedElement = TreePath.getPath(cc.getCompilationUnit(), decls.get(0));
+                            }
+                        }
                         ui = createRefactoringUI(TreePathHandle.create(selectedElement, cc), start, end, cc);
                     }
                 }, false);
