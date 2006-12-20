@@ -738,8 +738,6 @@ public class DataViewWindow extends TopComponent {
                 
                 String message;
                 NotifyDescriptor ndesc;
-                Object ret;
-                String retv;
                 while (rs.next()) {
                     Vector row = new Vector(cols);
                     for (int column = 1; column <= cols; column++)
@@ -755,23 +753,18 @@ public class DataViewWindow extends TopComponent {
                         }); //NOI18N
                         ndesc = new NotifyDescriptor(message, bundle.getString("FetchDataTitle"), NotifyDescriptor.YES_NO_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE, new Object[] {fetchNext, fetchAll, no}, NotifyDescriptor.CANCEL_OPTION); //NOI18N
                         
-                        ret = DialogDisplayer.getDefault().notify(ndesc);
-                        if (ret instanceof JButton)
-                            try {
-                                retv = ((JButton) ret).getText();
-                            } catch (ClassCastException exc) {
-                                retv = cancel; //window closed by close button or Esc key
-                            }
-                        else
-                            retv = cancel; //window closed by close button or Esc key
-                        
-                        if (retv.equals(allset))
+                        Object ret = DialogDisplayer.getDefault().notify(ndesc);
+                        if (fetchAll.equals(ret)) {
                             limit = Integer.MAX_VALUE;
-                        else
-                            if (retv.equals(nextset))
+                        } else {
+                            if (fetchNext.equals(ret)) {
                                 limit = limit + step;
-                            else
+                            } else {
+                                // window closed by close button or Esc key
+                                // or the cancel button was pressed
                                 break;
+                            }
+                        }
                     }
                 }
                 
