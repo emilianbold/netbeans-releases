@@ -18,7 +18,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<mconfig name="tomcatint-tomcat5 unit test config"
+<mconfig name="tomcatint-tomcat5 unit test config">
     
     <!-- stable testbag  -->
     <testbag testattribs="stable" executor="unit-executor" name="stable tests (no ide)">
