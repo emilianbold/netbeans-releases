@@ -94,6 +94,7 @@ public class PackageTest extends GeneratorTestMDRCompat {
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -140,6 +141,7 @@ public class PackageTest extends GeneratorTestMDRCompat {
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -157,10 +159,10 @@ public class PackageTest extends GeneratorTestMDRCompat {
             "}\n"
             );
         String golden = 
+            "package gro.snaebten.seludom.avaj;\n" +
             "/**\n" +
             " * What?\n" +
             " */\n" +
-            "package gro.snaebten.seludom.avaj;\n\n" +
             "class Test {\n" +
             "}\n";
 
@@ -185,6 +187,7 @@ public class PackageTest extends GeneratorTestMDRCompat {
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -203,10 +206,10 @@ public class PackageTest extends GeneratorTestMDRCompat {
             "}\n"
             );
         String golden = 
+            "package gro.snaebten.seludom.avaj;\n" +
             "/**\n" +
             " * What?\n" +
             " */\n" +
-            "package gro.snaebten.seludom.avaj;\n\n" +
             "import gro;\n\n" +
             "class Test {\n" +
             "}\n";
@@ -232,6 +235,7 @@ public class PackageTest extends GeneratorTestMDRCompat {
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
