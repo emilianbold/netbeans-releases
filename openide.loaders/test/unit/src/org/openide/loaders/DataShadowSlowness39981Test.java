@@ -21,11 +21,7 @@ package org.openide.loaders;
 
 import java.lang.ref.WeakReference;
 import java.util.*;
-import junit.textui.TestRunner;
 import org.openide.filesystems.FileSystem;
-import java.util.Enumeration;
-import org.openide.nodes.Node;
-import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.Repository;
 import org.netbeans.junit.*;
 import org.openide.filesystems.*;
@@ -135,7 +131,7 @@ public class DataShadowSlowness39981Test extends NbTestCase implements Operation
         
         WeakReference[] refArr = (WeakReference[])weaks.toArray(new WeakReference[0]);
         for (int i = 0; i < refArr.length; i++) {
-            assertGC(i + " - gc(" + refArr[i] + "): ", refArr[i]);
+            assertGC(i + " - gc(" + refArr[i].get() + "): ", refArr[i]);
         }
         
         
