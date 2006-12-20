@@ -126,7 +126,7 @@ public final class SessionGenerator {
     }
 
     private FileObject generateEJB21Classes() throws IOException {
-        FileObject ejbClassFO = GenerationUtils.createClass(EJB21_EJBCLASS,  pkg, ejbClassName, null);
+        FileObject ejbClassFO = GenerationUtils.createClass(EJB21_EJBCLASS, pkg, ejbClassName, null);
         if (hasRemote) {
             GenerationUtils.createClass(EJB21_REMOTE,  pkg, remoteName, null);
             GenerationUtils.createClass(EJB21_REMOTEHOME, pkg, remoteHomeName, null);
