@@ -42,14 +42,16 @@ public class Install extends HttpServlet {
             "</jnlp>";
     
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.setContentType("application/x-java-jnlp-file");
-//        response.setContentType("text/plain");
         
         String[] names = request.getParameterValues("registry");
         if ((names == null) || (names.length == 0)) {
-            names = new String[]{"default"};
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().println("Please define a registry");
+            
+            return;
         }
         
+        response.setContentType("application/x-java-jnlp-file");
         String codebase = 
                 getServerUrl(request) + getServletContext().getContextPath();
         
