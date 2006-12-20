@@ -33,7 +33,6 @@ import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.DeleteLocalAction;
-import org.netbeans.modules.versioning.system.cvss.ui.actions.SystemActionBridge;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.ignore.IgnoreAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.AnnotationsAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction;
@@ -63,6 +62,7 @@ import java.awt.Component;
 import java.awt.Color;
 import java.util.*;
 import java.io.File;
+import org.netbeans.modules.versioning.util.SystemActionBridge;
 
 /**
  * Table that displays nodes in the Versioning view. 

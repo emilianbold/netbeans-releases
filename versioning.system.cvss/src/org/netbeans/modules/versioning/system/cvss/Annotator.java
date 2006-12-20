@@ -28,7 +28,6 @@ import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.status.StatusAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.status.StatusProjectsAction;
-import org.netbeans.modules.versioning.system.cvss.ui.actions.SystemActionBridge;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.checkout.CheckoutAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.project.UpdateWithDependenciesAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.project.AddToRepositoryAction;
@@ -60,6 +59,7 @@ import java.text.MessageFormat;
 import java.io.File;
 import java.awt.*;
 import java.lang.reflect.Field;
+import org.netbeans.modules.versioning.util.SystemActionBridge;
 
 /**
  * Annotates names for display in Files and Projects view (and possible elsewhere). Uses

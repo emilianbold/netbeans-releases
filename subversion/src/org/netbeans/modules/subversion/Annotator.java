@@ -57,6 +57,7 @@ import java.io.File;
 import java.awt.*;
 import java.lang.reflect.Field;
 import org.netbeans.modules.subversion.client.SvnClient;
+import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**

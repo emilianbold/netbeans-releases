@@ -36,7 +36,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.OutputLogger;
 import java.text.MessageFormat;
 import java.text.DateFormat;
 import java.io.File;

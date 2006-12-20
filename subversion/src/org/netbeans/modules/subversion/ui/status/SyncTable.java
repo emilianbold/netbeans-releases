@@ -60,6 +60,7 @@ import java.awt.Component;
 import java.awt.Color;
 import java.util.*;
 import java.io.File;
+import org.netbeans.modules.versioning.util.SystemActionBridge;
 
 /**
  * Controls the {@link #getComponent() tsble} that displays nodes
