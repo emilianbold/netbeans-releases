@@ -50,7 +50,17 @@ public final class SessionGenerator {
     private static final String EJB30_LOCAL = "Templates/J2EE/EJB30/SessionLocal.java"; // NOI18N
     private static final String EJB30_REMOTE = "Templates/J2EE/EJB30/SessionRemote.java"; // NOI18N
 
-    private final Model model;
+    // informations collected in wizard
+    private final String wizardName;
+    private final FileObject pkg;
+    private final boolean hasRemote;
+    private final boolean hasLocal;
+    private final boolean isStateful;
+    private final boolean isSimplified;
+    private final boolean hasBusinessInterface;
+    private final boolean isXmlBased;
+    
+    // EJB naming options
     private final EJBNameOptions ejbNameOptions;
     private final String ejbName;
     private final String ejbClassName;
@@ -59,82 +69,91 @@ public final class SessionGenerator {
     private final String localName;
     private final String localHomeName;
 
-    public static SessionGenerator create(Model model) {
-        return new SessionGenerator(model);
+    public static SessionGenerator create(String ejbClassName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
+            boolean isStateful, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased) {
+        return new SessionGenerator(ejbClassName, pkg, hasRemote, hasLocal, isStateful, isSimplified, hasBusinessInterface, isXmlBased);
     } 
     
-    private SessionGenerator(Model model) {
-        this.model = model;
-        ejbNameOptions = new EJBNameOptions();
-        ejbName = ejbNameOptions.getSessionEjbNamePrefix() + model.ejbClassName + ejbNameOptions.getSessionEjbNameSuffix();
-        ejbClassName = ejbNameOptions.getSessionEjbClassPrefix() + model.ejbClassName + ejbNameOptions.getSessionEjbClassSuffix();
-        remoteName = ejbNameOptions.getSessionRemotePrefix() + model.ejbClassName + ejbNameOptions.getSessionRemoteSuffix();
-        remoteHomeName = ejbNameOptions.getSessionRemoteHomePrefix() + model.ejbClassName + ejbNameOptions.getSessionRemoteHomeSuffix();
-        localName = ejbNameOptions.getSessionLocalPrefix() + model.ejbClassName + ejbNameOptions.getSessionLocalSuffix();
-        localHomeName = ejbNameOptions.getSessionLocalHomePrefix() + model.ejbClassName + ejbNameOptions.getSessionLocalHomeSuffix();
+    private SessionGenerator(String wizardName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
+            boolean isStateful, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased) {
+        this.wizardName = wizardName;
+        this.pkg = pkg;
+        this.hasRemote = hasRemote;
+        this.hasLocal = hasLocal;
+        this.isStateful = isStateful;
+        this.isSimplified = isSimplified;
+        this.hasBusinessInterface = hasBusinessInterface;
+        this.isXmlBased = isXmlBased;
+        this.ejbNameOptions = new EJBNameOptions();
+        this.ejbName = ejbNameOptions.getSessionEjbNamePrefix() + wizardName + ejbNameOptions.getSessionEjbNameSuffix();
+        this.ejbClassName = ejbNameOptions.getSessionEjbClassPrefix() + wizardName + ejbNameOptions.getSessionEjbClassSuffix();
+        this.remoteName = ejbNameOptions.getSessionRemotePrefix() + wizardName + ejbNameOptions.getSessionRemoteSuffix();
+        this.remoteHomeName = ejbNameOptions.getSessionRemoteHomePrefix() + wizardName + ejbNameOptions.getSessionRemoteHomeSuffix();
+        this.localName = ejbNameOptions.getSessionLocalPrefix() + wizardName + ejbNameOptions.getSessionLocalSuffix();
+        this.localHomeName = ejbNameOptions.getSessionLocalHomePrefix() + wizardName + ejbNameOptions.getSessionLocalHomeSuffix();
     }
     
     public FileObject generate() throws IOException {
         FileObject resultFileObject = null;
-        if (model.isSimplified) {
-            resultFileObject = generateEJB30Classes(model);
+        if (isSimplified) {
+            resultFileObject = generateEJB30Classes();
             
             //put these lines in a common function at the appropriate place after EA1
             //something like public EjbJar getEjbJar()
             //This method will be used whereever we construct/get DD object graph to ensure
             //corresponding config listners attached to it.
-            Project project = FileOwnerQuery.getOwner(model.pkg);
+            Project project = FileOwnerQuery.getOwner(pkg);
             J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
             j2eeModuleProvider.getConfigSupport().ensureConfigurationReady();
 
-            if (model.isXmlBased) {
-                generateEJB30Xml(model);
+            if (isXmlBased) {
+                generateEJB30Xml();
             }
         } else {
-            resultFileObject = generateEJB21Classes(model);
+            resultFileObject = generateEJB21Classes();
 
             //put these lines in a common function at the appropriate place after EA1
             //something like public EjbJar getEjbJar()
             //This method will be used whereever we construct/get DD object graph to ensure
             //corresponding config listners attached to it.
-            Project project = FileOwnerQuery.getOwner(model.pkg);
+            Project project = FileOwnerQuery.getOwner(pkg);
             J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
             j2eeModuleProvider.getConfigSupport().ensureConfigurationReady();
 
-            if (model.isXmlBased) {
-                generateEJB21Xml(model);
+            if (isXmlBased) {
+                generateEJB21Xml();
             }
         }
         return resultFileObject;
     }
 
-    private FileObject generateEJB21Classes(Model model) throws IOException {
-        FileObject ejbClassFO = GenerationUtils.createClass(EJB21_EJBCLASS,  model.pkg, ejbClassName, null);
-        if (model.hasRemote) {
-            GenerationUtils.createClass(EJB21_REMOTE,  model.pkg, remoteName, null);
-            GenerationUtils.createClass(EJB21_REMOTEHOME, model.pkg, remoteHomeName, null);
+    private FileObject generateEJB21Classes() throws IOException {
+        FileObject ejbClassFO = GenerationUtils.createClass(EJB21_EJBCLASS,  pkg, ejbClassName, null);
+        if (hasRemote) {
+            GenerationUtils.createClass(EJB21_REMOTE,  pkg, remoteName, null);
+            GenerationUtils.createClass(EJB21_REMOTEHOME, pkg, remoteHomeName, null);
         }
-        if (model.hasLocal) {
-            GenerationUtils.createClass(EJB21_LOCAL, model.pkg, localName, null);
-            GenerationUtils.createClass(EJB21_LOCALHOME, model.pkg, localHomeName, null);
+        if (hasLocal) {
+            GenerationUtils.createClass(EJB21_LOCAL, pkg, localName, null);
+            GenerationUtils.createClass(EJB21_LOCALHOME, pkg, localHomeName, null);
         }
         return ejbClassFO;
     }
     
-    private FileObject generateEJB30Classes(Model model) throws IOException {
-        String ejbClassTemplateName = model.isStateful ? EJB30_STATEFUL_EJBCLASS : EJB30_STATELESS_EJBCLASS;
-        FileObject ejbClassFO = GenerationUtils.createClass(ejbClassTemplateName,  model.pkg, ejbClassName, null);
-        if (model.hasRemote) {
-            GenerationUtils.createClass(EJB30_REMOTE,  model.pkg, remoteName, null);
+    private FileObject generateEJB30Classes() throws IOException {
+        String ejbClassTemplateName = isStateful ? EJB30_STATEFUL_EJBCLASS : EJB30_STATELESS_EJBCLASS;
+        FileObject ejbClassFO = GenerationUtils.createClass(ejbClassTemplateName,  pkg, ejbClassName, null);
+        if (hasRemote) {
+            GenerationUtils.createClass(EJB30_REMOTE, pkg, remoteName, null);
         }
-        if (model.hasLocal) {
-            GenerationUtils.createClass(EJB30_LOCAL, model.pkg, localName, null);
+        if (hasLocal) {
+            GenerationUtils.createClass(EJB30_LOCAL, pkg, localName, null);
         }
         return ejbClassFO;
     }
 
-    private void generateEJB21Xml(Model model) throws IOException {
-        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(model.pkg);
+    private void generateEJB21Xml() throws IOException {
+        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(pkg);
         org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = DDProvider.getDefault().getMergedDDRoot(ejbModule.getMetadataUnit());
         EnterpriseBeans beans = ejbJar.getEnterpriseBeans();
         Session session = null;
@@ -145,15 +164,15 @@ public final class SessionGenerator {
         session = beans.newSession();
         session.setEjbName(ejbName);
         session.setDisplayName(ejbName); // TODO: add SB suffix?
-        Project project = FileOwnerQuery.getOwner(model.pkg);
-        session.setEjbClass(EjbGenerationUtil.getSelectedPackageName(model.pkg, project) + ejbClassName);
+        Project project = FileOwnerQuery.getOwner(pkg);
+        session.setEjbClass(EjbGenerationUtil.getSelectedPackageName(pkg, project) + ejbClassName);
 
         session.setRemote(remoteName);
         session.setLocal(localName);
         session.setHome(remoteHomeName);
         session.setLocalHome(localHomeName);
         String sessionType = Session.SESSION_TYPE_STATELESS;
-        if (model.isStateful) {
+        if (isStateful) {
             sessionType = Session.SESSION_TYPE_STATEFUL;
         }
         session.setSessionType(sessionType);
@@ -175,15 +194,15 @@ public final class SessionGenerator {
         ejbJar.write(ejbModule.getDeploymentDescriptor());
     }
     
-    private void generateEJB30Xml(Model model) throws IOException {
+    private void generateEJB30Xml() throws IOException {
         throw new UnsupportedOperationException("Method not implemented yet.");
     }
     
-    /**
-     * Special case for generating a Session implementation bean for web services
-     */
-    public String generateWebServiceImplBean(String ejbName, FileObject pkg, Project project, String delegateData) throws java.io.IOException {
-        //TODO: RETOUCHE WS
+      //TODO: RETOUCHE WS
+//    /**
+//     * Special case for generating a Session implementation bean for web services
+//     */
+//    public String generateWebServiceImplBean(String ejbName, FileObject pkg, Project project, String delegateData) throws java.io.IOException {
 //        String pkgName = EjbGenerationUtil.getSelectedPackageName(pkg, project);
 //        Bean b = genUtil.getDefaultBean();
 //        b.setCommentDataEjbName(ejbName);
@@ -197,36 +216,7 @@ public final class SessionGenerator {
 //        // generate bean class
 //        EjbJar ejbModule = EjbJar.getEjbJar(pkg);
 //        boolean simplified = ejbModule.getJ2eePlatformVersion().equals(J2eeModule.JAVA_EE_5);
-        return null;//genUtil.generateBeanClass(simplified ? SESSION_TEMPLATE_WS_JAVAEE5 : SESSION_TEMPLATE, b, pkgName, pkg);
-    }
-    
-    /** immutable model of data entered in wizard */
-    public static final class Model {
-        
-        final String ejbClassName;
-        final FileObject pkg;
-        final boolean hasRemote;
-        final boolean hasLocal;
-        final boolean isStateful;
-        final boolean isSimplified;
-        final boolean hasBusinessInterface;
-        final boolean isXmlBased;
-        
-        public static Model create(String ejbClassName, FileObject pkg, boolean hasRemote, boolean hasLocal, boolean isStateful, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased) {
-            return new Model(ejbClassName, pkg, hasRemote, hasLocal, isStateful, isSimplified, hasBusinessInterface, isXmlBased);
-        }
-        
-        private Model(String ejbClassName, FileObject pkg, boolean hasRemote, boolean hasLocal, boolean isStateful, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased) {
-            this.ejbClassName = ejbClassName;
-            this.pkg = pkg;
-            this.hasRemote = hasRemote;
-            this.hasLocal = hasLocal;
-            this.isStateful = isStateful;
-            this.isSimplified = isSimplified;
-            this.hasBusinessInterface = hasBusinessInterface;
-            this.isXmlBased = isXmlBased;
-        }
-        
-    }
+//        return null;//genUtil.generateBeanClass(simplified ? SESSION_TEMPLATE_WS_JAVAEE5 : SESSION_TEMPLATE, b, pkgName, pkg);
+//    }
     
 }

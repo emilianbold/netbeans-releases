@@ -50,34 +50,45 @@ public final class MessageGenerator {
     private static final String EJB30_QUEUE_EJBCLASS = "Templates/J2EE/EJB30/MessageDrivenQueueEjbClass.java"; // NOI18N
     private static final String EJB30_TOPIC_EJBCLASS = "Templates/J2EE/EJB30/MessageDrivenTopicEjbClass.java"; // NOI18N
 
-    private final Model model;
+    // informations collected in wizard
+    private final String wizardName;
+    private final FileObject pkg;
+    private final boolean isQueue;
+    private final boolean isSimplified;
+    private final boolean isXmlBased;
+
+    // EJB naming options
     private final EJBNameOptions ejbNameOptions;
     private final String ejbName;
     private final String ejbClassName;
     
-    public static MessageGenerator create(Model model) {
-        return new MessageGenerator(model);
+    public static MessageGenerator create(String wizardName, FileObject pkg, boolean isQueue, boolean isSimplified, boolean isXmlBased) {
+        return new MessageGenerator(wizardName, pkg, isQueue, isSimplified, isXmlBased);
     }
     
-    private MessageGenerator(Model model) {
-        this.model = model;
-        ejbNameOptions = new EJBNameOptions();
-        ejbName = ejbNameOptions.getMessageDrivenEjbNamePrefix() + model.ejbClassName + ejbNameOptions.getMessageDrivenEjbNameSuffix();
-        ejbClassName = ejbNameOptions.getMessageDrivenEjbClassPrefix() + model.ejbClassName + ejbNameOptions.getMessageDrivenEjbClassSuffix();
+    private MessageGenerator(String wizardName, FileObject pkg, boolean isQueue, boolean isSimplified, boolean isXmlBased) {
+        this.wizardName = wizardName;
+        this.pkg = pkg;
+        this.isQueue = isQueue;
+        this.isSimplified = isSimplified;
+        this.isXmlBased = isXmlBased;
+        this.ejbNameOptions = new EJBNameOptions();
+        this.ejbName = ejbNameOptions.getMessageDrivenEjbNamePrefix() + wizardName + ejbNameOptions.getMessageDrivenEjbNameSuffix();
+        this.ejbClassName = ejbNameOptions.getMessageDrivenEjbClassPrefix() + wizardName + ejbNameOptions.getMessageDrivenEjbClassSuffix();
     }
     
     public FileObject generate() throws IOException {
         FileObject resultFileObject = null;
-        if (model.isSimplified) {
-            resultFileObject = generateEJB30Classes(model);
-            if (model.isXmlBased) {
-                generateEJB30Xml(model);
+        if (isSimplified) {
+            resultFileObject = generateEJB30Classes();
+            if (isXmlBased) {
+                generateEJB30Xml();
             }
         } else {
-            resultFileObject = generateEJB21Classes(model);
-            if (model.isXmlBased) {
+            resultFileObject = generateEJB21Classes();
+            if (isXmlBased) {
                 try {
-                    generateEJB21Xml(model);
+                    generateEJB21Xml();
                 } catch (VersionNotSupportedException ex) {
                     ErrorManager.getDefault().notify(ex);
                 }
@@ -86,19 +97,19 @@ public final class MessageGenerator {
         return resultFileObject;
     }
     
-    private FileObject generateEJB21Classes(Model model) throws IOException {
-        FileObject resultFileObject = GenerationUtils.createClass(EJB21_EJBCLASS,  model.pkg, ejbClassName, null);
+    private FileObject generateEJB21Classes() throws IOException {
+        FileObject resultFileObject = GenerationUtils.createClass(EJB21_EJBCLASS,  pkg, ejbClassName, null);
         ///
-        Project project = FileOwnerQuery.getOwner(model.pkg);
+        Project project = FileOwnerQuery.getOwner(pkg);
         J2eeModuleProvider pwm = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
         pwm.getConfigSupport().ensureConfigurationReady();
         ///
         return resultFileObject;
     }
     
-    private FileObject generateEJB30Classes(Model model) throws IOException {
-        String ejbClassTemplate = model.isQueue ? EJB30_QUEUE_EJBCLASS : EJB30_TOPIC_EJBCLASS;
-        FileObject resultFileObject = GenerationUtils.createClass(ejbClassTemplate,  model.pkg, ejbClassName, null);
+    private FileObject generateEJB30Classes() throws IOException {
+        String ejbClassTemplate = isQueue ? EJB30_QUEUE_EJBCLASS : EJB30_TOPIC_EJBCLASS;
+        FileObject resultFileObject = GenerationUtils.createClass(ejbClassTemplate,  pkg, ejbClassName, null);
                 
         // Create server resources for this bean.
         //
@@ -109,7 +120,7 @@ public final class MessageGenerator {
         //
         // Note: Even with 1s (1000ms) delay, sometimes the data was still not available.
         //
-        Project project = FileOwnerQuery.getOwner(model.pkg);
+        Project project = FileOwnerQuery.getOwner(pkg);
         final J2eeModuleProvider pwm = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
@@ -122,8 +133,8 @@ public final class MessageGenerator {
         return resultFileObject;
     }
     
-    private void generateEJB21Xml(Model model) throws IOException, VersionNotSupportedException {
-        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(model.pkg);
+    private void generateEJB21Xml() throws IOException, VersionNotSupportedException {
+        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(pkg);
         org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = DDProvider.getDefault().getMergedDDRoot(ejbModule.getMetadataUnit());
         EnterpriseBeans beans = ejbJar.getEnterpriseBeans();
         MessageDriven messageDriven = null;
@@ -139,7 +150,7 @@ public final class MessageGenerator {
         ackProp.setActivationConfigPropertyName("acknowledgeMode"); // NOI18N
         ackProp.setActivationConfigPropertyValue("Auto-acknowledge"); // NOI18N
         config.addActivationConfigProperty(ackProp);
-        if (model.isQueue) {
+        if (isQueue) {
             String queue = "javax.jms.Queue"; // NOI18N
             messageDriven.setMessageDestinationType(queue);
             destProp.setActivationConfigPropertyValue(queue);
@@ -178,8 +189,8 @@ public final class MessageGenerator {
             ejbJar.setAssemblyDescriptor(assemblyDescriptor);
         }
         MessageDestination messageDestination = assemblyDescriptor.newMessageDestination();
-        String destinationLink = model.ejbClassName + "Destination"; //NOI18N
-        messageDestination.setDisplayName("Destination for " + model.ejbClassName);
+        String destinationLink = ejbName + "Destination"; //NOI18N
+        messageDestination.setDisplayName("Destination for " + ejbClassName);
         messageDestination.setMessageDestinationName(destinationLink);
         assemblyDescriptor.addMessageDestination(messageDestination);
         
@@ -192,35 +203,13 @@ public final class MessageGenerator {
         containerTransaction.addMethod(method);
         assemblyDescriptor.addContainerTransaction(containerTransaction);
         ejbJar.write(ejbModule.getDeploymentDescriptor());
-        Project project = FileOwnerQuery.getOwner(model.pkg);
-        J2eeModuleProvider pwm = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-        pwm.getConfigSupport().ensureResourceDefinedForEjb(ejbName, "message-driven"); //NOI18N
+        Project project = FileOwnerQuery.getOwner(pkg);
+        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        j2eeModuleProvider.getConfigSupport().ensureResourceDefinedForEjb(ejbName, "message-driven"); //NOI18N
     }
     
-    private void generateEJB30Xml(Model model) throws IOException {
+    private void generateEJB30Xml() throws IOException {
         throw new UnsupportedOperationException("Method not implemented yet.");
-    }
-    
-    public static final class Model {
-        
-        final String ejbClassName;
-        final FileObject pkg;
-        final boolean isQueue;
-        final boolean isSimplified;
-        final boolean isXmlBased;
-
-        public static Model create(String ejbClassName, FileObject pkg, boolean isQueue, boolean isSimplified, boolean isXmlBased) {
-            return new Model(ejbClassName, pkg, isQueue, isSimplified, isXmlBased);
-        }
-        
-        private Model(String ejbClassName, FileObject pkg, boolean isQueue, boolean isSimplified, boolean isXmlBased) {
-            this.ejbClassName = ejbClassName;
-            this.pkg = pkg;
-            this.isQueue = isQueue;
-            this.isSimplified = isSimplified;
-            this.isXmlBased = isXmlBased;
-        }
-        
     }
     
 }

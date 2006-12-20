@@ -122,10 +122,10 @@ public final class EJBNameOptions extends AdvancedOption {
     public void setEntityLocalHomePrefix(String prefix) { prefs().put(ENTITY_LOCALHOME_PREFIX, prefix); }
     public String getEntityLocalHomeSuffix() { return prefs().get(ENTITY_LOCALHOME_SUFFIX, DEFAULT_HOME_SUFFIX); } // NOI18N
     public void setEntityLocalHomeSuffix(String suffix) { prefs().put(ENTITY_LOCALHOME_SUFFIX, suffix); }
-    public String getEntityHomePrefix() { return prefs().get(ENTITY_REMOTEHOME_PREFIX, ""); } // NOI18N
-    public void setEntityHomePrefix(String prefix) { prefs().put(ENTITY_REMOTEHOME_PREFIX, prefix); }
-    public String getEntityHomeSuffix() { return prefs().get(ENTITY_REMOTEHOME_SUFFIX, DEFAULT_HOME_SUFFIX); } // NOI18N
-    public void setEntityHomeSuffix(String suffix) { prefs().put(ENTITY_REMOTEHOME_SUFFIX, suffix); }
+    public String getEntityRemoteHomePrefix() { return prefs().get(ENTITY_REMOTEHOME_PREFIX, ""); } // NOI18N
+    public void setEntityRemoteHomePrefix(String prefix) { prefs().put(ENTITY_REMOTEHOME_PREFIX, prefix); }
+    public String getEntityRemoteHomeSuffix() { return prefs().get(ENTITY_REMOTEHOME_SUFFIX, DEFAULT_HOME_SUFFIX); } // NOI18N
+    public void setEntityHomeRemoteSuffix(String suffix) { prefs().put(ENTITY_REMOTEHOME_SUFFIX, suffix); }
     public String getEntityEjbNamePrefix() { return prefs().get(ENTITY_EJBNAME_PREFIX, ""); } // NOI18N
     public void setEntityEjbNamePrefix(String prefix) { prefs().put(ENTITY_EJBNAME_PREFIX, prefix); }
     public String getEntityEjbNameSuffix() { return prefs().get(ENTITY_EJBNAME_SUFFIX, "EJB"); } // NOI18N

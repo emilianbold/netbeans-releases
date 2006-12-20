@@ -80,14 +80,13 @@ public final class MessageEJBWizard implements WizardDescriptor.InstantiatingIte
         
         // TODO: UI - add checkbox for Java EE 5 to create also EJB 2.1 style EJBs
         boolean isSimplified = ejbModule.getJ2eePlatformVersion().equals(J2eeModule.JAVA_EE_5);
-        MessageGenerator.Model model = MessageGenerator.Model.create(
+        MessageGenerator generator = MessageGenerator.create(
                 Templates.getTargetName(wiz),
                 pkg,
                 ejbPanel.isQueue(),
                 isSimplified,
                 !isSimplified // TODO: UI - add checkbox for option XML (not annotation) usage
                 );
-        MessageGenerator generator = MessageGenerator.create(model);
         FileObject result = generator.generate();
         return result == null ? Collections.EMPTY_SET : Collections.singleton(result);
     }

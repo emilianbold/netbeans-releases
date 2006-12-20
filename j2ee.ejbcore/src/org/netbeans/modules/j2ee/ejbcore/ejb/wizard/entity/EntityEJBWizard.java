@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
@@ -73,19 +74,23 @@ public final class EntityEJBWizard implements WizardDescriptor.InstantiatingIter
     }
 
     public Set instantiate () throws IOException {
-        FileObject pkg = Templates.getTargetFolder(wiz);
-        String ejbName = Templates.getTargetName(wiz);
-        Project project = Templates.getProject(wiz);
         boolean isCMP = ejbPanel.isCMP();
-        EntityGenerator eg = new EntityGenerator();
-        eg.generateEntity(ejbName, pkg, ejbPanel.hasRemote(), ejbPanel.hasLocal(), project, isCMP, ejbPanel.getPrimaryKeyClassName());
-        return Collections.EMPTY_SET;
+        EntityGenerator entityGenerator = EntityGenerator.create(
+                Templates.getTargetName(wiz), 
+                Templates.getTargetFolder(wiz), 
+                ejbPanel.hasRemote(), 
+                ejbPanel.hasLocal(), 
+                isCMP, 
+                ejbPanel.getPrimaryKeyClassName()
+                );
+        FileObject result = entityGenerator.generate();
+        return result == null ? Collections.<FileObject>emptySet() : Collections.singleton(result);
     }
 
-    public void addChangeListener(javax.swing.event.ChangeListener l) {
+    public void addChangeListener(ChangeListener l) {
     }
 
-    public void removeChangeListener(javax.swing.event.ChangeListener l) {
+    public void removeChangeListener(ChangeListener l) {
     }
 
     public boolean hasPrevious () {
@@ -98,19 +103,19 @@ public final class EntityEJBWizard implements WizardDescriptor.InstantiatingIter
 
     public void nextPanel () {
         if (! hasNext ()) {
-            throw new NoSuchElementException ();
+            throw new NoSuchElementException();
         }
         index++;
     }
 
     public void previousPanel () {
         if (! hasPrevious ()) {
-            throw new NoSuchElementException ();
+            throw new NoSuchElementException();
         }
         index--;
     }
 
-    public WizardDescriptor.Panel current () {
+    public WizardDescriptor.Panel current() {
         return panels[index];
     }
 }
