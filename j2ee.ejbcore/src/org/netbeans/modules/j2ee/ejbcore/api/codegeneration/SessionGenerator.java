@@ -51,13 +51,12 @@ public final class SessionGenerator {
     private static final String EJB30_REMOTE = "Templates/J2EE/EJB30/SessionRemote.java"; // NOI18N
 
     // informations collected in wizard
-    private final String wizardName;
     private final FileObject pkg;
     private final boolean hasRemote;
     private final boolean hasLocal;
     private final boolean isStateful;
     private final boolean isSimplified;
-    private final boolean hasBusinessInterface;
+//    private final boolean hasBusinessInterface;
     private final boolean isXmlBased;
     
     // EJB naming options
@@ -69,28 +68,27 @@ public final class SessionGenerator {
     private final String localName;
     private final String localHomeName;
 
-    public static SessionGenerator create(String ejbClassName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
+    public static SessionGenerator create(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
             boolean isStateful, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased) {
-        return new SessionGenerator(ejbClassName, pkg, hasRemote, hasLocal, isStateful, isSimplified, hasBusinessInterface, isXmlBased);
+        return new SessionGenerator(wizardTargetName, pkg, hasRemote, hasLocal, isStateful, isSimplified, hasBusinessInterface, isXmlBased);
     } 
     
-    private SessionGenerator(String wizardName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
+    private SessionGenerator(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
             boolean isStateful, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased) {
-        this.wizardName = wizardName;
         this.pkg = pkg;
         this.hasRemote = hasRemote;
         this.hasLocal = hasLocal;
         this.isStateful = isStateful;
         this.isSimplified = isSimplified;
-        this.hasBusinessInterface = hasBusinessInterface;
+//        this.hasBusinessInterface = hasBusinessInterface;
         this.isXmlBased = isXmlBased;
         this.ejbNameOptions = new EJBNameOptions();
-        this.ejbName = ejbNameOptions.getSessionEjbNamePrefix() + wizardName + ejbNameOptions.getSessionEjbNameSuffix();
-        this.ejbClassName = ejbNameOptions.getSessionEjbClassPrefix() + wizardName + ejbNameOptions.getSessionEjbClassSuffix();
-        this.remoteName = ejbNameOptions.getSessionRemotePrefix() + wizardName + ejbNameOptions.getSessionRemoteSuffix();
-        this.remoteHomeName = ejbNameOptions.getSessionRemoteHomePrefix() + wizardName + ejbNameOptions.getSessionRemoteHomeSuffix();
-        this.localName = ejbNameOptions.getSessionLocalPrefix() + wizardName + ejbNameOptions.getSessionLocalSuffix();
-        this.localHomeName = ejbNameOptions.getSessionLocalHomePrefix() + wizardName + ejbNameOptions.getSessionLocalHomeSuffix();
+        this.ejbName = ejbNameOptions.getSessionEjbNamePrefix() + wizardTargetName + ejbNameOptions.getSessionEjbNameSuffix();
+        this.ejbClassName = ejbNameOptions.getSessionEjbClassPrefix() + wizardTargetName + ejbNameOptions.getSessionEjbClassSuffix();
+        this.remoteName = ejbNameOptions.getSessionRemotePrefix() + wizardTargetName + ejbNameOptions.getSessionRemoteSuffix();
+        this.remoteHomeName = ejbNameOptions.getSessionRemoteHomePrefix() + wizardTargetName + ejbNameOptions.getSessionRemoteHomeSuffix();
+        this.localName = ejbNameOptions.getSessionLocalPrefix() + wizardTargetName + ejbNameOptions.getSessionLocalSuffix();
+        this.localHomeName = ejbNameOptions.getSessionLocalHomePrefix() + wizardTargetName + ejbNameOptions.getSessionLocalHomeSuffix();
     }
     
     public FileObject generate() throws IOException {

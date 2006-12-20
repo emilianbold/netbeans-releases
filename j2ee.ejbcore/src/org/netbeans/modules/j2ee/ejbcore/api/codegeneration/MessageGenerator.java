@@ -51,7 +51,6 @@ public final class MessageGenerator {
     private static final String EJB30_TOPIC_EJBCLASS = "Templates/J2EE/EJB30/MessageDrivenTopicEjbClass.java"; // NOI18N
 
     // informations collected in wizard
-    private final String wizardName;
     private final FileObject pkg;
     private final boolean isQueue;
     private final boolean isSimplified;
@@ -62,19 +61,18 @@ public final class MessageGenerator {
     private final String ejbName;
     private final String ejbClassName;
     
-    public static MessageGenerator create(String wizardName, FileObject pkg, boolean isQueue, boolean isSimplified, boolean isXmlBased) {
-        return new MessageGenerator(wizardName, pkg, isQueue, isSimplified, isXmlBased);
+    public static MessageGenerator create(String wizardTargetName, FileObject pkg, boolean isQueue, boolean isSimplified, boolean isXmlBased) {
+        return new MessageGenerator(wizardTargetName, pkg, isQueue, isSimplified, isXmlBased);
     }
     
-    private MessageGenerator(String wizardName, FileObject pkg, boolean isQueue, boolean isSimplified, boolean isXmlBased) {
-        this.wizardName = wizardName;
+    private MessageGenerator(String wizardTargetName, FileObject pkg, boolean isQueue, boolean isSimplified, boolean isXmlBased) {
         this.pkg = pkg;
         this.isQueue = isQueue;
         this.isSimplified = isSimplified;
         this.isXmlBased = isXmlBased;
         this.ejbNameOptions = new EJBNameOptions();
-        this.ejbName = ejbNameOptions.getMessageDrivenEjbNamePrefix() + wizardName + ejbNameOptions.getMessageDrivenEjbNameSuffix();
-        this.ejbClassName = ejbNameOptions.getMessageDrivenEjbClassPrefix() + wizardName + ejbNameOptions.getMessageDrivenEjbClassSuffix();
+        this.ejbName = ejbNameOptions.getMessageDrivenEjbNamePrefix() + wizardTargetName + ejbNameOptions.getMessageDrivenEjbNameSuffix();
+        this.ejbClassName = ejbNameOptions.getMessageDrivenEjbClassPrefix() + wizardTargetName + ejbNameOptions.getMessageDrivenEjbClassSuffix();
     }
     
     public FileObject generate() throws IOException {

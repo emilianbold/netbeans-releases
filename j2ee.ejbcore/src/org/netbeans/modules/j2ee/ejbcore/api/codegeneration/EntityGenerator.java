@@ -52,7 +52,6 @@ public class EntityGenerator {
     private static final String CMP_REMOTEHOME = "Templates/J2EE/EJB21/CmpRemoteHome.java"; // NOI18N
 
     // informations collected in wizard
-    private final String wizardName;
     private final FileObject pkg;
     private final boolean hasRemote;
     private final boolean hasLocal;
@@ -68,26 +67,25 @@ public class EntityGenerator {
     private final String localName;
     private final String localHomeName;
 
-    public static EntityGenerator create(String ejbClassName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
+    public static EntityGenerator create(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
             boolean isCMP, String primaryKeyClassName) {
-        return new EntityGenerator(ejbClassName, pkg, hasRemote, hasLocal, isCMP, primaryKeyClassName);
+        return new EntityGenerator(wizardTargetName, pkg, hasRemote, hasLocal, isCMP, primaryKeyClassName);
     }
     
-    private EntityGenerator(String wizardName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
+    private EntityGenerator(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
             boolean isCMP, String primaryKeyClassName) {
-        this.wizardName = wizardName;
         this.pkg = pkg;
         this.hasRemote = hasRemote;
         this.hasLocal = hasLocal;
         this.isCMP = isCMP;
         this.primaryKeyClassName = primaryKeyClassName;
         this.ejbNameOptions = new EJBNameOptions();
-        this.ejbName = ejbNameOptions.getEntityEjbNamePrefix() + wizardName + ejbNameOptions.getEntityEjbNameSuffix();
-        this.ejbClassName = ejbNameOptions.getEntityEjbClassPrefix() + wizardName + ejbNameOptions.getEntityEjbClassSuffix();
-        this.remoteName = ejbNameOptions.getEntityRemotePrefix() + wizardName + ejbNameOptions.getEntityRemoteSuffix();
-        this.remoteHomeName = ejbNameOptions.getEntityRemoteHomePrefix() + wizardName + ejbNameOptions.getEntityRemoteHomeSuffix();
-        this.localName = ejbNameOptions.getEntityLocalPrefix() + wizardName + ejbNameOptions.getEntityLocalSuffix();
-        this.localHomeName = ejbNameOptions.getEntityLocalHomePrefix() + wizardName + ejbNameOptions.getEntityLocalHomeSuffix();
+        this.ejbName = ejbNameOptions.getEntityEjbNamePrefix() + wizardTargetName + ejbNameOptions.getEntityEjbNameSuffix();
+        this.ejbClassName = ejbNameOptions.getEntityEjbClassPrefix() + wizardTargetName + ejbNameOptions.getEntityEjbClassSuffix();
+        this.remoteName = ejbNameOptions.getEntityRemotePrefix() + wizardTargetName + ejbNameOptions.getEntityRemoteSuffix();
+        this.remoteHomeName = ejbNameOptions.getEntityRemoteHomePrefix() + wizardTargetName + ejbNameOptions.getEntityRemoteHomeSuffix();
+        this.localName = ejbNameOptions.getEntityLocalPrefix() + wizardTargetName + ejbNameOptions.getEntityLocalSuffix();
+        this.localHomeName = ejbNameOptions.getEntityLocalHomePrefix() + wizardTargetName + ejbNameOptions.getEntityLocalHomeSuffix();
     }
 
     public FileObject generate() throws IOException {
