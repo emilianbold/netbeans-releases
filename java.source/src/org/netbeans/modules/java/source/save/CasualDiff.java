@@ -513,6 +513,11 @@ public class CasualDiff {
         int oldIndent = printer.indent();
         bodyPrinter.reset(oldIndent);
         bodyPrinter.indent();
+        if (oldT.stats.head != null && oldT.stats.head.pos == oldT.pos) {
+            // syntetic super() found, skip it
+            oldT.stats = oldT.stats.tail;
+            newT.stats = newT.stats.tail;
+        }
         int[] pos = diffList(oldT.stats, newT.stats, oldT.pos + 1, EstimatorFactory.members(), Measure.DEFAULT, bodyPrinter); // hint after open brace
         if (localPointer < pos[0]) {
             printer.print(origText.substring(localPointer, pos[0]));
