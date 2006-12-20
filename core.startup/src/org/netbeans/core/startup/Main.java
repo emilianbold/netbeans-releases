@@ -210,9 +210,6 @@ public final class Main extends Object {
         System.setProperty("jdk.home", jdkHome);  // NOI18N
     }
 
-    // read environment properties from external file, if any
-    readEnvMap ();
-
     // initialize the URL factory
     initializeURLFactory();
   
@@ -511,24 +508,4 @@ public final class Main extends Object {
         
         return handler.canContinue ();
     }
-
-    /** Reads system properties from a file on a disk and stores them 
-     * in System.getPropeties ().
-     */
-    private static void readEnvMap () {
-        java.util.Properties env = System.getProperties ();
-        
-	Map<String, String> m = System.getenv();
-	for (Iterator<Map.Entry<String,String>> it = m.entrySet().iterator(); it.hasNext(); ) {
-	    Map.Entry<String,String> entry = it.next();
-	    String key = entry.getKey();
-	    String value = entry.getValue();
-
-	    env.put("Env-".concat(key), value); // NOI18N
-	    // E.g. on Turkish Unix, want env-display not env-d\u0131splay:
-	    env.put("env-".concat(key.toLowerCase(Locale.US)), value); // NOI18N
-	}
-    }
-
-    
 }

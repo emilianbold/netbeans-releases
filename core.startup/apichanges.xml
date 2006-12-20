@@ -23,12 +23,26 @@ Microsystems, Inc. All Rights Reserved.
 <apichanges>
 
   <apidefs>
+    <apidef name="exec-property">System Properties Friend API</apidef>
     <apidef name="bridge">Startup Bridge Friend API</apidef>
   </apidefs>
 
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+     <change id="no-env-properties">
+        <api name="exec-property"/>
+        <summary>Environment variables are no longer accessible through system properties</summary>
+        <version major="1" minor="8"/>
+        <date day="20" month="12" year="2006"/>
+        <author login="rkubacki"/>
+        <compatibility addition="no" binary="incompatible" semantic="incompatible" />
+        <description>
+        <p>
+        </p>
+        </description>
+        <class package="org.netbeans.core.startup" name="Main" />
+    </change>
      <change id="less-reflection">
         <api name="bridge"/>
         <summary>Adding new methods into CoreBridge</summary>
