@@ -29,24 +29,24 @@ import org.netbeans.installer.utils.exceptions.ParseException;
 import org.w3c.dom.Element;
 
 public class FileEntry {
-    private long size = 0;
+    private long size             = 0;
     
-    private String md5 = null;
-    private String sha1 = null;
-    private String crc32 = null;
+    private String md5            = null;
+    private String sha1           = null;
+    private String crc32          = null;
     
-    private boolean directory = false;
-    private boolean empty = false;
+    private boolean directory     = false;
+    private boolean empty         = false;
     
     private boolean jarFile       = false;
     private boolean packedJarFile = false;
     private boolean signedJarFile = false;
     
-    private long lastModified = 0;
+    private long lastModified     = 0;
     
-    private int permissions = 0;
+    private int permissions       = 0;
     
-    private String name = null;
+    private String name           = null;
     
     public FileEntry(Element element) {
         String type = element.getAttribute("type");
@@ -72,25 +72,27 @@ public class FileEntry {
     }
     
     public FileEntry(File file, String name) throws IOException, NoSuchAlgorithmException {
-        this.directory = file.isDirectory();
-        
-        if (!directory) {
-            this.size  = file.length();
+        if (file.exists()) {
+            directory = file.isDirectory();
             
-            this.md5   = FileUtils.getMd5String(file);
-            this.sha1  = FileUtils.getSha1String(file);
-            this.crc32 = FileUtils.getCrc32String(file);
-            
-            this.jarFile = FileUtils.isJarFile(file);
-            if (jarFile) {
-                this.packedJarFile = false; // we cannot determine this
-                this.signedJarFile = FileUtils.isSigned(file);
+            if (!directory) {
+                size    = file.length();
+                md5     = FileUtils.getMd5String(file);
+                sha1    = FileUtils.getSha1String(file);
+                crc32   = FileUtils.getCrc32String(file);
+                jarFile = FileUtils.isJarFile(file);
+                
+                if (jarFile) {
+                    packedJarFile = false; // we cannot determine this
+                    signedJarFile = FileUtils.isSigned(file);
+                }
+            }  else {
+                empty = FileUtils.isEmpty(file);
             }
-        }  else {
-            this.empty = FileUtils.isEmpty(file);
+            
+            lastModified = file.lastModified();
         }
         
-        this.lastModified  = file.lastModified();
         this.name = name;
     }
     
