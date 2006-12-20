@@ -33,13 +33,8 @@ import org.netbeans.modules.collab.core.Debug;
  * @author  Todd Fast, todd.fast@sun.com
  */
 public class SyncWaitPanel extends javax.swing.JPanel {
-    // End of variables declaration//GEN-END:variables
     private static Dialog dialog;
     private static int referenceCount;
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JProgressBar progressBar;
 
     /**
      *
@@ -142,4 +137,9 @@ public class SyncWaitPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(progressBar, gridBagConstraints);
     } //GEN-END:initComponents
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JProgressBar progressBar;
+    // End of variables declaration//GEN-END:variables
 }
