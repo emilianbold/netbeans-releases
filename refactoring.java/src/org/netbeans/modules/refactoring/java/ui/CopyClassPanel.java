@@ -56,11 +56,13 @@ public class CopyClassPanel extends CustomRefactoringPanel implements ActionList
     private ChangeListener parent;
     private FileObject fo;
     private SourceGroup[] groups;
+    private String newName;
     
-    public CopyClassPanel(final ChangeListener parent, String title, String startPackage, FileObject f) {
+    public CopyClassPanel(final ChangeListener parent, String title, String startPackage, FileObject f, String newName) {
         setName(title);
         this.fo = f;
         this.parent = parent;
+        this.newName = newName;
         initComponents();
         setCombosEnabled(true);
         setThisClassVisible(true);
@@ -78,8 +80,6 @@ public class CopyClassPanel extends CustomRefactoringPanel implements ActionList
             ((JTextField) textField).getDocument().addDocumentListener(this); 
         }
         newNameTextField.getDocument().addDocumentListener(this);
-        newNameTextField.setSelectionStart(0);
-        newNameTextField.setSelectionEnd(newNameTextField.getText().length());
         
         project = fo != null ? FileOwnerQuery.getOwner(fo):OpenProjects.getDefault().getOpenProjects()[0];
         initValues(startPackage);
@@ -89,7 +89,15 @@ public class CopyClassPanel extends CustomRefactoringPanel implements ActionList
     public void initialize() {
         if (initialized)
             return ;
-        //put initialization code here
+        FileObject fob;
+        do {
+            fob = fo.getFileObject(newName + ".java"); //NOI18N
+            if (fob!=null)
+                newName += "1";
+        } while (fob!=null);
+        newNameTextField.setText(newName);
+        newNameTextField.setSelectionStart(0);
+        newNameTextField.setSelectionEnd(newNameTextField.getText().length());
         initialized = true;
     }
     
