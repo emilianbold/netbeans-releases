@@ -478,6 +478,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     }
 
                     public void run(CompilationController info) throws Exception {
+                        info.toPhase(Phase.ELEMENTS_RESOLVED);
                         CompilationUnitTree unit = info.getCompilationUnit();
                         TreePathHandle representedObject = TreePathHandle.create(TreePath.getPath(unit, unit.getTypeDecls().get(0)),info);
                         ui = createRefactoringUI(representedObject, info);
