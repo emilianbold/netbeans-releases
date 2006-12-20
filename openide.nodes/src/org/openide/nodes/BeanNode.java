@@ -331,7 +331,7 @@ public class BeanNode<T> extends AbstractNode {
 
     public Action[] getActions(boolean context) {
         return NodeOp.createFromNames(
-            new String[] { "CustomizeBean", null, "Copy", null, "Tools", "Properties" // NOI18N
+            new String[] { "Copy", null, "Tools", "Properties" // NOI18N
         }
         );
     }
