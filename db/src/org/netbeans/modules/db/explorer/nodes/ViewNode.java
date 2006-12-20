@@ -19,6 +19,9 @@
 
 package org.netbeans.modules.db.explorer.nodes;
 
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
+
 import java.util.*;
 import java.text.MessageFormat;
 
@@ -30,6 +33,12 @@ import org.netbeans.lib.ddl.impl.*;
 import org.netbeans.modules.db.*;
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.infos.*;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeTransfer;
+import org.openide.util.Lookup;
+import org.openide.util.datatransfer.ExTransferable;
+import org.openide.util.datatransfer.PasteType;
+
 
 // Node for Table/View/Procedure things.
 
@@ -44,6 +53,7 @@ public class ViewNode extends DatabaseNode {
             cmd.execute();
             super.setName(newname);
             info.put(DatabaseNode.TABLE, newname);
+            info.put(DatabaseNode.VIEW, newname);
         } catch (CommandNotSupportedException exc) {
             String message = MessageFormat.format(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_UnableToChangeName"), new String[] {exc.getCommand()}); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
@@ -56,4 +66,22 @@ public class ViewNode extends DatabaseNode {
         return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_View"); //NOI18N
     }
 
+    public Transferable clipboardCopy() throws IOException {
+        Transferable result;
+        final DbMetaDataTransferProvider dbTansferProvider = (DbMetaDataTransferProvider)Lookup.getDefault().lookup(DbMetaDataTransferProvider.class);
+        if (dbTansferProvider != null) {
+            ExTransferable exTransferable = ExTransferable.create(super.clipboardCopy());
+            ConnectionNodeInfo cni = (ConnectionNodeInfo)getInfo().getParent(DatabaseNode.CONNECTION);
+            final DatabaseConnection dbconn = ConnectionList.getDefault().getConnection(cni.getDatabaseConnection());
+            exTransferable.put(new ExTransferable.Single(dbTansferProvider.getViewDataFlavor()) {
+                protected Object getData() {
+                    return dbTansferProvider.createViewData(dbconn.getDatabaseConnection(), dbconn.findJDBCDriver(), getInfo().getName());
+                }
+            });
+            result = exTransferable;
+        } else {
+            result = super.clipboardCopy();
+        }
+        return result;
+    }
 }

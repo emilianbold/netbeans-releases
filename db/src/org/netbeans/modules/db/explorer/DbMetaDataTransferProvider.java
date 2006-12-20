@@ -38,7 +38,17 @@ public interface DbMetaDataTransferProvider {
     DataFlavor getTableDataFlavor();
 
     /**
+     * Returns the data flavor representing database views.
+     */
+    DataFlavor getViewDataFlavor();
+
+    /**
      * Returns an object which encapsulates a database table.
      */
     Object createTableData(DatabaseConnection dbconn, JDBCDriver jdbcDriver, String tableName);
+    
+    /**
+     * Returns an object which encapsulates a database view.
+     */
+    Object createViewData(DatabaseConnection dbconn, JDBCDriver jdbcDriver, String viewName);
 }

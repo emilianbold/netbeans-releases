@@ -1792,7 +1792,7 @@
 		children = ();
 		options = {
 			cut = NO;
-			copy = NO;
+			copy = YES;
 			delete = YES;
 		};
 		actions = (
