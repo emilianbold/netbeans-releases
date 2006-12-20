@@ -257,10 +257,7 @@ public final class GenerationUtils extends SourceUtils {
         Parameters.notNull("argumentValue", argumentValue); // NOI18N
 
         TreeMaker make = getTreeMaker();
-        // workaround for issue 89230
-        ExpressionTree argumentValueTree = argumentValue instanceof Boolean ?
-                make.Identifier(Boolean.TRUE.equals(argumentValue) ? "true" : "false") : // NOI18N
-                make.Literal(argumentValue); // NOI18N
+        ExpressionTree argumentValueTree = make.Literal(argumentValue);
         if (argumentName == null) {
             return argumentValueTree;
         } else {
