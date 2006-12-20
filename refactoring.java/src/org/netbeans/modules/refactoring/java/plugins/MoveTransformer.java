@@ -134,8 +134,22 @@ public class MoveTransformer extends SearchVisitor {
             return result;
         }
         if (isThisFileMoving) {
-            //change package statement
-            workingCopy.rewrite(node.getPackageName(), make.Identifier(move.getTargetPackageName(workingCopy.getFileObject())));
+            // change package statement if old and new package exist, i.e.
+            // neither old nor new package is default
+            String newPckg = move.getTargetPackageName(workingCopy.getFileObject());
+            if (node.getPackageName() != null && !"".equals(newPckg)) {
+                workingCopy.rewrite(node.getPackageName(), make.Identifier(move.getTargetPackageName(workingCopy.getFileObject())));
+            } else {
+                // in order to handle default package, we have to rewrite whole
+                // compilation unit:
+                CompilationUnitTree copy = make.CompilationUnit(
+                        "".equals(newPckg) ? null : make.Identifier(newPckg),
+                        node.getImports(),
+                        node.getTypeDecls(),
+                        node.getSourceFile()
+                );
+                workingCopy.rewrite(node, copy);
+            }
             if (isThisFileReferencingOldPackage) {
                 //add import to old package
                 node = insertImport(node, node.getPackageName().toString() + ".*");
