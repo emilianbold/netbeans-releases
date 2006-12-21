@@ -73,7 +73,8 @@ public interface AnchorShape {
 
         private int size;
         private boolean filled;
-        private boolean output;
+
+        private GeneralPath generalPath;
 
         /**
          * Creates a triangular anchor shape.
@@ -84,7 +85,18 @@ public interface AnchorShape {
         public Triangle (int size, boolean filled, boolean output) {
             this.size = size;
             this.filled = filled;
-            this.output = output;
+
+            float side = size * 0.3f;
+            generalPath = new GeneralPath ();
+            if (output) {
+                generalPath.moveTo (size, 0.0f);
+                generalPath.lineTo (0.0f, -side);
+                generalPath.lineTo (0.0f, +side);
+            } else {
+                generalPath.moveTo (0.0f, 0.0f);
+                generalPath.lineTo (size, -side);
+                generalPath.lineTo (size, +side);
+            }
         }
 
         public boolean isLineOriented () {
@@ -96,17 +108,6 @@ public interface AnchorShape {
         }
 
         public void paint (Graphics2D graphics, boolean source) {
-            GeneralPath generalPath = new GeneralPath ();
-            float side = size * 0.3f;
-            if (output) {
-                generalPath.moveTo (size, 0.0f);
-                generalPath.lineTo (0.0f, -side);
-                generalPath.lineTo (0.0f, +side);
-            } else {
-                generalPath.moveTo (0.0f, 0.0f);
-                generalPath.lineTo (size, -side);
-                generalPath.lineTo (size, +side);
-            }
             if (filled)
                 graphics.fill (generalPath);
             else
