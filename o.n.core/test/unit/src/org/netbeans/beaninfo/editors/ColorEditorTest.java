@@ -57,6 +57,30 @@ public class ColorEditorTest extends TestCase {
         Color restoredColor = (Color)propEd.getValue();
         System.out.println("restoredColor "+restoredColor);
         assertEquals("Restored value has to be the same", sc, restoredColor);
-//        assertTrue("It is SuperColor", restoredColor instanceof ColorEditor.SuperColor);
+        assertTrue("It is SuperColor", restoredColor instanceof ColorEditor.SuperColor);
+        assertEquals ("Generate Java source with UI color.", "javax.swing.UIManager.getDefaults().getColor(\"TextField.inactiveBackground\")", propEd.getJavaInitializationString ());
+    }
+    
+    public void testGetValue () throws Exception {
+        Color c = new Color (16, 16, 16);
+        System.out.println("original "+c);
+        XMLPropertyEditor propEd = new ColorEditor();
+        propEd.setValue(c);
+        Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+        Node element = propEd.storeToXML(doc);
+
+        NamedNodeMap nodeMap = element.getAttributes();
+        for (int i = 0; i < nodeMap.getLength(); i++) {
+            System.out.println("attr "+i+", "+nodeMap.item(i));
+        }
+        
+        propEd.readFromXML(element);
+        Color restoredColor = (Color)propEd.getValue();
+        System.out.println("restoredColor "+restoredColor);
+        assertEquals("Restored value has to be the same", c, restoredColor);
+        assertTrue("It is Color", restoredColor instanceof Color);
+        assertFalse("It is not SuperColor", restoredColor instanceof ColorEditor.SuperColor);
+        System.out.println("GENERATE: " + propEd.getJavaInitializationString ());
+        assertEquals ("Generate Java source with UI color.", "new java.awt.Color(16, 16, 16)", propEd.getJavaInitializationString ());
     }
 }

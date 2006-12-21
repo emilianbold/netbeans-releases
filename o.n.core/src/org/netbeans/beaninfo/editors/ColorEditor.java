@@ -54,7 +54,6 @@ import javax.swing.ListCellRenderer;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import org.netbeans.core.UIExceptions;
-
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.util.NbBundle;
 
@@ -213,7 +212,12 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
      * @return <code>Color</code> value or <code>null</code> */
     public Object getValue () {
         if (superColor != null) {
-            return superColor.getColor ();
+            if (superColor.getID () != null) {
+                return superColor;
+            } else {
+                return superColor.getColor ();
+            }
+            
         } else {
             return null;
         }
@@ -535,7 +539,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
         int i, k = swingColorNames.length;
         for (i = 0; i < k; i++)
             swingColors [i] = (Color) def.get (swingColorNames [i]);
-    }
+            }
 
     private SuperColor getSuperColor () {
         return superColor;
