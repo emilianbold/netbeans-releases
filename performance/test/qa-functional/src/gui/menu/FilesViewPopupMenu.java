@@ -64,12 +64,4 @@ public class FilesViewPopupMenu extends ValidatePopupMenuOnNodes {
         return filesTab.getProjectNode("PerformanceTestData");
     }
 
-    private Node getWebProjectNode() {
-        if(filesTab==null)
-            filesTab = new FilesTabOperator();
-        
-        return filesTab.getProjectNode("PerformanceTestWebApplication");
-    }
-    
-    
 }

@@ -50,8 +50,8 @@ public class MeasureActions  {
         suite.addTest(new OpenFilesWithOpenedEditor("testOpening20kBXmlFile", "Open Xml file (20kB) if Editor opened"));
         
         
-        suite.addTest(new OpenJspFile("testOpening20kBJSPFile", "Open JSP file"));
-        suite.addTest(new OpenJspFileWithOpenedEditor("testOpening20kBJSPFile", "Open JSP file if Editor opened"));
+//TODO tomcat is no more part of the build        suite.addTest(new OpenJspFile("testOpening20kBJSPFile", "Open JSP file"));
+//TODO tomcat is no more part of the build        suite.addTest(new OpenJspFileWithOpenedEditor("testOpening20kBJSPFile", "Open JSP file if Editor opened"));
         
         suite.addTest(new OpenFilesNoCloneableEditor("testOpening20kBPropertiesFile", "Open Properties file (20kB)"));
         suite.addTest(new OpenFilesNoCloneableEditorWithOpenedEditor("testOpening20kBPropertiesFile", "Open Properties file (20kB) if Editor opened"));
