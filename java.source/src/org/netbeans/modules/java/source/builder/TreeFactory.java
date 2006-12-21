@@ -310,7 +310,7 @@ public class TreeFactory implements TreeMakerInt {
     public LiteralTree Literal(Object value) {
         try {
             if (value instanceof Boolean)  // workaround for javac issue 6504896
-                return make.Literal(TypeTags.BOOLEAN, value);
+                return make.Literal(TypeTags.BOOLEAN, value == Boolean.FALSE ? 0 : 1);
             // workaround for making NULL_LITERAL kind.
             if (value == null) {
                 return make.Literal(TypeTags.BOT, value);

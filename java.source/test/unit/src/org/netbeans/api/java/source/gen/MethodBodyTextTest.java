@@ -18,12 +18,16 @@
  */
 package org.netbeans.api.java.source.gen;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
 import java.io.IOException;
 import java.util.Collections;
 import javax.lang.model.element.Modifier;
+import java.util.Collections;
 import javax.lang.model.type.TypeKind;
 import com.sun.source.tree.*;
 import junit.textui.TestRunner;
+import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -47,10 +51,11 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-//        suite.addTestSuite(MethodBodyTextTest.class);
-        suite.addTest(new MethodBodyTextTest("testSetBodyText"));
-        suite.addTest(new MethodBodyTextTest("testCreateWithBodyText"));
-        suite.addTest(new MethodBodyTextTest("testModifyBodyText"));
+        suite.addTestSuite(MethodBodyTextTest.class);
+//        suite.addTest(new MethodBodyTextTest("testSetBodyText"));
+//        suite.addTest(new MethodBodyTextTest("testCreateWithBodyText"));
+//        suite.addTest(new MethodBodyTextTest("testModifyBodyText"));
+//        suite.addTest(new MethodBodyTextTest("testCreateReturnBooleanBodyText"));
         return suite;
     }
     
@@ -131,6 +136,35 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
             getFile(getGoldenDir(), getGoldenPckg() + "testCreateWithBodyText_MethodBodyTextTest.pass")
         );
         assertEquals(golden, res);
+    }
+    
+    public void testCreateReturnBooleanBodyText() throws java.io.IOException, FileStateInvalidException {
+        process(
+            new MutableTransformer<Void, Object>() {
+                public Void visitClass(ClassTree node, Object p) {
+                    super.visitClass(node, p);
+                    StringBuffer body = new StringBuffer();
+                    body.append("{ return false; }");
+                    MethodTree method = Method(
+                            make.Modifiers(Collections.singleton(Modifier.PUBLIC)),
+                            "equals",
+                            make.PrimitiveType(TypeKind.BOOLEAN),
+                            Collections.EMPTY_LIST,
+                            Collections.EMPTY_LIST,
+                            Collections.EMPTY_LIST,
+                            body.toString(),
+                            null
+                            );
+                    ClassTree clazz = make.addClassMember(node, method);
+                    changes.rewrite(node, clazz);
+                    return null;
+                }
+            }
+        );
+        // there is "return 0" instead
+        String result = TestUtilities.copyFileToString(testFile);
+        System.err.println(result);
+        assertTrue(result.contains("return false"));
     }
     
     public void testModifyBodyText() throws java.io.IOException, FileStateInvalidException {
