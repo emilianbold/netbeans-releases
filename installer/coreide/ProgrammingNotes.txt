@@ -11,7 +11,8 @@ Target 'build' builds installers for 4 supported platforms with language
 support for English (en).
 
 Target 'build-ml' builds installers for 4 supported platforms with language
-support for English (an), Japanese (ja) and Simplified Chinese (zh).
+support for en, ja, pt_BR, zh (Bundle.properties for zh, zh_CN in simplified chinese; zh_HK, zh_TW
+stay in english due to problem in InstallShield).
 Suffix '-ml' is added to installer.basename.
 
 Supported platforms are:

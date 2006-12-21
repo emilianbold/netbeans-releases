@@ -28,9 +28,10 @@ Microsystems, Inc. All Rights Reserved.
 
   <!-- Enable LanguageSupport for ja,zh. Used to build ML installer. -->
   <xsl:template match="section[@name='Build']/buildConfiguration[@name='Default']/property[@name='support']/arrayItem[@type='com.installshield.isje.build.LanguageSupport']/property[@name='locales']">
-            <property array="True" length="3" name="locales" type="string">
+            <property array="True" length="4" name="locales" type="string">
                 <arrayItem>en</arrayItem>
                 <arrayItem>ja</arrayItem>
+                <arrayItem>pt_BR</arrayItem>
                 <arrayItem>zh</arrayItem>
             </property>
   </xsl:template>
