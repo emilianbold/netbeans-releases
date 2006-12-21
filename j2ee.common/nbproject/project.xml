@@ -264,29 +264,18 @@ Microsystems, Inc. All Rights Reserved.
             </test-dependencies>
             <friend-packages>
                 <friend>com.sun.rave.project.jsfproject</friend>
+                <friend>org.netbeans.modules.j2ee.archive</friend>
                 <friend>org.netbeans.modules.j2ee.clientproject</friend>
                 <friend>org.netbeans.modules.j2ee.earproject</friend>
-                <!-- Commented out due to issue 89883
-                <friend>org.netbeans.modules.j2ee.archive</friend>
-                <friend>org.netbeans.modules.j2ee.ddloaders</friend>
-                <friend>org.netbeans.modules.j2ee.ejbcore</friend>
-                -->
                 <friend>org.netbeans.modules.j2ee.ejbfreeform</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.j2ee.persistence</friend>
-                <!-- Commented out due to issue 89883
-                <friend>org.netbeans.modules.j2ee.refactoring</friend>
-                <friend>org.netbeans.modules.j2ee.verification</friend>
-                -->
                 <friend>org.netbeans.modules.mobility.end2end</friend>
                 <friend>org.netbeans.modules.web.core</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.web.struts</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>
-                <!-- Commented out due to issue 89883
-                <friend>org.netbeans.modules.websvc.jaxrpc</friend>
-                -->
                 <package>org.netbeans.modules.j2ee.common</package>
                 <package>org.netbeans.modules.j2ee.common.method</package>
                 <package>org.netbeans.modules.j2ee.common.queries.api</package>

@@ -33,24 +33,26 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
             </folder>
         </folder>
-    <attr name="Classes/ArchivePersistence" boolvalue="true"/>
-    <attr name="Databases/ArchivePersistence" boolvalue="true"/>
-    <attr name="J2EE/ArchivePersistence" boolvalue="true"/>
-    <attr name="JSP_Servlet/ArchivePersistence" boolvalue="true"/>
-    <attr name="WebServices/ArchivePersistence" boolvalue="true"/>
-    <attr name="SunResources/ArchivePersistence" boolvalue="true"/>    
-    <folder name="ArchivePersistence">
-      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.archive.project.Bundle"/> <!-- stringvalue="org.netbeans.modules.dbschema.jdbcimpl.resources.Bundle"/> -->
-      <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/dbschema/jdbcimpl/resources/Databases.html" />
-
-      <file name="Schema.dbschema"> <!-- url="templates/Schema.template"> -->
-         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.archive.project.Bundle"/> <!-- stringvalue="org.netbeans.modules.dbschema.jdbcimpl.resources.Bundle"/> -->
-         <attr name="template" boolvalue="true" />
-         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/dbschema/jdbcimpl/resources/DBSchema.html" />
-         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.dbschema.jdbcimpl.wizard.DBSchemaWizardIterator.singleton" />
-         <attr name="templateCategory" stringvalue="web-types,ejb-types"/>
-      </file>
-      <attr name="Database Schema.dbschema/JDBC Form Wizard.java" boolvalue="true"/>
-    </folder>
+        <!-- 
+        <attr name="Classes/ArchivePersistence" boolvalue="true"/>
+        <attr name="Databases/ArchivePersistence" boolvalue="true"/>
+        <attr name="J2EE/ArchivePersistence" boolvalue="true"/>
+        <attr name="JSP_Servlet/ArchivePersistence" boolvalue="true"/>
+        <attr name="WebServices/ArchivePersistence" boolvalue="true"/>
+        <attr name="SunResources/ArchivePersistence" boolvalue="true"/>    
+        <folder name="ArchivePersistence">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.archive.project.Bundle"/> <!- stringvalue="org.netbeans.modules.dbschema.jdbcimpl.resources.Bundle"/> ->
+            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/dbschema/jdbcimpl/resources/Databases.html" />
+            
+            <file name="Schema.dbschema"> <!- url="templates/Schema.template"> ->
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.archive.project.Bundle"/> <!- stringvalue="org.netbeans.modules.dbschema.jdbcimpl.resources.Bundle"/> ->
+                <attr name="template" boolvalue="true" />
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/dbschema/jdbcimpl/resources/DBSchema.html" />
+                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.dbschema.jdbcimpl.wizard.DBSchemaWizardIterator.singleton" />
+                <attr name="templateCategory" stringvalue="web-types,ejb-types"/>
+            </file>
+            <attr name="Database Schema.dbschema/JDBC Form Wizard.java" boolvalue="true"/>
+        </folder>
+        -->
     </folder>
 </filesystem>
