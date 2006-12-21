@@ -87,7 +87,7 @@ public class InstallerTest extends TestCase {
         assertEquals("Mnemonics", 'S', b.getMnemonic());
     }
 
-    public void tesCanDefineExitButton() throws Exception {
+    public void testCanDefineExitButton() throws Exception {
         String page = "<html><body><form action='http://xyz.cz' method='POST'>" +
             "\n" +
             "<input type='hidden' name='submit' value=\"&amp;Send Feedback\"/>" +
@@ -116,7 +116,7 @@ public class InstallerTest extends TestCase {
         b = (JButton)buttons[1];
         assertEquals("It is named", "Cancel", b.getText());
         assertNull("No url", b.getClientProperty("url"));
-        assertEquals("Mnemonics", -1, b.getMnemonic());
+        assertEquals("Mnemonics", 'C', b.getMnemonic());
     }
 
     public void testReadAllButtons() throws Exception {

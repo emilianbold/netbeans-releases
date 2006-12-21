@@ -218,17 +218,6 @@ public class Installer extends ModuleInstall {
                         continue;
                     }
 
-                    /*
-                    if ("hidden".equals(type) && "exit".equals(name)) { // NOI18N
-                        f.submitValue = value;
-                        JButton b = new JButton();
-                        Mnemonics.setLocalizedText(b, f.submitValue);
-                        b.setActionCommand("submit"); // NOI18N
-                        b.putClientProperty("url", f.url); // NOI18N
-                        b.setDefaultCapable(buttons.isEmpty());
-                        buttons.add(b);
-                    }
-                     */
                     
                     if ("hidden".equals(type)) { // NOI18N
                         JButton b = new JButton();
@@ -236,6 +225,9 @@ public class Installer extends ModuleInstall {
                         b.setActionCommand(name);
                         b.setDefaultCapable(buttons.isEmpty());
                         buttons.add(b);
+                        if ("exit".equals(name)) { // NOI18N
+                            defaultButton = null;
+                        }
                     }
                 }
             }
