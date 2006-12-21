@@ -19,11 +19,15 @@
 
 package org.netbeans.modules.editor.settings.storage;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import javax.swing.KeyStroke;
@@ -44,6 +48,64 @@ import org.openide.util.Utilities;
 public class Utils {
     
     private static final Logger LOG = Logger.getLogger(Utils.class.getName());
+    
+    private static final Map<Color, String> colorToName = new HashMap<Color, String>();
+    private static final Map<String, Color> nameToColor = new HashMap<String, Color>();
+    private static final Map<String, Integer> nameToFontStyle = new HashMap<String, Integer>();
+    private static final Map<Integer, String> fontStyleToName = new HashMap<Integer, String>();
+    static {
+        colorToName.put (Color.black, "black");
+        nameToColor.put ("black", Color.black);
+        colorToName.put (Color.blue, "blue");
+        nameToColor.put ("blue", Color.blue);
+        colorToName.put (Color.cyan, "cyan");
+        nameToColor.put ("cyan", Color.cyan);
+        colorToName.put (Color.darkGray, "darkGray");
+        nameToColor.put ("darkGray", Color.darkGray);
+        colorToName.put (Color.gray, "gray");
+        nameToColor.put ("gray", Color.gray);
+        colorToName.put (Color.green, "green");
+        nameToColor.put ("green", Color.green);
+        colorToName.put (Color.lightGray, "lightGray");
+        nameToColor.put ("lightGray", Color.lightGray);
+        colorToName.put (Color.magenta, "magenta");
+        nameToColor.put ("magenta", Color.magenta);
+        colorToName.put (Color.orange, "orange");
+        nameToColor.put ("orange", Color.orange);
+        colorToName.put (Color.pink, "pink");
+        nameToColor.put ("pink", Color.pink);
+        colorToName.put (Color.red, "red");
+        nameToColor.put ("red", Color.red);
+        colorToName.put (Color.white, "white");
+        nameToColor.put ("white", Color.white);
+        colorToName.put (Color.yellow, "yellow");
+        nameToColor.put ("yellow", Color.yellow);
+        
+        nameToFontStyle.put ("plain", new Integer (Font.PLAIN));
+        fontStyleToName.put (new Integer (Font.PLAIN), "plain");
+        nameToFontStyle.put ("bold", new Integer (Font.BOLD));
+        fontStyleToName.put (new Integer (Font.BOLD), "bold");
+        nameToFontStyle.put ("italic", new Integer (Font.ITALIC));
+        fontStyleToName.put (new Integer (Font.ITALIC), "italic");
+        nameToFontStyle.put ("bold+italic", new Integer (Font.BOLD + Font.ITALIC));
+        fontStyleToName.put (new Integer (Font.BOLD + Font.ITALIC), "bold+italic");
+    }
+    
+    static String colorToString (Color color) {
+	if (colorToName.containsKey (color))
+	    return (String) colorToName.get (color);
+	return Integer.toHexString (color.getRGB ());
+    }
+    
+    static Color stringToColor (String color) throws Exception {
+	if (nameToColor.containsKey (color))
+	    return (Color) nameToColor.get (color);
+        try {
+            return new Color ((int) Long.parseLong (color, 16));
+        } catch (NumberFormatException ex) {
+            throw new Exception ();
+        }
+    }
     
     static String keyStrokesToString (Collection<KeyStroke> keys) {
         StringBuffer sb = new StringBuffer ();
