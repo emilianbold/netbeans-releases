@@ -85,7 +85,7 @@ public class LLSyntaxAnalyser {
     
     private ASTNodeImpl read (TokenInput input, boolean embeded, boolean skipErrors) throws ParseException {
         if (rules.isEmpty () || input.eof ())
-            return new ASTNodeImpl (null, "Root", -1, null, 0);
+            return new ASTNodeImpl (null, "Root", -1, 0);
         if (first == null) {
             first = Petra.first2 (rules);
             boolean hasConflicts = AnalyserAnalyser.printConflicts (first, null);
@@ -129,7 +129,7 @@ public class LLSyntaxAnalyser {
                         throw new ParseException ("No rule for " + input.next (1) + " in " + input, root);
                     if (input.eof ()) {
                         if (node == null)
-                            root = node = new ASTNodeImpl (mimeType, "Root", -1, null, offset);
+                            root = node = new ASTNodeImpl (mimeType, "Root", -1, offset);
                         getErrorNode (node, offset);
                         //S ystem.out.println(input.getIndex () + ": unexpected eof " + nt);
                         return root;
@@ -313,8 +313,8 @@ public class LLSyntaxAnalyser {
             String      mimeType, 
             String      nt, 
             int         rule, 
-            List        children,
-            int         offset
+            int         offset,
+            List        children
         ) {
             this (mimeType, nt, rule, offset);
             Iterator it = children.iterator ();
