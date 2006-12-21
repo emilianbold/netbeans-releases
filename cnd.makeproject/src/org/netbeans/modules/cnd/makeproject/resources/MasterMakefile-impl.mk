@@ -1,5 +1,5 @@
 # 
-# Gererated Makefile - do not edit! 
+# Generated Makefile - do not edit! 
 # 
 # Edit the Makefile in the project folder instead (../Makefile). Each target
 # has a pre- and a post- target defined where you can add customization code.

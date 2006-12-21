@@ -80,7 +80,7 @@ public class EnvPanel extends javax.swing.JPanel implements HelpCtx.Provider, Pr
     }
 
     public HelpCtx getHelpCtx() {
-	return new HelpCtx(EnvPanel.class );
+	return new HelpCtx("Environment"); // NOI18N
     }
 
     

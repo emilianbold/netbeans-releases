@@ -41,20 +41,18 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
     
     public InheritanceImpl(AST ast, CsmFile file) {
         super(ast, file);
+        render(ast);
     }
 
     public boolean isVirtual() {
-        renderIfNeed();
         return virtual;
     }
 
     public CsmVisibility getVisibility() {
-        renderIfNeed();
         return visibility;
     }
 
     public CsmClass getCsmClass() {
-        renderIfNeed();
         if (ancestorCache == null || !ancestorCache.isValid())
         {
             ancestorCache = (CsmClass)getContainingFile().getProject().findClassifier(ancestorName);
@@ -62,15 +60,9 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
         return ancestorCache;
     }
     
-    private void renderIfNeed() {
-        if( visibility == null ) {
-            render();
-        }
-    }
-    
-    private void render() {
+    private void render(AST node) {
         visibility = CsmVisibility.PRIVATE;
-        for( AST token = getAst().getFirstChild(); token != null; token = token.getNextSibling() ) {
+        for( AST token = node.getFirstChild(); token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.LITERAL_private:
                     visibility = CsmVisibility.PRIVATE;

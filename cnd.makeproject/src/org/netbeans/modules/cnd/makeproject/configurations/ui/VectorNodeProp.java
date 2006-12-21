@@ -21,6 +21,7 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
+import java.io.File;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
@@ -95,7 +96,7 @@ public class VectorNodeProp extends PropertySupport {
         
         public void setAsText(String text) {
 	    Vector newList = new Vector();
-	    StringTokenizer st = new StringTokenizer(text, " ,"); // NOI18N
+	    StringTokenizer st = new StringTokenizer(text, File.pathSeparator); // NOI18N
 	    while (st.hasMoreTokens()) {
 		newList.add(st.nextToken());
 	    }
@@ -107,7 +108,7 @@ public class VectorNodeProp extends PropertySupport {
 	    String ret = ""; // NOI18N
 	    for (int i = 0; i < value.size(); i++) {
 		if (addSep)
-		    ret += ", "; // NOI18N
+		    ret += File.pathSeparator; // NOI18N
 		ret += (String)value.elementAt(i);
 		addSep = true;
 	    }

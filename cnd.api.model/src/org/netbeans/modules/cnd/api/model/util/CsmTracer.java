@@ -194,6 +194,7 @@ public class CsmTracer {
         indent();
         print("DEFINITION: " + toString(fun.getDefinition()));
         print("SIGNATURE " + fun.getSignature());
+        print("UNIQUE NAME " + fun.getUniqueName());
         dumpParameters(fun.getParameters());
         print("RETURNS " + toString(fun.getReturnType()));
         unindent();
@@ -203,6 +204,8 @@ public class CsmTracer {
         CsmFunction decl = fun.getDeclaration();
         print("FUNCTION DEFINITION " + fun.getName() + ' ' + getOffsetString(fun) + ' ' + getBriefClassName(fun));
         indent();
+        print("SIGNATURE " + fun.getSignature());
+        print("UNIQUE NAME " + fun.getUniqueName());
         print("DECLARATION: " + toString(decl));
         dumpParameters(fun.getParameters());
         print("RETURNS " + toString(fun.getReturnType()));
@@ -384,7 +387,7 @@ public class CsmTracer {
         for( Iterator iter = getSortedDeclarations(nsp); iter.hasNext(); ) {
             dumpModel((CsmDeclaration) iter.next());
         }
-        for( Iterator iter = nsp.getNestedNamespaces().iterator(); iter.hasNext(); ) {
+        for( Iterator iter = getSortedNestedNamespaces(nsp); iter.hasNext(); ) {
             dumpModel((CsmNamespace) iter.next());
         }
         if( ! nsp.isGlobal() ) {
@@ -400,6 +403,15 @@ public class CsmTracer {
         }
         return map.values().iterator();
     }
+    
+    private Iterator getSortedNestedNamespaces(CsmNamespace nsp) {
+        SortedMap map = new TreeMap();
+        for( Iterator iter = nsp.getNestedNamespaces().iterator(); iter.hasNext(); ) {
+            CsmNamespace decl = (CsmNamespace) iter.next();
+            map.put(decl.getQualifiedName(), decl);
+        }
+        return map.values().iterator();
+    }    
     
     private static String getSortKey(CsmDeclaration declaration) {
         StringBuffer sb = new StringBuffer();
@@ -452,7 +464,22 @@ public class CsmTracer {
     
     public void dumpModel(CsmVariable var) {
         print("VARIABLE " + toString(var));
+        CsmVariableDefinition def = var.getDefinition();
+        if (def != null){
+            indent();
+            print("DEFINITION: " + toString(def));
+            unindent();
+        }
     }
+    
+    public void dumpModel(CsmVariableDefinition var) {
+        CsmVariable decl = var.getDeclaration();
+        print("VARIABLE DEFINITION " + toString(var));
+        indent();
+        print("DECLARATION: " + toString(decl));
+        unindent();
+    }
+
     
     public void dumpModel(CsmField field) {
         StringBuffer sb = new StringBuffer("FIELD ");
@@ -506,6 +533,9 @@ public class CsmTracer {
 //        else if( decl.getKind() == CsmDeclaration.Kind.TYPEDEF ) {
 //            return false;
 //        }
+        else if( decl.getKind() == CsmDeclaration.Kind.VARIABLE_DEFINITION ) {
+            return false;
+        }
         else if( decl.getKind() == CsmDeclaration.Kind.VARIABLE ) {
             if( CsmKindUtilities.isLocalVariable(decl) ) {
                 return false;
@@ -532,6 +562,8 @@ public class CsmTracer {
             dumpModel((CsmFunctionDefinition) decl);
         } else if( decl.getKind() == CsmDeclaration.Kind.VARIABLE ) {
             dumpModel((CsmVariable) decl);
+        } else if( decl.getKind() == CsmDeclaration.Kind.VARIABLE_DEFINITION ) {
+            dumpModel((CsmVariableDefinition) decl);
         } else if( decl.getKind() == CsmDeclaration.Kind.NAMESPACE_ALIAS ) {
             dumpModel((CsmNamespaceAlias) decl);
         } else if( decl.getKind() == CsmDeclaration.Kind.USING_DECLARATION ) {
@@ -600,6 +632,8 @@ public class CsmTracer {
                 dumpModel((CsmField) member);
             } else if( member.getKind() == CsmDeclaration.Kind.FUNCTION ) {
                 dumpModel((CsmFunction) member);
+            } else if ( member.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ) { // inline function
+                dumpModel((CsmFunctionDefinition) member);
             } else {
                 StringBuffer sb = new StringBuffer(member.getKind().toString());
                 sb.append(' ');

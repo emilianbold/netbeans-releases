@@ -46,6 +46,11 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerCo
 
 /**
  * History:
+ * V31:
+ *   Now emitting compiler tool info for makefile based projects. This affects 
+ *   cCompilerTool, ccCompilerTool, and fortranCompilerTool elements.
+ * V30:
+ *   added PROJECT_MAKEFILE_ELEMENT (project makefile name)
  * V29:
  *   added FORTRANCOMPILERTOOL_ELEMENT
  */
@@ -53,7 +58,7 @@ abstract class CommonConfigurationXMLCodec
     extends XMLDecoder
     implements XMLEncoder {
 
-    protected final static int CURRENT_VERSION = 30;
+    protected final static int CURRENT_VERSION = 31;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor";
@@ -204,9 +209,9 @@ abstract class CommonConfigurationXMLCodec
 	    if (publicLocation) {
                 writeToolsSetBlock(xes, makeConfiguration);
 		if (makeConfiguration.isCompileConfiguration())
-		    writeNewConfBlock(xes, makeConfiguration);
+		    writeCompiledProjectConfBlock(xes, makeConfiguration);
 		if (makeConfiguration.isMakefileConfiguration())
-		    writeExtConfBlock(xes, makeConfiguration);
+		    writeMakefileProjectConfBlock(xes, makeConfiguration);
 		ConfigurationAuxObject[] profileAuxObjects = confs.getConf(i).getAuxObjects();
 		for (int j = 0; j < profileAuxObjects.length; j++) {
 		    ConfigurationAuxObject auxObject = profileAuxObjects[j];
@@ -238,7 +243,7 @@ abstract class CommonConfigurationXMLCodec
 	xes.elementClose(TOOLS_SET_ELEMENT);
     }
 
-    private void writeNewConfBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
+    private void writeCompiledProjectConfBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
 	xes.elementOpen(COMPILE_TYPE_ELEMENT);
 	writeCCompilerConfiguration(xes, makeConfiguration.getCCompilerConfiguration());
 	writeCCCompilerConfiguration(xes, makeConfiguration.getCCCompilerConfiguration());
@@ -250,15 +255,17 @@ abstract class CommonConfigurationXMLCodec
 	xes.elementClose(COMPILE_TYPE_ELEMENT);
     }
 
-    private void writeExtConfBlock(XMLEncoderStream xes,
-				   MakeConfiguration extConf) {
-	
+    private void writeMakefileProjectConfBlock(XMLEncoderStream xes,
+				   MakeConfiguration makeConfiguration) {
 	xes.elementOpen(MAKEFILE_TYPE_ELEMENT);
 	xes.elementOpen(MAKETOOL_ELEMENT);
-	xes.element(BUILD_COMMAND_WORKING_DIR_ELEMENT, extConf.getMakefileConfiguration().getBuildCommandWorkingDir().getValue());
-	xes.element(BUILD_COMMAND_ELEMENT, extConf.getMakefileConfiguration().getBuildCommand().getValue());
-	xes.element(CLEAN_COMMAND_ELEMENT, extConf.getMakefileConfiguration().getCleanCommand().getValue());
-	xes.element(EXECUTABLE_PATH_ELEMENT, extConf.getMakefileConfiguration().getOutput().getValue());
+	xes.element(BUILD_COMMAND_WORKING_DIR_ELEMENT, makeConfiguration.getMakefileConfiguration().getBuildCommandWorkingDir().getValue());
+	xes.element(BUILD_COMMAND_ELEMENT, makeConfiguration.getMakefileConfiguration().getBuildCommand().getValue());
+	xes.element(CLEAN_COMMAND_ELEMENT, makeConfiguration.getMakefileConfiguration().getCleanCommand().getValue());
+	xes.element(EXECUTABLE_PATH_ELEMENT, makeConfiguration.getMakefileConfiguration().getOutput().getValue());
+	writeCCompilerConfiguration(xes, makeConfiguration.getCCompilerConfiguration());
+	writeCCCompilerConfiguration(xes, makeConfiguration.getCCCompilerConfiguration());
+	writeFortranCompilerConfiguration(xes, makeConfiguration.getFortranCompilerConfiguration());
 	xes.elementClose(MAKETOOL_ELEMENT);
 	xes.elementClose(MAKEFILE_TYPE_ELEMENT);
     }

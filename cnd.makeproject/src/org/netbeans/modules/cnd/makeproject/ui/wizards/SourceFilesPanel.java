@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -22,19 +22,21 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 import java.awt.Color;
 import java.awt.Component;
 import java.io.File;
+import java.util.StringTokenizer;
 import java.util.Vector;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import org.netbeans.modules.cnd.api.utils.AllFileFilter;
 import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.CCSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.CSourceFileFilter;
@@ -42,6 +44,8 @@ import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.FortranSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.HeaderSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.utils.ResourceFileFilter;
+import org.netbeans.modules.cnd.api.utils.SourceFileFilter;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 
 public class SourceFilesPanel extends javax.swing.JPanel {
@@ -63,7 +67,9 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         filterComboBox.addItem(HeaderSourceFileFilter.getInstance());
         if (MakeOptions.getInstance().getFortran())
             filterComboBox.addItem(FortranSourceFileFilter.getInstance());
+        filterComboBox.addItem(ResourceFileFilter.getInstance());
         filterComboBox.addItem(AllSourceFileFilter.getInstance());
+        filterComboBox.addItem(AllFileFilter.getInstance());
         filterComboBox.setSelectedItem(AllSourceFileFilter.getInstance());
         
         refresh();
@@ -75,8 +81,34 @@ public class SourceFilesPanel extends javax.swing.JPanel {
     }
     
     public Vector getListData() {
-        FolderEntry.setFileFilter((FileFilter)filterComboBox.getSelectedItem());
+        //FolderEntry.setFileFilter((FileFilter)filterComboBox.getSelectedItem());
+        String suffixes = (String)filterComboBox.getSelectedItem();
+        FolderEntry.setFileFilter(new CustomFileFilter(suffixes));
         return data;
+    }
+    
+    private class CustomFileFilter extends SourceFileFilter {
+        String[] suffixes;
+        CustomFileFilter(String suffixesString) {
+            StringTokenizer st = new StringTokenizer(suffixesString);
+            Vector vec = new Vector();
+            while (st.hasMoreTokens()) {
+                String nextToken = st.nextToken();
+                if (nextToken.charAt(0) == '.')
+                    nextToken = nextToken.substring(1);
+                vec.add(nextToken);
+            }
+            suffixes = (String[])vec.toArray(new String[vec.size()]);
+        }
+
+        public String getDescription() {
+            return ""; // NOI18N
+        }
+
+        public String[] getSuffixes() {
+            return suffixes;
+        }
+
     }
     
     private class TargetSelectionListener implements ListSelectionListener {
@@ -185,51 +217,6 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         }
     }
     
-//    public class FolderEntry {
-//        private File file;
-//        private String folderName;
-//        private boolean addSubfolders;
-//        private FileFilter fileFilter;
-//        
-//        public FolderEntry(File file, String folderName) {
-//            this.file = file;
-//            this.folderName = folderName;
-//            addSubfolders = true;
-//        }
-//        
-//        public String getFolderName() {
-//            return folderName;
-//        }
-//        
-//        public void setFolderName(String file) {
-//            this.folderName = file;
-//        }
-//        
-//        public boolean isAddSubfoldersSelected() {
-//            return addSubfolders;
-//        }
-//        
-//        public void setAddSubfoldersSelected(boolean selected) {
-//            this.addSubfolders = selected;
-//        }
-//
-//        public File getFile() {
-//            return file;
-//        }
-//
-//        public void setFile(File file) {
-//            this.file = file;
-//        }
-//
-//        public FileFilter getFileFilter() {
-//            return fileFilter;
-//        }
-//
-//        public void setFileFilter(FileFilter fileFilter) {
-//            this.fileFilter = fileFilter;
-//        }
-//    }
-    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -292,7 +279,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(1, 0, 0, 0);
         buttonPanel.add(addButton, gridBagConstraints);
 
-        deleteButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("DeleteButtonTxt").charAt(0));
+        deleteButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("DeleteButtonMn").charAt(0));
         deleteButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("DeleteButtonTxt"));
         deleteButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -325,7 +312,14 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         add(filterText, gridBagConstraints);
 
+        filterComboBox.setEditable(true);
         filterComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        filterComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filterComboBoxActionPerformed(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -335,6 +329,17 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         add(filterComboBox, gridBagConstraints);
 
     }// </editor-fold>//GEN-END:initComponents
+    
+    private void filterComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterComboBoxActionPerformed
+        JComboBox cb = (JComboBox)evt.getSource();
+        if (cb.getSelectedItem() instanceof SourceFileFilter) {
+            SourceFileFilter fileFilter = (SourceFileFilter)cb.getSelectedItem();
+            if (fileFilter != null) {
+                String suffixes = fileFilter.getSuffixesAsString();
+                cb.setSelectedItem(suffixes);
+            }
+        }
+    }//GEN-LAST:event_filterComboBoxActionPerformed
     
     private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
         int index = sourceFileTable.getSelectedRow();

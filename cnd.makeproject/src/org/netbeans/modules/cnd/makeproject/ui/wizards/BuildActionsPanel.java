@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.io.File;
+import java.text.MessageFormat;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -29,7 +30,7 @@ import org.netbeans.modules.cnd.makeproject.ui.utils.ElfStaticLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.api.utils.MakefileFileFilter;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -40,116 +41,144 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     private DocumentListener documentListener;
     private boolean valid = false;
     private BuildActionsDescriptorPanel buildActionsDescriptorPanel;
-    private String projectName;
-    private String baseDir;
     
-    private static String DEF_WORKING_DIR = "."; // NOI18N
-    private static String DEF_BUILD_COMMAND = "${MAKE} -f Makefile"; // NOI18N
-    private static String DEF_CLEAN_COMMAND = "${MAKE} -f Makefile clean"; // NOI18N
+    private static String DEF_WORKING_DIR = ""; // NOI18N
+    private static String DEF_BUILD_COMMAND = "${MAKE}"; // NOI18N
+    private static String DEF_CLEAN_COMMAND = "${MAKE} clean"; // NOI18N
+    private static String DEF_BUILD_COMMAND_FMT = "{0} -f {1}"; // NOI18N
+    private static String DEF_CLEAN_COMMAND_FMT = "{0} -f {1} clean"; // NOI18N
     
     public BuildActionsPanel(BuildActionsDescriptorPanel buildActionsDescriptorPanel) {
         initComponents();
         instructionsTextArea.setBackground(instructionPanel.getBackground());
-	this.buildActionsDescriptorPanel = buildActionsDescriptorPanel;
-        documentListener = new DocumentListener() {           
+        this.buildActionsDescriptorPanel = buildActionsDescriptorPanel;
+        documentListener = new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
                 update(e);
             }
-
+            
             public void removeUpdate(DocumentEvent e) {
                 update(e);
             }
-
+            
             public void changedUpdate(DocumentEvent e) {
                 update(e);
             }
         };
-
-
-	// Add change listeners
-	buildCommandTextField.getDocument().addDocumentListener(documentListener);
-	buildCommandWorkingDirTextField.getDocument().addDocumentListener(documentListener);
-	cleanCommandTextField.getDocument().addDocumentListener(documentListener);
-	outputTextField.getDocument().addDocumentListener(documentListener);
-
-	// init focus
-	buildCommandWorkingDirTextField.selectAll();
-	buildCommandWorkingDirTextField.requestFocus();
+        
+        
+        // Add change listeners
+        makefileNameTextField.getDocument().addDocumentListener(documentListener);
+        buildCommandTextField.getDocument().addDocumentListener(documentListener);
+        buildCommandWorkingDirTextField.getDocument().addDocumentListener(documentListener);
+        cleanCommandTextField.getDocument().addDocumentListener(documentListener);
+        outputTextField.getDocument().addDocumentListener(documentListener);
+        
+        makefileNameTextField.getDocument().addDocumentListener(new MakefileDocumentListener());
+        
+        // init focus
+        buildCommandWorkingDirTextField.selectAll();
+        buildCommandWorkingDirTextField.requestFocus();
     }
-
+    
+    class MakefileDocumentListener implements DocumentListener {
+        public void changedUpdate( DocumentEvent e ) {
+            makefileFieldChanged();
+        }
+        
+        public void insertUpdate( DocumentEvent e ) {
+            makefileFieldChanged();
+        }
+        
+        public void removeUpdate( DocumentEvent e ) {
+            makefileFieldChanged();
+        }
+    }
+    
+    private void makefileFieldChanged() {
+        File makefile= new File(makefileNameTextField.getText());
+        if (makefile.exists() && makefile.getParent() != null) {
+            buildCommandWorkingDirTextField.setText(FilePathAdaptor.normalize(makefile.getParent()));
+            String buildCommand = MessageFormat.format(DEF_BUILD_COMMAND_FMT, new Object[]{DEF_BUILD_COMMAND, makefile.getName()});
+            String cleanCommand = MessageFormat.format(DEF_CLEAN_COMMAND_FMT, new Object[]{DEF_BUILD_COMMAND, makefile.getName()});
+            buildCommandTextField.setText(buildCommand);
+            cleanCommandTextField.setText(cleanCommand);
+        }
+    }
+    
     private void initFields() {
-	// Set default values
-	buildCommandWorkingDirTextField.setText(DEF_WORKING_DIR);
-	buildCommandTextField.setText(DEF_BUILD_COMMAND);
-	cleanCommandTextField.setText(DEF_CLEAN_COMMAND);
-	outputTextField.setText(""); // NOI18N
+        // Set default values
+        buildCommandWorkingDirTextField.setText(DEF_WORKING_DIR);
+        buildCommandTextField.setText(DEF_BUILD_COMMAND);
+        cleanCommandTextField.setText(DEF_CLEAN_COMMAND);
+        outputTextField.setText(""); // NOI18N
     }
-
+    
     public HelpCtx getHelpCtx() {
         return new HelpCtx(BuildActionsPanel.class);
     }
-
+    
     private boolean ignoreEvent = false;
     private void update(DocumentEvent e) {
         if (ignoreEvent) {
             // side-effect of changes done in this handler
             return;
         }
-
+        
         // start ignoring events
         ignoreEvent = true;
-
-	/*
-        if (buildCommandTextField.getDocument() == e.getDocument()) {
-            antScriptValidityChecked = false;
-            updateAntScriptLocation();
-            updateProjectName();
-            updateProjectFolder();
-        }
-	*/
-	/*
-        if (antScript.getDocument() == e.getDocument()) {
-            antScriptValidityChecked = false;
-            updateProjectName();
-        }
-
-	*/
+        
         // stop ignoring events
         ignoreEvent = false;
-
+        
         buildActionsDescriptorPanel.stateChanged(null);
     }
-
+    
     void read(WizardDescriptor wizardDescriptor) {
-	File projectDir = (File)wizardDescriptor.getProperty("projdir");
-	baseDir = projectDir.getPath();
-	projectName = (String)wizardDescriptor.getProperty("name");
-	initFields();
+        initFields();
     }
-
+    
     void store(WizardDescriptor wizardDescriptor) {
-	if (buildCommandWorkingDirTextField.getText().length() == 0)
-	    buildCommandWorkingDirTextField.setText(".");
-	wizardDescriptor.putProperty("buildCommandWorkingDirTextField", buildCommandWorkingDirTextField.getText()); // NOI18N
-	wizardDescriptor.putProperty("buildCommandTextField", buildCommandTextField.getText()); // NOI18N
-	wizardDescriptor.putProperty("cleanCommandTextField", cleanCommandTextField.getText()); // NOI18N
-	wizardDescriptor.putProperty("outputTextField", outputTextField.getText()); // NOI18N
+        wizardDescriptor.putProperty("makefileNameTextField", makefileNameTextField.getText()); // NOI18N
+        wizardDescriptor.putProperty("buildCommandWorkingDirTextField", buildCommandWorkingDirTextField.getText()); // NOI18N
+        wizardDescriptor.putProperty("buildCommandTextField", buildCommandTextField.getText()); // NOI18N
+        wizardDescriptor.putProperty("cleanCommandTextField", cleanCommandTextField.getText()); // NOI18N
+        wizardDescriptor.putProperty("outputTextField", outputTextField.getText()); // NOI18N
     }
     
     boolean valid(WizardDescriptor settings) {
-	boolean valid = true;
-        String makefileName = (String)settings.getProperty("makefilename"); // NOI18N
-        if (makefileName.equals(MakeConfigurationDescriptor.DEFAULT_PROJECT_MAKFILE_NAME) &&
-                buildCommandWorkingDirTextField.getText().equals(DEF_WORKING_DIR) &&
-                (buildCommandTextField.getText().equals(DEF_BUILD_COMMAND) ||
-                cleanCommandTextField.getText().equals(DEF_CLEAN_COMMAND))) {
-            String msg = NbBundle.getMessage(BuildActionsPanel.class, "BadValues"); // NOI18N
-            buildActionsDescriptorPanel.getWizardDescriptor().putProperty("WizardPanel_errorMessage", msg); // NOI18N
-            valid = false;
+        if (makefileNameTextField.getText().length() == 0 && buildCommandWorkingDirTextField.getText().length() == 0)
+            return false;
+        
+        if (makefileNameTextField.getText().length() > 0) {
+            if (!IpeUtils.isPathAbsolute(makefileNameTextField.getText()) || !new File(makefileNameTextField.getText()).exists()) {
+                String msg = NbBundle.getMessage(BuildActionsPanel.class, "MAKEFILEDOESNOTEXIST"); // NOI18N
+                buildActionsDescriptorPanel.getWizardDescriptor().putProperty("WizardPanel_errorMessage", msg); // NOI18N
+                return false;
+            }
         }
-	return valid;
+        if (buildCommandWorkingDirTextField.getText().length() == 0) {
+            String msg = NbBundle.getMessage(BuildActionsPanel.class, "NOWORKINGDIR"); // NOI18N
+            buildActionsDescriptorPanel.getWizardDescriptor().putProperty("WizardPanel_errorMessage", msg); // NOI18N
+            return false;
+        }
+        if (buildCommandWorkingDirTextField.getText().length() > 0) {
+            if (!IpeUtils.isPathAbsolute(buildCommandWorkingDirTextField.getText()) || !new File(buildCommandWorkingDirTextField.getText()).exists()) {
+                String msg = NbBundle.getMessage(BuildActionsPanel.class, "WORKINGDIRDOESNOTEXIST"); // NOI18N
+                buildActionsDescriptorPanel.getWizardDescriptor().putProperty("WizardPanel_errorMessage", msg); // NOI18N
+                return false;
+            }
+        }
+        if (outputTextField.getText().length() > 0) {
+            if (!IpeUtils.isPathAbsolute(outputTextField.getText())) {
+                String msg = NbBundle.getMessage(BuildActionsPanel.class, "BUILDRESULTNOTABSOLUTE"); // NOI18N
+                buildActionsDescriptorPanel.getWizardDescriptor().putProperty("WizardPanel_errorMessage", msg); // NOI18N
+                return false;
+            }
+        }
+        return true;
     }
-
+    
     /**
      * This method is called from within the constructor to
      * initialize the form.
@@ -172,6 +201,11 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         outputBrowseButton = new javax.swing.JButton();
         instructionPanel = new javax.swing.JPanel();
         instructionsTextArea = new javax.swing.JTextArea();
+        makefileNameLabel = new javax.swing.JLabel();
+        makefileNameTextField = new javax.swing.JTextField();
+        makefileBrowseButton = new javax.swing.JButton();
+        group1Label = new javax.swing.JLabel();
+        group2Label = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -181,13 +215,13 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         buildCommandWorkingDirLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("WORKING_DIR_LBL"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(buildCommandWorkingDirLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -204,7 +238,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 0);
         add(buildCommandWorkingDirBrowseButton, gridBagConstraints);
@@ -214,14 +248,14 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         buildCommandLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("BUILD_COMMAND_LBL"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(buildCommandLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -234,14 +268,14 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         cleanCommandLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("CLEAN_COMMAND_LBL"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(cleanCommandLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -254,13 +288,13 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         outputLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("OUTPUT_LBL"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(outputLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -277,7 +311,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 0);
         add(outputBrowseButton, gridBagConstraints);
@@ -296,7 +330,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
@@ -305,62 +339,132 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(instructionPanel, gridBagConstraints);
 
+        makefileNameLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("MAKEFILE_NAME_MN").charAt(0));
+        makefileNameLabel.setLabelFor(makefileNameTextField);
+        makefileNameLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("MAKEFILE_NAME_LBL"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(makefileNameLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        add(makefileNameTextField, gridBagConstraints);
+
+        makefileBrowseButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("MAKEFILE_BROWSE_BUTTON_MN").charAt(0));
+        makefileBrowseButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("MAKEFILE_BROWSE_BUTTON"));
+        makefileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                makefileBrowseButtonActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        add(makefileBrowseButton, gridBagConstraints);
+
+        group1Label.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("GROUP1_LBL"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(group1Label, gridBagConstraints);
+
+        group2Label.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("GROUP2_LBL"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        add(group2Label, gridBagConstraints);
+
     }// </editor-fold>//GEN-END:initComponents
-
+    
+    private void makefileBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_makefileBrowseButtonActionPerformed
+        String seed = null;
+        if (makefileNameTextField.getText().length() > 0) {
+            seed = makefileNameTextField.getText();
+        } else if (FileChooser.getCurrectChooserFile() != null) {
+            seed = FileChooser.getCurrectChooserFile().getPath();
+        } else {
+            seed = System.getProperty("user.home"); // NOI18N
+        }
+        JFileChooser fileChooser = new FileChooser(
+                "Select Makefile",
+                "Select",
+                JFileChooser.FILES_ONLY,
+                new FileFilter[] {MakefileFileFilter.getInstance()},
+                seed,
+                false
+                );
+        int ret = fileChooser.showOpenDialog(this);
+        if (ret == JFileChooser.CANCEL_OPTION)
+            return;
+        String path = fileChooser.getSelectedFile().getPath();
+        path = FilePathAdaptor.normalize(path);
+        makefileNameTextField.setText(path);
+    }//GEN-LAST:event_makefileBrowseButtonActionPerformed
+    
     private void outputBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_outputBrowseButtonActionPerformed
-	String seed;
-	if (outputTextField.getText().length() == 0) {
-	    seed = baseDir;
-	}
-	else if (IpeUtils.isPathAbsolute(outputTextField.getText())) {
-	    seed = outputTextField.getText();
-	}
-	else {
-	    seed = baseDir + File.separatorChar + outputTextField.getText();
-	}
-	JFileChooser fileChooser = new FileChooser(
-	    "Select Output",
-	    "Select",
-	    JFileChooser.FILES_ONLY,
-	    new FileFilter[] {ElfExecutableFileFilter.getInstance(), ElfStaticLibraryFileFilter.getInstance(), ElfDynamicLibraryFileFilter.getInstance()},
-	    seed,
-	    false
-	    );
+        String seed = null;
+        if (outputTextField.getText().length() > 0) {
+            seed = outputTextField.getText();
+        } else if (buildCommandWorkingDirTextField.getText().length() > 0) {
+            seed = buildCommandWorkingDirTextField.getText();
+        } else if (FileChooser.getCurrectChooserFile() != null) {
+            seed = FileChooser.getCurrectChooserFile().getPath();
+        } else {
+            seed = System.getProperty("user.home"); // NOI18N
+        }
+        JFileChooser fileChooser = new FileChooser(
+                "Select Output",
+                "Select",
+                JFileChooser.FILES_ONLY,
+                new FileFilter[] {ElfExecutableFileFilter.getInstance(), ElfStaticLibraryFileFilter.getInstance(), ElfDynamicLibraryFileFilter.getInstance()},
+                seed,
+                false
+                );
         int ret = fileChooser.showOpenDialog(this);
         if (ret == JFileChooser.CANCEL_OPTION)
             return;
-        String path = IpeUtils.toRelativePath(baseDir, fileChooser.getSelectedFile().getPath()); // FIXUP: not always relative path
-        path = FilePathAdaptor.normalize(path);
-	outputTextField.setText(path);
+        //String path = IpeUtils.toRelativePath(buildCommandWorkingDirTextField.getText(), fileChooser.getSelectedFile().getPath()); // FIXUP: not always relative path
+        String path = FilePathAdaptor.normalize(fileChooser.getSelectedFile().getPath());
+        outputTextField.setText(path);
     }//GEN-LAST:event_outputBrowseButtonActionPerformed
-
+    
     private void buildCommandWorkingDirBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buildCommandWorkingDirBrowseButtonActionPerformed
-	String seed;
-	if (buildCommandWorkingDirTextField.getText().length() == 0) {
-	    seed = baseDir;
-	}
-	else if (IpeUtils.isPathAbsolute(buildCommandWorkingDirTextField.getText())) {
-	    seed = buildCommandWorkingDirTextField.getText();
-	}
-	else {
-	    seed = baseDir + File.separatorChar + buildCommandWorkingDirTextField.getText();
-	}
-	System.out.println("seed " + seed);
-
-	JFileChooser fileChooser = new FileChooser(
-	    "Select Working Directory",
-	    "Select",
-	    JFileChooser.DIRECTORIES_ONLY,
-	    null,
-	    seed,
-	    false
-	    );
+        String seed = null;
+        if (buildCommandWorkingDirTextField.getText().length() > 0) {
+            seed = buildCommandWorkingDirTextField.getText();
+        } else if (makefileNameTextField.getText().length() > 0) {
+            seed = makefileNameTextField.getText();
+        } else if (FileChooser.getCurrectChooserFile() != null) {
+            seed = FileChooser.getCurrectChooserFile().getPath();
+        } else {
+            seed = System.getProperty("user.home"); // NOI18N
+        }
+        
+        JFileChooser fileChooser = new FileChooser(
+                "Select Working Directory",
+                "Select",
+                JFileChooser.DIRECTORIES_ONLY,
+                null,
+                seed,
+                false
+                );
         int ret = fileChooser.showOpenDialog(this);
         if (ret == JFileChooser.CANCEL_OPTION)
             return;
-        String path = IpeUtils.toRelativePath(baseDir, fileChooser.getSelectedFile().getPath()); // FIXUP: not always relative path
+        String path = fileChooser.getSelectedFile().getPath();
         path = FilePathAdaptor.normalize(path);
-	buildCommandWorkingDirTextField.setText(path);
+        buildCommandWorkingDirTextField.setText(path);
     }//GEN-LAST:event_buildCommandWorkingDirBrowseButtonActionPerformed
     
     
@@ -372,8 +476,13 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     private javax.swing.JTextField buildCommandWorkingDirTextField;
     private javax.swing.JLabel cleanCommandLabel;
     private javax.swing.JTextField cleanCommandTextField;
+    private javax.swing.JLabel group1Label;
+    private javax.swing.JLabel group2Label;
     private javax.swing.JPanel instructionPanel;
     private javax.swing.JTextArea instructionsTextArea;
+    private javax.swing.JButton makefileBrowseButton;
+    private javax.swing.JLabel makefileNameLabel;
+    private javax.swing.JTextField makefileNameTextField;
     private javax.swing.JButton outputBrowseButton;
     private javax.swing.JLabel outputLabel;
     private javax.swing.JTextField outputTextField;

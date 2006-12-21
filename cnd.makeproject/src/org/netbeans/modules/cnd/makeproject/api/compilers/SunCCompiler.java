@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -19,11 +19,24 @@
 
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Vector;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 public class SunCCompiler extends CCCCompiler {
+    private static final String compilerStderrCommand = "cc -xdryrun -E"; // NOI18N
+    private PersistentList systemIncludeDirectoriesList = null;
+    private PersistentList systemPreprocessorSymbolsList = null;
+    private boolean saveOK = true;
+    
     private static final String[] DEVELOPMENT_MODE_OPTIONS = {
         "",  // Fast Build // NOI18N
         "-g", // Debug" // NOI18N
@@ -85,44 +98,151 @@ public class SunCCompiler extends CCCCompiler {
         return value ? "-s" : ""; // NOI18N
     }
     
+    public void setSystemIncludeDirectories(Platform platform, List values) {
+        systemIncludeDirectoriesList = new PersistentList(values);
+    }
+    
+    public void setSystemPreprocessorSymbols(Platform platform, List values) {
+        systemPreprocessorSymbolsList = new PersistentList(values);
+    }
+    
     public List getSystemPreprocessorSymbols(Platform platform) {
+        if (systemPreprocessorSymbolsList != null)
+            return systemPreprocessorSymbolsList;
+        
+        if (parseCompilerOutput) {
+            getSystemIncludesAndDefines(platform);
+            return systemPreprocessorSymbolsList;
+        }
+        
         // FIXUP: should use 'platform' and not System.getProperty("os.arch")
         Vector list = new Vector();
-	String arch = System.getProperty("os.arch", "").toLowerCase(); // NOI18N
-	list.add("__SVR4"); // NOI18N
-	list.add("__unix"); // NOI18N
-	list.add("__sun"); // NOI18N
-	if (arch.indexOf("sparc") >= 0) // NOI18N // FIXUP: need to take this from platform
-	    list.add("__sparc"); // NOI18N
-	else if (arch.indexOf("86") >= 0) // NOI18N // FIXUP: need to take this from platform
-	    list.add("__i386"); // NOI18N
-	list.add("unix"); // NOI18N
-	list.add("sun"); // NOI18N
-	if (arch.indexOf("sparc") >= 0)  // NOI18N
-	    list.add("sparc"); // NOI18N
-	if (arch.indexOf("86") >= 0)  // NOI18N
-	    list.add("i386"); // NOI18N
-	return list;
+        String arch = System.getProperty("os.arch", "").toLowerCase(); // NOI18N
+        list.add("__SVR4"); // NOI18N
+        list.add("__unix"); // NOI18N
+        list.add("__sun"); // NOI18N
+        if (arch.indexOf("sparc") >= 0) // NOI18N // FIXUP: need to take this from platform
+            list.add("__sparc"); // NOI18N
+        else if (arch.indexOf("86") >= 0) // NOI18N // FIXUP: need to take this from platform
+            list.add("__i386"); // NOI18N
+        list.add("unix"); // NOI18N
+        list.add("sun"); // NOI18N
+        if (arch.indexOf("sparc") >= 0)  // NOI18N
+            list.add("sparc"); // NOI18N
+        if (arch.indexOf("86") >= 0)  // NOI18N
+            list.add("i386"); // NOI18N
+        return list;
     }
     
     public List getSystemIncludeDirectories(Platform platform) {
+        if (systemIncludeDirectoriesList != null)
+            return systemIncludeDirectoriesList;
+        
+        if (parseCompilerOutput) {
+            getSystemIncludesAndDefines(platform);
+            return systemIncludeDirectoriesList;
+        }
+        
         Vector list = new Vector();
         list.add("/opt/SUNWspro/prod/include/cc"); // NOI18N
-	return list;
+        return list;
     }
-
+    
     // To be overridden
     public String getMTLevelOptions(int value) {
-	return MT_LEVEL_OPTIONS[value];
+        return MT_LEVEL_OPTIONS[value];
     }
-   
+    
     // To be overridden
     public String getStandardsEvolutionOptions(int value) {
-	return STANDARD_OPTIONS[value];
+        return STANDARD_OPTIONS[value];
     }
-
+    
     // To be overridden
     public String getLanguageExtOptions(int value) {
-	return LANGUAGE_EXT_OPTIONS[value];
+        return LANGUAGE_EXT_OPTIONS[value];
+    }
+    
+    public void saveSystemIncludesAndDefines() {
+        if (systemIncludeDirectoriesList != null && saveOK)
+            systemIncludeDirectoriesList.saveList(getClass().getName() + "." + "systemIncludeDirectoriesList");
+        if (systemPreprocessorSymbolsList != null && saveOK)
+            systemPreprocessorSymbolsList.saveList(getClass().getName() + "." + "systemPreprocessorSymbolsList");
+    }
+    
+    private void restoreSystemIncludesAndDefines(Platform platform) {
+        systemIncludeDirectoriesList = PersistentList.restoreList(getClass().getName() + "." + "systemIncludeDirectoriesList");
+        systemPreprocessorSymbolsList = PersistentList.restoreList(getClass().getName() + "." + "systemPreprocessorSymbolsList");
+    }
+    
+    private void getSystemIncludesAndDefines(Platform platform) {
+        restoreSystemIncludesAndDefines(platform);
+        if (systemIncludeDirectoriesList == null || systemPreprocessorSymbolsList == null) {
+            getFreshSystemIncludesAndDefines(platform);
+        }
+    }
+    
+    private void getFreshSystemIncludesAndDefines(Platform platform) {
+        try {
+            systemIncludeDirectoriesList = new PersistentList();
+            systemPreprocessorSymbolsList = new PersistentList();
+        getSystemIncludesAndDefines(platform, compilerStderrCommand, false);
+        systemIncludeDirectoriesList.add("/usr/include"); // NOI18N
+            saveOK = true;
+    }
+        catch (IOException ioe) {
+            String errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", getName());
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
+            saveOK = false;
+        }
+    }
+    
+    public void resetSystemIncludesAndDefines(Platform platform) {
+        getFreshSystemIncludesAndDefines(platform);
+    }
+    
+    protected void parseCompilerOutput(Platform platform, InputStream is) {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        try {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                //System.out.println(line);
+                int includeIndex = line.indexOf("-I"); // NOI18N
+                while (includeIndex > 0) {
+                    String token;
+                    int spaceIndex = line.indexOf(" ", includeIndex + 1); // NOI18N
+                    if (spaceIndex > 0) {
+                        token = line.substring(includeIndex+2, spaceIndex);
+                        systemIncludeDirectoriesList.add(token);
+                        includeIndex = line.indexOf("-I", spaceIndex); // NOI18N
+                    }
+                }
+                
+                int defineIndex = line.indexOf("-D"); // NOI18N
+                while (defineIndex > 0) {
+                    String token;
+                    int spaceIndex = line.indexOf(" ", defineIndex + 1); // NOI18N
+                    if (spaceIndex > 0) {
+                        token = line.substring(defineIndex+2, spaceIndex);
+                        systemPreprocessorSymbolsList.add(token);
+                        defineIndex = line.indexOf("-D", spaceIndex); // NOI18N
+                    }
+                }
+            }
+            is.close();
+            reader.close();
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP
+        }
+    }
+    
+    private void dumpLists() {
+        System.out.println("==================================" + getDisplayName());
+        for (int i = 0; i < systemIncludeDirectoriesList.size(); i++) {
+            System.out.println("-I" + systemIncludeDirectoriesList.get(i)); // NOI18N
+        }
+        for (int i = 0; i < systemPreprocessorSymbolsList.size(); i++) {
+            System.out.println("-D" + systemPreprocessorSymbolsList.get(i)); // NOI18N
+        }
     }
 }

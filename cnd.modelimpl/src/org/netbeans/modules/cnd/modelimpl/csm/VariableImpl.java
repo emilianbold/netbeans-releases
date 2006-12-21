@@ -41,18 +41,28 @@ public class VariableImpl extends OffsetableDeclarationBase implements CsmVariab
     private ExpressionBase initExpr;
     
     /** Creates a new instance of VariableImpl */
-    public VariableImpl(String name, CsmFile file, int start, int end) {
-        super(file, start, end);
+    public VariableImpl(String name, CsmFile file) {
+        super(file);
         this.name = name;
         registerInProject();
     }
 
     /** Creates a new instance of VariableImpl */
     public VariableImpl(AST ast, CsmFile file, CsmType type, String name) {
+        this(ast, file, type, name, false);
+    }
+
+    /** Creates a new instance of VariableImpl */
+    public VariableImpl(AST ast, CsmFile file, CsmType type, String name, boolean isLocal) {
         super(ast, file);
+        initInitialValue(ast);
+        _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static) ? (byte)1 : (byte)0;
+        _extern = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_extern) ? (byte)1 : (byte)0;
         this.name = name;
         this.type = type;
-        registerInProject();
+        if (!isLocal) {
+            registerInProject();
+        }
     }
     
     private void registerInProject() {
@@ -75,10 +85,6 @@ public class VariableImpl extends OffsetableDeclarationBase implements CsmVariab
         return name;
     }
     
-    protected void setName(String name) {
-        this.name = name;
-    }
-
     public String getQualifiedName() {
         CsmScope scope = getScope();
         if( (scope instanceof CsmNamespace) || (scope instanceof CsmClass) ) {
@@ -98,20 +104,20 @@ public class VariableImpl extends OffsetableDeclarationBase implements CsmVariab
         return type;
     }
     
+    private final void initInitialValue(AST node) {
+        if( node != null ) {
+            AST tok = AstUtil.findChildOfType(node, CPPTokenTypes.ASSIGNEQUAL);
+            if( tok != null ) {
+                tok = tok.getNextSibling();
+            }
+            if( tok != null ) {
+                initExpr = new ExpressionBase(tok, getContainingFile(), null);
+            }
+        }
+    }
+    
     /** Gets this variable initial value */
     public CsmExpression getInitialValue() {
-	if( initExpr == null ) {
-	    if( getAst() != null ) {
-		AST tok = AstUtil.findChildOfType(getAst(), CPPTokenTypes.ASSIGNEQUAL);
-		if( tok != null ) {
-		    tok = tok.getNextSibling();
-		}
-		if( tok != null ) {
-		    initExpr = new ExpressionBase(tok, getContainingFile(), null);
-		}
-	    }
-	    
-	}
         return initExpr;
     }
     
@@ -133,9 +139,6 @@ public class VariableImpl extends OffsetableDeclarationBase implements CsmVariab
     }
 
     public boolean isStatic() {
-        if( _static == -1 ) {
-            _static = AstUtil.hasChildOfType(this, CPPTokenTypes.LITERAL_static) ? (byte)1 : (byte)0;
-        }
         return _static > 0;
     }
     
@@ -144,9 +147,6 @@ public class VariableImpl extends OffsetableDeclarationBase implements CsmVariab
     }
 
     public boolean isExtern() {
-        if( _extern == -1 ) {
-            _extern = AstUtil.hasChildOfType(this, CPPTokenTypes.LITERAL_extern) ? (byte)1 : (byte)0;
-        }
         return _extern > 0;
     }
 
@@ -195,5 +195,10 @@ public class VariableImpl extends OffsetableDeclarationBase implements CsmVariab
             ((MutableDeclarationsContainer) scope).removeDeclaration(this);
         }
     }
-    
+
+    public CsmVariableDefinition getDefinition() {
+        String uname = CsmDeclaration.Kind.VARIABLE_DEFINITION.toString() + UNIQUE_NAME_SEPARATOR + getQualifiedName();
+        CsmDeclaration def = getContainingFile().getProject().findDeclaration(uname);
+        return (def == null) ? null : (CsmVariableDefinition) def;
+    }
 }

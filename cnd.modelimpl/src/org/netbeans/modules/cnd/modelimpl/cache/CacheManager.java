@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -20,136 +20,115 @@
 package org.netbeans.modules.cnd.modelimpl.cache;
 
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
-import org.netbeans.modules.cnd.modelimpl.csm.Diagnostic;
-import java.io.*;
-import java.util.*;
-
-import antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.modelimpl.apt.structure.APTFile;
+import org.netbeans.modules.cnd.modelimpl.apt.support.APTPreprocState;
+import org.netbeans.modules.cnd.modelimpl.cache.impl.CacheManagerImpl;
 
 /**
- * Cache for ASTs
- * @author Vladimir Kvasihn
+ * manager of cached files
+ * @author Vladimir Voskresensky
  */
-public class CacheManager implements CsmModelListener {
-    
-    private static CacheManager instance = new CacheManager();
-    private static boolean useCache = Boolean.getBoolean("parser.cache");
-    private Map/*<CsmProject, Cache>*/ caches = null;
-    private final ProjectCache dummyCache = new ProejctDummyCache();
-    
-    protected CacheManager() {
-        init();
+public final class CacheManager implements CsmModelListener {
+    private static CacheManager singleton = new CacheManager();
+    private CacheManagerImpl impl;
+    private CacheManager() {
+        impl = new CacheManagerImpl();      
         CsmModel model = CsmModelAccessor.getModel();
         if( model != null ) {
             model.addModelListener(this);
-        }
+        }           
     }
     
-    public static CacheManager instance() {
-//        if( instance == null ) {
-//            synchronized( CacheManager.class ) {
-//                if( instance == null ) {
-//                    instance = new CacheManager();
-//                }
-//            }
-//        }
-        return instance;
+    /**
+     * instance of manager
+     */
+    public static CacheManager getInstance() {
+        return singleton;
     }
     
-    public boolean getUseCache() {
-        return useCache;
+    /**
+     * get or create full APT
+     * 
+     */
+    public APTFile findAPT(CsmFile file) {
+        // delegate to impl
+        return impl.findAPT(file);
     }
     
-    public void setUseCache(boolean useCache) {
-        if( this.useCache != useCache ) {
-            synchronized( this ) {
-                if( this.useCache != useCache ) {
-                    this.useCache = useCache;
-                    init();
-                }
-            }
-        }
+    /**
+     * get or create APT light
+     * 
+     */
+    public APTFile findAPTLight(CsmFile file) {
+        // delegate to impl
+        return impl.findAPTLight(file);
     }
     
-//    private static CacheManager createInstance() {
-//        if( useCache ) {
-//            try {
-//                return new CacheManagerImpl();
-//            }
-//            catch( Exception e ) {
-//                e.printStackTrace(System.err);
-//                System.err.println("Error initializing cache manager. Switching cache off");
-//            }
-//        }
-//        return new DummyCacheManager();
-//    }
-
-    private void init() {
-        if( useCache ) {
-            caches = new HashMap/*<CsmProject, Cache>*/();
-        }
-        else {
-            caches = null;
-        }
-    }
+    /**
+     * get or create AST
+     */
+    public FileCache findCacheWithAST(CsmFile file, APTPreprocState preprocState) {
+        // delegate to impl
+        return impl.findCacheWithAST(file, preprocState);
+    }    
     
-    public FileCache getCache(CsmProject project, File srcFile) {
-        ProjectCache cache = getCache(project);
-        return cache.getCache(srcFile);
-    }
-    
-    public void storeCache(CsmProject project, File srcFile, AST ast, List/*<String>*/ includes) {
-        ProjectCache cache = getCache(project);
-        cache.storeCache(srcFile, ast, includes);
-    }
-    
-    private ProjectCache getCache(CsmProject project) {
-        if( useCache ) {
-            ProjectCache cache = (ProjectCache) caches.get(project);
-            if( cache == null ) {
-                try {
-                    if( project instanceof LibProjectImpl ) {
-                        cache = new ProjectZipCache(project, "/");
-                    }
-                    else {
-                        cache = new ProjectPlainCache(project, "/");
-                    }
-                }
-                catch( IOException e ) {
-                    System.err.println("Exception when creating cache for project " + project.getName());
-                    e.printStackTrace(System.err);
-                    System.err.println("switching cache OFF for this project");
-                    cache = dummyCache;
-                }
-                caches.put(project, cache);
-            }
-            return cache;
-        }
-        return dummyCache;
+    /**
+     * invalidate information related to file
+     */
+    public void invalidate(CsmFile file) {
+        // delegate to impl
+        impl.invalidateFile(file);
     }
 
-    public void projectClosed(CsmProject project) {
-        synchronized( this ) {
-            if( caches != null && caches.containsKey(project) ) {
-                if( Diagnostic.DEBUG ) Diagnostic.trace("CacheManager: removing cache for project " + project.getName());
-                caches.remove(project);
-            }
-            else {
-                if( Diagnostic.DEBUG ) Diagnostic.trace("CacheManager: cache for project " + project.getName() + " not found: nothing to remove");
-            }
-        }
+    /**
+     * invalidate information related to file in all cached projects
+     */    
+    public void invalidate(String absPath) {
+        // delegate to impl
+        impl.invalidateAllFiles(absPath);
+    }
+    
+    /**
+     * load cache for file (check if cache is valid)
+     */
+    public FileCache loadValidCache(CsmFile file) {
+        return impl.loadValidCache(file);
     }
 
+    /**
+     * save cache
+     */
+    public void saveCache(CsmFile file, FileCache cache) {
+        impl.saveCache(file, cache);
+    }
+    
+    /**
+     * handle opened project event
+     */
     public void projectOpened(CsmProject project) {
-        if( Diagnostic.DEBUG ) Diagnostic.trace("CacheManager: project opened");
+        impl.projectOpened(project);
     }
 
+    /**
+     * handle closed project event
+     */    
+    public void projectClosed(CsmProject project) {
+        impl.projectClosed(project);
+    }
+
+    /**
+     * handle change model event
+     */    
     public void modelChanged(CsmChangeEvent e) {
+        impl.modelChanged(e);
     }
-
     
+    public void close() {
+        impl.close();
+    }
 }

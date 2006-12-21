@@ -23,6 +23,7 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 
 /**
  *
@@ -65,5 +66,31 @@ public class CsmBaseUtilities {
             funDecl = ((CsmFunctionDefinition)funDecl).getDeclaration();
         }
         return funDecl;
+    }    
+    
+    public static CsmClass getContextClass(CsmOffsetableDeclaration contextDeclaration) {
+        if (contextDeclaration == null) {
+            return null;
+        }   
+        CsmClass clazz = null;
+        if (CsmKindUtilities.isClass(contextDeclaration)) {
+            clazz = (CsmClass)contextDeclaration;
+        } else if (CsmKindUtilities.isClassMember(contextDeclaration)) {
+            clazz = ((CsmMember)contextDeclaration).getContainingClass();            
+        } else if (CsmKindUtilities.isFunction(contextDeclaration)) {
+            clazz = getFunctionClass((CsmFunction)contextDeclaration);
+        }
+        return clazz;
+    }
+    
+    public static CsmFunction getContextFunction(CsmOffsetableDeclaration contextDeclaration) {
+        if (contextDeclaration == null) {
+            return null;
+        }
+        CsmFunction fun = null;
+        if (CsmKindUtilities.isFunction(contextDeclaration)) {
+            fun = (CsmFunction)contextDeclaration;
+        }
+        return fun;
     }    
 }

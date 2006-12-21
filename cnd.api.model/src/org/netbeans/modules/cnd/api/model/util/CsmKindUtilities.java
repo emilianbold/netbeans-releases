@@ -279,7 +279,26 @@ public class CsmKindUtilities {
     public static boolean isVariable(CsmObject obj) {
         if (isDeclaration(obj)) {
             CsmDeclaration.Kind kind = ((CsmDeclaration)obj).getKind();
-            return kind == CsmDeclaration.Kind.VARIABLE;
+            return kind == CsmDeclaration.Kind.VARIABLE ||
+                   kind == CsmDeclaration.Kind.VARIABLE_DEFINITION ;
+        } else {
+            return false;
+        }        
+    }
+
+    public static boolean isVariableDeclaration(CsmObject obj) {
+        if (isDeclaration(obj)) {
+            CsmDeclaration.Kind kind = ((CsmDeclaration)obj).getKind();
+            return kind == CsmDeclaration.Kind.VARIABLE ;
+        } else {
+            return false;
+        }        
+    }
+
+    public static boolean isVariableDefinition(CsmObject obj) {
+        if (isDeclaration(obj)) {
+            CsmDeclaration.Kind kind = ((CsmDeclaration)obj).getKind();
+            return kind == CsmDeclaration.Kind.VARIABLE_DEFINITION ;
         } else {
             return false;
         }        

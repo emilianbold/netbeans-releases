@@ -30,9 +30,12 @@ public interface CsmProgressListener {
     void projectFilesCounted(CsmProject project, int filesCount);
     
     void projectParsingFinished(CsmProject project);
+
+    void projectParsingCancelled(CsmProject project);
     
     void fileParsingStarted(CsmFile file);
     
     void fileParsingFinished(CsmFile file);
 
+    void parserIdle();
 }

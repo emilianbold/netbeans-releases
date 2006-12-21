@@ -38,6 +38,8 @@ public class ClassImpl extends ClassEnumBase implements CsmClass, CsmMember {
     private List/*<CsmInheritance>*/ inheritances = new ArrayList/*<CsmInheritance>*/();
     private boolean template;
     
+    private final int leftBracketPos;
+    
     private class ClassAstRenderer extends AstRenderer {
         
         private CsmVisibility curentVisibility = CsmVisibility.PRIVATE;
@@ -149,10 +151,6 @@ public class ClassImpl extends ClassEnumBase implements CsmClass, CsmMember {
             }
         }
 
-        protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container) {
-            return new MemberTypedef(ast);
-        }
-
         protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, String name) {
             return new MemberTypedef(ast, type, name);
         }
@@ -161,11 +159,6 @@ public class ClassImpl extends ClassEnumBase implements CsmClass, CsmMember {
 
             CsmVisibility visibility;
 
-            public MemberTypedef(AST ast) {
-                super(ast, ClassImpl.this.getContainingFile(), ClassImpl.this);
-                visibility = curentVisibility;
-            }
-            
             public MemberTypedef(AST ast, CsmType type, String name) {
                 super(ast, ClassImpl.this.getContainingFile(), ClassImpl.this, type, name);
                 visibility = curentVisibility;
@@ -190,12 +183,13 @@ public class ClassImpl extends ClassEnumBase implements CsmClass, CsmMember {
         
     }
 
-    public ClassImpl(CsmDeclaration.Kind kind, String name, NamespaceImpl namespace, CsmFile file, int start, int end) {
-        this(kind, name, namespace, file, start, end, null);
+    public ClassImpl(CsmDeclaration.Kind kind, String name, NamespaceImpl namespace, CsmFile file) {
+        this(kind, name, namespace, file, null);
     }
     
-    public ClassImpl(CsmDeclaration.Kind kind, String name, NamespaceImpl namespace, CsmFile file, int start, int end, CsmClass containingClass) {
-        super(kind, name, namespace, file, start, end, containingClass);
+    public ClassImpl(CsmDeclaration.Kind kind, String name, NamespaceImpl namespace, CsmFile file, CsmClass containingClass) {
+        super(kind, name, namespace, file, containingClass, null);
+        leftBracketPos = 0;
         register();
     }
 
@@ -204,8 +198,8 @@ public class ClassImpl extends ClassEnumBase implements CsmClass, CsmMember {
     }
     
     public ClassImpl(AST ast, NamespaceImpl namespace, CsmFile file, CsmClass containingClass) {
-        super(CsmDeclaration.Kind.CLASS, AstUtil.findId(ast, CPPTokenTypes.RCURLY), namespace, file, 0, 0, containingClass);
-        setAst(ast);
+        super(CsmDeclaration.Kind.CLASS, AstUtil.findId(ast, CPPTokenTypes.RCURLY), namespace, file, containingClass, ast);
+        leftBracketPos = initLeftBracketPos(ast);
         new ClassAstRenderer().render(ast);
         register();
     }
@@ -222,14 +216,17 @@ public class ClassImpl extends ClassEnumBase implements CsmClass, CsmMember {
         return template;
     }
 
-    public void addMember(CsmMember member) {
+    private void addMember(CsmMember member) {
         members.add(member);
     }
     
+    private int initLeftBracketPos(AST node) {
+        AST lcurly = AstUtil.findChildOfType(node, CPPTokenTypes.LCURLY);
+        return (lcurly instanceof CsmAST)  ? ((CsmAST) lcurly).getOffset() : getStartOffset();
+    }
    
     public int getLeftBracketOffset() {
-        AST lcurly = AstUtil.findChildOfType(getAst(), CPPTokenTypes.LCURLY);
-        return (lcurly instanceof CsmAST)  ? ((CsmAST) lcurly).getOffset() : getStartOffset();
+        return leftBracketPos;
     }
 
     public List getScopeElements() {

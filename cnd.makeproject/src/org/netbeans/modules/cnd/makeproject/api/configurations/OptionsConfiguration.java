@@ -24,7 +24,7 @@ import java.util.Vector;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
 
 public class OptionsConfiguration {
-    private String preDefined = "";
+    private String preDefined = ""; // NOI18N
     boolean dirty = false;
 
     private String commandLine;

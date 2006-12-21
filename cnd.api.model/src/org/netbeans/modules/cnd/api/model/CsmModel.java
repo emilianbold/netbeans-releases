@@ -42,6 +42,10 @@ public interface CsmModel {
     
     void removeProgressListener(CsmProgressListener listener);
     
+    void addModelStateListener(CsmModelStateListener listener);
+    
+    void removeModelStateListener(CsmModelStateListener listener);
+    
     /**
      * Code model calls can be very expensive.
      * Therefore one can never call code model from event dispatching thread.
@@ -75,4 +79,16 @@ public interface CsmModel {
      */
     void enqueue(Runnable task, String name);
     
+    /**
+     * Find project that contains file.
+     * Returns CsmFile if project is found.
+     *
+     * @param absPath absolute file path
+     */
+    CsmFile findFile(String absPath);
+    
+    /**
+     * Returns the state of the model
+     */
+    CsmModelState getState();
 }

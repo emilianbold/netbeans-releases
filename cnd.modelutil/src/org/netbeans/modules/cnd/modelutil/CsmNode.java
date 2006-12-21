@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.cnd.modelutil;
 
+import java.lang.ref.WeakReference;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
@@ -29,7 +30,7 @@ import org.openide.util.Lookup;
  */
 public class CsmNode extends AbstractCsmNode {
     
-    private CsmObject data = null;
+    private WeakReference<CsmObject> data = null;
     
     public CsmNode(Children children, Lookup lookup) {
         super(children, lookup);
@@ -40,11 +41,16 @@ public class CsmNode extends AbstractCsmNode {
     }
 
     public void setData(CsmObject data) {
-        this.data = data;
+	if( data == null ) {
+	    this.data = null;
+	}
+	else {
+	    this.data = new WeakReference(data);
+	}
     }
     
     public CsmObject getCsmObject() {
-	return data;
+	return (data == null) ? null : data.get();
     }
 
 }

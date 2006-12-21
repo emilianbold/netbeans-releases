@@ -21,7 +21,7 @@ package org.netbeans.modules.cnd.makeproject.api.actions;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
-import org.netbeans.modules.cnd.makeproject.ui.MakePhysicalViewProvider;
+import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -41,7 +41,7 @@ public class NewFolderAction extends NodeAction {
 	Project project = (Project)n.getValue("Project"); // NOI18N
 	assert project != null;
 	Folder newFolder = folder.addNewFolder(true);
-	MakePhysicalViewProvider.setVisible(project, newFolder); 
+	MakeLogicalViewProvider.setVisible(project, newFolder); 
     }
 
     public boolean enable(Node[] activatedNodes) {

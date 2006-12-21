@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.cnd.makeproject.ui;
 
+import java.util.List;
+import java.util.Vector;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -28,35 +30,49 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
 public class PropertiesItemAction extends NodeAction {
-
+    
     protected boolean enable(Node[] activatedNodes)  {
-	return activatedNodes.length == 1;
+        return activatedNodes.length == 1;
     }
-
+    
     public String getName() {
-	return NbBundle.getBundle(getClass()).getString("CTL_PropertiesItemActionName"); // NOI18N
+        return NbBundle.getBundle(getClass()).getString("CTL_PropertiesItemActionName"); // NOI18N
     }
-
+    
     public void performAction(Node[] activatedNodes) {
-	for (int i = 0; i < activatedNodes.length; i++) {
-	    Node n = activatedNodes[i];
-	    Folder folder = (Folder)n.getValue("Folder"); // NOI18N
-	    Item item = (Item)n.getValue("Item"); // NOI18N
-	    Project project = (Project)n.getValue("Project"); // NOI18N
-	    if (project == null)
-		return; // FIXUP
-	    MakeCustomizerProvider cp = (MakeCustomizerProvider)project.getLookup().lookup( MakeCustomizerProvider.class );
-	    if (cp == null)
-		return; // FIXUP
-	    cp.showCustomizer(item);
-	}
+        for (int i = 0; i < activatedNodes.length; i++) {
+            Node n = activatedNodes[i];
+            Folder folder = (Folder)n.getValue("Folder"); // NOI18N
+            Item item = (Item)n.getValue("Item"); // NOI18N
+            Project project = (Project)n.getValue("Project"); // NOI18N
+            if (project == null)
+                return; // FIXUP
+            MakeCustomizerProvider cp = (MakeCustomizerProvider)project.getLookup().lookup( MakeCustomizerProvider.class );
+            if (cp == null)
+                return; // FIXUP
+            cp.showCustomizer(item);
+            //dumpNativeFileInfo(item);
+        }
     }
-
+    
+    private void dumpNativeFileInfo(Item item) {
+        System.out.println("---------------------------------------------------------- " + item.getPath()); // NOI18N
+        dumpList("SystemIncludePaths", item.getSystemIncludePaths()); // NOI18N
+        dumpList("UserIncludePaths", item.getUserIncludePaths()); // NOI18N
+        dumpList("SystemMacroDefinitions", item.getSystemMacroDefinitions()); // NOI18N
+        dumpList("UserMacroDefinitions", item.getUserMacroDefinitions()); // NOI18N
+    }
+    public void dumpList(String txt, List list) {
+        Vector vector = new Vector(list);
+        for (int i = 0; i < vector.size(); i++)
+            System.out.println(txt + ":" + vector.elementAt(i)); // NOI18N
+    }
+    
     public HelpCtx getHelpCtx() {
-	return null;
+        return null;
     }
-
+    
     protected boolean asynchronous() {
-	return false;
+        return false;
     }
 }

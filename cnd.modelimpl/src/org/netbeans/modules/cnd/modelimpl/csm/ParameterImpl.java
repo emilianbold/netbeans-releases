@@ -31,13 +31,15 @@ import org.netbeans.modules.cnd.modelimpl.antlr2.generated.CPPTokenTypes;
  * @author Vladimir Kvashin
  */
 public class ParameterImpl extends VariableImpl implements CsmParameter {
+    private final boolean varArg;
 
     public ParameterImpl(AST ast, CsmFile file, CsmType type, String name) {
-        super(ast, file, type, name);
+        super(ast, file, type, name, true);
+        varArg = ast.getType() == CPPTokenTypes.ELLIPSIS;
     }
 
     public boolean isVarArgs() {
-        return getAst().getType() == CPPTokenTypes.ELLIPSIS;
+        return varArg;
     }
     
 }

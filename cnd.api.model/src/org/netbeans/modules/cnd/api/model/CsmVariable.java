@@ -36,6 +36,11 @@ public interface CsmVariable extends CsmOffsetableDeclaration, CsmNamedElement {
     //TODO: create an interface to place getDeclarationText() in
     String getDeclarationText();
 
+    /**
+     * Gets this (static) variable definition
+     */
+    CsmVariableDefinition getDefinition();
+
     //public boolean isAuto();
 
     //public boolean isRegister();

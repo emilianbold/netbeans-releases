@@ -18,7 +18,7 @@
  */
 
 package org.netbeans.modules.cnd.modelutil;
-import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -29,14 +29,15 @@ import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.font.TextAttribute;
 import java.text.AttributedString;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JPanel;
+
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
 
 /**
  *
@@ -45,17 +46,13 @@ import javax.swing.JPanel;
  */
 
 public abstract class CsmPaintComponent extends JPanel {
+            
+    protected DrawState drawState = new DrawState();
     
-    protected int drawX;
-    
-    protected int drawY;
-    
-    protected int drawHeight;
-    
-    private Font drawFont;
-    
+    protected Font drawFont;
+           
     private int iconTextGap = 5;
-    
+            
     private int fontHeight;
     
     private int ascent;
@@ -66,7 +63,9 @@ public abstract class CsmPaintComponent extends JPanel {
     
     protected boolean isSelected;
     
-    private String text;
+   // private String text;
+    
+    private ArrayList postfixes;
     
     private static final String THROWS = " throws "; // NOI18N
     
@@ -77,6 +76,7 @@ public abstract class CsmPaintComponent extends JPanel {
     
     private static final Color KEYWORD_COLOR = Color.darkGray;
     private static final Color TYPE_COLOR = Color.black;
+    private static final Color POSTFIX_COLOR = Color.gray;
     
     private Icon icon;
     
@@ -84,9 +84,10 @@ public abstract class CsmPaintComponent extends JPanel {
     
     
     public CsmPaintComponent(){
-        super();
+        super();        
         setOpaque(true);
         setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
+        postfixes = new ArrayList();        
     }
     
     public void setSelected(boolean isSelected){
@@ -103,6 +104,30 @@ public abstract class CsmPaintComponent extends JPanel {
         java.awt.Rectangle r = g.getClipBounds();
         g.fillRect(r.x, r.y, r.width, r.height);
         draw(g);
+        
+        if(!postfixes.isEmpty()) {
+            drawString(g, " (", POSTFIX_COLOR);
+            Iterator iter = postfixes.iterator();
+            while(iter.hasNext()) {
+                ((PostfixString) iter.next()).Draw(g);
+                if(iter.hasNext()) {
+                    drawString(g, ",  ", POSTFIX_COLOR);
+                }
+            } 
+            drawString(g, ")", POSTFIX_COLOR);                        
+        }        
+    }
+    
+    public void appendPostfix(String text, Color c, int font) {
+        postfixes.add(new PostfixString(text, c, font));
+    }
+    
+    public void removePostfixes() {
+        postfixes.clear();
+    }
+    
+    public boolean hasPostfixes() {
+        return !postfixes.isEmpty();
     }
     
     /** IMPORTANT:
@@ -131,27 +156,27 @@ public abstract class CsmPaintComponent extends JPanel {
     protected void drawIcon(Graphics g, Icon icon) {
         Insets i = getInsets();
         if (i != null) {
-            drawX = i.left;
-            drawY = i.top;
+            drawState.drawX = i.left;
+            drawState.drawY = i.top;
         } else {
-            drawX = 0;
-            drawY = 0;
+            drawState.drawX = 0;
+            drawState.drawY = 0;
         }
         
         if (icon != null) {
             if (g != null) {
-                icon.paintIcon(this, g, drawX, drawY);
+                icon.paintIcon(this, g, drawState.drawX, drawState.drawY);
             }
-            drawX += icon.getIconWidth() + iconTextGap;
-            drawHeight = Math.max(fontHeight, icon.getIconHeight());
+            drawState.drawX += icon.getIconWidth() + iconTextGap;
+            drawState.drawHeight = Math.max(fontHeight, icon.getIconHeight());
         } else {
-            drawHeight = fontHeight;
+            drawState.drawHeight = fontHeight;
         }
         if (i != null) {
-            drawHeight += i.bottom;
+            drawState.drawHeight += i.bottom;
         }
-        drawHeight += drawY;
-        drawY += ascent;
+        drawState.drawHeight += drawState.drawY;
+        drawState.drawY += ascent;
     }
     
     protected void drawType(Graphics g, CsmType typ) {
@@ -205,16 +230,16 @@ public abstract class CsmPaintComponent extends JPanel {
     protected void drawStringToGraphics(Graphics g, String s, Font font, boolean strike) {
         if (g != null) {
             if (!strike){
-                g.drawString(s, drawX, drawY);
+                g.drawString(s, drawState.drawX, drawState.drawY);
             }else{
                 Graphics2D g2 = ((Graphics2D)g);
                 AttributedString strikeText = new AttributedString(s);
                 strikeText.addAttribute(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
                 strikeText.addAttribute(TextAttribute.FONT, g.getFont());
-                g2.drawString(strikeText.getIterator(), drawX, drawY);
+                g2.drawString(strikeText.getIterator(), drawState.drawX, drawState.drawY);
             }
         }
-        drawX += getWidth(s, font);
+        drawState.drawX += getWidth(s, font);
     }
     
     protected int getWidth(String s) {
@@ -258,7 +283,7 @@ public abstract class CsmPaintComponent extends JPanel {
 //        while (i.hasNext()) {
 //            storeWidth(((CsmClass)i.next()).getName());
 //        }
-        drawFont = font;
+         drawFont = font;
     }
     
     protected Font getDrawFont(){
@@ -274,9 +299,9 @@ public abstract class CsmPaintComponent extends JPanel {
         draw(null);
         Insets i = getInsets();
         if (i != null) {
-            drawX += i.right;
+            drawState.drawX += i.right;
         }
-        return new Dimension(drawX, drawHeight);
+        return new Dimension(drawState.drawX, drawState.drawHeight);
     }
     
     public void setModifiers(int modifiers){
@@ -286,9 +311,49 @@ public abstract class CsmPaintComponent extends JPanel {
     public int getModifiers(){
         return modifiers;
     }
-        
+      
+    DrawState getDrawState() {
+        return drawState;
+    }
+    
+    void setDrawState(DrawState drawState) {
+        this.drawState = drawState;
+    }
     
     //.................. INNER CLASSES .......................
+    
+    private class PostfixString {
+        private String text;
+        private Color c;
+        private int fontStyle;
+        
+        public PostfixString(String text, Color c, int fontStyle) {
+            this.text = text;
+            this.c = c;
+            this.fontStyle = fontStyle;
+        }
+        
+        public PostfixString(String text, int fontStyle) {
+            this(text, CsmPaintComponent.this.POSTFIX_COLOR, fontStyle);            
+        }
+        
+        void Draw(Graphics g) {            
+            CsmPaintComponent.this.drawString(g, text, c, new Font(getDrawFont().getName(), 
+                                                                   getDrawFont().getStyle() | fontStyle, 
+                                                                   getDrawFont().getSize()),
+                                               false);
+                                        
+        }        
+    }
+    
+    private class DrawState {
+        int drawX, drawY;
+        int drawHeight;    
+               
+        public DrawState() {
+            drawX = drawY = drawHeight = 0;
+        }        
+    }
     
     public static class NamespacePaintComponent extends CsmPaintComponent{
         
@@ -430,7 +495,39 @@ public abstract class CsmPaintComponent extends JPanel {
             return formatClassName;
         }        
     }
+
     
+    public static class TypedefPaintComponent extends CsmPaintComponent{
+        
+        String formatTypedefName;
+        private Color TYPEDEF_COLOR = Color.blue.darker().darker().darker();
+        private boolean displayFQN;
+        
+        public void setFormatTypedefName(String formatTypedefName){
+            this.formatTypedefName = formatTypedefName;
+        }
+        
+        protected Color getColor(){
+            return TYPEDEF_COLOR;
+        }
+        
+        protected void draw(Graphics g){
+            // IMPORTANT:
+            // when updated => have to update toString!
+            boolean strike = false;
+            drawIcon(g, getIcon());
+            drawString(g, formatTypedefName, getColor(), null, strike);
+        }
+      
+        /**
+         * returns string representation of paint item
+         * IMPORTANT: have to be in sync with draw() method
+         */
+        public String toString() {
+            return formatTypedefName;
+        }        
+    }
+
     public static class StructPaintComponent extends ClassPaintComponent{
         
         private Color STRUCT_COLOR = Color.red.darker().darker();
@@ -443,6 +540,7 @@ public abstract class CsmPaintComponent extends JPanel {
             super();
         }
     }
+    
     
     public static class UnionPaintComponent extends ClassPaintComponent{
         
@@ -553,6 +651,86 @@ public abstract class CsmPaintComponent extends JPanel {
             return VARIABLE_COLOR;
         }
     }
+    
+    public static class MacroPaintComponent extends CsmPaintComponent{
+        private Color MACRO_NAME_COLOR = Color.green.darker().darker();
+        private Color MACRO_PARAMETER_NAME_COLOR = Color.magenta.darker();
+        private List params = new ArrayList();
+        private String name;
+
+        public MacroPaintComponent(){
+            super();
+        }
+
+        public String getName(){
+            return name;
+        }
+        
+        public void setName(String name){
+            this.name = name;
+        }
+        
+        public void setParams(List params){
+            this.params = params;
+        }
+        
+        protected List getParamList(){
+            return params;
+        }
+
+        protected void draw(Graphics g){
+            // IMPORTANT:
+            // when updated => have to update toString!
+            boolean strike = false;
+            drawIcon(g, getIcon());
+            drawString(g, getName(), MACRO_NAME_COLOR, null, strike);
+            drawParameterList(g, getParamList(), strike);
+        }
+
+        protected void drawParameterList(Graphics g, List prmList, boolean strike) {
+            if (prmList == null || prmList.size()==0){
+                return;
+            }
+            drawString(g, "(", strike); // NOI18N
+            for (Iterator it = prmList.iterator(); it.hasNext();) {
+                drawString(g, (String)it.next(), MACRO_PARAMETER_NAME_COLOR, null, strike);
+                if (it.hasNext()) {
+                    drawString(g, ", ", strike); // NOI18N
+                }
+            }
+            drawString(g, ")", strike); // NOI18N
+        }
+
+        protected String toStringParameterList(List prmList) {
+            if (prmList == null || prmList.size()==0){
+                return "";
+            }
+            StringBuffer buf = new StringBuffer();
+            buf.append('('); // NOI18N
+            for (Iterator it = prmList.iterator(); it.hasNext();) {
+                buf.append((String)it.next());
+                if (it.hasNext()) {
+                    buf.append(", "); // NOI18N
+                }
+            }
+            buf.append(')'); // NOI18N
+            return buf.toString();
+        }
+
+        /**
+         * returns string representation of paint item
+         * IMPORTANT: have to be in sync with draw() method
+         */
+        public String toString() {
+            StringBuffer buf = new StringBuffer();
+            //macro name
+            buf.append(getName());
+            //macro params
+            buf.append(toStringParameterList(getParamList()));
+            return buf.toString();
+        }    
+    }
+    
     
     public static class ConstructorPaintComponent extends CsmPaintComponent{
         
@@ -787,5 +965,36 @@ public abstract class CsmPaintComponent extends JPanel {
             return FUN_COLOR;
         }
     }
+    
+    public static class CsmPaintComponentWrapper extends CsmPaintComponent {    
+        private CsmPaintComponent comp;
+
+        public CsmPaintComponentWrapper() {
+            super();        
+        }
+        
+        public void setCsmComponent(CsmPaintComponent comp) {           
+            this.comp = comp;
+        }
+
+        protected void draw(Graphics g) {
+            if (comp != null) {
+                comp.draw(g);            
+                setDrawState(comp.getDrawState());
+            }
+        }
+        
+        public void setFont(Font font) {
+            super.setFont(font);
+            if (comp != null)
+                 comp.setFont(font);
+        }
+        
+        public String toString() {
+            if (comp != null)
+                return comp.toString();
+            return "";
+        }    
+    } 
     
 }

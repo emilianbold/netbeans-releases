@@ -61,7 +61,7 @@ final class BuildActionsDescriptorPanel implements WizardDescriptor.Panel, NewMa
     } 
 
     public HelpCtx getHelp() {
-        return new HelpCtx( BuildActionsDescriptorPanel.class );
+        return new HelpCtx("NewMakeWizardP2");
     }
     
     public boolean isValid() {

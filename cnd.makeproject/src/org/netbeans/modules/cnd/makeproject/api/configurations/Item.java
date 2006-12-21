@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
@@ -27,13 +29,15 @@ import java.util.Vector;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.loaders.CCFSrcLoader;
+import org.netbeans.modules.cnd.loaders.CCDataLoader;
 import org.netbeans.modules.cnd.loaders.CCSrcObject;
 import org.netbeans.modules.cnd.loaders.CSrcObject;
 import org.netbeans.modules.cnd.loaders.FortranSrcObject;
 import org.netbeans.modules.cnd.loaders.HDataObject;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.loaders.CDataLoader;
+import org.netbeans.modules.cnd.loaders.FortranDataLoader;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSet;
@@ -41,15 +45,13 @@ import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSets;
 import org.netbeans.modules.cnd.makeproject.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
-import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
-public class Item implements NativeFileItem {
+public class Item implements NativeFileItem, PropertyChangeListener {
     private String path;
     private String sortName;
     private Folder folder;
@@ -62,6 +64,49 @@ public class Item implements NativeFileItem {
         if (i > 0)
             sortName = sortName.substring(0, i);
         folder = null;
+    }
+    
+    /**
+     * Rename item.
+     * @param newname new name without suffic or path
+     */
+    public void rename(String newname) {
+        if (newname == null || newname.length() == 0 || getFolder() == null)
+            return;
+        
+        // Rename name in path
+        int indexName = path.lastIndexOf('/');
+        if (indexName < 0)
+            indexName = 0;
+        else
+            indexName++;
+        int indexDot = path.lastIndexOf('.');
+        if (indexDot < indexName)
+            indexDot = -1;
+        
+        String oldname;
+        if (indexDot >= 0)
+            oldname = path.substring(indexName, indexDot);
+        else
+            oldname = path.substring(indexName);
+        if (oldname.equals(newname))
+            return;
+        
+        String newPath = ""; // NOI18N
+        if (indexName > 0)
+            newPath = path.substring(0, indexName);
+        newPath += newname;
+        if (indexDot >= 0)
+            newPath += path.substring(indexDot);
+        // Remove old item and insert new with new name
+        moveTo(newPath);
+    }
+    
+    public void moveTo(String newPath) {
+        Folder f = getFolder();
+        // FIXUP: update all configurations with settings from old item....
+        f.removeItem(this);
+        Item item = f.addItem(new Item(newPath));
     }
     
     public String getPath() {
@@ -93,6 +138,47 @@ public class Item implements NativeFileItem {
     
     public void setFolder(Folder folder) {
         this.folder = folder;
+        if (folder != null)
+            addPropertyChangeListener();
+    }
+    
+    private DataObject dataObject = null;
+    public void addPropertyChangeListener() {
+        dataObject = getDataObject();
+        if (dataObject != null) {
+            dataObject.addPropertyChangeListener(this);
+        }
+    }
+    
+    public void removePropertyChangeListener() {
+        //DataObject dataObject = getDataObject();
+        if (dataObject != null) {
+            dataObject.removePropertyChangeListener(this);
+            dataObject = null;
+        }
+    }
+    
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals("name")) { // NOI18N
+            // File has been renamed
+            rename((String)evt.getNewValue());
+        }
+        else if (evt.getPropertyName().equals("valid")) { // NOI18N
+            // File has been deleted
+            if (!((Boolean)evt.getNewValue()).booleanValue()) {
+              getFolder().removeItem(this);
+    }
+        }
+        else if (evt.getPropertyName().equals("primaryFile")) { // NOI18N
+            // File has been moved
+            FileObject fo = (FileObject)evt.getNewValue();
+            String newPath = FileUtil.toFile(fo).getPath();
+            if (!IpeUtils.isPathAbsolute(getPath())) {
+                newPath = IpeUtils.toRelativePath(getFolder().getConfigurationDescriptor().getBaseDir(), newPath);
+            }
+            newPath = FilePathAdaptor.normalize(newPath);
+            moveTo(newPath);
+        }
     }
     
     public Folder getFolder() {
@@ -143,11 +229,11 @@ public class Item implements NativeFileItem {
             if (i >= 0)
                 suffix = path.substring(i+1);
             if (suffix != null) {
-                if (amongSuffixes(suffix, CCFSrcLoader.getCppExtensions()))
+                if (amongSuffixes(suffix, CCDataLoader.getInstance().suffixes()))
                     tool = Tool.CCCompiler;
-                else if (amongSuffixes(suffix, CCFSrcLoader.getCExtensions()))
+                else if (amongSuffixes(suffix, CDataLoader.getInstance().suffixes()))
                     tool = Tool.CCompiler;
-                else if (MakeOptions.getInstance().getFortran() && amongSuffixes(suffix, CCFSrcLoader.getFortranExtensions()))
+                else if (MakeOptions.getInstance().getFortran() && amongSuffixes(suffix, FortranDataLoader.getInstance().suffixes()))
                     tool = Tool.FortranCompiler;
                 else
                     tool = Tool.CustomTool;
@@ -226,7 +312,7 @@ public class Item implements NativeFileItem {
             Iterator iter = vec2.iterator();
             while (iter.hasNext()) {
                 vec.add(IpeUtils.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), (String)iter.next()));
-        }
+            }
         }
         return vec;
     }

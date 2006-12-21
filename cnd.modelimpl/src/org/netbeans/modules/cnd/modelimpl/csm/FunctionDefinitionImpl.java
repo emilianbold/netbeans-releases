@@ -34,53 +34,82 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 public class FunctionDefinitionImpl extends FunctionImpl implements CsmFunctionDefinition {
 
     private CsmFunction declaration;
-    private String name;
-    private CsmCompoundStatement body;
+    private String qualifiedName;
+    //private String name;
+    private final CsmCompoundStatement body;
     private List/*<CsmParameter>*/  parameters;
+    private boolean qualifiedNameIsFake = false;
+    private String[] classOrNspNames;
     
     public FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
+        body = AstRenderer.findCompoundStatement(ast, getContainingFile());
     }
     
+    protected void initBeforeRegister(AST ast) {
+        super.initBeforeRegister(ast);
+        classOrNspNames = initClassOrNspNames(ast);
+    }
+
+    
     public CsmCompoundStatement getBody() {
-        if( body == null ) {
-            body = AstRenderer.findCompoundStatement(getAst(), getContainingFile());
-        }
         return body;
     }
 
     public CsmFunction getDeclaration() {
-        if( declaration == null ) {
-            String[] cnn = getClassOrNspNames();
-            if( cnn != null ) {
-                CsmObject o = ResolverFactory.createResolver(this).resolve(cnn);
-                if( o instanceof CsmClass ) {
-                    for( Iterator iter = ((CsmClass) o).getMembers().iterator(); iter.hasNext(); ) {
-                        CsmMember mem = (CsmMember) iter.next();
-                        if( mem.getKind() == CsmDeclaration.Kind.FUNCTION ) {
-                            if( mem.getName().equals(getName()) ) {
-				String sign = ((CsmFunction) mem).getSignature();
-				if( sign != null && sign.equals(getSignature()) ) {
-				    return (CsmFunction) mem;
-				}
-                            }
-                        }
-                    }
-                }
-                else if( o instanceof CsmNamespace ) {
-                    
-                }
-                //CsmDeclaration decl = 
-            }
-            // TODO: implement searching for declaration somewhere in .h ???
-            //else {             
-            //}
-        }
-        return declaration;
+	if( declaration == null ) {
+	    declaration = findDeclaration();
+	}
+	return declaration;
+    }
+    
+    private CsmFunction findDeclaration() {
+        String uname = CsmDeclaration.Kind.FUNCTION.toString() + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
+        CsmDeclaration def = getContainingFile().getProject().findDeclaration(uname);
+	if( def == null ) {
+	    CsmObject owner = findOwner();
+	    if( owner instanceof CsmClass ) {
+		def = findByName(((CsmClass) owner).getMembers(), getName());
+	    }
+	    else if( owner instanceof CsmNamespace ) {
+		def = findByName(((CsmNamespace) owner).getDeclarations(), getName());
+	    }
+	}
+        return (CsmFunction) def;
+    }
+    
+    private static CsmFunction findByName(Collection/*CsmDeclaration*/ declarations, String name) {
+	for (Iterator it = declarations.iterator(); it.hasNext();) {
+	    CsmDeclaration decl = (CsmDeclaration) it.next();
+	    if( decl.getName().equals(name) ) {
+		if( decl instanceof  CsmFunction ) { // paranoja
+		    return (CsmFunction) decl;
+		}
+	    }	
+	}
+	return null;
+    }
+    
+    /** @return either class or namespace */
+    private CsmObject findOwner() {
+	String[] cnn = classOrNspNames;
+	if( cnn != null ) {
+	    CsmObject obj = ResolverFactory.createResolver(this).resolve(cnn);
+	    if( obj instanceof CsmClass ) {
+		if( !( obj instanceof Unresolved.UnresolvedClass) ) {
+		    return (CsmClass) obj;
+		}
+	    }
+	    else if( obj instanceof CsmNamespace ) {
+		return (CsmNamespace) obj;
+	    }
+	}
+	return null;
     }    
     
-    private String[] getClassOrNspNames() {
-        AST qid = getQialifiedId();
+    private static String[] initClassOrNspNames(AST node) {
+        //qualified id
+        AST qid = AstUtil.findMethodName(node);
         if( qid == null ) {
             return null;
         }
@@ -98,36 +127,116 @@ public class FunctionDefinitionImpl extends FunctionImpl implements CsmFunctionD
         }
         return null;
     }
-
+    
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.FUNCTION_DEFINITION;
     }
-    
-    public String getQualifiedName() {
-        CsmFunction decl = getDeclaration();
-        return decl == null ? "<unknown>" : decl.getQualifiedName();
-    }
 
+    public String getQualifiedName() {
+	if( qualifiedName == null ) {
+	    qualifiedName = findQualifiedName();
+	}
+	return qualifiedName;
+    }
+    
+    private String findQualifiedName() {
+	if( declaration != null ) {
+	    return declaration.getQualifiedName();
+	}
+	CsmObject owner = findOwner();
+	if( owner instanceof CsmQualifiedNamedElement  ) {
+	    qualifiedNameIsFake = false;
+	    return ((CsmQualifiedNamedElement) owner).getQualifiedName() + "::" + getName();
+	}
+	else {
+	    qualifiedNameIsFake = true;
+	    String[] cnn = classOrNspNames;
+	    CsmNamespaceDefinition nsd = findNamespaceDefinition();
+	    StringBuffer sb = new StringBuffer();
+	    if( nsd != null ) {
+		sb.append(nsd.getQualifiedName());
+	    }
+	    if( cnn != null ) {
+		for (int i = 0; i < cnn.length; i++) {
+		    if( sb.length() > 0 ) {
+			sb.append("::");
+		    }
+		    sb.append(cnn[i]);
+		}
+	    }
+	    if( sb.length() == 0 ) {
+		sb.append("unknown>");
+	    }
+	    sb.append("::");
+	    sb.append(getName());
+	    return sb.toString();
+	}
+    }
+    
+    protected void registerInProject() {
+	super.registerInProject();
+	if( qualifiedNameIsFake ) {
+	    ((FileImpl) getContainingFile()).onFakeRegisration(this);
+	}
+    }
+    
+    public void fixFakeRegistration() {
+	String newQname = findQualifiedName();
+	if( ! newQname.equals(qualifiedName) ) {
+	    ((FileImpl) getContainingFile()).getProjectImpl().unregisterDeclaration(this);
+	    qualifiedName = newQname;
+	    ((FileImpl) getContainingFile()).getProjectImpl().registerDeclaration(this);
+	}
+    }
+    
+    private CsmNamespaceDefinition findNamespaceDefinition() {
+	return findNamespaceDefinition(getContainingFile().getDeclarations());
+    }
+    
+    private CsmNamespaceDefinition findNamespaceDefinition(Collection/*<CsmOffsetableDeclaration>*/ declarations) {
+	for (Iterator it = declarations.iterator(); it.hasNext();) {
+	    CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) it.next();
+	    if( decl.getStartOffset() > this.getStartOffset() ) {
+		break;
+	    }
+	    if( decl.getKind() == CsmDeclaration.Kind.NAMESPACE_DEFINITION ) {
+		if( this.getEndOffset() < decl.getEndOffset() ) {
+		    CsmNamespaceDefinition nsdef = (CsmNamespaceDefinition) decl;
+		    CsmNamespaceDefinition inner = findNamespaceDefinition(nsdef.getDeclarations());
+		    return (inner == null) ? nsdef : inner;
+		}
+	    }
+	}
+	return null;
+    }
+/*
     public String getName() {
         if( name == null ) {
             AST qid = getQialifiedId();
             if( qid != null ) {
                 for( AST n = qid.getFirstChild(); n != null; n = n.getNextSibling() ) {
-                    name = n.getText();
+                    int type = n.getType();
+                    if( type == CPPTokenTypes.ID ) {
+                        name = n.getText();
+                    } else if( type == CPPTokenTypes.LITERAL_OPERATOR ) {
+                        StringBuffer sb = new StringBuffer(n.getText());
+                        sb.append(' ');
+                        AST next = n.getNextSibling();
+                        if( next != null ) {
+                            sb.append(next.getText());
+                            n = next;
+                            name = sb.toString();
+                        }
+                    }
                 }
+            }
+            if( name == null ) {
+                name = "<null>"; // just to avoid NPE
             }
         }
         return name;
     }
-    
-    public AST getQialifiedId() {
-        for( AST t = getAst().getFirstChild(); t != null; t = t.getNextSibling() ) {
-            if( t.getType() == CPPTokenTypes.CSM_QUALIFIED_ID ) {
-                return t;
-            }
-        }
-        return null;
-    }
+*/    
 
     public CsmScope getScope() {
         return getContainingFile();
@@ -151,7 +260,5 @@ public class FunctionDefinitionImpl extends FunctionImpl implements CsmFunctionD
     public CsmFunctionDefinition getDefinition() {
         return this;
     }
-    
-    
+  
 }
-

@@ -46,7 +46,7 @@ public class IncludeImpl extends LineColOffsetableBase implements CsmInclude {
         this(incl.getIncludeName(), incl.isSystem(), incl.getIncludeFile(), containingFile, incl);
     }
     
-    private IncludeImpl(String name, boolean system, CsmFile includeFile, CsmFile containingFile, CsmOffsetable inclPos) {
+    public IncludeImpl(String name, boolean system, CsmFile includeFile, CsmFile containingFile, CsmOffsetable inclPos) {
         super(containingFile, inclPos);
         this.name = name;
         this.system = system;

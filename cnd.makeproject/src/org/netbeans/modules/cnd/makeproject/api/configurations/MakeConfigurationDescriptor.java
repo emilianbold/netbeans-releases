@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -32,6 +32,8 @@ import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -108,7 +110,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
         setModified(true);
     }
     
-    public void initLogicalFolders(Vector sourceFileFolders, boolean createLogicalFolders) {
+    public void initLogicalFolders(Iterator sourceFileFolders, boolean createLogicalFolders, Iterator importantItems) {
         if (createLogicalFolders) {
             rootFolder.addNewFolder(SOURCE_FILES_FOLDER, "Source Files", true);
             rootFolder.addNewFolder(HEADER_FILES_FOLDER, "Header Files", true);
@@ -118,7 +120,12 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
 //        if (sourceFileFolders != null)
 //            setExternalFileItems(sourceFileFolders); // From makefile wrapper wizard
         externalFileItems.addItem(new Item(getProjectMakefileName())); // NOI18N
-        addSourceFilesFromFolders(sourceFileFolders);
+        if (importantItems != null) {
+            while (importantItems.hasNext()) {
+                externalFileItems.addItem(new Item((String)importantItems.next()));
+            }
+        }
+        addSourceFilesFromFolders(sourceFileFolders, false);
         setModified(true);
     }
     
@@ -255,7 +262,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
             // Then try absolute if relative or relative if absolute
             String newPath;
             if (IpeUtils.isPathAbsolute(path))
-                newPath = IpeUtils.toRelativePath(getBaseDir(), path);
+                newPath = IpeUtils.toRelativePath(getBaseDir(), FilePathAdaptor.naturalize(path));
             else
                 newPath = IpeUtils.toAbsolutePath(getBaseDir(), path);
             item = (Item)projectItems.get(newPath);
@@ -456,36 +463,74 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
         }
     }
     
-    public void addSourceFilesFromFolders(Vector sourceFileFolders) {
-        addSourceFilesFromFolders(rootFolder, sourceFileFolders);
+    public void addSourceFilesFromFolders(Iterator sourceFileFolders, boolean acrynchron) {
+        addSourceFilesFromFolders(rootFolder, sourceFileFolders, acrynchron);
     }
     
-    public void addSourceFilesFromFolders(Folder folder, Vector sourceFileFolders) {
-        if (sourceFileFolders == null)
+    public void addSourceFilesFromFolders(Folder folder, Iterator sourceFileFoldersIterator, boolean acrynchron) {
+        if (sourceFileFoldersIterator == null)
             return;
-        Iterator iterator = sourceFileFolders.iterator();
-        while (iterator.hasNext()) {
-            FolderEntry folderEntry = (FolderEntry)iterator.next();
-            addFiles(folder, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), folderEntry.getFileFilter());
+        if (acrynchron)
+            new AddFilesThread(sourceFileFoldersIterator, folder).start();
+        else {
+            while (sourceFileFoldersIterator.hasNext()) {
+                FolderEntry folderEntry = (FolderEntry)sourceFileFoldersIterator.next();
+                Folder top = new Folder(folder.getConfigurationDescriptor(), folder, folderEntry.getFile().getName(), folderEntry.getFile().getName(), true);
+                addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), folderEntry.getFileFilter(), null);
+                folder.addFolder(top);
+            }
         }
     }
     
-    private void addFiles(Folder folder, File dir, boolean addSubFolders, FileFilter filter) {
+    class AddFilesThread extends Thread {
+        Iterator iterator;
+        Folder folder;
+        private ProgressHandle handle;
+        
+        AddFilesThread(Iterator iterator, Folder folder) {
+            this.iterator = iterator;
+            this.folder = folder;
+            handle = ProgressHandleFactory.createHandle("Adding files...");
+        }
+        public void run() {
+            handle.setInitialDelay(500);
+            handle.start();
+            while (iterator.hasNext()) {
+                FolderEntry folderEntry = (FolderEntry)iterator.next();
+                Folder top = new Folder(folder.getConfigurationDescriptor(), folder, folderEntry.getFile().getName(), folderEntry.getFile().getName(), true);
+                addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), folderEntry.getFileFilter(), handle);
+                folder.addFolder(top);
+            }
+            handle.finish();
+        }
+    }
+    
+    private void addFiles(Folder folder, File dir, boolean addSubFolders, FileFilter filter, ProgressHandle handle) {
         File[] files = dir.listFiles();
         for (int i = 0; i < files.length; i++) {
             if (!filter.accept(files[i]))
                 continue;
             if (files[i].isDirectory()) {
+                // FIXUP: is this the best way to deal with files under SCCS?
+                // Unfortunately the SCCS directory contains data files with the same
+                // suffixes as the the source files, and a simple file filter based on
+                // a file's suffix cannot see the difference between the source file and
+                // the data file. Only the source file should be added.
+                if (files[i].getName().equals("SCCS")) // NOI18N
+                    continue;
                 Folder dirfolder = folder;
                 if (addSubFolders) {
                     dirfolder = folder.addNewFolder(files[i].getName(), files[i].getName(), true);
                 }
-                addFiles(dirfolder, files[i], addSubFolders, filter);
+                addFiles(dirfolder, files[i], addSubFolders, filter, handle);
                 if (dirfolder.size() == 0)
                     folder.removeFolder(dirfolder);
             } else {
                 String filePath = IpeUtils.toRelativePath(baseDir, files[i].getPath());
-                folder.addItem(new Item(filePath));
+                folder.addItem(new Item(FilePathAdaptor.normalize(filePath)));
+                if (handle != null) {
+                    handle.progress(filePath);
+                }
             }
         }
     }

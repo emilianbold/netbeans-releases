@@ -37,6 +37,7 @@ public class PanelConfigureProject implements WizardDescriptor.Panel, NewMakePro
     
     private WizardDescriptor wizardDescriptor;
     private String name;
+    private int type;
     private PanelConfigureProjectVisual component;
     private String title;
     private String wizardTitle;
@@ -45,8 +46,9 @@ public class PanelConfigureProject implements WizardDescriptor.Panel, NewMakePro
     private boolean showMakefileTextField;
     
     /** Create the wizard panel descriptor. */
-    public PanelConfigureProject(String name, String wizardTitle, String wizardACSD, boolean showMakefileTextField) {
+    public PanelConfigureProject(String name, int type, String wizardTitle, String wizardACSD, boolean showMakefileTextField) {
         this.name = name;
+        this.type = type;
         this.wizardTitle = wizardTitle;
         this.wizardACSD = wizardACSD;
         this.showMakefileTextField = showMakefileTextField;
@@ -65,19 +67,17 @@ public class PanelConfigureProject implements WizardDescriptor.Panel, NewMakePro
     }
     
     public HelpCtx getHelp() {
-	/* FIXUP
-        switch ( type ) {
-            case ProjectDescriptor.TYPE_NEW_APP:
-                return new HelpCtx( this.getClass().getName() + "_APP" ); // NOI18N
-            case ProjectDescriptor.TYPE_NEW_LIB:
-                return new HelpCtx( this.getClass().getName() + "_LIB" ); // NOI18N
-            case ProjectDescriptor.TYPE_EXT_APP:
-                return new HelpCtx( this.getClass().getName() + "_EXT_APP" ); // NOI18N
-            case ProjectDescriptor.TYPE_EXT_LIB:
-                return new HelpCtx( this.getClass().getName() + "_EXT_LIB" ); // NOI18N
-        }        
-	*/
-        return new HelpCtx( PanelConfigureProject.class );
+        if (type == NewMakeProjectWizardIterator.TYPE_APPLICATION) {
+            return new HelpCtx("NewAppWizard"); // NOI18N
+        } else if (type == NewMakeProjectWizardIterator.TYPE_DYNAMIC_LIB) {
+            return new HelpCtx("NewDynamicLibWizard"); // NOI18N
+        } else if (type == NewMakeProjectWizardIterator.TYPE_STATIC_LIB) {
+            return new HelpCtx("NewStaticLibWizard"); // NOI18N
+        } else if (type == NewMakeProjectWizardIterator.TYPE_MAKEFILE) {
+            return new HelpCtx("NewMakeWizardP1"); // NOI18N
+        } else {
+            return new HelpCtx("CreatingCorC++Project"); // NOI18N
+        }
     }
     
     public boolean isValid() {

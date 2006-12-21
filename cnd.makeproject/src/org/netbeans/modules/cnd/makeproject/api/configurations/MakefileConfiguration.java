@@ -23,7 +23,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
-import java.io.File;
+import java.util.ResourceBundle;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
@@ -32,9 +32,11 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ElfDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ElfStaticLibraryFileFilter;
+import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.Sheet;
+import org.openide.util.NbBundle;
 
 public class MakefileConfiguration {
     private MakeConfiguration makeConfiguration;
@@ -64,6 +66,14 @@ public class MakefileConfiguration {
     // Working Dir
     public StringConfiguration getBuildCommandWorkingDir() {
 	return buildCommandWorkingDir;
+    }
+
+    // Working Dir
+    public String getBuildCommandWorkingDirValue() {
+        if (buildCommandWorkingDir.getValue().length() == 0)
+            return "."; //
+        else
+            return buildCommandWorkingDir.getValue();
     }
 
     public void setBuildCommandWorkingDir(StringConfiguration buildCommandWorkingDir) {
@@ -103,10 +113,10 @@ public class MakefileConfiguration {
     }
 
     public String getAbsBuildCommandWorkingDir() {
-	if (getBuildCommandWorkingDir().getValue().length() > 0 && IpeUtils.isPathAbsolute(getBuildCommandWorkingDir().getValue())) 
-	    return getBuildCommandWorkingDir().getValue();
+	if (getBuildCommandWorkingDirValue().length() > 0 && IpeUtils.isPathAbsolute(getBuildCommandWorkingDirValue())) 
+	    return getBuildCommandWorkingDirValue();
 	else
-	    return getMakeConfiguration().getBaseDir() + "/" + getBuildCommandWorkingDir().getValue();
+	    return getMakeConfiguration().getBaseDir() + "/" + getBuildCommandWorkingDirValue();
     }
 
     public boolean canClean() {
@@ -114,7 +124,9 @@ public class MakefileConfiguration {
     }
 
     public String getAbsOutput() {
-	if (getOutput().getValue().length() > 0 && IpeUtils.isPathAbsolute(getOutput().getValue()))
+        if (getOutput().getValue().length() == 0)
+            return "";
+        else if (getOutput().getValue().length() > 0 && IpeUtils.isPathAbsolute(getOutput().getValue()))
 	    return getOutput().getValue();
 	else
 	    return getMakeConfiguration().getBaseDir() + "/"  + getOutput().getValue();
@@ -146,10 +158,10 @@ public class MakefileConfiguration {
 	set.setName("Makefile");
 	set.setDisplayName("Makefile");
 	set.setShortDescription("MakefileDefaults");
-	set.put(new DirStringNodeProp(getBuildCommandWorkingDir(), "WorkingDirectory", "Working Directory", "Working Directory"));
-	set.put(new StringNodeProp(getBuildCommand(), "BuildCommand Line", "Build Command Line", "Build Command Line"));
-	set.put(new StringNodeProp(getCleanCommand(),  "CleanCommand Line", "Clean Command Line", "Clean Command Line"));
-	set.put(new OutputStringNodeProp(getOutput(), "Output", "Output", "Output"));
+	set.put(new DirStringNodeProp(getBuildCommandWorkingDir(), "WorkingDirectory", getString("WorkingDirectory_LBL"), getString("WorkingDirectory_TT"))); // NOI18N
+	set.put(new StringNodeProp(getBuildCommand(), "BuildCommandLine", getString("BuildCommandLine_LBL"), getString("BuildCommandLine_TT"))); // NOI18N
+	set.put(new StringNodeProp(getCleanCommand(),  "CleanCommandLine", getString("CleanCommandLine_LBL"), getString("CleanCommandLine_TT"))); // NOI18N
+	set.put(new OutputStringNodeProp(getOutput(), "BuildResult", getString("BuildResult_LBL"), getString("BuildResult_TT"))); // NOI18N
 	sheet.put(set);
 
 	return sheet;
@@ -183,7 +195,10 @@ public class MakefileConfiguration {
 	}
 
 	public PropertyEditor getPropertyEditor() {
-	    return new ElfEditor(getAbsOutput());
+            String seed = getAbsOutput();
+            if (seed.length() == 0)
+                seed = getMakeConfiguration().getBaseDir();
+	    return new ElfEditor(seed);
 	}
     }
 
@@ -312,11 +327,20 @@ public class MakefileConfiguration {
         }
         
         public void propertyChange(PropertyChangeEvent evt) {
-            if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
+            if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID && getSelectedFile() != null) {
                 String path = IpeUtils.toRelativePath(makeConfiguration.getBaseDir(), getSelectedFile().getPath()); // FIXUP: not always relative path
                 path = FilePathAdaptor.normalize(path);
                 editor.setValue(path);
             }
         }
+    }
+    
+    /** Look up i18n strings here */
+    private static ResourceBundle bundle;
+    private static String getString(String s) {
+	if (bundle == null) {
+	    bundle = NbBundle.getBundle(MakefileConfiguration.class);
+}
+	return bundle.getString(s);
     }
 }

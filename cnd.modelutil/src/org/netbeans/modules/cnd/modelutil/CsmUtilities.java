@@ -19,10 +19,7 @@
 
 package org.netbeans.modules.cnd.modelutil;
 
-import java.util.Collection;
-import java.util.Iterator;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmMember;
@@ -44,15 +41,14 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.loaders.CppEditorSupport;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
@@ -62,6 +58,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
+import org.openide.nodes.Node;
+        
 
 /**
  *
@@ -120,7 +118,17 @@ public class CsmUtilities {
 	int mod = 0;
         if (CsmKindUtilities.isClassMember(obj)) {
             mod |= CsmUtilities.getMemberModifiers((CsmMember)obj);
-        }  
+        } else {
+            if (CsmKindUtilities.isGlobalVariable(obj)||CsmKindUtilities.isGlobalVariable(obj)){
+                mod |= GLOBAL;
+            }
+            if (CsmKindUtilities.isFileLocalVariable(obj)){
+                mod |= FILE_LOCAL;
+            }
+            if (CsmKindUtilities.isEnumerator(obj)){
+                mod |= ENUMERATOR;
+            }
+        } 
         // add contst info for variables
         if (CsmKindUtilities.isVariable(obj)) {
             CsmVariable var = (CsmVariable)obj;
@@ -144,6 +152,10 @@ public class CsmUtilities {
 	if (member.isStatic()) {
 	    mod |= STATIC;
 	}
+        mod |= MEMBER;
+        if (CsmKindUtilities.isConstructor(member)){
+            mod |= CONSTRUCTOR;
+        }
 	return mod;
     }
     
@@ -168,10 +180,24 @@ public class CsmUtilities {
     
     //====================
 
-    public static CsmFile getCsmFile(BaseDocument bDoc) {
+    public static CsmFile getCsmFile(Node node, boolean waitParsing) {
+        EditorCookie ec = (EditorCookie) node.getCookie(EditorCookie.class);
+        if (ec instanceof CppEditorSupport) {
+            JEditorPane[] panes = ec.getOpenedPanes();
+            if (panes != null && panes.length>0) {
+                Document doc = panes[0].getDocument();
+                if (doc instanceof BaseDocument){
+                    return getCsmFile((BaseDocument)doc, waitParsing);
+                }
+            }
+        }
+        return null;
+    }
+
+    public static CsmFile getCsmFile(BaseDocument bDoc, boolean waitParsing) {
 	CsmFile csmFile = null;
 	try {
-	    csmFile = getCsmFile(NbEditorUtilities.getDataObject(bDoc));
+	    csmFile = getCsmFile(NbEditorUtilities.getDataObject(bDoc), waitParsing);
 	} catch (NullPointerException exc) {
 	    exc.printStackTrace();
 	}
@@ -181,25 +207,25 @@ public class CsmUtilities {
     public static CsmProject getCsmProject(BaseDocument bDoc) {
 	CsmProject csmProject = null;
 	try {
-	    csmProject = getCsmFile(bDoc).getProject();
+	    csmProject = getCsmFile(bDoc, false).getProject();
 	} catch (NullPointerException exc) {
 	    exc.printStackTrace();
 	}
 	return csmProject;
     }
     
-    public static CsmFile getCsmFile(DataObject dobj) {
+    public static CsmFile getCsmFile(DataObject dobj, boolean waitParsing) {
         // FIXUP: need to use NativeFileItemCookie
 	CsmFile csmFile = null;
 	try {
-	    csmFile = getCsmFile(dobj.getPrimaryFile());
+	    csmFile = getCsmFile(dobj.getPrimaryFile(), waitParsing);
 	} catch (NullPointerException exc) {
 	    exc.printStackTrace();
 	}
 	return csmFile;
     }
     
-    public static CsmFile getCsmFile(FileObject fo) {
+    public static CsmFile getCsmFile(FileObject fo, boolean waitParsing) {
         // FIXUP: till we have NativeFileItemCookie
 	CsmFile csmFile = null;
 	try {
@@ -208,36 +234,23 @@ public class CsmUtilities {
             if (prj != null) {
                 nativeProject = (NativeProject) prj.getLookup().lookup(NativeProject.class);
             } 
-            if (nativeProject != null) {
-                CsmProject csmPrj = CsmModelAccessor.getModel().getProject(nativeProject);                
-                File file = FileUtil.toFile(fo);
+            CsmProject csmPrj = CsmModelAccessor.getModel().getProject(nativeProject);
+            File file = FileUtil.toFile(fo);
+            if (csmPrj != null) {
                 csmFile = csmPrj.findFile(file.getAbsolutePath());
             } else {
                 // search in projects
-                File file = FileUtil.toFile(fo);
-                Collection/*<CsmProject>*/ projects = CsmModelAccessor.getModel().projects();
-                Set libs = new HashSet();
-                for (Iterator it = projects.iterator(); it.hasNext() && (csmFile == null);) {
-                    CsmProject curPrj = (CsmProject) it.next();
-                    csmFile = curPrj.findFile(file.getAbsolutePath());
-                    libs.addAll(curPrj.getLibraries());
-                }
-                // search in libs
-                if (csmFile == null && libs.size() > 0) {
-                    for (Iterator it = libs.iterator(); it.hasNext() && (csmFile == null);) {
-                        CsmProject lib = (CsmProject) it.next();
-                        csmFile = lib.findFile(file.getAbsolutePath());
-                    }
-                }
+                csmFile = CsmModelAccessor.getModel().findFile(file.getAbsolutePath());
             }
 	} catch (NullPointerException exc) {
 	    exc.printStackTrace();
 	}
-        if( csmFile != null ) {
+        if( csmFile != null && waitParsing) {
             try {
                 csmFile.scheduleParsing(true);
             } catch (InterruptedException ex) {
-                ex.printStackTrace();
+                // ignore
+                //ex.printStackTrace();
             }
         }
 	return csmFile;
@@ -530,7 +543,7 @@ public class CsmUtilities {
                     text = ((CsmStatement)element).getText();
                 }
             } else {
-                text = element.getContainingFile().getAbsolutePath();
+                text = element.getText();
             }
             if (text.length() > 0) {
                 text = "\"" + text + "\"";

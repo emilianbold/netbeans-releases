@@ -40,34 +40,50 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
  */
 public class TypeImpl extends OffsetableBase implements CsmType {
 
-    //private AST ast;
-    private CsmFile file;
+    private final int pointerDepth;
+    private final boolean reference;
+    private final int arrayDepth;
+    private final boolean _const;
+    private final String classifierText;
+    
+    // FIX for lazy resolver calls
+    private String[] qname = null;
+    private int firstOffset;
     private CsmClassifier classifier;
-    //private String text = null;
-    private int pointerDepth;
-    private boolean reference;
-    private int arrayDepth = 0;
     
     private TypeImpl(CsmClassifier classifier, int pointerDepth, boolean reference, int arrayDepth, AST ast, CsmFile file) {
-        super(file, 0, 0);
-        setAst(ast);
+        super(ast, file);
         this.classifier = classifier;
         this.pointerDepth = pointerDepth;
         this.reference = reference;
         this.arrayDepth = arrayDepth;
+        _const = initIsConst(ast);
+        if (this.classifier == null) {
+            this.classifier = initClassifier(ast);
+            this.classifierText = initClassifierText(ast);
+        } else {
+            String typeName = classifier.getName();
+            if (typeName == null || typeName.length()==0){
+                this.classifierText = initClassifierText(ast);
+            } else {
+                this.classifierText = typeName;
+            }
+        }
     }
 
     private TypeImpl(AST classifier, CsmFile file, int pointerDepth, boolean reference, int arrayDepth) {
         super(classifier, file);
         //setAst(classifier);
-        this.file = file;
         this.pointerDepth = pointerDepth;
         this.reference = reference;
         this.arrayDepth = arrayDepth;
+        _const = initIsConst(classifier);
+        this.classifier = initClassifier(classifier);
+        this.classifierText = initClassifierText(classifier);
     }
     
-    public CsmAST getEndAst() {
-        AST ast = getAst();
+    protected CsmAST getEndAst(AST node) {
+        AST ast = node;
         if( ast == null ) {
             return null;
         }
@@ -75,7 +91,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
         if( ast instanceof CsmAST ) {
             return (CsmAST) ast;
         }
-        return super.getEndAst();
+        return super.getEndAst(node);
     }
     
     private AST getLastNode(AST first) {
@@ -100,9 +116,9 @@ public class TypeImpl extends OffsetableBase implements CsmType {
         return pointerDepth > 0;
     }
     
-    public boolean isConst() {
-        if( getAst() != null ) {
-            for( AST token = getAst(); token != null; token = token.getNextSibling() ) {
+    private static boolean initIsConst(AST node) {
+        if( node != null ) {
+            for( AST token = node; token != null; token = token.getNextSibling() ) {
 		switch( token.getType() ) {
 		    case CPPTokenTypes.LITERAL_const:
                     case CPPTokenTypes.LITERAL___const:
@@ -115,6 +131,10 @@ public class TypeImpl extends OffsetableBase implements CsmType {
         }
         return false;
     }
+    
+    public boolean isConst() {
+        return _const;
+    }
 
     public String getText() {
 //        if( text == null ) {
@@ -122,7 +142,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
             if( isConst() ) {
                 sb.append("const ");
             }
-            sb.append(getClassifierText());
+            sb.append(classifierText);
             for( int i = 0; i < getPointerDepth(); i++ ) {
                 sb.append('*');
             }
@@ -138,13 +158,13 @@ public class TypeImpl extends OffsetableBase implements CsmType {
             return sb.toString();
     }
     
-    private String getClassifierText() {
-        if( getAst() == null ) {
+    private String initClassifierText(AST node) {
+        if( node == null ) {
             return classifier == null ? "" : classifier.getName();
         }
         else {
             StringBuffer sb = new StringBuffer();
-            addText(sb, AstRenderer.getFirstSiblingSkipQualifiers(getAst()));
+            addText(sb, AstRenderer.getFirstSiblingSkipQualifiers(node));
             return sb.toString();
         }
     }
@@ -162,14 +182,27 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     }
 
     public CsmClassifier getClassifier() {
-        if( classifier == null ) {
+        if ((classifier == null) && (qname != null)) {
             classifier = renderClassifier();
         }
         return classifier;
     }
     
     private CsmClassifier renderClassifier() {
-        AST tokType = AstRenderer.getFirstSiblingSkipQualifiers(getAst());
+        CsmClassifier result = null;
+        Resolver resolver = ResolverFactory.createResolver(getContainingFile(), firstOffset);
+        CsmObject o = resolver.resolve(qname);
+        if( CsmKindUtilities.isClassifier(o) ) {
+            result = (CsmClassifier) o;
+        }
+        if( result == null ) {
+            result = ((ProjectBase) getContainingFile().getProject()).getDummyForUnresolved(qname, getContainingFile(), firstOffset);
+        }
+        return result;
+    }
+        
+    private CsmClassifier initClassifier(AST node) {
+        AST tokType = AstRenderer.getFirstSiblingSkipQualifiers(node);
         if( tokType == null ||  
             (tokType.getType() != CPPTokenTypes.CSM_TYPE_BUILTIN && 
             tokType.getType() != CPPTokenTypes.CSM_TYPE_COMPOUND) &&
@@ -177,18 +210,19 @@ public class TypeImpl extends OffsetableBase implements CsmType {
             return null;
         }
 
-        CsmClassifier result = null;
         if( tokType.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ) {
-            result = BuiltinTypes.getBuiltIn(tokType);
+            return BuiltinTypes.getBuiltIn(tokType);
         }
         else { // tokType.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
             try {
                 CsmAST tokFirstId = (CsmAST) tokType.getFirstChild();
                         
-                int offset = tokFirstId.getOffset();
-                Resolver resolver = ResolverFactory.createResolver(file, offset);
+                firstOffset = tokFirstId.getOffset();
+                //Resolver resolver = ResolverFactory.createResolver(getContainingFile(), firstOffset);
                 // gather name components into string array 
                 // for example, for std::vector new String[] { "std", "vector" }
+                
+                //TODO: we have AstRenderer.getNameTokens, it is better to use it here
                 List l = new ArrayList();
 		int templateDepth = 0;
                 for( AST namePart = tokFirstId; namePart != null; namePart = namePart.getNextSibling() ) {
@@ -206,19 +240,21 @@ public class TypeImpl extends OffsetableBase implements CsmType {
                     else {
                         //assert namePart.getType() == CPPTokenTypes.SCOPE;
                         if( templateDepth == 0 && namePart.getType() != CPPTokenTypes.SCOPE ) {
-                            StringBuffer tokenText = new StringBuffer();
-                            tokenText.append('[').append(namePart.getText());
-                            if (namePart.getNumberOfChildren() == 0) {
-                                tokenText.append(", line=").append(namePart.getLine());
-                                tokenText.append(", column=").append(namePart.getColumn());
+                            if (Diagnostic.DEBUG) {
+                                StringBuffer tokenText = new StringBuffer();
+                                tokenText.append('[').append(namePart.getText());
+                                if (namePart.getNumberOfChildren() == 0) {
+                                    tokenText.append(", line=").append(namePart.getLine());
+                                    tokenText.append(", column=").append(namePart.getColumn());
+                                }
+                                tokenText.append(']');
+                                System.err.println("Incorect token: expected '::', found " + tokenText.toString());
                             }
-                            tokenText.append(']');
-                            System.err.println("Incorect token: expected '::', found " + tokenText.toString());
                         }
                     }
                 }
-                String[] qname = (String[]) l.toArray(new String[l.size()]);
-                CsmObject o = resolver.resolve(qname);
+                qname = (String[]) l.toArray(new String[l.size()]);
+                /*CsmObject o = resolver.resolve(qname);
                 if( CsmKindUtilities.isClassifier(o) ) {
                     result = (CsmClassifier) o;
                 }
@@ -230,15 +266,14 @@ public class TypeImpl extends OffsetableBase implements CsmType {
 //		    }
 //		}
                 if( result == null ) {
-                    result = ((ProjectBase) getContainingFile().getProject()).getDummyForUnresolved(qname, file, offset);
-                }
+                    result = ((ProjectBase) getContainingFile().getProject()).getDummyForUnresolved(qname, getContainingFile(), offset);
+                }*/
             }
             catch( Exception e ) {
                 e.printStackTrace(System.err);
             }
         }
-
-        return result;
+        return null;
     }
 
     public int getArrayDepth() {
@@ -279,6 +314,42 @@ public class TypeImpl extends OffsetableBase implements CsmType {
         boolean pointer = false;
         boolean refence = false;
         int pointerDepth = 0;
+        if (ptrOperator != null &&
+            (ptrOperator.getType() == CPPTokenTypes.CSM_CLASS_DECLARATION ||
+            ptrOperator.getType() == CPPTokenTypes.CSM_ENUM_DECLARATION)) {
+            ptrOperator = ptrOperator.getFirstChild();
+            int count = 0; 
+            boolean findBody = false;
+            boolean findStruct = false;
+            for (; ptrOperator != null; ptrOperator = ptrOperator.getNextSibling()){
+                switch( ptrOperator.getType() ) {
+                    case CPPTokenTypes.LITERAL_struct:
+                    case CPPTokenTypes.LITERAL_class:
+                    case CPPTokenTypes.LITERAL_enum:
+                    case CPPTokenTypes.LITERAL_union:
+                        findStruct = true;
+                        continue;
+                    case CPPTokenTypes.LCURLY:
+                        findBody = true;
+                        count++;
+                        continue;
+                    case CPPTokenTypes.RCURLY:
+                        count--;
+                        if (findStruct && count == -1){
+                            count = 0;
+                            findStruct = false;
+                            findBody = true;
+                        }
+                        continue;
+                    default:
+                        if (findBody && count == 0) {
+                            break;
+                        }
+                        continue;
+                }
+                break;
+            }
+        }
         while( ptrOperator != null && ptrOperator.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ) {
             //for( AST token = ptrOperator.getFirstChild(); token != null; token = token.getNextSibling() ) {
                 AST token = ptrOperator.getFirstChild();

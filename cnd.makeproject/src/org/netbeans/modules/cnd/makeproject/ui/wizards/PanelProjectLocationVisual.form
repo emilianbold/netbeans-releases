@@ -46,9 +46,12 @@
       </Constraints>
     </Component>
     <Component class="javax.swing.JTextField" name="projectNameTextField">
+      <Properties>
+        <Property name="columns" type="int" value="20"/>
+      </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="-1" gridY="-1" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="12" insetsBottom="12" insetsRight="0" anchor="17" weightX="1.0" weightY="0.0"/>
+          <GridBagConstraints gridX="-1" gridY="-1" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="12" insetsBottom="4" insetsRight="0" anchor="17" weightX="1.0" weightY="0.0"/>
         </Constraint>
       </Constraints>
     </Component>
@@ -79,6 +82,9 @@
       </Constraints>
     </Component>
     <Component class="javax.swing.JTextField" name="projectLocationTextField">
+      <Properties>
+        <Property name="columns" type="int" value="20"/>
+      </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
           <GridBagConstraints gridX="-1" gridY="1" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="12" insetsBottom="5" insetsRight="0" anchor="17" weightX="1.0" weightY="0.0"/>
@@ -140,6 +146,7 @@
     </Component>
     <Component class="javax.swing.JTextField" name="createdFolderTextField">
       <Properties>
+        <Property name="columns" type="int" value="20"/>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
       <Constraints>
@@ -167,6 +174,9 @@
       </Constraints>
     </Component>
     <Component class="javax.swing.JTextField" name="makefileTextField">
+      <Properties>
+        <Property name="columns" type="int" value="20"/>
+      </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
           <GridBagConstraints gridX="1" gridY="3" gridWidth="1" gridHeight="0" fill="2" ipadX="0" ipadY="0" insetsTop="4" insetsLeft="12" insetsBottom="12" insetsRight="0" anchor="18" weightX="1.0" weightY="1.0"/>

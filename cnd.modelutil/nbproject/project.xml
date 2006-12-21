@@ -111,6 +111,8 @@
             <friend-packages>
                 <friend>org.netbeans.modules.cnd.classview</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>
+                <friend>org.netbeans.modules.cnd.gotodeclaration</friend>
+                <friend>org.netbeans.modules.cnd.highlight</friend>
                 <friend>org.netbeans.modules.cnd.qnavigator</friend>
                 <package>org.netbeans.modules.cnd.modelutil</package>
             </friend-packages>

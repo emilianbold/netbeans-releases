@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    
+    <!--
+    <folder name="Menu">
+	<folder name="Tools">
+	    <attr name="org-netbeans-core-actions-ConfigureShortcutsAction.instance/org.netbeans.modules.cnd.modelui.switcher.SwitcherDialogAction.shadow" boolvalue="true"/>
+	    <file name="org.netbeans.modules.cnd.modelui.switcher.SwitcherDialogAction.shadow">
+		<attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.cnd.modelui.switcher.SwitcherDialogAction.instance"/>
+	    </file>
+            <attr name="org.netbeans.modules.cnd.modelui.switcher.SwitcherDialogAction.shadow/org-netbeans-core-actions-OptionsAction.instance" boolvalue="true"/>
+        </folder>
+    </folder>
+    -->
+
+    <folder name="Actions">
+        <folder name="View">
+	    <file name="org.netbeans.modules.cnd.modelui.switcher.SwitcherDialogAction.instance">
+		<attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.modelui.switcher.SwitcherDialogAction"/>
+	    </file>
+	    <file name="org.netbeans.modules.cnd.modelui.switcher.SwitchProjectAction.instance">
+		<attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.modelui.switcher.SwitchProjectAction"/>
+	    </file>
+	</folder>
+    </folder>
+    
+    <folder name="NativeProjects">
+        <folder name="Actions">
+            <file name="org.netbeans.modules.cnd.modelui.switcher.SwitchProjectAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.cnd.modelui.switcher.SwitchProjectAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-project-ui-CloseProject.shadow/org.netbeans.modules.cnd.modelui.switcher.SwitchProjectAction.shadow" boolvalue="true" />
+            <attr name="org.netbeans.modules.cnd.modelui.switcher.SwitchProjectAction.shadow/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true" />
+       </folder>
+   </folder>     
+    
+</filesystem>

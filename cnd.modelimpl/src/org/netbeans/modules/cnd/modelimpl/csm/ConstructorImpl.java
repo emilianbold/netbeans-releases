@@ -33,7 +33,6 @@ public class ConstructorImpl extends MethodImpl implements CsmConstructor {
     public ConstructorImpl(AST ast, ClassImpl cls, CsmVisibility visibility) {
         super(ast, cls, visibility);
         setName(cls.getName());
-        setAst(ast);
     }
 
     public List getInitializerList() {

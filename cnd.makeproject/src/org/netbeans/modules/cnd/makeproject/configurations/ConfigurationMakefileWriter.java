@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSets;
 import org.netbeans.modules.cnd.makeproject.api.compilers.Tool;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 
 public class ConfigurationMakefileWriter {
@@ -265,7 +266,7 @@ public class ConfigurationMakefileWriter {
         bw.write(output + ": " + "${OBJECTFILES}" + "\n"); // NOI18N
         String folders = IpeUtils.getDirName(output);
         if (folders != null)
-            bw.write("\t@${MKDIR} -p " + folders + "\n"); // NOI18N
+            bw.write("\t${MKDIR} -p " + folders + "\n"); // NOI18N
         bw.write("\t" + command + "\n"); // NOI18N
     }
     
@@ -277,7 +278,7 @@ public class ConfigurationMakefileWriter {
         bw.write(output + ": " + "${OBJECTFILES}" + "\n"); // NOI18N
         String folders = IpeUtils.getDirName(output);
         if (folders != null)
-            bw.write("\t@${MKDIR} -p " + folders + "\n"); // NOI18N
+            bw.write("\t${MKDIR} -p " + folders + "\n"); // NOI18N
         bw.write("\t" + "${RM}" + " " + output + "\n"); // NOI18N
         bw.write("\t" + command + "\n"); // NOI18N
         if (archiverConfiguration.getRunRanlib().getValue())
@@ -297,7 +298,7 @@ public class ConfigurationMakefileWriter {
                 ItemConfiguration itemConfiguration = (ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(items[i].getPath()));
                 if (itemConfiguration.getExcluded().getValue())
                     continue;
-                file = items[i].getPath();
+                file = escapeDriveLetter(IpeUtils.escapeSpaces(items[i].getPath())); // FIXUP: cygdrive hard-coded...
                 command = ""; // NOI18N
                 comment = null;
 		additionalDep = null;
@@ -308,7 +309,7 @@ public class ConfigurationMakefileWriter {
                     target = compilerConfiguration.getOutputFile(items[i].getPath(true), conf);
                     command += compilerConfiguration.getOptions(compiler) + " "; // NOI18N
                     command += "-o " + target + " "; // NOI18N
-                    command += items[i].getPath(true);
+                    command += IpeUtils.escapeSpaces(items[i].getPath(true));
                     additionalDep = compilerConfiguration.getAdditionalDependencies().getValue();
                 } else if (itemConfiguration.getTool() == Tool.CustomTool) {
                     CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
@@ -330,7 +331,7 @@ public class ConfigurationMakefileWriter {
 		else
 		    bw.write(target + ": " + file + "\n"); // NOI18N
                 if (folders != null)
-                    bw.write("\t@${MKDIR} -p " + folders + "\n"); // NOI18N
+                    bw.write("\t${MKDIR} -p " + folders + "\n"); // NOI18N
                 if (comment != null)
                     bw.write("\t@echo " + comment + "\n"); // NOI18N
                 bw.write("\t" + command + "\n"); // NOI18N
@@ -341,7 +342,7 @@ public class ConfigurationMakefileWriter {
     private void writeMakefileTargets(MakeConfiguration conf, BufferedWriter bw) throws IOException {
         MakefileConfiguration makefileConfiguration = conf.getMakefileConfiguration();
         String target = makefileConfiguration.getOutput().getValue();
-        String cwd = makefileConfiguration.getBuildCommandWorkingDir().getValue();
+        String cwd = makefileConfiguration.getBuildCommandWorkingDirValue();
         String command = makefileConfiguration.getBuildCommand().getValue();
         //bw.write(target + ":" + "\n"); // NOI18N
         bw.write("\tcd " + cwd + ";\\" + "\n"); // NOI18N
@@ -361,7 +362,7 @@ public class ConfigurationMakefileWriter {
                 String location = makeArtifact.getWorkingDirectory();
                 if (!makeArtifact.getBuild())
                     continue;
-                bw.write("\tcd " + location + "; " + makeArtifact.getBuildCommand() + "\n"); // NOI18N
+                bw.write("\tcd " + location + " && " + makeArtifact.getBuildCommand() + "\n"); // NOI18N
             }
         }
     }
@@ -379,7 +380,7 @@ public class ConfigurationMakefileWriter {
                 String location = makeArtifact.getWorkingDirectory();
                 if (!makeArtifact.getBuild())
                     continue;
-                bw.write("\tcd " + location + "; " + makeArtifact.getCleanCommand() + "\n"); // NOI18N
+                bw.write("\tcd " + location + " && " + makeArtifact.getCleanCommand() + "\n"); // NOI18N
             }
         }
     }
@@ -409,7 +410,7 @@ public class ConfigurationMakefileWriter {
         } else if (conf.isMakefileConfiguration()) {
             MakefileConfiguration makefileConfiguration = conf.getMakefileConfiguration();
             String target = makefileConfiguration.getOutput().getValue();
-            String cwd = makefileConfiguration.getBuildCommandWorkingDir().getValue();
+            String cwd = makefileConfiguration.getBuildCommandWorkingDirValue();
             String command = makefileConfiguration.getCleanCommand().getValue();
             
             bw.write("\tcd " + cwd + ";\\" + "\n"); // NOI18N
@@ -421,8 +422,12 @@ public class ConfigurationMakefileWriter {
     
     
     private String getOutput(MakeConfiguration conf) {
-        if (conf.isLinkerConfiguration())
-            return conf.getLinkerConfiguration().getOutputValue();
+        if (conf.isLinkerConfiguration()) {
+            String output = conf.getLinkerConfiguration().getOutputValue();
+            if (conf.isApplicationConfiguration() && conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS)
+                output += ".exe"; // NOI18N
+            return output;
+        }
         else if (conf.isArchiverConfiguration())
             return conf.getArchiverConfiguration().getOutputValue();
         else if (conf.isMakefileConfiguration())
@@ -458,5 +463,13 @@ public class ConfigurationMakefileWriter {
             }
         }
 	return false;
+    }
+    
+    private static String escapeDriveLetter(String s) {
+        if (s.length() > 1 && s.charAt(1) == ':') {
+            return "/cygdrive/" + s.charAt(0) + s.substring(2); // NOI18N
+        }
+        else
+            return s;
     }
 }

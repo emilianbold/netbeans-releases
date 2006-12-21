@@ -31,13 +31,18 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
  */
 public class UsingDeclarationImpl extends OffsetableDeclarationBase implements CsmUsingDeclaration, RawNamable {
 
-    private String name;
+    private final String name;
+    private final int startOffset;
+    private final String[] rawName;
     // TODO: don't store declaration here since the instance might change
     private CsmDeclaration referencedDeclaration = null;
     
     public UsingDeclarationImpl(AST ast, CsmFile file) {
         super(ast, file);
         name = ast.getText();
+        // TODO: here we override startOffset which is not good because startPosition is now wrong
+        startOffset = ((CsmAST)ast.getFirstChild()).getOffset();
+        rawName = AstUtil.getRawNameInChildren(ast);
     }
     
     public CsmDeclaration getReferencedDeclaration() {
@@ -50,7 +55,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase implements C
             if (referencedDeclaration == null) {
                 referencedDeclaration = (CsmDeclaration)ResolverFactory.createResolver(
                         getContainingFile(),
-                        ((CsmAST)getAst().getFirstChild()).getOffset()).
+                        startOffset).
                         resolve(name);
             }
             return referencedDeclaration;
@@ -58,7 +63,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase implements C
     }
     
     public int getStartOffset() {
-        return ((CsmAST)getAst().getFirstChild()).getOffset();
+        return startOffset;
     }
     
     public CsmDeclaration.Kind getKind() {
@@ -74,7 +79,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase implements C
     }
     
     public String[] getRawName() {
-        return AstUtil.getRawNameInChildren(getAst());
+        return rawName;
     }
     
     public String toString() {

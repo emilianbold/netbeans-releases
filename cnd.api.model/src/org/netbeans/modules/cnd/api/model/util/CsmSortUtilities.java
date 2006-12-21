@@ -23,6 +23,7 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -233,6 +234,22 @@ public class CsmSortUtilities {
                         return 1;
                     }
                 }
+
+                // macros
+                boolean mac1 = CsmKindUtilities.isMacro(csm1);
+                boolean mac2 = CsmKindUtilities.isMacro(csm2);
+                if (mac1 || mac2){
+                    if (mac1 && mac2) {
+                        return compareMacros((CsmMacro)csm1, (CsmMacro)csm2, sensitive);
+                    } else if (mac1) {
+                        // macros are lesser, than other elements
+                        return -1;
+                    } else {
+                        assert (mac2);
+                        // macros are lesser, than other elements
+                        return 1;
+                    }
+                }
             }
             return 0;
         }
@@ -394,6 +411,23 @@ public class CsmSortUtilities {
         int sameName = fun1.getName().compareTo(fun2.getName());
         if (order == 0 && sameName != 0) order = sameName;
 
+        return order;
+    }
+
+    
+    private static int compareMacros(CsmMacro fun1, CsmMacro fun2, boolean sensitive) {
+        int order = compareNames(fun1, fun2, sensitive);
+        if (order == 0 ){
+            int size1 = 0;
+            if (fun1.getParameters() != null){
+                size1 = fun1.getParameters().size();
+            }
+            int size2 = 0;
+            if (fun2.getParameters() != null){
+                size2 = fun2.getParameters().size();
+            }
+            order =  size1 - size2;
+        }
         return order;
     }
 }

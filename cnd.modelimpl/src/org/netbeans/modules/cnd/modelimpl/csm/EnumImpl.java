@@ -30,23 +30,15 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
  * @author Vladimir Kvashin
  */
 public class EnumImpl extends ClassEnumBase  implements CsmEnum, CsmMember {
+    
+    private List/*CsmEnumerator*/ enumerators = Collections.EMPTY_LIST;
 
-    public EnumImpl(String name, NamespaceImpl namespace, CsmFile file, int start, int end) {
-        this(name, namespace, file, start, end, null);
-    }
-    
-    public EnumImpl(String name, NamespaceImpl namespace, CsmFile file, int start, int end, CsmClass containingClass) {
-        super(CsmDeclaration.Kind.ENUM, name, namespace, file, start, end, containingClass);
-        register();
-    }
-    
     public EnumImpl(AST ast, NamespaceImpl namespace, CsmFile file) {
         this(ast, namespace, file, null);
     }
     
     public EnumImpl(AST ast, NamespaceImpl namespace, CsmFile file, CsmClass containingClass) {
-        super(CsmDeclaration.Kind.ENUM, AstUtil.findId(ast, CPPTokenTypes.RCURLY), namespace, file,  0, 0, containingClass);
-        setAst(ast);
+        super(CsmDeclaration.Kind.ENUM, AstUtil.findId(ast, CPPTokenTypes.RCURLY), namespace, file, containingClass, ast);
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             if( token.getType() == CPPTokenTypes.CSM_ENUMERATOR_LIST ) {
                 for( AST t = token.getFirstChild(); t != null; t = t.getNextSibling() ) {
@@ -73,7 +65,4 @@ public class EnumImpl extends ClassEnumBase  implements CsmEnum, CsmMember {
     public List getScopeElements() {
         return getEnumerators();
     }
-    
-   
-    private List/*CsmEnumerator*/ enumerators = Collections.EMPTY_LIST;
 }

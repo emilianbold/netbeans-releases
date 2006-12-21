@@ -26,6 +26,7 @@ import org.netbeans.modules.cnd.api.xml.VersionException;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
+import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
 import org.xml.sax.Attributes;
 
 public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
@@ -42,12 +43,14 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
     private final static String ARGS_ELEMENT = "args"; // NOI18N
     private final static String RUNDIR_ELEMENT = "rundir"; // NOI18N
     private final static String BUILD_FIRST_ELEMENT = "buildfirst"; // NOI18N
+    private final static String CONSOLE_TYPE_ELEMENT = "console-type"; // NOI18N
+    private final static String TERMINAL_TYPE_ELEMENT = "terminal-type"; // NOI18N
 
     public final static String TRUE_VALUE = "true"; // NOI18N
     public final static String FALSE_VALUE = "false"; // NOI18N
 
 
-    private final static int thisversion = 4;
+    private final static int thisversion = 5;
 
     public RunProfileXMLCodec(RunProfile profile) {
 	this.profile = profile;
@@ -93,6 +96,19 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
 	else if (element.equals(BUILD_FIRST_ELEMENT)) {
 	    profile.setBuildFirst(currentText.equals(TRUE_VALUE));
 	}
+	else {
+            int idx;            
+            try {
+                idx = Integer.parseInt(currentText);
+            } catch (NumberFormatException ex) {
+                idx = 0;
+    }
+            if (element.equals(CONSOLE_TYPE_ELEMENT)) {
+                profile.getConsoleType().setValue(idx);
+            } else if (element.equals(TERMINAL_TYPE_ELEMENT)) {
+                profile.getTerminalType().setValue(idx);
+            }
+	}
     }
 
 
@@ -132,6 +148,8 @@ public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
 	xes.element(ARGS_ELEMENT, profile.getArgsFlat());
 	xes.element(RUNDIR_ELEMENT, profile.getRunDir());
 	xes.element(BUILD_FIRST_ELEMENT, "" + profile.getBuildFirst()); // NOI18N
+        xes.element(CONSOLE_TYPE_ELEMENT, Integer.toString(profile.getConsoleType().getValue()));
+        xes.element(TERMINAL_TYPE_ELEMENT, Integer.toString(profile.getTerminalType().getValue()));
 	encode(xes, profile.getEnvironment());
 	xes.elementClose(PROFILE_ID);
     }

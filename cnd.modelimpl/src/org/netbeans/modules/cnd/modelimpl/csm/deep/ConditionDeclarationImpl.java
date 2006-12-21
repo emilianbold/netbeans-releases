@@ -37,26 +37,28 @@ import org.netbeans.modules.cnd.modelimpl.antlr2.generated.CPPTokenTypes;
  */
 public class ConditionDeclarationImpl extends OffsetableBase implements CsmCondition {
     
-    VariableImpl declaration;
+    private VariableImpl declaration;
     
     public ConditionDeclarationImpl(AST ast, CsmFile file) {
-            super(ast, file);
+        super(ast, file);
+        initDeclaration(ast);
     }
 
     public CsmCondition.Kind getKind() {
         return CsmCondition.Kind.DECLARATION;
     }
+    
+    private void initDeclaration(AST node) {
+        AstRenderer renderer = new AstRenderer((FileImpl) getContainingFile()) {
+            protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static) {
+                declaration = super.createVariable(offsetAst, file, type, name, _static);
+                return declaration;
+            }
+        };
+        renderer.renderVariable(node, null, null);
+    }
 
     public CsmVariable getDeclaration() {
-        if( declaration == null ) {
-            AstRenderer renderer = new AstRenderer((FileImpl) getContainingFile()) {
-                protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static) {
-                    declaration = super.createVariable(offsetAst, file, type, name, _static);
-                    return declaration;
-                }
-            };
-            renderer.renderVariable(getAst(), null, null);
-        }
         return declaration;
     }
 

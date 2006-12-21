@@ -80,6 +80,6 @@ public class AddExternalItemAction extends AbstractAction {
 	    
 	    makeProjectDescriptor.getExternalItemFolder().addItem(items[i] = new Item(itemPath));
 	}
-	MakePhysicalViewProvider.setVisible(project, items);
+	MakeLogicalViewProvider.setVisible(project, items);
     }
 }

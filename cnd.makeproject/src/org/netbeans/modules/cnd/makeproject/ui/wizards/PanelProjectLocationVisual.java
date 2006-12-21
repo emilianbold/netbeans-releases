@@ -22,22 +22,27 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ResourceBundle;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener {
+public class PanelProjectLocationVisual extends SettingsPanel
+                implements DocumentListener, HelpCtx.Provider {
     
     public static final String PROP_PROJECT_NAME = "projectName"; // NOI18N
     
     private PanelConfigureProject panel;
+    private String templateName;
     private String name;
     private boolean makefileNameChanged = false;
     
@@ -46,6 +51,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         initComponents();
         this.panel = panel;
         this.name = name;
+        this.templateName = name;
         // Register listener on the textFields to make the automatic updates
         projectNameTextField.getDocument().addDocumentListener( this );
         projectLocationTextField.getDocument().addDocumentListener( this );
@@ -62,6 +68,10 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     
     public String getProjectName() {
         return this.projectNameTextField.getText();
+    }
+    
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("NewAppWizard");
     }
     
     /** This method is called from within the constructor to
@@ -95,11 +105,12 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         projectNameLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("ACSN_projectNameLabel"));
         projectNameLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("ACSD_projectNameLabel"));
 
+        projectNameTextField.setColumns(20);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 4, 0);
         add(projectNameTextField, gridBagConstraints);
 
         projectLocationLabel.setLabelFor(projectLocationTextField);
@@ -112,6 +123,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         projectLocationLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("ACSN_projectLocationLabel"));
         projectLocationLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("ACSD_projectLocationLabel"));
 
+        projectLocationTextField.setColumns(20);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -148,6 +160,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         createdFolderLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("ACSN_createdFolderLabel"));
         createdFolderLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("ACSD_createdFolderLabel"));
 
+        createdFolderTextField.setColumns(20);
         createdFolderTextField.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -168,6 +181,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 12, 0);
         add(makefileLabel, gridBagConstraints);
 
+        makefileTextField.setColumns(20);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -231,6 +245,10 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         }
         if (makefileTextField.getText().indexOf(" ") >= 0) { // NOI18N
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_SpacesInMakefile")); // NOI18N
+            return false;
+        }
+        if (makefileTextField.getText().indexOf("/") >= 0 || makefileTextField.getText().indexOf("\\") >= 0) { // NOI18N
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage", NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_IllegalMakefileName")); // NOI18N
             return false;
         }
         
@@ -300,7 +318,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         
         String projectName = (String) settings.getProperty("displayName"); //NOI18N
         if (projectName == null) {
-            
+            String workingDir = (String) settings.getProperty("buildCommandWorkingDirTextField"); //NOI18N
+            if (workingDir != null && workingDir.length() > 0 && templateName.equals(getString("NativeMakefileName")))
+                name = IpeUtils.getBaseName(workingDir);
             int baseCount = 1;
             String formater = name + "{0}"; // NOI18N
             while ((projectName=validFreeProjectName(projectLocation, formater, baseCount))==null)
@@ -379,6 +399,15 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         }
     }
     
+    private String contructProjectMakefileName(int count) {
+        String makefileName = projectNameTextField.getText() + "-" + MakeConfigurationDescriptor.DEFAULT_PROJECT_MAKFILE_NAME; // NOI18N
+        if (count > 0)
+            makefileName += "" + count + ".mk"; // NOI18N
+        else
+            makefileName += ".mk"; // NOI18N
+        return makefileName;
+    }
+    
     
     /** Handles changes in the Project name and project directory
      */
@@ -393,10 +422,17 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             
             if (!makefileNameChanged) {
                 // re-evaluate name of master project file.
-                String makefileName = MakeConfigurationDescriptor.DEFAULT_PROJECT_MAKFILE_NAME;
+                String makefileName;
+                if (!templateName.equals(getString("NativeMakefileName"))) // NOI18N
+                    makefileName = MakeConfigurationDescriptor.DEFAULT_PROJECT_MAKFILE_NAME;
+                else
+                    makefileName = contructProjectMakefileName(0);
+                
+                for (int count = 0;;) {
                 String proposedMakefile = createdFolderTextField.getText() + File.separatorChar + makefileName;
-                if (new File(proposedMakefile).exists() || new File(proposedMakefile.toLowerCase()).exists() || new File(proposedMakefile.toUpperCase()).exists()) {
-                    makefileName = MakeConfigurationDescriptor.DEFAULT_PROJECT_MAKFILE_NAME + "_" + projectName + ".mk"; // NOI18N
+                    if (!new File(proposedMakefile).exists() && !new File(proposedMakefile.toLowerCase()).exists() && !new File(proposedMakefile.toUpperCase()).exists())
+                        break;
+                    makefileName = contructProjectMakefileName(count++);
                 }
                 makefileTextField.setText(makefileName);
                 makefileNameChanged = false;
@@ -411,6 +447,15 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         } catch (IOException e) {
             return null;
         }
+    }
+    
+    /** Look up i18n strings here */
+    private static ResourceBundle bundle;
+    private static String getString(String s) {
+	if (bundle == null) {
+	    bundle = NbBundle.getBundle(PanelProjectLocationVisual.class);
+}
+	return bundle.getString(s);
     }
     
 }

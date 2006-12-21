@@ -30,7 +30,6 @@ import org.netbeans.modules.cnd.modelimpl.antlr2.generated.CPPTokenTypes;
  * @author Vladimir Kvasihn
  */
 public class DestructorDefinitionImpl extends FunctionDefinitionImpl {
-
     public DestructorDefinitionImpl(AST ast, CsmFile file) {
         super(ast, file, null);
     }
@@ -38,9 +37,9 @@ public class DestructorDefinitionImpl extends FunctionDefinitionImpl {
     public CsmType getReturnType() {
         return NoType.instance();
     }
-
-    public String getName() {
-        AST token = getAst().getFirstChild();
+    
+    protected String initName(AST node) {
+        AST token = node.getFirstChild();
         if( token != null && token.getType() == CPPTokenTypes.CSM_QUALIFIED_ID ) {
             token = token.getNextSibling();
             if( token != null && token.getType() == CPPTokenTypes.TILDE ) {
@@ -52,14 +51,4 @@ public class DestructorDefinitionImpl extends FunctionDefinitionImpl {
         }
         return "~";
     }
-
-    public CsmOffsetable.Position getStartPosition() {
-        Position retValue;
-        
-        retValue = super.getStartPosition();
-        return retValue;
-    }
-    
-    
-    
 }

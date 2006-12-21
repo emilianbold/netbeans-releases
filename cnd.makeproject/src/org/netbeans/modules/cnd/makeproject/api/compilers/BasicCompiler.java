@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -24,16 +24,16 @@ import java.util.Vector;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 
 public class BasicCompiler extends Tool {
-
+    
     /** Creates a new instance of GenericCompiler */
     public BasicCompiler(int kind, String name, String displayName) {
         super(kind, name, displayName);
     }
-
+    
     public String getDevelopmentModeOptions(int value) {
         return ""; // NOI18N
     }
-
+    
     public String getWarningLevelOptions(int value) {
         return ""; // NOI18N
     }
@@ -52,5 +52,13 @@ public class BasicCompiler extends Tool {
     
     public List getSystemIncludeDirectories(Platform platform) {
         return new Vector(); // NOI18N
-}
+    }
+    
+    public void setSystemPreprocessorSymbols(Platform platform, List values) {
+        ;
+    }
+    
+    public void setSystemIncludeDirectories(Platform platform, List values) {
+        ;
+    }
 }

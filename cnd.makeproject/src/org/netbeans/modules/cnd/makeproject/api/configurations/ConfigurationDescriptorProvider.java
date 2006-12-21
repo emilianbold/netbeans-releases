@@ -29,9 +29,14 @@ public class ConfigurationDescriptorProvider {
     private FileObject projectDirectory;
     private ConfigurationDescriptor projectDescriptor = null;
     boolean hasTried = false;
+    private String relativeOffset = null;
 
     public ConfigurationDescriptorProvider(FileObject projectDirectory) {
 	this.projectDirectory = projectDirectory;
+    }
+
+    public void setRelativeOffset(String relativeOffset) {
+        this.relativeOffset = relativeOffset;
     }
 
     public synchronized ConfigurationDescriptor getConfigurationDescriptor() {
@@ -40,7 +45,7 @@ public class ConfigurationDescriptorProvider {
 	    ConfigurationXMLReader reader;
 	    reader = new ConfigurationXMLReader(projectDirectory);
 	    try {
-		projectDescriptor = reader.read();
+		projectDescriptor = reader.read(relativeOffset);
 	    } catch (java.io.IOException x) {
 		;	// most likely open failed
 	    }

@@ -31,12 +31,18 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
  */
 public class UsingDirectiveImpl extends OffsetableDeclarationBase implements CsmUsingDirective, RawNamable {
 
-    private String name;
+    private final String name;
+    private final int startOffset;
+    private final String[] rawName;
     // TODO: don't store declaration here since the instance might change
     private CsmNamespace referencedNamespace = null;
     
     public UsingDirectiveImpl(AST ast, CsmFile file) {
         super(ast, file);
+        // TODO: here we override startOffset which is not good because startPosition is now wrong
+        startOffset = ((CsmAST)ast.getFirstChild()).getOffset();
+        rawName = AstUtil.getRawNameInChildren(ast);
+        
         name = ast.getText();
     }
     
@@ -49,7 +55,7 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase implements Csm
             if (referencedNamespace == null) {
                 CsmObject result = ResolverFactory.createResolver(
                         getContainingFile(),
-                        ((CsmAST)getAst().getFirstChild()).getOffset()).
+                        startOffset).
                         resolve(name);
                 if (result != null && result instanceof CsmNamespaceDefinition)
                     referencedNamespace = ((CsmNamespaceDefinition)result).getNamespace();
@@ -59,7 +65,7 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase implements Csm
     }
     
     public int getStartOffset() {
-        return ((CsmAST)getAst().getFirstChild()).getOffset();
+        return startOffset;
     }
  
     public CsmDeclaration.Kind getKind() {
@@ -75,7 +81,7 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase implements Csm
     }
     
     public String[] getRawName() {
-        return AstUtil.getRawNameInChildren(getAst());
+        return rawName;
     }
     
     public String toString() {

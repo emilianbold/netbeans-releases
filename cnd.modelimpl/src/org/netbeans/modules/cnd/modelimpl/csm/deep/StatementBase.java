@@ -37,9 +37,11 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
  * @author Vladimir Kvashin
  */
 public abstract class StatementBase extends OffsetableBase implements CsmStatement {
+    private final AST ast;
     
     public StatementBase(AST ast, CsmFile file) {
             super(ast, file);
+            this.ast = ast;
     }
     
     public CsmScope getScope() {
@@ -47,4 +49,7 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
         return null;
     }
     
+    protected AST getAst() {
+        return ast;
+    }
 }

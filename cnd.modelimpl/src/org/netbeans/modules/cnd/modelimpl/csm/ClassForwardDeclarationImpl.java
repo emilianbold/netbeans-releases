@@ -33,12 +33,14 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
  * @author Vladimir Kvasihn
  */
 public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase implements CsmClassForwardDeclaration {
-
-
-    private String name = null;
+    private final String name;
+    private final String[] nameParts;
     
     public ClassForwardDeclarationImpl(AST ast, FileImpl file) {
         super(ast, file);
+        AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
+        name = (qid == null) ? "" : AstRenderer.getQualifiedName(qid);
+        nameParts = initNameParts(qid);
     }
 
     public CsmScope getScope() {
@@ -50,10 +52,6 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase imple
     }
 
     public String getQualifiedName() {
-        if( name == null ) {
-            AST qid = AstUtil.findChildOfType(getAst(), CPPTokenTypes.CSM_QUALIFIED_ID);
-            name = qid == null ? "" : AstRenderer.getQualifiedName(qid);
-        }
         return name;
     }
 
@@ -71,13 +69,15 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase imple
         return (o instanceof CsmClass) ? (CsmClass) o : (CsmClass) null;
     }
     
+    private String[] initNameParts(AST qid) {
+        if( qid != null ) {
+            return AstRenderer.getNameTokens(qid);
+        }
+        return new String[0];
+    }
+    
     private CsmObject resolve() {
         Resolver resolver = ResolverFactory.createResolver(this);
-        AST qid = AstUtil.findChildOfType(getAst(), CPPTokenTypes.CSM_QUALIFIED_ID);
-        if( qid != null ) {
-            String[] nameParts = AstRenderer.getNameTokens(qid);
-            return resolver.resolve(nameParts);
-        }
-        return resolver.resolve(new String[0]);
+        return resolver.resolve(nameParts);
     }
 }

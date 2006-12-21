@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 # The contents of this file are subject to the terms of the Common Development
 # and Distribution License (the License). You may not use this file except in
@@ -53,23 +53,23 @@ function classpath() {
     fi
     
 
-    CP=${CP}:${ide}/modules/org-netbeans-modules-projectuiapi.jar
-    CP=${CP}:${ide}/modules/org-netbeans-modules-projectapi.jar
-    CP=${CP}:${platform}/lib/org-openide-util.jar
-    CP=${CP}:${platform}/modules/org-openide-nodes.jar
-    CP=${CP}:${platform}/core/org-openide-filesystems.jar
-    CP=${CP}:${platform}/modules/org-openide-loaders.jar
-    CP=${CP}:${platform}/lib/org-openide-modules.jar
+    CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-projectuiapi.jar
+    CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-projectapi.jar
+    CP=${CP}${path_sep}${platform}/lib/org-openide-util.jar
+    CP=${CP}${path_sep}${platform}/modules/org-openide-nodes.jar
+    CP=${CP}${path_sep}${platform}/core/org-openide-filesystems.jar
+    CP=${CP}${path_sep}${platform}/modules/org-openide-loaders.jar
+    CP=${CP}${path_sep}${platform}/lib/org-openide-modules.jar
 
 
-    CP=${CP}:${cnddist}/modules/org-netbeans-modules-cnd-api-model.jar
-    CP=${CP}:${cnddist}/modules/org-netbeans-modules-cnd-modelimpl.jar
-    CP=${CP}:${cnddist}/modules/org-netbeans-modules-cnd-antlr.jar
-    CP=${CP}:${cnddist}/modules/org-netbeans-modules-cnd.jar
+    CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-api-model.jar
+    CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-modelimpl.jar
+    CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-antlr.jar
+    CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd.jar
 
     local error=""
 
-    for F in `echo ${CP} | awk -F: '{ for( i=1; i<=NF; i++ ) print $i }'`; do
+    for F in `echo ${CP} | awk -F${path_sep} '{ for( i=1; i<=NF; i++ ) print $i }'`; do
 	if [ ! -r ${F} ]; then
 	    echo "File ${F} doesn't exist"
 	    error="y"
@@ -81,16 +81,13 @@ function classpath() {
     else
 	#print classpath
 	echo "Using classpath:"
-	for F in `echo ${CP} | awk -F: '{ for( i=1; i<=NF; i++ ) print $i }'`; do
+	for F in `echo ${CP} | awk -F${path_sep} '{ for( i=1; i<=NF; i++ ) print $i }'`; do
 	    echo $F
 	done
     fi
 }
 
 function params() {
-
-    DEFS=""
-    PARAMS=""
 
     while [ -n "$1" ]
     do
@@ -102,6 +99,10 @@ function params() {
 		    shift
 		    echo "Using NB from $1"
 		    NBDIST=$1
+		    ;;
+	    --jdk)
+		    shift
+		    JAVA=$1/bin/java
 		    ;;
 	    --cnd)
 		    shift
@@ -122,7 +123,11 @@ function params() {
 		    ;;
 	    --yprofile|-yprofile)
 		    echo "profile using YourKit Profiler"
-		    DEBUG_PROFILE="-agentlib:yjpagent"
+		    DEBUG_PROFILE="-agentlib:yjpagent=dir=${HOME}/yjp_data"
+		    ;;
+	    --ycpu|-ycpu)
+		    echo "profile using YourKit Profiler with CPU sampling"
+		    DEBUG_PROFILE="-agentlib:yjpagent=sampling,noj2ee,dir=${HOME}/yjp_data"
 		    ;;
 	    *)
 		    PARAMS="${PARAMS} $1"
@@ -135,13 +140,9 @@ function params() {
 
 function main() {
 
-    params $@
-
-    classpath
-    if [ -z "${CP}" ]; then
-	echo "Can't find some necessary jars"
-	return
-    fi
+    JAVA="${JAVA-`which java`}"
+    DEFS=""
+    PARAMS=""
 
     #DEFS="${DEFS} -Dcnd.modelimpl.trace=true"
     #DEFS="${DEFS} -Dparser.cache=true"
@@ -157,6 +158,7 @@ function main() {
     #DEFS="${DEFS} -Dcnd.modelimpl.c.include=true"
     DEFS="${DEFS} -Dcnd.modelimpl.cpp.define=true"
     DEFS="${DEFS} -Dcnd.modelimpl.cpp.include=true"
+    DEFS="${DEFS} -Dcnd.cache.skip.save=true"
 
     #includes
     INCL=""
@@ -185,8 +187,29 @@ function main() {
 
     MAIN="org.netbeans.modules.cnd.modelimpl.trace.TraceModel"
 
+    params $@
+
+    classpath
+    if [ -z "${CP}" ]; then
+	echo "Can't find some necessary jars"
+	return
+    fi
+
+    echo "Java: " ${JAVA}
+    ${JAVA} -version
+
     #set -x
-    java -server ${DEBUG_PROFILE} -cp ${CP} ${DEFS} ${MAIN} ${STAT} ${INCL} ${PARAMS}
+    ${JAVA} -enableassertions ${DEBUG_PROFILE} -cp ${CP} ${DEFS} ${MAIN} ${STAT} ${INCL} ${PARAMS}
 }
+
+path_sep=":"
+
+### understand path separator
+uname=`uname`
+#uname_prefix=`expr substr "${uname}" 1 6`
+uname_prefix=${uname:0:6}
+if [ "${uname_prefix}" = "CYGWIN" ]; then
+   path_sep=";"
+fi
 
 main $@

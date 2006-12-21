@@ -38,13 +38,13 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private String qualifiedName;
 
     /** maps namespaces FQN to namespaces */
-    private Map/*<String, CsmNamespaceImpl>*/ nestedMap = new HashMap/*<String, CsmNamespaceImpl>*/();
+    private Map/*<String, CsmNamespaceImpl>*/ nestedMap = Collections.synchronizedMap(new HashMap/*<String, CsmNamespaceImpl>*/());
     
-    private Map/*<String,CsmDeclaration>*/ declarations = new HashMap/*<String,CsmDeclaration>*/();
-    private Collection/*<CsmNamespace>*/ nestedNamespaces = new ArrayList/*<CsmNamespace>*/();
+    private Map/*<String,CsmDeclaration>*/ declarations = Collections.synchronizedMap(new HashMap/*<String,CsmDeclaration>*/());
+    //private Collection/*<CsmNamespace>*/ nestedNamespaces = Collections.synchronizedList(new ArrayList/*<CsmNamespace>*/());
     
 //    private Collection/*<CsmNamespaceDefinition>*/ definitions = new ArrayList/*<CsmNamespaceDefinition>*/();
-    private Map/*<String,CsmNamespaceDefinition>*/ definitions = new TreeMap/*<String,CsmNamespaceDefinition>*/();
+    private Map/*<String,CsmNamespaceDefinition>*/ definitions = Collections.synchronizedSortedMap(new TreeMap/*<String,CsmNamespaceDefinition>*/());
 
     private boolean global;
     
@@ -86,8 +86,10 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         }
     }
     
+    private static int unnamedNr = 0;
     public static String getQualifiedName(NamespaceImpl parent, String name) {
-        return (parent == null || parent.isGlobal()) ? name : parent.getQualifiedName() + "::" + name;
+        return (parent == null || parent.isGlobal()) ? name : parent.getQualifiedName() + "::" + 
+                (name.length()==0 ? ("<unnamed>"+unnamedNr++):name);
     }
     
     public CsmNamespace getParent() {
@@ -95,7 +97,8 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
     
     public Collection/*<CsmNamespace>*/ getNestedNamespaces() {
-        return nestedNamespaces;
+        //return new ArrayList(nestedNamespaces);
+        return new ArrayList(nestedMap.values());
     }
     
 //    public Collection/*<CsmDeclaration>*/ getDeclarations() {
@@ -142,7 +145,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
 
 
     private void addNestedNamespace(NamespaceImpl nsp) {
-        nestedNamespaces.add(nsp);
+        //nestedNamespaces.add(nsp);
         nestedMap.put(nsp.getQualifiedName(), nsp);
     }
      
@@ -216,7 +219,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     
     public Collection/*<CsmNamespaceDefinition>*/ getDefinitions()  {
 //        return definitions;
-        return definitions.values();
+        return new ArrayList(definitions.values());
     }
     
     public void addNamespaceDefinition(NamespaceDefinitionImpl def) {

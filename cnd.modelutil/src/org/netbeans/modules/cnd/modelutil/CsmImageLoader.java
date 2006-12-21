@@ -84,6 +84,8 @@ public class CsmImageLoader implements CsmImageName {
             else
                 iconPath = ENUMERATOR;
         }
+        if (kind == CsmDeclaration.Kind.MACRO)
+            iconPath = MACRO;
         if (kind == CsmDeclaration.Kind.CLASS)
             iconPath = CLASS;
         if (kind == CsmDeclaration.Kind.STRUCT)
@@ -93,7 +95,7 @@ public class CsmImageLoader implements CsmImageName {
         if (kind == CsmDeclaration.Kind.TYPEDEF)
             iconPath = TYPEDEF;
 
-        if (kind == CsmDeclaration.Kind.VARIABLE) {
+        if (kind == CsmDeclaration.Kind.VARIABLE || kind == CsmDeclaration.Kind.VARIABLE_DEFINITION ) {
             boolean isLocal = (modifiers & CsmUtilities.LOCAL) != 0;
             boolean isFileLocal = (modifiers & CsmUtilities.FILE_LOCAL) != 0;
             boolean isGlobal = !(isLocal | isFileLocal);

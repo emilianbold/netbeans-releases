@@ -172,13 +172,22 @@ public class BasicCompilerConfiguration {
 	    fileName = fileName + ".o";
 
 	String dirName = MakeConfiguration.BUILD_FOLDER + '/' + conf.getName() + '/' + conf.getVariant(); // UNIX path
-	if (IpeUtils.isPathAbsolute(filePath))
-	    return dirName + '/' + MakeConfiguration.EXT_FOLDER + fileName; // UNIX path
+	if (IpeUtils.isPathAbsolute(fileName)) {
+            String absPath = fileName;
+            if (absPath.charAt(0) != '/')
+                absPath = '/' + absPath;
+            absPath = dirName + '/' + MakeConfiguration.EXT_FOLDER + absPath; // UNIX path
+            absPath = absPath.replace(':', '_');
+            absPath = absPath.replace(' ', '_');
+            return absPath;
+        }
 	else if (filePath.startsWith("..")) {
             String absPath = IpeUtils.toAbsolutePath(getBaseDir(), fileName);
-            if (absPath.length() >= 2 && absPath.charAt(1) == ':')
-                absPath = absPath.charAt(0) + absPath.substring(2);
             absPath = FilePathAdaptor.normalize(absPath);
+            absPath = absPath.replace(':', '_');
+            absPath = absPath.replace(' ', '_');
+            if (absPath.charAt(0) != '/')
+                absPath = '/' + absPath;
 	    return dirName + '/' + MakeConfiguration.EXT_FOLDER + absPath; // UNIX path
         }
 	else

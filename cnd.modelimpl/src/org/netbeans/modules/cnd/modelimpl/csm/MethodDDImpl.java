@@ -32,10 +32,11 @@ import org.netbeans.modules.cnd.modelimpl.antlr2.generated.CPPTokenTypes;
  */
 public class MethodDDImpl extends MethodImpl implements CsmFunctionDefinition {
 
-    private CsmCompoundStatement body;
+    private final CsmCompoundStatement body;
     
     public MethodDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility) {
         super(ast, cls, visibility);
+        body = AstRenderer.findCompoundStatement(ast, getContainingFile());
     }
 
     public CsmFunction getDeclaration() {
@@ -43,10 +44,11 @@ public class MethodDDImpl extends MethodImpl implements CsmFunctionDefinition {
     }
 
     public CsmCompoundStatement getBody() {
-        if( body == null ) {
-            body = AstRenderer.findCompoundStatement(getAst(), getContainingFile());
-        }
         return body;
+    }
+    
+    public Kind getKind() {
+        return CsmDeclaration.Kind.FUNCTION_DEFINITION;
     }
     
     public List getScopeElements() {

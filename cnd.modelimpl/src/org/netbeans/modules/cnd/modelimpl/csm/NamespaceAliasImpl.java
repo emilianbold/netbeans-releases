@@ -32,12 +32,14 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
  */
 public class NamespaceAliasImpl extends OffsetableDeclarationBase implements CsmNamespaceAlias, RawNamable {
 
-    private String alias;
-    private String namespace;
+    private final String alias;
+    private final String namespace;
+    private final String[] rawName;
     private CsmNamespace referencedNamespace = null;
     
     public NamespaceAliasImpl(AST ast, CsmFile file) {
         super(ast, file);
+        rawName = createRawName(ast);
         alias = ast.getText();
         AST token = ast.getFirstChild();
         while( token != null && token.getType() != CPPTokenTypes.ASSIGNEQUAL ) {
@@ -98,9 +100,9 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase implements Csm
     public String getQualifiedName() {
         return getName();
     }
-
-    public String[] getRawName() {
-        AST token = getAst().getFirstChild();
+    
+    private static String[] createRawName(AST node) {
+        AST token = node.getFirstChild();
         while( token != null && token.getType() != CPPTokenTypes.ASSIGNEQUAL ) {
             token = token.getNextSibling();
         }
@@ -111,6 +113,10 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase implements Csm
             }
         }
         return new String[0];
+    }
+
+    public String[] getRawName() {
+        return rawName;
     }
     
     public String toString() {

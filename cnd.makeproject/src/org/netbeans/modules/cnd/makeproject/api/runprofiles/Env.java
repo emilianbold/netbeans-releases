@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.makeproject.api.runprofiles;
 
 import java.util.Enumeration;
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 /**
@@ -93,12 +94,24 @@ public class Env {
 	String envString = "";
 	for (int i = 0; i < envStrings.length; i++) {
 	    if (addSep)
-	    envString += ",";
+	    envString += ";"; // NOI18N
 	    envString += envStrings[i];
 	    addSep = true;
 	}
 	return envString;
     }
+    
+    public String encode() {
+        return toString();
+    }
+    
+    public void decode(String envlist) {
+        StringTokenizer tokenizer = new StringTokenizer(envlist, " ;"); // NOI18N
+        while (tokenizer.hasMoreTokens()) {
+            putenv((String)tokenizer.nextToken());
+        }
+    }
+            
 
     public boolean equals(Object o) {
 	boolean eq = false;

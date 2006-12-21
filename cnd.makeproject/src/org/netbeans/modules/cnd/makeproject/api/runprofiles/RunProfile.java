@@ -26,6 +26,10 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.StringTokenizer;
 import java.util.Vector;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
@@ -35,10 +39,14 @@ import org.netbeans.modules.cnd.makeproject.runprofiles.ui.EnvPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public class RunProfile implements ConfigurationAuxObject {
@@ -75,6 +83,22 @@ public class RunProfile implements ConfigurationAuxObject {
     private boolean buildFirst;
     // Environment
     private Env environment;
+    private String dorun;
+    
+    public static final int CONSOLE_TYPE_DEFAULT = 0;
+    public static final int CONSOLE_TYPE_EXTERNAL = 1;
+    public static final int CONSOLE_TYPE_OUTPUT_WINDOW = 2;
+    
+    private static final String[] consoleTypeNames = {
+        getString("ConsoleType_Default"), // NOI18N
+        getString("ConsoleType_External"), // NOI18N
+        getString("ConsoleType_Output"), // NOI18N
+    };
+    private IntConfiguration consoleType;
+    
+    private IntConfiguration terminalType;
+    private HashMap termPaths;
+    private HashMap termOptions;
     
     public RunProfile(String baseDir) {
         this.baseDir = baseDir;
@@ -95,9 +119,106 @@ public class RunProfile implements ConfigurationAuxObject {
         argsFlat = ""; // NOI18N
         argsFlatValid = true;
         argsArrayValid = false;
-        runDir = ".";
+        runDir = "";
         buildFirst = true;
+        dorun = getDorunScript();
+        termPaths = new HashMap();
+        termOptions = new HashMap();
+        consoleType = new IntConfiguration(null, CONSOLE_TYPE_DEFAULT, consoleTypeNames, null);
+        terminalType = new IntConfiguration(null, 0, setTerminalTypeNames(), null);
         clearChanged();
+    }
+    
+    private String getDorunScript() {
+        File file = InstalledFileLocator.getDefault().locate("bin/dorun.sh", null, false); // NOI18N
+        if (file != null && file.exists()) {
+            return file.getAbsolutePath();
+        } else {
+            throw new IllegalStateException(getString("Err_MissingDorunScript")); // NOI18N
+        }
+    }
+    
+    private String[] setTerminalTypeNames() {
+        List list = new ArrayList();
+        String def = getString("TerminalType_Default"); // NOI18N
+        String name;
+        String termPath;
+        
+        list.add(def);
+        if (Utilities.isWindows()) {
+            String term = getString("TerminalType_CommandWindow"); // NOI18N
+            list.add(term);
+            termPaths.put(term, "start"); // NOI18N
+            termPaths.put(def, "start"); // NOI18N
+            termOptions.put(term, "sh \"" + dorun + "\" \"" + getString("LBL_RunPrompt") + " \" {0} {1}"); // NOI18N
+            termOptions.put(def,  "sh \"" + dorun + "\" \"" + getString("LBL_RunPrompt") + " \" {0} {1}"); // NOI18N
+        } else {
+            // Start with the user's $PATH. Append various other directories and look
+            // for gnome-terminal, konsole, and xterm.
+            String path = System.getProperty("Env-PATH") + // NOI18N
+                ":/usr/X11/bin:/usr/X/bin:/usr/X11R6/bin:/opt/gnome/bin" + // NOI18N
+                ":/usr/gnome/bin:/opt/kde/bin:/opt/kde3/bin/usr/kde/bin:/usr/openwin/bin"; // NOI18N
+            
+            termPath = searchPath(path, "gnome-terminal"); // NOI18N
+            if (termPath != null) {
+                name = getString("TerminalType_GNOME"); // NOI18N
+                list.add(name); 
+                termPaths.put(name, termPath);
+                termPaths.put(def, termPath);
+                termOptions.put(name, "-e \"\\\"" + dorun + "\\\" \\\"" + getString("LBL_RunPrompt") + " \\\" {0} {1}\""); // NOI18N
+                termOptions.put(def,  "-e \"\\\"" + dorun + "\\\" \\\"" + getString("LBL_RunPrompt") + " \\\" {0} {1}\""); // NOI18N
+            }
+            termPath = searchPath(path, "konsole"); // NOI18N
+            if (termPath != null) {
+                name = getString("TerminalType_KDE"); // NOI18N
+                list.add(name); 
+                termPaths.put(name, termPath);
+                termOptions.put(name, "-e \"" + dorun + "\" \"" + getString("LBL_RunPrompt") + " \" {0} {1}"); // NOI18N
+                if (termPaths.get(def) == null) {
+                    termPaths.put(def, termPath);
+                    termOptions.put(def, "-e \"" + dorun + "\" \"" + getString("LBL_RunPrompt") + " \" {0} {1}"); // NOI18N
+                }
+            }
+            termPath = searchPath(path, "xterm"); // NOI18N
+            if (termPath != null) {
+                name = getString("TerminalType_XTerm"); // NOI18N
+                list.add(name); 
+                termPaths.put(name, termPath);
+                termOptions.put(name, "-e \"" + dorun + "\" \"" + getString("LBL_RunPrompt") + " \" {0} {1}"); // NOI18N
+                if (termPaths.get(def) == null) {
+                    termPaths.put(def, termPath);
+                    termOptions.put(def, "-e \"" + dorun + "\" \"" + getString("LBL_RunPrompt") + " \" {0} {1}"); // NOI18N
+                }
+            }
+            if (termPaths.get(def) == null) {
+                list.add(getString("TerminalType_None")); // NOI18N
+            }
+        }
+        return (String[]) list.toArray(new String[list.size()]);
+    }
+    
+    /**
+     * Search an augmented $PATH (the user's $PATH plus various standard locations
+     * for a specific terminal emulater.
+     */
+    private String searchPath(String path, String term) {
+        StringTokenizer st = new StringTokenizer(path, ":"); // NOI18N
+        
+        while (st.hasMoreTokens()) {
+            File file = new File(st.nextToken(), term);
+            if (file.exists()) {
+                return file.getAbsolutePath();
+            }
+        }
+        return null;
+    }
+    
+    public String getTerminalPath() {
+        return (String) termPaths.get(getTerminalType().getName());
+    }
+    
+    public String getTerminalOptions() {
+        return (String) termOptions.get(getTerminalType().getName());
     }
     
     public boolean shared() {
@@ -208,8 +329,8 @@ public class RunProfile implements ConfigurationAuxObject {
          * Run Directory is either absolute or relative (to base directory).
          */
     public String getRunDir() {
-        if (runDir == null || runDir.length() == 0)
-            runDir = ".";
+        if (runDir == null)
+            runDir = "";
         return runDir;
     }
     
@@ -218,8 +339,8 @@ public class RunProfile implements ConfigurationAuxObject {
          * Run Directory is either absolute or relative (to base directory).
          */
     public void setRunDir(String runDir) {
-        if (runDir == null || runDir.length() == 0)
-            runDir = ".";
+        if (runDir == null)
+            runDir = "";
         if (this.runDir == runDir)
             return;
         if (this.runDir != null && this.runDir.equals(runDir)) {
@@ -239,12 +360,13 @@ public class RunProfile implements ConfigurationAuxObject {
     public String getRunDirectory() {
         String runDirectory;
         String runDirectoryCanonicalPath;
-        if (getRunDir().length() == 0)
-            setRunDir(".");
-        if (IpeUtils.isPathAbsolute(getRunDir()))
-            runDirectory = getRunDir();
+        String runDir2 = getRunDir();
+        if (runDir2.length() == 0)
+            runDir2 = "."; // NOI18N
+        if (IpeUtils.isPathAbsolute(runDir2))
+            runDirectory = runDir2;
         else
-            runDirectory = getBaseDir() + "/" + getRunDir();
+            runDirectory = getBaseDir() + "/" + runDir2;
         
         // convert to canonical path
         File runDirectoryFile = new File(runDirectory);
@@ -290,6 +412,30 @@ public class RunProfile implements ConfigurationAuxObject {
         this.environment = environment;
         if (pcs != null)
             pcs.firePropertyChange(PROP_ENVVARS_CHANGED, null, this);
+    }
+    
+    public IntConfiguration getConsoleType() {
+        return consoleType;
+    }
+    
+    public void setConsoleType(IntConfiguration consoleType) {
+        this.consoleType = consoleType;
+    }
+    
+    public int getDefaultConsoleType() {
+        return CONSOLE_TYPE_EXTERNAL;
+    }
+    
+    public IntConfiguration getTerminalType() {
+        if (terminalType.getName().equals(getString("TerminalType_None"))) { // NOI18N
+            return null;
+        } else {
+            return terminalType;
+        }
+    }
+    
+    public void setTerminalType(IntConfiguration terminalType) {
+        this.terminalType = terminalType;
     }
     
     
@@ -395,6 +541,8 @@ public class RunProfile implements ConfigurationAuxObject {
         //setRawRunDirectory(p.getRawRunDirectory());
         setBuildFirst(p.getBuildFirst());
         setEnvironment(p.getEnvironment());
+        setConsoleType(p.getConsoleType());
+        setTerminalType(p.getTerminalType());
     }
     
     public RunProfile cloneProfile() {
@@ -415,6 +563,8 @@ public class RunProfile implements ConfigurationAuxObject {
         //p.setRawRunDirectory(getRawRunDirectory());
         p.setBuildFirst(getBuildFirst());
         p.setEnvironment(getEnvironment().cloneEnv());
+        p.setConsoleType(getConsoleType());
+        p.setTerminalType(getTerminalType());
         return p;
     }
     
@@ -433,9 +583,17 @@ public class RunProfile implements ConfigurationAuxObject {
         set.put(new RunDirectoryNodeProp());
         set.put(new EnvNodeProp());
         set.put(new BuildFirstNodeProp());
+        set.put(new IntNodeProp(getConsoleType(), true, null,
+                getString("ConsoleType_LBL"), getString("ConsoleType_HINT"))); // NOI18N
+        set.put(new IntNodeProp(getTerminalType(), true, null,
+                getString("TerminalType_LBL"), getString("TerminalType_HINT"))); // NOI18N
         sheet.put(set);
         
         return sheet;
+    }
+    
+    private static String getString(String s) {
+        return NbBundle.getMessage(RunProfile.class, s);
     }
     
     private class ArgumentsNodeProp extends PropertySupport {
@@ -470,10 +628,13 @@ public class RunProfile implements ConfigurationAuxObject {
         
         public PropertyEditor getPropertyEditor() {
             String seed;
-            if (IpeUtils.isPathAbsolute(getRunDir()))
-                seed = getRunDir();
+            String runDir2 = getRunDir();
+            if (runDir2.length() == 0)
+                runDir2 = "."; // NOI18N
+            if (IpeUtils.isPathAbsolute(runDir2))
+                seed = runDir2;
             else
-                seed = getBaseDir() + File.separatorChar + getRunDir();
+                seed = getBaseDir() + File.separatorChar + runDir2;
             return new DirEditor(seed);
         }
     }

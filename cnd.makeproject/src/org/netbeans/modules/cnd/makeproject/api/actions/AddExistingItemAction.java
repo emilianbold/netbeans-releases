@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.ResourceBundle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.api.utils.AllFileFilter;
 import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.CCSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.CSourceFileFilter;
@@ -33,12 +34,13 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
-import org.netbeans.modules.cnd.makeproject.ui.MakePhysicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.FortranSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.HeaderSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.utils.ResourceFileFilter;
+import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -51,7 +53,10 @@ public class AddExistingItemAction extends NodeAction {
     protected boolean enable(Node[] activatedNodes)  {
 	if (activatedNodes.length != 1)
 	    return false;
-	Folder folder = (Folder)activatedNodes[0].getValue("Folder"); // NOI18N
+        Object o = activatedNodes[0].getValue("Folder"); // NOI18N
+        if (!(o instanceof Folder))
+            return false;
+	Folder folder = (Folder)o;
 	if (folder == null)
 	    return false;
 	if (!folder.isProjectFiles())
@@ -89,7 +94,9 @@ public class AddExistingItemAction extends NodeAction {
         fileChooser.addChoosableFileFilter(CCSourceFileFilter.getInstance());
         fileChooser.addChoosableFileFilter(HeaderSourceFileFilter.getInstance());
         fileChooser.addChoosableFileFilter(FortranSourceFileFilter.getInstance());
+        fileChooser.addChoosableFileFilter(ResourceFileFilter.getInstance());
         fileChooser.addChoosableFileFilter(AllSourceFileFilter.getInstance());
+        fileChooser.addChoosableFileFilter(AllFileFilter.getInstance());
         fileChooser.setFileFilter(fileChooser.getAcceptAllFileFilter());
 	int ret = fileChooser.showOpenDialog(null); // FIXUP
 	if (ret == FileChooser.CANCEL_OPTION)
@@ -118,7 +125,7 @@ public class AddExistingItemAction extends NodeAction {
 		    notifySources = true;
 	    }
 	}
-	MakePhysicalViewProvider.setVisible(project, items);
+	MakeLogicalViewProvider.setVisible(project, items);
 
 	if (notifySources)
 	    ((MakeSources)ProjectUtils.getSources(project)).descriptorChanged();

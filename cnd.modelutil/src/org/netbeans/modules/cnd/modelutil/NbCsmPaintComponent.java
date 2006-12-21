@@ -81,6 +81,22 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
         }
     }
     
+    public static class NbMacroPaintComponent extends CsmPaintComponent.MacroPaintComponent{
+        
+        public NbMacroPaintComponent(){
+            super();
+        }
+        
+        protected Icon getIcon(){
+            Icon superIcon = super.getIcon();
+            if (superIcon != null) 
+                return superIcon;
+            Icon newIcon = CsmImageLoader.getIcon(CsmDeclaration.Kind.MACRO, 0);
+            setIcon(newIcon);
+            return newIcon;            
+        }
+    }
+
     public static class NbClassPaintComponent extends CsmPaintComponent.ClassPaintComponent{
         
         public NbClassPaintComponent(){
@@ -97,6 +113,22 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
         }
     }
 
+    public static class NbTypedefPaintComponent extends CsmPaintComponent.TypedefPaintComponent{
+        
+        public NbTypedefPaintComponent(){
+            super();
+        }
+        
+        protected Icon getIcon(){
+            Icon superIcon = super.getIcon();
+            if (superIcon != null) 
+                return superIcon;
+            Icon newIcon = CsmImageLoader.getIcon(CsmDeclaration.Kind.TYPEDEF, 0);
+            setIcon(newIcon);
+            return newIcon;            
+        }
+    }
+    
     public static class NbStructPaintComponent extends CsmPaintComponent.StructPaintComponent{
         
         public NbStructPaintComponent(){

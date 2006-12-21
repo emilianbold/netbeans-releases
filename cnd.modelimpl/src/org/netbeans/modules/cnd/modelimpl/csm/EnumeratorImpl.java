@@ -30,24 +30,17 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
  * @author Vladimir Kvashin
  */
 public class EnumeratorImpl extends OffsetableBase implements CsmEnumerator {
+    private final String name;
+    private final CsmEnum enumeration;    
 
-    public EnumeratorImpl(EnumImpl enumeration, String name, int start, int end) {
-        super(enumeration.getContainingFile(), start, end);
-        this.name = name;
-        this.enumeration = enumeration;
-        enumeration.addEnumerator(this);
-    }
-    
     public EnumeratorImpl(AST ast, EnumImpl enumeration) {
         super(ast, enumeration.getContainingFile());
+        this.name = ast.getText();
         this.enumeration = enumeration;
         enumeration.addEnumerator(this);
     }
     
     public String getName() {
-        if (name == null) {
-            name = getAst().getText();
-        }
         return name;
     }
 
@@ -62,7 +55,4 @@ public class EnumeratorImpl extends OffsetableBase implements CsmEnumerator {
     public CsmScope getScope() {
         return getEnumeration();
     }
-
-    private String name;
-    private CsmEnum enumeration;    
 }

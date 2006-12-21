@@ -35,14 +35,14 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 public class NamespaceDefinitionImpl extends OffsetableDeclarationBase
     implements CsmNamespaceDefinition, MutableDeclarationsContainer, Disposable {
 
-    private List declarations = new ArrayList();
+    private List declarations = Collections.synchronizedList(new ArrayList());
     private String name;
     private NamespaceImpl namespace;
     
     public NamespaceDefinitionImpl(AST ast, CsmFile file, NamespaceImpl parent) {
         super(ast, file);
-        assert getAst().getType() == CPPTokenTypes.CSM_NAMESPACE_DECLARATION;
-        name = getAst().getText();
+        assert ast.getType() == CPPTokenTypes.CSM_NAMESPACE_DECLARATION;
+        name = ast.getText();
         namespace = ((ProjectBase) file.getProject()).findNamespace(parent, name, true);
         if( namespace instanceof NamespaceImpl ) {
             ((NamespaceImpl) namespace).addNamespaceDefinition(this);
@@ -54,7 +54,7 @@ public class NamespaceDefinitionImpl extends OffsetableDeclarationBase
     }
             
     public List getDeclarations() {
-        return declarations;
+        return new ArrayList(declarations);
     }
     
     public void addDeclaration(CsmOffsetableDeclaration decl) {
@@ -88,7 +88,7 @@ public class NamespaceDefinitionImpl extends OffsetableDeclarationBase
 
     public void dispose() {
         //NB: we're copying declarations, because dispose can invoke this.removeDeclaration
-        for( Iterator iter = new ArrayList(declarations).iterator(); iter.hasNext(); ) {
+        for( Iterator iter = getDeclarations().iterator(); iter.hasNext(); ) {
             Object o = iter.next();
             if( o  instanceof Disposable ) {
                 ((Disposable) o).dispose();

@@ -58,16 +58,22 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
     private void render() {
         AstRenderer renderer = new AstRenderer((FileImpl) getContainingFile()) {
             protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static) {
-                VariableImpl var = super.createVariable(offsetAst, file, type, name, _static);
+                VariableImpl var = new VariableImpl(offsetAst, file, type, name, true);
+                var.setStatic(_static);
                 declarators.add(var);
                 return var;
             }
-        };
-        if( ! renderer.renderVariable(getAst(), null, null) ) {
-            AST tree = getAst();
-            if( tree != null ) {
-                for( AST token = tree.getFirstChild(); token != null; token = token.getNextSibling() ) {
+            
+            public void render(AST tree, NamespaceImpl currentNamespace, MutableDeclarationsContainer container) {
+                if( tree != null ) {
+                    AST token = tree;
                     switch( token.getType() ) {
+                        case CPPTokenTypes.CSM_FOR_INIT_STATEMENT:
+                        case CPPTokenTypes.CSM_DECLARATION_STATEMENT:
+                            if (!renderVariable(token, currentNamespace, container)){
+                                render(token.getFirstChild(), currentNamespace, container);
+                            }
+                            break;
                         case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
                             declarators.add(new NamespaceAliasImpl(token, getContainingFile()));
                             break;
@@ -77,10 +83,26 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
                         case CPPTokenTypes.CSM_USING_DECLARATION:
                             declarators.add(new UsingDeclarationImpl(token, getContainingFile()));
                             break;
+                            
+                        case CPPTokenTypes.CSM_CLASS_DECLARATION:
+                        {
+                            ClassImpl cls = new ClassImpl(token, null, getContainingFile());
+                            declarators.add(cls);
+                            addTypedefs(renderTypedef(token, cls, currentNamespace), currentNamespace, container);
+                            renderVariableInClassifier(token, cls, currentNamespace, container);
+                            break;
+                        }
+                        case CPPTokenTypes.CSM_ENUM_DECLARATION:
+                        {
+                            CsmEnum csmEnum = new EnumImpl(token, currentNamespace, getContainingFile());
+                            declarators.add(csmEnum);
+                            renderVariableInClassifier(token, csmEnum, currentNamespace, container);
+                            break;
+                        }
                     }
                 }
             }
-        }
-        //TODO: process other kinds of declarations
+        };
+        renderer.render(getAst(), null, null);
     }
 }

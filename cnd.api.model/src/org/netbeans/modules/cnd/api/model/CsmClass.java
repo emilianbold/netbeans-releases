@@ -51,12 +51,6 @@ public interface CsmClass extends CsmCompoundClassifier {
     CsmClass getContainingClass();
     
     /**
-     * Returns containing namespace.
-     * TODO: decide, whether to retunr null for nested classes
-     */
-    CsmNamespace getContainingNamespace();
-    
-    /**
      * Returns immutable collection of this class' members
      * Members migt be:
      *	fields

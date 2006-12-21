@@ -57,12 +57,22 @@ public interface CsmProject extends CsmObject {
     /**
      * Finds declaration by its nuique name
      */
-    public CsmDeclaration findDeclaration(String uniqueName);
+    CsmDeclaration findDeclaration(String uniqueName);
     
     /**
      * Finds file by its absolute path
      */
     CsmFile findFile(String absolutePath);
+
+    /**
+     * Gets the collection of source project files.
+     */
+    Collection/*<CsmFile>*/ getSourceFiles();
+    
+    /**
+     * Gets the collection of heaher project files.
+     */
+    Collection/*<CsmFile>*/ getHeaderFiles();
     
     /**
      * Gets the collection of libraries of the project.
@@ -86,7 +96,8 @@ public interface CsmProject extends CsmObject {
     
     /**
      * Returns true if the project is completely parsed
+     * @param skipFile if null => all project files are checked;
+     * if param is not null => project is stable even if skipFile not parsed     
      */
-    boolean isStable();
-    
+    boolean isStable(CsmFile skipFile);
 }

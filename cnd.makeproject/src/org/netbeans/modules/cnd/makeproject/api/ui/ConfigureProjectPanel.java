@@ -26,7 +26,7 @@ public class ConfigureProjectPanel {
     PanelConfigureProject panel = null;
 
     public ConfigureProjectPanel(String name, String wizardTitle, String wizardACSD, boolean showMakefileTextField) {
-	panel = new PanelConfigureProject(name, wizardTitle, wizardACSD, showMakefileTextField);
+	panel = new PanelConfigureProject(name, -1, wizardTitle, wizardACSD, showMakefileTextField);
     }
 
     public String getName() {

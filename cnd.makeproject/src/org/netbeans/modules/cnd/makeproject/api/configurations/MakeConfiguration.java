@@ -115,6 +115,10 @@ public class MakeConfiguration extends Configuration {
         this.platform = platform;
     }
     
+    public boolean isApplicationConfiguration() {
+        return getConfigurationType().getValue() == TYPE_APPLICATION;
+    }
+    
     public boolean isCompileConfiguration() {
         return getConfigurationType().getValue() == TYPE_APPLICATION || getConfigurationType().getValue() == TYPE_DYNAMIC_LIB || getConfigurationType().getValue() == TYPE_STATIC_LIB;
     }

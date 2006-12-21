@@ -25,5 +25,11 @@ package org.netbeans.modules.cnd.api.model;
  */
 public interface CsmCompoundClassifier extends CsmClassifier, CsmOffsetableDeclaration, CsmScope, CsmValidable  {
 
+    /**
+     * Returns containing namespace.
+     * TODO: decide, whether to retunr null for nested classes
+     */
+    CsmNamespace getContainingNamespace();
+
     // TODO: isUnresolved() or smth like ?
 }

@@ -31,8 +31,7 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.antlr2.generated.CPPTokenTypes;
-import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
-import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 
 
@@ -40,20 +39,20 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
  * Implements CsmTypedef
  * @author vk155633
  */
-public class TypedefImpl extends OffsetableDeclarationBase  implements CsmTypedef, CsmScopeElement {
+public class TypedefImpl extends OffsetableDeclarationBase  implements CsmTypedef, Disposable, CsmScopeElement {
     
-    private String name;
-    private CsmType type;
+    private final String name;
+    private final CsmType type;
     private CsmObject container;
             
-    public TypedefImpl(AST ast, CsmFile file, CsmObject container) {
+    public TypedefImpl(AST ast, CsmFile file, CsmObject container, CsmType type, String name) {
         super(ast, file);
 	this.container = container;
-    }
-
-    public TypedefImpl(AST ast, CsmFile file, CsmObject container, CsmType type, String name) {
-        this(ast, file, container);
-        this.type = type;
+        if (type == null) {
+            this.type = createType(ast);
+        } else {
+            this.type = type;
+        }
         this.name = name;
     }
     
@@ -76,6 +75,13 @@ public class TypedefImpl extends OffsetableDeclarationBase  implements CsmTypede
         }
     }
 
+    public void dispose() {
+        CsmScope scope = getScope();
+        if( scope instanceof MutableDeclarationsContainer ) {
+            ((MutableDeclarationsContainer) scope).removeDeclaration(this);
+        }
+    }
+
     public String getQualifiedName() {
         if( CsmKindUtilities.isClass(container) ) {
 	    return ((CsmClass) container).getQualifiedName() + "::" + getName();
@@ -90,7 +96,7 @@ public class TypedefImpl extends OffsetableDeclarationBase  implements CsmTypede
     }
 
     public String getName() {
-        if( name == null ) {
+        /*if( name == null ) {
             AST tokId = null;
             for( AST token = getAst().getFirstChild(); token != null; token = token.getNextSibling() ) {
                 if( token.getType() == CPPTokenTypes.CSM_QUALIFIED_ID ) {
@@ -103,7 +109,7 @@ public class TypedefImpl extends OffsetableDeclarationBase  implements CsmTypede
         }
         if( name == null ) {
             name = "";
-        }
+        }*/
         return name;
     }
 
@@ -111,15 +117,15 @@ public class TypedefImpl extends OffsetableDeclarationBase  implements CsmTypede
         return CsmDeclaration.Kind.TYPEDEF;
     }
     
-    public CsmType getType() {
+    private final CsmType createType(AST node) {
         //
         // TODO: replace this horrible code with correct one
         //
-        if( type == null ) {
+        //if( type == null ) {
             AST ptrOperator = null;
             int arrayDepth = 0;
             AST classifier = null;
-            for( AST token = getAst().getFirstChild(); token != null; token = token.getNextSibling() ) {
+            for( AST token = node.getFirstChild(); token != null; token = token.getNextSibling() ) {
 //                if( token.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND || 
 //                        token.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ) {
 //                    classifier = token;
@@ -143,9 +149,13 @@ public class TypedefImpl extends OffsetableDeclarationBase  implements CsmTypede
                 }
             }
             if( classifier != null ) {
-                type = TypeImpl.createType(classifier, getContainingFile(), ptrOperator, arrayDepth);
+                return TypeImpl.createType(classifier, getContainingFile(), ptrOperator, arrayDepth);
             }
-        }
+        //}
+            return null;
+    }
+    
+    public CsmType getType() {
         return type;
     }
     

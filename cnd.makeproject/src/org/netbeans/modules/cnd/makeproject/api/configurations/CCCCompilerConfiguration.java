@@ -238,7 +238,7 @@ public class CCCCompilerConfiguration extends BasicCompilerConfiguration {
 	    inheritedValues = ((CCCCompilerConfiguration)getMaster()).getIncludeDirectories().getOption("");
 	    inheritIncludes = getInheritIncludes();
 	}
-	set1.put(new VectorNodeProp(getIncludeDirectories(), inheritIncludes, getBaseDir(), new String[] {"AdditionalIncludeDirectories", "Additional Include Directories", "Additional Include Directories (-I)", inheritedValues}, true));
+	set1.put(new VectorNodeProp(getIncludeDirectories(), inheritIncludes, getBaseDir(), new String[] {"IncludeDirectories", "Include Directories", "Include Directories (-I)", inheritedValues}, true));
 	// Preprocessor Macros
 	inheritedValues = null;
 	inheritIncludes = null;
@@ -247,7 +247,7 @@ public class CCCCompilerConfiguration extends BasicCompilerConfiguration {
 	    inheritIncludes = getInheritPreprocessor();
 	}
 	String[] texts = new String[] {"Preprocessor Definitions", "Preprocessor Definitions (-D)", "Preprocessor Definitions:", "Inherited Values:", inheritedValues};
-	set1.put(new OptionsNodeProp(getPreprocessorConfiguration(), inheritIncludes, new PreprocessorOptions(), null, ",", texts));
+	set1.put(new OptionsNodeProp(getPreprocessorConfiguration(), inheritIncludes, new PreprocessorOptions(), null, ";", texts));
         
         return set1;
     }

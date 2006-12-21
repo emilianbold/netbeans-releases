@@ -118,7 +118,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
     }
 
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(LibrariesPanel.class);
+        return new HelpCtx("Libraries"); // NOI18N
     }
 
     /**

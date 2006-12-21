@@ -37,16 +37,14 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
  */
 public class FunctionDDImpl extends FunctionImpl implements CsmFunctionDefinition {
     
-    private CsmCompoundStatement body;
+    private final CsmCompoundStatement body;
 
     public FunctionDDImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
+        body = AstRenderer.findCompoundStatement(ast, getContainingFile());
     }
 
     public CsmCompoundStatement getBody() {
-        if( body == null ) {
-            body = AstRenderer.findCompoundStatement(getAst(), getContainingFile());
-        }
         return body;
     }
 

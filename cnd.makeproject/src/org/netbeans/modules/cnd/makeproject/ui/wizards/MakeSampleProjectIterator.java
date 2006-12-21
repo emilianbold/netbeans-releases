@@ -71,7 +71,7 @@ public class MakeSampleProjectIterator implements TemplateWizard.Iterator {
         templateWizard.putProperty ("name", name); // NOI18N
 	String wizardTitle = getString("SAMPLE_PROJECT") + name; // NOI18N
 	String wizardTitleACSD = getString("SAMPLE_PROJECT_ACSD"); // NOI18N
-        basicPanel = new PanelConfigureProject(name, wizardTitle, wizardTitleACSD, false);
+        basicPanel = new PanelConfigureProject(name, -1, wizardTitle, wizardTitleACSD, false);
         currentIndex = 0;
         updateStepsList ();
     }

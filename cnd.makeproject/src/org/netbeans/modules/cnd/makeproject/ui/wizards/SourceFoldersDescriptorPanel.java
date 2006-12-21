@@ -60,7 +60,7 @@ final class SourceFoldersDescriptorPanel implements WizardDescriptor.Panel, NewM
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx( SourceFoldersDescriptorPanel.class );
+        return new HelpCtx("NewMakeWizardP3"); // NOI18N
     }
     
     public boolean isValid() {

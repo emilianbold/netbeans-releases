@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -128,25 +128,27 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
         BasicCompiler cCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
         
         sheet.put(getSet());
-        sheet.put(getBasicSet());
-        if (conf.getCompilerSet().getValue() == CompilerSets.SUN_COMPILER_SET) { // FIXUP: should be moved to SunCCompiler
-            Sheet.Set set2 = new Sheet.Set();
-            set2.setName("OtherOptions");
-            set2.setDisplayName("Other Options");
-            set2.setShortDescription("Other Options...");
-            set2.put(new IntNodeProp(getMTLevel(), getMaster() != null ? false : true, "MultithreadingLevel", "Multithreading Level", "Multithreading Level ..."));
-            set2.put(new IntNodeProp(getStandardsEvolution(), getMaster() != null ? false : true, "StandardsEvolution", "Standards Evolution", "Standards Evolution ..."));
-            set2.put(new IntNodeProp(getLanguageExt(), getMaster() != null ? false : true, "LanguageExtensions", "Language Extensions", "Language Extensions ..."));
-            sheet.put(set2);
+        if (conf.isCompileConfiguration()) {
+            sheet.put(getBasicSet());
+            if (conf.getCompilerSet().getValue() == CompilerSets.SUN_COMPILER_SET) { // FIXUP: should be moved to SunCCompiler
+                Sheet.Set set2 = new Sheet.Set();
+                set2.setName("OtherOptions");
+                set2.setDisplayName("Other Options");
+                set2.setShortDescription("Other Options...");
+                set2.put(new IntNodeProp(getMTLevel(), getMaster() != null ? false : true, "MultithreadingLevel", "Multithreading Level", "Multithreading Level ..."));
+                set2.put(new IntNodeProp(getStandardsEvolution(), getMaster() != null ? false : true, "StandardsEvolution", "Standards Evolution", "Standards Evolution ..."));
+                set2.put(new IntNodeProp(getLanguageExt(), getMaster() != null ? false : true, "LanguageExtensions", "Language Extensions", "Language Extensions ..."));
+                sheet.put(set2);
+            }
+            if (getMaster() != null)
+                sheet.put(getInputSet());
+            Sheet.Set set4 = new Sheet.Set();
+            set4.setName("Tool");
+            set4.setDisplayName("Tool");
+            set4.setShortDescription("Tool...");
+            set4.put(new StringNodeProp(getTool(), cCompiler.getName(), "Tool", "Tool", "Tool..."));
+            sheet.put(set4);
         }
-        if (getMaster() != null)
-            sheet.put(getInputSet());
-        Sheet.Set set4 = new Sheet.Set();
-        set4.setName("Tool");
-        set4.setDisplayName("Tool");
-        set4.setShortDescription("Tool...");
-        set4.put(new StringNodeProp(getTool(), cCompiler.getName(), "Tool", "Tool", "Tool..."));
-        sheet.put(set4);
         
         return sheet;
     }

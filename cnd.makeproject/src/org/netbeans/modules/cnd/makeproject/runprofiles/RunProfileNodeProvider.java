@@ -43,7 +43,7 @@ public class RunProfileNodeProvider {
 
 	public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
 	    RunProfile runProfile = (RunProfile) configuration.getAuxObject(RunProfile.PROFILE_ID);
-	    return runProfile.getSheet();
+	    return runProfile != null ? runProfile.getSheet() : null;
 	    //return configurationDescriptor.getSheet(project, configuration);
 	}
     }

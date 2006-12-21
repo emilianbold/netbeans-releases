@@ -36,7 +36,6 @@ public class MethodImpl extends FunctionImpl implements CsmMethod {
     private CsmVisibility visibility;
     private boolean _static = false;
     private boolean _abstract = false;
-    private byte _const;
     
 //    public MethodImpl(ClassImpl cls, CsmVisibility visibility, String name, int start, int end) {
 //        super(name, cls.getContainingFile(), start, end);
@@ -56,15 +55,6 @@ public class MethodImpl extends FunctionImpl implements CsmMethod {
             }
         }
     }
-    
-    /** 
-     * Is called by ancestor class just after sertting AST, prior than registering in project, etc
-     * Place all necessar initialization here instead of attributes initializer or constructor 
-     */
-    protected void init() {
-        _const = -1;
-    }
-    
     
 //    /** overrides FunctionImpl.registerInProject */
 //    protected void registerInProject() {
@@ -118,23 +108,7 @@ public class MethodImpl extends FunctionImpl implements CsmMethod {
 //    }
 
     public boolean isConst() {
-        if( _const == -1 ) {
-            if( AstUtil.findChildOfType(getAst(), CPPTokenTypes.LITERAL_const) == null ) {
-                _const = 0;
-            }
-            else {
-                _const = 1;
-            }
-        }
-        return _const > 0;
+	return super.isConst();
     }
-    
-    protected String createSignature() {
-        String sign =  super.createSignature();
-        if( isConst() ) {
-            sign += " const";
-        }
-        return sign;
-    }
-    
 }
+

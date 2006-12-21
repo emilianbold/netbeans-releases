@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import antlr.collections.AST;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 
@@ -39,8 +40,8 @@ public abstract class ClassEnumBase extends DeclarationBase implements CsmCompou
     private CsmVisibility visibility = CsmVisibility.PRIVATE;
     private CsmClass containingClass = null;
      
-    public ClassEnumBase(CsmDeclaration.Kind kind, String name, NamespaceImpl namespace, CsmFile file, int start, int end, CsmClass containingClass) {
-        super(kind, name, file, start, end);
+    public ClassEnumBase(CsmDeclaration.Kind kind, String name, NamespaceImpl namespace, CsmFile file, CsmClass containingClass, AST ast) {
+        super(kind, name, file, ast);
         this.namespace = namespace;
         this.containingClass = containingClass;
         if( containingClass == null ) {
@@ -58,12 +59,19 @@ public abstract class ClassEnumBase extends DeclarationBase implements CsmCompou
     protected void register() {
         if( getName().length() > 0 ) {
             registerInProject();
-            namespace.addDeclaration(this);
+            if (namespace != null) {
+                // It can be local class
+                namespace.addDeclaration(this);
+            }
         }
     }
     
     private void registerInProject() {
         ((ProjectBase) getContainingFile().getProject()).registerDeclaration(this);
+    }
+    
+    private void unregisterInProject() {
+        ((ProjectBase) getContainingFile().getProject()).unregisterDeclaration(this);
     }
     
     public CsmNamespace getContainingNamespace() {
@@ -86,7 +94,10 @@ public abstract class ClassEnumBase extends DeclarationBase implements CsmCompou
     }
 
     public void dispose() {
-        getContainingNamespaceImpl().removeDeclaration(this);
+        if (getContainingNamespaceImpl() != null) {
+            getContainingNamespaceImpl().removeDeclaration(this);
+        }
+	unregisterInProject();
         isValid = false;
     }
         

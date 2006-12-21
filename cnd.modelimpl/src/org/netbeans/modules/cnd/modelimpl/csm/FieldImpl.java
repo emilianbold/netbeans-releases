@@ -32,11 +32,11 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
  */
 public class FieldImpl extends VariableImpl implements CsmField {
 
-    private ClassImpl containingClass;
-    private CsmVisibility visibility;
+    private final ClassImpl containingClass;
+    private final CsmVisibility visibility;
 
-    public FieldImpl(ClassImpl cls, CsmVisibility visibility, String name, int start, int end) {
-        super(name, cls.getContainingFile(), start, end);
+    public FieldImpl(ClassImpl cls, CsmVisibility visibility, String name) {
+        super(name, cls.getContainingFile());
         setScope(cls);
         this.visibility = visibility;
         this.containingClass = cls;

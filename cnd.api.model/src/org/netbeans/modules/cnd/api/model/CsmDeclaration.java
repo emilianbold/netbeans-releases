@@ -45,8 +45,10 @@ public interface CsmDeclaration extends CsmQualifiedNamedElement, CsmObject, Csm
         public static final Kind STRUCT = new Kind("struct");
         
         public static final Kind ENUM = new Kind("Enum");
+        public static final Kind MACRO = new Kind("Macro");
         
         public static final Kind VARIABLE = new Kind("VARIABLE");
+        public static final Kind VARIABLE_DEFINITION = new Kind("VARIABLE_DEFINITION");
         
         public static final Kind FUNCTION = new Kind("FUNCTION");
         public static final Kind FUNCTION_DEFINITION = new Kind("FUNCTION_DEFINITION");

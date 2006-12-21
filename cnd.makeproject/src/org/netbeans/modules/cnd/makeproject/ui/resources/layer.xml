@@ -27,6 +27,14 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/desktop.html"/>
 
+                <file name="makefile.xml">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.NewMakeProjectWizardIterator.makefile"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makefile.html"/>
+                </file>
+
                 <file name="newApplication.xml">
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.NewMakeProjectWizardIterator.newApplication"/>
@@ -51,17 +59,9 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/newStaticLibrary.html"/>
                 </file>
 	    
-                <file name="makefile.xml">
-                    <attr name="template" boolvalue="true"/>
-                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.NewMakeProjectWizardIterator.makefile"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makefile.html"/>
-                </file>
-
+                <attr name="makefile.xml/newApplication.xml" boolvalue="true"/>
                 <attr name="newApplication.xml/newDynamicLibrary.xml" boolvalue="true"/>
                 <attr name="newDynamicLibrary.xml/newStaticLibrary.xml" boolvalue="true"/>
-                <attr name="newStaticLibrary.xml/makefile.xml" boolvalue="true"/>
             </folder>
 
             <folder name="Samples">
@@ -206,13 +206,20 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-modules-cnd-makeproject-api-actions-NewFolderAction.shadow/SeparatorNew.instance" boolvalue="true"/> 
         </folder>
     </folder>
-
+    
     <folder name="OptionsDialog">
-    <folder name="Advanced">
-    <file name="MakeProjectEditor.instance">
-    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.ui.options.MakeProjectEditorOptions"/>
-    </file>
-    </folder>
+        <attr name="Keymaps.instance/MakeProjectOption.instance" boolvalue="true"/> 
+        <file name="MakeProjectOption.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.ui.options.MakeProjectEditorOptions"/>
+        </file> 
+        <attr name="MakeProjectOption.instance/Advanced.instance" boolvalue="true"/>       
+<!--        
+        <folder name="Advanced">
+            <file name="MakeProjectEditor.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.ui.options.MakeProjectEditorOptions"/>
+            </file>
+        </folder>
+-->
     </folder>
 
 </filesystem>

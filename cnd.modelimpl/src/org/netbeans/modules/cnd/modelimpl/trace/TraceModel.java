@@ -20,7 +20,9 @@
 package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.text.NumberFormat;
+import org.netbeans.modules.cnd.editor.parser.CppFoldRecord;
 import org.netbeans.modules.cnd.modelimpl.antlr2.CPPParserEx;
+import org.netbeans.modules.cnd.modelimpl.apt.impl.structure.APTBuilder;
 import org.netbeans.modules.cnd.modelimpl.apt.impl.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.modelimpl.apt.impl.support.parser.APTPreprocStateImpl;
 import org.netbeans.modules.cnd.modelimpl.apt.impl.support.parser.APTSystemStorage;
@@ -28,7 +30,7 @@ import org.netbeans.modules.cnd.modelimpl.apt.support.APTDriver;
 import org.netbeans.modules.cnd.modelimpl.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.modelimpl.apt.utils.APTTraceUtils;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
-import org.netbeans.modules.cnd.modelimpl.cache.LibProjectImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.LibProjectImpl;
 import java.io.*;
 import java.util.*;
 import java.util.List;
@@ -48,6 +50,7 @@ import org.netbeans.modules.cnd.modelimpl.antlr2.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.apt.impl.support.APTFileMacroMap;
 import org.netbeans.modules.cnd.modelimpl.apt.impl.support.APTIncludeHandlerImpl;
 import org.netbeans.modules.cnd.modelimpl.apt.impl.support.parser.APTParserMacroExpandedStream;
+import org.netbeans.modules.cnd.modelimpl.apt.structure.APT;
 import org.netbeans.modules.cnd.modelimpl.apt.structure.APTFile;
 import org.netbeans.modules.cnd.modelimpl.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.modelimpl.apt.support.APTLanguageSupport;
@@ -55,6 +58,7 @@ import org.netbeans.modules.cnd.modelimpl.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.modelimpl.apt.support.APTPreprocState;
 import org.netbeans.modules.cnd.modelimpl.apt.utils.APTMacroUtils;
 import org.netbeans.modules.cnd.modelimpl.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.modelimpl.folding.APTFoldingProvider;
 
 /**
  * Tracer for model
@@ -116,7 +120,7 @@ public class TraceModel {
 		    lineCount += toAdd.getLineCount();
 		}
 		else {
-		    lineCount = -1;
+//		    lineCount = -1;
 		}
 	    }
 	}
@@ -124,8 +128,14 @@ public class TraceModel {
     
     
     private static final int APT_REPEAT_TEST =Integer.getInteger("apt.repeat.test", 3).intValue();
+
+    
     public static void main(String[] args) {
         new TraceModel().test(args);
+        if (TraceFlags.USE_AST_CACHE) {
+            CacheManager.getInstance().close();
+        }
+	//System.out.println("" + org.netbeans.modules.cnd.modelimpl.apt.utils.APTIncludeUtils.getHitRate());
     }
     
     private ModelImpl model;
@@ -137,6 +147,7 @@ public class TraceModel {
     private boolean showAstWindow = false;
     private boolean dumpAst = false;
     private boolean dumpModel = false;
+    private boolean dumpLib = false;
     private boolean dumpFileOnly = false;
     private boolean showTime = false;
     private boolean testLexer = false;
@@ -163,6 +174,7 @@ public class TraceModel {
     private boolean breakAfterAPT = false;
     
     private boolean stopBeforeAll = false;
+    private boolean stopAfterAll = false;
     private boolean printTokens = false;
     
     private List quoteIncludePaths = new ArrayList();
@@ -186,16 +198,39 @@ public class TraceModel {
     // Callback options
     private boolean dumpPPCallback = false;
     
+    // if true, then relative include paths oin -I option are considered
+    // to be based on the file that we currently compile rather then current dir
+    private boolean pathsRelCurFile = false;
+    
+    private boolean listFilesAtEnd = false;
+    private boolean testRawPerformance = false;
+    private boolean printUserFileList = false;
+    private boolean quiet = false;
+    private boolean memBySize = false;
+    
+    private boolean testFolding = false;
+    
     private Map/*<String, Integer>*/ cacheTimes = new HashMap();
+    
+    private int lap = 0;
     
     public TraceModel() {
         model =  (ModelImpl) CsmModelAccessor.getModel(); // new ModelImpl(true);
         if( model == null ) {
-            model = new ModelImpl(true);
+            model = new ModelImpl();
         }
-        ParserThreadManager.instance().init(true);
-        project = model.addProject("DummyPrjId", "DummyProject");
+        model.startup();
+	initProject();
         currentIncludePaths = quoteIncludePaths;
+    }
+    
+    private void initProject() {
+	if( project != null ) {
+	    Object platformProject = project.getPlatformProject();
+	    project.dispose();
+	    ((ModelImpl) CsmModelAccessor.getModel()).removeProject(platformProject);
+	}
+        project = model.addProject("DummyPrjId", "DummyProject");
     }
     
     private boolean processFlag(char flag, String argRest) {
@@ -231,7 +266,7 @@ public class TraceModel {
                                                     ? systemIncludePaths : quoteIncludePaths;
                                 argRest = argRest.substring(1);
                             }
-                            String includePath = new File(argRest).getAbsolutePath();
+                            String includePath = argRest;
                             currentIncludePaths.add(includePath);
                             argHasBeenEaten = true;
                         }
@@ -262,13 +297,18 @@ public class TraceModel {
                                 dumpFile.delete();
                             }
                             try {
-                                dumpFile.getParentFile().mkdirs();
-                                dumpFile.createNewFile();
-                                this.dumpFile = dumpFile.getAbsolutePath();
+                                if (dumpFile.getParentFile() != null) {
+                                    dumpFile.getParentFile().mkdirs();
+                                    dumpFile.createNewFile();
+                                    this.dumpFile = dumpFile.getAbsolutePath();     
+                                    argHasBeenEaten = true;                                    
+                                } else {
+//                                    System.err.println("failed to create statistics file");
+                                    argHasBeenEaten = false;  
+                                }
                             } catch (IOException ex) {
                                 ex.printStackTrace();
                             }
-                            argHasBeenEaten = true;
                         }
                         break;            
             case 'A':   testAPT = true; 
@@ -290,15 +330,35 @@ public class TraceModel {
             case 'd':   testAPTDriver = true; testAPT = true; breakAfterAPT = true; break;
             case 'h':   testParser = true; testAPT = true; breakAfterAPT = true; break;
             case 'H':   testAPTParser = true; testAPT = true; breakAfterAPT = true; break;
-            case 'O':   stopBeforeAll = true; break;
+            case 'O':   stopBeforeAll = true; stopAfterAll = true; break;
+	    case 'q':	quiet = true; break;
             default:
         }
         return argHasBeenEaten;
     }
     
     private void processFlag(String flag) {
-//        if( "condition".equals(flag) ) {
-//        }
+	if( "dumplib".equals(flag) ) {
+	    dumpLib = true;
+	}
+	else if( "relpath".equals(flag) ) {
+	    pathsRelCurFile = true;
+	}
+	else if( "listfiles".equals(flag) ) {
+	    listFilesAtEnd = true;
+	}
+	else if( "raw".equals(flag) ) {
+	    testRawPerformance = true;
+	    //TraceFlags.DO_NOT_RENDER = true;
+	}
+	else if( "listfiles".equals(flag) ) {
+	    printUserFileList = true;
+	}
+	else if( "mbs".equals(flag) ) {
+	    memBySize = true;
+	} else if ( "folding".equals(flag)) {
+            testFolding = true;
+        }
     }
     
     private void addFile(List files, File file) {
@@ -330,13 +390,19 @@ public class TraceModel {
                 addFile(fileList, new File(args[i]));
             }
         }
+	if( ! pathsRelCurFile ) {
+	    List[] paths = { quoteIncludePaths, systemIncludePaths };
+	    for (int listIdx = 0; listIdx < paths.length; listIdx++) {
+		for (int pathIdx = 0; pathIdx < paths[listIdx].size(); pathIdx++) {
+		    String path = (String) paths[listIdx].get(pathIdx);
+		    if( ! new File(path).isAbsolute() ) {
+			paths[listIdx].set(pathIdx, new File(path).getAbsolutePath());
+		    }
+		}
+	    }
+	}
         if (stopBeforeAll) {
-            System.out.println("Press any key to continue:");
-            try {
-                System.in.read();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+	    waitAnyKey();
         }        
         if( writeAst || readAst ) {
             try {
@@ -362,11 +428,11 @@ public class TraceModel {
         }
 
         if (testCache) {
-            print("Test cache mode ON." + '\n');
+            //print("Test cache mode ON." + '\n');
             enableCache = true;
         }
         else
-            print("Setting cache to " + (enableCache ? "ON" : "OFF") + '\n');
+            //print("Setting cache to " + (enableCache ? "ON" : "OFF") + '\n');
 
         if (dumpStatistics) {
             if (dumpFile == null && dumpDir == null) {
@@ -387,34 +453,67 @@ public class TraceModel {
             }
         }
         
-        CacheManager.instance().setUseCache(enableCache);
+        org.netbeans.modules.cnd.modelimpl.old.cache.CacheManager.instance().setUseCache(enableCache);
         
         if( testLibProject ) {
             testLibProject();
         }
         
-        print("Processing files:\n" + fileList.toString() + '\n');
+	if( printUserFileList ) {
+	    print("Processing files:\n" + fileList.toString() + '\n');
+	}
         
         long memUsed = 0;
         if( showMemoryUsage ) {
             memUsed = usedMemory();
         }
         
-	TestResult total = new TestResult();
-        for( int i = 0; i < fileList.size(); i++ ) {
-            try {
-		TestResult res = test((File) fileList.get(i), true);
-		total.accumulate(res);
-            }
-            catch( Exception e ) {
-                e.printStackTrace(System.err);
-            }
-        }
+	long t = System.currentTimeMillis();
+	TestResult total = test();
+	total.time = System.currentTimeMillis() - t;
 	
+	if( testRawPerformance ) {
+	    print("Take one finished.");
+	    print("Total parsing time " + total.time + " ms");
+	    calculateAverageLPS(total, true);
+	    print("Lines count " + total.lineCount);
+	    print("Average LPS " + total.getLPS());
+	    
+	    if( showMemoryUsage ) {
+		showMemoryUsage(memUsed);
+	    }
+	    
+//	    for (int i = 0; i < 100; i++) {
+//		initProject();
+//		test();
+//		showMemoryUsage(memUsed);
+//	    }
+	    
+	    print("\nTesting raw performance: parsing project, take two\n");
+	    initProject();
+	    if (stopBeforeAll) {
+		waitAnyKey();
+	    }
+	    t = System.currentTimeMillis();
+	    total = test();
+	    total.time = System.currentTimeMillis() - t;
+	}
+	
+	/* this unnecessary since we call waitProjectParsed() for each file
 	if( showTime ) {
 	    print("Waiting for the rest of the parser queue to be parsed");
 	}
 	waitProjectParsed();
+	*/
+	
+	if( dumpLib ) {
+	    for (Iterator it = project.getLibraries().iterator(); it.hasNext();) {
+		CsmProject lib = (CsmProject) it.next();
+		tracer.dumpModel(lib);
+	    }
+	}
+	
+        model.shutdown();
 	
         if( showTime ) {
 	    
@@ -427,51 +526,87 @@ public class TraceModel {
 		    }
 		}
 	    }
-	    
-	    print("\nGuessing statistics:");
-	    print(
-		    "Id"
-		    + "\t" + padR("Rule:Line", maxLen)
-		    + "\tTime"
-		    + "\tCount"
-		    + "\tFail"
-		    //+ "\tTime in failures"
-		    + "\tSuccess, %");
-	    long guessingTime=0;
-	    for (int i = 0; i<CPPParserEx.MAX_GUESS_IDX;i++) {
-		guessingTime += CPPParserEx.guessingTimes[i];
-		if (CPPParserEx.guessingCount[i] ==0) {
-		    continue;
+            
+            boolean printGuessStat = false;
+            // check if we had the statistics
+            for (int i = 0; i<CPPParserEx.MAX_GUESS_IDX;i++) {
+                if (CPPParserEx.guessingCount[i] !=0) {
+                    printGuessStat = true;
+                    break;
+                }
+            }
+            if( listFilesAtEnd ) {
+		print("\n========== User project files ==========");
+		List l = new ArrayList(project.getFileList().size());
+		for (Iterator it = project.getFileList().iterator(); it.hasNext();) {
+		    CsmFile file = (CsmFile) it.next();
+		    l.add(file.getAbsolutePath());
 		}
-		//double sps = (CPPParserEx.guessingTimes[i] !=0) ? ((double)CPPParserEx.guessingCount[i])/CPPParserEx.guessingTimes[i] : 0;
-		double usa = 0;
-		if( CPPParserEx.guessingCount[i] !=0 ) {
-		    usa = (1-((double)CPPParserEx.guessingFailures[i])/CPPParserEx.guessingCount[i]) * 100;
+		Collections.sort(l);
+		for (Iterator it = l.iterator(); it.hasNext();) {
+		    print((String) it.next());
+		    
 		}
-		print("" 
-			+ i 
-			+ "\t" + padR(CPPParserEx.guessingNames[i], maxLen)
-			+ "\t" + CPPParserEx.guessingTimes[i]
-			+ "\t" + CPPParserEx.guessingCount[i]
-			+ "\t" + CPPParserEx.guessingFailures[i]
-			//+ "\t" + (int)sps
-			+ "\t" + (int)usa);
+		print("\n========== Library files ==========");
+		l = new ArrayList();
+		for (Iterator it1 = project.getLibraries().iterator(); it1.hasNext();) {
+		    ProjectBase lib = (ProjectBase) it1.next();
+		    for (Iterator it2 = lib.getFileList().iterator(); it2.hasNext();) {
+			CsmFile file = (CsmFile) it2.next();
+			l.add(file.getAbsolutePath());
+		    }
+		}
+		Collections.sort(l);
+		for (Iterator it = l.iterator(); it.hasNext();) {
+		    print((String) it.next());
+		    
+		}
 	    }
-	    print("\nTotal guessing time: " + guessingTime + "ms");
+            if (printGuessStat) {
+                print("\nGuessing statistics:");
+                print(
+                        "Id"
+                        + "\t" + padR("Rule:Line", maxLen)
+                        + "\tTime"
+                        + "\tCount"
+                        + "\tFail"
+                        //+ "\tTime in failures"
+                        + "\tSuccess, %");
+                long guessingTime=0;
+                for (int i = 0; i<CPPParserEx.MAX_GUESS_IDX;i++) {
+                    guessingTime += CPPParserEx.guessingTimes[i];
+                    //double sps = (CPPParserEx.guessingTimes[i] !=0) ? ((double)CPPParserEx.guessingCount[i])/CPPParserEx.guessingTimes[i] : 0;
+                    double usa = 0;
+                    if( CPPParserEx.guessingCount[i] !=0 ) {
+                        usa = (1-((double)CPPParserEx.guessingFailures[i])/CPPParserEx.guessingCount[i]) * 100;
+                    }
+                    print("" 
+                            + i 
+                            + "\t" + padR(CPPParserEx.guessingNames[i], maxLen)
+                            + "\t" + CPPParserEx.guessingTimes[i]
+                            + "\t" + CPPParserEx.guessingCount[i]
+                            + "\t" + CPPParserEx.guessingFailures[i]
+                            //+ "\t" + (int)sps
+                            + "\t" + (int)usa);
+                }
+
+                print("\nTotal guessing time: " + guessingTime + "ms " + "(" + ((total.getTime() != 0) ? guessingTime*100/total.getTime() : -1) + "% of total parse time)");
+            }
+	}
+	if( showTime || testRawPerformance ) {
             print("Total parsing time: " + total.getTime() + "ms");
-	    print("Percentage time spent in guessing is " + guessingTime*100/total.getTime() + "%");
-	    
-            print("Average LPS: " + total.getLPS()); 
+            //print("Average LPS: " + total.getLPS()); 
+	    calculateAverageLPS(total, ! testRawPerformance);
+	    print("Lines count " + total.lineCount);
+	    String text = testRawPerformance ? "Raw performance (average LPS): " : "Average LPS: ";
+            print(text + total.getLPS()); 
 	    int userFiles = countUserFiles();
 	    int systemHeaders = countSystemHeaders();
 	    print("" + userFiles + " user files");
 	    print("" + systemHeaders + " system headers");
         }
         if( showMemoryUsage ) {
-            long newMemUsed = usedMemory();
-            NumberFormat nf = NumberFormat.getIntegerInstance();
-            nf.setGroupingUsed(true);
-            print("Amount of memory used: " + nf.format((newMemUsed - memUsed)/1024) + " Kb");
+	    showMemoryUsage(memUsed);
         }
         //if( showTime || showMemoryUsage ) {
             print("\n");
@@ -487,9 +622,71 @@ public class TraceModel {
             }  
         }
 
+        if (stopAfterAll) {
+            System.out.println("Press any key to finish:");
+            try {
+                System.in.read();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }            
+        }
+    }
+
+    private void showMemoryUsage(long memUsed) {
+	long newMemUsed = usedMemory();
+	long memDelta = newMemUsed - memUsed;
+	NumberFormat nf = NumberFormat.getIntegerInstance();
+	nf.setGroupingUsed(true);
+	nf.setMinimumIntegerDigits(6);
+	print("Amount of memory used" + getLap() + ": " + nf.format((memDelta)/1024) + " Kb");
+	if( memBySize ) {
+	    TestResult rInc = new TestResult();
+	    TestResult rExc = new TestResult();
+	    calculateAverageLPS(rInc, true);
+	    calculateAverageLPS(rExc, false);
+	    print("User code lines:  " + rExc.lineCount);
+	    print("Total lines (including all headers):  " + rInc.lineCount);
+	    print("Memory usage per (user) line " + getLap() + '\t' + nf.format(memDelta/rExc.lineCount) + " bytes per line");
+	    print("Memory usage per (total) line" + getLap() + '\t' + nf.format(memDelta/rInc.lineCount) + " bytes per line");
+	}
+    }
+    
+    private void waitAnyKey() {
+	System.out.println("Press any key to continue:");
+	try {
+	    System.in.read();
+	} catch (IOException ex) {
+	    ex.printStackTrace();
+	}
+    }
+
+    private TestResult test() {
+	lap++;
+	TestResult total = new TestResult();
+	for( int i = 0; i < fileList.size(); i++ ) {
+	    try {
+                if (!testFolding) {
+                    TestResult res = test((File) fileList.get(i));
+                    total.accumulate(res);
+                } else {
+                    testFolding((File)fileList.get(i));
+                }
+	    }
+	    catch( Exception e ) {
+		e.printStackTrace(System.err);
+	    }
+	}
+	return total;
+    }
+    
+    private String getLap() {
+	return " (lap " + lap + ") ";
     }
     
     private String padR(String s, int len) {
+        if (s == null) {
+            s="";
+        }
 	if( s.length() >= len ) {
 	    return s;
 	}
@@ -509,7 +706,6 @@ public class TraceModel {
 	    CsmProject lib = (CsmProject) it.next();
 	    lib.waitParse();
 	}
-        ParserThreadManager.instance().shutdown();
     }
     
     private static final boolean C_SYS_INCLUDE = Boolean.getBoolean("cnd.modelimpl.c.include");
@@ -530,7 +726,20 @@ public class TraceModel {
     
     private APTIncludeHandler getIncludeHandler(File file) {
         List sysIncludes = sysAPTData.getIncludes("TraceModelSysIncludes", getSystemIncludes());
-        return new APTIncludeHandlerImpl(quoteIncludePaths, sysIncludes);
+	List qInc = quoteIncludePaths;
+	if( pathsRelCurFile ) {
+	    qInc = new ArrayList(quoteIncludePaths.size());
+	    for (Iterator it = quoteIncludePaths.iterator(); it.hasNext();) {
+		String path = (String) it.next();
+		if( !( new File(path).isAbsolute() ) ) {
+		    File dirFile = file.getParentFile();
+		    File pathFile = new File(dirFile, path);
+		    path = pathFile.getAbsolutePath();
+		}
+		qInc.add(path);
+	    }
+	}
+        return new APTIncludeHandlerImpl(qInc, sysIncludes);
     }
     
     private APTMacroMap getMacroMap(File file)
@@ -544,7 +753,7 @@ public class TraceModel {
     }
 
     private APTPreprocState getPreprocState(File file) {
-        APTPreprocState preprocState = new APTPreprocStateImpl(getMacroMap(file), getIncludeHandler(file));
+        APTPreprocState preprocState = new APTPreprocStateImpl(getMacroMap(file), getIncludeHandler(file), true);
         return preprocState;
     }
     
@@ -856,7 +1065,7 @@ public class TraceModel {
         if (cleanAPT) {
             invalidateAPT(buffer);
             time = System.currentTimeMillis();     
-            apt = APTDriver.getInstance().findAPT(buffer);
+            apt = APTDriver.getInstance().findAPTLight(buffer);
         }           
         APTWalkerTest walker = new APTWalkerTest(apt, getMacroMap(file), getIncludeHandler(file));
         walker.visit();  
@@ -1108,6 +1317,15 @@ public class TraceModel {
             Writer out = new BufferedWriter(new FileWriter(outFile));
             APTTraceUtils.xmlSerialize(apt, out);
             out.flush();
+            APT light = APTBuilder.buildAPTLight(apt);
+            File outFileLW = new File(outDir, file.getName()+"_lw.xml");
+            if (outFileLW.exists()) {
+                outFileLW.delete();            
+            }
+            outFileLW.createNewFile();
+            Writer outLW = new BufferedWriter(new FileWriter(outFileLW));
+            APTTraceUtils.xmlSerialize(light, outLW);
+            outLW.flush();
         }
         return apt;
     }
@@ -1117,7 +1335,7 @@ public class TraceModel {
 	return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
     }
     
-    private TestResult test(File file, boolean first) 
+    private TestResult test(File file) 
         throws FileNotFoundException, RecognitionException, TokenStreamException, IOException, ClassNotFoundException {
         
 	TestResult result = new TestResult();
@@ -1153,14 +1371,16 @@ public class TraceModel {
         int errCount = 0;
         
         PPCallback callback = null;
+
         if( testParser ) {
             testParser(file);
         }
         else {
             callback = getCallback(file);
+            APTPreprocState preprocState = null;            
             if( ast == null ) {
 		if( TraceFlags.USE_APT ) {
-		    APTPreprocState preprocState = getPreprocState(file);
+		    preprocState = getPreprocState(file);
 		    fileImpl = (FileImpl) project.testAPTParseFile(file.getAbsolutePath(), preprocState);
 		}
 		else {
@@ -1168,6 +1388,11 @@ public class TraceModel {
 		}
                 try {
                     fileImpl.scheduleParsing(true);
+		    if( preprocState != null ) { // i.e. if TraceFlags.USE_APT
+			preprocState.setState(fileImpl.getPreprocStateState());
+		    }
+                    fileImpl.setPreprocState(null);
+                    waitProjectParsed();
                 }
                 catch( InterruptedException e ) {
                     // nothing to do
@@ -1185,14 +1410,21 @@ public class TraceModel {
             }
             errCount = fileImpl.getErrorCount();
             if ( dumpPPCallback ) {
-                dumpCallback(callback);
+                if (TraceFlags.USE_APT) {
+                    
+                    dumpMacroMap(preprocState.getMacroMap());
+                } else {
+                    dumpCallback(callback);
+                }
             }
         }
         time = System.currentTimeMillis() - time;
         if( showTime ) {
 	    result.setTime(time);
 	    result.setLineCount(countLines(fileImpl));
-            print("Processing " + file.getName() + " took " + time + " ms; LPS=" + result.getLPS() + "; error count: " + errCount);
+	    if( ! quiet ) {
+		print("Processing " + file.getName() + " took " + time + " ms; LPS=" + result.getLPS() + "; error count: " + errCount);
+	    }
         }
         
         if (dumpStatistics) {
@@ -1251,11 +1483,25 @@ public class TraceModel {
         return result;
     }
     
-    private long countLines(FileImpl fileImpl) {
+    private boolean hasNonEmptyIncludes(CsmFile fileImpl) {
+	for (Iterator it = fileImpl.getIncludes().iterator(); it.hasNext();) {
+	    CsmInclude inc = (CsmInclude) it.next();
+	    if( inc.getIncludeFile() != null ) {
+		return true;
+	    }
+	}
+	return false;
+    }
+    
+    private long countLines(CsmFile fileImpl) {
+	return countLines(fileImpl, false);
+    }
+    
+    private long countLines(CsmFile fileImpl, boolean allowResolvedIncludes) {
 	if( fileImpl == null ) {
 	    return -1;
 	}
-	if( ! fileImpl.getIncludes().isEmpty() ) {
+	if( ! allowResolvedIncludes && hasNonEmptyIncludes(fileImpl) ) { //! fileImpl.getIncludes().isEmpty() ) {
 	    return -1;
 	}
 	String text = fileImpl.getText();
@@ -1343,7 +1589,7 @@ public class TraceModel {
     }
     
     private void dumpMacroMap(APTMacroMap macroMap) {
-        tracer.print("State of macro mp:");
+        tracer.print("State of macro map:");
         tracer.print(macroMap == null ? "empty macro map" : macroMap.toString());
     }
     
@@ -1388,4 +1634,64 @@ public class TraceModel {
 	}
 	return cnt;
     }
+
+    private void calculateAverageLPS(TestResult total, boolean includeLibs) {
+	total.lineCount = 0;
+	for (Iterator it = project.getFileList().iterator(); it.hasNext();) {
+	    CsmFile file = (CsmFile) it.next();
+	    total.lineCount += countLines(file, true);
+	}
+	if( includeLibs ) {
+	    for (Iterator it1 = project.getLibraries().iterator(); it1.hasNext();) {
+		ProjectBase lib = (ProjectBase) it1.next();
+		for (Iterator it2 = lib.getFileList().iterator(); it2.hasNext();) {
+		    CsmFile file = (CsmFile) it2.next();
+		    total.lineCount += countLines(file, true);
+		}
+	    }
+	}
+    }
+
+    private void testFolding(File file) {
+        InputStream is;
+        try {
+            is = new FileInputStream(file);
+        } catch (FileNotFoundException ex) {
+            ex.printStackTrace();
+            return;
+        }
+        if (is == null) {
+            return;
+        }
+        Reader reader  = new InputStreamReader(is);
+        reader = new BufferedReader(reader);
+        List<CppFoldRecord> folds = new APTFoldingProvider().parse(file.getAbsolutePath(), reader);
+        try {
+            reader.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        printFolds(file.getAbsolutePath(), folds);
+    }
+
+    private void printFolds(String file, List<CppFoldRecord> folds) {
+        Collections.sort(folds, FOLD_COMPARATOR);
+        System.out.println("Foldings of the file " + file);
+        for (Iterator it = folds.iterator(); it.hasNext();) {
+            CppFoldRecord fold = (CppFoldRecord) it.next();
+            System.out.println(fold);
+        }
+    }
+    
+    private static Comparator<CppFoldRecord> FOLD_COMPARATOR = new Comparator<CppFoldRecord>() {
+        public int compare(CppFoldRecord o1, CppFoldRecord o2) {
+            int start1 = o1.getStartLine();
+            int start2 = o2.getStartLine();
+            if (start1 == start2) {
+                return o1.getStartOffset() - o2.getStartOffset();
+            } else {
+                return start1 - start2;
+            }
+        }        
+    };
 }

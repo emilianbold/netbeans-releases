@@ -59,10 +59,6 @@ public class MacroImpl extends LineColOffsetableBase implements CsmMacro {
      */
     private List/*<String>*/ params;
     
-    /** Creates a new instance of MacroImpl */
-    public MacroImpl() {
-    }
-    
     /** Creates new instance of MacroImpl based on existed macro and specified container */
     public MacroImpl(CsmMacro macro, CsmFile containingFile) {
         this(macro.getName(), macro.getParameters(), macro.getBody(), containingFile, macro);
@@ -73,7 +69,7 @@ public class MacroImpl extends LineColOffsetableBase implements CsmMacro {
         this(macroName, macroParams, macroBody, null, macroPos);
     }
     
-    private MacroImpl(String macroName, List/*<String>*/ macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos) {
+    public MacroImpl(String macroName, List/*<String>*/ macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos) {
         super(containingFile, macroPos);
         assert(macroName != null);
         assert(macroName.length() > 0);

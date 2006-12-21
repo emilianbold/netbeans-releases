@@ -117,9 +117,9 @@ public class APTWalkerTest extends APTWalker {
     protected void onEndif(APT apt, boolean wasInBranch) {
     }
 
-    protected Token onToken(Token token) {
-        return token;
-    }
+//    protected Token onToken(Token token) {
+//        return token;
+//    }
        
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
@@ -140,7 +140,7 @@ public class APTWalkerTest extends APTWalker {
             APTFile apt;
             boolean res = false;
             try {
-                apt = APTDriver.getInstance().findAPT(new FileBufferFile(new File(path)));
+                apt = APTDriver.getInstance().findAPTLight(new FileBufferFile(new File(path)));
                 APTWalkerTest walker = new APTWalkerTest(apt, getMacroMap(), inclHandler);
                 walker.visit();
                 resolvingTime += walker.resolvingTime;

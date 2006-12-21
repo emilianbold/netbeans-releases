@@ -44,6 +44,5 @@ int main(int argc, char**argv) {
             cout << i << ": " << argv[i] << "\n";
         }
     }
-
     return 0;
 }

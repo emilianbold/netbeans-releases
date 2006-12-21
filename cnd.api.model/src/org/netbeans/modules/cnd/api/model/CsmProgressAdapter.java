@@ -34,10 +34,15 @@ public class CsmProgressAdapter implements CsmProgressListener {
     public void projectParsingFinished(CsmProject project) {
     }
 
+    public void projectParsingCancelled(CsmProject project) {
+    }
+
     public void fileParsingStarted(CsmFile file) {
     }
 
     public void fileParsingFinished(CsmFile file) {
     }
-   
+
+    public void parserIdle() {
+    }
 }

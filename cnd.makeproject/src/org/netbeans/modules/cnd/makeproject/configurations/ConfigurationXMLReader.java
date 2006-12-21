@@ -54,7 +54,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
      * was: readFromDisk
      */
     
-    public ConfigurationDescriptor read() throws IOException {
+    public ConfigurationDescriptor read(String relativeOffset) throws IOException {
         
         String tag = null;
         
@@ -79,7 +79,8 @@ public class ConfigurationXMLReader extends XMLDocReader {
         XMLDecoder decoder =
                 new ConfigurationXMLCodec(tag,
                 projectDirectory,
-                configurationDescriptor);
+                configurationDescriptor,
+                relativeOffset);
         registerXMLDecoder(decoder);
         InputStream inputStream = xml.getInputStream();
         success = read(inputStream, FileUtil.toFile(xml).getPath());
@@ -116,7 +117,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         // Some samples are generated without generated makefile. Don't mark these 'not modified'. Then
         // the makefiles will be generated before the project is being built
         FileObject makeImpl = projectDirectory.getFileObject("nbproject/Makefile-impl.mk");
-        configurationDescriptor.setModified(makeImpl == null);
+        configurationDescriptor.setModified(makeImpl == null || relativeOffset != null);
         
         // Check version and display deprecation warning if too old
         if (configurationDescriptor.getVersion() >= 0 && configurationDescriptor.getVersion() <= DEPRECATED_VERSIONS) {

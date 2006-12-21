@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -19,28 +19,56 @@
 
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
+import java.io.IOException;
+import java.io.InputStream;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+
 public class CCCCompiler extends BasicCompiler {
+    // Switch to true to use compiler generated includes and defines
+    public static final boolean parseCompilerOutput = true; //Boolean.getBoolean("cnd.parse.compiler.output"); // NOI18N
+    
     public CCCCompiler(int kind, String name, String displayName) {
         super(kind, name, displayName);
     }
     
     // To be overridden
     public String getMTLevelOptions(int value) {
-	return ""; // NOI18N
+        return ""; // NOI18N
     }
     
     // To be overridden
     public String getLibraryLevelOptions(int value) {
-	return ""; // NOI18N
+        return ""; // NOI18N
     }
-
+    
     // To be overridden
     public String getStandardsEvolutionOptions(int value) {
-	return ""; // NOI18N
+        return ""; // NOI18N
     }
-
+    
     // To be overridden
     public String getLanguageExtOptions(int value) {
-	return ""; // NOI18N
+        return ""; // NOI18N
+    }
+    
+    protected void getSystemIncludesAndDefines(Platform platform, String command, boolean stdout) throws IOException {
+            Process process;
+            process = Runtime.getRuntime().exec(command + " " + "/dev/null"); // NOI18N
+            if (stdout)
+                parseCompilerOutput(platform, process.getInputStream());
+            else
+                parseCompilerOutput(platform, process.getErrorStream());
+        }
+    
+    // To be overridden
+    public void saveSystemIncludesAndDefines() {
+    }
+    
+    // To be overridden
+    public void resetSystemIncludesAndDefines(Platform platform) {
+    }
+    
+    // To be overridden
+    protected void parseCompilerOutput(Platform platform, InputStream is) {
     }
 }

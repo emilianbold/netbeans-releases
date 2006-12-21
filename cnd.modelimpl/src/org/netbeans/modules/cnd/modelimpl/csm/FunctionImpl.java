@@ -35,6 +35,16 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
  * @author Dmitriy Ivanov, Vladimir Kvashin
  */
 public class FunctionImpl extends OffsetableDeclarationBase implements CsmFunction, Disposable, RawNamable {
+    
+    private String name;
+    private final CsmType returnType;
+    private final List/*<CsmParameter>*/  parameters;
+    private String signature;
+    private final CsmScope scope;
+    private final String[] rawName;
+    
+    /** see comments to isConst() */
+    private final byte _const;
 
 //    public FunctionImpl(String name, CsmFile file, int start, int end) {
 //        super(file, start, end);
@@ -43,22 +53,76 @@ public class FunctionImpl extends OffsetableDeclarationBase implements CsmFuncti
 //    }
     
     public FunctionImpl(AST ast, CsmFile file, CsmScope scope) {
-        super(file, 0, 0);
-        init();
+        super(ast, file);
         this.scope = scope;
-        name = AstUtil.findId(ast);
+        name = initName(ast);
+        rawName = AstUtil.getRawNameInChildren(ast);
+        _const = initConst(ast);
+        returnType = initReturnType(ast);
+        parameters = initParameters(ast);
         if( name == null ) {
             name = "<null>"; // just to avoid NPE
         }
-        setAst(ast);
+        initBeforeRegister(ast);
         registerInProject();
     }
     
-    /** 
-     * Is called by ancestor class just after sertting AST, prior than registering in project, etc
-     * Override and place all necessar initialization here instead of attributes initializer or constructor.
-     */
-    protected void init() {
+    protected void initBeforeRegister(AST ast) {
+        
+    }
+    
+    protected String initName(AST node) {
+        return findFunctionName(node);
+    }
+    
+    /*private AST findLastID(AST ast) {
+        return getQialifiedId();
+//        AST last = null;
+//        for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
+//            int type = token.getType();
+//            if( type == CPPTokenTypes.CSM_QUALIFIED_ID ) {
+//                last = token;
+//            } else if ( type == CPPTokenTypes.COLON ){
+//                break;
+//            }
+//        }
+//        return last;
+    }*/
+    
+    private static String extractName(AST token){
+        int type = token.getType();
+        if( type == CPPTokenTypes.ID ) {
+            return token.getText();
+        } else if( type == CPPTokenTypes.CSM_QUALIFIED_ID ) {
+            AST last = AstUtil.getLastChild(token);
+            if( last != null) {
+                if( last.getType() == CPPTokenTypes.ID ) {
+                    return last.getText();
+                } else {
+                    AST first = token.getFirstChild();
+                    if( first.getType() == CPPTokenTypes.LITERAL_OPERATOR ) {
+                        StringBuffer sb = new StringBuffer(first.getText());
+                        sb.append(' ');
+                        AST next = first.getNextSibling();
+                        if( next != null ) {
+                            sb.append(next.getText());
+                        }
+                        return sb.toString();
+                    } else if (first.getType() == CPPTokenTypes.ID){
+                        return first.getText();
+                    }
+                }
+            }
+        }
+        return "";
+    }
+    
+    private static String findFunctionName(AST ast) {
+        AST token = AstUtil.findMethodName(ast);
+        if (token != null){
+            return extractName(token);
+        }
+        return "";
     }
     
     protected void registerInProject() {
@@ -81,7 +145,7 @@ public class FunctionImpl extends OffsetableDeclarationBase implements CsmFuncti
         return name;
     }
     
-    protected void setName(String name) {
+    protected final void setName(String name) {
         this.name = name;
     }
 
@@ -100,7 +164,7 @@ public class FunctionImpl extends OffsetableDeclarationBase implements CsmFuncti
     }
     
     public String[] getRawName() {
-        return AstUtil.getRawNameInChildren(getAst());
+        return rawName;
     }
     
     public String toString() {
@@ -126,7 +190,28 @@ public class FunctionImpl extends OffsetableDeclarationBase implements CsmFuncti
      */
     public CsmFunctionDefinition getDefinition() {
         String uname = CsmDeclaration.Kind.FUNCTION_DEFINITION.toString() + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
-        CsmDeclaration def = getContainingFile().getProject().findDeclaration(uname);
+        CsmProject prj = getContainingFile().getProject();
+        CsmDeclaration def = prj.findDeclaration(uname);
+        if (def == null) {
+            for (Iterator i = prj.getLibraries().iterator(); i.hasNext();){
+                CsmProject lib = (CsmProject)i.next();
+                def = lib.findDeclaration(uname);
+                if (def != null) {
+                    break;
+                }
+            }
+        }
+        if (def == null) {
+            for (Iterator i = CsmModelAccessor.getModel().projects().iterator(); i.hasNext();){
+                CsmProject p = (CsmProject)i.next();
+                if (p != prj){
+                    def = p.findDeclaration(uname);
+                    if (def != null) {
+                        break;
+                    }
+                }
+            }
+        }
         return (def == null) ? null : (CsmFunctionDefinition) def;
     }
     
@@ -160,22 +245,25 @@ public class FunctionImpl extends OffsetableDeclarationBase implements CsmFuncti
 //    public boolean isExplicit() {
 //        return false;
 //    }
+    
+    private CsmType initReturnType(AST node) {
+        CsmType ret = null;
+        AST token = getTypeToken(node);
+        if( token != null ) {
+            ret = AstRenderer.renderType(token, getContainingFile());
+        }
+        if( ret == null ) {
+            ret = TypeImpl.createBuiltinType("int", (AST) null, 0,  null/*getAst().getFirstChild()*/, getContainingFile());
+        }
+        return ret;
+    }
 
     public CsmType getReturnType() {
-        if( returnType == null ) {
-            AST token = getTypeToken();
-            if( token != null ) {
-                returnType = AstRenderer.renderType(token, getContainingFile());
-            }
-            if( returnType == null ) {
-                returnType = TypeImpl.createBuiltinType("int", (AST) null, 0,  null/*getAst().getFirstChild()*/, getContainingFile());
-            }
-        }
         return returnType;
     }
     
-    private AST getTypeToken() {
-        for( AST token = getAst().getFirstChild(); token != null; token = token.getNextSibling() ) {
+    private static AST getTypeToken(AST node) {
+        for( AST token = node.getFirstChild(); token != null; token = token.getNextSibling() ) {
             int type = token.getType();
             switch( type ) {
                 case CPPTokenTypes.CSM_TYPE_BUILTIN:
@@ -190,18 +278,19 @@ public class FunctionImpl extends OffsetableDeclarationBase implements CsmFuncti
         return null;
     }
     
-    public List/*<CsmParameter>*/  getParameters() {
-        if( parameters == null ) {
-            AST ast = AstUtil.findChildOfType(getAst(), CPPTokenTypes.CSM_PARMLIST);
-            if( ast != null ) {
-                // for K&R-style
-                AST ast2 = AstUtil.findSiblingOfType(ast.getNextSibling(), CPPTokenTypes.CSM_PARMLIST);
-                if( ast2 != null ) {
-                    ast = ast2;
-                }
+    private List initParameters(AST node) {
+        AST ast = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_PARMLIST);
+        if( ast != null ) {
+            // for K&R-style
+            AST ast2 = AstUtil.findSiblingOfType(ast.getNextSibling(), CPPTokenTypes.CSM_PARMLIST);
+            if( ast2 != null ) {
+                ast = ast2;
             }
-            parameters = AstRenderer.renderParameters(ast, getContainingFile());
         }
+        return AstRenderer.renderParameters(ast, getContainingFile());
+    }
+    
+    public List/*<CsmParameter>*/  getParameters() {
         return parameters;
     }
     
@@ -209,12 +298,6 @@ public class FunctionImpl extends OffsetableDeclarationBase implements CsmFuncti
         return scope;
     }
 
-    public void setScope(CsmScope scope) {
-        unregisterInProject();
-        this.scope = scope;
-        registerInProject();
-    }
-    
     public String getSignature() {
         if( signature == null ) {
             signature = createSignature();
@@ -222,7 +305,7 @@ public class FunctionImpl extends OffsetableDeclarationBase implements CsmFuncti
         return signature;
     }
     
-    protected String createSignature() {
+    private String createSignature() {
         // TODO: this fake implementation for Deimos only!
         // we should resolve parameter types and provide
         // kind of canonical representation here
@@ -239,6 +322,9 @@ public class FunctionImpl extends OffsetableDeclarationBase implements CsmFuncti
             }
         }
         sb.append(')');
+        if( isConst() ) {
+            sb.append(" const");
+        }
         return sb.toString();
     }
     
@@ -248,10 +334,29 @@ public class FunctionImpl extends OffsetableDeclarationBase implements CsmFuncti
         }
     }
     
-    private String name;
-    private CsmType returnType;
-    private List/*<CsmParameter>*/  parameters;
-    private String signature;
-    private CsmScope scope;
-
+    private static byte initConst(AST node) {
+        byte ret = 0;
+        AST token = node.getFirstChild();
+        while( token != null &&  token.getType() != CPPTokenTypes.CSM_QUALIFIED_ID) {
+            token = token.getNextSibling();
+        }
+        while( token != null ) {
+            if( token.getType() == CPPTokenTypes.LITERAL_const ) {
+                ret = 1;
+                break;
+            }
+            token = token.getNextSibling();
+        }
+        return ret;
+    }
+    
+    /** 
+     * isConst was originslly in MethodImpl;
+     * but this methods needs internally in FunctionDefinitionImpl
+     * to create proper sugnature. 
+     * Thereform it's moved here as a protected method.
+     */
+    protected boolean isConst() {
+        return _const > 0;
+    }
 }

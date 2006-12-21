@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -20,30 +20,18 @@
 package org.netbeans.modules.cnd.modelimpl.cache;
 
 import antlr.collections.AST;
-import java.io.Serializable;
-import java.util.List;
+import org.netbeans.modules.cnd.modelimpl.apt.structure.APTFile;
+import org.netbeans.modules.cnd.modelimpl.apt.support.APTPreprocState;
 
 /**
- * Cache for a single file: contains AST tree and #includes list
- * @author Vladimir Kvasihn
+ * cache entry 
+ * @author Vladimir Voskresensky
  */
-public class FileCache implements Serializable {
+public interface FileCache {
+    public APTFile getAPT();
 
-    static final long serialVersionUID = 7780355351879596673L;
+    public APTFile getAPTLight();
 
-    /*package-local*/ AST ast;
-    /*package-local*/ List/*<String>*/ includes;
-
-    public FileCache(AST ast, List/*<String>*/ includes) {
-        this.ast = ast;
-        this.includes = includes;
-    }
+    public AST getAST(APTPreprocState preprocState);
     
-    public AST getAST() {
-        return ast;
-    }
-    
-    public List/*<String>*/ getIncludes() {
-        return includes;
-    }
 }

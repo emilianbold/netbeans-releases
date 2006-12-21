@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.Vector;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 
 public class VectorConfiguration {
     private VectorConfiguration master;
@@ -79,11 +80,10 @@ public class VectorConfiguration {
 	String option = ""; // NOI8N
 	String[] values = getValueAsArray();
 	for (int i = 0; i < values.length; i++)
-	    option += prependOption + values[i] + " "; // NOI8N
+	    option += prependOption + IpeUtils.escapeSpaces(values[i]) + " "; // NOI8N
 	return option;
     }
-	
-
+    
     // Clone and Assign
     public void assign(VectorConfiguration conf) {
         setDirty(!this.equals(conf));
