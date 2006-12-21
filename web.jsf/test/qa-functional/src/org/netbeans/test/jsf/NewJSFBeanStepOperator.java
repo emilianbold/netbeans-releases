@@ -19,14 +19,18 @@
 
 package org.netbeans.test.jsf;
 
+import javax.swing.JComboBox;
+import javax.swing.JTextField;
 import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jemmy.operators.*;
-import org.netbeans.jemmy.util.NameComponentChooser;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JTextAreaOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+
 
 /** Class implementing all necessary methods for handling "New JSF Managed Bean" NbDialog.
  *
  * @author luke
- * @version 1.0
  */
 public class NewJSFBeanStepOperator extends WizardOperator {
 
@@ -34,10 +38,9 @@ public class NewJSFBeanStepOperator extends WizardOperator {
      */
     public NewJSFBeanStepOperator() {
         super("New JSF Managed Bean");
+        checkPanel("Name and Location");
     }
 
-    private JLabelOperator _lblSteps;
-    private JListOperator _lstSteps;
     private JLabelOperator _lblNameAndLocation;
     private JLabelOperator _lblClassName;
     private JTextFieldOperator _txtClassName;
@@ -61,26 +64,6 @@ public class NewJSFBeanStepOperator extends WizardOperator {
     //******************************
     // Subcomponents definition part
     //******************************
-
-    /** Tries to find "Steps" JLabel in this dialog.
-     * @return JLabelOperator
-     */
-    public JLabelOperator lblSteps() {
-        if (_lblSteps==null) {
-            _lblSteps = new JLabelOperator(this, "Steps");
-        }
-        return _lblSteps;
-    }
-
-    /** Tries to find null JList in this dialog.
-     * @return JListOperator
-     */
-    public JListOperator lstSteps() {
-        if (_lstSteps==null) {
-            _lstSteps = new JListOperator(this);
-        }
-        return _lstSteps;
-    }
 
     /** Tries to find "Name and Location" JLabel in this dialog.
      * @return JLabelOperator
@@ -107,7 +90,7 @@ public class NewJSFBeanStepOperator extends WizardOperator {
      */
     public JTextFieldOperator txtClassName() {
         if (_txtClassName==null) {
-            _txtClassName = new JTextFieldOperator(this);
+            _txtClassName = new JTextFieldOperator((JTextField)lblClassName().getLabelFor());
         }
         return _txtClassName;
     }
@@ -127,7 +110,7 @@ public class NewJSFBeanStepOperator extends WizardOperator {
      */
     public JTextFieldOperator txtProject() {
         if (_txtProject==null) {
-            _txtProject = new JTextFieldOperator(this, 1);
+            _txtProject = new JTextFieldOperator((JTextField)lblProject().getLabelFor());
         }
         return _txtProject;
     }
@@ -147,7 +130,7 @@ public class NewJSFBeanStepOperator extends WizardOperator {
      */
     public JComboBoxOperator cboLocation() {
         if (_cboLocation==null) {
-            _cboLocation = new JComboBoxOperator(this);
+            _cboLocation = new JComboBoxOperator((JComboBox)lblLocation().getLabelFor());
         }
         return _cboLocation;
     }
@@ -167,7 +150,7 @@ public class NewJSFBeanStepOperator extends WizardOperator {
      */
     public JComboBoxOperator cboPackage() {
         if (_cboPackage==null) {
-            _cboPackage = new JComboBoxOperator(this, 1);
+            _cboPackage = new JComboBoxOperator((JComboBox)lblPackage().getLabelFor());
         }
         return _cboPackage;
     }
@@ -187,7 +170,7 @@ public class NewJSFBeanStepOperator extends WizardOperator {
      */
     public JTextFieldOperator txtCreatedFile() {
         if (_txtCreatedFile==null) {
-            _txtCreatedFile = new JTextFieldOperator(this, 3);
+            _txtCreatedFile = new JTextFieldOperator((JTextField)lblCreatedFile().getLabelFor());
         }
         return _txtCreatedFile;
     }
@@ -207,7 +190,7 @@ public class NewJSFBeanStepOperator extends WizardOperator {
      */
     public JComboBoxOperator cboConfigurationFile() {
         if (_cboConfigurationFile==null) {
-            _cboConfigurationFile = new JComboBoxOperator(this, 2);
+            _cboConfigurationFile = new JComboBoxOperator((JComboBox)lblConfigurationFile().getLabelFor());
         }
         return _cboConfigurationFile;
     }
@@ -227,7 +210,7 @@ public class NewJSFBeanStepOperator extends WizardOperator {
      */
     public JComboBoxOperator cboScope() {
         if (_cboScope==null) {
-            _cboScope = new JComboBoxOperator(this, 3);
+            _cboScope = new JComboBoxOperator((JComboBox)lblScope().getLabelFor());
         }
         return _cboScope;
     }
@@ -405,10 +388,6 @@ public class NewJSFBeanStepOperator extends WizardOperator {
         txtBeanDescription().typeText(text);
     }
 
-    
-
-
-
     //*****************************************
     // High-level functionality definition part
     //*****************************************
@@ -416,8 +395,6 @@ public class NewJSFBeanStepOperator extends WizardOperator {
     /** Performs verification of NewJSFManagedBean by accessing all its components.
      */
     public void verify() {
-        lblSteps();
-        lstSteps();
         lblNameAndLocation();
         lblClassName();
         txtClassName();

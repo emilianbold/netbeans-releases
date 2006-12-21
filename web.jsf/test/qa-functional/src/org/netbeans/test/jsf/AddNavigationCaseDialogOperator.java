@@ -19,15 +19,22 @@
 
 package org.netbeans.test.jsf;
 
-import org.netbeans.jemmy.operators.*;
-import org.netbeans.jemmy.util.NameComponentChooser;
+import javax.swing.JComboBox;
+import javax.swing.JTextField;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JTextAreaOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+
 
 /** Class implementing all necessary methods for handling "Add Navigation Case" NbDialog.
  *
  * @author luke
- * @version 1.0
  */
-public class AddNavigationCaseDialogOperator extends JDialogOperator {
+public class AddNavigationCaseDialogOperator extends NbDialogOperator {
 
     /** Creates new AddNavigationCase that can handle it.
      */
@@ -37,8 +44,6 @@ public class AddNavigationCaseDialogOperator extends JDialogOperator {
 
     private JLabelOperator _lblFromView;
     private JComboBoxOperator _cboFromView;
-    public static final String ITEM_ = "";
-    public static final String ITEM_WELCOMEJSFJSP = "/welcomeJSF.jsp";
     private JButtonOperator _btBrowse;
     private JLabelOperator _lblFromAction;
     private JTextFieldOperator _txtFromAction;
@@ -50,10 +55,7 @@ public class AddNavigationCaseDialogOperator extends JDialogOperator {
     private JLabelOperator _lblRuleDescription;
     private JTextAreaOperator _txtRuleDescription;
     private JComboBoxOperator _cboToView;
-    private JLabelOperator _lblJLabel;
     private JButtonOperator _btAdd;
-    private JButtonOperator _btCancel;
-    private JButtonOperator _btHelp;
 
 
     //******************************
@@ -75,7 +77,7 @@ public class AddNavigationCaseDialogOperator extends JDialogOperator {
      */
     public JComboBoxOperator cboFromView() {
         if (_cboFromView==null) {
-            _cboFromView = new JComboBoxOperator(this);
+            _cboFromView = new JComboBoxOperator((JComboBox)lblFromView().getLabelFor());
         }
         return _cboFromView;
     }
@@ -105,7 +107,7 @@ public class AddNavigationCaseDialogOperator extends JDialogOperator {
      */
     public JTextFieldOperator txtFromAction() {
         if (_txtFromAction==null) {
-            _txtFromAction = new JTextFieldOperator(this, 1);
+            _txtFromAction = new JTextFieldOperator((JTextField)lblFromAction().getLabelFor());
         }
         return _txtFromAction;
     }
@@ -126,7 +128,7 @@ public class AddNavigationCaseDialogOperator extends JDialogOperator {
      */
     public JTextFieldOperator txtFromOutcome() {
         if (_txtFromOutcome==null) {
-            _txtFromOutcome = new JTextFieldOperator(this, 2);
+            _txtFromOutcome = new JTextFieldOperator((JTextField)lblFromOutcome().getLabelFor());
         }
         return _txtFromOutcome;
     }
@@ -186,19 +188,9 @@ public class AddNavigationCaseDialogOperator extends JDialogOperator {
      */
     public JComboBoxOperator cboToView() {
         if (_cboToView==null) {
-            _cboToView = new JComboBoxOperator(this, 1);
+            _cboToView = new JComboBoxOperator((JComboBox)lblToView().getLabelFor());
         }
         return _cboToView;
-    }
-
-    /** Tries to find " " JLabel in this dialog.
-     * @return JLabelOperator
-     */
-    public JLabelOperator lblJLabel() {
-        if (_lblJLabel==null) {
-            _lblJLabel = new JLabelOperator(this, " ", 5);
-        }
-        return _lblJLabel;
     }
 
     /** Tries to find "Add" JButton in this dialog.
@@ -214,27 +206,6 @@ public class AddNavigationCaseDialogOperator extends JDialogOperator {
     public void add(){
         btAdd().push();
     }
-
-    /** Tries to find "Cancel" JButton in this dialog.
-     * @return JButtonOperator
-     */
-    public JButtonOperator btCancel() {
-        if (_btCancel==null) {
-            _btCancel = new JButtonOperator(this, "Cancel");
-        }
-        return _btCancel;
-    }
-
-    /** Tries to find "Help" JButton in this dialog.
-     * @return JButtonOperator
-     */
-    public JButtonOperator btHelp() {
-        if (_btHelp==null) {
-            _btHelp = new JButtonOperator(this, "Help");
-        }
-        return _btHelp;
-    }
-
 
     //****************************************
     // Low-level functionality definition part
@@ -366,20 +337,6 @@ public class AddNavigationCaseDialogOperator extends JDialogOperator {
         cboToView().typeText(text);
     }
 
-    
-
-    /** clicks on "Cancel" JButton
-     */
-    public void cancel() {
-        btCancel().push();
-    }
-
-    /** clicks on "Help" JButton
-     */
-    public void help() {
-        btHelp().push();
-    }
-
 
     //*****************************************
     // High-level functionality definition part
@@ -401,12 +358,9 @@ public class AddNavigationCaseDialogOperator extends JDialogOperator {
         lblRuleDescription();
         txtRuleDescription();
         cboToView();
-        lblJLabel();
         btAdd();
         btCancel();
         btHelp();
     }
-
-    
 }
 

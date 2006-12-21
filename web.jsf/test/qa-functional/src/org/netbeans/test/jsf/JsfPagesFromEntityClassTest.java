@@ -20,6 +20,7 @@
 package org.netbeans.test.jsf;
 
 import java.io.IOException;
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.Bundle;
@@ -53,7 +54,7 @@ import org.netbeans.jellytools.actions.Action;
  *
  * @author luke
  */
-public class JsfPagesFromEntityClassTest extends DbJellyTestCase{
+public class JsfPagesFromEntityClassTest extends JellyTestCase{
     public static String PROJECT_LOCATION=System.getProperty("xtest.tmpdir");
     public static String PROJECT_NAME="myjsfproject";
     public static String J2EE_VERSION="Java EE 5";
@@ -106,7 +107,6 @@ public class JsfPagesFromEntityClassTest extends DbJellyTestCase{
         NewWebProjectFrameworkStep frameworkStep=new NewWebProjectFrameworkStep();
         frameworkStep.selectJsf();
         frameworkStep.finish();
-        sleep(1000);
         ProjectSupport.waitScanFinished();
     }
     

@@ -22,25 +22,4 @@ Microsystems, Inc. All Rights Reserved.
     
     <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
     
-     
-    <target name="runidetest" depends="init,init-cp,set-environment">
-        <executeTests pluginname="ide">
-            <classpath>
-                <path refid="test.qa-functional.run.cp"/>
-                <path refid="jemmy.and.jelly.path"/>
-            </classpath>
-           
-        </executeTests>
-    </target>
-    
-    <target name="set-environment">
-        <condition property="xtest.userdata|server.path" value="e:\\space\\AppServer">
-            <os family="windows"/>
-        </condition>
-        <condition property="xtest.userdata|server.path" value="/space/appserver">
-            <os family="unix"/>
-        </condition>
-    </target>
-    
-    
 </project>

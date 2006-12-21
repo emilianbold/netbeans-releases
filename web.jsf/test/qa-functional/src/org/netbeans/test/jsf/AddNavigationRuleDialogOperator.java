@@ -19,14 +19,18 @@
 
 package org.netbeans.test.jsf;
 
-import org.netbeans.jemmy.operators.*;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JTextAreaOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+
 
 /** Class implementing all necessary methods for handling "Add Navigation Rule" NbDialog.
  *
  * @author luke
- * @version 1.0
  */
-public class AddNavigationRuleDialogOperator extends JDialogOperator {
+public class AddNavigationRuleDialogOperator extends NbDialogOperator {
 
     /** Creates new AddNavigationRule that can handle it.
      */
@@ -39,10 +43,7 @@ public class AddNavigationRuleDialogOperator extends JDialogOperator {
     private JButtonOperator _btBrowse;
     private JLabelOperator _lblRuleDescription;
     private JTextAreaOperator _txtRuleDescription;
-    private JLabelOperator _lblJLabel;
     private JButtonOperator _btAdd;
-    private JButtonOperator _btCancel;
-    private JButtonOperator _btHelp;
 
 
     //******************************
@@ -99,16 +100,6 @@ public class AddNavigationRuleDialogOperator extends JDialogOperator {
         return _txtRuleDescription;
     }
 
-    /** Tries to find " " JLabel in this dialog.
-     * @return JLabelOperator
-     */
-    public JLabelOperator lblJLabel() {
-        if (_lblJLabel==null) {
-            _lblJLabel = new JLabelOperator(this, " ", 2);
-        }
-        return _lblJLabel;
-    }
-
     /** Tries to find "Add" JButton in this dialog.
      * @return JButtonOperator
      */
@@ -118,27 +109,6 @@ public class AddNavigationRuleDialogOperator extends JDialogOperator {
         }
         return _btAdd;
     }
-
-    /** Tries to find "Cancel" JButton in this dialog.
-     * @return JButtonOperator
-     */
-    public JButtonOperator btCancel() {
-        if (_btCancel==null) {
-            _btCancel = new JButtonOperator(this, "Cancel");
-        }
-        return _btCancel;
-    }
-
-    /** Tries to find "Help" JButton in this dialog.
-     * @return JButtonOperator
-     */
-    public JButtonOperator btHelp() {
-        if (_btHelp==null) {
-            _btHelp = new JButtonOperator(this, "Help");
-        }
-        return _btHelp;
-    }
-
 
     //****************************************
     // Low-level functionality definition part
@@ -198,19 +168,6 @@ public class AddNavigationRuleDialogOperator extends JDialogOperator {
         btAdd().push();
     }
 
-    /** clicks on "Cancel" JButton
-     */
-    public void cancel() {
-        btCancel().push();
-    }
-
-    /** clicks on "Help" JButton
-     */
-    public void help() {
-        btHelp().push();
-    }
-
-
     //*****************************************
     // High-level functionality definition part
     //*****************************************
@@ -223,12 +180,9 @@ public class AddNavigationRuleDialogOperator extends JDialogOperator {
         btBrowse();
         lblRuleDescription();
         txtRuleDescription();
-        lblJLabel();
         btAdd();
         btCancel();
         btHelp();
     }
-
-    
 }
 

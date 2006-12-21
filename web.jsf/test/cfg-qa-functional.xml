@@ -19,24 +19,22 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<mconfig name="Configuration of Jsf functional tests">
+<mconfig name="Configuration of JSF functional tests">
 
-    <testbag testattribs="stable" executor="ide" name="Jsf Functional test">
+    <testbag testattribs="stable" executor="ide-appserver" name="JSF Functional test">
         <testset dir="qa-functional/src">
             <patternset>
                <include name="org/netbeans/test/jsf/JsfFunctionalTest.class"/>
+               <!--
                <include name="org/netbeans/test/jsf/JsfPagesFromEntityClassTest.class"/>
                <include name="**/CompletionTest.class"/>
+               -->
             </patternset>
         </testset>
     </testbag>
-    
-   
- 
-    <!-- ide executor - use this one if you plan to run your tests inside IDE (internally).
-    Similarly as with code executor, you can create your own to 
-    prepare some neccessary stuff before running tests. -->
+
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
+    <executor name="ide-appserver" antfile="build-qa-functional.xml" target="runidetest-with-appserver"/> 
     <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
 </mconfig>
 
