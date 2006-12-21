@@ -26,6 +26,6 @@ Microsystems, Inc. All Rights Reserved.
 	
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="unit"/>
-    <property name="xtest.attribs" value="stable"/>
+    <property name="xtest.attribs" value="stable,validation"/>
 </project>
 

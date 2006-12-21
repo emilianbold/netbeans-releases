@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="Configuration of JSF functional tests">
 
-    <testbag testattribs="stable" executor="ide-appserver" name="JSF Functional test">
+    <testbag testattribs="validation" executor="ide-appserver" name="JSF Functional test">
         <testset dir="qa-functional/src">
             <patternset>
                <include name="org/netbeans/test/jsf/JsfFunctionalTest.class"/>
