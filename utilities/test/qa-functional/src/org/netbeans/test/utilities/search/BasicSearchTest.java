@@ -24,15 +24,11 @@
 
 package org.netbeans.test.utilities.search;
 
-import javax.swing.plaf.metal.MetalComboBoxEditor;
-import org.netbeans.jellytools.Bundle;
+import java.util.Hashtable;
+import java.util.Iterator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentChooser;
-import org.netbeans.jemmy.ComponentChooser;
-import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.junit.NbTestCase;
@@ -45,9 +41,6 @@ import org.netbeans.test.utilities.testcase.Utilities;
  * @author Max Sauer
  */
 public class BasicSearchTest extends NbTestCase {
-    /** Create test Dialog label */
-    protected static final String FIND_DIALOG = Bundle.getString(
-            "org.netbeans.modules.search.Bundle", "TEXT_TITLE_CUSTOMIZE");
     
     /** path to sample files */
     private static final String TEST_PACKAGE_PATH =
@@ -68,22 +61,14 @@ public class BasicSearchTest extends NbTestCase {
     }
     
     public void testSearchForClass() {
-        Node pn = new ProjectsTabOperator().getProjectRootNode(
-                Utilities.TEST_PROJECT_NAME);
-        pn.select();
-        Node n = new Node(pn, Utilities.SRC_PACKAGES_PATH);
-        n.select();
-        Utilities.takeANap(1000);
-        Utilities.pushFindPopup(n);
-        
-        NbDialogOperator ndo = new NbDialogOperator(FIND_DIALOG);
+        NbDialogOperator ndo = Utilities.getFindDialog();
         JTabbedPaneOperator jtpo = new JTabbedPaneOperator(ndo, 0);
         jtpo.selectPage(0);
         
         JComboBoxOperator jcbo = new JComboBoxOperator(ndo,
                 new JComboBoxOperator.JComboBoxFinder());
         jcbo.enterText("class"); //enter 'class' in search comboBox and press [Enter]
-
+        
         SearchResultsOperator sro = new SearchResultsOperator();
         assertTrue("Junit Output window should be visible", sro.isVisible());
         System.out.println("## Search output opened");
@@ -91,6 +76,51 @@ public class BasicSearchTest extends NbTestCase {
         sro.close();
         assertFalse("Search window is visible," +
                 "should be closed", sro.isShowing());
+    }
+    
+    /**
+     * Test if searched items are remembered inside combobox
+     */
+    public void testRememberSearchesInsideComboBox() {
+        //setup ten searches
+        for (int i = 0; i < 10; i++) {
+            NbDialogOperator ndo = Utilities.getFindDialog();
+            JTabbedPaneOperator jtpo = new JTabbedPaneOperator(ndo, 0);
+            jtpo.selectPage(0);
+            
+            JComboBoxOperator jcbo = new JComboBoxOperator(ndo,
+                    new JComboBoxOperator.JComboBoxFinder());
+            jcbo.enterText("a" + i);
+            Utilities.takeANap(500);
+        }
+        //check
+        NbDialogOperator ndo = Utilities.getFindDialog();
+        JTabbedPaneOperator jtpo = new JTabbedPaneOperator(ndo, 0);
+        jtpo.selectPage(0);
+        
+        JComboBoxOperator jcbo = new JComboBoxOperator(ndo,
+                new JComboBoxOperator.JComboBoxFinder());
+                
+        for (int i = 0; i < jcbo.getItemCount() - 1; i++) {
+            assertEquals("Found " + jcbo.getItemAt(i).toString() +" in search combo" +
+                    "expected" + new Integer(9-i).toString() + ".",
+                    jcbo.getItemAt(i).toString(), "a" + new Integer(9-i).toString());
+        }
+        assertEquals("Expected 'class', found: " + 
+                jcbo.getItemAt(jcbo.getItemCount()-1),
+                jcbo.getItemAt(jcbo.getItemCount()-1),  "class");
+
+    }
+    
+    
+    private String soutHashTable(Hashtable ht) {
+        StringBuffer sb = new StringBuffer();
+        Iterator itv = ht.values().iterator();
+        for (Iterator it = ht.keySet().iterator(); it.hasNext();) {
+            sb.append("KEY: " + it.next() + " Value: " + itv.next() + "\n");
+            
+        }
+        return sb.toString();
     }
     
     

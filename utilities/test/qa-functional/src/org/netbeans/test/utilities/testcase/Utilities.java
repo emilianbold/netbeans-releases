@@ -38,6 +38,12 @@ import org.openide.actions.SaveAllAction;
  * @author Max Sauer
  */
 public class Utilities {
+    
+    /** Find Dialog label */
+    public  static final String FIND_DIALOG = Bundle.getString(
+            "org.netbeans.modules.search.Bundle", "TEXT_TITLE_CUSTOMIZE");
+    
+    
     /** name of sample project */
     public static final String TEST_PROJECT_NAME = "UtilitiesTestProject";
     
@@ -166,6 +172,18 @@ public class Utilities {
         for(int i = 0; i < 7; i++) {
             new JCheckBoxOperator(ndo, i).setSelected(true);
         }
+    }
+    
+    public static NbDialogOperator getFindDialog() {
+        Node pn = new ProjectsTabOperator().getProjectRootNode(
+                Utilities.TEST_PROJECT_NAME);
+        pn.select();
+        Node n = new Node(pn, Utilities.SRC_PACKAGES_PATH);
+        n.select();
+        Utilities.takeANap(1000);
+        Utilities.pushFindPopup(n);
+        
+        return new NbDialogOperator(FIND_DIALOG);
     }
     
     /**
