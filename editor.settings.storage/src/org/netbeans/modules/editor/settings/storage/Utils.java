@@ -261,7 +261,7 @@ public class Utils {
                         LOG.log(Level.WARNING, "Can't find resource bundle for " + fo.getPath(), ex); //NOI18N
                     }
                 } else {
-                    LOG.log(Level.WARNING, "The file " + fo.getPath() + " does not specify its resource bundle.", new Throwable("@@@")); //NOI18N
+                    //[PENDING][HACK] LOG.log(Level.WARNING, "The file " + fo.getPath() + " does not specify its resource bundle.", new Throwable("@@@")); //NOI18N
                 }
 
                 if (bundleInfo == null) {
