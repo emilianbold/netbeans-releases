@@ -22,7 +22,7 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.Utilities;
@@ -52,13 +52,14 @@ public class JavaJSPCompletionProvider implements CompletionProvider {
         //delegate to java cc provider if the context is really java code
         int offset = component.getCaret().getDot();
         TokenHierarchy tokenHierarchy = TokenHierarchy.get(Utilities.getDocument(component));
-        TokenSequence tokenSequence = JspSyntaxSupport.tokenSequence(tokenHierarchy, JavaTokenId.language(), offset);
-        if(tokenSequence != null) {
+        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+        
+        if(tokenSequence.move(offset) != Integer.MAX_VALUE 
+                && tokenSequence.token().id() == JspTokenId.SCRIPTLET) {
             return new AsyncCompletionTask(new EmbeddedJavaCompletionQuery(component, queryType), component);
-        } else {
-            //not java context =>
-            return null;
         }
+        
+        return null;
     }
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {

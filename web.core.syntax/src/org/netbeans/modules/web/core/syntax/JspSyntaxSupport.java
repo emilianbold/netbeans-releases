@@ -147,7 +147,21 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         this(doc, false);
     }
     
-    
+    public String[] getImports(){
+        JspParserAPI.ParseResult pre = getParseResult();
+        if (pre != null){
+            PageInfo pi = pre.getPageInfo();
+            if(pi == null) {
+                //report error but do not break the entire CC
+                ErrorManager.getDefault().notify(ErrorManager.WARNING, new NullPointerException("PageInfo obtained from JspParserAPI.ParseResult is null!"));
+                return null;
+            }
+            List<String> imports = pi.getImports();
+            return imports.toArray(new String[imports.size()]);
+        }
+        
+        return null;
+    }
     
     public boolean isXmlSyntax(){
         return isXmlSyntax;
@@ -228,9 +242,9 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     }
     
     protected SyntaxSupport createSyntaxSupport(Class syntaxSupportClass) {
-//        if (syntaxSupportClass.isAssignableFrom(JspJavaSyntaxSupport.class)) {
-//            return new JspJavaSyntaxSupport(getDocument(), this);
-//        }
+        //        if (syntaxSupportClass.isAssignableFrom(JspJavaSyntaxSupport.class)) {
+        //            return new JspJavaSyntaxSupport(getDocument(), this);
+        //        }
         SyntaxSupport support = super.createSyntaxSupport(syntaxSupportClass);
         if (support != null)
             return support;
@@ -765,28 +779,28 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 new TagInfo("attribute", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2014.html",             // NOI18N
                         null, null, new TagAttributeInfo[] { new TagAttributeInfo("name", true, url + "syntaxref2014.html#1003581#1006483", false),           // NOI18N
                         new TagAttributeInfo("trim", false, url + "syntaxref2014.html#1006483#1003583", false)}),           // NOI18N
-                new TagInfo("body", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2015.html#1006731#1003768",             // NOI18N
+                        new TagInfo("body", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2015.html#1006731#1003768",             // NOI18N
                         null, null, new TagAttributeInfo[]{}),
-                new TagInfo("element", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2016.html#1003696#1003708",             // NOI18N
+                        new TagInfo("element", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2016.html#1003696#1003708",             // NOI18N
                         null, null, new TagAttributeInfo[] { new TagAttributeInfo("name", true, url + "syntaxref2016.html#1003706#1003708", false)}),           // NOI18N
-                new TagInfo("expression", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref205.html#1004353#11268",                 // NOI18N
+                        new TagInfo("expression", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref205.html#1004353#11268",                 // NOI18N
                         null, null, new TagAttributeInfo[] {}),
-                new TagInfo("fallback", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2023.html#11583#19029",    // NOI18N
+                        new TagInfo("fallback", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2023.html#11583#19029",    // NOI18N
                         null, null, new TagAttributeInfo[] {}),
-                new TagInfo("forward", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2018.html#1003349#15708", // NOI18N
+                        new TagInfo("forward", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2018.html#1003349#15708", // NOI18N
                         null, null, new TagAttributeInfo[] { new TagAttributeInfo("page", true, url + "syntaxref2018.html#15704#15708", true)}),       // NOI18N
-                new TagInfo("getProperty", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref2019.html#8820#9201",           // NOI18N
+                        new TagInfo("getProperty", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref2019.html#8820#9201",           // NOI18N
                         null, null, new TagAttributeInfo[] { new TagAttributeInfo("name", true, url + "syntaxref2019.html#15748#10919", false),       // NOI18N
                         new TagAttributeInfo("property", true, url + "syntaxref2019.html#10919#19482", false)}), // NOI18N
-                new TagInfo("include", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2020.html#8828#9228",              // NOI18N
+                        new TagInfo("include", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2020.html#8828#9228",              // NOI18N
                         null, null, new TagAttributeInfo[] { new TagAttributeInfo("flush", true, url + "syntaxref2020.html#17145#18376", false),       // NOI18N
                         new TagAttributeInfo("page", true, url + "syntaxref2020.html#10930#17145", true)}),       // NOI18N
-                new TagInfo("param", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref2023.html#11538#11583",                // NOI18N
+                        new TagInfo("param", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref2023.html#11538#11583",                // NOI18N
                         null, null, new TagAttributeInfo[] { new TagAttributeInfo("name", true, url + "syntaxref2023.html#11538#11583", false),        // NOI18N
                         new TagAttributeInfo("value", true, url + "syntaxref2023.html#11538#11583", true)}),      // NOI18N
-                new TagInfo("params", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2023.html#11538#11583",                 // NOI18N
+                        new TagInfo("params", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2023.html#11538#11583",                 // NOI18N
                         null, null, new TagAttributeInfo[] {}),
-                new TagInfo("plugin", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2023.html#1004158#19029",               // NOI18N
+                        new TagInfo("plugin", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2023.html#1004158#19029",               // NOI18N
                         null, null, new TagAttributeInfo[] { new TagAttributeInfo("align", false, url + "syntaxref2023.html#11516#11518", false),      // NOI18N
                         new TagAttributeInfo("archive", false, url + "syntaxref2023.html#11553#11516", false),    // NOI18N
                         new TagAttributeInfo("code", true, url + "syntaxref2023.html#11514#11515", false),        // NOI18N
@@ -800,14 +814,14 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                         new TagAttributeInfo("type", true, url + "syntaxref2023.html#10935#11514", false),        // NOI18N
                         new TagAttributeInfo("vspace", false, url + "syntaxref2023.html#11568#11520", false),     // NOI18N
                         new TagAttributeInfo("width", false, url + "syntaxref2023.html#11518#11568", false)}),    // NOI18N
-                new TagInfo("setProperty", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref2025.html#8856#9329",           // NOI18N
+                        new TagInfo("setProperty", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref2025.html#8856#9329",           // NOI18N
                         null, null, new TagAttributeInfo[] { new TagAttributeInfo("name", true, url + "syntaxref2025.html#17612#1001786", true),        // NOI18N
                         new TagAttributeInfo("param", false, url + "syntaxref2025.html#9919#20483", false),      // NOI18N
                         new TagAttributeInfo("property", false, url + "syntaxref2025.html#1001786#9329", false),   // NOI18N
                         new TagAttributeInfo("value", false, url + "syntaxref2025.html#20483#9329", true)}),     // NOI18N
-                new TagInfo("text", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2026.html",
+                        new TagInfo("text", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2026.html",
                         null, null, new TagAttributeInfo[]{}),
-                new TagInfo("useBean", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2027.html#8865#9359",     // NOI18N
+                        new TagInfo("useBean", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2027.html#8865#9359",     // NOI18N
                         null, null, new TagAttributeInfo[] { new TagAttributeInfo("beanName", false, url + "syntaxref2027.html#15804#9359", false),   // NOI18N
                         new TagAttributeInfo("class", false, url + "syntaxref2027.html#10968#19433", false),      // NOI18N
                         new TagAttributeInfo("id", true, url + "syntaxref2027.html#10964#10966", false),         // NOI18N
@@ -848,7 +862,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             directiveJspData = new TagInfo[] {
                 new TagInfo("include", null, TagInfo.BODY_CONTENT_EMPTY, url+"syntaxref209.html#1003408#8975", null, null,            // NOI18N
                         new TagAttributeInfo[] { new TagAttributeInfo("file", true, url + "syntaxref209.html#16836#10636", false)}),           // NOI18N
-                new TagInfo("page", null, TagInfo.BODY_CONTENT_EMPTY, url+"syntaxref2010.html", null, null,            // NOI18N
+                        new TagInfo("page", null, TagInfo.BODY_CONTENT_EMPTY, url+"syntaxref2010.html", null, null,            // NOI18N
                         new TagAttributeInfo[] { new TagAttributeInfo("autoFlush", false, url+"syntaxref2010.html#15673#15675", false),           // NOI18N
                         new TagAttributeInfo("buffer", false, url+"syntaxref2010.html#15671#15673", false),           // NOI18N
                         new TagAttributeInfo("contentType", false, url+"syntaxref2010.html#15683#1001361", false),           // NOI18N
@@ -862,7 +876,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                         new TagAttributeInfo("language", false, url+"syntaxref2010.html#15663#15665", false), // NOI18N
                         new TagAttributeInfo("pageEncoding", false, url+"syntaxref2010.html#1001361#1011216", false), // NOI18N
                         new TagAttributeInfo("session", false, url+"syntaxref2010.html#15669#15671", false)}), // NOI18N
-                new TagInfo("taglib", null, TagInfo.BODY_CONTENT_EMPTY, url+"syntaxref2012.html#1003416#1002041", null, null,  // NOI18N
+                        new TagInfo("taglib", null, TagInfo.BODY_CONTENT_EMPTY, url+"syntaxref2012.html#1003416#1002041", null, null,  // NOI18N
                         new TagAttributeInfo[] { new TagAttributeInfo("prefix", true, url+"syntaxref2012.html#1011290#1002041", false), // NOI18N
                         new TagAttributeInfo("uri", false, url+"syntaxref2012.html#10721#1011294", false), // NOI18N
                         new TagAttributeInfo("tagdir", false, url + "syntaxref2012.html#1011294#1011290", false)}) // NOI18N
@@ -880,8 +894,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                         new TagAttributeInfo("required", false, url + "syntaxref208.html#1004655#1004657", false),                             // NOI18N
                         new TagAttributeInfo("rtexprvalue", false, url + "syntaxref208.html#1004666#1004669", false),                          // NOI18N
                         new TagAttributeInfo("type", false, url + "syntaxref208.html#1004669#1004672", false)}),                                   // NOI18N
-                directiveJspData[0],
-                new TagInfo("tag", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref2011.html", null, null,                              // NOI18N
+                        directiveJspData[0],
+                        new TagInfo("tag", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref2011.html", null, null,                              // NOI18N
                         new TagAttributeInfo[] { new TagAttributeInfo("body-content", false, url + "syntaxref2011.html#1005164#005172", false),                 // NOI18N
                         new TagAttributeInfo("description", false, url + "syntaxref2011.html#1005196#1005198", false),                  // NOI18N
                         new TagAttributeInfo("display-name", false, url + "syntaxref2011.html#1005161#1005164", false),                 // NOI18N
@@ -894,8 +908,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                         new TagAttributeInfo("language", false, url + "syntaxref2011.html#1005201#1005203", false),                     // NOI18N
                         new TagAttributeInfo("pageEncoding", false, url + "syntaxref2011.html#1005209#1005214", false),                  // NOI18N
                         new TagAttributeInfo("small-icon", false, url + "syntaxref2011.html#1005190#1005193", false)}),                     // NOI18N
-                directiveJspData[2],
-                new TagInfo("variable", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref2013.html#15694#1003563", null, null,                             // NOI18N
+                        directiveJspData[2],
+                        new TagInfo("variable", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref2013.html#15694#1003563", null, null,                             // NOI18N
                         new TagAttributeInfo[] { new TagAttributeInfo("alias", false, url + "syntaxref2013.html#1005914#1005956", false),                          // NOI18N
                         new TagAttributeInfo("declare", false, url + "syntaxref2013.html#1006001#1006019", false),                          // NOI18N
                         new TagAttributeInfo("description", false, url + "syntaxref2013.html#1005991#1003563", false),                      // NOI18N
@@ -910,14 +924,14 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             commonXMLTagDatas = new TagInfo[]{
                 new TagInfo("declaration", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref204.html#10983#10991",                 // NOI18N
                         null, null, new TagAttributeInfo[] {}),
-                new TagInfo("output", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2022.html#1004130#1007521",                 // NOI18N
+                        new TagInfo("output", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2022.html#1004130#1007521",                 // NOI18N
                         null, null, new TagAttributeInfo[] {new TagAttributeInfo("doctype-public", false, "url + syntaxref2022.html#1007534#1007521", false),  // NOI18N
                         new TagAttributeInfo("doctype-root-element", false, "url + syntaxref2022.html#1007528#1007532", false),    // NOI18N
                         new TagAttributeInfo("doctype-system", false, url + "syntaxref2022.html#1007532#1007534", false),  // NOI18N
                         new TagAttributeInfo("omit-xml-declaration", false, url + "syntaxref2022.html#1007525#1007528"   , false)}),    // NOI18N
-                new TagInfo("scriptlet", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref206.html#10996#11007",                 // NOI18N
+                        new TagInfo("scriptlet", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref206.html#10996#11007",                 // NOI18N
                         null, null, new TagAttributeInfo[] {}),
-                new TagInfo("root", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref2024.html#1003283#1003311",                         // NOI18N
+                        new TagInfo("root", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref2024.html#1003283#1003311",                         // NOI18N
                         null, null, new TagAttributeInfo[] {new TagAttributeInfo("version", false, url+"syntaxref2024.html#1003299#1003301", false),
                         new TagAttributeInfo("xmlns:jsp", false, url+"syntaxref2024.html#1003297#1003299", false),
                         new TagAttributeInfo("xmlns:x", false, url+"syntaxref2024.html#1003301#1003311", false)})
@@ -926,7 +940,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             xmlJspTagDatas = new TagInfo[] {
                 new TagInfo("directive.page", null, TagInfo.BODY_CONTENT_EMPTY, directiveJspData[1].getInfoString(),   // NOI18N
                         null, null, directiveJspData[1].getAttributes()),
-                new TagInfo("directive.include", null, TagInfo.BODY_CONTENT_EMPTY, directiveJspData[1].getInfoString(),   // NOI18N
+                        new TagInfo("directive.include", null, TagInfo.BODY_CONTENT_EMPTY, directiveJspData[1].getInfoString(),   // NOI18N
                         null, null, directiveJspData[0].getAttributes()),
             };
             
@@ -951,11 +965,11 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             xmlTagFileTagDatas = new TagInfo[] {
                 new TagInfo("directive.tag", null, TagInfo.BODY_CONTENT_EMPTY, directiveTagFileData[2].getInfoString(), // NOI18N
                         null, null, directiveTagFileData[2].getAttributes()),
-                new TagInfo("directive.attribute", null, TagInfo.BODY_CONTENT_EMPTY, directiveTagFileData[0].getInfoString(), // NOI18N
+                        new TagInfo("directive.attribute", null, TagInfo.BODY_CONTENT_EMPTY, directiveTagFileData[0].getInfoString(), // NOI18N
                         null, null, directiveTagFileData[0].getAttributes()),
-                new TagInfo("directive.variable", null, TagInfo.BODY_CONTENT_EMPTY, directiveTagFileData[4].getInfoString(), // NOI18N
+                        new TagInfo("directive.variable", null, TagInfo.BODY_CONTENT_EMPTY, directiveTagFileData[4].getInfoString(), // NOI18N
                         null, null, directiveTagFileData[4].getAttributes()),
-                new TagInfo("directive.include", null, TagInfo.BODY_CONTENT_EMPTY, directiveJspData[1].getInfoString(),   // NOI18N
+                        new TagInfo("directive.include", null, TagInfo.BODY_CONTENT_EMPTY, directiveJspData[1].getInfoString(),   // NOI18N
                         null, null, directiveJspData[0].getAttributes())
             };
             
@@ -993,8 +1007,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                     rValue = standardTagTagDatas;
                 else
                     rValue = standardJspTagDatas;
-        }
-        else 
+        } else
             rValue = new TagInfo[0];
         return rValue;
     }
@@ -1082,34 +1095,34 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             return null;
         
         // forward to the offset where our token definitely is
-//System.out.println("looking for item at offset " + offset);
-//System.out.println("backitem " + backItem);
+        //System.out.println("looking for item at offset " + offset);
+        //System.out.println("backitem " + backItem);
         TokenItem item;
         while (true) {
             item = backItem.getNext();
-//System.out.println("looking at item " + item);
+            //System.out.println("looking at item " + item);
             if (item == null) {
                 item = backItem;
-//System.out.println("break1");
+                //System.out.println("break1");
                 break;
             }
             if (item.getOffset() > offset) {
                 item = backItem;
-//System.out.println("break2");
+                //System.out.println("break2");
                 break;
             }
             backItem = item;
-//System.out.println("backitem2 " + backItem);
+            //System.out.println("backitem2 " + backItem);
         }
         
-//System.out.println("REAL Token at offset " + offset + " is " + item );
+        //System.out.println("REAL Token at offset " + offset + " is " + item );
         TokenItem adjustedItem = (item.getOffset() == offset) ?
             item.getPrevious() : item;
-//System.out.println("ADJUSTED Token at offset " + offset + " is " + adjustedItem );
+        //System.out.println("ADJUSTED Token at offset " + offset + " is " + adjustedItem );
         
         TokenID id = (adjustedItem == null) ?
             item.getTokenID() : adjustedItem.getTokenID();
-//System.out.println("TokenID (adjusted) at offset " + offset + " is " + id );
+        //System.out.println("TokenID (adjusted) at offset " + offset + " is " + id );
         return adjustedItem;
     }
     
@@ -1132,7 +1145,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 id == JspDirectiveTokenContext.ERROR ||
                 id == JspDirectiveTokenContext.TEXT
                 ) {
-//System.out.println("uninteresting JspTag token");
+            //System.out.println("uninteresting JspTag token");
             return null;
         }
         
@@ -1176,7 +1189,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             // or COMMENT
             TokenItem elementStart = item;
             do {
-//System.out.println("backtracking, elementStart = " + elementStart);
+                //System.out.println("backtracking, elementStart = " + elementStart);
                 if (elementStart == null)
                     return null;
                 if (elementStart.getTokenID() == JspTagTokenContext.SYMBOL
@@ -1219,7 +1232,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 }
                 elementStart = elementStart.getPrevious(); // now non-null
                 if (!isScriptingOrContentToken(elementStart)
-                || elementStart.getTokenID() == JspTagTokenContext.COMMENT
+                        || elementStart.getTokenID() == JspTagTokenContext.COMMENT
                         || elementStart.getTokenID() == JspDirectiveTokenContext.COMMENT
                         || elementStart.getTokenContextPath().contains(ELTokenContext.contextPath)) {
                     // something from JSP
@@ -1233,7 +1246,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             while (true);
         }
         
-//System.out.println("muddy waters");
+        //System.out.println("muddy waters");
         return null;
     }
     
@@ -1447,8 +1460,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                     item = item.getNext();
                 StringBuffer value = new StringBuffer();
                 while ((item != null)
-                && ((item.getTokenID().getNumericID() == JspTagTokenContext.ATTR_VALUE_ID)
-                || (item.getTokenID().getNumericID() == JspTagTokenContext.EOL_ID))) {
+                        && ((item.getTokenID().getNumericID() == JspTagTokenContext.ATTR_VALUE_ID)
+                        || (item.getTokenID().getNumericID() == JspTagTokenContext.EOL_ID))) {
                     value.append(item.getImage());
                     item = item.getNext();
                     // request time values
@@ -1580,7 +1593,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                         firstToken.getOffset(), getDocument().getLength());
             }
             if (!isScriptingOrContentToken(nextItem)
-            || nextItem.getTokenID() == JspTagTokenContext.COMMENT
+                    || nextItem.getTokenID() == JspTagTokenContext.COMMENT
                     || nextItem.getTokenID() == JspDirectiveTokenContext.COMMENT
                     || nextItem.getTokenContextPath().contains(ELTokenContext.contextPath))
                 return new SyntaxElement.ContentL(this,
@@ -1761,7 +1774,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
      *  no matching block.
      */
     public int[] findMatchingBlock(int offset, boolean simpleSearch)
-    throws BadLocationException {
+            throws BadLocationException {
         
         int [] r_value = null;
         
@@ -1776,7 +1789,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 }
                 // Is it matching of scriptlet delimiters?
                 if (token.getTokenContextPath().contains(JspTagTokenContext.contextPath)
-                && token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL2_ID){
+                        && token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL2_ID){
                     return findMatchingScripletDelimiter(token);
                 }
                 // Try to match the tags.
@@ -1802,7 +1815,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             //start html token - we need to find the end token of the html comment
             while(token != null) {
                 if((token.getTokenID() == JspTagTokenContext.COMMENT)
-                || (token.getTokenID() == JspTagTokenContext.EOL)) {
+                        || (token.getTokenID() == JspTagTokenContext.EOL)) {
                     if(token.getImage().endsWith("--%>")) { //NOI18N
                         //found end token
                         int start = token.getOffset() + token.getImage().length() - "--%>".length(); //NOI18N
@@ -1816,7 +1829,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             //end html token - we need to find the start token of the html comment
             while(token != null) {
                 if((token.getTokenID() == JspTagTokenContext.COMMENT)
-                || (token.getTokenID() == JspTagTokenContext.EOL)) {
+                        || (token.getTokenID() == JspTagTokenContext.EOL)) {
                     if(token.getImage().startsWith("<%--")) { //NOI18N
                         //found end token
                         int start = token.getOffset();
@@ -1863,8 +1876,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             if (token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL_ID) // the starting of the jsp tag
                 // we are somewhere at beginning of the jsp tag. Find out the token with the jsp tag.
                 while (token !=null
-                    && !(token.getTokenID().getNumericID() == JspTagTokenContext.TAG_ID
-                    && token.getImage().trim().length() > 0))
+                && !(token.getTokenID().getNumericID() == JspTagTokenContext.TAG_ID
+                && token.getImage().trim().length() > 0))
                     token = token.getNext();    // move at the jsp tag
             isInside = true; // the curret is somewhere in '<jsptag' or '</jsptag'
         } else {
