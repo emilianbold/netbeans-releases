@@ -152,11 +152,16 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
     
     private static final RegionFilter COMPLETION_FILTER =
             new RegionFilter() {
-        public boolean accept(javax.swing.JComponent c) {
-            Class clz = null;
-            return c.getClass().getName().equals("org.netbeans.modules.editor.completion.ScrollCompletionPane") || c.getClass().getName().equals("org.openide.text.QuietEditorPane");
-        }
-    };
+
+                public boolean accept(javax.swing.JComponent c) {
+                    return c.getClass().getName().equals("org.netbeans.modules.editor.completion.CompletionScrollPane") ||
+                           c.getClass().getName().equals("org.openide.text.QuietEditorPane");
+                }
+
+                public String getFilterName() {
+                    return "Accept paints from org.netbeans.modules.editor.completion.CompletionScrollPane || org.openide.text.QuietEditorPane";
+                }
+            };
 
     public static void main(java.lang.String[] args) {
         System.setProperty("org.netbeans.performance.repeat", "3");

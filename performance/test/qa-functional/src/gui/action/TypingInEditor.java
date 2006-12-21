@@ -31,8 +31,6 @@ import org.netbeans.jellytools.actions.OpenAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
-import org.netbeans.performance.test.guitracker.LoggingRepaintManager.RegionFilter;
-
 /**
  * Test of typing in opened source editor.
  *
@@ -78,12 +76,6 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
             fontSize = ((JavaOptions)options).getFontSize();
             ((JavaOptions)options).setFontSize(20);
         }
-        
-        // turn off the error hightlighting feature
-        /* TODO doesn't work after retouche integration
-        parsingErrors = JavaSettings.getDefault().getParsingErrors();
-        JavaSettings.getDefault().setParsingErrors(0);
-         */
     }
     
     protected void turnBack() {
@@ -93,11 +85,6 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
         if (options instanceof JavaOptions) {
             ((JavaOptions)options).setFontSize(fontSize);
         }
-        
-        // set the modified properties back to default
-        /* TODO doesn't work after retouche integration
-        JavaSettings.getDefault().setParsingErrors(parsingErrors);
-         */
     }
     
     public void initialize() {
@@ -129,7 +116,6 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
     }
     
     public void prepare() {
-        repaintManager().setRegionFilter(ERRORSTRIPE_FILTER);
     }
     
     public ComponentOperator open(){
@@ -149,18 +135,6 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
         editorOperator.closeDiscard();
         super.shutdown();
     }
-    
-    
-    
-    private static final RegionFilter ERRORSTRIPE_FILTER =
-            new RegionFilter() {
-        public boolean accept(javax.swing.JComponent c) {
-            Class clz = null;
-            return c.getClass().getName().equals("org.netbeans.modules.editor.errorstripe.AnnotationView");
-        }
-    };
-
-    
     
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new TypingInEditor("measureTime", "Type a character in Editor"));
