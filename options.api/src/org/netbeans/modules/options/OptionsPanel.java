@@ -110,7 +110,7 @@ public class OptionsPanel extends JPanel {
         //generalpanel doesn't need lookup
         boolean isGeneralPanel = "General".equals(getCategoryID(categoryID));//NOI18N
         if (model.isLookupInitialized() || isGeneralPanel) {
-            setCurrentCategory(model.getCategory(getCategoryID(categoryID)));
+            setCurrentCategory(model.getCategory(getCategoryID(categoryID)), false);
             initActions();                        
         } else {
             RequestProcessor.getDefault().post(new Runnable() {
@@ -122,7 +122,7 @@ public class OptionsPanel extends JPanel {
                             final Cursor cursor = frame.getCursor();
                             frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                            setCurrentCategory(model.getCategory(getCategoryID(categoryID)));
+                            setCurrentCategory(model.getCategory(getCategoryID(categoryID)), true);
                             initActions();
                             // reset cursor
                             frame.setCursor(cursor);
@@ -134,7 +134,7 @@ public class OptionsPanel extends JPanel {
         }
     }
     
-    private void setCurrentCategory (final CategoryModel.Category category) {
+    private void setCurrentCategory (final CategoryModel.Category category, final boolean repaintAllowed) {
         CategoryModel.Category oldCategory = model.getCurrent();
         if (oldCategory != null) {
             ((CategoryButton) buttons.get (oldCategory.getID())).setNormal ();
@@ -162,8 +162,8 @@ public class OptionsPanel extends JPanel {
         // repaint
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
-                if (!checkSize (size)) {
-                    revalidate ();
+                if (!checkSize (size) && repaintAllowed) {
+                    revalidate ();                    
                     repaint ();
                 }
                 if (model.getCurrent() != null) {
@@ -432,7 +432,7 @@ public class OptionsPanel extends JPanel {
             this.category = category;
         }
         public void actionPerformed (ActionEvent e) {
-            setCurrentCategory (category);
+            setCurrentCategory (category, true);
         }
     }
     
@@ -440,7 +440,7 @@ public class OptionsPanel extends JPanel {
         public void actionPerformed (ActionEvent e) {
             Component c = FocusManager.getCurrentManager ().getFocusOwner ();
             if (c instanceof CategoryButton) {
-                setCurrentCategory (((CategoryButton) c).category);
+                setCurrentCategory (((CategoryButton) c).category, true);
                 ((CategoryButton) c).setSelected ();
             }
         }
@@ -449,14 +449,14 @@ public class OptionsPanel extends JPanel {
     private class UpAction extends AbstractAction {
         public void actionPerformed (ActionEvent e) {
             model.setPreviousCategoryAsCurrent();
-            setCurrentCategory (model.getCurrent());
+            setCurrentCategory (model.getCurrent(), true);
         }
     }
     
     private class DownAction extends AbstractAction {
         public void actionPerformed (ActionEvent e) {            
             model.setNextCategoryAsCurrent();
-            setCurrentCategory (model.getCurrent());            
+            setCurrentCategory (model.getCurrent(), true);            
         }
     }
     
@@ -562,7 +562,7 @@ public class OptionsPanel extends JPanel {
 
         public void mouseReleased (MouseEvent e) {
             if (!category.isCurrent() && category.isHighlited() && model.getCurrent() != null) {
-                setCurrentCategory(category);
+                setCurrentCategory(category, true);
             }
         }
 
