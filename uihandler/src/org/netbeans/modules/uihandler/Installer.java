@@ -135,19 +135,21 @@ public class Installer extends ModuleInstall {
             return true;
         }
         
-        return displaySummary("WELCOME_URL"); // NOI18N
+        return displaySummary("EXIT_URL", false); // NOI18N
     }
     
     private static ThreadLocal<Object> DISPLAYING = new ThreadLocal<Object>();
-    static boolean displaySummary(String msg) {
+    static boolean displaySummary(String msg, boolean explicit) {
         if (DISPLAYING.get() != null) {
             return true;
         }
         
-        boolean dontAsk = NbPreferences.forModule(Installer.class).getBoolean("ask.never.again." + msg, false); // NOI18N
-        if (dontAsk) {
-            LOG.log(Level.INFO, "UI Gesture Collector's ask.never.again.{0} is true, exiting", msg); // NOI18N
-            return true;
+        if (explicit) {
+            boolean dontAsk = NbPreferences.forModule(Installer.class).getBoolean("ask.never.again." + msg, false); // NOI18N
+            if (dontAsk) {
+                LOG.log(Level.INFO, "UI Gesture Collector's ask.never.again.{0} is true, exiting", msg); // NOI18N
+                return true;
+            }
         }
         
         

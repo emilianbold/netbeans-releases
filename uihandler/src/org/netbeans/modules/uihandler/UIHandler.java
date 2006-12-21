@@ -73,7 +73,7 @@ public class UIHandler extends Handler {
             record.getLevel().intValue() >= Level.WARNING.intValue() &&
             record.getThrown() != null
         ) {
-            Installer.displaySummary("ERROR_URL"); // NOI18N
+            Installer.displaySummary("ERROR_URL", false); // NOI18N
         }
     }
 
