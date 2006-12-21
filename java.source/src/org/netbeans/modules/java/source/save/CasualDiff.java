@@ -596,16 +596,21 @@ public class CasualDiff {
         diffTree(oldT.falsepart, newT.falsepart);
     }
 
-    protected void diffIf(JCIf oldT, JCIf newT) {
+    protected int diffIf(JCIf oldT, JCIf newT, int[] bounds) {
+        int localPointer = bounds[0];
         if (oldT.elsepart == null && newT.elsepart != null ||
             oldT.elsepart != null && newT.elsepart == null) {
             // mark the whole if statement to be reformatted, which Commit will refine.
             append(Diff.modify(oldT, getOldPos(oldT), newT));
         } else {
-            diffTree(oldT.cond, newT.cond);
+            int[] condPos = new int[] { getOldPos(oldT.cond), endPos(oldT.cond) };
+            printer.print(origText.substring(localPointer, condPos[0]));
+            localPointer = diffTree(oldT.cond, newT.cond, condPos);
             diffTree(oldT.thenpart, newT.thenpart);
             diffTree(oldT.elsepart, newT.elsepart);
         }
+        printer.print(origText.substring(localPointer, bounds[1]));
+        return bounds[1];
     }
 
     protected int diffExec(JCExpressionStatement oldT, JCExpressionStatement newT, int[] elementBounds) {
@@ -638,10 +643,13 @@ public class CasualDiff {
         diffTree(oldT.detail, newT.detail);
     }
 
-    protected void diffApply(JCMethodInvocation oldT, JCMethodInvocation newT) {
+    protected int diffApply(JCMethodInvocation oldT, JCMethodInvocation newT, int[] bounds) {
+        int localPointer = bounds[0];
+        printer.print(origText.substring(localPointer, bounds[0]));
         diffParameterList(oldT.typeargs, newT.typeargs);
-        diffTree(oldT.meth, newT.meth);
+        localPointer = diffTree(oldT.meth, newT.meth, new int[] { getOldPos(oldT.meth), endPos(oldT.meth) });
         diffParameterList(oldT.args, newT.args);
+        return localPointer;
     }
 
     boolean anonClass = false;
@@ -667,8 +675,11 @@ public class CasualDiff {
         diffList(oldT.elems, newT.elems, LineInsertionType.NONE, Query.NOPOS);
     }
 
-    protected void diffParens(JCParens oldT, JCParens newT) {
-        diffTree(oldT.expr, newT.expr);
+    protected int diffParens(JCParens oldT, JCParens newT, int[] bounds) {
+        int localPointer = bounds[0];
+        printer.print(origText.substring(localPointer, getOldPos(oldT.expr)));
+        localPointer = diffTree(oldT.expr, newT.expr, new int[] { getOldPos(oldT.expr), endPos(oldT.expr) });
+        return localPointer;
     }
 
     protected void diffAssign(JCAssign oldT, JCAssign newT) {
@@ -716,10 +727,13 @@ public class CasualDiff {
         diffTree(oldT.index, newT.index);
     }
 
-    protected void diffSelect(JCFieldAccess oldT, JCFieldAccess newT) {
-        diffTree(oldT.selected, newT.selected);
+    protected int diffSelect(JCFieldAccess oldT, JCFieldAccess newT, int[] bounds) {
+        int localPointer = bounds[0];
+        printer.print(origText.substring(localPointer, getOldPos(oldT.selected)));
+        localPointer = diffTree(oldT.selected, newT.selected, new int[] { getOldPos(oldT.selected), endPos(oldT.selected) });
         if (nameChanged(oldT.name, newT.name))
             append(Diff.name(oldT.pos, oldT.name, newT.name));
+        return localPointer;
     }
 
     protected int diffIdent(JCIdent oldT, JCIdent newT, int lastPrinted) {
@@ -1659,7 +1673,7 @@ public class CasualDiff {
               diffConditional((JCConditional)oldT, (JCConditional)newT);
               break;
           case JCTree.IF:
-              diffIf((JCIf)oldT, (JCIf)newT);
+              retVal = diffIf((JCIf)oldT, (JCIf)newT, elementBounds);
               break;
           case JCTree.EXEC:
               retVal = diffExec((JCExpressionStatement)oldT, (JCExpressionStatement)newT, elementBounds);
@@ -1680,7 +1694,7 @@ public class CasualDiff {
               diffAssert((JCAssert)oldT, (JCAssert)newT);
               break;
           case JCTree.APPLY:
-              diffApply((JCMethodInvocation)oldT, (JCMethodInvocation)newT);
+              retVal = diffApply((JCMethodInvocation)oldT, (JCMethodInvocation)newT, elementBounds);
               break;
           case JCTree.NEWCLASS:
               retVal = diffNewClass((JCNewClass)oldT, (JCNewClass)newT, elementBounds);
@@ -1689,7 +1703,7 @@ public class CasualDiff {
               diffNewArray((JCNewArray)oldT, (JCNewArray)newT);
               break;
           case JCTree.PARENS:
-              diffParens((JCParens)oldT, (JCParens)newT);
+              retVal = diffParens((JCParens)oldT, (JCParens)newT, elementBounds);
               break;
           case JCTree.ASSIGN:
               diffAssign((JCAssign)oldT, (JCAssign)newT);
@@ -1704,7 +1718,7 @@ public class CasualDiff {
               diffIndexed((JCArrayAccess)oldT, (JCArrayAccess)newT);
               break;
           case JCTree.SELECT:
-              diffSelect((JCFieldAccess)oldT, (JCFieldAccess)newT);
+              retVal = diffSelect((JCFieldAccess)oldT, (JCFieldAccess)newT, elementBounds);
               break;
           case JCTree.IDENT:
               retVal = diffIdent((JCIdent)oldT, (JCIdent)newT, elementBounds[0]);
