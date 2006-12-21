@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    The contents of this file are subject to the terms of the Common Development
+    and Distribution License (the License). You may not use this file except in
+    compliance with the License.
+    
+    You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+    or http://www.netbeans.org/cddl.txt.
+    
+    When distributing Covered Code, include this CDDL Header Notice in each file
+    and include the License file at http://www.netbeans.org/cddl.txt.
+    If applicable, add the following below the CDDL Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyrighted [year] [name of copyright owner]"
+    
+    The Original Software is NetBeans. The Initial Developer of the Original
+    Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+    Microsystems, Inc. All Rights Reserved.
+    -->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    
+    <folder name="Windows2">
+
+        <folder name="Modes">
+            <folder name="navigator">
+                <file name="GameBuilderInspector.wstcref" url="windowmanager/GameBuilderInspector.wstcref"/>
+            </folder>
+        </folder>
+
+        <folder name="Components">
+            <file name="GameBuilderInspector.settings" url="components/GameBuilderInspector.settings"/>
+        </folder>
+        <!--
+                <folder name="Groups">
+                    <file name="GameBuilderInspector.wsgrp" url="groups/GameBuilderInspector.wsgrp"/>
+                    <folder name="GameBuilderInspector">
+                        <file name="DesignInspector.wstcgrp" url="groups/GameBuilderInspector.wstcgrp"/>
+                    </folder>
+                </folder>
+        -->
+    </folder>
+<!--
+    <folder name="Templates">
+
+        <folder name="MIDP">
+
+            <file name="EmptyGame.java" url="integration/res/emptygame_java.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.game.integration.res.Bundle"/>
+                <attr name="SystemFileSystem.icon" stringvalue="nbresloc:org/netbeans/modules/vmd/game/integration/res/canvas_16.png"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.mvd.ui.wizard.FileWizardIterator.singleton"/>
+                <attr name="isMIDletTemplate" boolvalue="true"/>
+                <attr name="MIDP" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="MIDP"/>
+            </file>
+            <file name="EmptyGame.vmd" url="integration/res/emptygame_vmd.template">
+                <attr name="template" boolvalue="true"/>
+            </file>
+
+        </folder>
+
+    </folder>
+-->
+    <folder name="vmd-midp-game">
+
+        <folder name="components">
+
+            <file name="org-netbeans-modules-vmd-game-integration-components-GameRootCD.instance"/>
+
+            <file name="org-netbeans-modules-vmd-game-integration-components-LayerManagerCD.instance"/>
+
+            <file name="org-netbeans-modules-vmd-game-integration-components-LayerCD.instance"/>
+            <file name="org-netbeans-modules-vmd-game-integration-components-TiledLayerCD.instance"/>
+            <file name="org-netbeans-modules-vmd-game-integration-components-SpriteCD.instance"/>
+            <file name="org-netbeans-modules-vmd-game-integration-components-SpriteSequenceCD.instance"/>
+
+            <file name="org-netbeans-modules-vmd-game-integration-components-GameImageCD.instance"/>
+
+        </folder>
+
+    </folder>
+
+</filesystem>

@@ -1,0 +1,2 @@
+org.netbeans.modules.vmd.game.GameEditorViewFactory
+org.netbeans.modules.vmd.game.integration.TiledLayerEditorViewFactory

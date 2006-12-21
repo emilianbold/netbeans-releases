@@ -1,0 +1,1361 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.vmd.game.editor.tiledlayer;
+
+import java.awt.Color;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseMotionListener;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.DebugGraphics;
+import javax.swing.JComponent;
+import javax.swing.JMenu;
+import javax.swing.JPopupMenu;
+import javax.swing.Scrollable;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
+import org.netbeans.modules.vmd.game.dialog.DuplicateTiledLayerDialog;
+import org.netbeans.modules.vmd.game.dialog.NewSimpleTiledLayerDialog;
+import org.netbeans.modules.vmd.game.model.AnimatedTile;
+import org.netbeans.modules.vmd.game.model.ImageResource;
+import org.netbeans.modules.vmd.game.model.Layer;
+import org.netbeans.modules.vmd.game.model.Position;
+import org.netbeans.modules.vmd.game.model.StaticTile;
+import org.netbeans.modules.vmd.game.model.Tile;
+import org.netbeans.modules.vmd.game.model.TileDataFlavor;
+import org.netbeans.modules.vmd.game.model.TiledLayer;
+import org.netbeans.modules.vmd.game.model.TiledLayerListener;
+import org.netbeans.modules.vmd.game.nbdialog.NewLayerDialog;
+import org.netbeans.modules.vmd.game.view.main.MainView;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+
+
+/**
+ *
+ * @author kaja
+ */
+public class TiledLayerEditorComponent extends JComponent implements MouseListener, Scrollable, TiledLayerListener {
+	
+	public static final boolean DEBUG = false;
+	
+	public static final byte GRID_MODE_DOTS = 0;
+	public static final byte GRID_MODE_LINES = 1;
+	
+	private static final Color GRID_COLOR = Color.LIGHT_GRAY;
+	private static final Color ANIMATED_TILE_GRID_COLOR = Color.CYAN;
+	private static final Color HILITE_COLOR = new Color(0, 0, 255, 20);
+	
+	
+	private static final int GRID_WIDTH = 1;
+	private static final int CELL_BORDER_WIDTH = 0;
+	private static final int SELECTION_BORDER_WIDTH = 2;
+	
+	
+	private byte gridMode = GRID_MODE_LINES;
+	
+	private TiledLayer tiledLayer;
+	
+	private int paintTileIndex = 0;
+	private Color currentSelectedColor = Color.getHSBColor(0.0f, 1.0f, 0.0f);
+	
+	private int cellWidth;
+	private int cellHeight;
+	
+	private Position cellHiLited;
+	private Set<Position> cellsSelected = Collections.synchronizedSet(new HashSet<Position>());
+	private Set<Integer> rowsSelected = Collections.synchronizedSet(new HashSet<Integer>());
+	private Set<Integer> columnsSelected = Collections.synchronizedSet(new HashSet<Integer>());
+	
+	//private Point start = new Point(0, 0);
+	
+	private Timer timer;
+	
+	RulerHorizontal rulerHorizontal;
+	RulerVertical rulerVertical;
+	
+	/** Creates a new instance of EditorComponent */
+	public TiledLayerEditorComponent(TiledLayer tiledLayer) {
+		this.setTiledLayer(tiledLayer);
+		this.tiledLayer.addTiledLayerListener(this);
+		this.addMouseListener(this);
+		this.addMouseMotionListener(new PaintMotionListener());
+		this.setAutoscrolls(true);
+		this.timer = new Timer();
+		this.timer.schedule(new HiliteAnimator(), 0, 220);
+		ToolTipManager.sharedInstance().registerComponent(this);
+		//DnD
+		DropTarget dropTarget = new DropTarget(this, new TiledLayerDropTargetListener());
+		dropTarget.setActive(true);
+		this.setDropTarget(dropTarget);
+		
+		this.rulerHorizontal = new RulerHorizontal();
+		this.rulerVertical = new RulerVertical();
+	}
+	
+	public Dimension getMaximumSize() {
+		return new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
+	}
+	
+	public void setGridMode(byte gridMode) {
+		this.gridMode = gridMode;
+	}
+	
+	public String getToolTipText(MouseEvent event) {
+		Position cell = this.getCellAtPoint(event.getPoint());
+		int index = this.tiledLayer.getTileIndexAt(cell);
+		if (index < Tile.EMPTY_TILE_INDEX) {
+			AnimatedTile tile = (AnimatedTile) this.tiledLayer.getTileAt(cell);
+			return tile.getName() + " [" + cell.getRow() + "," + cell.getCol() + "]";
+		}
+		return "Index: " + index + " [" + cell.getRow() + "," + cell.getCol() + "]";
+	}
+	
+	public Dimension getPreferredSize() {
+		int width = GRID_WIDTH + (this.cellWidth + GRID_WIDTH) * this.tiledLayer.getColumnCount();
+		int height = GRID_WIDTH + (this.cellHeight + GRID_WIDTH) * this.tiledLayer.getRowCount();
+		return new Dimension(width, height);
+	}
+	
+	public void setTiledLayer(TiledLayer tiledLayer) {
+		this.tiledLayer = tiledLayer;
+		this.cellWidth = this.tiledLayer.getTileWidth() + (CELL_BORDER_WIDTH*2);
+		this.cellHeight = this.tiledLayer.getTileHeight() + (CELL_BORDER_WIDTH*2);
+	}
+	
+	public void paintComponent(Graphics g) {
+		if (DEBUG) System.out.println("EditorComponent clip : " + g.getClipBounds());
+		if (g instanceof DebugGraphics)
+			return;
+		Graphics2D g2d = (Graphics2D) g;
+		if (gridMode == GRID_MODE_DOTS)
+			this.paintGridDots(g2d);
+		else
+			this.paintGridLines(g2d);
+		this.paintCells(g2d);
+		
+		if (this.cellHiLited != null) {
+			this.paintGridHiLite((Graphics2D) g, cellHiLited, Color.ORANGE);
+		}
+	}
+	
+	//paints GRID as dots
+	private void paintGridDots(Graphics2D g) {
+		//Rectangle rect = g.getClipBounds();
+		g.setColor(Color.BLACK);
+		for (int horizontal = 0; horizontal < this.getHeight(); horizontal += (this.cellHeight + GRID_WIDTH)) {
+			//g.fillRect(0, horizontal, this.getWidth(), GRID_WIDTH);
+			for (int vertical = 0; vertical < this.getWidth(); vertical += (cellWidth + GRID_WIDTH)) {
+				//g.fillRect(vertical, 0, GRID_WIDTH, this.getHeight());
+				g.fillRect(vertical, horizontal, 1, 1);
+			}
+		}
+	}
+	
+	//paints GRID as lines
+	private void paintGridLines(Graphics2D g) {
+		//Rectangle rect = g.getClipBounds();
+		g.setColor(GRID_COLOR);
+		for (int horizontal = 0; horizontal < this.getHeight(); horizontal += (this.cellHeight + GRID_WIDTH)) {
+			//g.drawLine(0, horizontal, this.getWidth(), horizontal);
+			g.fillRect(0, horizontal, this.getWidth(), GRID_WIDTH);
+		}
+		for (int vertical = 0; vertical < this.getWidth(); vertical += (cellWidth + GRID_WIDTH)) {
+			//g.drawLine(vertical, 0, vertical, this.getHeight());
+			g.fillRect(vertical, 0, GRID_WIDTH, this.getHeight());
+		}
+	}
+	
+	/**
+	 * Returns four integers [topLeftRow, topLeftColumn, bottomRightRow, bottomRightColumn] these
+	 * signify the currently visible grid area.
+	 */
+	private int[] getVisibleCellBounds() {
+		int[] ret = new int[4];
+		Rectangle rect = this.getVisibleRect();
+		Position topLeft = this.getCellAtPoint(rect.getLocation());
+		Position bottomRight = this.getCellAtCoordinates(rect.getLocation().x + rect.width, rect.getLocation().y + rect.height);
+		ret[0] = topLeft.getRow();
+		ret[1] = topLeft.getCol();
+		ret[2] = bottomRight.getRow();
+		ret[3] = bottomRight.getCol();
+		return ret;
+	}
+	
+	private void paintCells(Graphics2D g) {
+		Rectangle rect = g.getClipBounds();
+		if (DEBUG) System.out.println("Paint cell: " + rect);
+		Position topLeft = this.getCellAtPoint(rect.getLocation());
+		Position bottomRight = this.getCellAtCoordinates(rect.getLocation().x + rect.width, rect.getLocation().y + rect.height);
+		//if (DEBUG) System.out.println("topLeft: " + topLeft + ", bottomRight: " + bottomRight);
+		//rows
+		for (int row = topLeft.getRow(); row <= bottomRight.getRow(); row++) {
+			//cols
+			for (int col = topLeft.getCol(); col <= bottomRight.getCol(); col++) {
+				Position cell = new Position(row, col);
+				//if (DEBUG) System.out.println("Looking at: " + cell + " compared to " + this.cellHiLited);
+				this.paintCellContents(g, cell);
+				
+				//paint selected cells
+				if (this.currentSelectedColor != null && (this.cellsSelected.contains(cell) || this.rowsSelected.contains(cell.getRow()) || this.columnsSelected.contains(cell.getCol()))) {
+					this.paintCellSelection(g, cell, this.currentSelectedColor);
+				}
+				
+				//hi-lite animated tiles
+				if (this.tiledLayer.getTileAt(cell).getIndex() < 0) {
+					//if (DEBUG) System.out.println("animated grid");
+					this.paintGridHiLite(g, cell, ANIMATED_TILE_GRID_COLOR);
+				}
+			}
+		}
+	}
+	
+	private void paintCellContents(Graphics2D g, Position cell) {
+		Tile tile = this.tiledLayer.getTileAt(cell.getRow(), cell.getCol());
+		//if (DEBUG) System.out.println("Paint contents of cell: " + rect);
+		Rectangle rect = this.getCellArea(cell);
+		int x = rect.x + CELL_BORDER_WIDTH;
+		int y = rect.y + CELL_BORDER_WIDTH;
+		tile.paint(g, x, y);
+	}
+	private void paintCellSelection(Graphics2D g, Position cell, Color color) {
+		//if (DEBUG) System.out.println("paintCellSelection: " + cell.toString());
+		Rectangle rect = this.getCellArea(cell);
+		g.setColor(color);
+		g.fillRect(rect.x, rect.y, rect.width, SELECTION_BORDER_WIDTH);
+		g.fillRect(rect.x, rect.y, SELECTION_BORDER_WIDTH, rect.height - (GRID_WIDTH * 2));
+		g.fillRect(rect.x + (rect.width - SELECTION_BORDER_WIDTH), rect.y, SELECTION_BORDER_WIDTH, rect.height);
+		g.fillRect(rect.x, rect.y + (rect.height - SELECTION_BORDER_WIDTH), rect.width, SELECTION_BORDER_WIDTH);
+	}
+	private void paintGridHiLite(Graphics2D g, Position cell, Color color) {
+		//if (DEBUG) System.out.println("paintGridHiLite: " + cell.toString());
+		Rectangle rect = this.getCellArea(cell);
+		g.setColor(color);
+		g.fillRect(rect.x, rect.y, rect.width, GRID_WIDTH);
+		g.fillRect(rect.x, rect.y, GRID_WIDTH, rect.height);
+		g.fillRect(rect.x + (rect.width - GRID_WIDTH), rect.y, GRID_WIDTH, rect.height);
+		g.fillRect(rect.x, rect.y + (rect.height - GRID_WIDTH), rect.width, GRID_WIDTH);
+	}
+	
+	TiledLayer getTiledLayer() {
+		return this.tiledLayer;
+	}
+	
+	private Position getCellAtPoint(Point p) {
+		return this.getCellAtCoordinates(p.x, p.y);
+	}
+	private Position getCellAtCoordinates(int x, int y) {
+		int row = (y - GRID_WIDTH) / (this.cellHeight + GRID_WIDTH);
+		int col = (x - GRID_WIDTH) / (this.cellWidth + GRID_WIDTH);
+		if (x < 0) {
+			col--;
+		}
+		if (y < 0) {
+			row--;
+		}
+		//if (DEBUG) System.out.println("row = " + row + " col = " + col);
+		return new Position(row, col);
+	}
+	
+	private Rectangle getCellArea(Position cell) {
+		return this.getCellArea(cell.getRow(), cell.getCol());
+	}
+	private Rectangle getCellArea(int row, int col) {
+		Rectangle cellArea = new Rectangle( ( (this.cellWidth + GRID_WIDTH) * col) + GRID_WIDTH, ((this.cellHeight + GRID_WIDTH) * row) + GRID_WIDTH, this.cellWidth, this.cellHeight);
+		return cellArea;
+	}
+	
+	
+	void setPaintTileIndex(int index) {
+		this.paintTileIndex = index;
+	}
+	
+	private void selectByIndex(int index) {
+		synchronized (this.cellsSelected) {
+			for (int r = 0; r < this.tiledLayer.getRowCount(); r++) {
+				for (int c = 0; c < this.tiledLayer.getColumnCount(); c++) {
+					if (this.tiledLayer.getTileAt(r, c).getIndex() == index) {
+						this.cellsSelected.add(new Position(r, c));
+					}
+				}
+			}
+		}
+	}
+	
+	private void selectAll() {
+		synchronized (this.cellsSelected) {
+			for (int r = 0; r < this.tiledLayer.getRowCount(); r++) {
+				for (int c = 0; c < this.tiledLayer.getColumnCount(); c++) {
+					this.cellsSelected.add(new Position(r, c));
+				}
+			}
+		}
+	}
+	
+	private void invertSelection() {
+		synchronized (this.cellsSelected) {
+			for (int r = 0; r < this.tiledLayer.getRowCount(); r++) {
+				for (int c = 0; c < this.tiledLayer.getColumnCount(); c++) {
+					Position p = new Position(r, c);
+					if (this.cellsSelected.contains(p)) {
+						this.cellsSelected.remove(p);
+					} else {
+						this.cellsSelected.add(p);
+					}
+				}
+			}
+		}
+	}
+	
+	//MouseListener
+	public void mouseClicked(MouseEvent e) {
+		this.handleMouseClicked(e);
+	}
+	
+	//MouseListener
+	public void mousePressed(MouseEvent e) {
+		if (e.isPopupTrigger()) {
+			this.doPopUp(e);
+		} else {
+			this.handleMousePressed(e);
+		}
+	}
+	
+	//MouseListener
+	public void mouseReleased(MouseEvent e) {
+		if (e.isPopupTrigger()) {
+			this.doPopUp(e);
+		}
+	}
+	
+	//MouseListener
+	public void mouseEntered(MouseEvent e) {
+	}
+	
+	//MouseListener
+	public void mouseExited(MouseEvent e) {
+		Position oldHilited = this.cellHiLited;
+		this.cellHiLited = null;
+		if (oldHilited != null)
+			this.repaint(this.getCellArea(oldHilited));
+	}
+	
+	private void handleMouseClicked(MouseEvent e) {
+		Position cell = this.getCellAtCoordinates(e.getX(), e.getY());
+		if (e.getClickCount() >= 2 && !SwingUtilities.isRightMouseButton(e)) {
+			this.selectByIndex(this.tiledLayer.getTileAt(cell.getRow(), cell.getCol()).getIndex());
+		}
+		this.repaint(getCellArea(cell));
+		MainView.getInstance().requestPreview(this.tiledLayer.getTileAt(cell.getRow(), cell.getCol()));
+	}
+	
+	private boolean isMultiSelect(MouseEvent e) {
+		return e.isShiftDown();
+	}
+	
+	private boolean isErase(MouseEvent e) {
+		if (SwingUtilities.isRightMouseButton(e))
+			return true;
+		return false;
+	}
+	
+	private void handleMousePressed(MouseEvent e) {
+		Position cell = this.getCellAtCoordinates(e.getX(), e.getY());
+		
+		if (isMultiSelect(e)) {
+			synchronized (this.cellsSelected) {
+				if (!this.cellsSelected.remove(cell))
+					this.cellsSelected.add(cell);
+			}
+		} else {
+			Set oldSelected = this.cellsSelected;
+			this.cellsSelected = new HashSet<Position>();
+			this.cellsSelected.add(cell);
+			for (Iterator it = oldSelected.iterator(); it.hasNext();) {
+				Position oldSelCel = (Position) it.next();
+				this.repaint(getCellArea(oldSelCel));
+			}
+		}
+		
+		this.repaint(getCellArea(cell));
+		MainView.getInstance().requestPreview(this.tiledLayer.getTileAt(cell.getRow(), cell.getCol()));
+	}
+	
+	//MouseMotionListener
+	private class PaintMotionListener extends MouseMotionAdapter {
+		private Position lastDraggedCell;
+		
+		public void mouseDragged(MouseEvent e) {
+			Point p = e.getPoint();
+			Position cell = TiledLayerEditorComponent.this.getCellAtPoint(p);
+			//if (DEBUG) System.out.println(cell);
+			
+			if (TiledLayerEditorComponent.this.isMultiSelect(e)) {
+				if (cell.equals(lastDraggedCell))
+					return;
+				synchronized (TiledLayerEditorComponent.this.cellsSelected) {
+					TiledLayerEditorComponent.this.cellsSelected.add(cell);
+				}
+			} else {
+				int tileIndex = TiledLayerEditorComponent.this.isErase(e) ? Tile.EMPTY_TILE_INDEX : TiledLayerEditorComponent.this.paintTileIndex;
+				//if we are on the same tile and trying to paint the same index then we aren't really changing anything :)
+				if (cell.equals(lastDraggedCell) && (tileIndex == TiledLayerEditorComponent.this.tiledLayer.getTileAt(cell.getRow(), cell.getCol()).getIndex()))
+					return;
+				if (lastDraggedCell != null)
+					TiledLayerEditorComponent.this.repaint(TiledLayerEditorComponent.this.getCellArea(lastDraggedCell));
+				TiledLayerEditorComponent.this.cellHiLited = cell;
+				//if (DEBUG) System.out.println("tile index = " + tileIndex);
+				TiledLayerEditorComponent.this.tiledLayer.setTileAt(tileIndex, cell.getRow(), cell.getCol());
+			}
+			TiledLayerEditorComponent.this.repaint(TiledLayerEditorComponent.this.getCellArea(cell));
+			this.lastDraggedCell = cell;
+			//The user is dragging us, so scroll!
+			Rectangle r = new Rectangle(e.getX(), e.getY(), 1, 1);
+			scrollRectToVisible(r);
+		}
+		
+		public void mouseMoved(MouseEvent e) {
+			TiledLayerEditorComponent.this.updateHiLite(e.getPoint());
+		}
+	}
+	
+	private void doPopUp(MouseEvent e) {
+		Position position = this.getCellAtPoint(e.getPoint());
+		
+		CreateTiledLayerAction ctl = new CreateTiledLayerAction();
+		DuplicateTiledLayerAction dtl = new DuplicateTiledLayerAction();
+		CreateFromSelectionAction cfs = new CreateFromSelectionAction();
+		EraseSelectionAction es = new EraseSelectionAction();
+		if (TiledLayerEditorComponent.this.cellsSelected.size() < 2) {
+			cfs.setEnabled(false);
+		}
+		
+		SelectRowAction sr = new SelectRowAction();
+		sr.putValue(SelectRowAction.PROP_POSITION, position);
+		
+		SelectColumnAction sc = new SelectColumnAction();
+		sc.putValue(SelectColumnAction.PROP_POSITION, position);
+		
+		SelectByIndexAction sbi = new SelectByIndexAction();
+		sbi.putValue(SelectByIndexAction.PROP_POSITION, position);
+		
+		SelectAllAction sa = new SelectAllAction();
+		
+		InvertSelectionAction is = new InvertSelectionAction();
+		
+		PrependRowAction pr = new PrependRowAction();
+		pr.putValue(PrependRowAction.PROP_POSITION, position);
+		
+		AppendRowAction ar = new AppendRowAction();
+		ar.putValue(AppendRowAction.PROP_POSITION, position);
+		
+		PrependColumnAction pc = new PrependColumnAction();
+		pc.putValue(PrependColumnAction.PROP_POSITION, position);
+		
+		AppendColumnAction ac = new AppendColumnAction();
+		ac.putValue(AppendColumnAction.PROP_POSITION, position);
+		
+		DeleteRowAction dr = new DeleteRowAction();
+		dr.putValue(DeleteRowAction.PROP_POSITION, position);
+		
+		DeleteColumnAction dc = new DeleteColumnAction();
+		dc.putValue(DeleteColumnAction.PROP_POSITION, position);
+		
+		TrimToSizeAction tts = new TrimToSizeAction();
+		
+		JPopupMenu menu = new JPopupMenu();
+		menu.add(ctl);
+		menu.add(dtl);
+		List<Action> actions = this.tiledLayer.getActions();
+		for (Action action : actions) {
+			//don't wanna add edit action since we are already editing :)
+			if (action instanceof Layer.EditLayerAction)
+				continue;
+			menu.add(action);
+		}
+		menu.addSeparator();
+		menu.add(cfs);
+		menu.add(es);
+		JMenu selecttionSubMenu = new JMenu("Select");
+		selecttionSubMenu.add(selecttionSubMenu);
+		selecttionSubMenu.add(sr);
+		selecttionSubMenu.add(sc);
+		selecttionSubMenu.add(sbi);
+		selecttionSubMenu.add(sa);
+		selecttionSubMenu.add(is);
+		menu.add(selecttionSubMenu);
+		menu.addSeparator();
+		menu.add(pr);
+		menu.add(ar);
+		menu.add(pc);
+		menu.add(ac);
+		menu.addSeparator();
+		menu.add(dr);
+		menu.add(dc);
+		menu.addSeparator();
+		menu.add(tts);
+		
+		menu.show(this, e.getX(), e.getY());
+	}
+	
+	public class CreateTiledLayerAction extends AbstractAction {
+		{
+			this.putValue(NAME, "Create new");
+		}
+		
+		public void actionPerformed(ActionEvent e) {
+			NewLayerDialog nld = new NewLayerDialog(null);
+			DialogDescriptor dd = new DialogDescriptor(nld, "Create a new layer");
+			dd.setButtonListener(nld);
+			dd.setValid(false);
+			nld.setDialogDescriptor(dd);
+			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+			d.setVisible(true);
+		}
+	}
+	
+	public class DuplicateTiledLayerAction extends AbstractAction {
+		{
+			this.putValue(NAME, "Duplicate");
+		}
+		
+		public void actionPerformed(ActionEvent e) {
+			new DuplicateTiledLayerDialog(TiledLayerEditorComponent.this.tiledLayer);
+		}
+	}
+	
+	public class TrimToSizeAction extends AbstractAction {
+		{
+			this.putValue(NAME, "Trim to size");
+		}
+		
+		public void actionPerformed(ActionEvent e) {
+			TiledLayerEditorComponent.this.tiledLayer.trimToSize();
+		}
+	}
+	
+	public class CreateFromSelectionAction extends AbstractAction {
+		{
+			this.putValue(NAME, "Create new from selection");
+		}
+		
+		public void actionPerformed(ActionEvent e) {
+			int left = Integer.MAX_VALUE;
+			int right = Integer.MIN_VALUE;
+			int top = Integer.MAX_VALUE;
+			int bottom = Integer.MIN_VALUE;
+			int[][] grid;
+			synchronized (TiledLayerEditorComponent.this.cellsSelected) {
+				if (TiledLayerEditorComponent.this.cellsSelected.size() < 2)
+					return;
+				Set <Position> cells = TiledLayerEditorComponent.this.cellsSelected;
+				//first find the grid size that can hold all the selected cells
+				for (Position position : cells) {
+					//find left boundry
+					left = Math.min(left, position.getCol());
+					//find right boundry
+					right = Math.max(right, position.getCol());
+					//find top boundry
+					top = Math.min(top, position.getRow());
+					//find bottom boundry
+					bottom = Math.max(bottom, position.getRow());
+				}
+				//then fill the grid with selected cells
+				grid = new int[(bottom-top)+1] [(right-left)+1];
+				for (Position position : cells) {
+					grid[position.getRow()-top] [position.getCol()-left] = TiledLayerEditorComponent.this.tiledLayer.getTileIndexAt(position);
+				}
+			}
+			new NewSimpleTiledLayerDialog(TiledLayerEditorComponent.this.tiledLayer.getImageResource(), grid);
+		}
+	}
+	
+	public class EraseSelectionAction extends AbstractAction {
+		{
+			this.putValue(NAME, "Erase selected tiles");
+		}
+		
+		public void actionPerformed(ActionEvent e) {
+			TiledLayerEditorComponent.this.tiledLayer.setTileAtPositions(Tile.EMPTY_TILE_INDEX, TiledLayerEditorComponent.this.cellsSelected);
+		}
+	}
+	
+	public class DeleteColumnAction extends AbstractAction {
+		public static final String PROP_POSITION = "PROP_POSITION";
+		{
+			this.putValue(NAME, "Delete column");
+		}
+		
+		public void actionPerformed(ActionEvent e) {
+			Position p = ((Position) this.getValue(PROP_POSITION));
+			TiledLayerEditorComponent.this.tiledLayer.deleteColumns(p.getCol(), 1);
+		}
+	}
+	public class DeleteRowAction extends AbstractAction {
+		public static final String PROP_POSITION = "PROP_POSITION";
+		{
+			this.putValue(NAME, "Delete row");
+		}
+		
+		public void actionPerformed(ActionEvent e) {
+			Position p = ((Position) this.getValue(PROP_POSITION));
+			TiledLayerEditorComponent.this.tiledLayer.deleteRows(p.getRow(), 1);
+		}
+	}
+	public class SelectColumnAction extends AbstractAction {
+		public static final String PROP_POSITION = "PROP_POSITION";
+		{
+			this.putValue(NAME, "Select column");
+		}
+		
+		public void actionPerformed(ActionEvent e) {
+			Position p = ((Position) this.getValue(PROP_POSITION));
+			TiledLayerEditorComponent.this.setColumnSelection(p.getCol(), true);
+		}
+	}
+	public class SelectRowAction extends AbstractAction {
+		public static final String PROP_POSITION = "PROP_POSITION";
+		{
+			this.putValue(NAME, "Select row");
+		}
+		
+		public void actionPerformed(ActionEvent e) {
+			Position p = ((Position) this.getValue(PROP_POSITION));
+			TiledLayerEditorComponent.this.setRowSelection(p.getRow(), true);
+		}
+	}
+	public class SelectByIndexAction extends AbstractAction {
+		public static final String PROP_POSITION = "PROP_POSITION";
+		{
+			this.putValue(NAME, "Select by index");
+		}
+		
+		public void actionPerformed(ActionEvent e) {
+			Position p = ((Position) this.getValue(PROP_POSITION));
+			TiledLayerEditorComponent.this.selectByIndex(TiledLayerEditorComponent.this.tiledLayer.getTileIndexAt(p));
+		}
+	}
+	public class InvertSelectionAction extends AbstractAction {
+		{
+			this.putValue(NAME, "Invert selection");
+		}
+		
+		public void actionPerformed(ActionEvent e) {
+			TiledLayerEditorComponent.this.invertSelection();
+		}
+	}
+	public class SelectAllAction extends AbstractAction {
+		{
+			this.putValue(NAME, "Select all");
+		}
+		
+		public void actionPerformed(ActionEvent e) {
+			TiledLayerEditorComponent.this.selectAll();
+		}
+	}
+	
+	public class PrependRowAction extends AbstractAction {
+		public static final String PROP_POSITION = "PROP_POSITION";
+		{
+			this.putValue(NAME, "Prepend row");
+		}
+		
+		public void actionPerformed(ActionEvent e) {
+			Position p = ((Position) this.getValue(PROP_POSITION));
+			TiledLayerEditorComponent.this.tiledLayer.insertRows(p.getRow(), 1);
+		}
+	}
+	public class AppendRowAction extends AbstractAction {
+		public static final String PROP_POSITION = "PROP_POSITION";
+		{
+			this.putValue(NAME, "Append row");
+		}
+		
+		public void actionPerformed(ActionEvent e) {
+			Position p = ((Position) this.getValue(PROP_POSITION));
+			TiledLayerEditorComponent.this.tiledLayer.insertRows(p.getRow() + 1, 1);
+		}
+	}
+	public class PrependColumnAction extends AbstractAction {
+		public static final String PROP_POSITION = "PROP_POSITION";
+		{
+			this.putValue(NAME, "Prepend column");
+		}
+		
+		public void actionPerformed(ActionEvent e) {
+			Position p = ((Position) this.getValue(PROP_POSITION));
+			TiledLayerEditorComponent.this.tiledLayer.insertColumns(p.getCol(), 1);
+		}
+	}
+	public class AppendColumnAction extends AbstractAction {
+		public static final String PROP_POSITION = "PROP_POSITION";
+		{
+			this.putValue(NAME, "Append column");
+		}
+		
+		public void actionPerformed(ActionEvent e) {
+			Position p = ((Position) this.getValue(PROP_POSITION));
+			TiledLayerEditorComponent.this.tiledLayer.insertColumns(p.getCol() + 1, 1);
+		}
+	}
+	
+	private void setRowSelection(int row, boolean selected) {
+		if (selected) {
+			this.rowsSelected.add(row);
+		}
+		else {
+			this.rowsSelected.remove(row);
+			for (Iterator<Position> it = cellsSelected.iterator(); it.hasNext();) {
+				Position position = it.next();
+				if (position.getRow() == row) {
+					it.remove();
+				}
+			}
+		}
+		//TODO : repaint the row only
+		this.repaint();
+	}
+	
+	private void setColumnSelection(int col, boolean selected) {
+		if (selected) {
+			this.columnsSelected.add(col);
+		}
+		else {
+			this.columnsSelected.remove(col);
+			for (Iterator<Position> it = cellsSelected.iterator(); it.hasNext();) {
+				Position position = it.next();
+				if (position.getCol() == col) {
+					it.remove();
+				}
+			}
+
+		}
+		//TODO : repaint the column only
+		this.repaint();
+	}
+	
+	//Scrollable
+	public Dimension getPreferredScrollableViewportSize() {
+		return this.getPreferredSize();
+	}
+	
+	public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+		if (orientation == SwingConstants.HORIZONTAL) {
+			return this.tiledLayer.getTileWidth();
+		}
+		return this.tiledLayer.getTileHeight();
+	}
+	
+	public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+		if (orientation == SwingConstants.HORIZONTAL) {
+			return this.tiledLayer.getTileWidth();
+		}
+		return this.tiledLayer.getTileHeight();
+	}
+	
+	public boolean getScrollableTracksViewportWidth() {
+		return false;
+	}
+	public boolean getScrollableTracksViewportHeight() {
+		return false;
+	}
+	
+	private class HiliteAnimator extends TimerTask {
+		private Color[] colors = {
+			null, 
+			new Color(128, 220, 255, 50), 
+			new Color(128, 220, 255, 120),
+			new Color(128, 220, 255, 190),
+			//new Color(128, 220, 255, 250),
+		};
+		private int i = 0;
+		
+		public void run() {
+			synchronized (TiledLayerEditorComponent.this.cellsSelected) {
+				if (++i >= colors.length) {
+					i = 0;
+				}
+				TiledLayerEditorComponent.this.currentSelectedColor = colors[i];
+				int[] bounds = TiledLayerEditorComponent.this.getVisibleCellBounds();
+				
+				for (int r = bounds[0]; r <= bounds[2]; r++) {
+					for (int c = bounds[1]; c <= bounds[3]; c++) {
+						Position cell = new Position(r, c);
+						if (false) System.out.println("looking at: " + cell);
+						if (
+								TiledLayerEditorComponent.this.cellsSelected.contains(cell) 
+								|| TiledLayerEditorComponent.this.columnsSelected.contains(cell.getCol())
+								|| TiledLayerEditorComponent.this.rowsSelected.contains(cell.getRow())
+							) {
+							if (false) System.out.println("selected cell repaint: " + cell);
+							TiledLayerEditorComponent.this.repaint(TiledLayerEditorComponent.this.getCellArea(cell));
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	private boolean isCellVisible(Position cell) {
+		return this.getVisibleRect().intersects(this.getCellArea(cell));
+	}
+	
+	private void updateHiLite(Point point) {
+		Position oldHilited = this.cellHiLited;
+		Position cell = this.getCellAtPoint(point);
+		if (cell == null)
+			return;
+		//if (DEBUG) System.out.println("dragOver " + cell);
+		if (!cell.equals(oldHilited)) {
+			this.cellHiLited = cell;
+			if (oldHilited != null) {
+				this.repaint(this.getCellArea(oldHilited));
+			}
+			this.repaint(this.getCellArea(this.cellHiLited));
+		}
+	}
+	
+	
+	//DnD implementation
+	private class TiledLayerDropTargetListener implements DropTargetListener {
+		public void dragEnter(DropTargetDragEvent dtde) {
+			if (DEBUG) System.out.println("dragEnter");
+		}
+		public void dragOver(DropTargetDragEvent dtde) {
+			TiledLayerEditorComponent.this.updateHiLite(dtde.getLocation());
+		}
+		public void dropActionChanged(DropTargetDragEvent dtde) {
+			if (DEBUG) System.out.println("dropActionChanged");
+		}
+		public void dragExit(DropTargetEvent dte) {
+			if (DEBUG) System.out.println("dragExit");
+		}
+		public void drop(DropTargetDropEvent dtde) {
+			Point dropPoint = dtde.getLocation();
+			if (DEBUG) System.out.println("Start drop @: " + dropPoint);
+			Transferable transferable = dtde.getTransferable();
+			try {
+				TileDataFlavor tileFlavor = new TileDataFlavor();
+				if (transferable.isDataFlavorSupported(tileFlavor)) {
+					dtde.acceptDrop(DnDConstants.ACTION_COPY);
+					List<Tile> tiles = (List<Tile>) transferable.getTransferData(tileFlavor);
+					assert (tiles.size() > 0);
+					ImageResource imgRes = TiledLayerEditorComponent.this.tiledLayer.getImageResource();
+					Tile newTile = null;
+					if (tiles.size() > 1) {
+						//TODO if dropping multiple tiles then turn them into an animated tile
+						int[] indexes = new int[tiles.size()];
+						for (int i = 0; i < indexes.length; i++) {
+							indexes[i] = tiles.get(i).getIndex();
+						}
+						newTile = imgRes.createAnimatedTile(indexes);
+					} else {
+						newTile = new StaticTile(imgRes, tiles.get(0).getIndex());
+					}
+					Position cell = TiledLayerEditorComponent.this.getCellAtPoint(dropPoint);
+					if (TiledLayerEditorComponent.this.cellsSelected.contains(cell)) {
+						TiledLayerEditorComponent.this.tiledLayer.setTileAtPositions(newTile.getIndex(), TiledLayerEditorComponent.this.cellsSelected);
+					} else {
+						TiledLayerEditorComponent.this.tiledLayer.setTileAt(newTile.getIndex(), cell.getRow(), cell.getCol());
+					}
+					dtde.dropComplete(true);
+				} else {
+					if (DEBUG) System.out.println("NOT a Tile :(");
+					dtde.dropComplete(false);
+				}
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+				dtde.dropComplete(false);
+			} catch (UnsupportedFlavorException e) {
+				e.printStackTrace();
+				dtde.dropComplete(false);
+			} catch (IOException e) {
+				e.printStackTrace();
+				dtde.dropComplete(false);
+			}
+		}
+	}
+	
+	//TiledLayerListener
+	public void tileChanged(TiledLayer tiledLayer, int row, int col) {
+		this.repaint(this.getCellArea(row, col));
+	}
+	
+	public void tilesChanged(TiledLayer tiledLayer, Set positions) {
+		this.revalidate();
+		this.repaint();
+	}
+	
+	public void columnsInserted(TiledLayer tiledLayer, int index, int count) {
+		this.shiftSelectedCellColumns(index, count);
+		this.revalidate();
+		this.repaint();
+		this.rulerHorizontal.repaint();
+		//this.rulerVertical.repaint();
+	}
+	
+	public void columnsRemoved(TiledLayer tiledLayer, int index, int count) {
+		this.shiftSelectedCellColumns(index, -count);
+		this.revalidate();
+		this.repaint();
+		this.rulerHorizontal.repaint();
+		//this.rulerVertical.repaint();
+	}
+	
+	public void rowsInserted(TiledLayer tiledLayer, int index, int count) {
+		this.shiftSelectedCellRows(index, count);
+		this.revalidate();
+		this.repaint();
+		//this.rulerHorizontal.repaint();
+		this.rulerVertical.repaint();
+	}
+	
+	public void rowsRemoved(TiledLayer tiledLayer, int index, int count) {
+		this.shiftSelectedCellRows(index, -count);
+		this.revalidate();
+		this.repaint();
+		//this.rulerHorizontal.repaint();
+		this.rulerVertical.repaint();
+	}
+	
+	private void shiftSelectedCellRows(int index, int count) {
+		List<Position> bucket = new ArrayList<Position>();
+
+		synchronized (this.cellsSelected) {
+			for (Iterator<Position> it = cellsSelected.iterator(); it.hasNext();) {
+				Position position = it.next();
+				int curRow = position.getRow();
+				if (curRow >= index) {
+					it.remove();
+					bucket.add(new Position(curRow + count, position.getCol()));
+				}
+			}
+
+			for (Position position : bucket) {
+				this.cellsSelected.add(position);
+			}
+		}
+	}
+	
+	private void shiftSelectedCellColumns(int index, int count) {
+		List<Position> bucket = new ArrayList<Position>();
+		
+		synchronized (this.cellsSelected) {
+			for (Iterator<Position> it = cellsSelected.iterator(); it.hasNext();) {
+				Position position = it.next();
+				int curCol = position.getCol();
+				if (curCol >= index) {
+					it.remove();
+					bucket.add(new Position(position.getRow(), curCol + count));
+				}
+			}
+
+			for (Position position : bucket) {
+				this.cellsSelected.add(position);
+			}
+		}
+	}
+	
+	class RulerVertical extends JComponent implements MouseListener, MouseMotionListener {
+		private static final int SIZE = 12;
+		private static final boolean DEBUG = false;
+		
+		private HashSet selectedRows = new HashSet();
+		private int hilitedRowHeader = -1;
+		
+		public RulerVertical() {
+			ToolTipManager.sharedInstance().registerComponent(this);
+			this.addMouseListener(this);
+			this.addMouseMotionListener(this);
+		}
+		
+		public String getToolTipText(MouseEvent event) {
+			return "Row: " + this.getRowAtPoint(event.getPoint());
+		}
+		
+		public Dimension getPreferredSize() {
+			Dimension size = TiledLayerEditorComponent.this.getPreferredSize();
+			size.width = SIZE;
+			return size;
+		}
+		
+		protected void paintComponent(Graphics graphincs) {
+			Graphics2D g = (Graphics2D) graphincs;
+			
+			Rectangle rect = g.getClipBounds();
+			if (DEBUG) System.out.println("RulerVertical.repaint " + rect);
+			
+			int unit = GRID_WIDTH + TiledLayerEditorComponent.this.cellHeight;
+			
+			for (int y = (rect.y / unit) * unit; y <= rect.y + rect.height; y+= unit) {
+				int row = y/unit;
+				
+				//only paint header cells for existing rows
+				if (row >= TiledLayerEditorComponent.this.tiledLayer.getRowCount())
+					break;
+				
+				boolean raised = true;
+				
+				g.setColor(new Color(240, 238, 230));
+				
+				if (selectedRows.contains(row)) {
+					raised = false;
+				}
+				g.fill3DRect(0, y + GRID_WIDTH/2, SIZE, unit, raised);
+				
+				if (row == this.hilitedRowHeader) {
+					g.setColor(HILITE_COLOR);
+					g.fill3DRect(0, y + GRID_WIDTH/2, SIZE, unit, raised);
+				}
+			}
+		}
+		
+		private int getRowAtPoint(Point point) {
+			return this.getRowAtCoordinates(point.x, point.y);
+		}
+		private int getRowAtCoordinates(int x, int y) {
+			return (y - GRID_WIDTH) / (TiledLayerEditorComponent.this.cellHeight + GRID_WIDTH);
+		}
+		
+		private Rectangle getRowHeaderArea(int row) {
+			Rectangle area = new Rectangle( 
+					0,
+					((TiledLayerEditorComponent.this.cellHeight + GRID_WIDTH) * row) + GRID_WIDTH/2, 
+					SIZE,
+					TiledLayerEditorComponent.this.cellHeight + GRID_WIDTH
+					);
+			return area;
+		}
+		
+		private void toggleRowHeaderSelection(int row) {
+			if (this.selectedRows.remove(row)) {
+				TiledLayerEditorComponent.this.setRowSelection(row, false);
+			}
+			else {
+				this.selectedRows.add(row);
+				TiledLayerEditorComponent.this.setRowSelection(row, true);
+			}
+			this.repaint();
+		}
+		
+		private void hiliteRowHeader(int row) {
+			if (this.hilitedRowHeader == row) {
+				return;
+			}
+			int oldHilited = this.hilitedRowHeader;
+			this.hilitedRowHeader = row;
+			this.repaint(this.getRowHeaderArea(row));
+			this.repaint(this.getRowHeaderArea(oldHilited));
+		}
+		
+		/**
+		 * Toggle the selection of the column header and the column cell selection.
+		 */
+		public void mouseClicked(MouseEvent e) {
+			int row = this.getRowAtPoint(e.getPoint());
+			this.toggleRowHeaderSelection(row);
+		}
+		public void mousePressed(MouseEvent e) {
+			if (e.isPopupTrigger()) {
+				this.handlePopUp(e);
+			}
+		}
+		public void mouseReleased(MouseEvent e) {
+			if (e.isPopupTrigger()) {
+				this.handlePopUp(e);
+			}
+		}
+		
+		public void mouseEntered(MouseEvent e) {
+		}
+		public void mouseExited(MouseEvent e) {
+			this.hiliteRowHeader(-1);
+		}
+		
+		public void mouseDragged(MouseEvent e) {
+		}
+		public void mouseMoved(MouseEvent e) {
+			int row = this.getRowAtPoint(e.getPoint());
+			this.hiliteRowHeader(row);
+		}
+
+		private void handlePopUp(MouseEvent e) {
+			int row = this.getRowAtPoint(e.getPoint());
+			if (DEBUG) System.out.println("Popup row: " + row);
+			JPopupMenu menu = this.createRulerPopupMenu(row);
+			menu.show(this, e.getX(), e.getY());
+		}
+		private JPopupMenu createRulerPopupMenu(int row) {
+			JPopupMenu menu = new JPopupMenu();
+			for (Iterator iter = this.getActions().iterator(); iter.hasNext();) {
+				Action action = (Action) iter.next();
+				action.putValue("ROW", new Integer(row));
+				menu.add(action);
+			}
+			return menu;
+		}
+		public List getActions() {
+			ArrayList actions = new ArrayList();
+			actions.add(new DeleteRowAction());
+			actions.add(new PrependRowAction());
+			actions.add(new AppendRowAction());
+			return Collections.unmodifiableList(actions);
+		}
+		
+		private class DeleteRowAction extends AbstractAction {
+			{
+				this.putValue(NAME, "Delete row");
+			}
+			
+			public void actionPerformed(ActionEvent e) {
+				int row = ((Integer) this.getValue("ROW")).intValue();
+				TiledLayerEditorComponent.this.tiledLayer.deleteRows(row, 1);
+			}
+		}
+		private class PrependRowAction extends AbstractAction {
+			{
+				this.putValue(NAME, "Prepend row");
+			}
+			
+			public void actionPerformed(ActionEvent e) {
+				int row = ((Integer) this.getValue("ROW")).intValue();
+				TiledLayerEditorComponent.this.tiledLayer.insertRows(row, 1);
+			}
+		}
+		private class AppendRowAction extends AbstractAction {
+			{
+				this.putValue(NAME, "Append row");
+			}
+			
+			public void actionPerformed(ActionEvent e) {
+				int row = ((Integer) this.getValue("ROW")).intValue();
+				TiledLayerEditorComponent.this.tiledLayer.insertRows(row +1, 1);
+			}
+		}
+	}
+	
+	class RulerHorizontal  extends JComponent implements MouseListener, MouseMotionListener {
+		private static final int SIZE = 12;
+		private static final boolean DEBUG = false;
+		
+		private HashSet selectedCols = new HashSet();
+		private int hilitedColumnHeader = -1;
+		
+		public RulerHorizontal() {
+			ToolTipManager.sharedInstance().registerComponent(this);
+			this.addMouseListener(this);
+			this.addMouseMotionListener(this);
+		}
+		
+		public String getToolTipText(MouseEvent event) {
+			return "Column: " + this.getColumnAtPoint(event.getPoint());
+		}
+		
+		public Dimension getPreferredSize() {
+			Dimension size = TiledLayerEditorComponent.this.getPreferredSize();
+			size.height = SIZE;
+			return size;
+		}
+		protected void paintComponent(Graphics graphincs) {
+			Graphics2D g = (Graphics2D) graphincs;
+			
+			Rectangle rect = g.getClipBounds();
+			if (DEBUG) System.out.println("RulerHorizontal.repaint " + rect);
+			
+			int unit = GRID_WIDTH + TiledLayerEditorComponent.this.cellWidth;
+			
+			for (int x = (rect.x / unit) * unit; x <= rect.x + rect.width; x+= unit) {
+				int col =  x / unit;
+				
+				if (col >= TiledLayerEditorComponent.this.tiledLayer.getColumnCount()) {
+					break;
+				}
+				
+				boolean raised = true;
+				//if (DEBUG) System.out.println("paint col: " + col);
+				g.setColor(new Color(240, 238, 230));
+				
+				if (selectedCols.contains(col)) {
+					raised = false;
+				}
+				g.fill3DRect(x + GRID_WIDTH/2, 0, unit, SIZE, raised);
+				
+				if (col == this.hilitedColumnHeader) {
+					g.setColor(HILITE_COLOR);
+					g.fill3DRect(x + GRID_WIDTH/2, 0, unit, SIZE, raised);
+				}
+			}
+		}
+		
+		private int getColumnAtPoint(Point point) {
+			return this.getColumnAtCoordinates(point.x, point.y);
+		}
+		private int getColumnAtCoordinates(int x, int y) {
+			return (x - GRID_WIDTH) / (TiledLayerEditorComponent.this.cellWidth + GRID_WIDTH);
+		}
+		
+		private Rectangle getColumnHeaderArea(int col) {
+			Rectangle area = new Rectangle( 
+					((TiledLayerEditorComponent.this.cellWidth + GRID_WIDTH) * col) + GRID_WIDTH/2, 
+					0,
+					TiledLayerEditorComponent.this.cellWidth + GRID_WIDTH,
+					SIZE);
+			return area;
+		}
+		
+		private void toggleColumnHeaderSelection(int col) {
+			if (this.selectedCols.remove(col)) {
+				TiledLayerEditorComponent.this.setColumnSelection(col, false);
+			}
+			else {
+				this.selectedCols.add(col);
+				TiledLayerEditorComponent.this.setColumnSelection(col, true);
+			}
+			this.repaint();
+		}
+		
+		private void hiliteColumnHeader(int col) {
+			if (this.hilitedColumnHeader == col) {
+				return;
+			}
+			int oldHilited = this.hilitedColumnHeader;
+			this.hilitedColumnHeader = col;
+			this.repaint(this.getColumnHeaderArea(col));
+			this.repaint(this.getColumnHeaderArea(oldHilited));
+		}
+		
+		/**
+		 * Toggle the selection of the column header and the column cell selection.
+		 */
+		public void mouseClicked(MouseEvent e) {
+			int col = this.getColumnAtPoint(e.getPoint());
+			this.toggleColumnHeaderSelection(col);
+		}
+		public void mousePressed(MouseEvent e) {
+			if (e.isPopupTrigger()) {
+				this.handlePopUp(e);
+			}
+		}
+		public void mouseReleased(MouseEvent e) {
+			if (e.isPopupTrigger()) {
+				this.handlePopUp(e);
+			}
+		}
+		
+		public void mouseEntered(MouseEvent e) {
+		}
+		public void mouseExited(MouseEvent e) {
+			this.hiliteColumnHeader(-1);
+		}
+		
+		public void mouseDragged(MouseEvent e) {
+		}
+		public void mouseMoved(MouseEvent e) {
+			int col = this.getColumnAtPoint(e.getPoint());
+			this.hiliteColumnHeader(col);
+		}
+
+		private void handlePopUp(MouseEvent e) {
+			int col = this.getColumnAtPoint(e.getPoint());
+			if (DEBUG) System.out.println("Popup col: " + col);
+			JPopupMenu menu = this.createRulerPopupMenu(col);
+			menu.show(this, e.getX(), e.getY());
+			this.hiliteColumnHeader(col);
+		}
+		private JPopupMenu createRulerPopupMenu(int col) {
+			JPopupMenu menu = new JPopupMenu();
+			for (Iterator iter = this.getActions().iterator(); iter.hasNext();) {
+				Action action = (Action) iter.next();
+				action.putValue("COLUMN", new Integer(col));
+				menu.add(action);
+			}
+			return menu;
+		}
+		
+		public List getActions() {
+			ArrayList actions = new ArrayList();
+			actions.add(new DeleteColAction());
+			actions.add(new PrependColAction());
+			actions.add(new AppendColAction());
+			return Collections.unmodifiableList(actions);
+		}
+		
+		private class DeleteColAction extends AbstractAction {
+			{
+				this.putValue(NAME, "Delete column");
+			}
+			
+			public void actionPerformed(ActionEvent e) {
+				int col = ((Integer) this.getValue("COLUMN")).intValue();
+				TiledLayerEditorComponent.this.tiledLayer.deleteColumns(col, 1);
+			}
+		}
+		private class PrependColAction extends AbstractAction {
+			{
+				this.putValue(NAME, "Prepend column");
+			}
+			
+			public void actionPerformed(ActionEvent e) {
+				int col = ((Integer) this.getValue("COLUMN")).intValue();
+				TiledLayerEditorComponent.this.tiledLayer.insertColumns(col, 1);
+			}
+		}
+		private class AppendColAction extends AbstractAction {
+			{
+				this.putValue(NAME, "Append column");
+			}
+			
+			public void actionPerformed(ActionEvent e) {
+				int col = ((Integer) this.getValue("COLUMN")).intValue();
+				TiledLayerEditorComponent.this.tiledLayer.insertColumns(col +1, 1);
+			}
+		}
+	}
+	
+}
+

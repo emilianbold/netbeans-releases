@@ -245,6 +245,7 @@ Microsystems, Inc. All Rights Reserved.
             <friend-packages>
                 <friend>org.netbeans.modules.mobility.end2end</friend>
                 <friend>org.netbeans.modules.mvd</friend>
+                <friend>org.netbeans.modules.vmd.io.javame</friend>
                 <package>org.netbeans.modules.mobility.editor.pub</package>
             </friend-packages>
         </data>

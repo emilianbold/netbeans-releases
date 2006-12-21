@@ -1,0 +1,15 @@
+package Templates.Classes;
+
+import javax.microedition.midlet.*;
+import javax.microedition.lcdui.*;
+
+/**
+ * @author __USER__
+ */
+public class EmptyGame {
+
+    //GEN-LINE:|fields|0|
+
+    //GEN-LINE:|methods|0|
+
+}

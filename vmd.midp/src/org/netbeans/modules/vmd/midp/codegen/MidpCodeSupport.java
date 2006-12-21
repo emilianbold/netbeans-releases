@@ -1,0 +1,89 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+package org.netbeans.modules.vmd.midp.codegen;
+
+import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
+import org.netbeans.modules.vmd.api.codegen.CodeWriter;
+import org.netbeans.modules.vmd.api.codegen.CodeSupport;
+import org.netbeans.modules.vmd.api.model.Debug;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
+
+/**
+ * @author David Kaspar
+ */
+// HINT - after making change, update MidpPrimitiveDescriptor, MidpEnumDescriptor too
+public class MidpCodeSupport {
+
+    public static void generateCodeForPropertyValue (CodeWriter writer, PropertyValue value) {
+        switch (value.getKind ()) {
+            case ARRAY: {
+                // TODO - add "new TYPE[] {" code
+                boolean newLines = value.getType ().getDimension () > 1;
+                for (PropertyValue propertyValue : value.getArray ()) {
+                    generateCodeForPropertyValue (writer, propertyValue);
+                    writer.write (newLines ? ",\n" : ", ");
+                }
+            } break;
+            case ENUM:
+                generateEnumTypes (writer, value);
+                break;
+            case NULL:
+                writer.write ("null"); // NOI18N
+                break;
+            case REFERENCE:
+                writer.write (CodeReferencePresenter.generateAccessCode (value.getComponent ()));
+                break;
+            case USERCODE:
+                writer.write (value.getUserCode ());
+                break;
+            case VALUE:
+                generatePrimitiveTypes (writer, value);
+                break;
+            default:
+                throw Debug.illegalState ();
+        }
+    }
+
+    // TODO - convert to global lookup - or could be handled as a default generator, a custom could be defined by Parameter
+    private static void generatePrimitiveTypes (CodeWriter writer, PropertyValue value) {
+        TypeID type = value.getType ();
+        if (MidpTypes.TYPEID_INT.equals (type))
+            writer.write (value.getValue ().toString ());
+        else if (MidpTypes.TYPEID_LONG.equals (type))
+            writer.write (value.getValue ().toString () + "l"); // NOI18N
+        else if (MidpTypes.TYPEID_BOOLEAN.equals (type))
+            writer.write ((Boolean) value.getValue () ? "true" : "false"); // NOI18N
+        else if (MidpTypes.TYPEID_JAVA_LANG_STRING.equals (type))
+            writer.write ("\"" + CodeSupport.encryptStringToJavaCode (value.getValue ().toString ()) + "\"");
+        else if (MidpTypes.TYPEID_JAVA_CODE.equals (type))
+            writer.write (value.getValue ().toString ());
+        //TODO
+    }
+
+    // TODO - convert to global lookup - or could be handled as a default generator, a custom could be defined by Parameter
+    private static void generateEnumTypes (CodeWriter writer, PropertyValue value) {
+        TypeID type = value.getType ();
+        if (MidpTypes.TYPEID_ALERT_TYPE.equals (type))
+            writer.write ("AlertType." + value.getValue ().toString ());
+        //TODO
+    }
+
+}

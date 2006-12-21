@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    The contents of this file are subject to the terms of the Common Development
+    and Distribution License (the License). You may not use this file except in
+    compliance with the License.
+    
+    You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+    or http://www.netbeans.org/cddl.txt.
+    
+    When distributing Covered Code, include this CDDL Header Notice in each file
+    and include the License file at http://www.netbeans.org/cddl.txt.
+    If applicable, add the following below the CDDL Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyrighted [year] [name of copyright owner]"
+    
+    The Original Software is NetBeans. The Initial Developer of the Original
+    Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+    Microsystems, Inc. All Rights Reserved.
+    -->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+
+    <folder name="Templates">
+        <folder name="MIDP">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.midp.resources.Bundle"/>
+
+            <file name="EmptyVisualMIDlet.java" url="templates/emptyvisualmidlet_java.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.midp.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" stringvalue="nbresloc:org/netbeans/modules/vmd/io/resources/design.gif"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
+<!--                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.mvd.ui.wizard.FileWizardIterator.singleton"/>-->
+                <attr name="isMIDletTemplate" boolvalue="true"/>
+                <attr name="MIDP" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="MIDP"/>
+            </file>
+            <file name="EmptyVisualMIDlet.vmd" url="templates/emptyvisualmidlet_vmd.template">
+                <attr name="template" boolvalue="true"/>
+            </file>
+
+            <attr name="EmptyVisualMIDlet.java/EmptyVisualDesign.java" boolvalue="true"/>
+
+            <file name="EmptyVisualDesign.java" url="templates/emptyvisualdesign_java.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.midp.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" stringvalue="nbresloc:org/netbeans/modules/vmd/io/resources/design.gif"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
+<!--                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.mvd.ui.wizard.FileWizardIterator.singleton"/>-->
+                <attr name="isMIDletTemplate" boolvalue="true"/>
+                <attr name="MIDP" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="MIDP"/>
+            </file>
+            <file name="EmptyVisualDesign.vmd" url="templates/emptyvisualdesign_vmd.template">
+                <attr name="template" boolvalue="true"/>
+            </file>
+
+        </folder>
+    </folder>
+
+    <folder name="vmd-midp">
+
+        <folder name="components">
+
+            <file name="org-netbeans-modules-vmd-midp-components-general-RootCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-general-ClassCD.instance"/>
+
+            <file name="org-netbeans-modules-vmd-midp-components-commands-CommandCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-commands-ListSelectCommandCD.instance"/>
+
+            <file name="org-netbeans-modules-vmd-midp-components-categories-CategoryCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-categories-CommandsCategoryCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-categories-ControllersCategoryCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-categories-DisplayablesCategoryCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-categories-PointsCategoryCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-categories-ResourcesCategoryCD.instance"/>
+
+            <file name="org-netbeans-modules-vmd-midp-components-resources-ResourceCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-resources-FontCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-resources-ImageCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-resources-TickerCD.instance"/>
+
+            <file name="org-netbeans-modules-vmd-midp-components-displayables-DisplayableCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-displayables-ScreenCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-displayables-AlertCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-displayables-ListCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-displayables-TextBoxCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-displayables-FormCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-displayables-CanvasCD.instance"/>
+
+            <file name="org-netbeans-modules-vmd-midp-components-items-ChoiceGroupCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-items-DateFieldCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-items-GaugeCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-items-ImageItemCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-items-ItemCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-items-StringItemCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-items-TextFieldCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-items-SpacerCD.instance"/>
+            
+            <file name="org-netbeans-modules-vmd-midp-components-elements-ChoiceElementCD.instance"/>
+
+            <file name="org-netbeans-modules-vmd-midp-components-points-PointCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-points-DisplayCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-points-MobileDeviceCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-points-CallPointCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-points-MethodPointCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-points-EntryPointCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-points-IfPointCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-points-SwitchPointCD.instance"/>
+
+            <file name="org-netbeans-modules-vmd-midp-components-sources-EventSourceCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-sources-CommandEventSourceCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-sources-EntryStartEventSourceCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-sources-IfFalseEventSourceCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-sources-IfTrueEventSourceCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-sources-ItemCommandEventSourceCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-sources-ListElementEventSourceCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-sources-ListSelectCommandEventSourceCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-sources-MobileDeviceResumeEventSourceCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-sources-MobileDeviceStartEventSourceCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-sources-SwitchCaseEventSourceCD.instance"/>
+
+            <file name="org-netbeans-modules-vmd-midp-components-handlers-EventHandlerCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-handlers-CallPointEventHandlerCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-handlers-ExitMidletEventHandlerCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-handlers-ListEventHandlerCD.instance"/>
+<!-- No working yet
+            <file name="org-netbeans-modules-vmd-midp-components-handlers-MenuScreenEventHandlerCD.instance"/>
+-->
+            <file name="org-netbeans-modules-vmd-midp-components-handlers-MethodPointEventHandlerCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-handlers-PreviousScreenEventHandlerCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-handlers-SwitchDisplayableEventHandlerCD.instance"/>
+
+            <file name="org-netbeans-modules-vmd-midp-components-listeners-EventListenerCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-listeners-CommandListenerCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-listeners-ItemCommandListenerCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-listeners-ItemStateListenerCD.instance"/>
+
+        </folder>
+
+        <folder name="producers">
+            <file name="org-netbeans-modules-vmd-midp-producers-ListProducer.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-ListElementEventSourceProducer.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-EntryPointProducer.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-IfCallPointProducer.instance"/>
+
+            <file name="org-netbeans-modules-vmd-midp-producers-CommandProducer$BackCommand.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-CommandProducer$CancelCommand.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-CommandProducer$ExitCommand.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-CommandProducer$HelpCommand.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-CommandProducer$ItemCommand.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-CommandProducer$OkCommand.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-CommandProducer$ScreenCommand.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-CommandProducer$StopCommand.instance"/>
+
+            <file name="org-netbeans-modules-vmd-midp-producers-MidpComponentProducer$Form.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-MidpComponentProducer$Alert.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-MidpComponentProducer$TextBox.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-MidpComponentProducer$ChoiceGroup.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-MidpComponentProducer$Gauge.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-MidpComponentProducer$Spacer.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-MidpComponentProducer$DateField.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-MidpComponentProducer$ImageItem.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-MidpComponentProducer$StringItem.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-MidpComponentProducer$Font.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-MidpComponentProducer$Image.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-MidpComponentProducer$Ticker.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-MidpComponentProducer$TextField.instance"/>
+        </folder>
+        
+        <folder name="inspectorfolders">
+            <file name="org-netbeans-modules-vmd-midp-inspector-folders-DatasourcesCategoryFolder.instance"/>
+        </folder>
+
+    </folder>
+
+</filesystem>

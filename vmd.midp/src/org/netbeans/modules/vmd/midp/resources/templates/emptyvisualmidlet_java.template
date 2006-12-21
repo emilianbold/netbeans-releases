@@ -1,0 +1,45 @@
+package Templates.Classes;
+
+import javax.microedition.midlet.*;
+import javax.microedition.lcdui.*;
+
+/**
+ * @author __USER__
+ */
+public class EmptyVisualMIDlet extends MIDlet {
+
+    private boolean midletPaused = false;
+
+    //GEN-LINE:|fields|0|
+
+    //GEN-LINE:|methods|0|
+
+    public Display getDisplay () {
+        return Display.getDisplay(this);
+    }
+
+    public void exitMIDlet() {
+        switchDisplayable (null, null);
+        destroyApp(true);
+        notifyDestroyed();
+    }
+
+    public void startApp() {
+        if (midletPaused) {
+            resumeMIDlet ();
+        } else {
+            initialize ();
+            startMIDlet ();
+        }
+        midletPaused = false;
+    }
+
+    public void pauseApp() {
+        midletPaused = true;
+    }
+
+    public void destroyApp(boolean unconditional) {
+        exitMIDlet ();
+    }
+
+}

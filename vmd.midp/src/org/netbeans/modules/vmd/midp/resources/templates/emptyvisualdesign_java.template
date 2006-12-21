@@ -1,0 +1,31 @@
+package Templates.Classes;
+
+import javax.microedition.midlet.*;
+import javax.microedition.lcdui.*;
+
+/**
+ * @author __USER__
+ */
+public class EmptyVisualDesign {
+
+    private MIDlet midlet;
+
+    //GEN-LINE:|fields|0|
+
+    public EmptyVisualDesign (MIDlet midlet) {
+        this.midlet = midlet;
+    }
+
+    //GEN-LINE:|methods|0|
+
+    public Display getDisplay () {
+        return Display.getDisplay(midlet);
+    }
+
+    public void exitMIDlet() {
+        switchDisplayable (null, null);
+//        midlet.destroyApp(true);
+        midlet.notifyDestroyed();
+    }
+
+}
