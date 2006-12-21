@@ -25,8 +25,8 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
                <include name="org/netbeans/test/jsf/JsfFunctionalTest.class"/>
-               <!--
                <include name="org/netbeans/test/jsf/JsfPagesFromEntityClassTest.class"/>
+               <!-- Add when 91415 fixed.
                <include name="**/CompletionTest.class"/>
                -->
             </patternset>
