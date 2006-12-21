@@ -37,7 +37,10 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import static org.netbeans.modules.web.core.syntax.completion.VirtualJavaFromJSPCreator.FakedJavaClass;
 
 /**
- * Code completion functionality for embedded java code (scriptlets, JSP declarations)
+ * Code completion functionality for Java code embedded in JSP files:
+ * - scriptlets (<% ... %>)
+ * - JSP declarations (<%! ... %> )
+ * - expressions (<%= ... %>)
  *
  * @author Tomasz.Slota@Sun.COM
  */
