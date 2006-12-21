@@ -178,9 +178,9 @@ public class DataShadowSlowness39981Test extends NbTestCase implements Operation
         createChildren ();
     }
     
-    public void test987 () throws Exception {
-        createChildren ();
-    }
+//    public void test987 () throws Exception {
+//        createChildren ();
+//    }
     
     
     public void operationCopy (org.openide.loaders.OperationEvent.Copy ev) {
