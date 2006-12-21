@@ -28,8 +28,7 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.midp.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" stringvalue="nbresloc:org/netbeans/modules/vmd/io/resources/design.gif"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
-<!--                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.mvd.ui.wizard.FileWizardIterator.singleton"/>-->
+                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.mobility.project.ui.wizard.FileWizardIterator.singleton"/>
                 <attr name="isMIDletTemplate" boolvalue="true"/>
                 <attr name="MIDP" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="MIDP"/>
@@ -44,9 +43,8 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.midp.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" stringvalue="nbresloc:org/netbeans/modules/vmd/io/resources/design.gif"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
-<!--                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.mvd.ui.wizard.FileWizardIterator.singleton"/>-->
-                <attr name="isMIDletTemplate" boolvalue="true"/>
+                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.mobility.project.ui.wizard.FileWizardIterator.singleton"/>
+                <attr name="isMIDletTemplate" boolvalue="false"/>
                 <attr name="MIDP" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="MIDP"/>
             </file>
