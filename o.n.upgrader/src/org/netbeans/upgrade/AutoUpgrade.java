@@ -85,7 +85,7 @@ public final class AutoUpgrade {
     
     // the order of VERSION_TO_CHECK here defines the precedence of imports
     // the first one will be choosen for import
-    final static private List VERSION_TO_CHECK = Arrays.asList (new String[] { ".netbeans/5.0" });
+    final static private List VERSION_TO_CHECK = Arrays.asList (new String[] { ".netbeans/5.5",".netbeans/5.0" });
     
     static private File checkPrevious (String[] version) {
         boolean exists;
