@@ -45,21 +45,38 @@ public class JavaJSPCompletionProvider implements CompletionProvider {
     private final JavaCompletionProvider javaCompletionProvider = new JavaCompletionProvider();
     
     public CompletionTask createTask(int queryType, final JTextComponent component) {
-        if ((queryType & COMPLETION_QUERY_TYPE) == 0){
-            return null;
+        if ((queryType & COMPLETION_QUERY_TYPE) != 0){
+            Document doc = Utilities.getDocument(component);
+            int caretOffset = component.getCaret().getDot();
+            
+            if (isWithinScriptlet(doc, caretOffset)){
+                //delegate to java cc provider if the context is really java code
+                return new AsyncCompletionTask(new EmbeddedJavaCompletionQuery(component, queryType), component);
+            }
         }
-        
-        //delegate to java cc provider if the context is really java code
-        int offset = component.getCaret().getDot();
-        TokenHierarchy tokenHierarchy = TokenHierarchy.get(Utilities.getDocument(component));
+
+        return null;
+    }
+    
+    private boolean isWithinScriptlet(Document doc, int offset){
+        TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
         TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
         
-        if(tokenSequence.move(offset) != Integer.MAX_VALUE 
-                && tokenSequence.token().id() == JspTokenId.SCRIPTLET) {
-            return new AsyncCompletionTask(new EmbeddedJavaCompletionQuery(component, queryType), component);
+        if(tokenSequence.move(offset) != Integer.MAX_VALUE) {
+            Object tokenID = tokenSequence.token().id();
+            if (tokenID == JspTokenId.SCRIPTLET){
+                return true;
+            } else if (tokenID == JspTokenId.SYMBOL2) { 
+                // maybe the caret is placed just before the ending script delimiter?
+                tokenSequence.movePrevious();
+                
+                if (tokenSequence.token().id() == JspTokenId.SCRIPTLET){
+                    return true;
+                }
+            }
         }
         
-        return null;
+        return false;
     }
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
