@@ -86,6 +86,55 @@
     server.
 </p>
 
+<h3>Scenario: We need to not scare newcommers</h3>
+
+<p>
+    The submission dialog shall not open too "early". Instead it shall
+    wait for some time, to let the user try and see that the NetBeans
+    based product is worth to use and it is worth to contribute to the
+    project efforts.
+</p>
+
+<p>
+    That is why there should be a limit of actions that the user has to
+    perform before its attention is drawn to the process of submission.
+    That is why there will be a toolbar button counting the actually
+    performed user actions and if there will be more than 500 of actions
+    the button will start to visually indicate that it should be pressed.
+    If done, then the UI Gestures Collector dialog for submissions will
+    open.
+</p>
+
+<h3>Scenario: We need reliable submissions</h3>
+
+<p>
+    We are not interested for logs from people who just play with the system
+    (especially testers). We need real data and we need the data to be
+    of the same quality - e.g. contain similar amount of information.
+</p>
+
+<p>
+    This should be achieved the "action limit" of 500 described in previous
+    section. If the user is encouraged to submit the logs after 500 actions,
+    then most of the logs will contain data of the same size and as such
+    they will be of similar level of value for analysis.
+</p>
+
+<h3>Scenario: Easy bug reports</h3>
+
+<p>
+    Easy bug reporting is critical to improving quality of any product.
+    Many products include some "Dr." functionality that allows easy bug
+    submission in case of failure. That is why it is expected that
+    many users are going to see a failure as a natural moment for submitting
+    a feedback to netbeans.org project. 
+</p>
+
+<p>
+    The exception dialog will be enhanced to contain a submit button
+    and open the UI Gestures Collector dialog.
+</p>
+
 <h1>Ascii Art</h1>
 
 
