@@ -24,9 +24,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.highlights.spi.Highlight;
+import org.netbeans.modules.editor.hints.AnnotationHolder.Attacher;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescriptionTestSupport;
@@ -38,6 +41,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.text.Annotation;
 
 /**
  *
@@ -259,6 +263,47 @@ public class AnnotationHolderTest extends NbTestCase {
         ec.open();
         
         AnnotationHolder.getInstance(file).setErrorDescriptions("foo", Arrays.asList(ed1, ed2, ed3));
+        
+        ec.close();
+    }
+    
+    public void testComputeSeverity() throws Exception {
+        ErrorDescription ed1 = ErrorDescriptionFactory.createErrorDescription(Severity.ERROR, "1", file, 3, 5);
+        ErrorDescription ed2 = ErrorDescriptionFactory.createErrorDescription(Severity.HINT, "2", file, 1, 7);
+        ErrorDescription ed3 = ErrorDescriptionFactory.createErrorDescription(Severity.WARNING, "2", file, 1, 7);
+        ErrorDescription ed4 = ErrorDescriptionFactory.createErrorDescription(Severity.VERIFIER, "2", file, 1, 7);
+        
+        ec.open();
+        
+        class AttacherImpl implements Attacher {
+            private ParseErrorAnnotation annotation;
+            public void attachAnnotation(int line, ParseErrorAnnotation a) throws BadLocationException {
+                if (line == 0) {
+                    this.annotation = a;
+                }
+            }
+            public void detachAnnotation(Annotation a) {}
+        }
+        
+        AttacherImpl impl = new AttacherImpl();
+        
+        AnnotationHolder.getInstance(file).attacher = impl;
+        
+        AnnotationHolder.getInstance(file).setErrorDescriptions("foo", Arrays.asList(ed1, ed2, ed3));
+        
+        assertEquals(Severity.ERROR, impl.annotation.getSeverity());
+        
+        AnnotationHolder.getInstance(file).setErrorDescriptions("foo", Arrays.asList(ed2, ed3));
+        
+        assertEquals(Severity.WARNING, impl.annotation.getSeverity());
+        
+        AnnotationHolder.getInstance(file).setErrorDescriptions("foo", Arrays.asList(ed2));
+        
+        assertEquals(Severity.HINT, impl.annotation.getSeverity());
+        
+        AnnotationHolder.getInstance(file).setErrorDescriptions("foo", Arrays.asList(ed2, ed4));
+        
+        assertEquals(Severity.VERIFIER, impl.annotation.getSeverity());
         
         ec.close();
     }

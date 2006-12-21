@@ -113,4 +113,7 @@ public class ParseErrorAnnotation extends Annotation implements PropertyChangeLi
         return lineNumber;
     }
     
+    Severity getSeverity() {
+        return severity;
+    }
 }

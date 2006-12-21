@@ -166,25 +166,40 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener 
         updateVisibleRanges();
     }
     
-    private static final boolean useLinesToAttachAnnotations = false;
+    Attacher attacher = new NbDocumentAttacher();
     
     void attachAnnotation(int line, ParseErrorAnnotation a) throws BadLocationException {
-        if (useLinesToAttachAnnotations) {
+        attacher.attachAnnotation(line, a);
+    }
+
+    void detachAnnotation(Annotation a) {
+        attacher.detachAnnotation(a);
+    }
+    
+    static interface Attacher {
+        public void attachAnnotation(int line, ParseErrorAnnotation a) throws BadLocationException;
+        public void detachAnnotation(Annotation a);
+    }
+    
+    final class LineAttacher implements Attacher {
+        public void attachAnnotation(int line, ParseErrorAnnotation a) throws BadLocationException {
             LineCookie lc = od.getCookie(LineCookie.class);
             Line lineRef = lc.getLineSet().getCurrent(line);
             
             a.attach(lineRef);
-        } else {
+        }
+        public void detachAnnotation(Annotation a) {
+            a.detach();
+        }
+    }
+    
+    final class NbDocumentAttacher implements Attacher {
+        public void attachAnnotation(int line, ParseErrorAnnotation a) throws BadLocationException {
             Position lineStart = doc.createPosition(NbDocument.findLineOffset((StyledDocument) doc, line));
             
             NbDocument.addAnnotation((StyledDocument) doc, lineStart, -1, a);
         }
-    }
-
-    void detachAnnotation(Annotation a) {
-        if (useLinesToAttachAnnotations) {
-            a.detach();
-        } else {
+        public void detachAnnotation(Annotation a) {
             if (doc != null) {
                 NbDocument.removeAnnotation((StyledDocument) doc, a);
             }
@@ -371,7 +386,20 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener 
         
         concatDescription(others, description);
         
-        Severity mostImportantSeverity = hasErrors ? Severity.ERROR : Severity.WARNING; //XXX compute correct severity
+        Severity mostImportantSeverity;
+        
+        if (hasErrors) {
+            mostImportantSeverity = Severity.ERROR;
+        } else {
+            mostImportantSeverity = Severity.HINT;
+            
+            for (ErrorDescription e : others) {
+                if (mostImportantSeverity.compareTo(e.getSeverity()) > 0) {
+                    mostImportantSeverity = e.getSeverity();
+                }
+            }
+        }
+        
         LazyFixList fixes = ErrorDescriptionFactory.lazyListForDelegates(computeFixes(hasErrors ? trueErrors : others));
         
         ParseErrorAnnotation pea = new ParseErrorAnnotation(mostImportantSeverity, fixes, description.toString(), line, this);
