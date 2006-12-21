@@ -57,12 +57,15 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDTDAction.instance">
                 &xml-action-attributes;
             </file>
+            <!-- TODO: Retouche -->
+            <!--
             <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDocumentHandlerAction.instance">
                 &dtd-action-attributes;
             </file>            
             <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDOMScannerAction.instance">
                 &dtd-action-attributes;
             </file>
+            -->
         </folder>
 
     </folder>
@@ -77,8 +80,11 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-xml-tools-doclet-DocletAction.instance" />
 
             <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDTDAction.instance" />
+            <!-- TODO: Retouche -->
+            <!-- 
             <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDocumentHandlerAction.instance" />
             <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDOMScannerAction.instance" />
+            -->
         </folder>
     </folder>
 

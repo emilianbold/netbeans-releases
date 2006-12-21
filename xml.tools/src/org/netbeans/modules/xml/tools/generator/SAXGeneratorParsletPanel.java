@@ -22,8 +22,8 @@ import java.awt.*;
 import java.util.*;
 import java.beans.*;
 
-import org.openide.src.Type;
-import org.openide.src.Identifier;
+//import org.openide.src.Type;
+//import org.openide.src.Identifier;
 import org.openide.util.*;
 
 import javax.swing.*;
@@ -269,7 +269,8 @@ public final class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
                     if (parslet == null) {
                         return String.class.getName();
                     } else {
-                        return parslets.getReturnType(parslet).toString();
+                        //TODO: Retouche
+//                        return parslets.getReturnType(parslet).toString();
                     }
                     
                 case METHOD_COLUMN: 
@@ -289,62 +290,63 @@ public final class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
 
 //            new RuntimeException("Setting Value to " + value).printStackTrace();
             
-            if (col == TYPE_COLUMN) {
-                if (TYPE_VALIDATOR.isValid((String) value) == false) return;
-            } else if (col == METHOD_COLUMN) {
-                if (METHOD_VALIDATOR.isValid((String)value) == false) return;
-            }
-            
-            ElementBindings binds = model.getElementBindings();
-            ElementBindings.Entry entry = binds.getEntry(row);
-
-            // set to parslet or null if none assigned
-            String currentParslet = entry.getParslet();
-
-            ParsletBindings parslets = model.getParsletBindings();
-            ParsletBindings.Entry parsletEntry = parslets.getEntry(currentParslet);
-
-            switch (col) {
-                case TYPE_COLUMN:
-                    // all parslets of the same name must return same type
-                    if (currentParslet == null) {
-                       break;  // can not set a value
-                    } else {
-                        if (binds.getParsletUsageCount(currentParslet)>1) {
-                            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Cannot change"); // NOI18N
-                        } else {
-                            Type returnType = 
-                                Type.createClass(Identifier.create((String)value));
-                            parsletEntry.setReturnType(returnType); 
-                        }
-                    }
-                    break;
-
-                // setting parslet determines return value    
-                case METHOD_COLUMN:    
-                                        
-                    String identifier = (String)value;
-                    String oldReturnType = parslets.getReturnType(currentParslet).toString();
-                    
-                    if (binds.getParsletUsageCount(currentParslet) == 1) {
-                        parslets.remove(currentParslet);
-                    }
-                    if (NO_METHOD.equals(identifier) == false) {
-                        entry.setParslet(identifier);
-                    
-                        if (parslets.getEntry(identifier) == null) {
-                            //parslets.put(identifier, (String) getValueAt(row, TYPE_COLUMN));
-                            parslets.put(identifier, oldReturnType);
-                        } else {
-                            fireTableRowsUpdated(row,row);
-                        }
-                    } else {
-                        entry.setParslet(null);
-                        fireTableRowsUpdated(row,row);
-                    }
-                    break;
-
-            }
+            //TODO: Retouche
+//            if (col == TYPE_COLUMN) {
+//                if (TYPE_VALIDATOR.isValid((String) value) == false) return;
+//            } else if (col == METHOD_COLUMN) {
+//                if (METHOD_VALIDATOR.isValid((String)value) == false) return;
+//            }
+//            
+//            ElementBindings binds = model.getElementBindings();
+//            ElementBindings.Entry entry = binds.getEntry(row);
+//
+//            // set to parslet or null if none assigned
+//            String currentParslet = entry.getParslet();
+//
+//            ParsletBindings parslets = model.getParsletBindings();
+//            ParsletBindings.Entry parsletEntry = parslets.getEntry(currentParslet);
+//
+//            switch (col) {
+//                case TYPE_COLUMN:
+//                    // all parslets of the same name must return same type
+//                    if (currentParslet == null) {
+//                       break;  // can not set a value
+//                    } else {
+//                        if (binds.getParsletUsageCount(currentParslet)>1) {
+//                            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Cannot change"); // NOI18N
+//                        } else {
+//                            Type returnType = 
+//                                Type.createClass(Identifier.create((String)value));
+//                            parsletEntry.setReturnType(returnType); 
+//                        }
+//                    }
+//                    break;
+//
+//                // setting parslet determines return value    
+//                case METHOD_COLUMN:    
+//                                        
+//                    String identifier = (String)value;
+//                    String oldReturnType = parslets.getReturnType(currentParslet).toString();
+//                    
+//                    if (binds.getParsletUsageCount(currentParslet) == 1) {
+//                        parslets.remove(currentParslet);
+//                    }
+//                    if (NO_METHOD.equals(identifier) == false) {
+//                        entry.setParslet(identifier);
+//                    
+//                        if (parslets.getEntry(identifier) == null) {
+//                            //parslets.put(identifier, (String) getValueAt(row, TYPE_COLUMN));
+//                            parslets.put(identifier, oldReturnType);
+//                        } else {
+//                            fireTableRowsUpdated(row,row);
+//                        }
+//                    } else {
+//                        entry.setParslet(null);
+//                        fireTableRowsUpdated(row,row);
+//                    }
+//                    break;
+//
+//            }
 //            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(model.toString());
 
         }

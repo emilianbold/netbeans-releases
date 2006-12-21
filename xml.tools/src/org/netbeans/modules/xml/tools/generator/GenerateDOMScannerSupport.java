@@ -26,7 +26,7 @@ import java.lang.reflect.Modifier;
 
 import org.openide.*;
 import org.openide.nodes.*;
-import org.openide.src.*;
+//import org.openide.src.*;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.*;
@@ -53,7 +53,8 @@ public class GenerateDOMScannerSupport implements XMLGenerateCookie {
     private static final String METHOD_SCAN_DOCUMENT = "visitDocument"; // NOI18N
     private static final String METHOD_SCAN_ELEMENT  = "visitElement"; // NOI18N
 
-    private static final Type Type_STRING = Type.createFromClass (String.class);
+    //TODO: Retouche
+//    private static final Type Type_STRING = Type.createFromClass (String.class);
 
 
     private DataObject DO;
@@ -69,51 +70,52 @@ public class GenerateDOMScannerSupport implements XMLGenerateCookie {
         this.dtd = dtd;
     }
 
+    //TODO: Retouche
     public void generate () {
-        try {                        
-            
-            if (getDTD() == null)
-                return;
-
-            FileObject primFile = DO.getPrimaryFile();
-            
-            String rawName = primFile.getName();
-            String name = rawName.substring(0,1).toUpperCase() + rawName.substring(1) + Util.THIS.getString("NAME_SUFFIX_Scanner");
-            
-            FileObject folder = primFile.getParent();
-            String packageName = Util.findJavaPackage(folder);
-
-            FileObject generFile = (new SelectFileDialog (folder, name, JAVA_EXT)).getFileObject();
-            name = generFile.getName();
-
-            // write to file
-            FileLock lock = null;
-            PrintStream printer = null;
-            try {
-                GuiUtil.setStatusText(Util.THIS.getString("MSG_DOM_1"));
-                lock = generFile.lock ();
-                printer = new PrintStream (generFile.getOutputStream (lock));
-		printer.println (prepareDOMScanner (name, packageName, primFile));
-            } finally {
-                GuiUtil.setStatusText(""); // NOI18N
-                if (printer != null)
-                    printer.close();
-                if (lock != null)
-                    lock.releaseLock();
-            }
-            GuiUtil.performDefaultAction (generFile);
-
-        } catch (UserCancelException e) {
-        } catch (SourceException e) {
-            // should not occure
-            ErrorManager.getDefault().notify(e);
-        } catch (TreeException e) {
-            // can not get tree representaion
-            GuiUtil.notifyError(Util.THIS.getString("MSG_DOM_ERR_1"));
-        } catch (IOException e) {
-            // can not get tree representaion or write            
-            GuiUtil.notifyError(Util.THIS.getString("MSG_DOM_ERR_2"));
-        }
+//        try {                        
+//            
+//            if (getDTD() == null)
+//                return;
+//
+//            FileObject primFile = DO.getPrimaryFile();
+//            
+//            String rawName = primFile.getName();
+//            String name = rawName.substring(0,1).toUpperCase() + rawName.substring(1) + Util.THIS.getString("NAME_SUFFIX_Scanner");
+//            
+//            FileObject folder = primFile.getParent();
+//            String packageName = Util.findJavaPackage(folder);
+//
+//            FileObject generFile = (new SelectFileDialog (folder, name, JAVA_EXT)).getFileObject();
+//            name = generFile.getName();
+//
+//            // write to file
+//            FileLock lock = null;
+//            PrintStream printer = null;
+//            try {
+//                GuiUtil.setStatusText(Util.THIS.getString("MSG_DOM_1"));
+//                lock = generFile.lock ();
+//                printer = new PrintStream (generFile.getOutputStream (lock));
+//		printer.println (prepareDOMScanner (name, packageName, primFile));
+//            } finally {
+//                GuiUtil.setStatusText(""); // NOI18N
+//                if (printer != null)
+//                    printer.close();
+//                if (lock != null)
+//                    lock.releaseLock();
+//            }
+//            GuiUtil.performDefaultAction (generFile);
+//
+//        } catch (UserCancelException e) {
+//        } catch (SourceException e) {
+//            // should not occure
+//            ErrorManager.getDefault().notify(e);
+//        } catch (TreeException e) {
+//            // can not get tree representaion
+//            GuiUtil.notifyError(Util.THIS.getString("MSG_DOM_ERR_1"));
+//        } catch (IOException e) {
+//            // can not get tree representaion or write            
+//            GuiUtil.notifyError(Util.THIS.getString("MSG_DOM_ERR_2"));
+//        }
     }
 
     private TreeDTDRoot getDTD () throws IOException, TreeException {
@@ -131,144 +133,144 @@ public class GenerateDOMScannerSupport implements XMLGenerateCookie {
         return dtd;
     }
         
-    private String prepareDOMScanner (String name, String packageName, FileObject primFile) throws IOException, SourceException, TreeException {
-        getDTD();
-        
-	String header = GenerateSupportUtils.getJavaFileHeader (name, primFile);
-	String packageLine = (packageName != null && packageName.length() != 0 ? "package " + packageName + ";\n" : ""); // NOI18N
-	ClassElement clazz = prepareDOMScannerClass (name);
-	
-	StringBuffer buf = new StringBuffer();
-	buf.append (header).append ("\n").append (packageLine).append (clazz.toString()); // NOI18N
-
-	return buf.toString();
-    }
+//    private String prepareDOMScanner (String name, String packageName, FileObject primFile) throws IOException, SourceException, TreeException {
+//        getDTD();
+//        
+//	String header = GenerateSupportUtils.getJavaFileHeader (name, primFile);
+//	String packageLine = (packageName != null && packageName.length() != 0 ? "package " + packageName + ";\n" : ""); // NOI18N
+//	ClassElement clazz = prepareDOMScannerClass (name);
+//	
+//	StringBuffer buf = new StringBuffer();
+//	buf.append (header).append ("\n").append (packageLine).append (clazz.toString()); // NOI18N
+//
+//	return buf.toString();
+//    }
 
     
     /*
      * Generate top level class content.
      *
      */
-    private ClassElement prepareDOMScannerClass (String name) throws SourceException {
-	ClassElement clazz = new ClassElement ();
-	JavaDoc javadoc = clazz.getJavaDoc();
-	javadoc.setRawText ("\n"+ // NOI18N
-			    " This is a scanner of DOM tree.\n"+ // NOI18N
-			    "\n"+ // NOI18N
-			    " Example:\n"+ // NOI18N
-			    " <pre>\n"+ // NOI18N
-			    "     javax.xml.parsers.DocumentBuilderFactory builderFactory = javax.xml.parsers.DocumentBuilderFactory.newInstance();\n"+ // NOI18N
-			    "     javax.xml.parsers.DocumentBuilder builder = builderFactory.newDocumentBuilder();\n"+ // NOI18N
-			    "     org.w3c.dom.Document document = builder.parse (new org.xml.sax.InputSource (???));\n"+ // NOI18N
-			    "     <font color=\"blue\">"+name+" scanner = new "+name+" (document);</font>\n"+ // NOI18N
-			    "     <font color=\"blue\">scanner."+METHOD_SCAN_DOCUMENT+"();</font>\n"+ // NOI18N
-			    " </pre>\n"+ // NOI18N
-			    "\n"+ // NOI18N
-			    " @see org.w3c.dom.Document\n"+ // NOI18N
-			    " @see org.w3c.dom.Element\n"+ // NOI18N
-			    " @see org.w3c.dom.NamedNodeMap\n"); // NOI18N
-	clazz.setModifiers (Modifier.PUBLIC);
-	clazz.setName (Identifier.create (name));
-
-	dtd2java (clazz, findRootTagName());
-	    
-	return (clazz);
-    }
+//    private ClassElement prepareDOMScannerClass (String name) throws SourceException {
+//	ClassElement clazz = new ClassElement ();
+//	JavaDoc javadoc = clazz.getJavaDoc();
+//	javadoc.setRawText ("\n"+ // NOI18N
+//			    " This is a scanner of DOM tree.\n"+ // NOI18N
+//			    "\n"+ // NOI18N
+//			    " Example:\n"+ // NOI18N
+//			    " <pre>\n"+ // NOI18N
+//			    "     javax.xml.parsers.DocumentBuilderFactory builderFactory = javax.xml.parsers.DocumentBuilderFactory.newInstance();\n"+ // NOI18N
+//			    "     javax.xml.parsers.DocumentBuilder builder = builderFactory.newDocumentBuilder();\n"+ // NOI18N
+//			    "     org.w3c.dom.Document document = builder.parse (new org.xml.sax.InputSource (???));\n"+ // NOI18N
+//			    "     <font color=\"blue\">"+name+" scanner = new "+name+" (document);</font>\n"+ // NOI18N
+//			    "     <font color=\"blue\">scanner."+METHOD_SCAN_DOCUMENT+"();</font>\n"+ // NOI18N
+//			    " </pre>\n"+ // NOI18N
+//			    "\n"+ // NOI18N
+//			    " @see org.w3c.dom.Document\n"+ // NOI18N
+//			    " @see org.w3c.dom.Element\n"+ // NOI18N
+//			    " @see org.w3c.dom.NamedNodeMap\n"); // NOI18N
+//	clazz.setModifiers (Modifier.PUBLIC);
+//	clazz.setName (Identifier.create (name));
+//
+//	dtd2java (clazz, findRootTagName());
+//	    
+//	return (clazz);
+//    }
 
     /*
      * Generate scanner methods.
      *
      */
-    private void dtd2java (ClassElement clazz, String tempRootName) throws SourceException {
-        Iterator it;
-        FieldElement field;
-        ConstructorElement constructor;
-        MethodElement method;
-        Type docType = Type.parse (DOM_DOCUMENT);
-        Type elemType = Type.parse (DOM_ELEMENT);
-        StringBuffer sb;
-        JavaDoc javadoc;
-
-        // document field
-        field = new FieldElement();
-        field.setType (docType);
-        field.setName (Identifier.create (VARIABLE_DOCUMENT));
-        javadoc = field.getJavaDoc();
-        javadoc.setRawText ("org.w3c.dom.Document document"); // NOI18N
-        clazz.addField (field);
-
-        // constructor
-        constructor = new ConstructorElement();
-        constructor.setModifiers (Modifier.PUBLIC);
-        constructor.setName (clazz.getName());
-        constructor.setParameters
-        (new MethodParameter [] { new MethodParameter (VARIABLE_DOCUMENT, docType, false) });
-        sb = new StringBuffer ("\n"); // NOI18N
-        sb.append ("this.").append (VARIABLE_DOCUMENT).append (" = ").append (VARIABLE_DOCUMENT).append (";\n"); // NOI18N
-        constructor.setBody (sb.toString());
-        javadoc = constructor.getJavaDoc();
-        javadoc.setRawText ("Create new " + clazz.getName() + " with org.w3c.dom.Document."); // NOI18N
-        clazz.addConstructor (constructor);
-
-        // scanDocument method
-        
-        method = new MethodElement();
-        method.setModifiers (Modifier.PUBLIC);
-        method.setReturn (Type.VOID);
-        method.setName (Identifier.create (METHOD_SCAN_DOCUMENT));
-        sb = new StringBuffer ("\n"); // NOI18N
-        sb.append (DOM_ELEMENT).append (" ").append (VARIABLE_ELEMENT).append (" = "). // NOI18N
-        append (VARIABLE_DOCUMENT).append (".getDocumentElement();\n"); // NOI18N
-        
-        // no root element is obvious, go over all declated elements.
-        
-        it = dtd.getElementDeclarations().iterator();
-        while (it.hasNext()) {
-            String tagName = ((TreeElementDecl)it.next()).getName();
-            sb.append ("if ((").append (VARIABLE_ELEMENT).append (" != null) && "). // NOI18N
-            append (VARIABLE_ELEMENT).append (".getTagName().equals (\"").append (tagName).append ("\")) {\n"); // NOI18N
-            sb.append (METHOD_SCAN_ELEMENT).append ("_").append (GenerateSupportUtils.getJavaName (tagName)).append (" (").append (VARIABLE_ELEMENT). // NOI18N
-            append (");\n}\n"); // NOI18N
-        }
-        method.setBody (sb.toString());
-        javadoc = method.getJavaDoc();
-        javadoc.setRawText ("Scan through org.w3c.dom.Document " + VARIABLE_DOCUMENT + "."); // NOI18N
-        clazz.addMethod (method);
-        
-        // set of scan_ methods
-
-        it = dtd.getElementDeclarations().iterator();
-        while (it.hasNext()) {
-            TreeElementDecl next = (TreeElementDecl) it.next();
-            String tagName = next.getName();
-            method = new MethodElement();
-            method.setReturn (Type.VOID);
-            method.setName (Identifier.create (GenerateSupportUtils.getJavaName (METHOD_SCAN_ELEMENT + "_" + tagName))); // NOI18N
-            method.setParameters
-            (new MethodParameter [] { new MethodParameter (VARIABLE_ELEMENT, elemType, false) });
-            sb = new StringBuffer ();
-            sb.append (" // <").append (tagName).append (">\n// element.getValue();\n"); // NOI18N
-            Iterator it2;
-            if ((it2 = dtd.getAttributeDeclarations (tagName).iterator()).hasNext()) {
-                sb.append (DOM_NAMED_NODE_MAP).append (" ").append (VARIABLE_ATTRS).append (" = "). // NOI18N
-                append (VARIABLE_ELEMENT).append (".getAttributes();\n"); // NOI18N
-                sb.append ("for (int i = 0; i < ").append (VARIABLE_ATTRS).append (".getLength(); i++) {\n"); // NOI18N
-                sb.append ("org.w3c.dom.Attr attr = (org.w3c.dom.Attr)attrs.item(i);\n"); // NOI18N
-                while (it2.hasNext()) {
-                    TreeAttlistDeclAttributeDef attr = (TreeAttlistDeclAttributeDef)it2.next();
-                    sb.append ("if (attr.getName().equals (\"").append (attr.getName()).append ("\")) { // <"). // NOI18N
-                    append (tagName).append (" ").append (attr.getName()).append ("=\"???\">\n"); // NOI18N
-                    sb.append ("// attr.getValue();\n}\n"); // NOI18N
-                }
-                sb.append ("}\n"); // NOI18N
-            }
-            sb.append (generateElementScanner(next));
-            method.setBody (sb.toString());
-            javadoc = method.getJavaDoc();
-            javadoc.setRawText ("Scan through org.w3c.dom.Element named " + tagName + "."); // NOI18N
-            clazz.addMethod (method);
-        }
-    }
+//    private void dtd2java (ClassElement clazz, String tempRootName) throws SourceException {
+//        Iterator it;
+//        FieldElement field;
+//        ConstructorElement constructor;
+//        MethodElement method;
+//        Type docType = Type.parse (DOM_DOCUMENT);
+//        Type elemType = Type.parse (DOM_ELEMENT);
+//        StringBuffer sb;
+//        JavaDoc javadoc;
+//
+//        // document field
+//        field = new FieldElement();
+//        field.setType (docType);
+//        field.setName (Identifier.create (VARIABLE_DOCUMENT));
+//        javadoc = field.getJavaDoc();
+//        javadoc.setRawText ("org.w3c.dom.Document document"); // NOI18N
+//        clazz.addField (field);
+//
+//        // constructor
+//        constructor = new ConstructorElement();
+//        constructor.setModifiers (Modifier.PUBLIC);
+//        constructor.setName (clazz.getName());
+//        constructor.setParameters
+//        (new MethodParameter [] { new MethodParameter (VARIABLE_DOCUMENT, docType, false) });
+//        sb = new StringBuffer ("\n"); // NOI18N
+//        sb.append ("this.").append (VARIABLE_DOCUMENT).append (" = ").append (VARIABLE_DOCUMENT).append (";\n"); // NOI18N
+//        constructor.setBody (sb.toString());
+//        javadoc = constructor.getJavaDoc();
+//        javadoc.setRawText ("Create new " + clazz.getName() + " with org.w3c.dom.Document."); // NOI18N
+//        clazz.addConstructor (constructor);
+//
+//        // scanDocument method
+//        
+//        method = new MethodElement();
+//        method.setModifiers (Modifier.PUBLIC);
+//        method.setReturn (Type.VOID);
+//        method.setName (Identifier.create (METHOD_SCAN_DOCUMENT));
+//        sb = new StringBuffer ("\n"); // NOI18N
+//        sb.append (DOM_ELEMENT).append (" ").append (VARIABLE_ELEMENT).append (" = "). // NOI18N
+//        append (VARIABLE_DOCUMENT).append (".getDocumentElement();\n"); // NOI18N
+//        
+//        // no root element is obvious, go over all declated elements.
+//        
+//        it = dtd.getElementDeclarations().iterator();
+//        while (it.hasNext()) {
+//            String tagName = ((TreeElementDecl)it.next()).getName();
+//            sb.append ("if ((").append (VARIABLE_ELEMENT).append (" != null) && "). // NOI18N
+//            append (VARIABLE_ELEMENT).append (".getTagName().equals (\"").append (tagName).append ("\")) {\n"); // NOI18N
+//            sb.append (METHOD_SCAN_ELEMENT).append ("_").append (GenerateSupportUtils.getJavaName (tagName)).append (" (").append (VARIABLE_ELEMENT). // NOI18N
+//            append (");\n}\n"); // NOI18N
+//        }
+//        method.setBody (sb.toString());
+//        javadoc = method.getJavaDoc();
+//        javadoc.setRawText ("Scan through org.w3c.dom.Document " + VARIABLE_DOCUMENT + "."); // NOI18N
+//        clazz.addMethod (method);
+//        
+//        // set of scan_ methods
+//
+//        it = dtd.getElementDeclarations().iterator();
+//        while (it.hasNext()) {
+//            TreeElementDecl next = (TreeElementDecl) it.next();
+//            String tagName = next.getName();
+//            method = new MethodElement();
+//            method.setReturn (Type.VOID);
+//            method.setName (Identifier.create (GenerateSupportUtils.getJavaName (METHOD_SCAN_ELEMENT + "_" + tagName))); // NOI18N
+//            method.setParameters
+//            (new MethodParameter [] { new MethodParameter (VARIABLE_ELEMENT, elemType, false) });
+//            sb = new StringBuffer ();
+//            sb.append (" // <").append (tagName).append (">\n// element.getValue();\n"); // NOI18N
+//            Iterator it2;
+//            if ((it2 = dtd.getAttributeDeclarations (tagName).iterator()).hasNext()) {
+//                sb.append (DOM_NAMED_NODE_MAP).append (" ").append (VARIABLE_ATTRS).append (" = "). // NOI18N
+//                append (VARIABLE_ELEMENT).append (".getAttributes();\n"); // NOI18N
+//                sb.append ("for (int i = 0; i < ").append (VARIABLE_ATTRS).append (".getLength(); i++) {\n"); // NOI18N
+//                sb.append ("org.w3c.dom.Attr attr = (org.w3c.dom.Attr)attrs.item(i);\n"); // NOI18N
+//                while (it2.hasNext()) {
+//                    TreeAttlistDeclAttributeDef attr = (TreeAttlistDeclAttributeDef)it2.next();
+//                    sb.append ("if (attr.getName().equals (\"").append (attr.getName()).append ("\")) { // <"). // NOI18N
+//                    append (tagName).append (" ").append (attr.getName()).append ("=\"???\">\n"); // NOI18N
+//                    sb.append ("// attr.getValue();\n}\n"); // NOI18N
+//                }
+//                sb.append ("}\n"); // NOI18N
+//            }
+//            sb.append (generateElementScanner(next));
+//            method.setBody (sb.toString());
+//            javadoc = method.getJavaDoc();
+//            javadoc.setRawText ("Scan through org.w3c.dom.Element named " + tagName + "."); // NOI18N
+//            clazz.addMethod (method);
+//        }
+//    }
 
     /*
      * Generate fragment of code that goes over element content model

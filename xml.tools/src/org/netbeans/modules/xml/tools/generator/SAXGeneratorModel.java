@@ -298,15 +298,16 @@ public class SAXGeneratorModel implements java.io.Serializable {
      * Should be called after loadElementBindings().
      */
     public void loadParsletBindings(ParsletBindings parslets) {
-        if (parslets == null) return;
-        
-        Iterator it = parslets.values().iterator();
-        while (it.hasNext()) {
-            ParsletBindings.Entry next = (ParsletBindings.Entry) it.next();
-            
-            if (elementBindings.containsParslet(next.getId())) {
-                parsletBindings.put(next.getId(), next);
-            }
-        }
+        //TODO: Retouche
+//        if (parslets == null) return;
+//        
+//        Iterator it = parslets.values().iterator();
+//        while (it.hasNext()) {
+//            ParsletBindings.Entry next = (ParsletBindings.Entry) it.next();
+//            
+//            if (elementBindings.containsParslet(next.getId())) {
+//                parsletBindings.put(next.getId(), next);
+//            }
+//        }
     }
 }

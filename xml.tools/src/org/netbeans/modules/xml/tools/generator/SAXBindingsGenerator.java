@@ -36,7 +36,8 @@ final class SAXBindingsGenerator {
         s.append("<!DOCTYPE SAX-bindings PUBLIC \"-//XML Module//DTD SAX Bindings 1.0//EN\" \"\">\n"); // NOI18N
         s.append("<SAX-bindings version='1'>\n"); // NOI18N
         s.append(elementBindings(model));
-        s.append(parsletBindings(model));
+        //TODO: Retouche
+//        s.append(parsletBindings(model));
         s.append("</SAX-bindings>"); // NOI18N
         
         return s.toString();
@@ -58,15 +59,18 @@ final class SAXBindingsGenerator {
         return s.toString();
     }
     
-    private static String parsletBindings(SAXGeneratorModel model) {
-        StringBuffer s = new StringBuffer();
+    //TODO: Retouche
+//    private static String parsletBindings(SAXGeneratorModel model) {
         
-        Iterator it = model.getParsletBindings().values().iterator();
-        while (it.hasNext()) {
-            ParsletBindings.Entry next = (ParsletBindings.Entry) it.next();
-            s.append("\t<parslet parslet='" + next.getId() + "' return='" + next.getType() + "' />\n"); // NOI18N
-        }
+//        StringBuffer s = new StringBuffer();
+//        
+//        Iterator it = model.getParsletBindings().values().iterator();
+//        while (it.hasNext()) {
+//            ParsletBindings.Entry next = (ParsletBindings.Entry) it.next();
+//            s.append("\t<parslet parslet='" + next.getId() + "' return='" + next.getType() + "' />\n"); // NOI18N
+//        }
+//        
+//        return s.toString();
+//    }
         
-        return s.toString();
-    }
 }
