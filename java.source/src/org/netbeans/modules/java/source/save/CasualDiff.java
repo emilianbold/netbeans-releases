@@ -305,7 +305,7 @@ public class CasualDiff {
         } else {
             insertHint += oldT.name.length();
         }
-        diffParameterList(oldT.typarams, newT.typarams);
+        localPointer = diffParameterList(oldT.typarams, newT.typarams, localPointer);
         if (oldT.typarams.nonEmpty()) {
             // if type parameters exists, compute correct end of type parameters.
             // ! specifies the offset for insertHint var.
@@ -332,7 +332,7 @@ public class CasualDiff {
                 localPointer = insertHint;
                 break;
             case DELETE:
-                output.writeTo(origText.substring(localPointer, insertHint));
+                printer.print(origText.substring(localPointer, insertHint));
                 localPointer = endPos(oldT.extending);
                 break;
         }
@@ -498,6 +498,7 @@ public class CasualDiff {
             localPointer = oldT.pos + oldT.name.length();
         }
         if (newT.init != null && oldT.init != null) {
+            printer.print(origText.substring(localPointer, localPointer = getOldPos(oldT.init)));
             localPointer = diffTree(oldT.init, newT.init, new int[] { localPointer, endPos(oldT.init) });
         } else {
             diffTreeToken("=", endPos(oldT.init), oldT.init, newT.init, "");
@@ -613,9 +614,11 @@ public class CasualDiff {
         return bounds[1];
     }
 
-    protected int diffExec(JCExpressionStatement oldT, JCExpressionStatement newT, int[] elementBounds) {
-        int retVal = diffTree(oldT.expr, newT.expr, elementBounds);
-        return retVal;
+    protected int diffExec(JCExpressionStatement oldT, JCExpressionStatement newT, int[] bounds) {
+        int localPointer = bounds[0];
+        localPointer = diffTree(oldT.expr, newT.expr, bounds);
+        printer.print(origText.substring(localPointer, bounds[1]));
+        return bounds[1];
     }
 
     protected void diffBreak(JCBreak oldT, JCBreak newT) {
@@ -646,9 +649,9 @@ public class CasualDiff {
     protected int diffApply(JCMethodInvocation oldT, JCMethodInvocation newT, int[] bounds) {
         int localPointer = bounds[0];
         printer.print(origText.substring(localPointer, bounds[0]));
-        diffParameterList(oldT.typeargs, newT.typeargs);
+        diffParameterList(oldT.typeargs, newT.typeargs, localPointer);
         localPointer = diffTree(oldT.meth, newT.meth, new int[] { getOldPos(oldT.meth), endPos(oldT.meth) });
-        diffParameterList(oldT.args, newT.args);
+        localPointer = diffParameterList(oldT.args, newT.args, localPointer);
         return localPointer;
     }
 
@@ -657,9 +660,9 @@ public class CasualDiff {
     protected int diffNewClass(JCNewClass oldT, JCNewClass newT, int[] bounds) {
         int localPointer = bounds[0];
         diffTree(oldT.encl, newT.encl);
-        diffParameterList(oldT.typeargs, newT.typeargs);
+        diffParameterList(oldT.typeargs, newT.typeargs, localPointer);
         localPointer = diffTree(oldT.clazz, newT.clazz, localPointer);
-        diffParameterList(oldT.args, newT.args);
+        diffParameterList(oldT.args, newT.args, localPointer);
         // let diffClassDef() method notified that anonymous class is printed.
         printer.print(origText.substring(localPointer, getOldPos(oldT.def)));
         anonClass = true; 
@@ -671,7 +674,7 @@ public class CasualDiff {
 
     protected void diffNewArray(JCNewArray oldT, JCNewArray newT) {
         diffTree(oldT.elemtype, newT.elemtype);
-        diffParameterList(oldT.dims, newT.dims);
+        diffParameterList(oldT.dims, newT.dims, -1);
         diffList(oldT.elems, newT.elems, LineInsertionType.NONE, Query.NOPOS);
     }
 
@@ -761,13 +764,13 @@ public class CasualDiff {
 
     protected void diffTypeApply(JCTypeApply oldT, JCTypeApply newT) {
         diffTree(oldT.clazz, newT.clazz);
-        diffParameterList(oldT.arguments, newT.arguments);
+        diffParameterList(oldT.arguments, newT.arguments, -1);
     }
 
     protected void diffTypeParameter(JCTypeParameter oldT, JCTypeParameter newT) {
         if (nameChanged(oldT.name, newT.name))
             append(Diff.name(oldT.pos, oldT.name, newT.name));
-        diffParameterList(oldT.bounds, newT.bounds);
+        diffParameterList(oldT.bounds, newT.bounds, -1);
     }
     
     protected void diffWildcard(JCWildcard oldT, JCWildcard newT) {
@@ -783,7 +786,7 @@ public class CasualDiff {
     
     protected void diffAnnotation(JCAnnotation oldT, JCAnnotation newT) {
         diffTree(oldT.annotationType, newT.annotationType);
-        diffParameterList(oldT.args, newT.args);
+        diffParameterList(oldT.args, newT.args, -1);
     }
     
     protected int diffModifiers(JCModifiers oldT, JCModifiers newT, JCTree parent, int lastPrinted) throws IOException, BadLocationException {
@@ -1052,16 +1055,17 @@ public class CasualDiff {
 
     // XXX: this method should be removed later when all call will be
     // refactored and will use new list matching
-    protected void diffParameterList(List<? extends JCTree> oldList, List<? extends JCTree> newList) {
+    protected int diffParameterList(List<? extends JCTree> oldList, List<? extends JCTree> newList, int localPointer) {
         if (oldList == newList)
-            return;
+            return localPointer;
         assert oldList != null && newList != null;
         int lastOldPos = Query.NOPOS;
         Iterator<? extends JCTree> oldIter = oldList.iterator();
         Iterator<? extends JCTree> newIter = newList.iterator();
         while (oldIter.hasNext() && newIter.hasNext()) {
             JCTree oldT = oldIter.next();
-            diffTree(oldT, newIter.next());
+            printer.print(origText.substring(localPointer, localPointer = getOldPos(oldT)));
+            localPointer = diffTree(oldT, newIter.next(), new int[] { localPointer, endPos(oldT) });
             if (oldTopLevel != null)
                 lastOldPos = model.getEndPos(oldT, oldTopLevel);
         }
@@ -1072,6 +1076,7 @@ public class CasualDiff {
         while (newIter.hasNext()) {
             append(Diff.insert(newIter.next(), lastOldPos, LineInsertionType.BEFORE));
         }
+        return localPointer;
     }
     
     /**

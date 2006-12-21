@@ -60,8 +60,11 @@ public class BodyStatementTest extends GeneratorTest {
 //        suite.addTest(new BodyStatementTest("testNullLiteral"));
 //        suite.addTest(new BodyStatementTest("testBooleanLiteral"));
 //        suite.addTest(new BodyStatementTest("testRenameInIfStatement"));
+//        suite.addTest(new BodyStatementTest("testRenameInLocalDecl"));
+//        suite.addTest(new BodyStatementTest("testRenameInInvocationPars"));
         return suite;
     }
+    
     /**
      * Adds 'System.err.println(null);' statement to the method body. 
      */
@@ -234,6 +237,118 @@ public class BodyStatementTest extends GeneratorTest {
                 invocation = (MethodInvocationTree) select.getExpression();
                 select = (MemberSelectTree) invocation.getMethodSelect();
                 IdentifierTree identToRename = (IdentifierTree) select.getExpression();
+                IdentifierTree copy = make.setLabel(identToRename, "element");
+                workingCopy.rewrite(identToRename, copy);
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * Renames el to element in method parameter and if statement
+     */
+    public void testRenameInLocalDecl() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "import javax.swing.text.Element;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void action666(Element el) {\n" +
+            "        String name = el.getName();\n" +
+            "    }\n" +
+            "}\n");
+        String golden = 
+            "package personal;\n" +
+            "\n" +
+            "import javax.swing.text.Element;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void action666(Element element) {\n" +
+            "        String name = element.getName();\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                // rename in parameter
+                VariableTree vt = method.getParameters().get(0);
+                VariableTree parCopy = make.setLabel(vt, "element");
+                workingCopy.rewrite(vt, parCopy);
+                // no need to check kind
+                VariableTree statementTree = (VariableTree) method.getBody().getStatements().get(0);
+                MethodInvocationTree invocation = (MethodInvocationTree) statementTree.getInitializer();
+                MemberSelectTree select = (MemberSelectTree) invocation.getMethodSelect();
+                IdentifierTree identToRename = (IdentifierTree) select.getExpression();
+                IdentifierTree copy = make.setLabel(identToRename, "element");
+                workingCopy.rewrite(identToRename, copy);
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * Renames el to element in method parameter and if statement
+     */
+    public void testRenameInInvocationPars() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "import javax.swing.text.Element;\n" +
+            "import java.util.Collections;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void action666(Element el) {\n" +
+            "        Collections.singleton(el);\n" +
+            "    }\n" +
+            "}\n");
+        String golden = 
+            "package personal;\n" +
+            "\n" +
+            "import javax.swing.text.Element;\n" +
+            "import java.util.Collections;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void action666(Element element) {\n" +
+            "        Collections.singleton(element);\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                // rename in parameter
+                VariableTree vt = method.getParameters().get(0);
+                VariableTree parCopy = make.setLabel(vt, "element");
+                workingCopy.rewrite(vt, parCopy);
+                // no need to check kind
+                // rename in if
+                ExpressionStatementTree expressionStmt = (ExpressionStatementTree) method.getBody().getStatements().get(0);
+                MethodInvocationTree invocation = (MethodInvocationTree) expressionStmt.getExpression();
+                IdentifierTree identToRename = (IdentifierTree) invocation.getArguments().get(0);
                 IdentifierTree copy = make.setLabel(identToRename, "element");
                 workingCopy.rewrite(identToRename, copy);
             }
