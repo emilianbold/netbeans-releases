@@ -31,7 +31,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.Set;
 import javax.swing.text.AttributeSet;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
@@ -41,8 +40,6 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
-import org.openide.util.NbBundle;
-
 
 /**
  * This class contains access methods for editor settings like font & colors
@@ -575,8 +572,12 @@ public class EditorSettingsImpl extends EditorSettings {
             if (fo.getFileObject (KEYBINDING_FILE_NAME) != null)
                 addKeyMapProfile (fo, false); // Editors/text/base/keybindings.xml
             Enumeration e = fo.getChildren (false);
-            while (e.hasMoreElements ())
-                init3 ((FileObject) e.nextElement ());
+            while (e.hasMoreElements ()) {
+                FileObject ff = (FileObject) e.nextElement ();
+                if (!ff.getNameExt().equals(DEFAULTS_FOLDER)) {
+                    init3 (ff);
+                }
+            }
         }
     }
         
@@ -588,48 +589,36 @@ public class EditorSettingsImpl extends EditorSettings {
             addKeyMapProfile (fo, false); // Editors/text/base/ProfileName/keybindings.xml
     }
 
-    private void addMimeType (FileObject fo) {
-        String mimeType = fo.getPath ();
-        mimeType = mimeType.substring (8);
-        String bundleName = (String) fo.getAttribute 
-            ("SystemFileSystem.localizingBundle");
-        String languageName = mimeType;
-        if (bundleName != null)
-            try {
-                languageName = NbBundle.getBundle (bundleName).getString (mimeType);
-            } catch (MissingResourceException ex) {}
-        mimeToLanguage.put(mimeType, languageName);
+    private void addMimeType(FileObject fo) {
+        String mimeType = fo.getPath().substring(8);
+        String displayName = Utils.getLocalizedName(fo, mimeType, mimeType);
+        mimeToLanguage.put(mimeType, displayName);
     }
     
-    private void addFontColorsProfile (FileObject fo, boolean systemProfile) {
-        String profile = fo.getParent ().getNameExt ();
-        String bundleName = (String) fo.getParent ().getAttribute 
-            ("SystemFileSystem.localizingBundle");
-        String locProfile = profile;
-        if (bundleName != null)
-            try {
-                locProfile = NbBundle.getBundle (bundleName).getString (profile);
-            } catch (MissingResourceException ex) {}
+    private void addFontColorsProfile(FileObject fo, boolean systemProfile) {
+        String profile = fo.getParent().getNameExt();
+        String displayName = Utils.getLocalizedName(fo.getParent(), profile, profile);
+        
         if (systemProfile) {
-            systemFontColorProfiles.add(locProfile);
+            systemFontColorProfiles.add(displayName);
         }
-        fontColorProfiles.put (locProfile, profile);
+        
+        fontColorProfiles.put(displayName, profile);
     }
     
-    private void addKeyMapProfile (FileObject fo, boolean systemProfile) {
-        String profile = fo.getNameExt ();
-        if (profile.equals ("base")) profile = DEFAULT_PROFILE;
-        String bundleName = (String) fo.getAttribute 
-            ("SystemFileSystem.localizingBundle");
-        String locProfile = profile;
-        if (bundleName != null)
-            try {
-                locProfile = NbBundle.getBundle (bundleName).getString (profile);
-            } catch (MissingResourceException ex) {}
-        if (systemProfile) {
-            systemKeymapProfiles.add(locProfile);
+    private void addKeyMapProfile(FileObject fo, boolean systemProfile) {
+        String profile = fo.getNameExt();
+        if (profile.equals("base")) { //NOI18N
+            profile = DEFAULT_PROFILE;
         }
-        keyMapProfiles.put (locProfile, profile);
+        
+        String displayName = Utils.getLocalizedName(fo, profile, profile);
+        
+        if (systemProfile) {
+            systemKeymapProfiles.add(displayName);
+        }
+        
+        keyMapProfiles.put(displayName, profile);
     }
     
     String getInternalFontColorProfile(String profile) {

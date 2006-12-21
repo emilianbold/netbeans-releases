@@ -28,7 +28,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 import java.util.StringTokenizer;
+import java.util.WeakHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.KeyStroke;
 import org.openide.ErrorManager;
@@ -36,6 +40,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 
@@ -219,5 +224,54 @@ public class Utils {
         if (fo1 == null) 
             return fo.createFolder (next);
         return fo1;
+    }
+    
+    static String getLocalizedName(FileObject fo, String key, String defaultValue) {
+        assert key != null : "The key can't be null"; //NOI18N
+
+        Object [] bundleInfo = findResourceBundle(fo);
+        if (bundleInfo[1] != null) {
+            try {
+                return ((ResourceBundle) bundleInfo[1]).getString(key);
+            } catch (MissingResourceException ex) {
+                LOG.log(Level.WARNING, "The bundle '" + bundleInfo[0] + "' is missing key '" + key + "'.", ex); //NOI18N
+            }
+        }
+        
+        return defaultValue;
+    }
+
+    private static final WeakHashMap<FileObject, Object []> bundleInfos = new WeakHashMap<FileObject, Object []>();
+    private static Object [] findResourceBundle(FileObject fo) {
+        assert fo != null : "FileObject can't be null"; //NOI18N
+        
+        synchronized (bundleInfos) {
+            Object [] bundleInfo = bundleInfos.get(fo);
+            if (bundleInfo == null) {
+                String bundleName = null;
+                Object attrValue = fo.getAttribute("SystemFileSystem.localizingBundle"); //NOI18N
+                if (attrValue instanceof String) {
+                    bundleName = (String) attrValue;
+                }
+
+                if (bundleName != null) {
+                    try {
+                        bundleInfo = new Object [] { bundleName, NbBundle.getBundle(bundleName) };
+                    } catch (MissingResourceException ex) {
+                        LOG.log(Level.WARNING, "Can't find resource bundle for " + fo.getPath(), ex); //NOI18N
+                    }
+                } else {
+                    LOG.log(Level.WARNING, "The file " + fo.getPath() + " does not specify its resource bundle.", new Throwable("@@@")); //NOI18N
+                }
+
+                if (bundleInfo == null) {
+                   bundleInfo = new Object [] { bundleName, null }; 
+                }
+
+                bundleInfos.put(fo, bundleInfo);
+            }
+
+            return bundleInfo;
+        }
     }
 }
