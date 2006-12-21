@@ -39,7 +39,6 @@ public class LoggingEventQueue extends EventQueue {
             popMethod = EventQueue.class.getDeclaredMethod ("pop", new Class [] {} );
             popMethod.setAccessible(true);
         } catch (Exception e) {
-            // XXX exception handling
             e.printStackTrace(System.err);
         }
     }

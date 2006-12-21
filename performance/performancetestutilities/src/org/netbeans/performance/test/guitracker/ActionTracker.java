@@ -32,22 +32,18 @@ import java.awt.event.InvocationEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
-
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.ListIterator;
-
+import java.util.Stack;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JWindow;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -70,49 +66,56 @@ public class ActionTracker {
     
     /** Start of a sequence of recorded events. */
     public final static int TRACK_START = 1;
+    
     /** Painting happened.  @see Painter */
     public final static int TRACK_PAINT = 2;
     
     /** MOUSE_PRESSED event. */
-    public final static int TRACK_MOUSE_PRESS = 3;
+    public final static int TRACK_MOUSE_PRESS = 10;
     /** MOUSE_RELEASED event. */
-    public final static int TRACK_MOUSE_RELEASE = 4;
+    public final static int TRACK_MOUSE_RELEASE = 11;
     /** MOUSE_DRAGGED event. */
-    public final static int TRACK_MOUSE_DRAGGED = 5;
+    public final static int TRACK_MOUSE_DRAGGED = 12;
     /** MOUSE_MOVED event. */
-    public final static int TRACK_MOUSE_MOVED = 6;
+    public final static int TRACK_MOUSE_MOVED = 13;
     
     /** KEY_PRESSED event. */
-    public final static int TRACK_KEY_PRESS = 7;
+    public final static int TRACK_KEY_PRESS = 20;
     /** KEY_RELEASED event. */
-    public final static int TRACK_KEY_RELEASE = 8;
+    public final static int TRACK_KEY_RELEASE = 21;
     
     /** COMPONENT_SHOWN event happened on a Frame or JFrame. */
-    public static final int TRACK_FRAME_SHOW = 9;
+    public static final int TRACK_FRAME_SHOW = 30;
     /** COMPONENT_HIDDEN event happened on a Frame or JFrame. */
-    public static final int TRACK_FRAME_HIDE = 10;
+    public static final int TRACK_FRAME_HIDE = 31;
     
     /** COMPONENT_SHOWN event happened on a Dialog or JDialog. */
-    public final static int TRACK_DIALOG_SHOW = 11;
+    public final static int TRACK_DIALOG_SHOW = 32;
     /** COMPONENT_HIDDEN event happened on a Dialog or JDialog. */
-    public final static int TRACK_DIALOG_HIDE = 12;
+    public final static int TRACK_DIALOG_HIDE = 33;
     
     /** COMPONENT_SHOWN event happened on a Component. */
-    public final static int TRACK_COMPONENT_SHOW = 13;
+    public final static int TRACK_COMPONENT_SHOW = 34;
     /** COMPONENT_HIDDEN event happened on a Component. */
-    public final static int TRACK_COMPONENT_HIDE = 14;
+    public final static int TRACK_COMPONENT_HIDE = 35;
     
     /** Any messages the application wants to send. */
-    public final static int TRACK_APPLICATION_MESSAGE = 15;
+    public final static int TRACK_APPLICATION_MESSAGE = 50;
+    
+    /** Any messages the application wants to send. */
+    public final static int TRACK_CONFIG_APPLICATION_MESSAGE = 51;
+    
+    /** Before/After messages. */
+    public final static int TRACK_TRACE_MESSAGE = 52;
     
     /** FOCUS_GAINED event */
-    public final static int TRACK_FOCUS_GAINED = 21;
+    public final static int TRACK_FOCUS_GAINED = 80;
     /** FOCUS_LOST event */
-    public final static int TRACK_FOCUS_LOST = 22;
+    public final static int TRACK_FOCUS_LOST = 81;
     /** unknown event */
-    public final static int TRACK_INVOCATION = 23;
+    public final static int TRACK_INVOCATION = 82;
     /** unknown event */
-    public final static int TRACK_UNKNOWN = 24;
+    public final static int TRACK_UNKNOWN = 83;
     
     /** The name of the root element in generated XML. */
     public final static String TN_ROOT_ELEMENT = "action-tracking";
@@ -132,6 +135,9 @@ public class ActionTracker {
     public final static String ATTR_TIME_DIFF_START = "diff";
     /** The attribute name for calculated time difference since the last MOUSE_DRAGGED event. */
     public final static String ATTR_TIME_DIFF_DRAG  = "diffdrag";
+    /** The attribute measured for events we are measuring one start + one stop. */
+    public final static String ATTR_MEASURED  = "measured";
+    
     
     // Instance of the ActionTracker
     private static ActionTracker instance = null;
@@ -175,6 +181,8 @@ public class ActionTracker {
     // awt event mask
     long awt_event_mask = -1;
     
+    //location for "actionTrackerXsl" file
+    private static String actionTrackerXslLocation = "";
     
     /**
      * Retrieves the ActionTracker instance for this application.  Rather
@@ -359,6 +367,21 @@ public class ActionTracker {
     }
     
     /**
+     * Add a <code>Tuple</code> matching these parameters
+     * to the current EventList.  The <code>time</code> parameter is
+     * derived from the current time.
+     * @param code
+     * @param name
+     * @param measured - if we log this as measured (User action = start point, appropriate paint=stop point, measured time=result
+     */
+    public void add(int code, String name, boolean measured) {
+        EventList ce = getCurrentEvents();
+        Tuple t = new Tuple(code, name, ce != null ? ce.startMillies : (long)-1);
+        t.measured = measured;
+        add(t);
+    }
+    
+    /**
      * Process an AWTEvent, and if it's interesting recording it in
      * the current EventList.
      * @param event
@@ -371,7 +394,7 @@ public class ActionTracker {
                     || id == MouseEvent.MOUSE_RELEASED)) {
                 
                 String mr = id == MouseEvent.MOUSE_PRESSED
-                        ? "MOUSE_PRESSED" : "MOUSE_RELEASED";
+                        ? "MOUSE PRESSED" : "MOUSE RELEASED";
                 int bmask = me.getButton();
                 
                 add(id == MouseEvent.MOUSE_PRESSED
@@ -384,7 +407,7 @@ public class ActionTracker {
             if (id == MouseEvent.MOUSE_MOVED
                     || id == MouseEvent.MOUSE_DRAGGED) {
                 String mm = id == MouseEvent.MOUSE_MOVED
-                        ? "MOUSE_MOVED" : "MOUSE_DRAGGED";
+                        ? "MOUSE MOVED" : "MOUSE DRAGGED";
                 
                 add(id == MouseEvent.MOUSE_MOVED
                         ? TRACK_MOUSE_MOVED : TRACK_MOUSE_DRAGGED,
@@ -401,13 +424,13 @@ public class ActionTracker {
                     || id == KeyEvent.KEY_RELEASED) {
                 
                 String kr = id == KeyEvent.KEY_PRESSED
-                        ? "KEY_PRESSED" : "KEY_RELEASED";
+                        ? "KEY PRESSED" : "KEY RELEASED";
                 int kc = ke.getKeyCode();
                 
                 add(id == KeyEvent.KEY_PRESSED
                         ? ActionTracker.TRACK_KEY_PRESS
                         : ActionTracker.TRACK_KEY_RELEASE,
-                        "KeyEvent " + kr
+                        kr
                         + " keycode=" + Integer.toString(kc)
                         + " keytext=" + KeyEvent.getKeyText(kc)
                         + " modtext=" + KeyEvent.getKeyModifiersText(ke.getModifiers()));
@@ -461,26 +484,8 @@ public class ActionTracker {
             //            InvocationEvent ie = (InvocationEvent)event;
             //            add(TRACK_INVOCATION, ie.paramString());
         } else {
-            add(TRACK_UNKNOWN, "unknown event: " + event.paramString());
+            add(TRACK_UNKNOWN, "Unknown event: " + event.paramString());
         }
-    }
-    
-    /**
-     * Record a message from the application, recording a
-     * <code>TRACK_APPLICATION_MESSAGE</code> event.
-     * @param msg
-     */
-    public void applicationMessage(String msg) {
-        add(TRACK_APPLICATION_MESSAGE, msg);
-    }
-    
-    /**
-     * Record a painting notification from the application, recording a
-     * <code>TRACK_PAINT</code> event.
-     * @param name
-     */
-    public void paintHappened(String name) {
-        add(TRACK_PAINT, name);
     }
     
     /**
@@ -489,7 +494,7 @@ public class ActionTracker {
      * Otherwise nothing in the system knows that it's finished.
      */
     public void scenarioFinished() {
-        applicationMessage("ScenarioFinished");
+        add(TRACK_APPLICATION_MESSAGE, "ScenarioFinished");
         if (exportXmlWhenScenarioFinished) {
             try { exportAsXML(); } catch (Exception e) {
                 System.err.println("Unable to export to XML because " + e);
@@ -523,7 +528,7 @@ public class ActionTracker {
      * @throws javax.xml.transform.TransformerException
      */
     public void exportAsXML()
-    throws ParserConfigurationException, TransformerConfigurationException,
+            throws ParserConfigurationException, TransformerConfigurationException,
             TransformerException {
         PrintStream out = System.out; // Default
         if (fnActionOutput != null) {
@@ -550,7 +555,7 @@ public class ActionTracker {
      * @throws javax.xml.transform.TransformerException
      */
     public void exportAsXML(PrintStream out)
-    throws ParserConfigurationException, TransformerConfigurationException,
+            throws ParserConfigurationException, TransformerConfigurationException,
             TransformerException {
         exportAsXML(null, out);
     }
@@ -567,57 +572,56 @@ public class ActionTracker {
      * @throws javax.xml.transform.TransformerException
      */
     public void exportAsXML(Document style, PrintStream out)
-    throws ParserConfigurationException, TransformerConfigurationException,
+            throws ParserConfigurationException, TransformerConfigurationException,
             TransformerException {
-        Document doc = getDocumentBuilder()
-        .getDOMImplementation()
-        .createDocument(null, TN_ROOT_ELEMENT, null);
+        Document doc = getDocumentBuilder().getDOMImplementation().createDocument(null, TN_ROOT_ELEMENT, null);
         Element root = doc.getDocumentElement();
         
         // Construct the DOM contents by scanning through all EventLists,
         // and for each event adding everything to the DOM.
         
-        ListIterator liLists = eventLists != null ? eventLists.listIterator() : null;
-        while (liLists != null && liLists.hasNext()) {
-            // For each EventList
-            EventList evlist = (EventList)liLists.next();
+        for (EventList eventList : eventLists) {
             Element evlistElement = doc.createElement(TN_EVENT_LIST);
             root.appendChild(evlistElement);
-            evlistElement.setAttribute(ATTR_START, Long.toString(evlist.getStartMillis()));
-            evlistElement.setAttribute(ATTR_NAME, evlist.getName());
-            ListIterator liEvents = evlist.listIterator();
+            evlistElement.setAttribute(ATTR_START, Long.toString(eventList.getStartMillis()));
+            evlistElement.setAttribute(ATTR_NAME, eventList.getName());
             
             //don't log repeated events
             Tuple previous = new Tuple(0,"",0,0);
             
-            while (liEvents.hasNext()) {
-                // For each Event
-                Tuple t = (Tuple)liEvents.next();
-                
+            // For each Event
+            for (Tuple t : eventList) {
                 // log only if it isn't the same
                 if(!t.equals(previous)){
                     Element eventElement = doc.createElement(TN_EVENT);
                     evlistElement.appendChild(eventElement);
                     eventElement.setAttribute(ATTR_TYPE, t.getCodeName());
                     eventElement.setAttribute(ATTR_NAME, t.getName());
-                    eventElement.setAttribute(ATTR_TIME, Long.toString(t.getTimeMillis()));
+                    eventElement.setAttribute(ATTR_TIME, getTimeMillisForLog(t));
                     eventElement.setAttribute(ATTR_TIME_DIFF_START, Long.toString(t.getTimeDifference()));
+                    
+                    if(t.getMeasured())
+                        eventElement.setAttribute(ATTR_MEASURED, "true");
                 }
                 previous = t;
             }
         }
         
         // Now, transform it out
-        
         Transformer tr = style != null
                 ? getTransformerFactory().newTransformer(new DOMSource(style))
                 : getTransformerFactory().newTransformer();
         
         tr.setOutputProperty(OutputKeys.INDENT, "yes");
+        tr.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         DOMSource docSrc = new DOMSource(doc);
         StreamResult rslt = new StreamResult(out);
+
+        out.println("<?xml version=\"1.0\" ?>");
+        out.println("<?xml-stylesheet type=\"text/xsl\" href=\"" + getPathToXsl(new File(actionTrackerXslLocation)) + "\" media=\"screen\"?>");
         tr.transform(docSrc, rslt);
     }
+    
     
     /**
      * Get name for the code
@@ -627,26 +631,94 @@ public class ActionTracker {
     public static String getNameForCode(int code) {
         String cname = "unk";
         switch (code) {
-            case TRACK_START:         cname = "TRACK_START"; break;
-            case TRACK_PAINT:         cname = "TRACK_PAINT"; break;
-            case TRACK_MOUSE_PRESS:   cname = "TRACK_MOUSE_PRESS"; break;
-            case TRACK_MOUSE_RELEASE: cname = "TRACK_MOUSE_RELEASE"; break;
-            case TRACK_MOUSE_DRAGGED: cname = "TRACK_MOUSE_DRAGGED"; break;
-            case TRACK_MOUSE_MOVED:   cname = "TRACK_MOUSE_MOVED"; break;
-            case TRACK_KEY_PRESS:     cname = "TRACK_KEY_PRESS"; break;
-            case TRACK_KEY_RELEASE:   cname = "TRACK_KEY_RELEASE"; break;
-            case TRACK_FRAME_SHOW:    cname = "TRACK_FRAME_SHOW"; break;
-            case TRACK_FRAME_HIDE:    cname = "TRACK_FRAME_HIDE"; break;
-            case TRACK_DIALOG_SHOW:   cname = "TRACK_DIALOG_SHOW"; break;
-            case TRACK_DIALOG_HIDE:   cname = "TRACK_DIALOG_HIDE"; break;
-            case TRACK_COMPONENT_SHOW:cname = "TRACK_COMPONENT_SHOW"; break;
-            case TRACK_COMPONENT_HIDE:cname = "TRACK_COMPONENT_HIDE"; break;
-            case TRACK_INVOCATION:    cname = "TRACK_INVOCATION"; break;
-            case TRACK_UNKNOWN:       cname = "TRACK_UNKNOWN"; break;
-            case TRACK_APPLICATION_MESSAGE: cname = "TRACK_APPLICATION_MESSAGE"; break;
+            case TRACK_START:         cname = "start"; break;
+            case TRACK_PAINT:         cname = "paint"; break;
+            case TRACK_MOUSE_PRESS:   cname = "user_action"; break;
+            case TRACK_MOUSE_RELEASE: cname = "user_action"; break;
+            case TRACK_MOUSE_DRAGGED: cname = "user_action"; break;
+            case TRACK_MOUSE_MOVED:   cname = "user_action"; break;
+            case TRACK_KEY_PRESS:     cname = "user_action"; break;
+            case TRACK_KEY_RELEASE:   cname = "user_action"; break;
+            case TRACK_FRAME_SHOW:    cname = "application_message"; break;
+            case TRACK_FRAME_HIDE:    cname = "application_message"; break;
+            case TRACK_DIALOG_SHOW:   cname = "application_message"; break;
+            case TRACK_DIALOG_HIDE:   cname = "application_message"; break;
+            case TRACK_COMPONENT_SHOW:cname = "application_message"; break;
+            case TRACK_COMPONENT_HIDE:cname = "application_message"; break;
+            case TRACK_INVOCATION:    cname = "application_message"; break;
+            case TRACK_UNKNOWN:       cname = "unknown"; break;
+            case TRACK_APPLICATION_MESSAGE: cname = "application_message"; break;
+            case TRACK_CONFIG_APPLICATION_MESSAGE: cname = "config_message"; break;
+            case TRACK_TRACE_MESSAGE: cname = "trace_message"; break;
         }
         return cname;
     }
+    
+    /**
+     * Get value in Mili
+     * @param nano - value in nanoseconds
+     * @return value in miliseconds
+     */
+    static long nanoToMili(long nano) {
+        return nano/1000000;
+    }
+    
+    /**
+     * Get time in millis and only changing part of the time (1000s)
+     * @param tuple
+     * @return time in millis
+     */
+    private static String getTimeMillisForLog(Tuple t) {
+        return Long.toString(t.getTimeMillis() - t.getTimeMillis()/10000000*10000000);
+    }
+    
+    /** 
+     * Set location for ActionTracker.xsl file
+     * @param dir where the ActionTracker.xsl file is going to be placed
+     */
+    public void setXslLocation(String xslLocation){
+        this.actionTrackerXslLocation = xslLocation;
+    }
+    
+ /**
+  * Create a relative path to XSL trnaformer for ActionTracker.xml log file
+  * @param file in the current workdir
+  * <pre>
+    We expect that "work" and "results" directories have the same parent :
+    test_run/test_bag/user/class/method - directory after counting/moving results
+          PARENT/work/user/class/method - working directory
+          PARENT/results/testrun        - testrun directory
+ 
+    test_run/test_bag/user/class/method
+    -> up test_run/test_bag/user/class/
+    -> up test_run/test_bag/user/
+    -> up test_run/test_bag/
+    * -> Up to relative path from actionTrackerXslLocation=getWorkDir()
+    -> up test_run/
+   </pre>
+    */
+    private static String getPathToXsl(File file) {
+        StringBuilder pathToXsl = new StringBuilder();
+        
+        //skip the file name - go to folder
+        if (file.isFile())
+            file = file.getParentFile();
+            
+        // find the relative path to "work"
+        while(file != null && !file.getName().equalsIgnoreCase("work")) {
+            pathToXsl.append(".."+File.separator);
+            file = file.getParentFile();
+        }
+        
+        // move up over "testbag_XX" folder
+        pathToXsl.append(".."+File.separator);
+        
+        // add ActionTracker.xsl 
+        pathToXsl.append("ActionTracker.xsl");
+        
+        return pathToXsl.toString();
+    }
+    
     
     /**
      * Record a list of @see ActionTracker.Tuple objects.  This is
@@ -690,7 +762,7 @@ public class ActionTracker {
          * @return start time in ms
          */
         public long getStartMillis() {
-            return startMillies/1000000;
+            return nanoToMili(startMillies);
         }
         
         /**
@@ -707,7 +779,7 @@ public class ActionTracker {
          */
         public String toString() {
             return getName()
-            + " (" + this.size() + ") "
+                    + " (" + this.size() + ") "
                     + new Date(getStartMillis()).toString();
         }
     }
@@ -729,6 +801,9 @@ public class ActionTracker {
         
         /** difference from a "start" time in millis */
         long diffies;
+        
+        /** this tuple we measure - help to distinguish which action/paint has been measured */
+        boolean measured;
         
         /**
          * Create a tuple to track actions.
@@ -753,6 +828,7 @@ public class ActionTracker {
             this.name = name;
             this.millies = millies;
             this.diffies = millies - start;
+            this.measured = false;
             //System.err.println("new ActionTracker.Tuple " + toString()+" ,start="+start);
         }
         
@@ -782,13 +858,25 @@ public class ActionTracker {
          * Get current time in milliseconds
          * @return time in ms
          */
-        public long getTimeMillis() { return millies/1000000; }
+        public long getTimeMillis() { return nanoToMili(millies); }
         
         /**
          * Get difference in milliseconds
          * @return difference in ms
          */
-        public long getTimeDifference() { return diffies/1000000; }
+        public long getTimeDifference() { return nanoToMili(diffies); }
+        
+        /**
+         * Set this tuple as the one we measure (one start and one stop)
+         * @param measured - if true this is going to be measured
+         */
+        public void setMeasured(boolean measured) { this.measured = measured; }
+        
+        /**
+         * Get whether this tuple is the one we measure (one start and one stop)
+         * @return true - if this one is going to be measured, false else
+         */
+        public boolean getMeasured() { return this.measured; };
         
         /**
          * Convert tuple to the string

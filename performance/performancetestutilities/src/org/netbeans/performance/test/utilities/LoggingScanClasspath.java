@@ -38,13 +38,13 @@ public class LoggingScanClasspath {
         data.add(new PerformanceScanData(file,measuredTime));
     }
 
-    public static ArrayList getData(){
+    public static ArrayList<PerformanceScanData> getData(){
         return data;
     }
     
     public static void printMeasuredValues(PrintStream ps){
-        for(int i=0; i<data.size(); i++)
-            ps.println(data.get(i));
+        for (PerformanceScanData performanceScanData : data)
+            ps.println(performanceScanData);
     }
     
     public class PerformanceScanData{

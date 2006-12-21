@@ -82,7 +82,7 @@ public class LoggingRepaintManager extends RepaintManager {
     }
     
     /**
-     * Measure onle explorer
+     * Measure only explorer
      * @param ignore true - measure only explorer, false - measure everything
      */
     public void setOnlyExplorer(boolean ignore) {
@@ -94,7 +94,7 @@ public class LoggingRepaintManager extends RepaintManager {
     }
     
     /**
-     * Measure onle editor
+     * Measure only editor
      * @param ignore true - measure only editor, false - measure everything
      */
     public void setOnlyEditor(boolean ignore) {
@@ -119,20 +119,15 @@ public class LoggingRepaintManager extends RepaintManager {
      * @param h hieght of the region
      */
     public synchronized void addDirtyRegion(JComponent c, int x, int y, int w, int h) {
-        String log = "addDirtyRegion " + c.getClass().getName() + ", "+ x + "," + y + "," + w + "," + h;
+        String log = "Dirty Region " + c.getClass().getName() + ", "+ x + "," + y + "," + w + "," + h;
         
         // fix for issue 73361, It looks like the biggest cursor is on Sol 10 (10,19) in textfields
         // of some dialogs
         if (w > 10 || h > 19) { // painted region isn't cursor (or painted region is greater than cursor)
-            if (regionFilter != null) {
-                if (regionFilter.accept(c)) {
-                    tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, log);
-                    hasDirtyMatches = true;
-                } else {
-                    tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "ignored " + log);
-                }
-            } else { // no filter =>  measure everything
-                tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, log);
+            if (regionFilter != null && !regionFilter.accept(c)) {
+                tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "IGNORED - " + log);
+            } else { // no filter || accepted by filter =>  measure it
+                tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "ADD - " + log);
                 hasDirtyMatches = true;
             }
         }
@@ -142,30 +137,46 @@ public class LoggingRepaintManager extends RepaintManager {
     
     public interface RegionFilter {
         public boolean accept(JComponent c);
+        public String getFilterName();
     }
     
     private static final RegionFilter EXPLORER_FILTER =
             new RegionFilter() {
-        public boolean accept(JComponent c) {
-            Class clz = null;
-            for (clz = c.getClass(); clz != null; clz = clz.getSuperclass()) {  // some components as ProjectsView uses own class for View so we are looking for those have superclass explorer.view
-                if (clz.getPackage().getName().equals("org.openide.explorer.view")) { // if it's explorer.view log this paint event
-                    return true;
+
+                public boolean accept(JComponent c) {
+                    Class clz = null;
+
+                    for (clz = c.getClass(); clz != null; clz = clz.getSuperclass()) {
+                        if (clz.getPackage().getName().equals("org.openide.explorer.view")) {
+                            return true;
+                        }
+                    }
+                    return false;
                 }
-            }
-            return false;
-        }
-    };
+
+                public String getFilterName() {
+                    return "Accept paints from package: org.openide.explorer.view";
+                }
+            };
     
     private static final RegionFilter EDITOR_FILTER =
             new RegionFilter() {
-        public boolean accept(JComponent c) {
-            Class clz = null;
-            return c.getClass().getName().equals("org.openide.text.QuietEditorPane");
-        }
-    };
+
+                public boolean accept(JComponent c) {
+                    return c.getClass().getName().equals("org.openide.text.QuietEditorPane");
+                }
+
+                public String getFilterName() {
+                    return "Accept paints from org.openide.text.QuietEditorPane";
+                }
+            };
     
     public void  setRegionFilter(RegionFilter filter) {
+        if(filter != null)
+            tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "FILTER : " + filter.getFilterName());
+        else
+            tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "FILTER : reset");
+        
         regionFilter = filter;
     }
     
@@ -177,7 +188,7 @@ public class LoggingRepaintManager extends RepaintManager {
         //System.out.println("Done superpaint ("+tr+","+hasDirtyMatches+").");
         if (tr != null && hasDirtyMatches) {
             lastPaint = System.nanoTime();
-            tr.add(tr.TRACK_PAINT, "DONE PAINTING");
+            tr.add(tr.TRACK_PAINT, "PAINTING - done");
             //System.out.println("Done painting - " +tr);
             hasDirtyMatches = false;
         }
@@ -210,17 +221,17 @@ public class LoggingRepaintManager extends RepaintManager {
     private long waitNoPaintEvent(long timeout, boolean afterPaint) {
         long current = System.nanoTime();
         long first = current;
-        while (((current - lastPaint)/1000000 < timeout) || ((lastPaint == 0L) && afterPaint)) {
+        while ((ActionTracker.nanoToMili(current - lastPaint) < timeout) || ((lastPaint == 0L) && afterPaint)) {
             try {
-                Thread.currentThread().sleep(Math.min((current - lastPaint)/1000000 + 20, timeout));
+                Thread.currentThread().sleep(Math.min(ActionTracker.nanoToMili(current - lastPaint) + 20, timeout));
             } catch (InterruptedException e) {
-                // XXX what to do here?
+                e.printStackTrace(System.err);
             }
             current = System.nanoTime();
-            if ((current - first)/1000000 > MAX_TIMEOUT)
-                return lastPaint/1000000;
+            if (ActionTracker.nanoToMili(current - first) > MAX_TIMEOUT)
+                return ActionTracker.nanoToMili(lastPaint);
         }
-        return lastPaint/1000000;
+        return ActionTracker.nanoToMili(lastPaint);
     }
     
     /** Utility method used from NetBeans to measure startup time.
@@ -230,12 +241,12 @@ public class LoggingRepaintManager extends RepaintManager {
      * @return time of last paint
      */
     public static long measureStartup() {
-        // XXX load our EQ and repaint manager
+        // load our EQ and repaint manager
         ActionTracker tr = ActionTracker.getInstance();
         LoggingRepaintManager rm = new LoggingRepaintManager(tr);
         rm.setEnabled(true);
         
-        tr.startNewEventList("startupTime");
+        tr.startNewEventList("Startup time measurement");
         
         long waitAfterStartup = Long.getLong("org.netbeans.performance.waitafterstartup", 10000).longValue();
         long time = rm.waitNoPaintEvent(waitAfterStartup, true);
@@ -255,21 +266,4 @@ public class LoggingRepaintManager extends RepaintManager {
         return time;
     }
     
-    /*
-    public synchronized void addInvalidComponent(JComponent c) {
-        if (filter.match(c)) {
-            logger.log ("addInvalidComponent", c);
-            hasValidateMatches = true;
-        }
-        super.addInvalidComponent(c);
-    }
-     
-    public void validateInvalidComponents() {
-        if (hasValidateMatches) {
-            logger.log("validateInvalidComponents");
-            hasValidateMatches = false;
-        }
-        super.validateInvalidComponents();
-    }
-     */
 }

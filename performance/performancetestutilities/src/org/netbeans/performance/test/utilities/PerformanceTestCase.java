@@ -20,6 +20,7 @@
 package org.netbeans.performance.test.utilities;
 
 import java.awt.Component;
+import java.awt.Window;
 
 import java.util.HashMap;
 
@@ -34,7 +35,6 @@ import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.junit.NbPerformanceTest;
 
 import org.netbeans.performance.test.guitracker.ActionTracker;
-import org.netbeans.performance.test.guitracker.ActionTracker.EventList;
 import org.netbeans.performance.test.guitracker.LoggingRepaintManager;
 import org.netbeans.performance.test.guitracker.LoggingEventQueue;
 
@@ -232,7 +232,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * for quiet period of time after this call.</p>
      */
     public void measureTime() {
-        boolean exceptionDuringMeasurement = false;
+        Exception exceptionDuringMeasurement = null;
 
         long wait_after_open_heuristic = WAIT_AFTER_OPEN;
 
@@ -244,25 +244,25 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         JemmyProperties.setCurrentTimeout("EventDispatcher.RobotAutoDelay", 1);
         log("----------------------- DISPATCHING MODEL = "+JemmyProperties.getCurrentDispatchingModel());
 
-        tr.startNewEventList("test beggining"); // XXX add test name
-        tr.add(tr.TRACK_APPLICATION_MESSAGE, "expectedTime "+expectedTime+", "+
-                "repeat "+repeat+", "+
-                "after_prepare "+WAIT_AFTER_PREPARE+", "+
-                "after_open "+WAIT_AFTER_OPEN+", "+
-                "after_close "+WAIT_AFTER_CLOSE+", "+
-                "paint "+WAIT_PAINT+", "+
-                "iteration "+MAX_ITERATION);
-
         String performanceDataName = setPerformanceName();
+
+        tr.startNewEventList(performanceDataName);
+        tr.add(tr.TRACK_CONFIG_APPLICATION_MESSAGE, "Expected_time="+expectedTime+
+                ", Repeat="+repeat+
+                ", Wait_after_prepare="+WAIT_AFTER_PREPARE+
+                ", Wait_after_open="+WAIT_AFTER_OPEN+
+                ", Wait_after_close="+WAIT_AFTER_CLOSE+
+                ", Wait_paint="+WAIT_PAINT+
+                ", Max_iteration="+MAX_ITERATION);
 
         checkScanFinished(); // just to be sure, that during measurement we will not wait for scanning dialog
 
         try {
             initialize();
 
-            for(int i=1; i<=repeat && !exceptionDuringMeasurement; i++){
+            for(int i=1; i<=repeat && exceptionDuringMeasurement==null; i++){
                 try {
-                    tr.startNewEventList("TEST ITERATION no."+i); // XXX add test name
+                    tr.startNewEventList("Iteration no." + i);
                     tr.connectToAWT(true);
                     prepare();
                     waitNoEvent(WAIT_AFTER_PREPARE);
@@ -275,12 +275,13 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
                     logMemoryUsage();
 
-                    tr.add(tr.TRACK_START, "BEFORE OPEN");
+                    tr.add(tr.TRACK_TRACE_MESSAGE, "OPEN - before");
                     testedComponentOperator = open();
+                    tr.add(tr.TRACK_TRACE_MESSAGE, "OPEN - after");
 
                     // this is to optimize delays
                     long wait_time = (wait_after_open_heuristic>WAIT_AFTER_OPEN)?WAIT_AFTER_OPEN:wait_after_open_heuristic;
-                    tr.add(tr.TRACK_APPLICATION_MESSAGE, "wait_after_open_heuristic "+wait_time);
+                    tr.add(tr.TRACK_CONFIG_APPLICATION_MESSAGE, "Wait_after_open_heuristic="+wait_time);
                     Thread.currentThread().sleep(wait_time);
                     waitNoEvent(wait_time/4);
 
@@ -292,7 +293,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     new QueueTool().waitEmpty();
 
                     measuredTime[i] = getMeasuredTime();
-                    tr.add(tr.TRACK_APPLICATION_MESSAGE, "MEASURED TIME="+measuredTime[i]);
+                    tr.add(tr.TRACK_APPLICATION_MESSAGE, "Measured Time="+measuredTime[i], true);
                     // negative HEURISTIC_FACTOR disables heuristic
                     if (HEURISTIC_FACTOR > 0) {
                         wait_after_open_heuristic = (long) (measuredTime[i] * HEURISTIC_FACTOR);
@@ -312,14 +313,14 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     log("------- [ "+i+" ] ---------------- Exception rises while measuring performance :"+exc.getMessage());
                     exc.printStackTrace(getLog());
                     getScreenshot("exception_during_open");
-                    exceptionDuringMeasurement = true;
+                    exceptionDuringMeasurement = exc;
                     // throw new JemmyException("Exception arises during measurement:"+exc.getMessage());
                 }finally{ // finally for prepare(), open()
                     try{
                         // Uncomment if you want to run with analyzer tool
                         // com.sun.forte.st.collector.CollectorAPI.pause ();
 
-                        tr.add(tr.TRACK_APPLICATION_MESSAGE, "before close");
+                        tr.add(tr.TRACK_TRACE_MESSAGE, "CLOSE - before");
                         close();
 
                         closeAllModal();
@@ -329,10 +330,9 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                         log("------- [ "+i+" ] ---------------- Exception rises while closing tested component :"+e.getMessage());
                         e.printStackTrace(getLog());
                         getScreenshot("exception_during_close");
-                        exceptionDuringMeasurement = true;
+                        exceptionDuringMeasurement = e;
                         //throw new JemmyException("Exception arises while closing tested component :"+e.getMessage());
                     }finally{ // finally for close()
-                        tr.add(tr.TRACK_APPLICATION_MESSAGE, "iteration no."+i+" finished");
                         tr.connectToAWT(false);
                     }
                 }
@@ -341,21 +341,20 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             tr.startNewEventList("shutdown hooks");
             shutdown();
             closeAllDialogs();
-            tr.add(tr.TRACK_APPLICATION_MESSAGE, "shutdown hooks finished");
-            repaintManager().setRegionFilter(null);
+            tr.add(tr.TRACK_APPLICATION_MESSAGE, "AFTER SHUTDOWN");
         }catch (Exception e) { // catch for initialize(), shutdown(), closeAllDialogs()
             log("----------------------- Exception rises while shuting down / initializing:"+e.getMessage());
             e.printStackTrace(getLog());
             getScreenshot("exception_during_init_or_shutdown");
             // throw new JemmyException("Exception rises while shuting down :"+e.getMessage());
-            exceptionDuringMeasurement = true;
+            exceptionDuringMeasurement = e;
         }finally{ // finally for initialize(), shutdown(), closeAllDialogs()
-            // XXX export results?
+            repaintManager().setRegionFilter(null);
         }
 
         dumpLog();
-        if(exceptionDuringMeasurement)
-            throw new Error("Exception rises during measurement, look at appropriate log file for stack trace(s).");
+        if(exceptionDuringMeasurement!=null)
+            throw new Error("Exception {" + exceptionDuringMeasurement.getMessage()+ "}rises during measurement, look at appropriate log file for stack trace(s).");
 
         compare(measuredTime);
 
@@ -375,7 +374,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      */
     public void measureMemoryUsage() {
 
-        boolean exceptionDuringMeasurement = false;
+        Exception exceptionDuringMeasurement = null;
         long wait_after_open_heuristic = WAIT_AFTER_OPEN;
 
         long memoryUsageMinimum = 0;
@@ -395,7 +394,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
         initialize();
 
-        for(int i=1; i<=repeat_memory && !exceptionDuringMeasurement; i++){
+        for(int i=1; i<=repeat_memory && exceptionDuringMeasurement==null; i++){
             try {
                 prepare();
 
@@ -416,7 +415,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
             }catch(Exception exc){ // catch for prepare(), open()
                 exc.printStackTrace(getLog());
-                exceptionDuringMeasurement = true;
+                exceptionDuringMeasurement = exc;
                 getScreenshot("exception_during_open");
                 // throw new JemmyException("Exception arises during measurement:"+exc.getMessage());
             }finally{
@@ -432,7 +431,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                 }catch(Exception e){
                     e.printStackTrace(getLog());
                     getScreenshot("measure");
-                    exceptionDuringMeasurement = true;
+                    exceptionDuringMeasurement = e;
                 }finally{ // finally for initialize(), shutdown(), closeAllDialogs()
                     // XXX export results?
                 }
@@ -449,10 +448,12 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
         }
 
+        // set Performance Data Name
+        String performanceDataName = setPerformanceName();
+            
         // report deltas against minimum of measured values
         for(int i=1; i<=repeat_memory; i++){
             //String performanceDataName = setPerformanceName(i);
-            String performanceDataName = setPerformanceName();
             log("Used Memory ["+performanceDataName+" | "+i+"] = " +memoryUsage[i]);
 
             reportPerformance(performanceDataName, memoryUsage[i] - memoryUsageMinimum, "bytes", i);
@@ -464,11 +465,11 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         }catch (Exception e) {
             e.printStackTrace(getLog());
             getScreenshot("shutdown");
-            exceptionDuringMeasurement = true;
+            exceptionDuringMeasurement = e;
         }finally{
         }
 
-        if(exceptionDuringMeasurement)
+        if(exceptionDuringMeasurement!=null)
             throw new Error("Exception rises during measurement, look at appropriate log file for stack trace(s).");
 
     }
@@ -615,7 +616,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             Runtime runtime = Runtime.getRuntime();
             long totalMemory = runtime.totalMemory();
             long freeMemory = runtime.freeMemory();
-            tr.add(tr.TRACK_APPLICATION_MESSAGE, "usedMemory size:"+ (totalMemory-freeMemory) +" total:"+totalMemory+" free:"+freeMemory);
+            tr.add(tr.TRACK_APPLICATION_MESSAGE, "Memory used="+ (totalMemory-freeMemory) +" total="+totalMemory);
         }
     }
 
@@ -624,7 +625,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * @param i number of repeat (GC runs i*3 times)
      */
     public void runGC(int i){
-        for(int gc=0; gc < i; gc ++){
+        while(i>0) {
             try{
                 System.runFinalization();
                 System.gc();
@@ -633,9 +634,10 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                 Thread.currentThread().sleep(500);
                 System.gc();
                 Thread.currentThread().sleep(500);
-            }catch(Exception exc){ //just catch exception
-
+            }catch(Exception exc){
+                exc.printStackTrace(System.err);
             }
+            i--;
         }
     }
 
@@ -690,6 +692,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             Class cls = Class.forName("org.netbeans.core.WarmUpSupport"); // NOI18N
             java.lang.reflect.Field fld = cls.getDeclaredField("finished"); // NOI18N
             fld.setAccessible(true);
+            
             // assume that warmup should not last more than 20sec
             for (int i=20; i>0; i--) {
                 warmupFinished = fld.getBoolean(null);
@@ -700,7 +703,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     log("checkWarmup - waiting");
                     Thread.sleep(1000);
                 } catch (InterruptedException ie) {
-                    // do nothing
+                    ie.printStackTrace(System.err);
                 }
             }
             fail("checkWarmup - waiting for warmup completion failed");
@@ -740,30 +743,34 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * @return measured time
      */
     public long getMeasuredTime(){
-        EventList lst = tr.getCurrentEvents();
-        ActionTracker.Tuple[] events = (ActionTracker.Tuple[]) lst.toArray(new ActionTracker.Tuple[0]);
-        long start = 0L;
-        long end = 0L;
-        for (int i = 0; i < events.length; i++) {
-            ActionTracker.Tuple t = events[i];
-            int code = t.getCode();
+        ActionTracker.Tuple start = tr.getCurrentEvents().getFirst();
+        ActionTracker.Tuple end = tr.getCurrentEvents().getFirst();
+        
+        for (ActionTracker.Tuple tuple : tr.getCurrentEvents()) {
+            int code = tuple.getCode();
             if (code == ActionTracker.TRACK_START
                     // it could be ActionTracker.TRACK_MOUSE_RELEASE (by default) or ActionTracker.TRACK_MOUSE_PRESS or ActionTracker.TRACK_MOUSE_MOVE
                     || code == track_mouse_event
                     || code == ActionTracker.TRACK_KEY_PRESS) {
-                start = t.getTimeMillis();
+                start = tuple;
             } else if (code == ActionTracker.TRACK_PAINT
                     || code == ActionTracker.TRACK_FRAME_SHOW
                     || code == ActionTracker.TRACK_DIALOG_SHOW
                     || code == ActionTracker.TRACK_COMPONENT_SHOW
                     ) {
-                end = t.getTimeMillis();
+                end = tuple;
             }
         }
-        if (start > end || start == 0) {
-            throw new IllegalStateException("Measuring failed, because we start["+start+"] > end["+end+"] or start=0");
+
+        start.setMeasured(true);
+        end.setMeasured(true);
+        
+        long result = end.getTimeMillis() - start.getTimeMillis();
+        
+        if (result < 0 || start.getTimeMillis() == 0) {
+            throw new IllegalStateException("Measuring failed, because we start["+start.getTimeMillis()+"] > end["+end.getTimeMillis()+"] or start=0");
         }
-        return (end - start);
+        return result;
     }
 
     /**
@@ -774,6 +781,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     public void dumpLog(){
         tr.stopRecording();
         try {
+            tr.setXslLocation(getWorkDirPath());
             tr.exportAsXML(getLog("ActionTracker.xml"));
         } catch (Exception ex) {
             throw new Error("Exception while generating log", ex);
@@ -889,10 +897,9 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * @param chooser chooser used for looking for dialogs
      */
     private static void closeDialogs(javax.swing.JDialog dialog, org.netbeans.jemmy.ComponentChooser chooser) {
-        java.awt.Window[] ownees = dialog.getOwnedWindows();
-        for(int i = 0; i < ownees.length; i++) {
-            if(chooser.checkComponent(ownees[i])) {
-                closeDialogs((javax.swing.JDialog)ownees[i], chooser);
+        for (Window window : dialog.getOwnedWindows()) {
+            if(chooser.checkComponent(window)) {
+                closeDialogs((javax.swing.JDialog)window, chooser);
             }
         }
         new org.netbeans.jemmy.operators.JDialogOperator(dialog).close();
