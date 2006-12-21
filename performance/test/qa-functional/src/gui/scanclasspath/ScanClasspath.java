@@ -27,7 +27,6 @@ import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 import org.netbeans.performance.test.utilities.LoggingScanClasspath;
-import org.netbeans.performance.test.utilities.LoggingScanClasspath.PerformanceScanData;
 
 
 /**
@@ -87,16 +86,14 @@ public class ScanClasspath extends org.netbeans.performance.test.utilities.Perfo
         checkScanFinished();
         
         LoggingScanClasspath.printMeasuredValues(getLog());
-        java.util.ArrayList data = LoggingScanClasspath.getData();
-        for (int i=0; i<data.size(); i++){
-            PerformanceScanData psd = (PerformanceScanData) data.get(i);
-            
+        
+        for (LoggingScanClasspath.PerformanceScanData data : LoggingScanClasspath.getData()) {
             // report only if we want to report it
-            if(reportCPR.contains((Object)psd.getName())){
-                if(psd.getValue() > 0)
-                    reportPerformance("Scanning " + psd.getName(), psd.getValue(), "ms", 1);
+            if(reportCPR.contains((Object)data.getName())){
+                if(data.getValue() > 0)
+                    reportPerformance("Scanning " + data.getName(), data.getValue(), "ms", 1);
                 else
-                    fail("Measured value ["+psd.getValue()+"] is not > 0 !");
+                    fail("Measured value ["+data.getValue()+"] is not > 0 !");
             }
         }
     }
