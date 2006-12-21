@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -151,14 +152,18 @@ final class WorkspaceParser {
         for (int i = 0; i < resourceDirs.length; i++) {
             File resDir = resourceDirs[i];
             File location = getLocation(resDir);
-            if (location != null && EclipseUtils.isRegularProject(location)) {
-                logger.finest("Found a regular Eclipse Project in: " // NOI18N
-                        + location.getAbsolutePath());
-                if (!projectsDirs.contains(location.getName())) {
-                    addLightProject(projectsDirs, location, false);
-                } else {
-                    logger.warning("Trying to add the same project twice: " // NOI18N
+            if (location != null) {
+                if (EclipseUtils.isRegularProject(location)) {
+                    logger.finest("Found a regular Eclipse Project in: " // NOI18N
                             + location.getAbsolutePath());
+                    if (!projectsDirs.contains(location.getName())) {
+                        addLightProject(projectsDirs, location, false);
+                    } else {
+                        logger.warning("Trying to add the same project twice: " // NOI18N
+                                + location.getAbsolutePath());
+                    }
+                } else {
+                    logger.warning(location.getAbsolutePath() + " does not contain regular project"); // NOI18N
                 }
             }
         }
@@ -185,24 +190,13 @@ final class WorkspaceParser {
     }
     
     /** Loads location of external project. */
-    private File getLocation(File prjDir) throws ProjectImporterException {
+    private static File getLocation(final File prjDir) throws ProjectImporterException {
         File locationFile = new File(prjDir, ".location"); // NOI18N
         if (locationFile.isFile()) {
             FileInputStream fis = null;
             try {
                 fis = new FileInputStream(locationFile);
-                // starts with 17 bytes.
-                long toSkip = 17;
-                while(toSkip != 0) {
-                    toSkip -= fis.skip(toSkip);
-                }
-                // follows byte describing path length
-                int pathLength = fis.read();
-                // follows path itself
-                byte[] path = new byte[pathLength];
-                int read = fis.read(path);
-                assert read == pathLength;
-                return new File(new String(path, "ISO-8859-1")); // NOI18N
+                return getLocation(fis);
             } catch (IOException e) {
                 throw new ProjectImporterException("Error during reading " + // NOI18N
                         ".location file", e); // NOI18N
@@ -217,6 +211,28 @@ final class WorkspaceParser {
             }
         }
         return null;
+    }
+    
+    /**
+     * Loads location of external project. Package-private for unit tests only.
+     */
+    static File getLocation(final InputStream is) throws IOException {
+        // starts with 17 bytes.
+        long toSkip = 17;
+        while(toSkip != 0) {
+            toSkip -= is.skip(toSkip);
+        }
+        // follows byte describing path length
+        int pathLength = is.read();
+        // follows path itself
+        byte[] path = new byte[pathLength];
+        int read = is.read(path);
+        assert read == pathLength;
+        String pathS = new String(path, "ISO-8859-1"); // NOI18N
+        if (pathS.startsWith("URI//")) { // #89577 // NOI18N
+            pathS = pathS.substring(pathS.indexOf(':') + 1);
+        }
+        return new File(pathS);
     }
     
 }
