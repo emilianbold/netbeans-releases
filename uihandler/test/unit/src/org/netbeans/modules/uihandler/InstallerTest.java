@@ -21,30 +21,10 @@ package org.netbeans.modules.uihandler;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.Locale;
 import javax.swing.JButton;
 import junit.framework.TestCase;
 import junit.framework.*;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
-import org.netbeans.modules.uihandler.api.Activated;
-import org.netbeans.modules.uihandler.api.Deactivated;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.modules.ModuleInstall;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -105,6 +85,38 @@ public class InstallerTest extends TestCase {
         assertEquals("It is named", "Send Feedback", b.getText());
         assertEquals("It url attribute is set", "http://xyz.cz", b.getClientProperty("url"));
         assertEquals("Mnemonics", 'S', b.getMnemonic());
+    }
+
+    public void tesCanDefineExitButton() throws Exception {
+        String page = "<html><body><form action='http://xyz.cz' method='POST'>" +
+            "\n" +
+            "<input type='hidden' name='submit' value=\"&amp;Send Feedback\"/>" +
+            "\n" +
+            "<input type='hidden' name='exit' value=\"&amp;Cancel\"/>" +
+            "\n" +
+            "</form></body></html>";
+        
+        InputStream is = new ByteArrayInputStream(page.getBytes());
+        JButton def = new JButton("Default");
+        Object[] buttons = Installer.parseButtons(is, def);
+        is.close();
+        
+        assertNotNull("buttons parsed", buttons);
+        assertEquals("There are two buttons", 2, buttons.length);
+        if (def == buttons[1]) {
+            fail("Second is default: " + buttons[1]);
+        }
+        assertEquals("It is a button", JButton.class, buttons[0].getClass());
+        JButton b = (JButton)buttons[0];
+        assertEquals("It is named", "Send Feedback", b.getText());
+        assertEquals("It url attribute is set", "http://xyz.cz", b.getClientProperty("url"));
+        assertEquals("Mnemonics", 'S', b.getMnemonic());
+
+        assertEquals("It is a button", JButton.class, buttons[1].getClass());
+        b = (JButton)buttons[1];
+        assertEquals("It is named", "Cancel", b.getText());
+        assertNull("No url", b.getClientProperty("url"));
+        assertEquals("Mnemonics", -1, b.getMnemonic());
     }
 
     public void testReadAllButtons() throws Exception {

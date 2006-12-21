@@ -217,6 +217,18 @@ public class Installer extends ModuleInstall {
                         buttons.add(b);
                         continue;
                     }
+
+                    /*
+                    if ("hidden".equals(type) && "exit".equals(name)) { // NOI18N
+                        f.submitValue = value;
+                        JButton b = new JButton();
+                        Mnemonics.setLocalizedText(b, f.submitValue);
+                        b.setActionCommand("submit"); // NOI18N
+                        b.putClientProperty("url", f.url); // NOI18N
+                        b.setDefaultCapable(buttons.isEmpty());
+                        buttons.add(b);
+                    }
+                     */
                     
                     if ("hidden".equals(type)) { // NOI18N
                         JButton b = new JButton();
@@ -363,7 +375,7 @@ public class Installer extends ModuleInstall {
                 a.deactivated(log);
             }
 
-            String exitMsg = NbBundle.getMessage(Installer.class, "MSG_EXIT"); // NOI18N
+            String exitMsg = NbBundle.getMessage(Installer.class, "MSG_" + msg + "_EXIT"); // NOI18N
             URL url = null;
             Object[] buttons = new Object[] { exitMsg };
             try {

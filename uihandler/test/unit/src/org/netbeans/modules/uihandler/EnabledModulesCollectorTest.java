@@ -111,7 +111,7 @@ public class EnabledModulesCollectorTest extends TestCase {
             return null;
         }
 
-        public Set getDependencies() {
+        public Set<org.openide.modules.Dependency> getDependencies() {
             return Collections.emptySet();
         }
 
