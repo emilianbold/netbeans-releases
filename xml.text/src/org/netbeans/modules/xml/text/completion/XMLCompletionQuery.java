@@ -128,14 +128,13 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
                     // broken document
                     return cannotSuggest(component, sup.requestedAutoCompletion());
                 }
-                
+
                 if (helper.getCompletionType() == SyntaxQueryHelper.COMPLETION_TYPE_VALUE) {
                     //might be the end tag autocompletion
                     if(helper.getToken().getTokenID() == XMLDefaultTokenContext.TAG) {
                         SyntaxElement se = helper.getSyntaxElement();
                         if(se instanceof StartTag) {
                             String tagName = ((StartTag)se).getNodeName();
-                            list = new ArrayList();
                             list.add(new EndTagAutocompletionResultItem(tagName));
                         }
                     }
