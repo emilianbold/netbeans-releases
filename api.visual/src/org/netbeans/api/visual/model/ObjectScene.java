@@ -64,14 +64,14 @@ public class ObjectScene extends Scene {
     private ObjectSceneEvent event = new ObjectSceneEvent (this);
 
     /**
-     * Adds a mapping between an object and a widget.
+     * Adds a mapping between an object and a widget. Note that it does not add the widget into the scene automatically.
      * @param object the model object; the object must not be a Widget
      * @param widget the scene widget; if null then the object is non-visual and does not have any widget assigned
      */
     public final void addObject (Object object, Widget widget) {
         assert object != null  &&  ! (object instanceof Widget)  &&  ! objects.containsKey (object);
         if (widget != null)
-            assert ! widget2objects.containsKey (widget)  &&  widget.getScene () == this  &&  widget.getParentWidget () != null;
+            assert ! widget2objects.containsKey (widget)  &&  widget.getScene () == this;
         objects.put (object, object);
         object2widgets.put (object, widget);
         objectStates.put (object, ObjectState.createNormal ());
@@ -84,7 +84,7 @@ public class ObjectScene extends Scene {
     }
 
     /**
-     * Removes a mapping for an object.
+     * Removes a mapping for an object. Note that it does not remove the widget from the scene automatically.
      * @param object the object for which the mapping is removed
      */
     public final void removeObject (Object object) {
