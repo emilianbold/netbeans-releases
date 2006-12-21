@@ -24,6 +24,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.openide.util.NbPreferences;
 
 /**
@@ -67,9 +68,7 @@ class HttpProxySettings {
     }
 
     public void showConfigurationDialog() {
-        if( ProxyDialog.showDialog() ) {
-            propertySupport.firePropertyChange( PROXY_SETTINGS, null, this );
-        }
+        OptionsDisplayer.getDefault().open( "General" );//NOI18N
     }
 
     private static synchronized void initProxyMethodsMaybe() {
