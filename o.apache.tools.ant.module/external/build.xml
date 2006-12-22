@@ -19,7 +19,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project name="ant/external" default="unzip" basedir=".">
     <target name="unzip">
-        <unzip src="ant-libs-1.6.5.zip" dest="lib"/>
+        <unzip src="ant-libs-1.7.0.zip" dest="lib"/>
     </target>
     <target name="clean">
         <delete dir="lib"/>

@@ -31,6 +31,11 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
                 </module-dependencies>
             <public-packages/>
+            <extra-compilation-unit>
+                <package-root>antsrc</package-root>
+                <classpath>${ant.cp}</classpath>
+                <built-to>build/antclasses</built-to>
+            </extra-compilation-unit>
         </data>
     </configuration>
 </project>

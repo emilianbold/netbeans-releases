@@ -20,6 +20,8 @@
 package org.apache.tools.ant.module.api;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
@@ -77,7 +79,6 @@ public class IntrospectedInfoTest extends NbTestCase {
          */
     }
     
-    /* XXX uncomment when Ant 1.7.0 is integrated:
     public void testEnumeratedAttributes() throws Exception {
         ii.register("enumtask", EnumTask.class, "task");
         String k1 = EnumTask.class.getName();
@@ -91,7 +92,6 @@ public class IntrospectedInfoTest extends NbTestCase {
         public enum E {chocolate, vanilla, strawberry}
         public void setAttr(E e) {}
     }
-     */
     
     public static final class IFL extends InstalledFileLocator {
         public IFL() {

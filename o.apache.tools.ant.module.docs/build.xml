@@ -28,7 +28,26 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="ant-docs-*.zip"/>
             </fileset>
         </unzip>
+        <mkdir dir="build/antclasses"/>
+        <javac srcdir="antsrc" destdir="build/antclasses" classpath="${ant.cp}" source="1.4"/>
+        <taskdef name="makemanual" classname="MakeManual" classpath="${ant.cp}:build/antclasses"/>
+        <makemanual dir="${build.javahelp.dir}/${javahelp.base}" hs="javahelp/org/apache/tools/ant/module/docs/HelpSet.hs"/>
         <antcall target="projectized.javahelp"/>
+    </target>
+
+    <target name="preview-javahelp" depends="clean,check-javahelp,-preview-javahelp,-preview-javahelp-nb" description="Build JavaHelp and take a look at it.">
+    </target>
+    <target name="-preview-javahelp">
+        <taskdef name="preview" classname="Preview" classpath="${ant.cp}:build/antclasses"/>
+        <preview custom="${build.javahelp.dir}/${javahelp.base}/HelpSet.hs"/>
+    </target>
+    <target name="-preview-javahelp-nb" if="netbeans.home">
+        <pathconvert dirsep="/" property="docs.zip">
+            <fileset dir="../external">
+                <include name="ant-docs-*.zip"/>
+            </fileset>
+        </pathconvert>
+        <nbbrowse url="jar:file:${docs.zip}!/index.html"/>
     </target>
 
     <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
@@ -48,7 +67,7 @@ Microsystems, Inc. All Rights Reserved.
                 <text>For the Ant documentation module itself:</text>
                 <file location="${license.file}"/>
                 <text>For the Ant manual:</text>
-                <file location="${nb_all}/ant/external/ant-1.6.5-license.txt"/>
+                <file location="${nb_all}/ant/external/ant-1.7.0-license.txt"/>
             </license>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>
