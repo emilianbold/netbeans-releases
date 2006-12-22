@@ -22,10 +22,4 @@ public class EmptyVisualDesign {
         return Display.getDisplay(midlet);
     }
 
-    public void exitMIDlet() {
-        switchDisplayable (null, null);
-//        midlet.destroyApp(true);
-        midlet.notifyDestroyed();
-    }
-
 }

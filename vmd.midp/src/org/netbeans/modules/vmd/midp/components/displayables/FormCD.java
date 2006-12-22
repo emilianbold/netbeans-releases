@@ -20,16 +20,18 @@ package org.netbeans.modules.vmd.midp.components.displayables;
 
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.codegen.Parameter;
+import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
+import org.netbeans.modules.vmd.api.inspector.common.ArrayPropertyOrderingController;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.actions.AddActionPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
+import org.netbeans.modules.vmd.midp.components.MidpArraySupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
-import org.netbeans.modules.vmd.midp.components.MidpArraySupport;
 import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 import org.netbeans.modules.vmd.midp.components.listeners.ItemStateListenerCD;
 import org.netbeans.modules.vmd.midp.flow.FlowItemCommandPinOrderPresenter;
@@ -40,8 +42,6 @@ import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
-import org.netbeans.modules.vmd.api.inspector.common.ArrayPropertyOrderingController;
 
 /**
  * @author David Kaspar
@@ -80,7 +80,7 @@ public final class FormCD extends ComponentDescriptor {
         return new CodeSetterPresenter()
                 .addParameters(MidpParameter.create(PROP_ITEMS, PROP_ITEM_STATE_LISTENER))
                 .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).addParameters(DisplayableCD.PROP_TITLE))
-                .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).setArrayParameter(PROP_ITEMS).addParameters(DisplayableCD.PROP_TITLE, PROP_ITEMS))
+                .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).addParameters(DisplayableCD.PROP_TITLE, PROP_ITEMS))
                 .addSetters(MidpSetter.createSetter("setItemStateListener", MidpVersionable.MIDP).addParameters(PROP_ITEM_STATE_LISTENER))
                 .addSetters(MidpSetter.createSetter("insert", MidpVersionable.MIDP).setArrayParameter(PROP_ITEMS).addParameters(PROP_ITEMS, Parameter.PARAM_INDEX))
                 .addSetters(MidpSetter.createSetter("set", MidpVersionable.MIDP).setArrayParameter(PROP_ITEMS).addParameters(PROP_ITEMS, Parameter.PARAM_INDEX));
