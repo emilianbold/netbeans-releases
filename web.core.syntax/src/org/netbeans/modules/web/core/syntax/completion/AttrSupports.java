@@ -124,10 +124,12 @@ public class AttrSupports extends Object {
         
     }
     
-    /** Support for code completing of package and class. */
-    public static class PackageClassSupport extends AttributeValueSupport.Default {
+    /** 
+     * Provides code completion for a class name context
+     */
+    public static class ClassNameSupport extends AttributeValueSupport.Default {
         
-        public PackageClassSupport(boolean tag, String longName, String attrName) {
+        public ClassNameSupport(boolean tag, String longName, String attrName) {
             super(tag, longName, attrName);
         }
         
@@ -138,7 +140,7 @@ public class AttrSupports extends Object {
         protected FakedJavaClass getFakedJavaClass(Document doc, int caretOffset, String prefix){
             
             if (prefix != null){
-                String fakedClassBody = "import " + prefix; //NOI18N
+                String fakedClassBody = "class Foo extends " + prefix; //NOI18N
                 FakedJavaClass fakedJavaClass = new FakedJavaClass(fakedClassBody, fakedClassBody.length());
                 
                 return fakedJavaClass;
@@ -165,6 +167,36 @@ public class AttrSupports extends Object {
          *  It sets itemLength and itemOffset variables as a side effect
          */
         private List completionResults(int offset, JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
+            return null;
+        }
+        
+    }
+    
+    /** 
+     * Provides code completion for a comma-separated list of imports context
+     */
+    public static class PackageListSupport extends ClassNameSupport {
+        
+        public PackageListSupport(boolean tag, String longName, String attrName) {
+            super(tag, longName, attrName);
+        }
+        
+        protected FakedJavaClass getFakedJavaClass(Document doc, int caretOffset, String prefix){
+            
+            if (prefix != null){
+                int commaPos = prefix.lastIndexOf(",");
+                
+                if (commaPos > -1){
+                    prefix = prefix.substring(commaPos + 1);
+                }
+                
+                String fakedClassBody = "import " + prefix; //NOI18N
+                FakedJavaClass fakedJavaClass = new FakedJavaClass(fakedClassBody, fakedClassBody.length());
+                
+                return fakedJavaClass;
+            }
+            
+            
             return null;
         }
         
