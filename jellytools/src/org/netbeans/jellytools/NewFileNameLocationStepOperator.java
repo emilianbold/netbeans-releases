@@ -18,11 +18,15 @@
  */
 package org.netbeans.jellytools;
 
-import org.netbeans.jellytools.nodes.Node;
+import java.awt.Component;
+import java.awt.Component;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import javax.swing.JTextField;
+import org.netbeans.jemmy.ComponentChooser;
 
 /**
  * Handle "Name And Location" panel of the New File wizard.
@@ -50,19 +54,49 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
     private JTextFieldOperator  _txtProject;
     private JLabelOperator      _lblCreatedFile;
     private JTextFieldOperator  _txtCreatedFile;
+    private JLabelOperator      _lblPackage;
     private JComboBoxOperator   _cboPackage;
+    private JLabelOperator      _lblLocation;
     private JComboBoxOperator   _cboLocation;
-     
+    
+    /** Waits for wizard with New title.  */
+    public NewFileNameLocationStepOperator() {
+        super();
+    }
+    
+    /** Waits for wizard with given title.
+     * @param title title of wizard
+     */
+    public NewFileNameLocationStepOperator(String title) {
+        super(title);
+    }
+    
     /** Returns operator for first label with "Name"
      * @return JLabelOperator
      */
     public JLabelOperator lblObjectName() {
         if(_lblObjectName == null) {
-            _lblObjectName = new JLabelOperator(this,2);
+            final String nameLabel = Bundle.getString("org.netbeans.modules.properties.Bundle", "PROP_name");
+            final String nameAndLocationLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.project.Bundle", "LBL_JavaTargetChooserPanelGUI_Name");
+            _lblObjectName = new JLabelOperator(this, new JLabelOperator.JLabelFinder(new ComponentChooser() {
+                public boolean checkComponent(Component comp) {
+                    JLabel jLabel = (JLabel)comp;
+                    String text = jLabel.getText();
+                    if(text == null || nameAndLocationLabel.equals(text)) {
+                        return false;
+                    } else if(text.indexOf(nameLabel) > -1 && (jLabel.getLabelFor() == null || jLabel.getLabelFor() instanceof JTextField)) {
+                        return true;
+                    }
+                    return false;
+                }
+                public String getDescription() {
+                    return "JLabel containing Name and associated with text field";
+                }
+            }));
         }
         return _lblObjectName;
     }
-
+    
     
     /** Returns operator of text field bind to lblObjectName
      * @return JTextOperator
@@ -83,12 +117,12 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
      */
     public JLabelOperator lblProject() {
         if(_lblProject == null) {
-            _lblProject = new JLabelOperator(this, Bundle.getString("org.netbeans.modules.project.ui.Bundle", 
-                                                                    "LBL_TemplateChooserPanelGUI_jLabel1"));
+            _lblProject = new JLabelOperator(this, Bundle.getString("org.netbeans.modules.project.ui.Bundle",
+                    "LBL_TemplateChooserPanelGUI_jLabel1"));
         }
         return _lblProject;
     }
-
+    
     
     /** Returns operator of text field bind to lblProject
      * @return JTextOperator
@@ -113,7 +147,7 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
         }
         return _lblCreatedFile;
     }
-
+    
     /** Returns operator of text field bind to lblCreatedFile
      * @return JTextOperator
      */
@@ -128,23 +162,44 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
         return _txtCreatedFile;
     }
     
+    /** Returns operator of label "Location:"
+     * @return JLabelOperator
+     */
+    public JLabelOperator lblLocation() {
+        if(_lblLocation == null) {
+            _lblLocation = new JLabelOperator(this,
+                    Bundle.getStringTrimmed("org.netbeans.modules.java.project.Bundle", "LBL_JavaTargetChooserPanelGUI_jLabel1"));
+        }
+        return _lblLocation;
+    }
+    
     /** Returns operator for combo box Location:
      * @return JComboBoxOperator
      */
     public JComboBoxOperator cboLocation() {
         if ( _cboLocation==null ) {
-            _cboLocation = new JComboBoxOperator(this,0);
+            _cboLocation = new JComboBoxOperator((JComboBox)lblLocation().getLabelFor());
         }
         return _cboLocation;
     }
     
+    /** Returns operator of label "Package:"
+     * @return JLabelOperator
+     */
+    public JLabelOperator lblPackage() {
+        if(_lblPackage == null) {
+            _lblPackage = new JLabelOperator(this,
+                    Bundle.getStringTrimmed("org.netbeans.modules.java.project.Bundle", "LBL_JavaTargetChooserPanelGUI_jLabel2"));
+        }
+        return _lblPackage;
+    }
     
-    /** returns operator for combo box Packages:
+    /** returns operator for combo box Package:
      * @return JComboBoxOperator
      */
     public JComboBoxOperator cboPackage() {
         if ( _cboPackage==null ) {
-            _cboPackage = new JComboBoxOperator(this,1);
+            _cboPackage = new JComboBoxOperator((JComboBox)lblPackage().getLabelFor());
         }
         return _cboPackage;
     }
@@ -163,7 +218,7 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
         cboPackage().clearText();
         cboPackage().typeText(packageName);
     }
-
+    
     /** Sets given object name in the text field.
      * @param objectName name of object
      */
@@ -187,7 +242,7 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
         cboLocation().selectItem(1);
     }
     
-    /** Performs verification by accessing all sub-components */    
+    /** Performs verification by accessing all sub-components */
     public void verify() {
         lblObjectName();
         txtObjectName();
