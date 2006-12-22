@@ -358,19 +358,59 @@ public class PlatformImpl extends J2eePlatformImpl {
         if (J2eePlatform.TOOL_APP_CLIENT_RUNTIME.equals(toolName)) {    //NOI18N
             if (isValidPlatformRoot(root).equals("")) {
                 return new File[] {
-                    new File(root, "lib/appserv-admin.jar"),    //NOI18N
-                    new File(root, "lib/appserv-cmp.jar"),      //NOI18N
-                    new File(root, "lib/appserv-ext.jar"),      //NOI18N
-                    new File(root, "lib/appserv-rt.jar"),       //NOI18N
-                    new File(root, APPSERV_WS_JAR),       //NOI18N
-                    new File(root, "lib/dbschema.jar"),         //NOI18N
-                    new File(root, "lib/fscontext.jar"),        //NOI18N
-                    new File(root, "lib/j2ee.jar"),             //NOI18N
+                    
+                    // 8.2 only -- not in GF based servers
+                    new File(root, "lib/dom.jar"),            //NOI18N
                     new File(root, "lib/xalan.jar"),            //NOI18N
                     new File(root, "lib/xercesImpl.jar"),       //NOI18N
+                    
+                    // Shared by all
+                    new File(root, "lib/appserv-rt.jar"),       //NOI18N
+                    
+                    // GF V1U1 and V2 -- not in 8.2
+                    new File(root, "lib/javaee.jar"),             //NOI18N
+                    
+                    // 8.2 -- api's included in javaee.jar
+                    new File(root, "lib/j2ee.jar"),             //NOI18N
+                    
+                    // GF V2 -- not present in other environments
+                    new File(root, "lib/jmac-api.jar"),       // NOI18N
+                    
+                    // Shared
+                    new File(root, "lib/appserv-ext.jar"),      //NOI18N
+                    new File(root, "lib/mail.jar"),       // NOI18N
+                    new File(root, "lib/activation.jar"),       // NOI18N
+                    
+                    // GF V2 -- not present in other environments
+                    new File(root, "lib/webservices-rt.jar"),       //NOI18N
+                    new File(root, "lib/webservices-tools.jar"),       //NOI18N
+                    
+                    // GF V1U1 and V2 -- not present in 8.2
+                    new File(root, "lib/appserv-ws.jar"),       //NOI18N
+                    
+                    // 8.2 -- not present in GF V1U1 or GF v2
+                    new File(root, "lib/jaxrpc-impl.jar"),       //NOI18N
+                    new File(root, "lib/saaj-impl.jar"),       //NOI18N
+                    new File(root, "lib/jaxr-impl.jar"),       //NOI18N
+                    new File(root, "lib/relaxngDatatype.jar"),       //NOI18N
+                    new File(root, "lib/xsdlib.jar"),       //NOI18N
+                   
+                    // Shared
+                    new File(root, "lib/appserv-cmp.jar"),      //NOI18N
+                    
+                    // GF V1U1 and V2 -- not present in 8.2
+                    new File(root, "javadb/lib/derbyclient.jar"),      //NOI18N
+                    new File(root, "lib/toplink-essentials.jar"),      //NOI18N
+                    new File(root, "lib/dbschema.jar"),         //NOI18N
+                    
+                    // Shared
+                    new File(root, "lib/appserv-admin.jar"),    //NOI18N
                     new File(root, "lib/install/applications/jmsra/imqjmsra.jar"), //NOI18N, standalone JMS
+                    new File(root, "lib/fscontext.jar"),        //NOI18N
+                    
+                    // GF V1U1 and GF V2
                     new File(root, "lib/dtds"),                 //NOI18N
-                    new File(root, "lib/schemas")               //NOI18N
+                    new File(root, "lib/schemas"),               //NOI18N
                 };
             }
         }
