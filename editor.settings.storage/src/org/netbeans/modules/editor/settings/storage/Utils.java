@@ -35,7 +35,7 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.KeyStroke;
-import org.openide.ErrorManager;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -150,33 +150,26 @@ public class Utils {
         return result.toArray(new KeyStroke[result.size ()]);
     }
     
-    static FileObject getFileObject (
-        String[] mimeTypes, 
-        String profile,
-        String fileNameExt
-    ) {
-        String name = getFileName (mimeTypes, profile, fileNameExt);
-        FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
-        return fs.findResource (name);
+    static FileObject getFileObject(MimePath mimePath, String profile, String fileNameExt) {
+        String name = getFileName(mimePath, profile, fileNameExt);
+        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+        return fs.findResource(name);
     }
     
     /**
      * Crates FileObject for given mimeTypes and profile.
      */ 
-    static FileObject createFileObject (
-        String[] mimeTypes, 
-        String profile,
-        String fileName
-    ) {
-        String name = getFileName (mimeTypes, profile, fileName);
-        FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
+    static FileObject createFileObject(MimePath mimePath, String profile, String fileName) {
+        String name = getFileName(mimePath, profile, fileName);
+        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
         try {
-            if (fileName == null)
-                return FileUtil.createFolder (fs.getRoot (), name);
-            else
-                return FileUtil.createData (fs.getRoot (), name);
+            if (fileName == null) {
+                return FileUtil.createFolder(fs.getRoot(), name);
+            } else {
+                return FileUtil.createData(fs.getRoot(), name);
+            }
         } catch (IOException ex) {
-            ErrorManager.getDefault ().notify (ex);
+            LOG.log(Level.WARNING, "Can't create editor settings file or folder: " + name, ex); //NOI18N
             return null;
         }
     }
@@ -184,41 +177,37 @@ public class Utils {
     /**
      * Crates FileObject for given mimeTypes and profile.
      */ 
-    static void deleteFileObject (
-        String[] mimeTypes, 
-        String profile,
-        String fileName
-    ) {
-        String name = getFileName (mimeTypes, profile, fileName);
-        FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
-        FileObject fo = fs.findResource (name);
-        if (fo == null) return;
-        try {
-            fo.delete ();
-        } catch (IOException ex) {
-            ErrorManager.getDefault ().notify (ex);
+    static void deleteFileObject(MimePath mimePath, String profile, String fileName) {
+        String name = getFileName(mimePath, profile, fileName);
+        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+        FileObject fo = fs.findResource(name);
+        if (fo != null) {
+            try {
+                fo.delete();
+            } catch (IOException ex) {
+                LOG.log(Level.WARNING, "Can't delete editor settings file " + fo.getPath(), ex); //NOI18N
+            }
         }
     }
     
-    /**
-     * Crates FileObject for given mimeTypes and profile.
-     */ 
-    static String getFileName (
-        String[] mimeTypes, 
-        String profile,
-        String fileName
-    ) {
-        StringBuffer sb = new StringBuffer ("Editors");
-        int i, k = mimeTypes.length;
-        for (i = 0; i < k; i++)
-            sb.append ('/').append (mimeTypes [i]);
-        if (profile != null)
-            sb.append ('/').append (profile);
-        if (fileName != null)
-            sb.append ('/').append (fileName);
-        return sb.toString ();
+    static String getFileName(MimePath mimePath, String profile, String fileName) {
+        StringBuilder sb = new StringBuilder("Editors");
+        
+        if (mimePath.size() > 0) {
+            sb.append('/').append(mimePath.getPath());
+        }
+        
+        if (profile != null) {
+            sb.append('/').append(profile);
+        }
+        
+        if (fileName != null) {
+            sb.append('/').append(fileName);
+        }
+        
+        return sb.toString();
     }
-       
+
     private static FileObject createFile (FileObject fo, String next) throws IOException {
         FileObject fo1 = fo.getFileObject (next);
         if (fo1 == null) 

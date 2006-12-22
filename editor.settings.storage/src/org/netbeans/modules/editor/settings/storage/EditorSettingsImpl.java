@@ -23,16 +23,15 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.text.AttributeSet;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.api.FontColorSettingsFactory;
 import org.netbeans.modules.editor.settings.storage.api.KeyBindingSettingsFactory;
@@ -201,7 +200,7 @@ public class EditorSettingsImpl extends EditorSettings {
 
                 // 3) load colorings
                 Map<String, AttributeSet> m = ColoringStorage.loadColorings 
-                    (new String [0], profile, ALL_LANGUAGES_FILE_NAME, false);
+                    (MimePath.EMPTY, profile, ALL_LANGUAGES_FILE_NAME, false);
                 if (m != null) {
                     Collection<AttributeSet> c = m.values();
                     defaultColors.put (profile, c);
@@ -235,7 +234,7 @@ public class EditorSettingsImpl extends EditorSettings {
         // 2) get data from cache or disk
         if (!defaultColorDefaults.containsKey (profile)) {
             Map<String, AttributeSet> m = ColoringStorage.loadColorings 
-                (new String [0], profile, ALL_LANGUAGES_FILE_NAME, true);
+                (MimePath.EMPTY, profile, ALL_LANGUAGES_FILE_NAME, true);
             if (m != null) {
                 Collection<AttributeSet> c = m.values();
                 defaultColorDefaults.put(profile, c);
@@ -267,7 +266,7 @@ public class EditorSettingsImpl extends EditorSettings {
         if (fontColors == null) {
             // 2) remove coloring / revert to defaults
             ColoringStorage.deleteColorings
-                (new String [0], internalProfile, ALL_LANGUAGES_FILE_NAME);
+                (MimePath.EMPTY, internalProfile, ALL_LANGUAGES_FILE_NAME);
             defaultColors.remove (internalProfile);
             init ();
             pcs.firePropertyChange (PROP_DEFAULT_FONT_COLORS, null, null);
@@ -282,7 +281,7 @@ public class EditorSettingsImpl extends EditorSettings {
         // 3) save new values to disk
         if (!internalProfile.startsWith ("test")) {
             ColoringStorage.saveColorings 
-                (new String [0], internalProfile, ALL_LANGUAGES_FILE_NAME, fontColors);
+                (MimePath.EMPTY, internalProfile, ALL_LANGUAGES_FILE_NAME, fontColors);
             if (fontColorProfiles.get (profile) == null)
                 fontColorProfiles.put (profile, profile);
         }
@@ -322,7 +321,7 @@ public class EditorSettingsImpl extends EditorSettings {
                 
                 // 3) read data form disk or cache
                 Map<String, AttributeSet> m = ColoringStorage.loadColorings 
-                    (new String [0], profile, HIGHLIGHTING_FILE_NAME, false);
+                    (MimePath.EMPTY, profile, HIGHLIGHTING_FILE_NAME, false);
                 highlightings.put (profile, m);
             }
         }
@@ -353,7 +352,7 @@ public class EditorSettingsImpl extends EditorSettings {
         // 2) read data form disk or cache
         if (!highlightingDefaults.containsKey (profile)) {
             Map<String, AttributeSet> m = ColoringStorage.loadColorings 
-                (new String [0], profile, HIGHLIGHTING_FILE_NAME, true);
+                (MimePath.EMPTY, profile, HIGHLIGHTING_FILE_NAME, true);
             highlightingDefaults.put (profile, m);
         }
         
@@ -380,7 +379,7 @@ public class EditorSettingsImpl extends EditorSettings {
         if (fontColors == null) {
             // 2) remove coloring / revert to defaults
             ColoringStorage.deleteColorings
-                (new String [0], internalProfile, HIGHLIGHTING_FILE_NAME);
+                (MimePath.EMPTY, internalProfile, HIGHLIGHTING_FILE_NAME);
             highlightings.remove (internalProfile);
             init ();
             pcs.firePropertyChange (PROP_EDITOR_FONT_COLORS, null, null);
@@ -395,7 +394,7 @@ public class EditorSettingsImpl extends EditorSettings {
         // 3) save new values to disk
         if (!internalProfile.startsWith ("test")) {
             ColoringStorage.saveColorings (
-                new String [0], 
+                MimePath.EMPTY, 
                 internalProfile, 
                 HIGHLIGHTING_FILE_NAME, 
                 fontColors.values ()
@@ -644,35 +643,54 @@ public class EditorSettingsImpl extends EditorSettings {
         }
     }
     
-    private Map<List<String>, WeakReference<KeyBindingSettingsImpl>> keyBindingsMap = 
-        new HashMap<List<String>, WeakReference<KeyBindingSettingsImpl>>();
+    private Map<MimePath, WeakReference<KeyBindingSettingsImpl>> keyBindingsMap = 
+        new HashMap<MimePath, WeakReference<KeyBindingSettingsImpl>>();
     
     public KeyBindingSettingsFactory getKeyBindingSettings (String[] mimeTypes) {
-        List<String> key = Arrays.asList(mimeTypes);
-        WeakReference<KeyBindingSettingsImpl> reference = keyBindingsMap.get(key);
+        MimePath mimePath = MimePath.EMPTY;
+        
+        for (int i = 0; i < mimeTypes.length; i++) {
+            mimePath = MimePath.get(mimePath, mimeTypes[i]);
+        }
+        
+        return getKeyBindingSettings(mimePath);
+    }
+
+    public KeyBindingSettingsFactory getKeyBindingSettings(MimePath mimePath) {
+        WeakReference<KeyBindingSettingsImpl> reference = keyBindingsMap.get(mimePath);
         KeyBindingSettingsImpl result = reference == null ? null : reference.get();
         
         if (result == null) {
-            result = new KeyBindingSettingsImpl(mimeTypes);
-            keyBindingsMap.put(key, new WeakReference<KeyBindingSettingsImpl>(result));
+            result = new KeyBindingSettingsImpl(mimePath);
+            keyBindingsMap.put(mimePath, new WeakReference<KeyBindingSettingsImpl>(result));
         }
         
         return result;
     }
     
-    private Map<List<String>, WeakReference<FontColorSettingsFactory>> fontColorsMap = 
-        new HashMap<List<String>, WeakReference<FontColorSettingsFactory>>();
+    private Map<MimePath, WeakReference<FontColorSettingsFactory>> fontColorsMap = 
+        new HashMap<MimePath, WeakReference<FontColorSettingsFactory>>();
     
     public FontColorSettingsFactory getFontColorSettings (String[] mimeTypes) {
-        List<String> key = Arrays.asList (mimeTypes);
-        WeakReference<FontColorSettingsFactory> reference = fontColorsMap.get(key);
+        MimePath mimePath = MimePath.EMPTY;
+        
+        for (int i = 0; i < mimeTypes.length; i++) {
+            mimePath = MimePath.get(mimePath, mimeTypes[i]);
+        }
+        
+        return getFontColorSettings(mimePath);
+    }
+    
+    public FontColorSettingsFactory getFontColorSettings (MimePath mimePath) {
+        WeakReference<FontColorSettingsFactory> reference = fontColorsMap.get(mimePath);
         FontColorSettingsFactory result = reference == null ? null : reference.get();
         
         if (result == null) {
-            result = new FontColorSettingsImpl(mimeTypes);
-            fontColorsMap.put(key, new WeakReference<FontColorSettingsFactory>(result));
+            result = new FontColorSettingsImpl(mimePath);
+            fontColorsMap.put(mimePath, new WeakReference<FontColorSettingsFactory>(result));
         }
         
         return result;
     }
+    
 }

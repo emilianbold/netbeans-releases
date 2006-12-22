@@ -115,14 +115,9 @@ public final class SettingsProvider implements MimeDataProvider {
         }
         
         protected void initialize() {
-            String [] mimeTypes = new String [mimePath.size()];
-            for (int i = 0; i < mimePath.size(); i++) {
-                mimeTypes[i] = mimePath.getMimeType(i);
-            }
-            
             factories = new Factory [] {
-                (Factory) EditorSettings.getDefault().getFontColorSettings(mimeTypes),
-                (Factory) EditorSettings.getDefault().getKeyBindingSettings(mimeTypes),
+                (Factory) ((EditorSettingsImpl) EditorSettings.getDefault()).getFontColorSettings(mimePath),
+                (Factory) ((EditorSettingsImpl) EditorSettings.getDefault()).getKeyBindingSettings(mimePath),
             };
             instances = new Object [factories.length];
             
