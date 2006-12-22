@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.web.core.syntax.completion;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -46,6 +47,7 @@ import static org.netbeans.modules.web.core.syntax.completion.VirtualJavaFromJSP
  */
 public class JavaJSPCompletionProvider implements CompletionProvider {
     private final JavaCompletionProvider javaCompletionProvider = new JavaCompletionProvider();
+    private static final Logger logger = Logger.getLogger(JavaJSPCompletionProvider.class.getName());
     
     public CompletionTask createTask(int queryType, final JTextComponent component) {
         if ((queryType & COMPLETION_QUERY_TYPE) != 0){
@@ -108,9 +110,7 @@ public class JavaJSPCompletionProvider implements CompletionProvider {
                 
                 return fakedJavaClass;
             } catch (BadLocationException ex) {
-                java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
-                        ex.getMessage(),
-                        ex);
+                logger.log(java.util.logging.Level.SEVERE, ex.getMessage(), ex);
             }
             
             return null;
