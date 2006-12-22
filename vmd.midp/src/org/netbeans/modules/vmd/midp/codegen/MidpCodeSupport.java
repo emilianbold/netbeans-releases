@@ -26,6 +26,8 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 
+import java.util.List;
+
 /**
  * @author David Kaspar
  */
@@ -35,12 +37,27 @@ public class MidpCodeSupport {
     public static void generateCodeForPropertyValue (CodeWriter writer, PropertyValue value) {
         switch (value.getKind ()) {
             case ARRAY: {
-                // TODO - add "new TYPE[] {" code
-                boolean newLines = value.getType ().getDimension () > 1;
-                for (PropertyValue propertyValue : value.getArray ()) {
+                TypeID type = value.getType ();
+                int dimension = type.getDimension ();
+                boolean newLines = dimension > 1;
+                List<PropertyValue> array = value.getArray ();
+
+                writer.write ("new " + MidpTypes.getOptimalizedFQNClassName (type)); // NOI18N
+                for (int a = 0; a < dimension; a ++)
+                    writer.write ("[]"); // NOI18N
+                writer.write (" {"); // NOI18N
+                if (array.size () > 0)
+                    writer.write (newLines ? "\n" : " "); // NOI18N
+
+                for (int a = 0; a < array.size (); a ++) {
+                    if (a > 0)
+                        writer.write (newLines ? ",\n" : ", "); // NOI18N
+                    PropertyValue propertyValue = array.get (a);
                     generateCodeForPropertyValue (writer, propertyValue);
-                    writer.write (newLines ? ",\n" : ", ");
                 }
+
+                if (array.size () > 0)
+                    writer.write (newLines ? "}" : " }"); // NOI18N
             } break;
             case ENUM:
                 generateEnumTypes (writer, value);

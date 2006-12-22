@@ -27,6 +27,7 @@ import java.util.Iterator;
 /**
  * @author David Kaspar
  */
+// TODO - merge with api.model.PropertValueSupport class
 public class ArraySupport {
 
     public static void append (DesignComponent arrayComponent, String arrayPropertyName, DesignComponent itemToAppend) {
