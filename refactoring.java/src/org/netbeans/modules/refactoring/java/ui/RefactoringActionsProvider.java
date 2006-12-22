@@ -175,6 +175,10 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         
         Dictionary dict = lookup.lookup(Dictionary.class);
         FileObject fob = getTarget(dict);
+        if (dict!=null && dict.get("target") != null && fob==null) { //NOI18N
+            //unknown target
+            return false;
+        }
         if (fob != null) {
             if (!fob.isFolder())
                 return false;
