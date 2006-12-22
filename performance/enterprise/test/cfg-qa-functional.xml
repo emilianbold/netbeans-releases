@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN" "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+
+<mconfig name="core qa-performance test config">
+    
+    <!-- testbag common for all suites to setup usedir -->
+    <testbag testattribs="all or menus or dialogs or actions or setup or memory_usage or memory_dialog or memory_action or memory_menu or editor_related or java_related or apisupport_related or temp or memory_temp" prio="1"
+             executor="ide_perf_setup" name="UI responsiveness - setup">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasuringSetup.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <!-- 1st round -->    
+    <testbag testattribs="all or actions" prio="2"
+             executor="ide_performance" name="UI responsiveness - Actions" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureActions.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="all or dialogs" prio="3"
+             executor="ide_performance" name="UI responsiveness - Dialogs" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureDialogs.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="all or menus" prio="4"
+             executor="ide_performance" name="UI responsiveness - Menus" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureMenus.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <!-- 2nd round -->    
+    <testbag testattribs="(all or actions) and NOT once" prio="5"
+             executor="ide_performance" name="UI responsiveness - Actions" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureActions.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="(all or dialogs) and NOT once" prio="6"
+             executor="ide_performance" name="UI responsiveness - Dialogs" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureDialogs.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="(all or menus) and NOT once" prio="7"
+             executor="ide_performance" name="UI responsiveness - Menus" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureMenus.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <!-- 3rd round -->    
+    <testbag testattribs="(all or actions) and NOT once" prio="8"
+             executor="ide_performance" name="UI responsiveness - Actions" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureActions.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="(all or dialogs) and NOT once" prio="9"
+             executor="ide_performance" name="UI responsiveness - Dialogs" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureDialogs.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="(all or menus) and NOT once" prio="10"
+             executor="ide_performance" name="UI responsiveness - Menus" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureMenus.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <!-- Scan Classpath test bag -->    
+    <testbag testattribs="all or classpath_scan" prio="100"
+             executor="ide_performance_scan" name="Classpath Scan" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                
+                <include name="gui/scanclasspath/ScanClasspath.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <!-- Temp -->    
+    <testbag testattribs="temp" prio="1000"
+             executor="ide_performance" name="Temp" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureTemp.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    
+<!-- Memory Footprint Testbags -->
+    <!-- Out Of The Box -->
+    <testbag testattribs="footprint_all or out_of_the_box_startup or footprint_temp" prio="300"
+             executor="ide_footprint" name="Footprint - Out Of The Box Startup" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="footprint/FootprintTests.class/testOutOfTheBoxStartup"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="(footprint_all or out_of_the_box_startup) and NOT once" prio="301"
+             executor="ide_footprint" name="Footprint - Out Of The Box Startup" >
+        <testset dir="footprint/src">
+            <patternset>
+                <include name="footprint/FootprintTests.class/testOutOfTheBoxStartup"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="(footprint_all or out_of_the_box_startup) and NOT once" prio="302"
+             executor="ide_footprint" name="Footprint - Out Of The Box Startup" >
+        <testset dir="footprint/src">
+            <patternset>
+                <include name="footprint/FootprintTests.class/testOutOfTheBoxStartup"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <!-- J2SE Project workflow -->
+    <testbag testattribs="footprint_all or j2se_project" prio="310"
+             executor="ide_footprint" name="Footprint - J2SE project workflow" >
+        <testset dir="footprint/src">
+            <patternset>
+                <include name="footprint/FootprintTests.class/testJ2SEProjectWorkflow"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="(footprint_all or j2se_project) and NOT once" prio="311"
+             executor="ide_footprint" name="Footprint - J2SE project workflow" >
+        <testset dir="footprint/src">
+            <patternset>
+                <include name="footprint/FootprintTests.class/testJ2SEProjectWorkflow"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="(footprint_all or j2se_project) and NOT once" prio="312"
+             executor="ide_footprint" name="Footprint - J2SE project workflow" >
+        <testset dir="footprint/src">
+            <patternset>
+                <include name="footprint/FootprintTests.class/testJ2SEProjectWorkflow"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <!-- Web Project workflow -->
+<!--TODO tomcat is no more part of the build    <testbag testattribs="footprint_all or web_project" prio="320"
+             executor="ide_footprint" name="Footprint - Web project workflow" >
+        <testset dir="footprint/src">
+            <patternset>
+                <include name="footprint/FootprintTests.class/testWebProjectWorkflow"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="(footprint_all or web_project) and NOT once" prio="321"
+             executor="ide_footprint" name="Footprint - Web project workflow" >
+        <testset dir="footprint/src">
+            <patternset>
+                <include name="footprint/FootprintTests.class/testWebProjectWorkflow"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="(footprint_all or web_project) and NOT once" prio="322"
+             executor="ide_footprint" name="Footprint - Web project workflow" >
+        <testset dir="footprint/src">
+            <patternset>
+                <include name="footprint/FootprintTests.class/testWebProjectWorkflow"/>
+            </patternset>
+        </testset>
+    </testbag>
+-->    
+    <!-- Find Usages -->
+    <testbag testattribs="footprint_all or find_usages" prio="330"
+             executor="ide_footprint" name="Footprint - Find usages" >
+        <testset dir="footprint/src">
+            <patternset>
+                <include name="footprint/FootprintTests.class/testFindUsages"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="(footprint_all or find_usages) and NOT once" prio="331"
+             executor="ide_footprint" name="Footprint - Find usages" >
+        <testset dir="footprint/src">
+            <patternset>
+                <include name="footprint/FootprintTests.class/testFindUsages"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="(footprint_all or find_usages) and NOT once" prio="332"
+             executor="ide_footprint" name="Footprint - Find usages" >
+        <testset dir="footprint/src">
+            <patternset>
+                <include name="footprint/FootprintTests.class/testFindUsages"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <!-- Refactor Rename -->
+    <testbag testattribs="footprint_all or rename_class" prio="340"
+             executor="ide_footprint" name="Footprint - Rename class" >
+        <testset dir="footprint/src">
+            <patternset>
+                <include name="footprint/FootprintTests.class/testRefactoringRename"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="(footprint_all or rename_class)) and NOT once" prio="341"
+             executor="ide_footprint" name="Footprint - Rename class" >
+        <testset dir="footprint/src">
+            <patternset>
+                <include name="footprint/FootprintTests.class/testRefactoringRename"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="(footprint_all or rename_class) and NOT once" prio="342"
+             executor="ide_footprint" name="Footprint - Rename class" >
+        <testset dir="footprint/src">
+            <patternset>
+                <include name="footprint/FootprintTests.class/testRefactoringRename"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    
+    <!-- executors & compilers -->
+    <executor name="ide_perf_setup" antfile="build-qa-functional.xml" target="runidesetup"/>
+    <executor name="ide_performance" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
+    <executor name="ide_performance_scan" antfile="build-qa-functional.xml" target="runidetest_scan" />
+    <executor name="ide_footprint" antfile="build-qa-functional.xml" target="runidetest_footprint"/>
+    
+    <compiler name="compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
+    
+</mconfig>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. -->
+<!-- (If you delete it and reopen the project it will be recreated.) -->
+<!-- The names of existing targets are significant to the IDE and should not be removed. -->
+<!-- (For example, 'javadoc' is run when you choose Build -> Generate Javadoc.) -->
+<project name="PerformanceTestData" default="default" basedir=".">
+    <description>
+        Builds, tests, and runs the project PerformanceTestData.
+    </description>
+    <target name="default" depends="test,jar,javadoc" description="Build and test whole project."/>
+    <target name="jar" description="Build JAR.">
+        <ant antfile="nbproject/build-impl.xml" target="jar"/>
+    </target>
+    <target name="compile-single">
+        <ant antfile="nbproject/build-impl.xml" target="compile-single">
+            <property name="is.test" value="false"/>
+        </ant>
+    </target>
+    <target name="compile-test-single">
+        <ant antfile="nbproject/build-impl.xml" target="compile-single">
+            <property name="is.test" value="true"/>
+        </ant>
+    </target>
+    <target name="run" description="Run a main class.">
+        <ant antfile="nbproject/build-impl.xml" target="run"/>
+    </target>
+    <target name="debug" description="Debug project in IDE.">
+        <ant antfile="nbproject/build-impl.xml" target="debug-nb"/>
+    </target>
+    <target name="javadoc" description="Build Javadoc.">
+        <ant antfile="nbproject/build-impl.xml" target="javadoc-nb"/>
+    </target>
+    <target name="test" description="Run unit tests.">
+        <ant antfile="nbproject/build-impl.xml" target="test-nb"/>
+    </target>
+    <target name="test-single">
+        <ant antfile="nbproject/build-impl.xml" target="test-single-nb"/>
+    </target>
+    <target name="debug-test-single">
+        <ant antfile="nbproject/build-impl.xml" target="debug-test-single-nb"/>
+    </target>
+    <target name="debug-fix">
+        <ant antfile="nbproject/build-impl.xml" target="debug-fix-nb"/>
+    </target>
+    <target name="clean" description="Clean build products.">
+        <ant antfile="nbproject/build-impl.xml" target="clean"/>
+    </target>
+</project>

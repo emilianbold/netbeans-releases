@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+OpenIDE-Module: entpackperftests
+OpenIDE-Module-Layer: entpackperftests/layer.xml
+OpenIDE-Module-Localizing-Bundle: entpackperftests/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+
