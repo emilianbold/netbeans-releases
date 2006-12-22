@@ -435,10 +435,14 @@ public class AppClientProjectGenerator {
         // set j2ee.appclient environment
         File[] accrt = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_APP_CLIENT_RUNTIME);
         ep.setProperty(AppClientProjectProperties.APPCLIENT_TOOL_RUNTIME, Utils.toClasspathString(accrt));
-        ep.setProperty(AppClientProjectProperties.APPCLIENT_TOOL_MAINCLASS, 
-                j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_MAIN_CLASS));
-        ep.setProperty(AppClientProjectProperties.APPCLIENT_TOOL_JVMOPTS, 
-                j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_JVM_OPTS));
+        String acMain = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_MAIN_CLASS);
+        if (acMain != null) {
+            ep.setProperty(AppClientProjectProperties.APPCLIENT_TOOL_MAINCLASS, acMain);
+        }
+        String jvmOpts = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_JVM_OPTS);
+        if (jvmOpts != null) {
+            ep.setProperty(AppClientProjectProperties.APPCLIENT_TOOL_JVMOPTS, jvmOpts);
+        }
         String args = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME,
                 AppClientProjectProperties.J2EE_PLATFORM_APPCLIENT_ARGS);
         if (args != null) {
