@@ -30,6 +30,7 @@ import java.util.StringTokenizer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /** Implementation of a URLMapper which creates http URLs for fileobjects in the IDE.
  * Directs the requests for URLs to WrapperServlet.
@@ -88,7 +89,8 @@ public class HttpServerURLMapper extends URLMapper {
         try {
             return new URL(newPath.toString());
         } catch (MalformedURLException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Exceptions.attachMessage(ex, "using: " + newPath);
+            Exceptions.printStackTrace(ex);
             return null;
         }
     }
