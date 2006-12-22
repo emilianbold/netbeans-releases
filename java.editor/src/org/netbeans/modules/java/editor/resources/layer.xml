@@ -178,10 +178,11 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="org-netbeans-modules-editor-java-JavaCodeTemplateFilter$Factory.instance"/>
                 </folder>                
 
-                <folder name="GlyphGutterActions">
+<!--The overriden annotations are temporarily disabled:-->
+<!--                <folder name="GlyphGutterActions">
                     <file name="org-netbeans-modules-java-editor-overridden-IsOverriddenAnnotationAction.instance"/>
                     <attr name="org-netbeans-modules-java-editor-overridden-IsOverriddenAnnotationAction.instance/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow" boolvalue="true"/>
-                </folder>
+                </folder>-->
             </folder>
 
         </folder>
