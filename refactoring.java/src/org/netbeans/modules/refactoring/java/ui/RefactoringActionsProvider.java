@@ -76,6 +76,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
+                    if (selected.getKind() == ElementKind.CONSTRUCTOR) {
+                        selected = selected.getEnclosingElement();
+                    }
                     if (selected.getKind() == ElementKind.PACKAGE || selected.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
                         FileObject f = SourceUtils.getFile(selected, info.getClasspathInfo());
                         return new RenameRefactoringUI(f==null?info.getFileObject():f);
