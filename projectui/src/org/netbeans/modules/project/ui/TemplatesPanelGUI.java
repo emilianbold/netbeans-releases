@@ -147,9 +147,9 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     }
     
     public FileObject getSelectedTemplate () {
-        Node[] nodes = (Node[]) ((ExplorerProviderPanel)this.projectsPanel).getSelectedNodes();
+        Node[] nodes = ((ExplorerProviderPanel) this.projectsPanel).getSelectedNodes();
         if (nodes != null && nodes.length == 1) {
-            DataObject dobj = (DataObject) nodes[0].getCookie (DataObject.class);
+            DataObject dobj = nodes[0].getCookie(DataObject.class);
             if (dobj != null) {
                 while (dobj instanceof DataShadow) {
                     dobj = ((DataShadow)dobj).getOriginal();
@@ -186,7 +186,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             if (ExplorerManager.PROP_SELECTED_NODES.equals (event.getPropertyName())) {
                 Node[] selectedNodes = (Node[]) event.getNewValue ();
                 if (selectedNodes != null && selectedNodes.length == 1) {
-                    DataObject template = (DataObject) selectedNodes[0].getCookie(DataObject.class);
+                    DataObject template = selectedNodes[0].getCookie(DataObject.class);
                     if (template != null) {
                         FileObject fo = template.getPrimaryFile();
                         URL descURL = getDescription (template);

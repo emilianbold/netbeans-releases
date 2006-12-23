@@ -19,7 +19,6 @@
 
 package org.openide.actions;
 
-
 import java.awt.Component;
 import java.awt.event.*;
 import java.beans.*;
@@ -68,11 +67,11 @@ public class NewTemplateAction extends NodeAction {
         // bugfix #29661, start finding the target folder with null folder
         targetFolder = null;
         while (targetFolder == null && folder != null) {
-            targetFolder = (DataFolder) folder.getCookie(DataFolder.class);
+            targetFolder = folder.getCookie(DataFolder.class);
             folder = folder.getParentNode ();
         }
         
-        Cookie c = n == null ? null : (Cookie)n.getCookie (Cookie.class);
+        NewTemplateAction.Cookie c = n == null ? null : n.getCookie(NewTemplateAction.Cookie.class);
         if (c != null) {
             TemplateWizard t = c.getTemplateWizard ();
             if (t != null) {
@@ -146,13 +145,13 @@ public class NewTemplateAction extends NodeAction {
         if ((activatedNodes == null) || (activatedNodes.length != 1))
             return false;
 
-        Cookie c = (Cookie)activatedNodes[0].getCookie (Cookie.class);
+        NewTemplateAction.Cookie c = activatedNodes[0].getCookie(NewTemplateAction.Cookie.class);
         if (c != null) {
             // if the current node provides its own wizard...
             return c.getTemplateWizard () != null;
         }
         
-        DataFolder cookie = (DataFolder)activatedNodes[0].getCookie(DataFolder.class);
+        DataFolder cookie = activatedNodes[0].getCookie(DataFolder.class);
         if (cookie != null && cookie.getPrimaryFile ().canWrite ()) {
             return true;
         }
@@ -520,7 +519,7 @@ public class NewTemplateAction extends NodeAction {
                 return false;
             }
             Node n = nodes[0];
-            DataObject obj = (DataObject)n.getCookie (DataObject.class);
+            DataObject obj = n.getCookie(DataObject.class);
             if (obj == null || !obj.isTemplate ()) {
                 Logger.getAnonymousLogger().warning("Selected node in popup menu is not acceptable."); //NOI18N
                 // do not accept
@@ -553,7 +552,7 @@ public class NewTemplateAction extends NodeAction {
     
     /** Root template childen.
      */
-    private static class RootChildren extends Children.Keys
+    private static class RootChildren extends Children.Keys<Node>
     implements NodeListener {
         /** last wizard used with the root */
         private TemplateWizard wizard;
@@ -586,12 +585,11 @@ public class NewTemplateAction extends NodeAction {
 
         /** Creates nodes for nodes.
          */
-        protected Node[] createNodes (Object key) {
-            Node n = (Node)key;
+        protected Node[] createNodes(Node n) {
             String nodeName = n.getDisplayName();
             
             DataObject obj = null;
-            DataShadow shadow = (DataShadow)n.getCookie (DataShadow.class);
+            DataShadow shadow = n.getCookie(DataShadow.class);
             if (shadow != null) {
                 // I need DataNode here to get localized name of the
                 // shadow, but without the ugly "(->)" at the end
@@ -602,7 +600,7 @@ public class NewTemplateAction extends NodeAction {
             }
             
             if (obj == null)
-                obj = (DataObject)n.getCookie (DataObject.class);
+                obj = n.getCookie(DataObject.class);
             if (obj != null) {
                 if (obj.isTemplate ()) {
                     // on normal nodes stop recursion
@@ -707,7 +705,7 @@ public class NewTemplateAction extends NodeAction {
             if (current != null && ev.getSource () == current.get ()) {
                 // change in current node
                 if (Node.PROP_COOKIE.equals (pn)) {
-                    final Node node = (Node) current.get();
+                    final Node node = current.get();
                     Mutex.EVENT.readAccess(new Runnable() {
                         public void run() {
                             updateWizard (getWizard (node));
@@ -739,12 +737,11 @@ public class NewTemplateAction extends NodeAction {
         /** Creates nodes for nodes.
          */
         @Override
-        protected Node[] createNodes(Node key) {
-            Node n = (Node)key;
+        protected Node[] createNodes(Node n) {
             String nodeName = n.getDisplayName();
             
             DataObject obj = null;
-            DataShadow shadow = (DataShadow)n.getCookie (DataShadow.class);
+            DataShadow shadow = n.getCookie(DataShadow.class);
             if (shadow != null) {
                 // I need DataNode here to get localized name of the
                 // shadow, but without the ugly "(->)" at the end
@@ -755,7 +752,7 @@ public class NewTemplateAction extends NodeAction {
             }
             
             if (obj == null)
-                obj = (DataObject)n.getCookie (DataObject.class);
+                obj = n.getCookie(DataObject.class);
             if (obj != null) {
                 if (obj.isTemplate ()) {
                     // on normal nodes stop recursion
@@ -807,7 +804,7 @@ public class NewTemplateAction extends NodeAction {
     
     static private final synchronized Node[] getNodesFromLookup (Lookup lookup) {
         if (lookup != null) {
-            return (Node[]) lookup.lookupAll(Node.class).toArray(EMPTY_NODE_ARRAY);
+            return lookup.lookupAll(Node.class).toArray(EMPTY_NODE_ARRAY);
         }
         return EMPTY_NODE_ARRAY;
     }

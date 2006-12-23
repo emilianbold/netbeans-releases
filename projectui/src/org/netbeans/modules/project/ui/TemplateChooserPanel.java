@@ -21,7 +21,6 @@ package org.netbeans.modules.project.ui;
 
 import java.awt.Component;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -30,7 +29,6 @@ import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;

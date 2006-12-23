@@ -19,7 +19,6 @@
 
 package org.openide.loaders;
 
-
 import java.awt.event.KeyEvent;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
@@ -27,7 +26,6 @@ import java.lang.ref.*;
 import java.lang.reflect.Method;
 import javax.swing.*;
 import javax.swing.event.*;
-import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.*;
 import org.openide.filesystems.*;
 import org.openide.util.*;
@@ -43,7 +41,7 @@ final class TemplateWizard2 extends javax.swing.JPanel implements DocumentListen
     
     private static final String PROP_LOCATION_FOLDER = "locationFolder"; // NOI18N
     private DataFolder locationFolder;
-    private Reference  fileSystemRef = new WeakReference (null);
+    private Reference<FileSystem> fileSystemRef = new WeakReference<FileSystem>(null);
     private DefaultPropertyModel locationFolderModel;
 
     /** File extension of the template and of the created file -
@@ -232,12 +230,12 @@ final class TemplateWizard2 extends javax.swing.JPanel implements DocumentListen
     */
     String implIsValid () {
         // test whether the selected folder on selected filesystem already exists
-        FileSystem fs = (FileSystem)fileSystemRef.get ();
+        FileSystem fs = fileSystemRef.get();
         if (locationFolder == null || fs == null)
             return NbBundle.getMessage(TemplateWizard2.class, "MSG_fs_or_folder_does_not_exist"); // NOI18N
         
         // target filesystem should be writable
-        if (((FileSystem)fileSystemRef.get ()).isReadOnly ())
+        if (fileSystemRef.get().isReadOnly())
             return NbBundle.getMessage(TemplateWizard2.class, "MSG_fs_is_readonly"); // NOI18N
         
         if (locationFolder == null) locationFolder = DataFolder.findFolder (fs.getRoot());
@@ -366,9 +364,9 @@ final class TemplateWizard2 extends javax.swing.JPanel implements DocumentListen
         firePropertyChange (PROP_LOCATION_FOLDER, oldLocation, locationFolder);
         if (fd != null) {
             try {
-                fileSystemRef = new WeakReference (fd.getPrimaryFile ().getFileSystem ());
+                fileSystemRef = new WeakReference<FileSystem>(fd.getPrimaryFile().getFileSystem());
             } catch (org.openide.filesystems.FileStateInvalidException fsie) {
-                fileSystemRef = new WeakReference (null);
+                fileSystemRef = new WeakReference<FileSystem>(null);
             }
         }
         fireStateChanged ();

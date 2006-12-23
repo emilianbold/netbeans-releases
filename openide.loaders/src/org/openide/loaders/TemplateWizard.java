@@ -986,7 +986,7 @@ public class TemplateWizard extends WizardDescriptor {
         
         public Set<DataObject> instantiate (TemplateWizard wiz) throws IOException {
             // iterate Set and replace unexpected object with dataobjects
-            Set<Object> workSet = null;
+            Set workSet = null;
             if (instantiatingIterator instanceof WizardDescriptor.ProgressInstantiatingIterator) {
                 assert wiz.getProgressHandle () != null : "ProgressHandle cannot be null.";
                 workSet = ((ProgressInstantiatingIterator)instantiatingIterator).instantiate (wiz.getProgressHandle ());

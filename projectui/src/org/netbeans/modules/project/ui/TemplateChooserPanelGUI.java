@@ -285,7 +285,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
             if (!haveChildren) {
                 return new Node[] {new FilterNode(d.getNodeDelegate(), Children.LEAF )};
             } else {
-                return new Node[] {new FilterNode(d.getNodeDelegate(), new TemplateChildren((DataFolder)d))};
+                return new Node[] {new FilterNode(d.getNodeDelegate(), new TemplateChildren(d))};
             }
         }
         

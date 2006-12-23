@@ -99,7 +99,7 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
         
         setName (bundle.getString("LAB_TemplateChooserPanelName"));
 
-        putClientProperty(PROP_CONTENT_SELECTED_INDEX, new Integer(0));
+        putClientProperty(PROP_CONTENT_SELECTED_INDEX, 0);
         putClientProperty(PROP_CONTENT_DATA, new String[] {getName(), "..."}); // NOI18N
         
         // Fix of #19667 - those values will be retreived in addNotify
@@ -154,6 +154,7 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
     }
 
     /** Forward focus to tree view. */
+    @SuppressWarnings("deprecation")
     public boolean requestDefaultFocus() {
         return treeView.requestDefaultFocus();
     }
@@ -192,11 +193,11 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
          */
         @Override
         protected Node[] createNodes(Node key) {
-            Node n = (Node)key;
+            Node n = key;
             String nodeName = n.getDisplayName();
             
             DataObject obj = null;
-            DataShadow shadow = (DataShadow)n.getCookie (DataShadow.class);
+            DataShadow shadow = n.getCookie(DataShadow.class);
             if (shadow != null) {
                 // I need DataNode here to get localized name of the
                 // shadow, but without the ugly "(->)" at the end
@@ -207,7 +208,7 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
             }
             
             if (obj == null)
-                obj = (DataObject)n.getCookie (DataObject.class);
+                obj = n.getCookie(DataObject.class);
             
             if (obj != null) {
                 if (obj.isTemplate ()) {
@@ -437,7 +438,7 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
         // a bit ugly code to do that
         DataObject obj = template;
         DataObject stop = wizard.getTemplatesFolder ();
-        final LinkedList ll = new LinkedList ();
+        final LinkedList<String> names = new LinkedList<String>();
         for (;;) {
             if (obj == null) {
                 // seems that the template is not one of templates
@@ -450,7 +451,7 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
             }
 
             String key = obj.getNodeDelegate().getName ();
-            ll.addFirst(key);
+            names.addFirst(key);
             obj = obj.getFolder();
         }
 
@@ -461,9 +462,7 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
                 if (selection == null) {
                     // go thru all the nodes and find
                     Node node = getExplorerManager().getRootContext();
-                    java.util.ListIterator it = ll.listIterator();
-                    while (it.hasNext()) {
-                        String name = (String)it.next ();
+                    for (String name : names) {
                         node = node.getChildren ().findChild (name);
                         if (node == null) {
                             // end it
@@ -531,7 +530,7 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
         boolean enable = false;
         Node[] n = getExplorerManager().getSelectedNodes();
         if (n.length == 1) {
-            template = (DataObject)n[0].getCookie (DataObject.class);
+            template = n[0].getCookie(DataObject.class);
             enable = template != null && template.isTemplate();
         }
         return enable;
@@ -561,14 +560,14 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
         
         public int getChildCount (Object o) {
             Node n = Visualizer.findNode(o);
-            DataObject obj = (DataObject)n.getCookie (DataObject.class);
+            DataObject obj = n.getCookie(DataObject.class);
 
             return obj == null || obj.isTemplate () ? 0 : super.getChildCount (o);
         }
 
         public boolean  isLeaf (Object o) {
             Node n = Visualizer.findNode(o);
-            DataObject obj = (DataObject)n.getCookie (DataObject.class);
+            DataObject obj = n.getCookie(DataObject.class);
 
             return obj == null || obj.isTemplate ();
         }
