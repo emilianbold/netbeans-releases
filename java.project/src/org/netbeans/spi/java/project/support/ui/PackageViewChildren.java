@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -217,7 +218,11 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
     // Private methods ---------------------------------------------------------
         
     private void refreshKeys() {
-        setKeys( names2nodes.keySet() );
+        Set<String> keys;
+        synchronized (names2nodes) {
+            keys = new TreeSet<String>(names2nodes.keySet());
+        }
+        setKeys(keys);
     }
     
     /* #70097: workaround of a javacore deadlock
@@ -294,13 +299,15 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
     private void removeSubTree (FileObject fo) {
         String path = FileUtil.getRelativePath( root, fo );
         assert path != null : "Removing wrong folder" + fo;
-        Set<String> keys = names2nodes.keySet();
-        keys.remove(path);
-        path = path + '/';  //NOI18N
-        Iterator<String> it = keys.iterator();
-        while (it.hasNext()) {
-            if (it.next().startsWith(path)) {
-                it.remove();
+        synchronized (names2nodes) {
+            Set<String> keys = names2nodes.keySet();
+            keys.remove(path);
+            path = path + '/';  //NOI18N
+            Iterator<String> it = keys.iterator();
+            while (it.hasNext()) {
+                if (it.next().startsWith(path)) {
+                    it.remove();
+                }
             }
         }
     }
@@ -463,17 +470,18 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             
             // Find all entries which have to be updated
             List<String> needsUpdate = new ArrayList<String>();
-            for (Iterator<String> it = names2nodes.keySet().iterator(); it.hasNext(); ) {
-                String p = it.next();
-                if ( p.startsWith( oldPath ) ) { 
-                    if ( visible ) {
-                        needsUpdate.add( p );
+            synchronized (names2nodes) {
+                for (Iterator<String> it = names2nodes.keySet().iterator(); it.hasNext(); ) {
+                    String p = it.next();
+                    if ( p.startsWith( oldPath ) ) {
+                        if ( visible ) {
+                            needsUpdate.add( p );
+                        } else {
+                            it.remove();
+                            doUpdate = true;
+                        }
                     }
-                    else {
-                        it.remove();
-                        doUpdate = true;
-                    }
-                }    
+                }
             }   
                         
             // If the node does not exists then there might have been update
