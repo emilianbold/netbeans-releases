@@ -26,19 +26,22 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.Enumeration;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.product.ProductRegistry;
+import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StreamUtils;
+import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ErrorManager;
@@ -97,9 +100,13 @@ public class Installer {
             "nbi.ignore.lock.file";
     
     private static final String DEFAULT_INSTALLER_MANIFEST =
-            "Manifest-Version: 1.0\n" +
-            "Main-Class: org.netbeans.installer.Installer\n" +
-            "Class-Path: \n";
+            "Manifest-Version: 1.0" + SystemUtils.getLineSeparator() + 
+            "Main-Class: org.netbeans.installer.Installer" + SystemUtils.getLineSeparator() + 
+            "Class-Path: " + SystemUtils.getLineSeparator();
+    
+    public static final String DATA_DIRECTORY = "data/";
+    
+    public static final String ENGINE_JAR_CONTENT_LIST = DATA_DIRECTORY + "engine.list";
     
     /** Errorcode to be used at normal exit */
     public static final int NORMAL_ERRORCODE = 0;
@@ -550,7 +557,14 @@ public class Installer {
         LogManager.logUnindent("... finished setting the look and feel");
     }
     
-    private void copyEngineContents(File jarfile, File dest) throws IOException {        
+    
+    private void cacheEngineJar() throws IOException, DownloadException {
+        File engCont = FileProxy.getInstance().getFile("resource:" + ENGINE_JAR_CONTENT_LIST);
+        
+        List <String> entries = FileUtils.readStringList(engCont);               
+        
+        File dest = getCacheExpectedFile();
+        
         JarOutputStream jos = null;
         
         try {
@@ -558,21 +572,27 @@ public class Installer {
                     DEFAULT_INSTALLER_MANIFEST.getBytes()));
             dest.getParentFile().mkdirs();
             jos = new JarOutputStream(new FileOutputStream(dest),mf);
-            ZipFile zf = new ZipFile(jarfile);
-            Enumeration <? extends ZipEntry> entries = zf.entries();
-            ZipEntry ze;
-            while(entries.hasMoreElements()) {
-                ze = entries.nextElement();
-                if(!ze.getName().startsWith("data/") &&
-                        !ze.getName().startsWith("META-INF/")) {
-                    jos.putNextEntry(ze);
-                    StreamUtils.transferData(zf.getInputStream(ze), jos);
+            
+            for(int i=0;i<entries.size();i++) {
+                String name = entries.get(i);
+                if(name.length()>0 && !name.startsWith(DATA_DIRECTORY)) {
+                    jos.putNextEntry(new JarEntry(name));
+                    if(!name.endsWith("/")) {
+                        StreamUtils.transferData(ResourceUtils.getResource(name), jos);
+                    }
                 }
             }
-            jos.putNextEntry(new ZipEntry("data/"));
-            jos.putNextEntry(new ZipEntry("data/bundled-product-registry.xml"));
+            
+            jos.putNextEntry(new JarEntry(DATA_DIRECTORY));
+            
+            
+            jos.putNextEntry(new JarEntry(DATA_DIRECTORY + "bundled-product-registry.xml"));
+            
             Document doc = ProductRegistry.getInstance().getEmptyRegistryDocument();
-            ProductRegistry.getInstance().saveRegistryDocument(doc,jos);            
+            ProductRegistry.getInstance().saveRegistryDocument(doc,jos);
+            
+            jos.putNextEntry(new JarEntry(ENGINE_JAR_CONTENT_LIST));
+            jos.write(StringUtils.asString(entries, SystemUtils.getLineSeparator()).getBytes());
         } catch (XMLException ex) {
             throw new IOException(ex.toString());
         }  catch (IOException ex) {
@@ -584,31 +604,23 @@ public class Installer {
                 } catch (IOException ex) {
                     LogManager.log(ex);
                 }
+                
             }
         }
+        
+        cachedEngine = (!dest.exists()) ? null : dest;
+        LogManager.log(MESSAGE, "NBI Engine jar file = [" +
+                cachedEngine + "], exist = " +
+                ((cachedEngine==null) ? false : cachedEngine.exists()));
     }
-    
-    private void cacheEngineJar(File jarfile) throws IOException {
-        if(jarfile!=null) {
-            String name = "nbi-engine.jar";
-            File dest = new File(getLocalDirectory().getPath() +
-                    File.separator + name);
-            if(jarfile!=null) {
-                if(!jarfile.getAbsolutePath().equals(dest.getAbsolutePath()) && jarfile.exists()) {
-                    copyEngineContents(jarfile,dest);
-                }
-            }
-            cachedEngine = (!dest.exists()) ? null : dest;
-            LogManager.log(MESSAGE, "NBI Engine jar file = [" +
-                    cachedEngine + "], exist = " +
-                    ((cachedEngine==null) ? false : cachedEngine.exists()));
-        }
+    private File getCacheExpectedFile() {
+        return new File(getLocalDirectory().getPath(), "nbi-engine.jar");
+        
     }
     
     private void cacheEngineLocally() {
         LogManager.log(MESSAGE, "cache engine data locally to run uninstall in the future");
-        LogManager.indent();
-        File jarfile = null;
+        LogManager.indent();        
         String filePrefix = "file:";
         String httpPrefix = "http://";
         String jarSep = "!/";
@@ -617,56 +629,56 @@ public class Installer {
             String installerResource = "org/netbeans/installer/Installer.class";
             URL url = this.getClass().getClassLoader().getResource(installerResource);
             if(url == null) {
-                throw new IOException("No manifest in the engine");
+                throw new IOException("No main Installer class in the engine");
             }
             
             LogManager.log(DEBUG, "NBI Engine URL for Installer.Class = " + url);
             LogManager.log(DEBUG, "URL Path = " + url.getPath());
             
+            boolean needCache = true;
+            
             if("jar".equals(url.getProtocol())) {
+                LogManager.log("... running engine as a .jar file");
                 // we run engine from jar, not from .class
                 String path = url.getPath();
-                if (path != null) {
-                    String jarLocation;
-                    if (path.startsWith(filePrefix)) {
-                        if (path.indexOf(jarSep) != -1) {
-                            jarLocation = path.substring(filePrefix.length(),
-                                    path.indexOf(jarSep + installerResource));
-                            jarLocation = URLDecoder.decode(jarLocation,"UTF8");
-                            jarfile = new File(jarLocation);
-                        } else {
-                            throw new IOException("JAR path " + path +
-                                    " doesn`t contaion jar-separator " + jarSep);
-                        }
-                    } else if (path.startsWith(httpPrefix)) {
-                        jarLocation = path.substring(
-                                path.indexOf(httpPrefix),
+                String jarLocation;
+                
+                if (path.startsWith(filePrefix)) {
+                    LogManager.log("... classloader says that jar file is on the disk");
+                    if (path.indexOf(jarSep) != -1) {
+                        jarLocation = path.substring(filePrefix.length(),
                                 path.indexOf(jarSep + installerResource));
-                        try {
-                            LogManager.log(MESSAGE,
-                                    "Downloading engine jar file from " + jarLocation);
-                            jarLocation = URLDecoder.decode(jarLocation,"UTF8");
-                            jarfile = FileProxy.getInstance().getFile(jarLocation);
-                        }  catch(DownloadException ex) {
-                            LogManager.log(WARNING,
-                                    "Could not download engine jar. \nError = " + ex );
-                            jarfile = null;
+                        jarLocation = URLDecoder.decode(jarLocation,"UTF8");
+                        File jarfile = new File(jarLocation);
+                        LogManager.log("... checking if it runs from cached engine");
+                        if(jarfile.getAbsolutePath().equals(
+                                getCacheExpectedFile().getAbsolutePath())) {
+                            needCache = false; // we already run cached version
                         }
+                        LogManager.log("... " + !needCache);
+                    } else {
+                        throw new IOException("JAR path " + path +
+                                " doesn`t contaion jar-separator " + jarSep);
                     }
+                } else if (path.startsWith(httpPrefix)) {
+                    LogManager.log("... classloader says that jar file is on remote server");
                 }
+            } else {
+                // a quick hack to allow caching engine when run from
+                // the IDE (i.e. as a .class) - probably to be removed
+                // later. Or maybe not...
+                LogManager.log("... running engine as a .class file");
             }
-            
-            // a quick hack to allow caching engine when run from
-            // the IDE (i.e. as a .class) - probably to be removed
-            // later. Or maybe not...
-            if("file".equals(url.getProtocol())) {
-                String path = url.toString();
-                File root = new File(path.substring(filePrefix.length(),
-                        path.indexOf("build/classes/" + installerResource)));
-                jarfile = new File(root, "dist/nbi-engine.jar");
+            if(needCache) { 
+                try {
+                    cacheEngineJar();
+                } catch (DownloadException ex) {
+                    LogManager.log("Can`t load engine jar content list");
+                    LogManager.log(ex);
+                    throw new IOException(ex.toString());
+                }
+                
             }
-            
-            cacheEngineJar(jarfile);
             
         } catch (IOException ex) {
             LogManager.log(CRITICAL, "can`t cache installer engine");
@@ -711,8 +723,8 @@ public class Installer {
         LogManager.logUnindent("finished creating lock file");
     }
     
-    /////////////////////////////////////////////////////////////////////////////////
-    // Inner classes
+/////////////////////////////////////////////////////////////////////////////////
+// Inner classes
     public static enum InstallerExecutionMode {
         NORMAL,
         CREATE_BUNDLE;

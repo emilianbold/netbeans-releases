@@ -29,7 +29,7 @@ $Id$
         Target overrides
     ======================================================================== -->
     <target name="-post-clean" depends="native-clean"/>
-    <target name="-pre-jar" depends="native-build"/>
+    <target name="-pre-jar" depends="native-build,create-jar-contents-list"/>
 
     <!-- =======================================================================
         NetBeans Installer engine specific targets
@@ -110,8 +110,7 @@ $Id$
                                 i18nDir="${basedir}/${native.launcher.windows.i18n.dir}"
                                 testJVM="${basedir}/${test.jvm.file}"/>
     </target>
-
-    <target name="init-create-launchers">
+    <target name="init-engine-tasks">
 	<delete dir="${ant.build.classes.cls}"/>
         <mkdir dir="${ant.build.classes.cls}"/>
         <javac srcdir="${ant.build.classes.src}" destdir="${ant.build.classes.cls}" debug="true" classpath="${javac.classpath.ant}"/>
@@ -119,10 +118,21 @@ $Id$
 	<taskdef name="create-native-launcher" 
                  classname="org.netbeans.installer.infra.build.ant.launchers.Build" 
                  classpath="${ant.build.classes.cls}"/>
+        
+        <taskdef name="write-jar-content-list" 
+                 classname="org.netbeans.installer.infra.build.ant.WriteFileList" 
+                 classpath="${ant.build.classes.cls}"/>
     </target>
+    <target name="init-create-launchers" depends="init-engine-tasks"/>
     
     <target name="create-launchers" depends="jar,init-create-launchers">
         <antcall target="create-launcher-windows"/>
     </target>
 
+    <target name="create-jar-contents-list" depends="init-engine-tasks">
+         <write-jar-content-list dir="${basedir}/${build.classes.dir}" 
+                                 output="${basedir}/${build.classes.dir}/${jar.contents.list}"
+                                 mask="(?!^data/).*"/>                                
+         
+    </target>
 </project>
