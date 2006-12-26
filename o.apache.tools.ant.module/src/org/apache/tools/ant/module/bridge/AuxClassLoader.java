@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
 import org.openide.util.Enumerations;
+import org.openide.util.Exceptions;
 
 /**
  * Loads classes in the following order:
@@ -58,7 +59,13 @@ final class AuxClassLoader extends AntBridge.AllPermissionURLClassLoader {
                 // OK, didn't find it.
             }
         }
-        return super.findClass(name);
+        try {
+            return super.findClass(name);
+        } catch (UnsupportedClassVersionError e) {
+            // May be thrown during unit tests in case there is a JDK mixup.
+            Exceptions.attachMessage(e, "loading: " + name);
+            throw e;
+        }
     }
     
     @Override
