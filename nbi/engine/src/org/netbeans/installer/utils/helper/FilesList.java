@@ -49,7 +49,7 @@ public class FilesList {
         final Document document = XMLUtils.loadXMLDocument(xml);
         
         for (Element element: XMLUtils.getChildren(document.getDocumentElement())) {
-            entries.add(new FileEntry(element));
+            entries.add(0, new FileEntry(element));
         }
     }
     
