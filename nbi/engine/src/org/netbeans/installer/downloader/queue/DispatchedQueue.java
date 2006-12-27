@@ -32,7 +32,7 @@ import org.netbeans.installer.downloader.impl.PumpingImpl;
 
 import java.io.File;
 import java.net.URL;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -43,7 +43,7 @@ public class DispatchedQueue extends QueueBase {
   
   private final ProcessDispatcher dispatcher = new RoundRobinDispatcher(DISPATCHER_QUANTUM, DISPATCHER_POOL);
   
-  private final Map<String, Pump> pId2p = new HashMap<String, Pump>();
+  private final Map<String, Pump> pId2p = new LinkedHashMap<String, Pump>();
   
   public DispatchedQueue(File stateFile) {
     super(stateFile);
@@ -51,12 +51,12 @@ public class DispatchedQueue extends QueueBase {
   
   public synchronized void reset() {
     final boolean wasActive = dispatcher.isActive();
-    if (wasActive) dispatcher.stop();
+    terminate();
     for (String id: id2Pumping.keySet().toArray(new String[0])) {
       delete(id);
     }
-    if (wasActive) dispatcher.start();
     fire("queueReset");
+    if (wasActive) invoke();
   }
   
   public synchronized Pumping add(URL url) {
