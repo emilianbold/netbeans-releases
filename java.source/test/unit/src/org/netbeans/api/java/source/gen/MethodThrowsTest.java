@@ -30,7 +30,6 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.jackpot.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -80,21 +79,29 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
-                        MethodTree copy = make.addMethodThrows(
-                            node, make.Identifier("IOException")
-                        );
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                    MethodTree copy = make.addMethodThrows(
+                        method, make.Identifier("IOException")
+                    );
+                    workingCopy.rewrite(method, copy);
                 }
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -118,24 +125,32 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
-                        MethodTree copy = make.addMethodThrows(
-                            node, make.Identifier("IOException")
-                        );
-                        copy = make.addMethodThrows(
-                            copy, make.Identifier("FileNotFoundException")
-                        );
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                    MethodTree copy = make.addMethodThrows(
+                        method, make.Identifier("IOException")
+                    );
+                    copy = make.addMethodThrows(
+                        copy, make.Identifier("FileNotFoundException")
+                    );
+                    workingCopy.rewrite(method, copy);
                 }
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         assertEquals(golden, res);
     }
@@ -158,21 +173,29 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
-                        MethodTree copy = make.removeMethodThrows(node, 0);
-                        copy = make.removeMethodThrows(copy, 0);
-                        copy = make.removeMethodThrows(copy, 0);
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                    MethodTree copy = make.removeMethodThrows(method, 0);
+                    copy = make.removeMethodThrows(copy, 0);
+                    copy = make.removeMethodThrows(copy, 0);
+                    workingCopy.rewrite(method, copy);
                 }
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -198,21 +221,29 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
-                        MethodTree copy = make.addMethodThrows(
-                            node, make.Identifier("Exception")
-                        );
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                    MethodTree copy = make.addMethodThrows(
+                        method, make.Identifier("Exception")
+                    );
+                    workingCopy.rewrite(method, copy);
                 }
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -236,21 +267,29 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
-                        MethodTree copy = make.insertMethodThrows(
-                            node, 0, make.Identifier("FileNotFoundException")
-                        );
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                    MethodTree copy = make.insertMethodThrows(
+                        method, 0, make.Identifier("FileNotFoundException")
+                    );
+                    workingCopy.rewrite(method, copy);
                 }
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -274,19 +313,27 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
-                        MethodTree copy = make.removeMethodThrows(node, 1);
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                    MethodTree copy = make.removeMethodThrows(method, 1);
+                    workingCopy.rewrite(method, copy);
                 }
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         assertEquals(golden, res);
     }
@@ -309,19 +356,27 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
-                        MethodTree copy = make.removeMethodThrows(node, 0);
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                    MethodTree copy = make.removeMethodThrows(method, 0);
+                    workingCopy.rewrite(method, copy);
                 }
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -345,19 +400,27 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
-                        MethodTree copy = make.removeMethodThrows(node, 2);
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                    MethodTree copy = make.removeMethodThrows(method, 2);
+                    workingCopy.rewrite(method, copy);
                 }
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -381,19 +444,27 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
-                        MethodTree copy = make.removeMethodThrows(node, 0);
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                    MethodTree copy = make.removeMethodThrows(method, 0);
+                    workingCopy.rewrite(method, copy);
                 }
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -419,19 +490,27 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
-                        MethodTree copy = make.addMethodThrows(node, make.Identifier("FileNotFoundException"));
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                    MethodTree copy = make.addMethodThrows(method, make.Identifier("FileNotFoundException"));
+                    workingCopy.rewrite(method, copy);
                 }
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -464,19 +543,27 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
-                        MethodTree copy = make.addMethodThrows(node, make.Identifier("NullPointerException"));
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                    MethodTree copy = make.addMethodThrows(method, make.Identifier("NullPointerException"));
+                    workingCopy.rewrite(method, copy);
                 }
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
