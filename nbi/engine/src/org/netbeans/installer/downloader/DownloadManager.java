@@ -41,7 +41,7 @@ public class DownloadManager {
   
   private DownloadManager() {
     wd = new File(Installer.DEFAULT_LOCAL_DIRECTORY_PATH, "wd");
-    defaultFolder = new File(Installer.DEFAULT_LOCAL_DIRECTORY_PATH, "downloads");
+    defaultFolder = DownloadConfig.DEFAULT_OUTPUT_DIR;
     wd.mkdirs();
     queue = new DispatchedQueue(new File(wd, "state.xml"));
     queue.reset();

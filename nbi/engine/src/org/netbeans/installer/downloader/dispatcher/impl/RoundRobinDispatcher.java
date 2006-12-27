@@ -65,7 +65,7 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
     if (quantum < 10 || poolSize < 1)
       throw new IllegalArgumentException();
     this.timeQuantum = quantum;
-    this.pollingTime = timeQuantum * 5;
+    this.pollingTime = timeQuantum * 5 < 1000 ? timeQuantum * 5: 1000;
     this.pool = new WorkersPool(poolSize);
     workingQueue = new ArrayBlockingQueue<Worker>(poolSize);
     waitingQueue = new LinkedList<Process>();

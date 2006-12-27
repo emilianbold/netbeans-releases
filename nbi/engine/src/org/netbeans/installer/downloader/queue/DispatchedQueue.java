@@ -20,7 +20,8 @@
  */
 package org.netbeans.installer.downloader.queue;
 
-import org.netbeans.installer.Installer;
+import static org.netbeans.installer.downloader.DownloadConfig.DISPATCHER_POOL;
+import static org.netbeans.installer.downloader.DownloadConfig.DISPATCHER_QUANTUM;
 import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.downloader.Pumping;
 import static org.netbeans.installer.downloader.Pumping.State;
@@ -33,7 +34,6 @@ import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.installer.utils.exceptions.UnexpectedExceptionError;
 
 /**
  *
@@ -41,7 +41,7 @@ import org.netbeans.installer.utils.exceptions.UnexpectedExceptionError;
  */
 public class DispatchedQueue extends QueueBase {
   
-  private final ProcessDispatcher dispatcher = new RoundRobinDispatcher(100, 10);
+  private final ProcessDispatcher dispatcher = new RoundRobinDispatcher(DISPATCHER_QUANTUM, DISPATCHER_POOL);
   
   private final Map<String, Pump> pId2p = new HashMap<String, Pump>();
   
@@ -56,11 +56,7 @@ public class DispatchedQueue extends QueueBase {
       delete(id);
     }
     if (wasActive) dispatcher.start();
-    try {
-      fire("queueReset");
-    } catch(NoSuchMethodException ex) {
-      throw new UnexpectedExceptionError("Listener contract was changed", ex);
-    }
+    fire("queueReset");
   }
   
   public synchronized Pumping add(URL url) {
@@ -76,23 +72,15 @@ public class DispatchedQueue extends QueueBase {
       pId2p.put(id, pump);
       dispatcher.schedule(pump);
     }
-    try {
-      fire("pumpingAdd", id);
-      return newOne;
-    } catch (NoSuchMethodException ex) {
-      throw new UnexpectedExceptionError("Listener contract was changed", ex);
-    }
+    fire("pumpingAdd", id);
+    return newOne;
   }
   
   public synchronized Pumping delete(String id) {
     final PumpingImpl oldOne = id2Pumping.remove(id);
     if (oldOne == null) return null;
     dispatcher.terminate(pId2p.get(id));
-    try {
-      fire("pumpingDelete", id);
-    } catch (NoSuchMethodException ex) {
-      throw new UnexpectedExceptionError("Listener contract was changed", ex);
-    }
+    fire("pumpingDelete", id);
     pId2p.remove(id);
     if (oldOne.state() != State.FINISHED)
       oldOne.reset();
@@ -101,11 +89,7 @@ public class DispatchedQueue extends QueueBase {
   
   public synchronized void invoke() {
     if (dispatcher.isActive()) return;
-    try {
-      fire("pumpsInvoke");
-    } catch(NoSuchMethodException ex) {
-      throw new UnexpectedExceptionError("Listener contract was changed", ex);
-    }
+    fire("pumpsInvoke");
     for (Pumping pumping : toArray()) {
       if (pumping.state() != State.FINISHED) {
         final Pump newOne = new Pump(pumping);
@@ -120,11 +104,7 @@ public class DispatchedQueue extends QueueBase {
     if (!dispatcher.isActive()) return;
     dispatcher.stop();
     dump();
-    try {
-      fire("pumpsTerminate");
-    } catch(NoSuchMethodException ex) {
-      throw new UnexpectedExceptionError("Listener contract was changed", ex);
-    }
+    fire("pumpsTerminate");
   }
   
   public synchronized boolean isActive() {

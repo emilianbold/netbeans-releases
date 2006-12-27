@@ -21,6 +21,7 @@
 package org.netbeans.installer.downloader.impl;
 
 import java.security.NoSuchAlgorithmException;
+import org.netbeans.installer.downloader.DownloadConfig;
 import org.netbeans.installer.downloader.Pumping;
 import org.netbeans.installer.downloader.connector.URLConnector;
 import org.netbeans.installer.downloader.dispatcher.Process;
@@ -41,8 +42,8 @@ import org.netbeans.installer.utils.helper.URLUtil;
  */
 public class Pump implements Process {
   
-  private static final int ATTEMPT_TIME_DELAY = 5 * 1000;
-  private static final int MAX_ATTEMPT_COUNT = 15;
+  private static final int ATTEMPT_TIME_DELAY = DownloadConfig.REATTEMPT_DELAY;
+  private static final int MAX_ATTEMPT_COUNT = DownloadConfig.ATTEMPT_COUNT;
   
   final PumpingImpl pummping;
   URLConnector connector = URLConnector.getConnector();

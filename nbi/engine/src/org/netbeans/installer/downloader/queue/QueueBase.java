@@ -26,6 +26,7 @@ import org.netbeans.installer.downloader.DownloadListener;
 import org.netbeans.installer.downloader.impl.PumpingImpl;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.exceptions.ParseException;
+import org.netbeans.installer.utils.exceptions.UnexpectedExceptionError;
 import org.netbeans.installer.utils.xml.DomUtil;
 import org.netbeans.installer.utils.xml.visitors.DomVisitor;
 import org.netbeans.installer.utils.xml.visitors.RecursiveDomVisitor;
@@ -87,13 +88,17 @@ public abstract class QueueBase implements PumpingsQueue {
     return id2Pumping.values().toArray(new Pumping[0]);
   }
   
-  public void fire(String methodName, Object... args) throws NoSuchMethodException {
+  public void fire(String methodName, Object... args) {
     final List<Class> argsClasses = new ArrayList<Class>(args.length);
     for (Object arg : args) {
       argsClasses.add(arg.getClass());
     }
-    final Method method = DownloadListener.class.getMethod(methodName, argsClasses.toArray(new Class[0]));
-    notifyListeners(method, args);
+    try {
+      final Method method = DownloadListener.class.getMethod(methodName, argsClasses.toArray(new Class[0]));
+      notifyListeners(method, args);
+    } catch (NoSuchMethodException ex) {
+      throw new UnexpectedExceptionError("Listener contract was changed", ex);
+    }
   }
   
   private synchronized void notifyListeners(Method mehtod, Object... args) {
