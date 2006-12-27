@@ -750,6 +750,47 @@ Microsystems, Inc. All Rights Reserved.
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
             
+            <target name="library-inclusion-in-archive" depends="compile">
+                <xsl:if test="count(//carproject:included-library) &gt; 0">
+                    <mkdir dir="${{build.classes.dir}}/META-INF/lib"/>
+                </xsl:if>
+                <xsl:for-each select="//carproject:included-library">
+                    <xsl:variable name="included.prop.name">
+                        <xsl:value-of select="."/>
+                    </xsl:variable>
+                    <xsl:if test="//carproject:included-library[@files]">
+                        <xsl:if test="(@files &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
+                            <xsl:call-template name="copyIterateFiles">
+                                <xsl:with-param name="files" select="@files"/>
+                                <xsl:with-param name="target" select="'${build.classes.dir}/META-INF/lib'"/>
+                                <xsl:with-param name="libfile" select="$included.prop.name"/>
+                            </xsl:call-template>
+                        </xsl:if>
+                        <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
+                            <xsl:variable name="target" select="'${build.classes.dir}/META-INF/lib'"/>
+                            <xsl:variable name="libfile" select="concat('${',$included.prop.name,'}')"/>
+                            <copy file="{$libfile}" todir="{$target}"/>
+                        </xsl:if>
+                    </xsl:if>
+                    <xsl:if test="//carproject:included-library[@dirs]">
+                        <xsl:if test="(@dirs &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
+                            <xsl:call-template name="copyIterateDirs">
+                                <xsl:with-param name="files" select="@dirs"/>
+                                <xsl:with-param name="target" select="'${build.classes.dir}/META-INF/lib'"/>
+                                <xsl:with-param name="libfile" select="$included.prop.name"/>
+                            </xsl:call-template>
+                        </xsl:if>
+                        <xsl:if test="@dirs = 1 and (@files = 0 or not(@files))">
+                            <xsl:variable name="target" select="'${build.classes.dir}/META-INF/lib'"/>
+                            <xsl:variable name="libfile" select="concat('${',$included.prop.name,'}')"/>
+                            <copy todir="{$target}">
+                                <fileset dir="{$libfile}" includes="**/*"/>
+                            </copy>
+                        </xsl:if>
+                    </xsl:if>
+                </xsl:for-each>
+            </target>
+            
             <target name="library-inclusion-in-manifest" depends="compile">
                 <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
                 <!-- copy libraries into ear  -->
@@ -919,7 +960,7 @@ Microsystems, Inc. All Rights Reserved.
             </target>
             
             <target name="-do-dist-with-manifest">
-                <xsl:attribute name="depends">init,compile,-pre-dist</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-dist,library-inclusion-in-archive</xsl:attribute>
                 <xsl:attribute name="if">has.custom.manifest</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.jar}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
@@ -932,7 +973,7 @@ Microsystems, Inc. All Rights Reserved.
             </target>
             
             <target name="-do-dist-without-manifest">
-                <xsl:attribute name="depends">init,compile,-pre-dist</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-dist,library-inclusion-in-archive</xsl:attribute>
                 <xsl:attribute name="unless">has.custom.manifest</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.jar}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
@@ -964,7 +1005,7 @@ Microsystems, Inc. All Rights Reserved.
                 </jar>
             </target>
             
-            <target name="-do-dist" depends="init,compile,-pre-dist,-do-dist-without-manifest,-do-dist-with-manifest"/>
+            <target name="-do-dist" depends="init,compile,-pre-dist,library-inclusion-in-archive,-do-dist-without-manifest,-do-dist-with-manifest"/>
             
             <target name="-do-ear-dist">
                 <xsl:attribute name="depends">init,compile,-pre-dist,library-inclusion-in-manifest,-do-ear-dist-without-manifest,-do-ear-dist-with-manifest</xsl:attribute>
