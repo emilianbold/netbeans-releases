@@ -1860,6 +1860,23 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <checkmoduleconfigs nbroot=".."/>
   </target>
 
+  <target name="index-layer-paths" depends="bootstrap" description="Create index of layer paths.">
+      <property name="build" location="netbeans"/>
+      <fail message="You must create a build first.">
+          <condition>
+              <not>
+                  <available file="${build}" type="dir"/>
+              </not>
+          </condition>
+      </fail>
+      <taskdef name="layerindex" classname="org.netbeans.nbbuild.LayerIndex" classpath="nbantext.jar"/>
+      <layerindex>
+          <modules dir="${build}">
+              <include name="**/*.jar"/>
+          </modules>
+      </layerindex>
+  </target>
+
   <target name="display-l10n-list-matches" description="Show which files are actually matched by an l10n.list in some module.">
     <property name="nbroot" location=".."/>
     <input addproperty="module">Select a top-level module (e.g. "java") to display results for:</input>
