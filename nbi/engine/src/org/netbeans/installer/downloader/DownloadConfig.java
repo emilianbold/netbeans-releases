@@ -26,7 +26,7 @@ public class DownloadConfig {
     DISPATCHER_POOL = 10;
     
     DEFAULT_OUTPUT_DIR = new File(Installer.DEFAULT_LOCAL_DIRECTORY_PATH, "downloads");
-    ATTEMPT_COUNT = 15;
+    ATTEMPT_COUNT = 10;
     REATTEMPT_DELAY = 5 * 1000;
   }
 }

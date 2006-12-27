@@ -20,8 +20,7 @@ public class QueueAndListenerWithoutServerTest extends MyTestCase {
   
   public void testInvokeTerminate() {
     final DispatchedQueue queue = new DispatchedQueue(new File(MyTestCase.testWD, "queueState.xml"));
-    final ActionsTracer listener = new ActionsTracer();
-    queue.addListener(listener);
+    final ActionsTracer listener = new ActionsTracer(queue);
     queue.invoke();
     assertEquals(1, listener.actions.size());
     assertEquals("invoke", listener.actions.get(0).getFirst());
@@ -32,9 +31,8 @@ public class QueueAndListenerWithoutServerTest extends MyTestCase {
   
   public void testAddDelete() throws MalformedURLException {
     final PumpingsQueue queue = new DispatchedQueue(new File(MyTestCase.testWD, "queueState.xml"));
-    final ActionsTracer listener = new ActionsTracer();
-    queue.addListener(listener);
-    final Pumping pumping = queue.add(new URL("http://127.0.0.1:808/testurl.data"));
+    final ActionsTracer listener = new ActionsTracer(queue);
+    final Pumping pumping = queue.add(new URL("http://127.0.0.1:8080/testurl.data"));
     assertTrue(queue.toArray().length == 1);
     assertEquals(1, listener.actions.size());
     assertEquals("add", listener.actions.get(0).getFirst());
@@ -48,11 +46,10 @@ public class QueueAndListenerWithoutServerTest extends MyTestCase {
   
   public void testReset() throws MalformedURLException {
     final PumpingsQueue queue = new DispatchedQueue(new File(MyTestCase.testWD, "queueState.xml"));
-    final ActionsTracer listener = new ActionsTracer();
-    queue.addListener(listener);
-    final Pumping pumping1 = queue.add(new URL("http://127.0.0.1:808/testurl.data"));
-    final Pumping pumping2 = queue.add(new URL("http://127.0.0.1:808/testurl.data"));
-    final Pumping pumping3 = queue.add(new URL("http://127.0.0.1:808/testurl.data"));
+    final ActionsTracer listener = new ActionsTracer(queue);
+    final Pumping pumping1 = queue.add(new URL("http://127.0.0.1:8080/testurl.data"));
+    final Pumping pumping2 = queue.add(new URL("http://127.0.0.1:8080/testurl.data"));
+    final Pumping pumping3 = queue.add(new URL("http://127.0.0.1:8080/testurl.data"));
     assertEquals(3, listener.actions.size());
     assertEquals("add", listener.actions.get(0).getFirst());
     assertEquals(pumping1.getId(), listener.actions.get(0).getSecond());
@@ -73,8 +70,7 @@ public class QueueAndListenerWithoutServerTest extends MyTestCase {
   
   public void testResetInAction() {
     final DispatchedQueue queue = new DispatchedQueue(new File(MyTestCase.testWD, "queueState.xml"));
-    final ActionsTracer listener = new ActionsTracer();
-    queue.addListener(listener);
+    final ActionsTracer listener = new ActionsTracer(queue);
     queue.invoke();
     queue.reset();
     queue.terminate();
