@@ -56,6 +56,11 @@ public class WSStartServer extends StartServer {
     private int state;
     
     /**
+     * Map containing markers that describe whether the server is started in debug mode
+     */
+    private static Map isDebugModeMap = Collections.synchronizedMap((Map)new HashMap(2,1));
+    
+    /**
      * Creates a new instance of WSStartServer
      *
      * @param the server's deployment manager
@@ -124,7 +129,8 @@ public class WSStartServer extends StartServer {
                 serverProgress), 0, Thread.NORM_PRIORITY);
         
         // set the debuggable marker
-        isDebuggable = true;
+        // isDebuggable = true;
+        isDebugModeMap.put(dm.getHost() + dm.getPort() + dm.getDomainRoot(), new Object());
         
         // set the state to starting
         state = STATE_STARTING;
@@ -133,10 +139,7 @@ public class WSStartServer extends StartServer {
         return serverProgress;
     }
     
-    /**
-     * Marker describing whether the server is started in debug mode
-     */
-    private boolean isDebuggable = false;
+    
     
     /**
      * Specifies whether the server instance is started in debug mode. The
@@ -148,8 +151,19 @@ public class WSStartServer extends StartServer {
      * @return whether the instance is started in debug mode
      */
     public boolean isDebuggable(Target target) {
-        return isDebuggable;
+        
+        if(!isDebugModeMap.containsKey(dm.getHost() + dm.getPort() + dm.getDomainRoot())){
+            return false;
+        }
+        
+        if(!isRunning()){
+            isDebugModeMap.remove(dm.getHost() + dm.getPort() + dm.getDomainRoot());
+            return false;
+        }
+        return true;
     }
+    
+    
     
     /**
      * Tells whether the target is also the target server
@@ -236,7 +250,8 @@ public class WSStartServer extends StartServer {
                 0, Thread.NORM_PRIORITY);
         
         // set the debugguable marker to false as the server is stopped
-        isDebuggable = false;
+        // isDebuggable = false;
+        isDebugModeMap.remove(dm.getHost() + dm.getPort() + dm.getDomainRoot());
         
         // set the state to stopping
         state = STATE_STOPPING;
@@ -292,7 +307,8 @@ public class WSStartServer extends StartServer {
         
         // set the debuggble marker to false as we do not start the server in
         // debug mode
-        isDebuggable = false;
+        // isDebuggable = false;
+        isDebugModeMap.remove(dm.getHost() + dm.getPort() + dm.getDomainRoot());
         
         // set the state to starting
         state = STATE_STARTING;
@@ -766,7 +782,7 @@ public class WSStartServer extends StartServer {
                         "TXT_ioWindowTitle")).start();                 // NOI18N
                 
                 // show the server's log
-                  String title = dm.getInstanceProperties(). // NOI18N
+                String title = dm.getInstanceProperties(). // NOI18N
                         getProperty(WSDeploymentFactory.SERVER_NAME_ATTR) + " ["+
                         dm.getInstanceProperties().
                         getProperty(WSDeploymentFactory.HOST_ATTR) + ":"+
