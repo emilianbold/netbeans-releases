@@ -93,6 +93,7 @@ public class Widget {
     private Dimension preferredSize;
     private Rectangle preferredBounds;
     private boolean checkClipping;
+    private boolean enabled;
 
     private ObjectState state = ObjectState.createNormal ();
 
@@ -132,6 +133,7 @@ public class Widget {
         preferredLocation = null;
         preferredBounds = null;
         checkClipping = false;
+        enabled = true;
 
         location = new Point ();
         bounds = null;
@@ -327,6 +329,24 @@ public class Widget {
         if (constraints == null)
             constraints = new HashMap<Widget, Object> ();
         constraints.put (child, constraint);
+    }
+
+    /**
+     * Returns whether the widget is enabled.
+     * If the widget is disabled then any event is processed by assigned actions.
+     * @return true if the widget is enabled.
+     */
+    public final boolean isEnabled () {
+        return enabled;
+    }
+
+    /**
+     * Sets whether the widget is enabled.
+     * If the widget is disabled then any event is processed by assigned actions.
+     * @param enabled if true, then the widget is enabled
+     */
+    public final void setEnabled (boolean enabled) {
+        this.enabled = enabled;
     }
 
     /**

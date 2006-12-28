@@ -234,6 +234,9 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
     }
 
     private WidgetAction.State processLocationOperator (Operator operator, String tool, Widget widget, WidgetAction.WidgetLocationEvent event) {
+        if (! widget.isEnabled ())
+            return WidgetAction.State.REJECTED;
+
         Point location = widget.getLocation ();
         event.translatePoint (- location.x, - location.y);
 
@@ -294,6 +297,9 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
     }
 
     private WidgetAction.State processOperator (Operator operator, String tool, Widget widget, WidgetAction.WidgetEvent event) {
+        if (! widget.isEnabled ())
+            return WidgetAction.State.REJECTED;
+
         WidgetAction.State state;
 
         List<Widget> children = widget.getChildren ();
@@ -358,6 +364,17 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
         return WidgetAction.State.REJECTED;
     }
 
+    private Widget resolveTopMostDisabledWidget (Widget widget) {
+        Widget disabledWidget = null;
+        Widget tempWidget = widget;
+        while (tempWidget != null) {
+            if (! tempWidget.isEnabled ())
+                disabledWidget = tempWidget;
+            tempWidget = tempWidget.getParentWidget ();
+        }
+        return disabledWidget;
+    }
+
     private WidgetAction.State processKeyOperator (Operator operator, WidgetAction.WidgetKeyEvent event) {
         WidgetAction.State state;
         String tool = scene.getActiveTool ();
@@ -382,24 +399,32 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
     private WidgetAction.State processKeyOperator (Operator operator, String tool, Scene scene, WidgetAction.WidgetKeyEvent event) {
         Widget focusedWidget = scene.getFocusedWidget ();
         WidgetAction.State state;
+        Widget disabledWidget;
         switch (scene.getKeyEventProcessingType ()) {
             case ALL_WIDGETS:
                 return processOperator (operator, tool, scene, event);
             case FOCUSED_WIDGET_AND_ITS_PARENTS:
-                return processParentOperator (operator, tool, focusedWidget, event);
+                disabledWidget = resolveTopMostDisabledWidget (focusedWidget);
+                return processParentOperator (operator, tool, disabledWidget != null ? disabledWidget.getParentWidget () : focusedWidget, event);
             case FOCUSED_WIDGET_AND_ITS_CHILDREN:
+                disabledWidget = resolveTopMostDisabledWidget (focusedWidget);
+                if (disabledWidget != null)
+                    return WidgetAction.State.REJECTED;
                 state = processSingleOperator (operator, tool, focusedWidget, event);
                 if (state.isConsumed ())
                     return state;
                 return processOperator (operator, tool, focusedWidget, event);
             case FOCUSED_WIDGET_AND_ITS_CHILDREN_AND_ITS_PARENTS:
-                state = processSingleOperator (operator, tool, focusedWidget, event);
-                if (state.isConsumed ())
-                    return state;
-                state = processOperator (operator, tool, focusedWidget, event);
-                if (state.isConsumed ())
-                    return state;
-                return processParentOperator (operator, tool, focusedWidget.getParentWidget (), event);
+                disabledWidget = resolveTopMostDisabledWidget (focusedWidget);
+                if (disabledWidget == null) {
+                    state = processSingleOperator (operator, tool, focusedWidget, event);
+                    if (state.isConsumed ())
+                        return state;
+                    state = processOperator (operator, tool, focusedWidget, event);
+                    if (state.isConsumed ())
+                        return state;
+                }
+                return processParentOperator (operator, tool, disabledWidget != null ? disabledWidget.getParentWidget () : focusedWidget.getParentWidget (), event);
             default:
                 throw new IllegalStateException ();
         }
