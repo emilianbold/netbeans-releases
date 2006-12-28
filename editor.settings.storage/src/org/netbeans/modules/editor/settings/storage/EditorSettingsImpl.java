@@ -97,7 +97,7 @@ public class EditorSettingsImpl extends EditorSettings {
     // FontColors ..............................................................
     
     /**
-     * Returns set of font & colors profiles.
+     * Gets display names of all font & color profiles.
      *
      * @return set of font & colors profiles
      */
@@ -620,6 +620,11 @@ public class EditorSettingsImpl extends EditorSettings {
         keyMapProfiles.put(displayName, profile);
     }
     
+    /**
+     * Translates profile's display name to its Id. If the profile's display name
+     * can't be translated this method will simply return the profile's display name
+     * without translation.
+     */
     String getInternalFontColorProfile(String profile) {
 	if (fontColorProfiles == null) {
 	    init ();

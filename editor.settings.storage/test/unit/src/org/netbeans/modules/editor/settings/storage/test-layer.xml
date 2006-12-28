@@ -21,6 +21,12 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
 
     <folder name="Editors">
+        <folder name="NetBeans">
+            <folder name="Defaults">
+                <file name="defaultColoring.xml" url="fonts-and-colors-all-languages.xml"/>
+            </folder>
+        </folder>
+        
         <folder name="text">
             <folder name="x-type-A">
                 <folder name="NetBeans">
@@ -30,6 +36,14 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
                 <folder name="Defaults">
                     <file name="keybindings.xml" url="key-bindings.xml"/> 
+                </folder>
+            </folder>
+            
+            <folder name="x-type-B">
+                <folder name="NetBeans">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="fonts-and-colors-2.xml"/>
+                    </folder>
                 </folder>
             </folder>
             
