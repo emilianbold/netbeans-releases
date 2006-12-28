@@ -49,10 +49,10 @@ public class PanelConfigureProjectVisual extends JPanel {
         initComponents();
         setName(NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NameAndLoc")); // NOI18N
         projectLocationPanel = new PanelProjectLocationVisual( panel );
-        putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaApp")); // NOI18N
+        putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewAppClient")); // NOI18N
         jSeparator1.setVisible(true);
-        getAccessibleContext().setAccessibleName(NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaApp")); // NOI18N
-        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelConfigureProjectVisual.class,"ACSD_NewJavaApp")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewAppClient")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelConfigureProjectVisual.class, "ACSD_NewAppClient")); // NOI18N
         locationContainer.add( projectLocationPanel, java.awt.BorderLayout.CENTER );
         optionsPanel = new PanelOptionsVisual( panel );
         projectLocationPanel.addPropertyChangeListener(optionsPanel);

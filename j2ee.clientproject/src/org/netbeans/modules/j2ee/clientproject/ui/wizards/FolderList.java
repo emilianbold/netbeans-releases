@@ -19,19 +19,12 @@
 
 package org.netbeans.modules.j2ee.clientproject.ui.wizards;
 
-
-import java.awt.Color;
 import java.awt.Component;
-import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.event.ListSelectionListener;
@@ -42,38 +35,34 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientSourceRootsUi;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.j2ee.clientproject.ui.FoldersListSettings;
-
 
 /**
  * List of source/test roots
  * @author tzezula
  */
 public final class FolderList extends javax.swing.JPanel {
-
+    
     public static final String PROP_FILES = "files";    //NOI18N
     public static final String PROP_LAST_USED_DIR = "lastUsedDir";  //NOI18N
-
+    
     private String fcMessage;
     private File projectFolder;
     private File lastUsedFolder;
     private FolderList relatedFolderList;
-
+    
     /** Creates new form FolderList */
-    public FolderList (String label, char mnemonic, String accessibleDesc, String fcMessage,
-                       char addButtonMnemonic, String addButtonAccessibleDesc,
-                       char removeButtonMnemonic,String removeButtonAccessibleDesc) {
+    public FolderList(String label, char mnemonic, String accessibleDesc, String fcMessage,
+            char addButtonMnemonic, String addButtonAccessibleDesc,
+            char removeButtonMnemonic,String removeButtonAccessibleDesc) {
         this.fcMessage = fcMessage;
         initComponents();
         this.jLabel1.setText(label);
         this.jLabel1.setDisplayedMnemonic(mnemonic);
         this.roots.getAccessibleContext().setAccessibleDescription(accessibleDesc);
         this.roots.setCellRenderer(new Renderer());
-        this.roots.setModel (new DefaultListModel());
+        this.roots.setModel(new DefaultListModel());
         this.roots.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
@@ -82,39 +71,39 @@ public final class FolderList extends javax.swing.JPanel {
             }
         });
         this.addButton.getAccessibleContext().setAccessibleDescription(addButtonAccessibleDesc);
-        this.addButton.setMnemonic (addButtonMnemonic);        
+        this.addButton.setMnemonic(addButtonMnemonic);
         this.removeButton.getAccessibleContext().setAccessibleDescription(removeButtonAccessibleDesc);
-        this.removeButton.setMnemonic (removeButtonMnemonic);
+        this.removeButton.setMnemonic(removeButtonMnemonic);
         this.removeButton.setEnabled(false);
     }
     
-    public void setProjectFolder (File projectFolder) {
+    public void setProjectFolder(File projectFolder) {
         this.projectFolder = projectFolder;
     }
     
-    public void setRelatedFolderList (FolderList relatedFolderList) {
+    public void setRelatedFolderList(FolderList relatedFolderList) {
         this.relatedFolderList = relatedFolderList;
     }
-
-    public File[] getFiles () {
+    
+    public File[] getFiles() {
         Object[] files = ((DefaultListModel)this.roots.getModel()).toArray();
         File[] result = new File[files.length];
         System.arraycopy(files, 0, result, 0, files.length);
         return result;
     }
-
-    public void setFiles (File[] files) {
+    
+    public void setFiles(File[] files) {
         DefaultListModel model = ((DefaultListModel)this.roots.getModel());
         model.clear();
         for (int i=0; i<files.length; i++) {
-            model.addElement (files[i]);
+            model.addElement(files[i]);
         }
         if (files.length>0) {
             this.roots.setSelectedIndex(0);
         }
     }
     
-    public void setLastUsedDir (File lastUsedDir) {
+    public void setLastUsedDir(File lastUsedDir) {
         if (this.lastUsedFolder == null ? lastUsedDir != null : !this.lastUsedFolder.equals(lastUsedDir)) {
             File oldValue = this.lastUsedFolder;
             this.lastUsedFolder = lastUsedDir;
@@ -122,10 +111,10 @@ public final class FolderList extends javax.swing.JPanel {
         }
     }
     
-    public File getLastUsedDir () {
+    public File getLastUsedDir() {
         return this.lastUsedFolder;
     }
-
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -164,26 +153,25 @@ public final class FolderList extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(jScrollPane1, gridBagConstraints);
 
-        addButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/clientproject/ui/wizards/Bundle").getString("CTL_AddFolder"));
+        addButton.setText(org.openide.util.NbBundle.getMessage(FolderList.class, "CTL_AddFolder")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(addButton, gridBagConstraints);
+        addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FolderList.class, "AD_AddFolder")); // NOI18N
 
-        removeButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/clientproject/ui/wizards/Bundle").getString("CTL_RemoveFolder"));
+        removeButton.setText(org.openide.util.NbBundle.getMessage(FolderList.class, "CTL_RemoveFolder")); // NOI18N
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -192,48 +180,45 @@ public final class FolderList extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(removeButton, gridBagConstraints);
-
+        removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FolderList.class, "AD_RemoveFolder")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
+    
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
-        Object[] selection = this.roots.getSelectedValues ();
+        Object[] selection = this.roots.getSelectedValues();
         for (int i=0; i<selection.length; i++) {
-            ((DefaultListModel)this.roots.getModel()).removeElement (selection[i]);
+            ((DefaultListModel)this.roots.getModel()).removeElement(selection[i]);
         }
         this.firePropertyChange(PROP_FILES, null, null);
     }//GEN-LAST:event_removeButtonActionPerformed
-
+    
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         JFileChooser chooser = new JFileChooser();
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setDialogTitle(this.fcMessage);
-        chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setMultiSelectionEnabled(true);
         if (this.lastUsedFolder != null && this.lastUsedFolder.isDirectory()) {
-            chooser.setCurrentDirectory (this.lastUsedFolder);
-        }        
-        else if (this.projectFolder != null && this.projectFolder.isDirectory()) {
-            chooser.setCurrentDirectory (this.projectFolder);            
-        }                        
+            chooser.setCurrentDirectory(this.lastUsedFolder);
+        } else if (this.projectFolder != null && this.projectFolder.isDirectory()) {
+            chooser.setCurrentDirectory(this.projectFolder);
+        }
         if (chooser.showOpenDialog(this)== JFileChooser.APPROVE_OPTION) {
             File[] files = chooser.getSelectedFiles();
             int[] indecesToSelect = new int[files.length];
             DefaultListModel model = (DefaultListModel)this.roots.getModel();
             Set<File> invalidRoots = new HashSet<File>();
-            File[] relatedFolders = this.relatedFolderList == null ? 
+            File[] relatedFolders = this.relatedFolderList == null ?
                 new File[0] : this.relatedFolderList.getFiles();
             for (int i=0, index=model.size(); i<files.length; i++, index++) {
                 File normalizedFile = FileUtil.normalizeFile(files[i]);
                 if (!isValidRoot(normalizedFile, relatedFolders, this.projectFolder)) {
-                    invalidRoots.add (normalizedFile);
-                }
-                else {
-                    int pos = model.indexOf (normalizedFile);                
+                    invalidRoots.add(normalizedFile);
+                } else {
+                    int pos = model.indexOf(normalizedFile);
                     if (pos == -1) {
-                        model.addElement (normalizedFile);
+                        model.addElement(normalizedFile);
                         indecesToSelect[i] = index;
-                    }
-                    else {
+                    } else {
                         indecesToSelect[i] = pos;
                     }
                 }
@@ -251,10 +236,10 @@ public final class FolderList extends javax.swing.JPanel {
     }//GEN-LAST:event_addButtonActionPerformed
     
     
-    static boolean isValidRoot (File file, File[] relatedRoots, File projectFolder) {
+    static boolean isValidRoot(File file, File[] relatedRoots, File projectFolder) {
         Project p;
-        if ((p = FileOwnerQuery.getOwner(file.toURI()))!=null 
-            && !file.getAbsolutePath().startsWith(projectFolder.getAbsolutePath()+File.separatorChar)) {
+        if ((p = FileOwnerQuery.getOwner(file.toURI()))!=null
+                && !file.getAbsolutePath().startsWith(projectFolder.getAbsolutePath()+File.separatorChar)) {
             final Sources sources = (Sources) p.getLookup().lookup(Sources.class);
             if (sources == null) {
                 return false;
@@ -279,18 +264,17 @@ public final class FolderList extends javax.swing.JPanel {
                 }
             }
             return true;
-        }
-        else if (contains (file, relatedRoots)) {
+        } else if (contains(file, relatedRoots)) {
             return false;
         }
         return true;
     }
     
-    private static boolean contains (File folder, File[] roots) {
-        String path = folder.getAbsolutePath ();
+    private static boolean contains(File folder, File[] roots) {
+        String path = folder.getAbsolutePath();
         for (int i=0; i<roots.length; i++) {
             String rootPath = roots[i].getAbsolutePath();
-            if (rootPath.equals (path) || path.startsWith (rootPath + File.separatorChar)) {
+            if (rootPath.equals(path) || path.startsWith(rootPath + File.separatorChar)) {
                 return true;
             }
         }
@@ -301,7 +285,7 @@ public final class FolderList extends javax.swing.JPanel {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             File f = (File) value;
             Project p = FileOwnerQuery.getOwner(f.toURI());
-            String message = f.getAbsolutePath();            
+            String message = f.getAbsolutePath();
             Component result = super.getListCellRendererComponent(list, message, index, isSelected, cellHasFocus);
             return result;
         }

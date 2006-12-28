@@ -37,7 +37,6 @@ import org.openide.util.NbBundle;
  *
  * @author  Petr Hrebejk
  */
-
 public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener {
     
     public static final String PROP_PROJECT_NAME = "projectName";      //NOI18N
@@ -77,16 +76,14 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
         setLayout(new java.awt.GridBagLayout());
 
-        getAccessibleContext().setAccessibleName(null);
-        getAccessibleContext().setAccessibleDescription(null);
         projectNameLabel.setLabelFor(projectNameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_ProjectName_Label"));
+        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_ProjectName_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(projectNameLabel, gridBagConstraints);
-        projectNameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelProjectLocationVisual.class).getString("ACSN_projectNameLabel"));
-        projectNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelProjectLocationVisual.class).getString("ACSD_projectNameLabel"));
+        projectNameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelProjectLocationVisual.class).getString("ACSN_projectNameLabel")); // NOI18N
+        projectNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelProjectLocationVisual.class).getString("ACSD_projectNameLabel")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -96,14 +93,14 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         add(projectNameTextField, gridBagConstraints);
 
         projectLocationLabel.setLabelFor(projectLocationTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_ProjectLocation_Label"));
+        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_ProjectLocation_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(projectLocationLabel, gridBagConstraints);
-        projectLocationLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelProjectLocationVisual.class).getString("ACSN_projectLocationLabel"));
-        projectLocationLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelProjectLocationVisual.class).getString("ACSD_projectLocationLabel"));
+        projectLocationLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelProjectLocationVisual.class).getString("ACSN_projectLocationLabel")); // NOI18N
+        projectLocationLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelProjectLocationVisual.class).getString("ACSD_projectLocationLabel")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
@@ -113,30 +110,29 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         add(projectLocationTextField, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_BrowseLocation_Button")); // NOI18N
         browseButton.setActionCommand("BROWSE");
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseLocationAction(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
         add(browseButton, gridBagConstraints);
-        browseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelProjectLocationVisual.class).getString("ACSN_browseButton"));
-        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelProjectLocationVisual.class).getString("ACSD_browseButton"));
+        browseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelProjectLocationVisual.class).getString("ACSN_browseButton")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelProjectLocationVisual.class).getString("ACSD_browseButton")); // NOI18N
 
         createdFolderLabel.setLabelFor(createdFolderTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(createdFolderLabel, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_Lablel"));
+        org.openide.awt.Mnemonics.setLocalizedText(createdFolderLabel, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(createdFolderLabel, gridBagConstraints);
-        createdFolderLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelProjectLocationVisual.class).getString("ACSN_createdFolderLabel"));
-        createdFolderLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelProjectLocationVisual.class).getString("ACSD_createdFolderLabel"));
+        createdFolderLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelProjectLocationVisual.class).getString("ACSN_createdFolderLabel")); // NOI18N
+        createdFolderLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelProjectLocationVisual.class).getString("ACSD_createdFolderLabel")); // NOI18N
 
         createdFolderTextField.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -148,6 +144,8 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(createdFolderTextField, gridBagConstraints);
 
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACSN_PanelProjectLocationVisual")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACSD_PanelProjectLocationVisual")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     private void browseLocationAction(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLocationAction
@@ -250,7 +248,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         String projectName = (String) settings.getProperty(WizardProperties.NAME); //NOI18N
         if (projectName == null) {
             int baseCount = FoldersListSettings.getDefault().getNewApplicationCount() + 1;
-            String formater = NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaApplication");
+            String formater = NbBundle.getMessage(PanelSourceFolders.class, "TXT_JavaApplication");
             while ((projectName=validFreeProjectName(projectLocation, formater, baseCount))==null)
                 baseCount++;
             settings.putProperty(NewAppClientProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
@@ -342,5 +340,4 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             return null;
         }
     }
-    
 }

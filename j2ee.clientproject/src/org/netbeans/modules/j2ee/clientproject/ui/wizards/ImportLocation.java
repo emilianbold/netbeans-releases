@@ -30,7 +30,6 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 
-
 final class ImportLocation implements WizardDescriptor.Panel, WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel, ChangeListener {
     
     private WizardDescriptor wizardDescriptor;

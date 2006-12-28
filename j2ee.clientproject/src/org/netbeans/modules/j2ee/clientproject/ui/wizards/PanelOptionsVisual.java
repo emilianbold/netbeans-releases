@@ -123,10 +123,8 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
 
         setLayout(new java.awt.GridBagLayout());
 
-        getAccessibleContext().setAccessibleName(null);
-        getAccessibleContext().setAccessibleDescription(null);
         setAsMainCheckBox.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_setAsMainCheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_setAsMainCheckBox")); // NOI18N
         setAsMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -137,8 +135,8 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(setAsMainCheckBox, gridBagConstraints);
-        setAsMainCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSN_setAsMainCheckBox"));
-        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSD_setAsMainCheckBox"));
+        setAsMainCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSN_setAsMainCheckBox")); // NOI18N
+        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSD_setAsMainCheckBox")); // NOI18N
 
         mainClassTextField.setText("com.myapp.Main");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -149,11 +147,12 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(mainClassTextField, gridBagConstraints);
-        mainClassTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ASCN_mainClassTextFiled"));
-        mainClassTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ASCD_mainClassTextFiled"));
+        mainClassTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ASCN_mainClassTextField")); // NOI18N
+        mainClassTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ASCD_mainClassTextField")); // NOI18N
 
         addToAppLabel.setLabelFor(addToAppComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(addToAppLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/clientproject/ui/wizards/Bundle").getString("LBL_NWP1_AddToEApp_CheckBox"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/clientproject/ui/wizards/Bundle"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addToAppLabel, bundle.getString("LBL_NWP1_AddToEApp_CheckBox")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -163,7 +162,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         add(addToAppLabel, gridBagConstraints);
 
         serverInstanceLabel.setLabelFor(serverInstanceComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(serverInstanceLabel, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_Server_Label"));
+        org.openide.awt.Mnemonics.setLocalizedText(serverInstanceLabel, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_Server_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -177,7 +176,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
                 serverInstanceComboBoxActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -187,7 +185,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(serverInstanceComboBox, gridBagConstraints);
-        serverInstanceComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_IW_SelectServerInstance_A11YDesc"));
+        serverInstanceComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_IW_SelectServerInstance_A11YDesc")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -204,7 +202,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
                 j2eeSpecComboBoxActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -212,10 +209,10 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(j2eeSpecComboBox, gridBagConstraints);
-        j2eeSpecComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_IW_SelectJ2EEVersion_A11YDesc"));
+        j2eeSpecComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_IW_SelectJ2EEVersion_A11YDesc")); // NOI18N
 
         j2eeSpecLabel.setLabelFor(j2eeSpecComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(j2eeSpecLabel, NbBundle.getBundle("org/netbeans/modules/j2ee/clientproject/ui/wizards/Bundle").getString("LBL_NWP1_J2EESpecLevel_Label"));
+        org.openide.awt.Mnemonics.setLocalizedText(j2eeSpecLabel, NbBundle.getBundle("org/netbeans/modules/j2ee/clientproject/ui/wizards/Bundle").getString("LBL_NWP1_J2EESpecLevel_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -224,7 +221,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         add(j2eeSpecLabel, gridBagConstraints);
 
         warningPlaceHolderPanel.setLayout(new java.awt.BorderLayout());
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -234,7 +230,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         add(warningPlaceHolderPanel, gridBagConstraints);
 
         mainClassLabel.setLabelFor(mainClassTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(mainClassLabel, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_NWP1_MainClass_Label"));
+        org.openide.awt.Mnemonics.setLocalizedText(mainClassLabel, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_NWP1_MainClass_Label")); // NOI18N
         mainClassLabel.setAlignmentX(0.5F);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -243,21 +239,22 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(mainClassLabel, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(manageServersButton, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_ManageServers"));
+        org.openide.awt.Mnemonics.setLocalizedText(manageServersButton, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_ManageServers")); // NOI18N
         manageServersButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 manageServersButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 11, 0);
         add(manageServersButton, gridBagConstraints);
-        manageServersButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ASCN_ManageServers"));
-        manageServersButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ASCD_ManageServers"));
+        manageServersButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ASCN_ManageServers")); // NOI18N
+        manageServersButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ASCD_ManageServers")); // NOI18N
 
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSN_PanelOptionsVisual")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_PanelOptionsVisual")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void manageServersButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageServersButtonActionPerformed

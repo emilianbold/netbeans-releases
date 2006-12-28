@@ -3,10 +3,10 @@
 <Form version="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AccessibilityProperties>
     <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-      <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/wizards/Bundle.properties" key="ACSN_PanelOptionsVisual" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+      <ResourceString bundle="org/netbeans/modules/j2ee/clientproject/ui/wizards/Bundle.properties" key="ACSN_PanelOptionsVisual" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
     </Property>
     <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-      <ResourceString bundle="org/netbeans/modules/java/j2seproject/ui/wizards/Bundle.properties" key="ACSD_PanelOptionsVisual" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+      <ResourceString bundle="org/netbeans/modules/j2ee/clientproject/ui/wizards/Bundle.properties" key="ACSD_PanelOptionsVisual" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
     </Property>
   </AccessibilityProperties>
   <AuxValues>
@@ -52,10 +52,10 @@
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/clientproject/ui/wizards/Bundle.properties" key="ASCN_mainClassTextFiled" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/clientproject/ui/wizards/Bundle.properties" key="ASCN_mainClassTextField" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
         </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/clientproject/ui/wizards/Bundle.properties" key="ASCD_mainClassTextFiled" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/clientproject/ui/wizards/Bundle.properties" key="ASCD_mainClassTextField" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <Constraints>
