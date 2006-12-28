@@ -73,7 +73,9 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientView;
+import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientView;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ActionProvider;
@@ -952,7 +954,18 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                 result.add(TEST_LIBRARIES);
             }
             
-            result.add(KEY_SERVICE_REFS);
+            //show the ws client node iff there are some clients
+            JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
+            JAXWSClientSupport jwcss = JAXWSClientSupport.getJaxWsClientSupport(project.getProjectDirectory());
+            if ((jwcss != null) && (jaxWsModel != null) &&  (jaxWsModel.getClients().length > 0)) {
+                result.add(KEY_SERVICE_REFS);
+            } else {
+                WebServicesClientSupport wscs = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
+                List wsClients = wscs.getServiceClients();
+                if ((wsClients != null)  && (!wsClients.isEmpty())) {
+                    result.add(KEY_SERVICE_REFS);
+                }
+            }
             
             return result;
         }
