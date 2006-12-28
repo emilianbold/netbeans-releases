@@ -19,26 +19,8 @@
 
 package org.netbeans.modules.j2ee.clientproject.ui.customizer;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.ListCellRenderer;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
-import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.modules.j2ee.clientproject.AppClientProjectUtil;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 /** Customizer for general project attributes.
  *

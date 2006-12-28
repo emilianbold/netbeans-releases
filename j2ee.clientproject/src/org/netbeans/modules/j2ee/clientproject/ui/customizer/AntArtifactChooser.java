@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
@@ -54,7 +53,6 @@ import org.openide.util.NbBundle;
  */
 public class AntArtifactChooser extends JPanel implements PropertyChangeListener {
     
-
     private String[] artifactTypes;
     
     /** Creates new form JarArtifactChooser */
@@ -145,7 +143,7 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
             return null;
         }
         
-        try {            
+        try {
             File normProjectDir = FileUtil.normalizeFile(projectDir);
             FileObject fo = FileUtil.toFileObject(normProjectDir);
             if (fo != null) {
@@ -157,7 +155,7 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
         }
         
         return null;
-    }    
+    }
     
     /**
      * Set up GUI fields according to the requested project.
@@ -173,9 +171,9 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
             
             List<AntArtifact> artifacts = new ArrayList<AntArtifact>();
             for (int i=0; i<artifactTypes.length; i++) {
-                artifacts.addAll (Arrays.asList(AntArtifactQuery.findArtifactsByType(project, artifactTypes[i])));
+                artifacts.addAll(Arrays.asList(AntArtifactQuery.findArtifactsByType(project, artifactTypes[i])));
             }
-
+            
             for (AntArtifact artifact : artifacts) {
                 URI uris[] = artifact.getArtifactLocations();
                 for( int y = 0; y < uris.length; y++ ) {
@@ -186,7 +184,7 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
         }
         
     }
-        
+    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabelJarFiles;
@@ -195,9 +193,9 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField jTextFieldName;
     // End of variables declaration//GEN-END:variables
-
     
-    /** Shows dialog with the artifact chooser 
+    
+    /** Shows dialog with the artifact chooser
      * @return null if canceled selected jars if some jars selected
      */
     public static ArtifactItem[] showDialog( String[] artifactTypes, Project master, Component parent ) {
@@ -205,39 +203,39 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
         JFileChooser chooser = ProjectChooser.projectChooser();
         chooser.setDialogTitle( NbBundle.getMessage( AntArtifactChooser.class, "LBL_AACH_Title" ) ); // NOI18N
         chooser.setApproveButtonText( NbBundle.getMessage( AntArtifactChooser.class, "LBL_AACH_SelectProject" ) ); // NOI18N
-        chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (AntArtifactChooser.class,"AD_AACH_SelectProject"));
+        chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AntArtifactChooser.class,"AD_AACH_SelectProject"));
         AntArtifactChooser accessory = new AntArtifactChooser( artifactTypes, chooser );
         chooser.setAccessory( accessory );
         chooser.setPreferredSize( new Dimension( 650, 380 ) );
-        chooser.setCurrentDirectory (FoldersListSettings.getDefault().getLastUsedArtifactFolder());
-
+        chooser.setCurrentDirectory(FoldersListSettings.getDefault().getLastUsedArtifactFolder());
+        
         int option = chooser.showOpenDialog( parent ); // Show the chooser
-              
+        
         if ( option == JFileChooser.APPROVE_OPTION ) {
-
+            
             File dir = chooser.getSelectedFile();
-            dir = FileUtil.normalizeFile (dir);
+            dir = FileUtil.normalizeFile(dir);
             Project selectedProject = accessory.getProject( dir );
-
+            
             if ( selectedProject == null ) {
                 return null;
             }
             
             if ( selectedProject.getProjectDirectory().equals( master.getProjectDirectory() ) ) {
-                DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( 
-                    NbBundle.getMessage( AntArtifactChooser.class, "MSG_AACH_RefToItself" ),
-                    NotifyDescriptor.INFORMATION_MESSAGE ) );
+                DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message(
+                        NbBundle.getMessage( AntArtifactChooser.class, "MSG_AACH_RefToItself" ),
+                        NotifyDescriptor.INFORMATION_MESSAGE ) );
                 return null;
             }
             
             if ( ProjectUtils.hasSubprojectCycles( master, selectedProject ) ) {
-                DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( 
-                    NbBundle.getMessage( AntArtifactChooser.class, "MSG_AACH_Cycles" ),
-                    NotifyDescriptor.INFORMATION_MESSAGE ) );
+                DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message(
+                        NbBundle.getMessage( AntArtifactChooser.class, "MSG_AACH_Cycles" ),
+                        NotifyDescriptor.INFORMATION_MESSAGE ) );
                 return null;
             }
             
-            FoldersListSettings.getDefault().setLastUsedArtifactFolder (FileUtil.normalizeFile(chooser.getCurrentDirectory()));
+            FoldersListSettings.getDefault().setLastUsedArtifactFolder(FileUtil.normalizeFile(chooser.getCurrentDirectory()));
             
             Object[] tmp = new Object[accessory.jListArtifacts.getModel().getSize()];
             int count = 0;
@@ -250,14 +248,13 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
             ArtifactItem artifactItems[] = new ArtifactItem[count];
             System.arraycopy(tmp, 0, artifactItems, 0, count);
             return artifactItems;
+        } else {
+            return null;
         }
-        else {
-            return null; 
-        }
-                
+        
     }
-       
-    /** Shows dialog with the artifact chooser 
+    
+    /** Shows dialog with the artifact chooser
      * @return null if canceled selected jars if some jars selected
      */
     public static ArtifactItem[] showDialog( String artifactType, Project master, Component parent ) {
@@ -269,35 +266,35 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
         AntArtifactChooser accessory = new AntArtifactChooser( artifactType, chooser );
         chooser.setAccessory( accessory );
         chooser.setPreferredSize( new Dimension( 650, 380 ) );
-        chooser.setCurrentDirectory (FoldersListSettings.getDefault().getLastUsedArtifactFolder());
-
+        chooser.setCurrentDirectory(FoldersListSettings.getDefault().getLastUsedArtifactFolder());
+        
         int option = chooser.showOpenDialog( parent ); // Show the chooser
-              
+        
         if ( option == JFileChooser.APPROVE_OPTION ) {
-
+            
             File dir = chooser.getSelectedFile();
-            dir = FileUtil.normalizeFile (dir);
+            dir = FileUtil.normalizeFile(dir);
             Project selectedProject = accessory.getProject( dir );
-
+            
             if ( selectedProject == null ) {
                 return null;
             }
             
             if ( selectedProject.getProjectDirectory().equals( master.getProjectDirectory() ) ) {
-                DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( 
-                    NbBundle.getMessage( AntArtifactChooser.class, "MSG_AACH_RefToItself" ),
-                    NotifyDescriptor.INFORMATION_MESSAGE ) );
+                DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message(
+                        NbBundle.getMessage( AntArtifactChooser.class, "MSG_AACH_RefToItself" ),
+                        NotifyDescriptor.INFORMATION_MESSAGE ) );
                 return null;
             }
             
             if ( ProjectUtils.hasSubprojectCycles( master, selectedProject ) ) {
-                DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( 
-                    NbBundle.getMessage( AntArtifactChooser.class, "MSG_AACH_Cycles" ),
-                    NotifyDescriptor.INFORMATION_MESSAGE ) );
+                DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message(
+                        NbBundle.getMessage( AntArtifactChooser.class, "MSG_AACH_Cycles" ),
+                        NotifyDescriptor.INFORMATION_MESSAGE ) );
                 return null;
             }
             
-            FoldersListSettings.getDefault().setLastUsedArtifactFolder (FileUtil.normalizeFile(chooser.getCurrentDirectory()));
+            FoldersListSettings.getDefault().setLastUsedArtifactFolder(FileUtil.normalizeFile(chooser.getCurrentDirectory()));
             
             Object[] tmp = new Object[accessory.jListArtifacts.getModel().getSize()];
             int count = 0;
@@ -310,11 +307,10 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
             ArtifactItem artifactItems[] = new ArtifactItem[count];
             System.arraycopy(tmp, 0, artifactItems, 0, count);
             return artifactItems;
+        } else {
+            return null;
         }
-        else {
-            return null; 
-        }
-                
+        
     }
     
     /**

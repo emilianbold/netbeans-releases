@@ -19,6 +19,9 @@
 
 package org.netbeans.modules.j2ee.clientproject.ui.customizer;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Image;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.libraries.Library;
@@ -27,17 +30,26 @@ import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.openide.util.HelpCtx;
 import org.openide.util.WeakListeners;
 
-import javax.swing.*;
-import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
 
-import java.util.*;
 import java.util.List;
+import java.util.Set;
+import javax.swing.AbstractListModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JList;
 
 
 import org.openide.util.Utilities;
-import org.openide.util.NbBundle;
+
 /**
  *
  * @author  tz97951

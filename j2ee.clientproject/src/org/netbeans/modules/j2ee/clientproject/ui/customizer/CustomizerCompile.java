@@ -19,37 +19,7 @@
 
 package org.netbeans.modules.j2ee.clientproject.ui.customizer;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.List;
-import java.awt.*;
-import javax.swing.ButtonModel;
-import javax.swing.DefaultListModel;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.ListCellRenderer;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
-import javax.swing.text.Document;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.Specification;
-import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.ErrorManager;
-import org.openide.awt.Mnemonics;
-
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.TemplateWizard;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.HelpCtx;
 
 /**

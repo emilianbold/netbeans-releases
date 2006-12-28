@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2ee.clientproject.ui.customizer;
 
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.openide.util.HelpCtx;
 
@@ -32,10 +31,10 @@ public class CustomizerJavadoc extends JPanel implements HelpCtx.Provider {
     private AppClientProjectProperties j2seProperties = null;
     
     public CustomizerJavadoc( AppClientProjectProperties uiProperties ) {
-                
+        
         initComponents();
         
-        uiProperties.JAVADOC_PRIVATE_MODEL.setMnemonic( jCheckBoxPrivate.getMnemonic() ); 
+        uiProperties.JAVADOC_PRIVATE_MODEL.setMnemonic( jCheckBoxPrivate.getMnemonic() );
         jCheckBoxPrivate.setModel( uiProperties.JAVADOC_PRIVATE_MODEL );
         
         uiProperties.JAVADOC_NO_TREE_MODEL.setMnemonic( jCheckBoxTree.getMnemonic() );
@@ -44,17 +43,17 @@ public class CustomizerJavadoc extends JPanel implements HelpCtx.Provider {
         uiProperties.JAVADOC_USE_MODEL.setMnemonic( jCheckBoxUsages.getMnemonic() );
         jCheckBoxUsages.setModel( uiProperties.JAVADOC_USE_MODEL );
         
-        uiProperties.JAVADOC_NO_NAVBAR_MODEL.setMnemonic( jCheckBoxNavigation.getMnemonic() ); 
-        jCheckBoxNavigation.setModel( uiProperties.JAVADOC_NO_NAVBAR_MODEL ); 
+        uiProperties.JAVADOC_NO_NAVBAR_MODEL.setMnemonic( jCheckBoxNavigation.getMnemonic() );
+        jCheckBoxNavigation.setModel( uiProperties.JAVADOC_NO_NAVBAR_MODEL );
         
         uiProperties.JAVADOC_NO_INDEX_MODEL.setMnemonic( jCheckBoxIndex.getMnemonic() );
-        jCheckBoxIndex.setModel( uiProperties.JAVADOC_NO_INDEX_MODEL ); 
+        jCheckBoxIndex.setModel( uiProperties.JAVADOC_NO_INDEX_MODEL );
         
         uiProperties.JAVADOC_SPLIT_INDEX_MODEL.setMnemonic( jCheckBoxSplitIndex.getMnemonic() );
-        jCheckBoxSplitIndex.setModel( uiProperties.JAVADOC_SPLIT_INDEX_MODEL ); 
+        jCheckBoxSplitIndex.setModel( uiProperties.JAVADOC_SPLIT_INDEX_MODEL );
         
         uiProperties.JAVADOC_AUTHOR_MODEL.setMnemonic( jCheckBoxAuthor.getMnemonic() );
-        jCheckBoxAuthor.setModel( uiProperties.JAVADOC_AUTHOR_MODEL ); 
+        jCheckBoxAuthor.setModel( uiProperties.JAVADOC_AUTHOR_MODEL );
         
         uiProperties.JAVADOC_VERSION_MODEL.setMnemonic( jCheckBoxVersion.getMnemonic() );
         jCheckBoxVersion.setModel( uiProperties.JAVADOC_VERSION_MODEL );
@@ -62,7 +61,7 @@ public class CustomizerJavadoc extends JPanel implements HelpCtx.Provider {
         jTextFieldWinTitle.setDocument( uiProperties.JAVADOC_WINDOW_TITLE_MODEL );
         
         uiProperties.JAVADOC_PREVIEW_MODEL.setMnemonic( jCheckBoxPreview.getMnemonic() );
-        jCheckBoxPreview.setModel( uiProperties.JAVADOC_PREVIEW_MODEL ); 
+        jCheckBoxPreview.setModel( uiProperties.JAVADOC_PREVIEW_MODEL );
         
         jTextFieldAddOptions.setDocument( uiProperties.JAVADOC_ADDITIONALPARAM_MODEL );
         
@@ -71,7 +70,7 @@ public class CustomizerJavadoc extends JPanel implements HelpCtx.Provider {
         // XXX Temporarily removing some controls
         remove( jLabelPackage );
         remove( jTextFieldPackage );
-        remove( jButtonPackage );       
+        remove( jButtonPackage );
         remove( jCheckBoxSubpackages );
         jPanel1.remove( jLabelEncoding );
         jPanel1.remove( jTextFieldEncoding );
@@ -326,7 +325,7 @@ public class CustomizerJavadoc extends JPanel implements HelpCtx.Provider {
 
     }
     // </editor-fold>//GEN-END:initComponents
-
+    
     private void reenableSplitIndex(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reenableSplitIndex
         jCheckBoxSplitIndex.setEnabled( jCheckBoxIndex.isSelected() );
     }//GEN-LAST:event_reenableSplitIndex
@@ -358,5 +357,5 @@ public class CustomizerJavadoc extends JPanel implements HelpCtx.Provider {
     private javax.swing.JTextField jTextFieldPackage;
     private javax.swing.JTextField jTextFieldWinTitle;
     // End of variables declaration//GEN-END:variables
-        
+    
 }
