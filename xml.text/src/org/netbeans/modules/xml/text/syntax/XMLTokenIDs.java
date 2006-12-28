@@ -19,17 +19,16 @@
 
 package org.netbeans.modules.xml.text.syntax;
 
-import org.netbeans.editor.BaseTokenCategory;
 import org.netbeans.editor.BaseTokenID;
-import org.netbeans.editor.TokenID;
-import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 
 /**
  * Enumeration of all XML TokenIds.
  *
  * @author  Petr Kuzel
  * @see XMLDefaultTokenContext
+ * @see XMLTokenId
  */
+@Deprecated
 public interface XMLTokenIDs {
 
     // Token categories
