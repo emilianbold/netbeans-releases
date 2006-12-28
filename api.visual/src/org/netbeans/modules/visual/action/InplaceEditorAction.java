@@ -28,6 +28,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.KeyEvent;
+import java.util.EnumSet;
 
 /**
  * @author David Kaspar
@@ -38,6 +39,7 @@ public final class InplaceEditorAction <C extends JComponent> extends WidgetActi
 
     private C editor = null;
     private Widget widget = null;
+    private Rectangle rectangle = null;
 
     public InplaceEditorAction (InplaceEditorProvider<C> provider) {
         this.provider = provider;
@@ -74,10 +76,6 @@ public final class InplaceEditorAction <C extends JComponent> extends WidgetActi
         return State.REJECTED;
     }
 
-    public State keyReleased (Widget widget, WidgetKeyEvent event) {
-        return super.keyReleased (widget, event); // TODO
-    }
-
     public final boolean isEditorVisible () {
         return editor != null;
     }
@@ -91,15 +89,16 @@ public final class InplaceEditorAction <C extends JComponent> extends WidgetActi
         if (component == null)
             return false;
 
-        editor = createEditorComponent (widget);
+        editor = provider.createEditorComponent (this, widget);
         if (editor == null)
             return false;
         this.widget = widget;
 
         component.add (editor);
-        notifyOpened (widget, editor);
+        provider.notifyOpened (this, widget, editor);
 
-        Rectangle rectangle = scene.convertSceneToView (widget.convertLocalToScene (widget.getPreferredBounds ()));
+        Rectangle rectangle = widget.getScene ().convertSceneToView (widget.convertLocalToScene (widget.getPreferredBounds ()));
+
         Point center = GeomUtil.center (rectangle);
         Dimension size = editor.getMinimumSize ();
         if (rectangle.width > size.width)
@@ -108,19 +107,30 @@ public final class InplaceEditorAction <C extends JComponent> extends WidgetActi
             size.height = rectangle.height;
         int x = center.x - size.width / 2;
         int y = center.y - size.height / 2;
-        if (x + size.width > component.getWidth ())
-            x = component.getWidth () - size.width;
-        if (y + size.height > component.getHeight ())
-            y = component.getHeight () - size.height;
-        if (x < 0)
-            x = 0;
-        if (y < 0)
-            y = 0;
+
+        rectangle = new Rectangle (x, y, size.width, size.height);
+        updateRectangleToFitToView (rectangle);
+
+        Rectangle r = provider.getInitialEditorComponentBounds (this, widget, editor, rectangle);
+        this.rectangle = r != null ? r : rectangle;
+
         editor.setBounds (x, y, size.width, size.height);
-        editor.repaint ();
+        notifyEditorComponentBoundsChanged ();
         editor.requestFocus ();
 
         return true;
+    }
+
+    private void updateRectangleToFitToView (Rectangle rectangle) {
+        JComponent component = widget.getScene ().getView ();
+        if (rectangle.x + rectangle.width > component.getWidth ())
+            rectangle.x = component.getWidth () - rectangle.width;
+        if (rectangle.y + rectangle.height > component.getHeight ())
+            rectangle.y = component.getHeight () - rectangle.height;
+        if (rectangle.x < 0)
+            rectangle.x = 0;
+        if (rectangle.y < 0)
+            rectangle.y = 0;
     }
 
     public final void closeEditor (boolean commit) {
@@ -128,7 +138,7 @@ public final class InplaceEditorAction <C extends JComponent> extends WidgetActi
             return;
         Container parent = editor.getParent ();
         Rectangle bounds = parent != null ? editor.getBounds () : null;
-        notifyClosing (widget, editor, commit);
+        provider.notifyClosing (this, widget, editor, commit);
         if (bounds != null) {
             parent.remove (editor);
             parent.repaint (bounds.x, bounds.y, bounds.width, bounds.height);
@@ -136,18 +146,66 @@ public final class InplaceEditorAction <C extends JComponent> extends WidgetActi
         }
         editor = null;
         widget = null;
+        rectangle = null;
     }
 
-    protected void notifyOpened (Widget widget, C editor) {
-        provider.notifyOpened (this, widget, editor);
-    }
+    public void notifyEditorComponentBoundsChanged () {
+        EnumSet<InplaceEditorProvider.ExpansionDirection> directions = provider.getExpansionDirections (this, widget, editor);
+        if (directions == null)
+            directions = EnumSet.noneOf (InplaceEditorProvider.ExpansionDirection.class);
+        Rectangle rectangle = this.rectangle;
+        Dimension size = editor.getPreferredSize ();
+        Dimension minimumSize = editor.getMinimumSize ();
+        if (minimumSize != null) {
+            if (size.width < minimumSize.width)
+                size.width = minimumSize.width;
+            if (size.height < minimumSize.height)
+                size.height = minimumSize.height;
+        }
 
-    protected void notifyClosing (Widget widget, C editor, boolean discarded) {
-        provider.notifyClosing (this, widget, editor, discarded);
-    }
+        int heightDiff = rectangle.height - size.height;
+        int widthDiff = rectangle.width - size.width;
 
-    protected C createEditorComponent (Widget widget) {
-        return provider.createEditorComponent (this, widget);
+        boolean top = directions.contains (InplaceEditorProvider.ExpansionDirection.TOP);
+        boolean bottom = directions.contains (InplaceEditorProvider.ExpansionDirection.BOTTOM);
+
+        if (top) {
+            if (bottom) {
+                rectangle.y += heightDiff / 2;
+                rectangle.height = size.height;
+            } else {
+                rectangle.y += heightDiff;
+                rectangle.height = size.height;
+            }
+        } else {
+            if (bottom) {
+                rectangle.height = size.height;
+            } else {
+            }
+        }
+
+        boolean left = directions.contains (InplaceEditorProvider.ExpansionDirection.LEFT);
+        boolean right = directions.contains (InplaceEditorProvider.ExpansionDirection.RIGHT);
+
+        if (left) {
+            if (right) {
+                rectangle.x += widthDiff / 2;
+                rectangle.width = size.width;
+            } else {
+                rectangle.x += widthDiff;
+                rectangle.width = size.width;
+            }
+        } else {
+            if (right) {
+                rectangle.width = size.width;
+            } else {
+            }
+        }
+
+        updateRectangleToFitToView (rectangle);
+
+        editor.setBounds (rectangle);
+        editor.repaint ();
     }
 
 }

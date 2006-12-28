@@ -30,6 +30,7 @@ import org.netbeans.modules.visual.action.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.EnumSet;
 
 /**
  * The factory class of all built-in actions. Action creation usually requires some parameter like decorator
@@ -264,7 +265,17 @@ public final class ActionFactory {
      * @return the in-place editor action
      */
     public static WidgetAction createInplaceEditorAction (TextFieldInplaceEditor editor) {
-        return createInplaceEditorAction (new TextFieldInplaceEditorProvider (editor));
+        return createInplaceEditorAction (editor, null);
+    }
+
+    /**
+     * Creates a text in-place editor action visualized using JTextField.
+     * @param editor the editor logic
+     * @param expansionDirections the expansion directions
+     * @return the in-place editor action
+     */
+    public static WidgetAction createInplaceEditorAction (TextFieldInplaceEditor editor, EnumSet<InplaceEditorProvider.ExpansionDirection> expansionDirections) {
+        return createInplaceEditorAction (new TextFieldInplaceEditorProvider (editor, expansionDirections));
     }
 
     /**
