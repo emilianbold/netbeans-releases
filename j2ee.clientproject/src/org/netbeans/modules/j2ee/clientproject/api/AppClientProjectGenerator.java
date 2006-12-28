@@ -415,7 +415,9 @@ public class AppClientProjectGenerator {
         Deployment deployment = Deployment.getDefault();
         J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
         if (!j2eePlatform.getSupportedSpecVersions(J2eeModule.CLIENT).contains(j2eeLevel)) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "J2EE level:" + j2eeLevel + " not supported by server " + Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID) + " for module type CLIENT");
+            ErrorManager.getDefault().log(ErrorManager.WARNING,
+                    NbBundle.getMessage(AppClientProjectGenerator.class, "MSG_Warning_SpecLevelNotSupported",  // NOI18N
+                    new Object[] {j2eeLevel, Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID)}));
         }
         ep.setProperty(AppClientProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID(serverInstanceID));
         ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM, j2eeLevel);
