@@ -495,19 +495,13 @@ public class WSStartServer extends StartServer {
                 // can observe the progress
                 new WSTailer(serverProcess.getInputStream(), NbBundle.
                         getMessage(WSStartServer.class,
-                        "TXT_ioWindowTitle")).start();                 // NOI18N
+                        "TXT_ioWindowTitle",dm.getServerTitleMessage())).start();                 // NOI18N
                 
                 // show the server's log
-                String title = dm.getInstanceProperties(). // NOI18N
-                        getProperty(WSDeploymentFactory.SERVER_NAME_ATTR) + " ["+
-                        dm.getInstanceProperties().
-                        getProperty(WSDeploymentFactory.HOST_ATTR) + ":"+
-                        dm.getInstanceProperties().
-                        getProperty(WSDeploymentFactory.PORT_ATTR)+ "]";
                 
                 new WSTailer(new File(dm.getLogFilePath()),
                         NbBundle.getMessage(ShowServerLogAction.class,
-                        "LBL_LogWindowTitle", title)).start();
+                        "LBL_LogWindowTitle", dm.getServerTitleMessage())).start();
                 
                 // wait till the timeout happens, or if the server starts before
                 // send the completed event to j2eeserver
@@ -641,20 +635,15 @@ public class WSStartServer extends StartServer {
                 
                 // create a tailer to the server's output stream so that a user
                 // can observe the progress
+                
                 new WSTailer(serverProcess.getInputStream(),
                         NbBundle.getMessage(WSStartServer.class,
-                        "TXT_ioWindowTitle")).start();                 // NOI18N
+                        "TXT_ioWindowTitle",dm.getServerTitleMessage())).start();                 // NOI18N
                 
                 // show the server's log
-                String title = dm.getInstanceProperties(). // NOI18N
-                        getProperty(WSDeploymentFactory.SERVER_NAME_ATTR) + " ["+
-                        dm.getInstanceProperties().
-                        getProperty(WSDeploymentFactory.HOST_ATTR) + ":"+
-                        dm.getInstanceProperties().
-                        getProperty(WSDeploymentFactory.PORT_ATTR)+ "]";
                 new WSTailer(new File(dm.getLogFilePath()),
                         NbBundle.getMessage(ShowServerLogAction.class,
-                        "LBL_LogWindowTitle", title)).
+                        "LBL_LogWindowTitle", dm.getServerTitleMessage())).
                         start();
                 
                 // wait till the timeout happens, or if the server starts before
@@ -777,20 +766,15 @@ public class WSStartServer extends StartServer {
                 
                 // create a tailer to the server's output stream so that a user
                 // can observe the progress
+                
                 new WSTailer(serverProcess.getInputStream(),
                         NbBundle.getMessage(WSStartServer.class,
-                        "TXT_ioWindowTitle")).start();                 // NOI18N
+                        "TXT_ioWindowTitle", dm.getServerTitleMessage())).start();                 // NOI18N
                 
                 // show the server's log
-                String title = dm.getInstanceProperties(). // NOI18N
-                        getProperty(WSDeploymentFactory.SERVER_NAME_ATTR) + " ["+
-                        dm.getInstanceProperties().
-                        getProperty(WSDeploymentFactory.HOST_ATTR) + ":"+
-                        dm.getInstanceProperties().
-                        getProperty(WSDeploymentFactory.PORT_ATTR)+ "]";
                 new WSTailer(new File(dm.getLogFilePath()),
                         NbBundle.getMessage(ShowServerLogAction.class,
-                        "LBL_LogWindowTitle", title)).start();
+                        "LBL_LogWindowTitle",  dm.getServerTitleMessage())).start();
                 
                 // wait till the timeout happens, or if the server starts before
                 // send the completed event to j2eeserver

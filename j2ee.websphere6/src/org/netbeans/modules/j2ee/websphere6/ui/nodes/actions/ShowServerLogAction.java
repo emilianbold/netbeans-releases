@@ -19,7 +19,6 @@
 package org.netbeans.modules.j2ee.websphere6.ui.nodes.actions;
 
 import java.io.File;
-import org.netbeans.modules.j2ee.websphere6.WSDeploymentFactory;
 import org.netbeans.modules.j2ee.websphere6.WSDeploymentManager;
 import org.netbeans.modules.j2ee.websphere6.ui.nodes.WSManagerNode;
 import org.netbeans.modules.j2ee.websphere6.util.WSDebug;
@@ -43,25 +42,20 @@ public class ShowServerLogAction extends CookieAction {
             Object node = nodes[i].getLookup().lookup(WSManagerNode.class);
             if (node instanceof WSManagerNode) {
                 try{
-                    File file = 
+                    File file =
                             new File(((WSManagerNode) node).getLogFilePath());
                     
                     WSDebug.notify(file.getAbsolutePath());
                     
                     
-                      WSDeploymentManager dm = ((WSManagerNode) node).
-                              getDeploymentManager();
-                      String title = dm.getInstanceProperties(). // NOI18N
-                        getProperty(WSDeploymentFactory.SERVER_NAME_ATTR) + " ["+
-                        dm.getInstanceProperties().
-                        getProperty(WSDeploymentFactory.HOST_ATTR) + ":"+
-                        dm.getInstanceProperties().
-                        getProperty(WSDeploymentFactory.PORT_ATTR)+ "]";
-                      
-                    new WSTailer(file, 
+                    WSDeploymentManager dm = ((WSManagerNode) node).
+                            getDeploymentManager();
+                    
+                    new WSTailer(file,
                             NbBundle.getMessage(
-                            ShowServerLogAction.class, 
-                            "LBL_LogWindowTitle", title)).start(); // NOI18N
+                            ShowServerLogAction.class,
+                            "LBL_LogWindowTitle",
+                            dm.getServerTitleMessage())).start(); // NOI18N
                 } catch (Exception e){
                     return;//nothing much to do
                 }
@@ -99,7 +93,7 @@ public class ShowServerLogAction extends CookieAction {
                 break;
             }
             
-            WSDeploymentManager dm = 
+            WSDeploymentManager dm =
                     ((WSManagerNode) node).getDeploymentManager();
             
             local = dm.getIsLocal().equals("true"); // NOI18N

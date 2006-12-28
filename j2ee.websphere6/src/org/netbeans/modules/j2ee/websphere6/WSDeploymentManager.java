@@ -430,6 +430,16 @@ public class WSDeploymentManager implements DeploymentManager {
     public boolean getIsConnected() {
         return isConnected;
     }
+    public String getServerTitleMessage() {
+        String title = "[" + getInstanceProperties(). // NOI18N
+                getProperty(WSDeploymentFactory.SERVER_NAME_ATTR) + ", "+
+                getInstanceProperties().
+                getProperty(WSDeploymentFactory.HOST_ATTR) + ":"+
+                getInstanceProperties().
+                getProperty(WSDeploymentFactory.PORT_ATTR)+ "]";
+        return title;
+    }
+    
     
     ////////////////////////////////////////////////////////////////////////////
     // DeploymentManager Implementation
@@ -717,8 +727,8 @@ public class WSDeploymentManager implements DeploymentManager {
             Method method = targetModuleID[0].getClass().
                     getMethod("getWebURL", new Class[0]);            // NOI18N
             webUrl = (String) method.
-                    invoke(targetModuleID[0], new Object[0]);            
-          
+                    invoke(targetModuleID[0], new Object[0]);
+            
             if (webUrlInEntApp!=null && targetModuleID[0].getModuleID().contains("type=Application")) {
                 TargetModuleID [] tmids = targetModuleID;
                 if (tmids.length==1 &&
@@ -765,7 +775,7 @@ public class WSDeploymentManager implements DeploymentManager {
                         
                         method = child.getClass().
                                 getMethod("setStartable", new Class[] {boolean.class});  // NOI18N
-                        method.invoke(child, new Object[] {true}); 
+                        method.invoke(child, new Object[] {true});
                         
                         //set weburl
                         String port=getDefaultHostPort();
@@ -784,7 +794,7 @@ public class WSDeploymentManager implements DeploymentManager {
                         }
                         method = child.getClass().
                                 getMethod("setWebURL", new Class[] {String.class});  // NOI18N
-                        method.invoke(child, new Object[] {webUrl});                        
+                        method.invoke(child, new Object[] {webUrl});
                         
                         method = tmids[0].getClass().
                                 getMethod("setChildTargetModuleID", new Class[] {TargetModuleID[].class});  // NOI18N
@@ -839,17 +849,17 @@ public class WSDeploymentManager implements DeploymentManager {
                 
                 /* Commented as it doesn`t work properly
                 try { // stop running web modules
-                    
+                 
                     TargetModuleID [] modules = getRunningModules(
                             ModuleType.WAR,
                             new Target[] {targetModuleID[0].getTarget()});
                     TargetModuleID [] amodules = getAvailableModules(
                             ModuleType.WAR,
                             new Target[] {targetModuleID[0].getTarget()});
-                    
-                    
+                 
+                 
                     for(int i=0;i<modules.length;i++) {
-                        if(modules[i].getWebURL()==null || webUrl.equals(modules[i].getWebURL())) {                            
+                        if(modules[i].getWebURL()==null || webUrl.equals(modules[i].getWebURL())) {
                             //stop(new TargetModuleID[] {modules[i]} );
                         }
                     }
