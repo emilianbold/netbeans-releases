@@ -279,6 +279,8 @@ public class PhysicalView {
                 fireNameChange(null, null);
                 fireDisplayNameChange(null, null);
                 fireShortDescriptionChange(null, null);
+            } else if (SourceGroup.PROP_CONTAINERSHIP.equals(prop)) {
+                // OK, ignore
             } else {
                 assert false : "Attempt to fire an unsupported property change event from " + pi.getClass().getName() + ": " + prop;
             }
