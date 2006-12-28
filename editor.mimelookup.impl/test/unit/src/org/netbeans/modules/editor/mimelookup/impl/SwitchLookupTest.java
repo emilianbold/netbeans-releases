@@ -262,8 +262,7 @@ public class SwitchLookupTest extends NbTestCase {
     
     public void testNoMapper() {
         MimePath mimePath = MimePath.parse("text/x-jsp/text/x-java/text/x-javadoc");
-        SwitchLookup lookup = new SwitchLookup(mimePath);
-        List paths = lookup.computePaths(ClassInfoStorage.getInstance().getInfo(DummySetting.class.getName()));
+        List paths = SwitchLookup.computePaths(mimePath, ClassInfoStorage.getInstance().getInfo(DummySetting.class.getName()).getExtraPath());
         checkPaths(mimePath, null, paths);
     }
     
@@ -272,8 +271,7 @@ public class SwitchLookupTest extends NbTestCase {
         TestUtilities.sleepForWhile();
         
         MimePath mimePath = MimePath.parse("text/x-jsp/text/x-java/text/x-javadoc");
-        SwitchLookup lookup = new SwitchLookup(mimePath);
-        List paths = lookup.computePaths(ClassInfoStorage.getInstance().getInfo(DummySetting.class.getName()));
+        List paths = SwitchLookup.computePaths(mimePath, ClassInfoStorage.getInstance().getInfo(DummySetting.class.getName()).getExtraPath());
         checkPaths(mimePath, "DummyFolder", paths);
     }
     

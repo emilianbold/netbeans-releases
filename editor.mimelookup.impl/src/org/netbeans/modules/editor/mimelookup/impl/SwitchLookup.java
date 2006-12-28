@@ -21,7 +21,6 @@ package org.netbeans.modules.editor.mimelookup.impl;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,7 +31,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -98,7 +96,7 @@ public class SwitchLookup extends Lookup {
     }
 
     private Lookup createLookup(ClassInfoStorage.Info classInfo) {
-        List paths = computePaths(classInfo);
+        List paths = computePaths(mimePath, classInfo.getExtraPath());
         Lookup lookup;
         
         if (classInfo.getInstanceProviderClass() != null) {
@@ -151,7 +149,7 @@ public class SwitchLookup extends Lookup {
             }
 
             if (currentClassInfo.getInstanceProviderClass() == null) {
-                List currentPaths = computePaths(currentClassInfo);
+                List currentPaths = computePaths(mimePath, currentClassInfo.getExtraPath());
 
                 // Remove the className from the list of users of the current paths
                 Set currentPathsUsers = (Set) pathsToClasses.get(currentPaths);
@@ -172,7 +170,7 @@ public class SwitchLookup extends Lookup {
         }
     }
     
-    /* package */ List computePaths(ClassInfoStorage.Info classInfo) {
+    /* package */ static List computePaths(MimePath mimePath, String extraPath) {
         ArrayList arrays = new ArrayList(mimePath.size());
 
         for (int i = mimePath.size(); i >= 0 ; i--) {
@@ -219,9 +217,9 @@ public class SwitchLookup extends Lookup {
                     sb.append(path[ii]);
                 }
             }
-            if (classInfo.getExtraPath().length() > 0) {
+            if (extraPath != null && extraPath.length() > 0) {
                 sb.append('/'); //NOI18N
-                sb.append(classInfo.getExtraPath());
+                sb.append(extraPath);
             }
 
             paths.add(sb.toString());
@@ -230,7 +228,7 @@ public class SwitchLookup extends Lookup {
         return paths;
     }
 
-    private String [] split(MimePath mimePath) {
+    private static String [] split(MimePath mimePath) {
         String [] array = new String[mimePath.size()];
         
         for (int i = 0; i < mimePath.size(); i++) {
@@ -242,7 +240,7 @@ public class SwitchLookup extends Lookup {
     
     // Remember the paths list contains string arrays such as { 'text/x-jsp', 'text/x-ant+xml', 'text/x-java' },
     // the elementIdx points to the 'text/x-ant+xml' part and genericMimeType is 'text/xml'.
-    private List forkPaths(List paths, String genericMimeType, int elementIdx) {
+    private static List forkPaths(List paths, String genericMimeType, int elementIdx) {
         ArrayList forkedPaths = new ArrayList(paths.size());
         
         for (Iterator i = paths.iterator(); i.hasNext(); ) {
