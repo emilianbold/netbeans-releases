@@ -27,10 +27,8 @@
     <component 
         class="org.netbeans.installer.wizard.components.panels.ComponentsSelectionPanel"/>
     <component 
+        class="org.netbeans.installer.wizard.components.sequences.MainSequence"/>
+    <component 
         class="org.netbeans.installer.wizard.components.actions.FinalizeRegistryAction"/>
     
-    <!--
-    <component class="org.netbeans.installer.wizard.components.panels.ComponentsSelectionPanel"/>
-    <component class="org.netbeans.installer.wizard.components.sequences.MainSequence"/>
-    -->
 </wizard>

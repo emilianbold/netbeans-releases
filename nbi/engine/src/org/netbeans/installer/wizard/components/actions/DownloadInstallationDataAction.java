@@ -41,7 +41,7 @@ public class DownloadInstallationDataAction extends CompositeWizardAction {
     public static final Class CLASS = DownloadInstallationDataAction.class;
     
     public static final String DIALOG_TITLE_PROPERTY = WizardPanel.DIALOG_TITLE_PROPERTY;
-    public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(CLASS, "DownloadInstallationDataAction.default.dialog.title");
+    public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(CLASS, "DIDA.dialog.title");
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
