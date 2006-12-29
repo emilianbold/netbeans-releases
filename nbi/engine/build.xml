@@ -30,7 +30,7 @@ $Id$
     ======================================================================== -->
     <target name="-post-clean" depends="native-clean"/>
     <target name="-pre-jar" depends="native-build,create-jar-contents-list"/>
-
+    
     <!-- =======================================================================
         NetBeans Installer engine specific targets
     ======================================================================== -->
@@ -78,7 +78,7 @@ $Id$
             </and>
         </condition>
     </target>
-  
+    
     <target name="init-platform" depends="init-windows,init-linux,init-solaris-x86,init-solaris-sparc,init-macosx"/>
     
     <target name="init-windows" if="is.windows">
@@ -101,38 +101,50 @@ $Id$
         <property name="native.dir" value="${native.dir.macosx}"/>
         <property name="native.file" value="${native.file.macosx}"/>
     </target>
-
+    
     <target name="create-launcher-windows">
-        <create-native-launcher launcherStub="${basedir}/${native.launcher.windows.stub}"
-                                jar="${basedir}/${dist.jar}"
-                                output="${basedir}/${dist.dir}/${native.launcher.windows.file}"
-                                jvmArguments="${native.launcher.windows.jvmargs}"
-                                i18nDir="${basedir}/${native.launcher.windows.i18n.dir}"
-                                testJVM="${basedir}/${test.jvm.file}"/>
+        <create-native-launcher 
+            launcherStub="${basedir}/${native.launcher.windows.stub}"
+            jar="${basedir}/${dist.jar}"
+            output="${basedir}/${dist.dir}/${native.launcher.windows.file}"
+            jvmArguments="${native.launcher.windows.jvmargs}"
+            i18nDir="${basedir}/${native.launcher.windows.i18n.dir}"
+            testJVM="${basedir}/${test.jvm.file}"/>
     </target>
-    <target name="init-engine-tasks">
-	<delete dir="${ant.build.classes.cls}"/>
-        <mkdir dir="${ant.build.classes.cls}"/>
-        <javac srcdir="${ant.build.classes.src}" destdir="${ant.build.classes.cls}" debug="true" classpath="${javac.classpath.ant}"/>
-   
-	<taskdef name="create-native-launcher" 
-                 classname="org.netbeans.installer.infra.build.ant.launchers.Build" 
-                 classpath="${ant.build.classes.cls}"/>
+    
+    <target name="init-custom-tasks" depends="build-custom-tasks">
+        <taskdef 
+            name="create-native-launcher" 
+            classname="org.netbeans.installer.infra.build.ant.launchers.Build" 
+            classpath="${custom.tasks.cls}"/>
         
-        <taskdef name="write-jar-content-list" 
-                 classname="org.netbeans.installer.infra.build.ant.WriteFileList" 
-                 classpath="${ant.build.classes.cls}"/>
+        <taskdef 
+            name="write-jar-content-list" 
+            classname="org.netbeans.installer.infra.build.ant.WriteFileList" 
+            classpath="${custom.tasks.cls}"/>
     </target>
-    <target name="init-create-launchers" depends="init-engine-tasks"/>
+    
+    <target name="build-custom-tasks" unless="skip.custom.tasks.build">
+        <delete dir="${custom.tasks.cls}"/>
+        <mkdir dir="${custom.tasks.cls}"/>
+        
+        <javac 
+            srcdir="${custom.tasks.src}" 
+            destdir="${custom.tasks.cls}" 
+            debug="true" 
+            classpath="${javac.classpath.ant}"/>
+    </target>
+    
+    <target name="init-create-launchers" depends="init-custom-tasks"/>
     
     <target name="create-launchers" depends="jar,init-create-launchers">
         <antcall target="create-launcher-windows"/>
     </target>
-
-    <target name="create-jar-contents-list" depends="init-engine-tasks">
-         <write-jar-content-list dir="${basedir}/${build.classes.dir}" 
-                                 output="${basedir}/${build.classes.dir}/${jar.contents.list}"
-                                 mask="(?!^data/).*"/>                                
-         
+    
+    <target name="create-jar-contents-list" depends="init-custom-tasks">
+        <write-jar-content-list 
+            dir="${basedir}/${build.classes.dir}" 
+            output="${basedir}/${build.classes.dir}/${jar.contents.list}"
+            mask="(?!^data/).*"/>                                
     </target>
 </project>
