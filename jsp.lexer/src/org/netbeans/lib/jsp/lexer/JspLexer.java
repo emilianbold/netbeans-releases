@@ -300,8 +300,8 @@ public class JspLexer implements Lexer<JspTokenId> {
                         }
                     }
                     
-                    //everyting alse is an error
-                    lexerState = ISI_TAG_ERROR;
+                    //not jsp end tag -> just content -> switch to init state
+                    lexerState = INIT;
                     break;
                     
                 case ISI_TAGNAME:
