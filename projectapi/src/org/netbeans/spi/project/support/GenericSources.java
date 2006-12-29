@@ -134,12 +134,14 @@ public class GenericSources {
             if (file != rootFolder && !FileUtil.isParentOf(rootFolder, file)) {
                 throw new IllegalArgumentException();
             }
-            if (file.isFolder() && file != p.getProjectDirectory() && ProjectManager.getDefault().isProject(file)) {
-                // #67450: avoid actually loading the nested project.
-                return false;
-            }
-            if (FileOwnerQuery.getOwner(file) != p) {
-                return false;
+            if (p != null) {
+                if (file.isFolder() && file != p.getProjectDirectory() && ProjectManager.getDefault().isProject(file)) {
+                    // #67450: avoid actually loading the nested project.
+                    return false;
+                }
+                if (FileOwnerQuery.getOwner(file) != p) {
+                    return false;
+                }
             }
             File f = FileUtil.toFile(file);
             if (f != null) {
