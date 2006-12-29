@@ -124,7 +124,6 @@ public class GarbageCollectAction extends CallableSystemAction {
             
             setHorizontalAlignment( JLabel.CENTER );
             setMinimumSize( getPreferredSize() );
-            setMaximumSize( getPreferredSize() );
             isInitialized = true;
         }
 
@@ -132,10 +131,23 @@ public class GarbageCollectAction extends CallableSystemAction {
         }
 
         public Dimension getMaximumSize() {
-            Dimension result = super.getMaximumSize();
-            result.height = getParent().getHeight();
+            return updateHeight(super.getMaximumSize());
+        }
 
-            return result;
+        public Dimension getPreferredSize() {
+            return updateHeight(super.getPreferredSize());
+        }
+
+        /** #91618: Update preferred and maximum height according to parent's
+         * height, count with borders.
+         */
+        private Dimension updateHeight (Dimension size) {
+            Component parent = getParent();
+            if (parent != null) {
+                Insets insets = getInsets();
+                size.height = parent.getHeight() - (insets.top + insets.bottom);
+            }
+            return size;
         }
 
         public void addNotify() {
