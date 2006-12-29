@@ -27,6 +27,7 @@ import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Abort;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javadoc.JavadocEnter;
 import com.sun.tools.javadoc.JavadocMemberEnter;
@@ -93,6 +94,7 @@ import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
+import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.java.source.util.LowMemoryEvent;
 import org.netbeans.modules.java.source.util.LowMemoryListener;
 import org.netbeans.modules.java.source.util.LowMemoryNotifier;
@@ -878,7 +880,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             }
             if (currentPhase == Phase.RESOLVED && phase.compareTo(Phase.UP_TO_DATE)>=0) {
                 currentPhase = Phase.UP_TO_DATE;
-            }                
+            }          
+        } catch (CouplingAbort a) {
+            RepositoryUpdater.couplingAbort(a, currentInfo.jfo);
+            currentInfo.needsRestart = true;
+            return currentPhase;
         } catch (Abort abort) {
             currentPhase = Phase.UP_TO_DATE;
         } catch (IOException ex) {

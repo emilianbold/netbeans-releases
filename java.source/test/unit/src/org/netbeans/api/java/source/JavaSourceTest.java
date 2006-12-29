@@ -42,7 +42,10 @@ import javax.swing.text.StyledDocument;
 import javax.tools.JavaFileObject;
 import junit.framework.*;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -64,6 +67,10 @@ import org.openide.util.lookup.ProxyLookup;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.netbeans.modules.java.source.classpath.CacheClassPath;
+import org.netbeans.modules.java.source.usages.IndexUtil;
+import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 /**
  *
  * @author Tomas Zezula
@@ -89,6 +96,10 @@ public class JavaSourceTest extends NbTestCase {
                     Lookups.metaInfServices(l),
                     Lookups.singleton(l),
             });
+        }
+        
+        public void setLookupsWrapper(Lookup... l) {
+            setLookups(l);
         }
         
     }
@@ -1016,6 +1027,92 @@ public class JavaSourceTest extends NbTestCase {
         
     }
     
+    public void testCouplingErrors() throws Exception {
+        File workdir = this.getWorkDir();
+        File src1File = new File (workdir, "src1");
+        src1File.mkdir();
+        final FileObject src1 = FileUtil.toFileObject(src1File);
+        
+        File src2File = new File (workdir, "src2");
+        src2File.mkdir();
+        final FileObject src2 = FileUtil.toFileObject(src2File);
+        
+        createTestFile(src1, "test/Test.java", "package test; public class Test {private long x;}");
+        
+        final FileObject test = createTestFile(src2, "test/Test.java", "package test; public class Test {private int x;}");
+        final FileObject test2 = createTestFile(src2, "test/Test2.java", "package test; public class Test2 {private Test x;}");
+        
+        File cache = new File(workdir, "cache");
+        
+        cache.mkdirs();
+        
+        SourceUtilsTestUtil2.disableLocks();
+        IndexUtil.setCacheFolder(cache);
+
+        ClassLoader l = JavaSourceTest.class.getClassLoader();
+        Lkp.DEFAULT.setLookupsWrapper(
+                Lookups.metaInfServices(l),
+                Lookups.singleton(l),
+                Lookups.singleton(new ClassPathProvider() {
+            public ClassPath findClassPath(FileObject file, String type) {
+                try {
+                    if (ClassPath.BOOT == type) {
+                        return createBootPath();
+                    }
+                    
+                    if (ClassPath.SOURCE == type) {
+                        return ClassPathSupport.createClassPath(new FileObject[] {
+                            src1
+                        });
+                    }
+                    
+                    if (ClassPath.COMPILE == type) {
+                        return createCompilePath();
+                    }
+                    
+                    if (ClassPath.EXECUTE == type) {
+                        return ClassPathSupport.createClassPath(new FileObject[] {
+                        });
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+            
+        }));
+        
+        RepositoryUpdater.getDefault().scheduleCompilationAndWait(src1, src1).await();
+        
+        final ClassPath bootPath = createBootPath();
+        final ClassPath compilePath = CacheClassPath.forSourcePath(ClassPathSupport.createClassPath(new FileObject[] {src1}));
+        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,null);
+        final JavaSource js = JavaSource.create(cpInfo, test2, test);
+        
+        final List<FileObject> files = new ArrayList<FileObject>();
+        
+        js.runUserActionTask(new CancellableTask<CompilationController>() {
+            public void run(CompilationController cc) throws IOException {
+                files.add(cc.getFileObject());
+                cc.toPhase(Phase.RESOLVED);
+            }
+            public void cancel() {}
+        }, true);
+        
+        assertEquals(Arrays.asList(test2, test, test), files);
+        
+        files.clear();
+        
+        js.runModificationTask(new CancellableTask<WorkingCopy>() {
+            public void run(WorkingCopy cc) throws IOException {
+                files.add(cc.getFileObject());
+                cc.toPhase(Phase.RESOLVED);
+            }
+            public void cancel() {}
+        });
+        
+        assertEquals(Arrays.asList(test2, test, test), files);
+    }
     
     private static class TestProvider implements JavaSource.JavaFileObjectProvider {
         
@@ -1369,4 +1466,16 @@ public class JavaSourceTest extends NbTestCase {
         return ClassPathSupport.createClassPath(Collections.EMPTY_LIST);
     }
     
+    private FileObject createTestFile (FileObject srcRoot, String relativeName, String content) throws IOException {
+        FileObject f = FileUtil.createData(srcRoot, relativeName);
+        Writer out = new OutputStreamWriter(f.getOutputStream());
+        
+        try {
+            out.write(content);
+        } finally {
+            out.close();
+        }
+        
+        return f;
+    }
 }
