@@ -516,13 +516,12 @@ public class JspLexer implements Lexer<JspTokenId> {
                             }
                             break;
                         case '\n':
-//                            if (input.readLength() == 1) { // no char
-                            return token(JspTokenId.EOL);
-//
-//                            } else { // return string first
-//                                input.backup(1);
-//                                return token(JspTokenId.ATTR_VALUE);
-//                            }
+                            if (input.readLength() == 1) { // no char
+                                return token(JspTokenId.EOL);
+                            } else { // return string first
+                                input.backup(1);
+                                return token(JspTokenId.ATTR_VALUE);
+                            }
                         case '$':
                         case '#':
                             if(input.readLength() > 1) {
