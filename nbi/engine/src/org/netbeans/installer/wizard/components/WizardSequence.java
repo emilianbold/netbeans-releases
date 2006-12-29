@@ -39,7 +39,7 @@ import org.netbeans.installer.wizard.conditions.WizardCondition;
  * @author Kirill Sorokin
  */
 public class WizardSequence extends WizardComponent {
-    private Wizard childWizard;
+    protected Wizard childWizard;
     
     public void executeForward() {
         this.childWizard = wizard.createSubWizard(components, -1);

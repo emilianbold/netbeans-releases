@@ -216,7 +216,16 @@ public class PostInstallSummaryPanel extends WizardPanel {
         }
         
         protected void initializeContainer() {
+            super.initializeContainer();
+            
+            // set up the back button
             container.getBackButton().setEnabled(false);
+            
+            // set up the next (or finish) button
+            container.getNextButton().setText(
+                    component.getProperty(FINISH_BUTTON_TEXT_PROPERTY));
+            
+            // set up the cancel button
             container.getCancelButton().setEnabled(false);
         }
         
