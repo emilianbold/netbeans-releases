@@ -124,7 +124,7 @@ $Id$
             classpath="${custom.tasks.cls}"/>
     </target>
     
-    <target name="build-custom-tasks" unless="skip.custom.tasks.build">
+    <target name="build-custom-tasks" unless="skip.build.custom.tasks">
         <delete dir="${custom.tasks.cls}"/>
         <mkdir dir="${custom.tasks.cls}"/>
         
