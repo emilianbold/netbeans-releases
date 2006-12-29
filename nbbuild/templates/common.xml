@@ -304,6 +304,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="build.test.unit.dir" location="build/test/unit"/>
         <property name="build.test.unit.classes.dir" location="${build.test.unit.dir}/classes"/>
         <property name="build.test.unit.results.dir" location="${build.test.unit.dir}/results"/>
+        <property name="build.test.unit.work.dir" location="${build.test.unit.dir}/work"/>
         <property name="extra.test.libs.dir" location="${test.dist.dir}/extralibs"/> 
         <!-- if project.xml doesn't contain test dependencies -->
         <property name="test.unit.folder" location="build/test/unit/dist"/>
@@ -335,8 +336,14 @@ Microsystems, Inc. All Rights Reserved.
         
         <!-- path reference used in both compiler and executor -->
         <propertyset id="test.unit.properties">
-            <propertyref prefix="test-unit-sys-prop."/>
-            <mapper type="glob" from="test-unit-sys-prop.*" to="*"/>
+            <propertyset>
+                <propertyref prefix="test-unit-sys-prop."/>
+                <mapper type="glob" from="test-unit-sys-prop.*" to="*"/>
+            </propertyset>
+            <propertyset>
+                <propertyref name="build.test.unit.work.dir"/>
+                <mapper type="glob" from="build.test.unit.work.dir" to="nbjunit.workdir"/>
+            </propertyset>
         </propertyset>
     </target>
 
