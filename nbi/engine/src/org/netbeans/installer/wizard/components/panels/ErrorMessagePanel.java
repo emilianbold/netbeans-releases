@@ -58,7 +58,6 @@ public class ErrorMessagePanel extends WizardPanel {
     // Inner Classes
     public static class ErrorMessagePanelUi extends WizardPanelUi {
         protected ErrorMessagePanel        component;
-        protected ErrorMessagePanelSwingUi swingUi;
         
         public ErrorMessagePanelUi(ErrorMessagePanel component) {
             super(component);

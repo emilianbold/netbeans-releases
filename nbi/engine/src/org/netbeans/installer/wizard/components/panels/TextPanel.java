@@ -65,7 +65,6 @@ public class TextPanel extends WizardPanel {
     // Inner Classes
     public static class TextPanelUi extends WizardPanelUi {
         protected TextPanel        component;
-        protected TextPanelSwingUi swingUi;
         
         public TextPanelUi(TextPanel component) {
             super(component);

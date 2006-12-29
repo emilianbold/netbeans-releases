@@ -103,7 +103,6 @@ public class DestinationPanel extends ErrorMessagePanel {
     // Inner Classes
     public static class DestinationPanelUi extends ErrorMessagePanelUi {
         protected DestinationPanel        component;
-        protected DestinationPanelSwingUi swingUi;
         
         public DestinationPanelUi(DestinationPanel component) {
             super(component);

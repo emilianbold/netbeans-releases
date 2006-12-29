@@ -112,7 +112,6 @@ public class PostCreateBundleSummaryPanel extends WizardPanel {
     // Inner Classes
     public static class PostCreateBundleSummaryPanelUi extends WizardPanelUi {
         protected PostCreateBundleSummaryPanel        component;
-        protected PostCreateBundleSummaryPanelSwingUi swingUi;
         
         public PostCreateBundleSummaryPanelUi(PostCreateBundleSummaryPanel component) {
             super(component);

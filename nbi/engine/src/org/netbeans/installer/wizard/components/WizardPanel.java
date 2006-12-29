@@ -59,7 +59,6 @@ public abstract class WizardPanel extends WizardComponent {
     // Inner Classes
     public static class WizardPanelUi extends WizardComponentUi {
         protected WizardPanel        component;
-        protected WizardPanelSwingUi swingUi;
         
         public WizardPanelUi(WizardPanel component) {
             super(component);

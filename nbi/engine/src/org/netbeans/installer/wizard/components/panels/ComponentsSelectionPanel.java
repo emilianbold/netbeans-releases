@@ -190,6 +190,8 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         }
         
         protected void initialize() {
+            super.initialize();
+            
             messagePane.setContentType(
                     component.getProperty(MESSAGE_CONTENT_TYPE_PROPERTY));
             messagePane.setText(

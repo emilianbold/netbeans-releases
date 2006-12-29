@@ -111,7 +111,6 @@ public class PreInstallSummaryPanel extends WizardPanel {
     // Inner Classes
     public static class PreInstallSummaryPanelUi extends WizardPanelUi {
         protected PreInstallSummaryPanel        component;
-        protected PreInstallSummaryPanelSwingUi swingUi;
         
         public PreInstallSummaryPanelUi(PreInstallSummaryPanel component) {
             super(component);

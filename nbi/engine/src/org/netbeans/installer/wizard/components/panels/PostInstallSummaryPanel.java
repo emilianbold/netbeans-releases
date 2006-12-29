@@ -160,7 +160,6 @@ public class PostInstallSummaryPanel extends WizardPanel {
     // Inner Classes
     public static class PostInstallSummaryPanelUi extends WizardPanelUi {
         protected PostInstallSummaryPanel        component;
-        protected PostInstallSummaryPanelSwingUi swingUi;
         
         public PostInstallSummaryPanelUi(PostInstallSummaryPanel component) {
             super(component);
