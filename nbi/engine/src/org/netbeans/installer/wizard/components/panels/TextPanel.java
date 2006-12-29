@@ -15,7 +15,7 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- *  
+ *
  * $Id$
  */
 package org.netbeans.installer.wizard.components.panels;
@@ -24,36 +24,96 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
+import org.netbeans.installer.wizard.SwingUi;
+import org.netbeans.installer.wizard.WizardUi;
+import org.netbeans.installer.wizard.components.WizardComponent;
+import org.netbeans.installer.wizard.components.WizardPanel;
+import org.netbeans.installer.wizard.components.WizardPanel.WizardPanelUi;
+import org.netbeans.installer.wizard.containers.WizardContainerSwing;
 
 /**
  *
  * @author Kirill Sorokin
  */
-public class TextPanel extends DefaultWizardPanel {
-    private NbiTextPane textPane;
+public class TextPanel extends WizardPanel {
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String TEXT_PROPERTY         = "text";
+    public static final String CONTENT_TYPE_PROPERTY = "content.type";
     
+    public static final String DEFAULT_TEXT =
+            ResourceUtils.getString(TextPanel.class, "TP.text");
+    public static final String DEFAULT_CONTENT_TYPE =
+            ResourceUtils.getString(TextPanel.class, "TP.content.type");
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
     public TextPanel() {
         setProperty(TEXT_PROPERTY, DEFAULT_TEXT);
         setProperty(CONTENT_TYPE_PROPERTY, DEFAULT_CONTENT_TYPE);
     }
     
-    public void initialize() {
-        final String contentType = getProperty(CONTENT_TYPE_PROPERTY);
-        textPane.setContentType(contentType);
+    public WizardUi getWizardUi() {
+        if (wizardUi == null) {
+            wizardUi = new TextPanelUi(this);
+        }
         
-        final String text = getProperty(TEXT_PROPERTY);
-        textPane.setText(text);
+        return wizardUi;
     }
     
-    public void initComponents() {
-        textPane = new NbiTextPane();
+    /////////////////////////////////////////////////////////////////////////////////
+    // Inner Classes
+    public static class TextPanelUi extends WizardPanelUi {
+        protected TextPanel        component;
+        protected TextPanelSwingUi swingUi;
         
-        add(textPane, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 11, 11), 0, 0));
+        public TextPanelUi(TextPanel component) {
+            super(component);
+            
+            this.component = component;
+        }
+        
+        // swing ui specific ////////////////////////////////////////////////////////
+        public SwingUi getSwingUi(WizardContainerSwing container) {
+            if (swingUi == null) {
+                swingUi = new TextPanelSwingUi(component, container);
+            }
+            
+            return super.getSwingUi(container);
+        }
     }
     
-    public static final String TEXT_PROPERTY = "text";
-    public static final String CONTENT_TYPE_PROPERTY = "content.type";
-    
-    public static final String DEFAULT_TEXT = ResourceUtils.getString(TextPanel.class, "TextPanel.default.text");
-    public static final String DEFAULT_CONTENT_TYPE = ResourceUtils.getString(TextPanel.class, "TextPanel.default.content.type");
+    public static class TextPanelSwingUi extends WizardPanelSwingUi {
+        protected TextPanel component;
+        
+        private NbiTextPane textPane;
+        
+        public TextPanelSwingUi(
+                final TextPanel component, 
+                final WizardContainerSwing container) {
+            super(component, container);
+            
+            this.component = component;
+            
+            initComponents();
+        }
+        
+        protected void initialize() {
+            textPane.setContentType(component.getProperty(CONTENT_TYPE_PROPERTY));
+            textPane.setText(component.getProperty(TEXT_PROPERTY));
+        }
+        
+        private void initComponents() {
+            textPane = new NbiTextPane();
+                    
+            add(textPane, new GridBagConstraints(
+                    0, 0,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 1.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(11, 11, 11, 11),       // padding
+                    0, 0));                           // ??? (padx, pady)
+        }
+    }
 }

@@ -21,30 +21,34 @@
 package org.netbeans.installer.utils.helper.swing;
 
 import java.awt.BorderLayout;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.util.List;
 import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.installer.utils.helper.Text;
-import org.netbeans.installer.wizard.WizardFrame;
 
 public class NbiTextsDialog extends NbiDialog {
-    private NbiFrame owner;
-    
     private NbiTabbedPane textsTabbedPane;
     
-    private String title;
+    private String            title;
     private Map<String, Text> texts;
+    
+    public NbiTextsDialog(String title, Map<String, Text> texts) {
+        super();
+        
+        this.title = title;
+        this.texts = texts;
+        
+        initComponents();
+        initialize();
+    }
     
     public NbiTextsDialog(NbiFrame owner, String title, Map<String, Text> texts) {
         super(owner);
         
-        this.owner = owner;
         this.title = title;
         this.texts = texts;
         
@@ -64,7 +68,6 @@ public class NbiTextsDialog extends NbiDialog {
     
     private void initComponents() {
         setLayout(new GridBagLayout());
-        setSize(owner.getSize());
         
         textsTabbedPane = new NbiTabbedPane();
         

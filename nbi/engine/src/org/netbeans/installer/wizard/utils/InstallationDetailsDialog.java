@@ -47,18 +47,14 @@ import org.netbeans.installer.utils.helper.swing.NbiScrollPane;
 import org.netbeans.installer.utils.helper.swing.treetable.NbiTreeColumnCellRenderer;
 import org.netbeans.installer.utils.helper.swing.treetable.NbiTreeTable;
 import org.netbeans.installer.utils.helper.swing.treetable.NbiTreeTableModel;
-import org.netbeans.installer.wizard.WizardFrame;
+import org.netbeans.installer.wizard.containers.FrameWizardContainer;
 
 public class InstallationDetailsDialog extends NbiDialog {
-    private WizardFrame wizardFrame;
-    
     private NbiTreeTable   detailsTreeTable;
     private NbiScrollPane detailsScrollPane;
     
-    public InstallationDetailsDialog(WizardFrame owner) {
-        super(owner);
-        
-        wizardFrame = owner;
+    public InstallationDetailsDialog() {
+        super();
         
         initComponents();
         initialize();
@@ -66,7 +62,6 @@ public class InstallationDetailsDialog extends NbiDialog {
     
     private void initialize() {
         setTitle("Installation details");
-        setSize(wizardFrame.getSize());
     }
     
     private void initComponents() {

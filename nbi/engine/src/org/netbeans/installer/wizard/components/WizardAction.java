@@ -20,194 +20,205 @@
  */
 package org.netbeans.installer.wizard.components;
 
-import java.io.File;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import org.netbeans.installer.utils.FileUtils;
-import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.StringUtils;
-import org.netbeans.installer.utils.SystemUtils;
-import org.netbeans.installer.wizard.Wizard;
-import org.netbeans.installer.wizard.conditions.TrueCondition;
-import org.netbeans.installer.wizard.conditions.WizardCondition;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
+import org.netbeans.installer.Installer;
+import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.UiUtils;
+import org.netbeans.installer.utils.helper.ErrorLevel;
+import org.netbeans.installer.utils.helper.swing.NbiLabel;
+import org.netbeans.installer.utils.helper.swing.NbiProgressBar;
+import org.netbeans.installer.utils.progress.Progress;
+import org.netbeans.installer.utils.progress.ProgressListener;
+import org.netbeans.installer.wizard.SwingUi;
+import org.netbeans.installer.wizard.WizardUi;
+import org.netbeans.installer.wizard.containers.WizardContainerSwing;
 
 /**
  *
  * @author Kirill Sorokin
  */
-public abstract class WizardAction implements WizardComponent {
-    private Wizard          wizard     = null;
+public abstract class WizardAction extends WizardComponent {
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
+    protected WizardUi wizardUi;
     
-    private WizardCondition condition  = new TrueCondition();
-    private Properties      properties = new Properties();
+    protected boolean  finished = false;
+    protected boolean  canceled = false;
     
-    protected boolean       finished   = false;
-    protected boolean       canceled   = false;
+    protected WizardAction() {
+        // does nothing
+    }
     
-    public final void executeForward(final Wizard wizard) {
-        Thread worker = new Thread() {
+    public final void executeForward() {
+        new Thread() {
             public void run() {
-                executeComponent(wizard, true);
+                finished = false;
+                execute();
+                finished = true;
+                
                 if (!canceled) {
                     wizard.next();
                 }
             }
-        };
-        worker.start();
+        }.start();
     }
     
-    public final void executeBackward(final Wizard wizard) {
-        Thread worker = new Thread() {
-            public void run() {
-                executeComponent(wizard, true);
-                if (!canceled) {
-                    wizard.previous();
-                }
-            }
-        };
-        worker.start();
+    public final void executeBackward() {
+        // does nothing
     }
     
-    public final void executeBlocking(final Wizard wizard) {
-        executeComponent(wizard, true);
-    }
-    
-    public final void executeSilently(final Wizard wizard) {
-        executeComponent(wizard, false);
-        wizard.next();
-    }
-    
-    public final void executeSilentlyBlocking(final Wizard wizard) {
-        executeComponent(wizard, false);
-    }
-    
-    public final void addChild(WizardComponent component) {
-        throw new UnsupportedOperationException(
-                "This component does not support child components");
-    }
-    
-    public final void removeChild(WizardComponent component) {
-        throw new UnsupportedOperationException(
-                "This component does not support child components");
-    }
-    
-    public final void addChildren(List<WizardComponent> component) {
-        throw new UnsupportedOperationException(
-                "This component does not support child components");
-    }
-    
-    public final List<WizardComponent> getChildren() {
-        throw new UnsupportedOperationException(
-                "This component does not support child components");
-    }
-    
-    public final void setCondition(final WizardCondition condition) {
-        this.condition = condition;
-    }
-    
-    public final WizardCondition getCondition() {
-        return condition;
-    }
-    
-    public boolean canExecuteForward() {
-        return true;
-    }
-    
-    public boolean canExecuteBackward() {
+    public final boolean canExecuteBackward() {
         return false;
     }
     
-    public boolean isPointOfNoReturn() {
-        return false;
+    public WizardUi getWizardUi() {
+        if (wizardUi == null) {
+            wizardUi = new WizardActionUi(this);
+        }
+        
+        return wizardUi;
     }
     
-    public final String getProperty(final String name) {
-        return getProperty(name, true);
+    public void initialize() {
+        // does nothing
     }
     
-    public final void setProperty(final String name, final String value) {
-        properties.setProperty(name, value);
-    }
-    
-    public final Properties getProperties() {
-        return properties;
-    }
-    
-    // abstract methods - to be overridden by subclasses ////////////////////////////
     public abstract void execute();
-    
-    public abstract WizardPanel getUI();
     
     public void cancel() {
         canceled = true;
+        
+        while (!finished) {
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                ErrorManager.notify(ErrorLevel.DEBUG, e);
+            }
+        }
     }
     
     /////////////////////////////////////////////////////////////////////////////////
-    private void executeComponent(final Wizard wizard, final boolean showUi) {
-        this.wizard = wizard;
+    // Inner Classes
+    public static class WizardActionUi extends WizardComponentUi implements ProgressListener {
+        protected WizardAction component;
+        protected Progress     progress;
         
-        finished = false;
+        public WizardActionUi(final WizardAction component) {
+            super(component);
+            
+            this.component = component;
+        }
         
-        // first initialize and show the UI
-        if (showUi) {
-            WizardPanel ui = getUI();
-            if (ui != null) {
-                for (Object key: getProperties().keySet()) {
-                    ui.getProperties().put(key, getProperties().get(key));
-                }
-                
-                ui.executeForward(wizard);
+        public SwingUi getSwingUi(WizardContainerSwing container) {
+            if (swingUi == null) {
+                swingUi = new WizardActionSwingUi(component, container);
+            }
+            
+            return super.getSwingUi(container);
+        }
+        
+        public void setProgress(final Progress progress) {
+            if (this.progress != null) {
+                this.progress.removeProgressListener(this);
+            }
+            
+            this.progress = progress;
+            this.progress.addProgressListener(this);
+        }
+        
+        public void progressUpdated(Progress progress) {
+            if (swingUi != null) {
+                ((WizardActionSwingUi) swingUi).progressUpdated(progress);
             }
         }
-        execute();
-        
-        finished = true;
     }
     
-    protected final Wizard getWizard() {
-        return wizard;
-    }
-    
-    // helper methods for working with properties ///////////////////////////////////
-    protected final String getProperty(final String name, final boolean parse) {
-        String value = properties.getProperty(name);
+    public static class WizardActionSwingUi extends WizardComponentSwingUi {
+        private NbiLabel       titleLabel;
+        private NbiLabel       detailLabel;
+        private NbiProgressBar progressBar;
         
-        if (parse) {
-            return value != null ? parseString(value) : null;
-        } else {
-            return value;
+        public WizardActionSwingUi(
+                final WizardComponent component,
+                final WizardContainerSwing container) {
+            super(component, container);
+            
+            initComponents();
         }
-    }
-    
-    // helper methods for SystemUtils and ResourceUtils /////////////////////////////
-    protected final String parseString(final String string) {
-        return SystemUtils.parseString(string, getCorrectClassLoader());
-    }
-    
-    protected final File parsePath(final String path) {
-        return SystemUtils.parsePath(path, getCorrectClassLoader());
-    }
-    
-    protected final String getString(final String baseName, final String key) {
-        return ResourceUtils.getString(baseName, key, getCorrectClassLoader());
-    }
-    
-    protected final String getString(final String baseName, final String key, final Object... arguments) {
-        return ResourceUtils.getString(baseName, key, getCorrectClassLoader(), arguments);
-    }
-    
-    protected final InputStream getResource(final String path) {
-        return ResourceUtils.getResource(path, getCorrectClassLoader());
-    }
-    
-    // private stuff ////////////////////////////////////////////////////////////////
-    private final ClassLoader getCorrectClassLoader() {
-        if (wizard.getProductComponent() != null) {
-            return wizard.getProductComponent().getClassLoader();
-        } else {
-            return getClass().getClassLoader();
+        
+        public void initializeContainer() {
+            super.initializeContainer();
+            
+            // set up the back button
+            container.getBackButton().setEnabled(false);
+            container.getBackButton().setVisible(false);
+            
+            // set up the next (or finish) button
+            container.getNextButton().setEnabled(false);
+            container.getNextButton().setVisible(false);
+            
+            // set up the cancel button
+            container.getCancelButton().setVisible(true);
+            container.getCancelButton().setEnabled(true);
+        }
+        
+        public void evaluateCancelButtonClick() {
+            if (!UiUtils.showYesNoDialog("Are you sure you want to cancel?")) {
+                return;
+            }
+            
+            new Thread() {
+                public void run() {
+                    ((WizardAction) component).cancel();
+                    Installer.getInstance().cancel();
+                }
+            }.start();
+        }
+        
+        public void progressUpdated(Progress progress) {
+            if (titleLabel != null) {
+                titleLabel.setText(progress.getTitle());
+            }
+            
+            if (detailLabel != null) {
+                detailLabel.setText(progress.getDetail());
+            }
+            
+            if (progressBar != null) {
+                progressBar.setValue(progress.getPercentage());
+            }
+        }
+        
+        private void initComponents() {
+            titleLabel  = new NbiLabel();
+            detailLabel = new NbiLabel();
+            progressBar = new NbiProgressBar();
+            
+            add(titleLabel, new GridBagConstraints(
+                    0, 0,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.3,                         // weight-x, weight-y
+                    GridBagConstraints.SOUTH,         // anchor
+                    GridBagConstraints.HORIZONTAL,    // fill
+                    new Insets(11, 11, 0, 11),        // padding
+                    0, 0));                           // ??? (padx, pady)
+            add(detailLabel, new GridBagConstraints(
+                    0, 1,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.HORIZONTAL,    // fill
+                    new Insets(4, 11, 0, 11),         // padding
+                    0, 0));                           // ??? (padx, pady)
+            add(progressBar, new GridBagConstraints(
+                    0, 2,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.7,                         // weight-x, weight-y
+                    GridBagConstraints.NORTH,         // anchor
+                    GridBagConstraints.HORIZONTAL,    // fill
+                    new Insets(4, 11, 11, 11),        // padding
+                    0, 0));                           // ??? (padx, pady)
         }
     }
 }

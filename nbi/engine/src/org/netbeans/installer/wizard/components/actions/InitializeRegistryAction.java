@@ -15,7 +15,7 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- *  
+ *
  * $Id$
  */
 package org.netbeans.installer.wizard.components.actions;
@@ -23,7 +23,7 @@ package org.netbeans.installer.wizard.components.actions;
 import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
-import org.netbeans.installer.utils.exceptions.FinalizationException;
+import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.components.WizardAction;
 
@@ -31,15 +31,15 @@ import org.netbeans.installer.wizard.components.WizardAction;
  *
  * @author Kirill Sorokin
  */
-public class FinalizeRegistryAction extends WizardAction {
+public class InitializeRegistryAction extends WizardAction {
     public void execute() {
         try {
             Progress progress = new Progress();
             
             ((WizardActionUi) getWizardUi()).setProgress(progress);
-            ProductRegistry.getInstance().finalizeRegistry(progress);
-        } catch (FinalizationException e) {
-            ErrorManager.notify(ErrorLevel.ERROR, "Cannot finalize registry", e);
+            ProductRegistry.getInstance().initializeRegistry(progress);
+        } catch (InitializationException e) {
+            ErrorManager.notify(ErrorLevel.CRITICAL, "Cannot init registry", e);
         }
     }
 }

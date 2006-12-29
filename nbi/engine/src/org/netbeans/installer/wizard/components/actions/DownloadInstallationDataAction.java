@@ -32,16 +32,15 @@ import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
-import org.netbeans.installer.wizard.components.panels.DefaultWizardPanel;
-import org.netbeans.installer.wizard.components.sequences.*;
+import org.netbeans.installer.wizard.components.WizardPanel;
 
 
-public class DownloadInstallationDataAction extends CompositeProgressAction {
+public class DownloadInstallationDataAction extends CompositeWizardAction {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final Class CLASS = DownloadInstallationDataAction.class;
     
-    public static final String DIALOG_TITLE_PROPERTY = DefaultWizardPanel.DIALOG_TITLE_PROPERTY;
+    public static final String DIALOG_TITLE_PROPERTY = WizardPanel.DIALOG_TITLE_PROPERTY;
     public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(CLASS, "DownloadInstallationDataAction.default.dialog.title");
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -63,11 +62,11 @@ public class DownloadInstallationDataAction extends CompositeProgressAction {
         overallProgress.setTitle("Downloading installation data for selected components");
         overallProgress.setPercentage(percentageLeak);
         
-        progressPanel.setOverallProgress(overallProgress);
+        ((CompositeWizardActionUi) getWizardUi()).setOverallProgress(overallProgress);
         for (ProductComponent component: components) {
             // initiate the progress for the current element
             currentProgress = new Progress();
-            progressPanel.setCurrentProgress(currentProgress);
+            ((CompositeWizardActionUi) getWizardUi()).setCurrentProgress(currentProgress);
             
             overallProgress.addChild(currentProgress, percentageChunk);
             try {

@@ -44,7 +44,7 @@ import org.netbeans.installer.wizard.components.panels.SelectedComponentsLicense
  * @author Kirill Sorokin
  */
 public class MainSequence extends WizardSequence {
-    public void executeForward(final Wizard wizard) {
+    public void executeForward() {
         final ProductRegistry registry = ProductRegistry.getInstance();
         final List<ProductComponent> toInstall = registry.getComponentsToInstall();
         final List<ProductComponent> toUninstall = registry.getComponentsToUninstall();
@@ -88,7 +88,7 @@ public class MainSequence extends WizardSequence {
                         "execution mode is not recognized");
         }
         
-        super.executeForward(wizard);
+        super.executeForward();
     }
     
     public boolean canExecuteForward() {

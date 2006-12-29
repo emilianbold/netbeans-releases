@@ -24,12 +24,17 @@ import java.io.File;
 import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.wizard.WizardUi;
+import org.netbeans.installer.wizard.components.WizardAction;
 
 /**
  *
  * @author Kirill Sorokin
  */
-public class SetInstallationLocationAction extends DefaultWizardAction {
+public class SetInstallationLocationAction extends WizardAction {
+    public static final String SOURCE_COMPONENT_UID_PROPERTY = "source.component";
+    public static final String RELATIVE_LOCATION_PROPERTY = "relative.location";
+    
     public void execute() {
         String uid = getProperty(SOURCE_COMPONENT_UID_PROPERTY);
         String relativeLocation = getProperty(RELATIVE_LOCATION_PROPERTY);
@@ -57,10 +62,7 @@ public class SetInstallationLocationAction extends DefaultWizardAction {
         targetComponent.setInstallationLocation(newLocation.getAbsoluteFile());
     }
     
-    public void cancel() {
-        // does nothing
+    public WizardUi getWizardUi() {
+        return null; // we do not have any ui for this action
     }
-    
-    private static final String SOURCE_COMPONENT_UID_PROPERTY = "source.component";
-    private static final String RELATIVE_LOCATION_PROPERTY = "relative.location";
 }

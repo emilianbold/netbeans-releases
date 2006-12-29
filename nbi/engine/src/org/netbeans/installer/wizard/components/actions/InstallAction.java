@@ -34,15 +34,14 @@ import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
-import org.netbeans.installer.wizard.components.panels.DefaultWizardPanel;
+import org.netbeans.installer.wizard.components.WizardPanel;
+import org.netbeans.installer.wizard.components.actions.CompositeWizardAction.CompositeWizardActionUi;
 
-public class InstallAction extends CompositeProgressAction {
+public class InstallAction extends CompositeWizardAction {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final Class CLASS = InstallAction.class;
-    
-    public static final String DIALOG_TITLE_PROPERTY = DefaultWizardPanel.DIALOG_TITLE_PROPERTY;
-    public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(CLASS, "InstallAction.default.dialog.title");
+    public static final String DIALOG_TITLE_PROPERTY = WizardPanel.DIALOG_TITLE_PROPERTY;
+    public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(InstallAction.class, "IA.dialog.title");
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
@@ -51,6 +50,14 @@ public class InstallAction extends CompositeProgressAction {
     
     public InstallAction() {
         setProperty(DIALOG_TITLE_PROPERTY, DEFAULT_DIALOG_TITLE);
+    }
+    
+    public boolean canExecuteForward() {
+        return ProductRegistry.getInstance().getComponentsToInstall().size() > 0;
+    }
+    
+    public boolean isPointOfNoReturn() {
+        return true;
     }
     
     public void execute() {
@@ -65,11 +72,11 @@ public class InstallAction extends CompositeProgressAction {
         overallProgress.setTitle("Installing selected components");
         overallProgress.setPercentage(percentageLeak);
         
-        progressPanel.setOverallProgress(overallProgress);
+        ((CompositeWizardActionUi) getWizardUi()).setOverallProgress(overallProgress);
         for (ProductComponent component:components) {
             currentProgress = new Progress();
             currentProgress.setTitle("Installing " + component.getDisplayName());
-            progressPanel.setCurrentProgress(currentProgress);
+            ((CompositeWizardActionUi) getWizardUi()).setCurrentProgress(currentProgress);
             
             overallProgress.addChild(currentProgress, percentageChunk);
             try {
@@ -130,13 +137,5 @@ public class InstallAction extends CompositeProgressAction {
         }
         
         super.cancel();
-    }
-    
-    public boolean canExecuteForward() {
-        return ProductRegistry.getInstance().getComponentsToInstall().size() > 0;
-    }
-    
-    public boolean isPointOfNoReturn() {
-        return true;
     }
 }

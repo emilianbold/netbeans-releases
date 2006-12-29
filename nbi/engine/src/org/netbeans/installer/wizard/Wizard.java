@@ -31,8 +31,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
+import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.utils.helper.ErrorLevel;
+import org.netbeans.installer.utils.helper.UiMode;
 import org.netbeans.installer.wizard.components.WizardComponent;
 import static org.netbeans.installer.utils.helper.ErrorLevel.DEBUG;
 import static org.netbeans.installer.utils.helper.ErrorLevel.MESSAGE;
@@ -46,6 +48,8 @@ import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.wizard.conditions.AndCondition;
 import org.netbeans.installer.wizard.conditions.WizardCondition;
+import org.netbeans.installer.wizard.containers.WizardContainer;
+import org.netbeans.installer.wizard.containers.FrameWizardContainer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -80,7 +84,7 @@ public class Wizard {
     private static String componentsInstanceURI = DEFAULT_COMPONENTS_INSTANCE_URI;
     private static String componentsSchemaURI = DEFAULT_COMPONENTS_SCHEMA_URI;
     
-    private static WizardExecutionMode executionMode = WizardExecutionMode.GUI;
+    private static UiMode executionMode = UiMode.SWING;
     
     public static synchronized Wizard getInstance() {
         if (instance == null) {
@@ -98,7 +102,7 @@ public class Wizard {
             
             // check whether silent mode is active
             if (System.getProperty(SILENT_MODE_ACTIVE_PROPERTY) != null) {
-                executionMode = WizardExecutionMode.SILENT;
+                executionMode = UiMode.SILENT;
             }
             
             // create the root wizard and load its components
@@ -156,7 +160,7 @@ public class Wizard {
         }
     }
     
-    public static WizardExecutionMode getExecutionMode() {
+    public static UiMode getExecutionMode() {
         return executionMode;
     }
     
@@ -207,7 +211,7 @@ public class Wizard {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     protected List<WizardComponent> components;
-    protected WizardFrame           frame;
+    protected WizardContainer       frame;
     
     private   ProductComponent      productComponent;
     private   int                   currentIndex;
@@ -222,7 +226,7 @@ public class Wizard {
         this();
         
         this.parent           = parent;
-        this.frame            = parent.getFrame();
+        this.frame            = parent.getContainer();
         this.productComponent = parent.getProductComponent();
     }
     
@@ -244,8 +248,8 @@ public class Wizard {
     // wizard lifecycle control methods /////////////////////////////////////////////
     public void open() {
         switch (executionMode) {
-            case GUI:
-                frame = new WizardFrame();
+            case SWING:
+                frame = new FrameWizardContainer();
                 
                 SwingUtilities.invokeLater(new Runnable(){
                     public void run() {
@@ -257,17 +261,18 @@ public class Wizard {
                 // we don't have to initialize anything for silent mode
                 break;
             default:
-                ErrorManager.notify(ERROR, "Something terrible has " +
+                ErrorManager.notify(CRITICAL, "Something terrible has " +
                         "happened - we have an execution mode which is not " +
                         "in its enum");
         }
+        
+        next();
     }
     
     public void close() {
         switch (executionMode) {
-            case GUI:
+            case SWING:
                 frame.setVisible(false);
-                frame.dispose();
                 break;
             case SILENT:
                 // we don't have to initialize anything for silent mode
@@ -288,24 +293,29 @@ public class Wizard {
         // should be here in the first place
         if (component != null) {
             currentIndex = components.indexOf(component);
+            
+            component.setWizard(this);
             switch (executionMode) {
-                case GUI:
-                    component.executeForward(this);
+                case SWING:
+                    if (component.getWizardUi() != null) {
+                        frame.updateWizardUi(component.getWizardUi());
+                    }
                     break;
                 case SILENT:
-                    component.executeSilently(this);
+                    // nothing special should be done for silent mode
                     break;
                 default:
-                    ErrorManager.notify(ERROR, "Something terrible has " +
+                    ErrorManager.notify(CRITICAL, "Something terrible has " +
                             "happened - we have an execution mode which is not " +
                             "in its enum");
             }
             
+            component.initialize();
+            component.executeForward();
         } else if (parent != null) {
             parent.next();
         } else {
-            ErrorManager.notify(ERROR, "Cannot move to the next " +
-                    "element - the wizard is at the last element");
+            Installer.getInstance().finish();
         }
     }
     
@@ -317,40 +327,31 @@ public class Wizard {
         // should be here in the first place
         if (component != null) {
             currentIndex = components.indexOf(component);
+            
+            component.setWizard(this);
             switch (executionMode) {
-                case GUI:
-                    component.executeBackward(this);
+                case SWING:
+                    if (component.getWizardUi() != null) {
+                        frame.updateWizardUi(component.getWizardUi());
+                    }
                     break;
                 case SILENT:
-                    ErrorManager.notify(ERROR, "Moving backward is " +
+                    ErrorManager.notify(CRITICAL, "Moving backward is " +
                             "not possible in silent mode");
                     break;
                 default:
-                    ErrorManager.notify(ERROR, "Something terrible has " +
+                    ErrorManager.notify(CRITICAL, "Something terrible has " +
                             "happened - we have an execution mode which is not " +
                             "in its enum");
             }
             
+            component.initialize();
+            component.executeBackward();
         } else if (parent != null) {
             parent.previous();
         } else {
             ErrorManager.notify(ERROR, "Cannot move to the previous " +
                     "component - the wizard is at the first component");
-        }
-    }
-    
-    public void executeComponent(WizardComponent component) {
-        switch (executionMode) {
-            case GUI:
-                component.executeBlocking(this);
-                break;
-            case SILENT:
-                component.executeSilentlyBlocking(this);
-                break;
-            default:
-                ErrorManager.notify(ERROR, "Something terrible has " +
-                        "happened - we have an execution mode which is not " +
-                        "in its enum");
         }
     }
     
@@ -392,7 +393,7 @@ public class Wizard {
     }
     
     // getters & setters ////////////////////////////////////////////////////////////
-    public WizardFrame getFrame() {
+    public WizardContainer getContainer() {
         return frame;
     }
     

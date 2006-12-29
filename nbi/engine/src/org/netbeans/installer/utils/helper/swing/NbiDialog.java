@@ -29,14 +29,19 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
-import org.netbeans.installer.wizard.WizardFrame;
 
 /**
  *
  * @author Kirill Sorokin
  */
 public class NbiDialog extends JDialog {
-    private NbiFrame owner;
+    protected NbiFrame owner;
+    
+    public NbiDialog() {
+        super();
+        
+        initComponents();
+    }
     
     public NbiDialog(NbiFrame owner) {
         super(owner);
@@ -47,7 +52,14 @@ public class NbiDialog extends JDialog {
     }
     
     private void initComponents() {
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setContentPane(new ContentPane());
+        
+        if (owner != null) {
+            setSize(owner.getSize());
+        } else {
+            setSize(NbiFrame.DEFAULT_FRAME_WIDTH, NbiFrame.DEFAULT_FRAME_HEIGHT);
+        }
     }
     
     public void setVisible(boolean visible) {
@@ -63,7 +75,9 @@ public class NbiDialog extends JDialog {
         private Image backgroundImage;
         
         public ContentPane() {
-            backgroundImage = org.netbeans.installer.utils.helper.swing.NbiDialog.this.owner.getBackgroundImage();
+            if (NbiDialog.this.owner != null) {
+                backgroundImage = NbiDialog.this.owner.getBackgroundImage();
+            }
         }
         
         protected void paintComponent(Graphics graphics) {

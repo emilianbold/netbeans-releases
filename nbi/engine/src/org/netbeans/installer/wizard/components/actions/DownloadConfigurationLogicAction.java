@@ -26,24 +26,20 @@ import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.product.utils.Status;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.helper.ErrorLevel;
-import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
-import org.netbeans.installer.wizard.components.panels.DefaultWizardPanel;
-import org.netbeans.installer.wizard.components.sequences.*;
+import org.netbeans.installer.wizard.components.WizardPanel;
 
 
-public class DownloadConfigurationLogicAction extends CompositeProgressAction {
+public class DownloadConfigurationLogicAction extends CompositeWizardAction {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final Class CLASS = DownloadConfigurationLogicAction.class;
-    
-    public static final String DIALOG_TITLE_PROPERTY = DefaultWizardPanel.DIALOG_TITLE_PROPERTY;
-    public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(CLASS, "DownloadConfigurationLogicAction.default.dialog.title");
+    public static final String DIALOG_TITLE_PROPERTY = WizardPanel.DIALOG_TITLE_PROPERTY;
+    public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(DownloadConfigurationLogicAction.class, "DCLA.dialog.title");
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
@@ -52,6 +48,10 @@ public class DownloadConfigurationLogicAction extends CompositeProgressAction {
     
     public DownloadConfigurationLogicAction() {
         setProperty(DIALOG_TITLE_PROPERTY, DEFAULT_DIALOG_TITLE);
+    }
+    
+    public boolean canExecuteForward() {
+        return ProductRegistry.getInstance().getComponentsToInstall().size() > 0;
     }
     
     public void execute() {
@@ -64,11 +64,11 @@ public class DownloadConfigurationLogicAction extends CompositeProgressAction {
         overallProgress.setTitle("Downloading configuration logic for selected components");
         overallProgress.setPercentage(percentageLeak);
         
-        progressPanel.setOverallProgress(overallProgress);
+        ((CompositeWizardActionUi) getWizardUi()).setOverallProgress(overallProgress);
         for (ProductComponent component: components) {
             // initiate the progress for the current element
             currentProgress = new Progress();
-            progressPanel.setCurrentProgress(currentProgress);
+            ((CompositeWizardActionUi) getWizardUi()).setCurrentProgress(currentProgress);
             
             overallProgress.addChild(currentProgress, percentageChunk);            
             try {
@@ -119,9 +119,5 @@ public class DownloadConfigurationLogicAction extends CompositeProgressAction {
         }
         
         super.cancel();
-    }
-    
-    public boolean canExecuteForward() {
-        return ProductRegistry.getInstance().getComponentsToInstall().size() > 0;
     }
 }

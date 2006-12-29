@@ -24,114 +24,182 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.SwingUtilities;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
+import org.netbeans.installer.wizard.SwingUi;
+import org.netbeans.installer.wizard.WizardUi;
+import org.netbeans.installer.wizard.components.WizardComponent;
+import org.netbeans.installer.wizard.components.WizardPanel;
+import org.netbeans.installer.wizard.components.WizardPanel.WizardPanelSwingUi;
+import org.netbeans.installer.wizard.components.WizardPanel.WizardPanelUi;
+import org.netbeans.installer.wizard.containers.WizardContainerSwing;
 
 /**
  *
  * @author Kirill Sorokin
  */
-public abstract class ErrorMessagePanel extends DefaultWizardPanel {
-    /////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    public static final String ERROR_ICON = "org/netbeans/installer/wizard/components/panels/error.png";
-    public static final String EMPTY_ICON = "org/netbeans/installer/wizard/components/panels/empty.png";
-    
-    public static final long VALIDATION_DELAY = 1000;
-    
+public class ErrorMessagePanel extends WizardPanel {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    private Icon errorIcon = new ImageIcon(getClass().getClassLoader().getResource(ERROR_ICON));
-    private Icon emptyIcon = new ImageIcon(getClass().getClassLoader().getResource(EMPTY_ICON));
+    public ErrorMessagePanel() {
+        // does nothing
+    }
     
-    private ValidatingThread validatingThread = new ValidatingThread();
-    private NbiLabel         errorLabel = null;
-    
-    public void defaultInitialize() {
-        super.defaultInitialize();
-        
-        if (validatingThread.isAlive()) {
-            validatingThread.play();
-        } else {
-            validatingThread.start();
+    public WizardUi getWizardUi() {
+        if (wizardUi == null) {
+            wizardUi = new ErrorMessagePanelUi(this);
         }
-    }
-    
-    public void defaultInitComponents() {
-        super.defaultInitComponents();
         
-        errorLabel = new NbiLabel();
-        
-        add(errorLabel, new GridBagConstraints(0, 99, 99, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(7, 11, 11, 11), 0, 0));
+        return wizardUi;
     }
-    
-    public void evaluateNextButtonClick() {
-        super.evaluateNextButtonClick();
-        
-        validatingThread.pause();
-    }
-    
-    public void evaluateHelpButtonClick() {
-        super.evaluateHelpButtonClick();
-        
-        validatingThread.pause();
-    }
-    
-    public void evaluateCancelButtonClick() {
-        super.evaluateCancelButtonClick();
-        
-        validatingThread.pause();
-    }
-    
-    public void evaluateBackButtonClick() {
-        super.evaluateBackButtonClick();
-        
-        validatingThread.pause();
-    }
-    
-    public void updateErrorMessage() {
-        String errorMessage = validateInput();
-        
-        if (errorMessage != null) {
-            errorLabel.setIcon(errorIcon);
-            errorLabel.setText(errorMessage);
-            getNextButton().setEnabled(false);
-        } else {
-            errorLabel.setIcon(emptyIcon);
-            errorLabel.setText(" ");
-            getNextButton().setEnabled(true);
-        }
-    }
-    
-    public abstract String validateInput();
     
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
-    private class ValidatingThread extends Thread {
-        private boolean paused = false;
+    public static class ErrorMessagePanelUi extends WizardPanelUi {
+        protected ErrorMessagePanel        component;
+        protected ErrorMessagePanelSwingUi swingUi;
         
-        public void run() {
-            while (true) {
-                if (!paused) {
-                    updateErrorMessage();
-                }
-                
-                try {
-                    sleep(VALIDATION_DELAY);
-                } catch (InterruptedException e) {
-                    ErrorManager.notify(ErrorLevel.DEBUG, e);
-                }
+        public ErrorMessagePanelUi(ErrorMessagePanel component) {
+            super(component);
+            
+            this.component = component;
+        }
+        
+        public SwingUi getSwingUi(WizardContainerSwing container) {
+            if (swingUi == null) {
+                swingUi = new ErrorMessagePanelSwingUi(component, container);
+            }
+            
+            return super.getSwingUi(container);
+        }
+    }
+    
+    public static class ErrorMessagePanelSwingUi extends WizardPanelSwingUi {
+        /////////////////////////////////////////////////////////////////////////////
+        // Constants
+        public static final String ERROR_ICON = 
+                "org/netbeans/installer/wizard/components/panels/error.png";
+        public static final String EMPTY_ICON = 
+                "org/netbeans/installer/wizard/components/panels/empty.png";
+        
+        /////////////////////////////////////////////////////////////////////////////
+        // Instance
+        protected ErrorMessagePanel component;
+        
+        private Icon errorIcon;
+        private Icon emptyIcon;
+        
+        private NbiLabel errorLabel;
+        
+        private ValidatingThread validatingThread;
+        
+        public ErrorMessagePanelSwingUi(
+                final ErrorMessagePanel component, 
+                final WizardContainerSwing container) {
+            super(component, container);
+            
+            this.component = component;
+            
+            errorIcon = new ImageIcon(
+                    getClass().getClassLoader().getResource(ERROR_ICON));
+            emptyIcon = new ImageIcon(
+                    getClass().getClassLoader().getResource(EMPTY_ICON));
+            
+            initComponents();
+        }
+        
+        protected void initialize() {
+            if (validatingThread == null) {
+                validatingThread = new ValidatingThread(this);
+                validatingThread.start();
+            } else {
+                validatingThread.play();
             }
         }
         
-        public void pause() {
-            paused = true;
+        public void evaluateNextButtonClick() {
+            super.evaluateNextButtonClick();
+            
+            validatingThread.pause();
         }
         
-        public void play() {
-            paused = false;
+        public void evaluateCancelButtonClick() {
+            super.evaluateCancelButtonClick();
+            
+            validatingThread.pause();
+        }
+        
+        public void evaluateBackButtonClick() {
+            super.evaluateBackButtonClick();
+            
+            validatingThread.pause();
+        }
+        
+        protected void updateErrorMessage() {
+            String errorMessage = validateInput();
+            
+            if (errorMessage != null) {
+                errorLabel.setIcon(errorIcon);
+                errorLabel.setText(errorMessage);
+                container.getNextButton().setEnabled(false);
+            } else {
+                errorLabel.setIcon(emptyIcon);
+                errorLabel.setText(" ");
+                container.getNextButton().setEnabled(true);
+            }
+        }
+        
+        private void initComponents() {
+            errorLabel = new NbiLabel();
+            
+            add(errorLabel, new GridBagConstraints(
+                    0, 99,                             // x, y
+                    99, 1,                             // width, height
+                    1.0, 0.0,                          // weight-x, weight-y
+                    GridBagConstraints.CENTER,         // anchor
+                    GridBagConstraints.HORIZONTAL,     // fill
+                    new Insets(7, 11, 11, 11),         // padding
+                    0, 0));                            // ??? (padx, pady)
+        }
+        
+        /////////////////////////////////////////////////////////////////////////////
+        // Inner Classes
+        private static class ValidatingThread extends Thread {
+            /////////////////////////////////////////////////////////////////////////
+            // Constants
+            public static final long VALIDATION_DELAY = 1000;
+            
+            /////////////////////////////////////////////////////////////////////////
+            // Instance
+            private ErrorMessagePanelSwingUi swingUi;
+            private boolean paused = false;
+            
+            public ValidatingThread(ErrorMessagePanelSwingUi swingUi) {
+                this.swingUi = swingUi;
+            }
+            
+            public void run() {
+                while (true) {
+                    if (!paused) {
+                        swingUi.updateErrorMessage();
+                    }
+                    
+                    try {
+                        sleep(VALIDATION_DELAY);
+                    } catch (InterruptedException e) {
+                        ErrorManager.notify(ErrorLevel.DEBUG, e);
+                    }
+                }
+            }
+            
+            public void pause() {
+                paused = true;
+            }
+            
+            public void play() {
+                paused = false;
+            }
         }
     }
 }

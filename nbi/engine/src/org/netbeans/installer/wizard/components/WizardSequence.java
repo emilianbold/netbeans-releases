@@ -30,6 +30,7 @@ import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.wizard.Wizard;
+import org.netbeans.installer.wizard.WizardUi;
 import org.netbeans.installer.wizard.conditions.TrueCondition;
 import org.netbeans.installer.wizard.conditions.WizardCondition;
 
@@ -37,62 +38,23 @@ import org.netbeans.installer.wizard.conditions.WizardCondition;
  *
  * @author Kirill Sorokin
  */
-public class WizardSequence implements WizardComponent {
-    private Wizard wizard;
+public class WizardSequence extends WizardComponent {
     private Wizard childWizard;
     
-    private List<WizardComponent> components = new ArrayList<WizardComponent>();
-    private WizardCondition condition = new TrueCondition();
-    private Properties properties = new Properties();
-    
-    public void executeForward(final Wizard wizard) {
-        this.wizard = wizard;
+    public void executeForward() {
         this.childWizard = wizard.createSubWizard(components, -1);
         
         childWizard.next();
     }
     
-    public void executeBackward(final Wizard wizard) {
-        this.wizard = wizard;
+    public void executeBackward() {
         this.childWizard = wizard.createSubWizard(components, components.size());
         
         childWizard.previous();
     }
     
-    public void executeBlocking(final Wizard wizard) {
-        executeForward(wizard);
-    }
-    
-    public void executeSilently(final Wizard wizard) {
-        executeForward(wizard);
-    }
-    
-    public void executeSilentlyBlocking(final Wizard wizard) {
-        executeForward(wizard);
-    }
-    
-    public final void addChild(WizardComponent component) {
-        components.add(component);
-    }
-    
-    public final void removeChild(WizardComponent component) {
-        components.remove(component);
-    }
-    
-    public final void addChildren(List<WizardComponent> components) {
-        this.components.addAll(components);
-    }
-    
-    public final List<WizardComponent> getChildren() {
-        return components;
-    }
-    
-    public final void setCondition(final WizardCondition condition) {
-        this.condition = condition;
-    }
-    
-    public final WizardCondition getCondition() {
-        return condition;
+    public void initialize() {
+        // does nothing
     }
     
     public boolean canExecuteForward() {
@@ -106,7 +68,7 @@ public class WizardSequence implements WizardComponent {
             }
         }
         
-        // if none of the components can be executed, it does not make sense to 
+        // if none of the components can be executed, it does not make sense to
         // execute the sequence as well
         return false;
     }
@@ -121,15 +83,15 @@ public class WizardSequence implements WizardComponent {
                 return true;
             }
             
-            // if the currently examined component is a point of no return and it 
-            // cannot be executed (since we passed the previous statement) - we have 
+            // if the currently examined component is a point of no return and it
+            // cannot be executed (since we passed the previous statement) - we have
             // no previous component
             if (component.isPointOfNoReturn()) {
                 return false;
             }
         }
         
-        // if none of the components can be executed it does not make sense to 
+        // if none of the components can be executed it does not make sense to
         // execute the sequence as well
         return false;
     }
@@ -149,65 +111,7 @@ public class WizardSequence implements WizardComponent {
         return false;
     }
     
-    public final String getProperty(final String name) {
-        return getProperty(name, true);
-    }
-    
-    public final void setProperty(final String name, final String value) {
-        properties.setProperty(name, value);
-    }
-    
-    public final Properties getProperties() {
-        return properties;
-    }
-    
-    /////////////////////////////////////////////////////////////////////////////////
-    protected final Wizard getWizard() {
-        return wizard;
-    }
-    
-    protected final void removeAllChildren() {
-        components.clear();
-    }
-    
-    // helper methods for working with properties ///////////////////////////////////
-    protected final String getProperty(final String name, final boolean parse) {
-        String value = properties.getProperty(name);
-        
-        if (parse) {
-            return value != null ? parseString(value) : null;
-        } else {
-            return value;
-        }
-    }
-    
-    // helper methods for SystemUtils and ResourceUtils /////////////////////////////
-    protected String parseString(final String string) {
-        return SystemUtils.parseString(string, getCorrectClassLoader());
-    }
-    
-    protected File parsePath(final String path) {
-        return SystemUtils.parsePath(path, getCorrectClassLoader());
-    }
-    
-    protected String getString(final String baseName, final String key) {
-        return ResourceUtils.getString(baseName, key, getCorrectClassLoader());
-    }
-    
-    protected String getString(final String baseName, final String key, final Object... arguments) {
-        return ResourceUtils.getString(baseName, key, getCorrectClassLoader(), arguments);
-    }
-    
-    protected InputStream getResource(final String path) {
-        return ResourceUtils.getResource(path, getCorrectClassLoader());
-    }
-    
-    // private stuff ////////////////////////////////////////////////////////////////
-    private ClassLoader getCorrectClassLoader() {
-        if (getWizard().getProductComponent() != null) {
-            return getWizard().getProductComponent().getClassLoader();
-        } else {
-            return getClass().getClassLoader();
-        }
+    public WizardUi getWizardUi() {
+        return null;
     }
 }

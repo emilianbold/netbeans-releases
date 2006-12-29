@@ -22,6 +22,8 @@ package org.netbeans.installer.wizard.components.panels;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
@@ -37,8 +39,45 @@ import org.netbeans.installer.wizard.components.actions.SearchForJdkAction;
  * @author Kirill Sorokin
  */
 public class JdkLocationPanel extends ApplicationLocationPanel {
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String JDK_LOCATION_PROPERTY = "jdk.location";
+    
+    public static final String MINIMUM_JDK_VERSION_PROPERTY = "minimum.jdk.version";
+    public static final String MAXIMUM_JDK_VERSION_PROPERTY = "maximum.jdk.version";
+    
+    public static final String DEFAULT_MESSAGE_TEXT = ResourceUtils.getString(JdkLocationPanel.class, "JLP.message.text");
+    public static final String DEFAULT_MESSAGE_CONTENT_TYPE = ResourceUtils.getString(JdkLocationPanel.class, "JLP.message.content.type");
+    public static final String DEFAULT_LOCATION_LABEL_TEXT = ResourceUtils.getString(JdkLocationPanel.class, "JLP.location.label.text");
+    public static final String DEFAULT_LOCATION_BUTTON_TEXT = ResourceUtils.getString(JdkLocationPanel.class, "JLP.location.button.text");
+    public static final String DEFAULT_LIST_LABEL_TEXT = ResourceUtils.getString(JdkLocationPanel.class, "JLP.list.label.text");
+    
+    public static final String ERROR_NULL_PROPERTY = "error.null";
+    public static final String ERROR_NOT_VALID_PATH_PROPERTY = "error.not.valid.path";
+    public static final String ERROR_NOT_JAVAHOME_PROPERTY = "error.not.javahome";
+    public static final String ERROR_NOT_JDK_PROPERTY = "error.not.jdk";
+    public static final String ERROR_WRONG_VERSION_OLDER_PROPERTY = "error.wrong.version.older";
+    public static final String ERROR_WRONG_VERSION_NEWER_PROPERTY = "error.wrong.version.newer";
+    public static final String ERROR_UNKNOWN_PROPERTY = "error.unknown";
+    
+    public static final String DEFAULT_ERROR_NULL = ResourceUtils.getString(JdkLocationPanel.class, "JLP.error.null");
+    public static final String DEFAULT_ERROR_NOT_VALID_PATH = ResourceUtils.getString(JdkLocationPanel.class, "JLP.error.not.valid.path");
+    public static final String DEFAULT_ERROR_NOT_JAVAHOME = ResourceUtils.getString(JdkLocationPanel.class, "JLP.error.not.javahome");
+    public static final String DEFAULT_ERROR_NOT_JDK = ResourceUtils.getString(JdkLocationPanel.class, "JLP.error.not.jdk");
+    public static final String DEFAULT_ERROR_WRONG_VERSION_OLDER = ResourceUtils.getString(JdkLocationPanel.class, "JLP.error.wrong.version.older");
+    public static final String DEFAULT_ERROR_WRONG_VERSION_NEWER = ResourceUtils.getString(JdkLocationPanel.class, "JLP.error.wrong.version.newer");
+    public static final String DEFAULT_ERROR_UNKNOWN = ResourceUtils.getString(JdkLocationPanel.class, "JLP.error.unknown");
+    
+    public static final String DEFAULT_MINIMUM_JDK_VERSION = ResourceUtils.getString(JdkLocationPanel.class, "JLP.minimum.jdk.version");;
+    public static final String DEFAULT_MAXIMUM_JDK_VERSION = ResourceUtils.getString(JdkLocationPanel.class, "JLP.maximum.jdk.version");;
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
     private Version minimumVersion;
     private Version maximumVersion;
+    
+    private List<File>   jdkLocations = new LinkedList<File>();
+    private List<String> jdkLabels    = new LinkedList<String>();
     
     public JdkLocationPanel() {
         setProperty(MINIMUM_JDK_VERSION_PROPERTY, DEFAULT_MINIMUM_JDK_VERSION);
@@ -61,45 +100,29 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     }
     
     public void initialize() {
-        minimumVersion = new Version(getProperty(MINIMUM_JDK_VERSION_PROPERTY));
-        maximumVersion = new Version(getProperty(MAXIMUM_JDK_VERSION_PROPERTY));
-        
-        super.initialize();
-    }
-    
-    private Map<File, Version> filterLocations() {
-        Map<File, Version> filteredLocations = new HashMap<File, Version>();
-        
-        try {
-            if (SearchForJdkAction.locatedJdks != null) {
-                for (File file: SearchForJdkAction.locatedJdks.keySet()) {
-                    Version version = SearchForJdkAction.locatedJdks.get(file);
-                    if (version.newerOrEquals(minimumVersion) && version.olderOrEquals(maximumVersion)) {
-                        filteredLocations.put(file, version);
-                    }
+        if (minimumVersion == null) {
+            minimumVersion = new Version(getProperty(MINIMUM_JDK_VERSION_PROPERTY));
+            maximumVersion = new Version(getProperty(MAXIMUM_JDK_VERSION_PROPERTY));
+            
+            for (int i = 0; i < SearchForJdkAction.jdkLocations.size(); i++) {
+                File    location = SearchForJdkAction.jdkLocations.get(i);
+                String  label    = SearchForJdkAction.jdkLabels.get(i);
+                Version version  = JDKUtils.getVersion(location);
+                
+                if (!version.olderThan(minimumVersion) && !version.newerThan(maximumVersion)) {
+                    jdkLocations.add(location);
+                    jdkLabels.add(label);
                 }
             }
-        } catch (ClassCastException e) {
-            ErrorManager.notify(ErrorLevel.ERROR, e);
         }
-        
-        return filteredLocations;
     }
     
-    public Map<String, File> getLocations() {
-        Map<String, File> locations = new HashMap<String, File>();
-        
-        try {
-            Map<File, Version> filteredLocations = filterLocations();
-            
-            for (File file: filteredLocations.keySet()) {
-                locations.put(file.getAbsolutePath() + " (v. " + filteredLocations.get(file).toJdkStyle() + ")", file);
-            }
-        } catch (ClassCastException e) {
-            ErrorManager.notify(ErrorLevel.ERROR, e);
-        }
-        
-        return locations;
+    public List<File> getLocations() {
+        return jdkLocations;
+    }
+    
+    public List<String> getLabels() {
+        return jdkLabels;
     }
     
     public String validateLocation(String path) {
@@ -146,48 +169,13 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
         String path = getWizard().getProductComponent().getProperty(JDK_LOCATION_PROPERTY);
         
         if (path == null) {
-            File selectedLocation = null;
-            Map<File, Version> locations = filterLocations();
-            
-            for (File file: locations.keySet()) {
-                if ((selectedLocation == null) || locations.get(file).newerThan(locations.get(selectedLocation))) {
-                    selectedLocation = file;
-                }
+            if (jdkLocations.size() != 0) {
+                return jdkLocations.get(0);
+            } else {
+                return new File("");
             }
-            
-            return selectedLocation;
         } else {
             return new File(path);
         }
     }
-    
-    public static final String JDK_LOCATION_PROPERTY = "jdk.location";
-    
-    public static final String MINIMUM_JDK_VERSION_PROPERTY = "minimum.jdk.version";
-    public static final String MAXIMUM_JDK_VERSION_PROPERTY = "maximum.jdk.version";
-    
-    public static final String DEFAULT_MESSAGE_TEXT = ResourceUtils.getString(JdkLocationPanel.class, "JdkLocationPanel.default.message.text");
-    public static final String DEFAULT_MESSAGE_CONTENT_TYPE = ResourceUtils.getString(JdkLocationPanel.class, "JdkLocationPanel.default.message.content.type");
-    public static final String DEFAULT_LOCATION_LABEL_TEXT = ResourceUtils.getString(JdkLocationPanel.class, "JdkLocationPanel.default.location.label.text");
-    public static final String DEFAULT_LOCATION_BUTTON_TEXT = ResourceUtils.getString(JdkLocationPanel.class, "JdkLocationPanel.default.location.button.text");
-    public static final String DEFAULT_LIST_LABEL_TEXT = ResourceUtils.getString(JdkLocationPanel.class, "JdkLocationPanel.default.list.label.text");
-    
-    public static final String ERROR_NULL_PROPERTY = "error.null";
-    public static final String ERROR_NOT_VALID_PATH_PROPERTY = "error.not.valid.path";
-    public static final String ERROR_NOT_JAVAHOME_PROPERTY = "error.not.javahome";
-    public static final String ERROR_NOT_JDK_PROPERTY = "error.not.jdk";
-    public static final String ERROR_WRONG_VERSION_OLDER_PROPERTY = "error.wrong.version.older";
-    public static final String ERROR_WRONG_VERSION_NEWER_PROPERTY = "error.wrong.version.newer";
-    public static final String ERROR_UNKNOWN_PROPERTY = "error.unknown";
-    
-    public static final String DEFAULT_ERROR_NULL = ResourceUtils.getString(JdkLocationPanel.class, "JdkLocationPanel.default.error.null");
-    public static final String DEFAULT_ERROR_NOT_VALID_PATH = ResourceUtils.getString(JdkLocationPanel.class, "JdkLocationPanel.default.error.not.valid.path");
-    public static final String DEFAULT_ERROR_NOT_JAVAHOME = ResourceUtils.getString(JdkLocationPanel.class, "JdkLocationPanel.default.error.not.javahome");
-    public static final String DEFAULT_ERROR_NOT_JDK = ResourceUtils.getString(JdkLocationPanel.class, "JdkLocationPanel.default.error.not.jdk");
-    public static final String DEFAULT_ERROR_WRONG_VERSION_OLDER = ResourceUtils.getString(JdkLocationPanel.class, "JdkLocationPanel.default.error.wrong.version.older");
-    public static final String DEFAULT_ERROR_WRONG_VERSION_NEWER = ResourceUtils.getString(JdkLocationPanel.class, "JdkLocationPanel.default.error.wrong.version.newer");
-    public static final String DEFAULT_ERROR_UNKNOWN = ResourceUtils.getString(JdkLocationPanel.class, "JdkLocationPanel.default.error.unknown");
-    
-    public static final String DEFAULT_MINIMUM_JDK_VERSION = ResourceUtils.getString(JdkLocationPanel.class, "JdkLocationPanel.default.minimum.jdk.version");;
-    public static final String DEFAULT_MAXIMUM_JDK_VERSION = ResourceUtils.getString(JdkLocationPanel.class, "JdkLocationPanel.default.maximum.jdk.version");;
 }

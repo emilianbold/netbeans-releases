@@ -38,13 +38,13 @@ public class NbiFrame extends JFrame {
     protected URL frameBackground;
     protected URL frameIcon;
     
-    protected ContentPane contentPane;
+    protected NbiContentPane contentPane;
     
     public NbiFrame() {
         super();
         
-        frameWidth      = DEFAULT_WIZARD_FRAME_WIDTH;
-        frameHeight     = DEFAULT_WIZARD_FRAME_HEIGHT;
+        frameWidth      = DEFAULT_FRAME_WIDTH;
+        frameHeight     = DEFAULT_FRAME_HEIGHT;
         frameBackground = DEFAULT_WIZARD_FRAME_BACKGROUND;
         frameIcon       = DEFAULT_WIZARD_FRAME_ICON;
         
@@ -59,7 +59,7 @@ public class NbiFrame extends JFrame {
         setResizable(false);
         
         // initialize the content pane
-        contentPane = new ContentPane();
+        contentPane = new NbiContentPane();
         contentPane.setBackgroundImage(frameBackground);
         
         // update the content pane
@@ -75,45 +75,17 @@ public class NbiFrame extends JFrame {
         super.setVisible(visible);
     }
     
-    public ContentPane getContentPane() {
-        return contentPane;
-    }
-    
     public Image getBackgroundImage() {
-        return getContentPane().getBackgroundImage();
+        return contentPane.getBackgroundImage();
     }
     
-    public void setBackgroundImage(URL backgroundImageUrl) {
-        getContentPane().setBackgroundImage(backgroundImageUrl);
+    public void setBackgroundImage(URL url) {
+        contentPane.setBackgroundImage(url);
     }
     
-    public class ContentPane extends JPanel {
-        private Image backgroundImage;
-        
-        protected void paintComponent(Graphics graphics) {
-            super.paintComponent(graphics);
-            
-            if (backgroundImage != null) {
-                graphics.drawImage(backgroundImage, 0, 0, this);
-            }
-        }
-        
-        public Image getBackgroundImage() {
-            return backgroundImage;
-        }
-        
-        public void setBackgroundImage(URL backgroundImageURL) {
-            if (backgroundImageURL != null) {
-                backgroundImage = new ImageIcon(backgroundImageURL).getImage();
-            }  else {
-                backgroundImage = null;
-            }
-        }
-    }
-    
-    public static final int DEFAULT_WIZARD_FRAME_WIDTH      = 600;
-    public static final int DEFAULT_WIZARD_FRAME_HEIGHT     = 500;
-    public static final URL DEFAULT_WIZARD_FRAME_BACKGROUND = NbiFrame.class.getClassLoader().getResource("org/netbeans/installer/wizard/wizard-background.png");
+    public static final int DEFAULT_FRAME_WIDTH      = 600;
+    public static final int DEFAULT_FRAME_HEIGHT     = 500;
+    public static final URL DEFAULT_WIZARD_FRAME_BACKGROUND = null;
     public static final URL DEFAULT_WIZARD_FRAME_ICON       = NbiFrame.class.getClassLoader().getResource("org/netbeans/installer/wizard/wizard-icon.png");
     
     public static final String WIZARD_FRAME_WIDTH_PROPERTY      = "nbi.wizard.frame.width";

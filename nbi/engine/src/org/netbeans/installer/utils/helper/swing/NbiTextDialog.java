@@ -21,22 +21,15 @@
 package org.netbeans.installer.utils.helper.swing;
 
 import java.awt.BorderLayout;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.io.IOException;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
-import org.netbeans.installer.utils.helper.ErrorLevel;
-import org.netbeans.installer.utils.ErrorManager;
-import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.helper.Text;
-import org.netbeans.installer.wizard.WizardFrame;
+import org.netbeans.installer.wizard.containers.FrameWizardContainer;
 
 public class NbiTextDialog extends NbiDialog {
-    private WizardFrame   wizardFrame;
-    
     private NbiTextPane   textPane;
     private NbiPanel      textPanel;
     private NbiScrollPane textScrollPane;
@@ -44,10 +37,19 @@ public class NbiTextDialog extends NbiDialog {
     private String title;
     private Text   text;
     
-    public NbiTextDialog(WizardFrame owner, String title, Text text) {
+    public NbiTextDialog(String title, Text text) {
+        super();
+        
+        this.title = title;
+        this.text = text;
+        
+        initComponents();
+        initialize();
+    }
+    
+    public NbiTextDialog(NbiFrame owner, String title, Text text) {
         super(owner);
         
-        this.wizardFrame = owner;
         this.title = title;
         this.text = text;
         
@@ -63,7 +65,6 @@ public class NbiTextDialog extends NbiDialog {
     
     private void initComponents() {
         setLayout(new GridBagLayout());
-        setSize(wizardFrame.getSize());
         
         textPane = new NbiTextPane();
         

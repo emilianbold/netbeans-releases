@@ -49,7 +49,7 @@ import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.wizard.components.actions.FinalizeRegistryAction;
-import org.netbeans.installer.wizard.components.actions.InitalizeRegistryAction;
+import org.netbeans.installer.wizard.components.actions.InitializeRegistryAction;
 import static org.netbeans.installer.utils.helper.ErrorLevel.DEBUG;
 import static org.netbeans.installer.utils.helper.ErrorLevel.MESSAGE;
 import static org.netbeans.installer.utils.helper.ErrorLevel.WARNING;
@@ -100,8 +100,8 @@ public class Installer {
             "nbi.ignore.lock.file";
     
     private static final String DEFAULT_INSTALLER_MANIFEST =
-            "Manifest-Version: 1.0" + SystemUtils.getLineSeparator() + 
-            "Main-Class: org.netbeans.installer.Installer" + SystemUtils.getLineSeparator() + 
+            "Manifest-Version: 1.0" + SystemUtils.getLineSeparator() +
+            "Main-Class: org.netbeans.installer.Installer" + SystemUtils.getLineSeparator() +
             "Class-Path: " + SystemUtils.getLineSeparator();
     
     public static final String DATA_DIRECTORY = "data/";
@@ -186,8 +186,6 @@ public class Installer {
         final Wizard wizard = Wizard.getInstance();
         
         wizard.open();
-        wizard.executeComponent(new InitalizeRegistryAction());
-        wizard.next();
     }
     
     /**
@@ -213,10 +211,7 @@ public class Installer {
      * @see #criticalExit()
      */
     public void finish() {
-        final Wizard wizard = Wizard.getInstance();
-        
-        wizard.executeComponent(new FinalizeRegistryAction());
-        wizard.close();
+        Wizard.getInstance().close();
         DownloadManager.instance.terminate();
         System.exit(NORMAL_ERRORCODE);
     }
@@ -557,11 +552,10 @@ public class Installer {
         LogManager.logUnindent("... finished setting the look and feel");
     }
     
-    
     private void cacheEngineJar() throws IOException, DownloadException {
         File engCont = FileProxy.getInstance().getFile("resource:" + ENGINE_JAR_CONTENT_LIST);
         
-        List <String> entries = FileUtils.readStringList(engCont);               
+        List <String> entries = FileUtils.readStringList(engCont);
         
         File dest = getCacheExpectedFile();
         
@@ -613,6 +607,7 @@ public class Installer {
                 cachedEngine + "], exist = " +
                 ((cachedEngine==null) ? false : cachedEngine.exists()));
     }
+    
     private File getCacheExpectedFile() {
         return new File(getLocalDirectory().getPath(), "nbi-engine.jar");
         
@@ -620,7 +615,7 @@ public class Installer {
     
     private void cacheEngineLocally() {
         LogManager.log(MESSAGE, "cache engine data locally to run uninstall in the future");
-        LogManager.indent();        
+        LogManager.indent();
         String filePrefix = "file:";
         String httpPrefix = "http://";
         String jarSep = "!/";
@@ -669,7 +664,7 @@ public class Installer {
                 // later. Or maybe not...
                 LogManager.log("... running engine as a .class file");
             }
-            if(needCache) { 
+            if(needCache) {
                 try {
                     cacheEngineJar();
                 } catch (DownloadException ex) {
@@ -723,8 +718,8 @@ public class Installer {
         LogManager.logUnindent("finished creating lock file");
     }
     
-/////////////////////////////////////////////////////////////////////////////////
-// Inner classes
+    /////////////////////////////////////////////////////////////////////////////////
+    // Inner classes
     public static enum InstallerExecutionMode {
         NORMAL,
         CREATE_BUNDLE;

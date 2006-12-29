@@ -34,15 +34,14 @@ import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.helper.swing.NbiDialog;
+import org.netbeans.installer.utils.helper.swing.NbiFrame;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiScrollPane;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
-import org.netbeans.installer.wizard.WizardFrame;
+import org.netbeans.installer.wizard.containers.FrameWizardContainer;
 
 public class InstallationLogDialog extends NbiDialog {
-    private WizardFrame wizardFrame;
-    
     private NbiTextPane   logPane;
     private NbiPanel      logPanel;
     private NbiScrollPane logScrollPane;
@@ -51,10 +50,8 @@ public class InstallationLogDialog extends NbiDialog {
     
     private File logFile;
     
-    public InstallationLogDialog(WizardFrame owner) {
-        super(owner);
-        
-        wizardFrame = owner;
+    public InstallationLogDialog() {
+        super();
         
         initComponents();
         initialize();
@@ -64,7 +61,6 @@ public class InstallationLogDialog extends NbiDialog {
         logFile = LogManager.getLogFile();
         
         setTitle(logFile.getAbsolutePath());
-        setSize(wizardFrame.getSize());
     }
     
     private void initComponents() {
