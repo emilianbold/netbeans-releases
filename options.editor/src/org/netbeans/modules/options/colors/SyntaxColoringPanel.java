@@ -531,53 +531,61 @@ PropertyChangeListener {
               wave = null, 
               strikethrough = null;
         if (cbEffects.getSelectedIndex () == 1)
-            underline = ((ColorValue) cbEffectColor.getSelectedItem ()).color;
+            underline = getRealColor(cbEffectColor);
         if (cbEffects.getSelectedIndex () == 2)
-            wave = ((ColorValue) cbEffectColor.getSelectedItem ()).color;
+            wave = getRealColor(cbEffectColor);
         if (cbEffects.getSelectedIndex () == 3)
-            strikethrough = ((ColorValue) cbEffectColor.getSelectedItem ()).color;
+            strikethrough = getRealColor(cbEffectColor);
         
         SimpleAttributeSet c = new SimpleAttributeSet (category);
-        Color color = ((ColorValue) cbBackground.getSelectedItem ()).color;
-        if (color != null)
-            c.addAttribute (StyleConstants.Background, color);
-        else
-            c.removeAttribute (StyleConstants.Background);
-        color = ((ColorValue) cbForeground.getSelectedItem ()).color;
-        if (color != null)
-            c.addAttribute (
-                StyleConstants.Foreground,
-                color
-            );
-        else
-            c.removeAttribute (StyleConstants.Foreground);
-        if (underline != null)
-            c.addAttribute (
-                StyleConstants.Underline,
-                underline
-            );
-        else
-            c.removeAttribute (StyleConstants.Underline);
-        if (strikethrough != null)
-            c.addAttribute (
-                StyleConstants.StrikeThrough,
-                strikethrough
-            );
-        else
-            c.removeAttribute (StyleConstants.StrikeThrough);
-        if (wave != null)
-            c.addAttribute (
-                EditorStyleConstants.WaveUnderlineColor,
-                wave
-            );
-        else
-            c.removeAttribute (EditorStyleConstants.WaveUnderlineColor);
-        replaceCurrrentCategory (c);
         
-        setToBeSaved (currentProfile, currentLanguage);
-        updatePreview ();
+        Color color = getRealColor(cbBackground);
+        System.out.println("### updateData: bgColor = " + color);
+        if (color != null) {
+            c.addAttribute(StyleConstants.Background, color);
+        } else {
+            c.removeAttribute(StyleConstants.Background);
+        }
+        
+        color = getRealColor(cbForeground);
+        if (color != null) {
+            c.addAttribute(StyleConstants.Foreground, color);
+        } else {
+            c.removeAttribute(StyleConstants.Foreground);
+        }
+        
+        if (underline != null) {
+            c.addAttribute(StyleConstants.Underline, underline);
+        } else {
+            c.removeAttribute(StyleConstants.Underline);
+        }
+        
+        if (strikethrough != null) {
+            c.addAttribute(StyleConstants.StrikeThrough, strikethrough);
+        } else {
+            c.removeAttribute(StyleConstants.StrikeThrough);
+        }
+        
+        if (wave != null) {
+            c.addAttribute(EditorStyleConstants.WaveUnderlineColor, wave);
+        } else {
+            c.removeAttribute(EditorStyleConstants.WaveUnderlineColor);
+        }
+        
+        replaceCurrrentCategory(c);
+        setToBeSaved(currentProfile, currentLanguage);
+        updatePreview();
     }
 
+    private Color getRealColor(JComboBox comboBox) {
+        // The last item is Inherited Color or None
+        if (comboBox.getSelectedIndex() < comboBox.getItemCount() - 1) {
+            return ((ColorValue) comboBox.getSelectedItem()).color;
+        } else {
+            return null;
+        }
+    }
+    
     private boolean                 blink = true;
     private int                     blinkSequence = 0;
     private RequestProcessor.Task   task = new RequestProcessor 
