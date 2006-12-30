@@ -540,7 +540,6 @@ PropertyChangeListener {
         SimpleAttributeSet c = new SimpleAttributeSet (category);
         
         Color color = getRealColor(cbBackground);
-        System.out.println("### updateData: bgColor = " + color);
         if (color != null) {
             c.addAttribute(StyleConstants.Background, color);
         } else {
