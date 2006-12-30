@@ -72,10 +72,24 @@ public abstract class EditorSettings {
     
     /** Property name constant. */
     public static final String PROP_CURRENT_FONT_COLOR_PROFILE = "currentFontColorProfile";
-    /** Property name constant. */
-    public static final String PROP_DEFAULT_FONT_COLORS = "defaultFontColors";
-    /** Property name constant. */
-    public static final String PROP_EDITOR_FONT_COLORS = "editorFontColors";
+    
+    /** 
+     * The name of the property change event for 'All Languages' font and colors.
+     * 
+     * @deprecated This has always been meant for internal use only. As per
+     * general contract clients should listen on mime type specific Lookup for
+     * changes in editor settings.
+     */
+    public static final String PROP_DEFAULT_FONT_COLORS = EditorSettingsImpl.PROP_DEFAULT_FONT_COLORS;
+    
+    /** 
+     * The name of the property change event for 'Highlighting' font and colors.
+     * 
+     * @deprecated This has always been meant for internal use only. As per
+     * general contract clients should listen on mime type specific Lookup for
+     * changes in editor settings.
+     */
+    public static final String PROP_EDITOR_FONT_COLORS = EditorSettingsImpl.PROP_EDITOR_FONT_COLORS;
 
 
     /**
@@ -113,6 +127,8 @@ public abstract class EditorSettings {
      *
      * @param profile a profile name
      * @return font & color defaults for given profile or null
+     * 
+     * @deprecated Use getFontColorSettings(new String[0]).getAllFontColors(profile) instead.
      */
     public abstract Collection<AttributeSet> getDefaultFontColors (
 	String profile
@@ -124,6 +140,8 @@ public abstract class EditorSettings {
      *
      * @param profile a profile name
      * @return font & color defaults for given profile or null
+     * 
+     * @deprecated Use getFontColorSettings(new String[0]).getAllFontColorsDefaults(profile) instead.
      */
     public abstract Collection<AttributeSet> getDefaultFontColorDefaults (
 	String profile
@@ -134,6 +152,8 @@ public abstract class EditorSettings {
      *
      * @param profile a profile name
      * @param fontColors font & color defaults to be used
+     * 
+     * @deprecated Use getFontColorSettings(new String[0]).setAllFontColors(profile, fontColors) instead.
      */
     public abstract void setDefaultFontColors (
 	String profile,

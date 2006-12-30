@@ -30,7 +30,6 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
-import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
@@ -116,8 +115,8 @@ public final class SettingsProvider implements MimeDataProvider {
         
         protected void initialize() {
             factories = new Factory [] {
-                (Factory) ((EditorSettingsImpl) EditorSettings.getDefault()).getFontColorSettings(mimePath),
-                (Factory) ((EditorSettingsImpl) EditorSettings.getDefault()).getKeyBindingSettings(mimePath),
+                (Factory) FontColorSettingsImpl.get(mimePath),
+                (Factory) KeyBindingSettingsImpl.get(mimePath),
             };
             instances = new Object [factories.length];
             
