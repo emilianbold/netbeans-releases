@@ -103,7 +103,7 @@ public class NBSLanguage {
                 Parser.create (
                     null,
                     Pattern.create (
-                        "['a'-'z' 'A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_' '-']*",
+                        "['a'-'z' 'A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*",
                         NBS
                     ),
                     IDENTIFIER,
@@ -176,6 +176,10 @@ public class NBSLanguage {
                     rule ("token2", new Object[] {COLON, "state"}),
                     rule ("token2", new Object[] {}),
                     rule ("state", new Object[] {LT, IDENTIFIER, GT}),
+//                    rule ("state", new Object[] {LT, IDENTIFIER, "state2", GT}),
+//                    rule ("state2", new Object[] {}),
+//                    rule ("state2", new Object[] {"+", IDENTIFIER}),
+//                    rule ("state2", new Object[] {"-", IDENTIFIER}),
                     rule ("tokenGroup", new Object[] {"tokensInGroup", BRACE2}),
                     rule ("tokensInGroup", new Object[] {"tokenInGroup", "tokensInGroup"}),
                     rule ("tokensInGroup", new Object[] {}),
@@ -239,6 +243,7 @@ public class NBSLanguage {
                     rule ("property", new Object[] {IDENTIFIER, COLON, "propertyValue", SEMICOLON}),
                     rule ("propertyValue", new Object[] {STRING}),
                     rule ("propertyValue", new Object[] {"class"}),
+                    rule ("propertyValue", new Object[] {PARENTHESIS, "regularExpression", PARENTHESIS2}),
                     
                     rule ("class", new Object[] {IDENTIFIER, "class1"}),
                     rule ("class1", new Object[] {DOT, IDENTIFIER, "class1"}),

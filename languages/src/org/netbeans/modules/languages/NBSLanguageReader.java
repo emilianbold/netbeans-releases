@@ -225,7 +225,7 @@ public class NBSLanguageReader {
         if (value == null)
             value = node.getNode ("command0.command1.properties");
         if (value != null)
-            value = readProperties ((ASTNode) value);
+            value = readProperties ((ASTNode) value, language);
         
         if (value == null) {
             ASTNode n = node.getNode ("command0.command1.command2.class");
@@ -256,7 +256,7 @@ public class NBSLanguageReader {
         addFeature (language, keyword, identifier, value);
     }
     
-    private static Map readProperties (ASTNode node) {
+    private static Map readProperties (ASTNode node, Language language) throws ParseException {
         Map result = new HashMap ();
         Iterator it = node.getChildren ().iterator ();
         while (it.hasNext ()) {
@@ -265,14 +265,19 @@ public class NBSLanguageReader {
             ASTNode n = (ASTNode) o;
             String key = n.getTokenTypeIdentifier ("identifier");
             String value = n.getTokenTypeIdentifier ("propertyValue.string");
-            if (value == null) {
+            if (value != null) {
+                value = value.substring (1, value.length () - 1);
+                Evaluator evaluator = Evaluator.createExpressionEvaluator (c (value));
+                result.put (key, evaluator);
+            } else 
+            if (n.getNode ("propertyValue.class") != null) {
                 value = n.getNode ("propertyValue.class").getAsText ();
                 Evaluator evaluator = Evaluator.createMethodEvaluator (value);
                 result.put (key, evaluator);
             } else {
-                value = value.substring (1, value.length () - 1);
-                Evaluator evaluator = Evaluator.createExpressionEvaluator (c (value));
-                result.put (key, evaluator);
+                value = n.getNode ("propertyValue.regularExpression").getAsText ();
+                Pattern pattern = Pattern.create (value, language.getMimeType ());
+                result.put (key, pattern);
             }
         }
         return result;
@@ -315,19 +320,19 @@ public class NBSLanguageReader {
             if (!(feature instanceof Map))
                 throw new ParseException ("Syntax error.");
             Map m = (Map) feature;
-            String colorName = getString (m, "color-name", false);
+            String colorName = getString (m, "color_name", false);
             if (colorName == null)
                 colorName = identifier.toString ();
             feature = createColoring (
                 colorName,
-                getString (m, "default-coloring", false),
-                getString (m, "foreground-color", false),
-                getString (m, "background-color", false),
-                getString (m, "underline-color", false),
-                getString (m, "wave-underline-color", false),
-                getString (m, "strike-through-color", false),
-                getString (m, "font-name", false),
-                getString (m, "font-type", false),
+                getString (m, "default_coloring", false),
+                getString (m, "foreground_color", false),
+                getString (m, "background_color", false),
+                getString (m, "underline_color", false),
+                getString (m, "wave_underline_color", false),
+                getString (m, "strike_through_color", false),
+                getString (m, "font_name", false),
+                getString (m, "font_type", false),
                 getEvaluator (m, "condition", false)
             );
             language.addFeature (featureName, identifier, feature);
@@ -431,7 +436,7 @@ public class NBSLanguageReader {
                 throw new ParseException ("Syntax error.");
             Map m = (Map) feature;
             feature = Navigator.create (
-                getEvaluator (m, "display-name", true),
+                getEvaluator (m, "display_name", true),
                 getEvaluator (m, "tooltip", false),
                 getEvaluator (m, "icon", false),
                 getEvaluator (m, "isLeaf", false)

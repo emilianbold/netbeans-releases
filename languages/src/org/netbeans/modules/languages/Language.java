@@ -185,9 +185,10 @@ public class Language {
         String name,
         Map properties
     ) throws ParseException {
-        String state = (String) ((Evaluator) properties.get ("state")).evaluate ();
         String mimeType = (String) ((Evaluator) properties.get ("mimeType")).evaluate ();
         Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
+        Evaluator stateEvaluator = (Evaluator) properties.get ("state");
+        String state = stateEvaluator == null ? null : (String) stateEvaluator.evaluate ();
         
         // import tokens
         Iterator it = l.parserRules.iterator ();

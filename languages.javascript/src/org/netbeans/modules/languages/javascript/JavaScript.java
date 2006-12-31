@@ -92,7 +92,7 @@ public class JavaScript {
         }
         if (!input.eof () && input.next (1).getIdentifier ().equals ("/"))
             nnode.addToken (input.read ());
-        if (input.next (1).getType ().equals ("js-identifier"))
+        if (input.next (1).getType ().equals ("js_identifier"))
             nnode.addToken (input.read ());
         return nnode;
     }
@@ -126,7 +126,7 @@ public class JavaScript {
     public static String functionName (SyntaxCookie cookie) {
         PTPath path = cookie.getPTPath ();
         ASTNode n = (ASTNode) path.getLeaf ();
-        String name = n.getTokenTypeIdentifier ("js-identifier");
+        String name = n.getTokenTypeIdentifier ("js_identifier");
         String parameters = "";
         ASTNode parametersNode = n.getNode ("FormalParameterList");
         if (parametersNode != null)
@@ -409,7 +409,7 @@ public class JavaScript {
     }
     
     private static int getIndent (TokenSequence ts) {
-        if (ts.token ().id ().name ().equals ("js-whitespace")) {
+        if (ts.token ().id ().name ().equals ("js_whitespace")) {
             String w = ts.token ().text ().toString ();
             int i = w.lastIndexOf ('\n');
             if (i >= 0)

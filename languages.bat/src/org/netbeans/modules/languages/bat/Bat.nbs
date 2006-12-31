@@ -23,7 +23,7 @@ TOKEN:operator: ( [
     "+" "|" "&" "<" ">" "!" "@" "=" ":" "/" "\\" "(" ")" "," "%" "^" "#" "{" "}" "?" "!" "." "$" "*" "_" "-"
 ] )
 
-TOKEN:line-comment: ( "rem " [^ "\n" "\r"]* )
+TOKEN:line_comment: ( "rem " [^ "\n" "\r"]* )
 
 TOKEN:keyword:(
     "AUX" |

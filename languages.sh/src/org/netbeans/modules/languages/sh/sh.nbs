@@ -23,7 +23,7 @@ TOKEN:operator: ( [
     "+" "|" "&" "<" ">" "!" "@" "="
 ] )
 
-TOKEN:line-comment: ( "#" [^ "\n" "\r"]* )
+TOKEN:line_comment: ( "#" [^ "\n" "\r"]* )
 
 TOKEN:keyword:(
     "alias" |
@@ -73,5 +73,5 @@ TOKEN:string: (
 ########### navigator ##########################################################
 
 NAVIGATOR:label {
-    display-name: "$label$";
+    display_name: "$label$";
 }

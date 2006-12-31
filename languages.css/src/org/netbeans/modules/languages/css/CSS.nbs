@@ -18,16 +18,16 @@
 
 ########### tokens #############################################################
 
-TOKEN:css-comment:( "/*" - "*/" )
-TOKEN:css-comment:( "<!--" | "-->" )
-TOKEN:css-whitespace: ([" " "\t" "\n" "\r"]+)
+TOKEN:css_comment:( "/*" - "*/" )
+TOKEN:css_comment:( "<!--" | "-->" )
+TOKEN:css_whitespace: ([" " "\t" "\n" "\r"]+)
 
-TOKEN:css-operator:( ["*" "#" "." "," ":" "-" "+" ">" "(" ")" "{" "}" ";" "[" "]" "!" "/"] )
-TOKEN:css-identifier: (
+TOKEN:css_operator:( ["*" "#" "." "," ":" "-" "+" ">" "(" ")" "{" "}" ";" "[" "]" "!" "/"] )
+TOKEN:css_identifier: (
     "-"? ["a"-"z" "A"-"Z" "_"]
          ["a"-"z" "A"-"Z" "_" "0" - "9" "-"]*
 )
-TOKEN:css-keyword: (
+TOKEN:css_keyword: (
     "@charset" |
     "@import" |
     "@media" |
@@ -36,34 +36,34 @@ TOKEN:css-keyword: (
     "url"
 )
 
-TOKEN:css-url: (
+TOKEN:css_url: (
     "url" [" " "\t" "\n" "\r"]* ("(" - ")")
 )
 
-TOKEN:css-number:( 
+TOKEN:css_number:( 
     ["0"-"9"]+ 
     ( "pt" | "pc" | "in" | "mm" | "cm" | "em" |
       "ex" | "px" | "ms" | "s" | "%"
     )?
 )
 
-TOKEN:css-number:(
+TOKEN:css_number:(
     ["0"-"9"]* "." ["0"-"9"]+
     ( "pt" | "pc" | "in" | "mm" | "cm" | "em" |
       "ex" | "px" | "ms" | "s" | "%"
     )?
 )
 
-TOKEN:css-hash:( "#" ["a"-"z" "A"-"Z" "0"-"9" "-" "_"]+)
+TOKEN:css_hash:( "#" ["a"-"z" "A"-"Z" "0"-"9" "-" "_"]+)
 
-TOKEN:css-string: (
+TOKEN:css_string: (
     "\""
         ( [^ "\"" "\n" "\r"] |
           ("\\" ["r" "n" "t" "\\" "\'" "\""])
         )*
     "\""
 )
-TOKEN:css-string: (
+TOKEN:css_string: (
     "\'"
         ( [^ "\"" "\n" "\r"] |
           ("\\" ["r" "n" "t" "\\" "\'" "\""])
@@ -74,17 +74,17 @@ TOKEN:css-string: (
 
 ########### grammar ############################################################
 
-SKIP:css-comment
-SKIP:css-whitespace
-SKIP:css-error
+SKIP:css_comment
+SKIP:css_whitespace
+SKIP:css_error
 
 S = [charset] (import)* (ruleset | media | page)*;
-charset = "@charset"  <css-string> ";";
-import = "@import" (<css-string> | <css-url>) (<css-identifier>)* ";";
+charset = "@charset"  <css_string> ";";
+import = "@import" (<css_string> | <css_url>) (<css_identifier>)* ";";
 media = "@media" mediaName mediaBody;
-mediaName = <css-identifier> ("," <css-identifier>)*;
+mediaName = <css_identifier> ("," <css_identifier>)*;
 mediaBody = "{" (ruleset)* "}";
-page = "@page" [":" <css-indentifier>] body;
+page = "@page" [":" <css_indentifier>] body;
 
 ruleset = selectors body;
 body = "{" declarations "}";
@@ -94,33 +94,33 @@ combinator = ">" | "+" | ;
 #attrib removed!!!
 simple_selector = element_name (hash | class | attrib | pseudo)* |
                   (hash | class | attrib | pseudo)+;
-element_name = <css-identifier> | "*";
-hash = <css-hash>;
-class = "." <css-identifier>;
-attrib = "[" <css-identifier> [ ("=" | "~=" | "|=") (<css-identifier> | <css-string>) ] "]";
-pseudo = ":" [ <css-identifier> ["(" <css-identifier> ")"] ];
+element_name = <css_identifier> | "*";
+hash = <css_hash>;
+class = "." <css_identifier>;
+attrib = "[" <css_identifier> [ ("=" | "~=" | "|=") (<css_identifier> | <css_string>) ] "]";
+pseudo = ":" [ <css_identifier> ["(" <css_identifier> ")"] ];
 
 declarations = declaration ";" declarations;
 declarations = declaration;
 declarations = ;
 declaration = key ":" expr [prio];
-key = <css-identifier>;
+key = <css_identifier>;
 expr = term (operator term)*;
-term = ["-" | "+"] (<css-number> | <css-identifier> | <css-string> | <css-url> | <css-hash> | function);
+term = ["-" | "+"] (<css_number> | <css_identifier> | <css_string> | <css_url> | <css_hash> | function);
 operator = "/" | "," |;
-function = <css-identifier> "(" expr ")";
+function = <css_identifier> "(" expr ")";
 prio = "!" "important";
 
 ########### color ##############################################################
  
 COLOR:selector {
-    default-coloring: "identifier";
+    default_coloring: "identifier";
 } 
  
 COLOR:key {
-    default-coloring: "keyword";
-    foreground-color:"#000099";
-    font-type:"bold";
+    default_coloring: "keyword";
+    foreground_color:"#000099";
+    font_type:"bold";
 } 
 
 ########### code folding #######################################################
@@ -131,12 +131,12 @@ FOLD:mediaBody
 ########### navigator ##########################################################
 
 NAVIGATOR:media {
-    display-name: "@media $mediaName$";
+    display_name: "@media $mediaName$";
     icon: "/org/netbeans/modules/languages/resources/css.gif";
 }
 
 NAVIGATOR:ruleset {
-    display-name: "$selectors$";
+    display_name: "$selectors$";
     tooltip: org.netbeans.modules.languages.css.CSS.navigatorTooltip;
     icon: "/org/netbeans/modules/languages/resources/css.gif";
 }
@@ -155,14 +155,14 @@ INDENT "{:}"
 
 REFORMAT:ruleset:"i"
 REFORMAT:declarations:"++i"
-REFORMAT:css-key:"i"
+REFORMAT:css_key:"i"
 REFORMAT:body:" "
 REFORMAT:value:" "
 
 
 ########### completion #########################################################
 
-COMPLETION:css-key {
+COMPLETION:css_key {
 #    recursive:    "true";
     text1: "azimuth";
     text2: "background-attachment";
@@ -287,7 +287,7 @@ MARK:ERROR {
 }
 
 PROPERTIES {
-    navigator-sort:"true"; 
+    navigator_sort:"true"; 
     #traceSteps:"true";
     #printRules:"true";
     #printFirst:"true";

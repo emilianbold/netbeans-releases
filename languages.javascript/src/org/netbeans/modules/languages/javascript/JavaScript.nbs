@@ -19,10 +19,10 @@
 
 ########### tokens #############################################################
 
-TOKEN:js-comment:("/*" - "*/")
-TOKEN:js-comment:("<!--")
-TOKEN:js-line-comment: ("//"[^"\n""\r"]*)
-TOKEN:js-keyword: (
+TOKEN:js_comment:("/*" - "*/")
+TOKEN:js_comment:("<!--")
+TOKEN:js_line_comment: ("//"[^"\n""\r"]*)
+TOKEN:js_keyword: (
     "abstract" | 
     "boolean" |  
     "break" |
@@ -84,7 +84,7 @@ TOKEN:js-keyword: (
     "with"
 )
 
-TOKEN:js-operator: (
+TOKEN:js_operator: (
     "==" | "!=" | "<<" | ">>" | ">>>" | ">=" | "<=" | "++" | "--" | 
     "+=" | "-=" | "*=" | "/=" | "%=" | "<<=" | ">>=" | ">>>=" | "&=" | 
     "^=" | "|=" | "&&" | "||" | "===" | "!==" | 
@@ -93,9 +93,9 @@ TOKEN:js-operator: (
     "~" | "|" | "\\"
 )
 
-TOKEN:js-separator: ( [";" "{" "}"] )
+TOKEN:js_separator: ( [";" "{" "}"] )
 
-TOKEN:js-string: (
+TOKEN:js_string: (
     "\"" ( 
         [^ "\\" "\"" "\n" "\r"] |
         ("\\" (
@@ -107,7 +107,7 @@ TOKEN:js-string: (
     )* 
     "\""
 )
-TOKEN:js-string: (
+TOKEN:js_string: (
     "\'" ( 
         [^ "\\" "\'" "\n" "\r"] |
         ("\\" (
@@ -123,7 +123,7 @@ TOKEN:js-string: (
 #    "/" ( [^ "\n" "\r"] )* "/" ['g' 'i' 'm']*
 #)
 
-TOKEN:js-number: (
+TOKEN:js_number: (
     ["0"-"9"] ['l' 'L']? |
     ["1"-"9"] ["0"-"9"]* ['l' 'L']? |
     "0" ["0"-"7"]+ ['l' 'L']? |
@@ -134,9 +134,9 @@ TOKEN:js-number: (
     ["0"-"9"]+ (["e" "E"] ["+" "-"]? ["0"-"9"]+)? ["f" "F" "d" "D"]
 )
 
-TOKEN:js-whitespace: ([" " "\t" "\n" "\r"]+)
+TOKEN:js_whitespace: ([" " "\t" "\n" "\r"]+)
 
-TOKEN:js-identifier: (
+TOKEN:js_identifier: (
     ["a"-"z" "A"-"Z" "_" "$"] 
     ["a"-"z" "A"-"Z" "0"-"9" "_" "$" "-"
     ]*
@@ -145,13 +145,13 @@ TOKEN:js-identifier: (
 
 ########### grammar ############################################################
 
-SKIP:js-whitespace
-SKIP:js-comment
-SKIP:js-line-comment
+SKIP:js_whitespace
+SKIP:js_comment
+SKIP:js_line_comment
 
 S = (SourceElement)+;
 SourceElement = Statement;
-FormalParameterList = [<js-identifier> ("," <js-identifier>)*]; 
+FormalParameterList = [<js_identifier> ("," <js_identifier>)*]; 
 
 Statement = EmptyStatement | ExpressionStatement | VariableStatement | 
     Block | LabelledStatement | IfStatement | SwitchStatement | 
@@ -160,7 +160,7 @@ Statement = EmptyStatement | ExpressionStatement | VariableStatement |
     ThrowStatement | TryStatement;
 Block = "{" (Statement)* "}";
 VariableStatement = "var" VariableDeclaration ("," VariableDeclaration)* [";"];
-VariableDeclaration = <js-identifier> [Initializer];
+VariableDeclaration = <js_identifier> [Initializer];
 Initializer = "=" AssignmentExpression;
 EmptyStatement = ";";
 ExpressionStatement = ExpressionInitial [";"];
@@ -174,19 +174,19 @@ ForStatement =
         "in" Expression
     ) ")" Statement;
 #HACK                     "for" "(" LeftHandSideExpression "in" Expression ")" Statement;
-VariableDeclarationNoIn = <js-identifier> [InitializerNoIn];
+VariableDeclarationNoIn = <js_identifier> [InitializerNoIn];
 InitializerNoIn = "=" AssignmentExpressionNoIn;
-ContinueStatement = "continue" [<js-identifier>] [";"];
-BreakStatement = "break" [<js-identifier>] [";"];
+ContinueStatement = "continue" [<js_identifier>] [";"];
+BreakStatement = "break" [<js_identifier>] [";"];
 ReturnStatement = "return" [Expression] [";"];
 WithStatement = "with" "(" Expression ")" Statement;
 SwitchStatement = "switch" "(" Expression ")" "{" (CaseClause)* [DefaultClause] (CaseClause)* "}";
 CaseClause = "case" Expression ":" (Statement)*;
 DefaultClause = "default" ":" (Statement)*;
-LabelledStatement = <js-identifier> ":" Statement;
+LabelledStatement = <js_identifier> ":" Statement;
 ThrowStatement = "throw" Expression ";";
 TryStatement = "try" Block [Catch] [Finally];
-Catch = "catch" "(" <js-identifier> ")" Block;
+Catch = "catch" "(" <js_identifier> ")" Block;
 Finally = "finally" Block;
 
 ExpressionInitial = AssignmentExpressionInitial ("," AssignmentExpression)*;
@@ -266,17 +266,17 @@ CallExpression = PrimaryExpression (MemberOperator | Arguments)*;
 CallExpressionInitial = PrimaryExpressionInitial (MemberOperator | Arguments)*;
 NewExpression = "new" NewSubExpression (MemberOperator | Arguments)*;
 NewSubExpression = PrimaryExpression (MemberOperator)* | NewExpression;
-MemberOperator = "[" Expression "]" | "." <js-identifier>;
+MemberOperator = "[" Expression "]" | "." <js_identifier>;
 Arguments = "(" [AssignmentExpression ("," AssignmentExpression)*] ")";
 PrimaryExpression = PrimaryExpressionInitial | ObjectLiteral;
 PrimaryExpressionInitial = "this" | "null" | "true" | "false" | 
-    <js-number> | <js-string> | <js-identifier> | RegularExpression |
+    <js_number> | <js_string> | <js_identifier> | RegularExpression |
     "(" Expression ")" | ArrayLiteral | FunctionDeclaration;
 ArrayLiteral = "[" (",")* [AssignmentExpression] ( (",")+ AssignmentExpression)* (",")* "]";
 ObjectLiteral = "{" [PropertyNameAndValue ("," PropertyNameAndValue)*] "}";
 PropertyNameAndValue = PropertyName ":" AssignmentExpression;
-PropertyName = <js-identifier> | <js-string> | <js-number>;
-FunctionDeclaration = "function" [<js-identifier>] "(" FormalParameterList ")" FunctionBody;
+PropertyName = <js_identifier> | <js_string> | <js_number>;
+FunctionDeclaration = "function" [<js_identifier>] "(" FormalParameterList ")" FunctionBody;
 FunctionBody = Block;
 
 RegularExpression = "/";
@@ -286,21 +286,21 @@ PARSE:RegularExpression:org.netbeans.modules.languages.javascript.JavaScript.par
 
 ########### colors #############################################################
 
-COLOR:js-separator {
-    color-name: "js-operator";
+COLOR:js_separator {
+    color_name: "js_operator";
 }
 
 #COLOR:functionName {
-#    color-name: "method";
-#    default-coloring: "default";
-#    font-type: "bold";
+#    color_name: "method";
+#    default_coloring: "default";
+#    font_type: "bold";
 #}
 
 COLOR:RegularExpression {
-    color-name: "regularExpression";
-    default-coloring: "string";
-    font-type: "bold";
-    foreground-color: "0x99006b";
+    color_name: "regularExpression";
+    default_coloring: "string";
+    font_type: "bold";
+    foreground_color: "0x99006b";
 }
 
 ########### indentation ########################################################
@@ -314,24 +314,24 @@ FOLD:FunctionBody:"{...}"
 ########### navigator ##########################################################
 
 NAVIGATOR:FunctionDeclaration {
-    display-name: org.netbeans.modules.languages.javascript.JavaScript.functionName;
+    display_name: org.netbeans.modules.languages.javascript.JavaScript.functionName;
     icon: "/org/netbeans/modules/languages/resources/method.gif";
     isLeaf: "true";
 }
 
 NAVIGATOR:VariableDeclaration {
-    display-name: "$js-identifier$";
-    tooltip: "$js-identifier$ $Initializer$";
+    display_name: "$js_identifier$";
+    tooltip: "$js_identifier$ $Initializer$";
     icon: "/org/netbeans/modules/languages/resources/variable.gif";
 }
 
 NAVIGATOR:ObjectLiteral {
-    display-name: org.netbeans.modules.languages.javascript.JavaScript.objectName;
+    display_name: org.netbeans.modules.languages.javascript.JavaScript.objectName;
     icon: "/org/netbeans/modules/languages/resources/class.gif";
 }
 
 NAVIGATOR:PropertyNameAndValue {
-    display-name: "$PropertyName$";
+    display_name: "$PropertyName$";
     icon: "/org/netbeans/modules/languages/resources/variable.gif";
 }
 
@@ -346,29 +346,29 @@ MARK:error {
     message:"Unexpected character.";
 }
 
-COMPLETION:js-identifier {
+COMPLETION:js_identifier {
     text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems; 
     description1:org.netbeans.modules.languages.javascript.JavaScript.completionDescriptions; 
 }
 
-COMPLETION:js-keyword {
+COMPLETION:js_keyword {
     text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems; 
     description1:org.netbeans.modules.languages.javascript.JavaScript.completionDescriptions; 
 }
 
-COMPLETION:js-whitespace {
+COMPLETION:js_whitespace {
     text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems; 
     description1:org.netbeans.modules.languages.javascript.JavaScript.completionDescriptions; 
 }
 
 STORE:VariableDeclaration {
     context:"Folder,Block";
-    name:"$js-identifier$";
+    name:"$js_identifier$";
 }
 
 STORE:FunctionDeclaration {
     context:"Folder,Block";
-    name:"$js-identifier$";
+    name:"$js_identifier$";
 }
 
 STORE:PropertyNameAndValue {
@@ -376,7 +376,7 @@ STORE:PropertyNameAndValue {
     name:"$PropertyName$";
 }
 
-HYPERLINK:js-identifier:org.netbeans.modules.languages.javascript.JavaScript.hyperlink
+HYPERLINK:js_identifier:org.netbeans.modules.languages.javascript.JavaScript.hyperlink
 
 COMPLETE "(:)"
 COMPLETE "{:}"

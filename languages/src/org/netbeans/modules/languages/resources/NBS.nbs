@@ -37,7 +37,7 @@ TOKEN:keyword:(
     "TOKEN" | 
     "TOOLTIP"
 )
-TOKEN:identifier: ( ["a"-"z" "A"-"Z"] ["a"-"z" "A"-"Z" "0"-"9" "_" "-"]* )
+TOKEN:identifier: ( ["a"-"z" "A"-"Z"] ["a"-"z" "A"-"Z" "0"-"9" "_"]* )
 TOKEN:operator: ( 
     ":" | "*" | "?" | "+" | "-" | "[" | "]" | "<" | ">" |
     "^" | "|" | "{" | "}" | "(" | ")" | "," | "=" | ";" | 
@@ -148,15 +148,15 @@ class1 = ;
 
 
 NAVIGATOR:token {
-    display-name: "<html><b><font color=000099>TOKEN</font></b>: $identifier$</html>";
+    display_name: "<html><b><font color=000099>TOKEN</font></b>: $identifier$</html>";
 }
 
 NAVIGATOR:groupToken {
-    display-name: "<html><b><font color=000099>TOKEN</font></b>: $identifier$</html>";
+    display_name: "<html><b><font color=000099>TOKEN</font></b>: $identifier$</html>";
 }
 
 NAVIGATOR:command {
-    display-name: "<html><b><font color=000099>$keyword$</font></b>: $command0.class$</html>";
+    display_name: "<html><b><font color=000099>$keyword$</font></b>: $command0.class$</html>";
 }
 
 HYPERLINK:value:org.netbeans.modules.languages.NBS.hyperlink  
@@ -183,24 +183,24 @@ COMPLETION:S {
 }
 
 COMPLETION:colorKey {
-    text1:        "color-name";
-    description1: "<html><b><font color=blue>color-name</font></b> <font color=#aaaaaa> The name of coloring.</font></html>";
-    text2:        "default-coloring";
-    description2: "<html><b><font color=blue>default-coloring</font></b> <font color=#aaaaaa> Defines basic type this font&color is extended from (like keyword, operator).</font></html>";
-    text3:        "foreground-color";
-    description3: "<html><b><font color=blue>foreground-color</font></b> <font color=#aaaaaa> Foregroud color.</font></html>";
-    text4:        "background-color";
-    description4: "<html><b><font color=blue>background-color</font></b> <font color=#aaaaaa> background color.</font></html>";
-    text5:        "underline-color";
-    description5: "<html><b><font color=blue>underline-color</font></b> <font color=#aaaaaa> Underline color.</font></html>";
-    text6:        "wave-underline-color";
-    description6: "<html><b><font color=blue>wave-underline-color</font></b> <font color=#aaaaaa> Wave underline color.</font></html>";
-    text7:        "strike-through-color";
-    description7: "<html><b><font color=blue>strike-through-color</font></b> <font color=#aaaaaa> Strike trough color.</font></html>";
-    text8:        "font-name";
-    description8: "<html><b><font color=blue>font-name</font></b> <font color=#aaaaaa> Font name.</font></html>";
-    text9:        "font-type";
-    description9: "<html><b><font color=blue>font-type</font></b> <font color=#aaaaaa> Font type like bold and italic.</font></html>";
+    text1:        "color_name";
+    description1: "<html><b><font color=blue>color_name</font></b> <font color=#aaaaaa> The name of coloring.</font></html>";
+    text2:        "default_coloring";
+    description2: "<html><b><font color=blue>default_coloring</font></b> <font color=#aaaaaa> Defines basic type this font&color is extended from (like keyword, operator).</font></html>";
+    text3:        "foreground_color";
+    description3: "<html><b><font color=blue>foreground_color</font></b> <font color=#aaaaaa> Foregroud color.</font></html>";
+    text4:        "background_color";
+    description4: "<html><b><font color=blue>background_color</font></b> <font color=#aaaaaa> background color.</font></html>";
+    text5:        "underline_color";
+    description5: "<html><b><font color=blue>underline_color</font></b> <font color=#aaaaaa> Underline color.</font></html>";
+    text6:        "wave_underline_color";
+    description6: "<html><b><font color=blue>wave_underline_color</font></b> <font color=#aaaaaa> Wave underline color.</font></html>";
+    text7:        "strike_through_color";
+    description7: "<html><b><font color=blue>strike_through_color</font></b> <font color=#aaaaaa> Strike trough color.</font></html>";
+    text8:        "font_name";
+    description8: "<html><b><font color=blue>font_name</font></b> <font color=#aaaaaa> Font name.</font></html>";
+    text9:        "font_type";
+    description9: "<html><b><font color=blue>font_type</font></b> <font color=#aaaaaa> Font type like bold and italic.</font></html>";
 }
 
 COMPLETION:completionKey {
@@ -215,8 +215,8 @@ COMPLETION:completionKey {
 }
 
 COMPLETION:navigatorKey {
-    text1:        "display-name";
-    description1: "<html><b><font color=blue>display-name</font></b> <font color=#aaaaaa> text to be displayed in Navigator.</font></html>";
+    text1:        "display_name";
+    description1: "<html><b><font color=blue>display_name</font></b> <font color=#aaaaaa> text to be displayed in Navigator.</font></html>";
     text2:        "tooltip";
     description2: "<html><b><font color=blue>tooltip</font></b> <font color=#aaaaaa> Tooltip.</font></html>";
     text3:        "icon";

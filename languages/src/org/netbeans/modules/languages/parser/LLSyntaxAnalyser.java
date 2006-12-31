@@ -108,8 +108,15 @@ public class LLSyntaxAnalyser {
                 if (embeded)
                     return root;
                 ASTNode n = read (input, true, skipErrors);
-                if (n != null) // embeded language without grammer definition
+                if (n != null) {// embeded language without grammer definition
+                    if (node == null) {
+                        root = node = new ASTNodeImpl (mimeType, "Root", -1, 0);
+                        Iterator it2 = initialWhitespaces.iterator ();
+                        while (it2.hasNext ())
+                            node.addToken ((SToken) it2.next ());
+                    }
                     node.addNode ((ASTNodeImpl) n);
+                }
             }
             while (!it.hasNext ()) {
                 if (stack.empty ()) break;
