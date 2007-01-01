@@ -19,13 +19,26 @@
 
 package org.openide.util.lookup;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Set;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -36,36 +49,109 @@ import org.openide.util.RequestProcessor;
  * @author Jesse Glick
  */
 public class MetaInfServicesLookupTest extends NbTestCase {
-
+    private Logger LOG;
+    
     public MetaInfServicesLookupTest(String name) {
         super(name);
+        LOG = Logger.getLogger("Test." + name);
+    }
+    
+    private String prefix() {
+        return "META-INF/services/";
+    }
+    
+    protected Level logLevel() {
+        return Level.INFO;
     }
 
-    private URL findJar(String n) {
-        URL u = MetaInfServicesLookupTest.class.getResource("/org/openide/util/data/" + n);
-        assertNotNull("Url cannot be null: " + n, u);
-        return u;
+    private URL findJar(String n) throws IOException {
+        LOG.info("Looking for " + n);
+        File jarDir = new File(getWorkDir(), "jars");
+        jarDir.mkdirs();
+        File jar = new File(jarDir, n);
+        if (jar.exists()) {
+            return jar.toURI().toURL();
+        }
+        
+        LOG.info("generating " + jar);
+        
+        URL data = MetaInfServicesLookupTest.class.getResource(n.replaceAll("\\.jar", "\\.txt"));
+        assertNotNull("Data found", data);
+        StringBuffer sb = new StringBuffer();
+        InputStreamReader r = new InputStreamReader(data.openStream());
+        for(;;) {
+            int ch = r.read();
+            if (ch == -1) {
+                break;
+            }
+            sb.append((char)ch);
+        }
+        
+        JarOutputStream os = new JarOutputStream(new FileOutputStream(jar));
+        
+        Pattern p = Pattern.compile(":([^:]+):([^:]*)", Pattern.MULTILINE | Pattern.DOTALL);
+        Matcher m = p.matcher(sb);
+        Pattern foobar = Pattern.compile("^(org\\.(foo|bar)\\..*)$", Pattern.MULTILINE);
+        Set<String> names = new TreeSet<String>();
+        while (m.find()) {
+            assert m.groupCount() == 2;
+            String entryName = prefix() + m.group(1);
+            LOG.info("putting there entry: " + entryName);
+            os.putNextEntry(new JarEntry(entryName));
+            os.write(m.group(2).getBytes());
+            os.closeEntry();
+            
+            Matcher fb = foobar.matcher(m.group(2));
+            while (fb.find()) {
+                String clazz = fb.group(1).replace('.', '/') + ".class";
+                LOG.info("will copy " + clazz);
+                names.add(clazz);
+            }
+        }
+        
+        for (String copy : names) {
+            os.putNextEntry(new JarEntry(copy));
+            LOG.info("copying " + copy);
+            InputStream from = MetaInfServicesLookupTest.class.getResourceAsStream("/" + copy);
+            assertNotNull(copy, from);
+            for (;;) {
+                int ch = from.read();
+                if (ch == -1) {
+                    break;
+                }
+                os.write(ch);
+            }
+            from.close();
+            os.closeEntry();;
+        }
+        os.close();
+        LOG.info("done " + jar);
+        return jar.toURI().toURL();
     }
 
     ClassLoader c1, c2, c2a, c3, c4;
 
     protected void setUp() throws Exception {
+        clearWorkDir();
+        ClassLoader app = getClass().getClassLoader().getParent();
+        ClassLoader c0 = app;
+        
         c1 = new URLClassLoader(new URL[] {
             findJar("services-jar-1.jar"),
-        });
+        }, c0);
         c2 = new URLClassLoader(new URL[] {
             findJar("services-jar-2.jar"),
         }, c1);
         c2a = new URLClassLoader(new URL[] {
             findJar("services-jar-2.jar"),
         }, c1);
-        c3 = new URLClassLoader(new URL[] {
-            findJar("services-jar-2.jar"),
-        });
+        c3 = new URLClassLoader(new URL[] { findJar("services-jar-2.jar") },
+            c0
+        );
         c4 = new URLClassLoader(new URL[] {
             findJar("services-jar-1.jar"),
             findJar("services-jar-2.jar"),
-        });
+        }, c0);
     }
 
     public void testBasicUsage() throws Exception {

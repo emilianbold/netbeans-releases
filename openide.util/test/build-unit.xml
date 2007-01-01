@@ -21,14 +21,4 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="openide/util/test-unit" basedir="." default="all">
     <import file="../../../nbbuild/templates/xtest-unit.xml"/>
-
-    <!-- ========= -->
-    <!-- Compilers -->
-    <!-- ========= -->
-
-    <target name="default-compiler">
-        <ant dir="unit/src/org/openide/util/data"/>
-        <antcall target="xtest-unit.default-compiler" />
-    </target>
-
 </project>
