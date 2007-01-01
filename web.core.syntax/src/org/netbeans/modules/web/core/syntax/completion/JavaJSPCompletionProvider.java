@@ -45,9 +45,9 @@ import static org.netbeans.modules.web.core.syntax.completion.VirtualJavaFromJSP
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class JavaJSPCompletionProvider implements CompletionProvider {
+public class JavaJspCompletionProvider implements CompletionProvider {
     private final JavaCompletionProvider javaCompletionProvider = new JavaCompletionProvider();
-    private static final Logger logger = Logger.getLogger(JavaJSPCompletionProvider.class.getName());
+    private static final Logger logger = Logger.getLogger(JavaJspCompletionProvider.class.getName());
     
     public CompletionTask createTask(int queryType, final JTextComponent component) {
         if ((queryType & COMPLETION_QUERY_TYPE) != 0){

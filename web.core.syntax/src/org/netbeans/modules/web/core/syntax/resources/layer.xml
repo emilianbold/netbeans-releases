@@ -39,7 +39,7 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-web-core-syntax-completion-JspCompletionProvider.instance"/>
-                    <file name="org-netbeans-modules-web-core-syntax-completion-JavaJSPCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-web-core-syntax-completion-JavaJspCompletionProvider.instance"/>
                 </folder>
                 <folder name="FoldManager">
                     <file name="org-netbeans-modules-web-core-syntax-folding-JspFoldManagerFactory.instance"/>
