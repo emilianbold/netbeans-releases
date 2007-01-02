@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.nbbuild;
@@ -628,7 +628,7 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
         w.write("\"Portions Copyrighted [year] [name of copyright owner]\"\n");
         w.write("\n");
         w.write("The Original Software is NetBeans. The Initial Developer of the Original\n");
-        w.write("Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun\n");
+        w.write("Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun\n");
         w.write("Microsystems, Inc. All Rights Reserved.\n");
         w.write ("-->\n");
         w.write ("<!DOCTYPE api-answers PUBLIC \"-//NetBeans//DTD Arch Answers//EN\" \""); w.write (nbRoot); w.write ("nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd\" [\n");
