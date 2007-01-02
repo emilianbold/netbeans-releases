@@ -142,7 +142,7 @@ public class JSPOptions extends BaseOptions {
         Set allClasses = res.allClasses();
         for (Iterator it = allClasses.iterator(); it.hasNext();) {
             Class cls = (Class)it.next();
-            if (cls.getName().equals("org.netbeans.modules.web.core.syntax.JspIndentEngine")) { //NOI18N
+            if (cls.getName().equals(org.netbeans.modules.web.core.syntax.formatting.JspIndentEngine.class.getName())) { //NOI18N
                 engineClass = cls;
 		break;
             }
