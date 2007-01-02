@@ -19,15 +19,14 @@
 
 package org.netbeans.modules.mobility.project;
 import java.io.File;
-import java.io.IOException;
+import java.util.HashMap;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -51,66 +50,55 @@ public final class J2MEAntLogger extends AntLogger {
     public J2MEAntLogger() {
     }
     */
-    public boolean interestedInSession(final AntSession session) {
+    public boolean interestedInSession(AntSession session) {
         // disable this feature when verbosity set to DEBUG
         return session.getVerbosity() < AntEvent.LOG_DEBUG;
     }
     
-    private static File getSourceRoot(final File dir) {
-        final FileObject projdir = FileUtil.toFileObject(FileUtil.normalizeFile(dir));
-        try {
-            final Project proj = ProjectManager.getDefault().findProject(projdir);
-            if (proj == null) return null;
-            final AntProjectHelper helper = proj.getLookup().lookup(AntProjectHelper.class);
-            if (helper == null) return null;
-            final String sourceRoot = helper.getStandardPropertyEvaluator().getProperty("src.dir"); //NOI18N
-            return sourceRoot == null ? null : helper.resolveFile(sourceRoot);
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+    public boolean interestedInScript(File script, AntSession session) {
+        FileObject projfile = FileUtil.toFileObject(FileUtil.normalizeFile(script));
+        Project proj = FileOwnerQuery.getOwner(projfile);
+        if (proj == null) return false;
+        AntProjectHelper helper = proj.getLookup().lookup(AntProjectHelper.class);
+        if (helper == null) return false;
+        String sourceRoot = helper.getStandardPropertyEvaluator().getProperty("src.dir"); //NOI18N
+        if (sourceRoot == null) return false;
+        File srcRoot = helper.resolveFile(sourceRoot);
+        if (srcRoot == null) return false;
+        HashMap<File, String> roots = (HashMap)session.getCustomData(this);
+        if (roots == null) {
+            roots = new HashMap();
+            session.putCustomData(this, roots);
         }
-        return null;
+        roots.put(script, srcRoot.getAbsolutePath().replaceAll(CHARSTOESCAPE, ESCAPESEQUENCE) + separator);
+        return true;
     }
     
-    public boolean interestedInScript(final File script, final AntSession session) {
-        if (script.getName().equals("build-impl.xml")) { // NOI18N
-            final File parent = script.getParentFile();
-            if (parent != null && parent.getName().equals("nbproject")) { // NOI18N
-                final File parent2 = parent.getParentFile();
-                if (parent2 != null) {
-                    final File srcRoot = getSourceRoot(parent2);
-                    if (srcRoot == null) return false;
-                    session.putCustomData(this, srcRoot.getAbsolutePath().replaceAll(CHARSTOESCAPE, ESCAPESEQUENCE)+separator);
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    
-    public String[] interestedInTargets(@SuppressWarnings("unused")
-	final AntSession session) {
+    public String[] interestedInTargets(AntSession session) {
         // may be restricted to "compile" target only
         return AntLogger.ALL_TARGETS;
     }
     
-    public String[] interestedInTasks(@SuppressWarnings("unused")
-	final AntSession session) {
+    public String[] interestedInTasks(AntSession session) {
         // may be restricted to "javac" task only
         return AntLogger.ALL_TASKS;
     }
     
-    public void messageLogged(final AntEvent event) {
+    public void messageLogged(AntEvent event) {
         if (event.isConsumed()) return;
-        final String message = event.getMessage();
-        final String newMessage = PREPROCESSED.matcher(message).replaceFirst((String)event.getSession().getCustomData(this));
+        HashMap<File, String> roots = (HashMap)event.getSession().getCustomData(this);
+        if (roots == null) return;
+        String srcRoot = roots.get(event.getScriptLocation());
+        if (srcRoot == null) return;
+        String message = event.getMessage();
+        String newMessage = PREPROCESSED.matcher(message).replaceFirst(srcRoot);
         if (!message.equals(newMessage)) {
             event.consume();
             event.getSession().deliverMessageLogged(event, newMessage, event.getLogLevel());
         }
     }
     
-    public int[] interestedInLogLevels(@SuppressWarnings("unused")
-	final AntSession session) {
+    public int[] interestedInLogLevels(AntSession session) {
         return new int[]{AntEvent.LOG_VERBOSE, AntEvent.LOG_INFO, AntEvent.LOG_WARN, AntEvent.LOG_ERR};
     }
     
