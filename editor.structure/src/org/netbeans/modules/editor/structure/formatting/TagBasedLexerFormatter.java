@@ -25,47 +25,43 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtFormatter;
-import org.netbeans.editor.ext.ExtSyntaxSupport;
-import org.openide.ErrorManager;
 
 /**
  *
  * @author Tomasz.Slota@Sun.COM
  */
-@Deprecated // use TagBasedLexerFormatter instead
-public abstract class TagBasedFormatter extends ExtFormatter  {
-    
+public abstract class TagBasedLexerFormatter extends ExtFormatter  {
+    private static final Logger logger = Logger.getLogger(TagBasedLexerFormatter.class.getName());
+            
     /** Creates a new instance of TagBases */
-    public TagBasedFormatter(Class kitClass) {
+    public TagBasedLexerFormatter(Class kitClass) {
         super(kitClass);
     }
     
-    protected abstract ExtSyntaxSupport getSyntaxSupport(BaseDocument doc);
-    protected abstract boolean isClosingTag(TokenItem token);
-    protected abstract boolean isUnformattableToken(TokenItem token);
+    protected abstract boolean isClosingTag(TokenHierarchy tokenHierarchy, int tagTokenOffset);
+    protected abstract boolean isUnformattableToken(TokenHierarchy tokenHierarchy, int tagTokenOffset);
     protected abstract boolean isUnformattableTag(String tag);
-    protected abstract boolean isOpeningTag(TokenItem token);
-    protected abstract String extractTagName(TokenItem tknTag);
+    protected abstract boolean isOpeningTag(TokenHierarchy tokenHierarchy, int tagTokenOffset);
+    protected abstract String extractTagName(TokenHierarchy tokenHierarchy, int tokenOffset);
     protected abstract boolean areTagNamesEqual(String tagName1, String tagName2);
     protected abstract boolean isClosingTagRequired(BaseDocument doc, String tagName);
-    protected abstract int getOpeningSymbolOffset(TokenItem tknTag);
-    protected abstract TokenItem getTagTokenEndingAtPosition(BaseDocument doc, int position) throws BadLocationException;
-    protected abstract int getTagEndOffset(TokenItem token);
+    protected abstract int getOpeningSymbolOffset(TokenHierarchy tokenHierarchy, int tagTokenOffset);
+    protected abstract int getTagEndingAtPosition(TokenHierarchy tokenHierarchy, int position) throws BadLocationException;
+    protected abstract int getTagEndOffset(TokenHierarchy tokenHierarchy, int tagStartOffset);
     
-    protected Writer extFormatterReformat(final BaseDocument doc, final int startOffset, final int endOffset,
-            final boolean indentOnly) throws BadLocationException, IOException {
-        return super.reformat(doc, startOffset, endOffset, indentOnly);
-    }
-    
-    protected boolean isWSTag(TokenItem tag){
-        char chars[] = tag.getImage().toCharArray();
+    protected boolean isWSTag(Token tag){
+        char chars[] = tag.text().toString().toCharArray();
         
         for (char c : chars){
             if (!Character.isWhitespace(c)){
@@ -76,21 +72,28 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
         return true;
     }
     
-    protected int getIndentForTagParameter(BaseDocument doc, TokenItem tag) throws BadLocationException{
-        int tagStartLine = Utilities.getLineOffset(doc, tag.getOffset());
-        TokenItem currentToken = tag.getNext();
+    protected int getIndentForTagParameter(TokenHierarchy tokenHierarchy, int tagOffset) throws BadLocationException{
+        BaseDocument doc = (BaseDocument) tokenHierarchy.mutableInputSource();
+        int tagStartLine = Utilities.getLineOffset(doc, tagOffset);
+        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+        tokenSequence.move(tagOffset);
+        Token token;
+        int tokenOffset;
         
         /*
          * Find the offset of the first attribute if it is specified on the same line as the opening of the tag
          * e.g. <tag   |attr=
          * 
          */
-        while (currentToken != null && isWSTag(currentToken) && tagStartLine == Utilities.getLineOffset(doc, currentToken.getOffset())){
-            currentToken = currentToken.getNext();
-        }
+        do {
+            tokenSequence.moveNext();
+            token = tokenSequence.token();
+            tokenOffset = token.offset(tokenHierarchy);
+        } while (token != null && isWSTag(token) 
+                && tagStartLine == Utilities.getLineOffset(doc, tokenOffset));
         
-        if (tag != null && !isWSTag(currentToken) && tagStartLine == Utilities.getLineOffset(doc, currentToken.getOffset())){
-            return currentToken.getOffset() - Utilities.getRowIndent(doc, currentToken.getOffset()) - Utilities.getRowStart(doc, currentToken.getOffset());
+        if (!isWSTag(token) && tagStartLine == Utilities.getLineOffset(doc, tokenOffset)){
+            return tokenOffset - Utilities.getRowIndent(doc, tokenOffset) - Utilities.getRowStart(doc, tokenOffset);
         }
         
         return getShiftWidth(); // default;
@@ -98,14 +101,15 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
     
     @Override public Writer reformat(BaseDocument doc, int startOffset, int endOffset,
             boolean indentOnly) throws BadLocationException, IOException {
-        
-        if (!hasValidSyntaxSupport(doc)){
-            return null;
-        }
-        
         LinkedList<TagIndentationData>unprocessedOpeningTags = new LinkedList<TagIndentationData>();
         List<TagIndentationData>matchedOpeningTags = new ArrayList<TagIndentationData>();
         doc.atomicLock();
+        TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+        
+        if (tokenHierarchy == null){
+            logger.severe("Could not retrieve TokenHierarchy for document " + doc);
+            return null;
+        }
         
         try{
             int lastLine = Utilities.getLineOffset(doc, doc.getLength());
@@ -116,19 +120,19 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
             boolean unformattableLines[] = new boolean[lastLine + 1];
             int indentsWithinTags[] = new int[lastLine + 1];
             
-            ExtSyntaxSupport sup = getSyntaxSupport(doc);
-            TokenItem token = sup.getTokenChain(0, doc.getLength() - 1);
+            TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+            boolean thereAreMoreTokens = tokenSequence.moveFirst();
             
-            if (token != null){
+            if (tokenSequence != null){
                 // calc line indents - pass 1
                 do{
-                    boolean isOpenTag = isOpeningTag(token);
-                    boolean isCloseTag = isClosingTag(token);
+                    boolean isOpenTag = isOpeningTag(tokenHierarchy, tokenSequence.offset());
+                    boolean isCloseTag = isClosingTag(tokenHierarchy, tokenSequence.offset());
                     
                     if (isOpenTag || isCloseTag){
                         
-                        String tagName = extractTagName(token);
-                        int tagEndOffset = getTagEndOffset(token);
+                        String tagName = extractTagName(tokenHierarchy, tokenSequence.offset());
+                        int tagEndOffset = getTagEndOffset(tokenHierarchy, tokenSequence.offset());
                         int lastTagLine = Utilities.getLineOffset(doc, tagEndOffset);
                         
                         if (isOpenTag){
@@ -136,25 +140,26 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
                             TagIndentationData tagData = new TagIndentationData(tagName, lastTagLine);
                             unprocessedOpeningTags.add(tagData);
                             
-                            // format lines within tag
-                            int firstTagLine = Utilities.getLineOffset(doc, token.getOffset());
+                            // format content of a tag that spans across multiple lines
+                            int firstTagLine = Utilities.getLineOffset(doc, tokenSequence.offset());
                             
                             if (firstTagLine < lastTagLine){ // performance!
-                                int indentWithinTag = getIndentForTagParameter(doc, token);
+                                int indentWithinTag = getIndentForTagParameter(tokenHierarchy, tokenSequence.offset());
                                 
                                 for (int i = firstTagLine + 1; i <= lastTagLine; i ++){
                                     indentsWithinTags[i] = indentWithinTag;
                                 }
                                 
                                 // if there is only the closing symbol on the last line of tag do not indent it
-                                TokenItem currentToken = token.getNext();
-                                while (Utilities.getLineOffset(doc, currentToken.getOffset()) < lastTagLine
-                                        || isWSTag(currentToken)){
+                                thereAreMoreTokens &= tokenSequence.moveNext();
+                                
+                                while (Utilities.getLineOffset(doc, tokenSequence.offset()) < lastTagLine
+                                        || isWSTag(tokenSequence.token())){
                                     
-                                    currentToken = currentToken.getNext();
+                                    tokenSequence.moveNext();
                                 }
                                 
-                                if (currentToken.getOffset() == tagEndOffset){
+                                if (tokenSequence.offset() == tagEndOffset){
                                     indentsWithinTags[lastTagLine] = 0;
                                 }
                             }
@@ -189,20 +194,20 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
                         }
                     }
                     
-                    boolean wasPreviousTokenUnformattable = isUnformattableToken(token);
+                    boolean wasPreviousTokenUnformattable = isUnformattableToken(tokenHierarchy, tokenSequence.offset());
                     
                     if (wasPreviousTokenUnformattable && firstUnformattableLine == -1){
-                        firstUnformattableLine = Utilities.getLineOffset(doc, token.getOffset());
+                        firstUnformattableLine = Utilities.getLineOffset(doc, tokenSequence.offset());
                     }
                     
-                    token = token.getNext();
+                    thereAreMoreTokens &= tokenSequence.moveNext();
                     
                     // detect an end of unformattable block; mark it
                     if (firstUnformattableLine > -1
-                            && (!wasPreviousTokenUnformattable || token == null)){
+                            && (!wasPreviousTokenUnformattable || !thereAreMoreTokens)){
                         
-                        int lastUnformattableLine = token == null ? lastLine :
-                            Utilities.getLineOffset(doc, token.getOffset() - 1);
+                        int lastUnformattableLine = thereAreMoreTokens ? 
+                            Utilities.getLineOffset(doc, tokenSequence.offset() - 1) : lastLine;
                         
                         for (int i = firstUnformattableLine + 1; i < lastUnformattableLine; i ++){
                             unformattableLines[i] = true;
@@ -211,7 +216,7 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
                         firstUnformattableLine = -1;
                     }
                 }
-                while (token != null);
+                while (thereAreMoreTokens);
             }
             
             // calc line indents - pass 2
@@ -254,25 +259,25 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
         int initialIndent = getInitialIndentFromPreviousLine(doc, lineNumber);
         int endOfPreviousLine = Utilities.getFirstNonWhiteBwd(doc, dotPos);
         endOfPreviousLine = endOfPreviousLine == -1 ? 0 : endOfPreviousLine;
+        TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
         
         // workaround for \n passed from code completion to reformatter
         if (lineNumber == Utilities.getLineOffset(doc, endOfPreviousLine)){
             return;
         }
         
-        TokenItem tknOpeningTag = getTagTokenEndingAtPosition(doc, endOfPreviousLine);
+        int openingTagOffset = getTagEndingAtPosition(tokenHierarchy, endOfPreviousLine);
         
-        if (isOpeningTag(tknOpeningTag)){
-            TokenItem tknClosingTag = getNextClosingTag(doc, dotPos + 1);
+        if (isOpeningTag(tokenHierarchy, openingTagOffset)){
+            int closingTagOffset = getNextClosingTagOffset(tokenHierarchy, dotPos + 1);
             
-            if (tknClosingTag != null){
-                TokenItem tknMatchingOpeningTag = getMatchingOpeningTag(tknClosingTag);
+            if (closingTagOffset != -1){
+                int matchingOpeningTagOffset = getMatchingOpeningTagStart(tokenHierarchy, closingTagOffset);
                 
-                if (tknMatchingOpeningTag != null
-                        && tknMatchingOpeningTag.getOffset() == tknOpeningTag.getOffset()){
+                if (openingTagOffset == matchingOpeningTagOffset){
                     
-                    int openingTagLine = Utilities.getLineOffset(doc, tknOpeningTag.getOffset());
-                    int closingTagLine = Utilities.getLineOffset(doc, tknClosingTag.getOffset());
+                    int openingTagLine = Utilities.getLineOffset(doc, openingTagOffset);
+                    int closingTagLine = Utilities.getLineOffset(doc, closingTagOffset);
                     
                     if (closingTagLine == Utilities.getLineOffset(doc, dotPos)){
                         
@@ -280,7 +285,7 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
                             /* "smart enter"
                              * <t>|optional text</t>
                              */
-                            Position closingTagPos = doc.createPosition(getOpeningSymbolOffset(tknClosingTag));
+                            Position closingTagPos = doc.createPosition(getOpeningSymbolOffset(tokenHierarchy, closingTagOffset));
                             changeRowIndent(doc, dotPos, initialIndent + getShiftWidth());
                             doc.insertString(closingTagPos.getOffset(), "\n", null); //NOI18N
                             int newCaretPos = closingTagPos.getOffset() - 1;
@@ -299,7 +304,7 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
                 
                 int indent = initialIndent;
                 
-                if (isClosingTagRequired(doc, extractTagName(tknOpeningTag))){
+                if (isClosingTagRequired(doc, extractTagName(tokenHierarchy, openingTagOffset))){
                     indent += getShiftWidth();
                 }
                 
@@ -308,7 +313,7 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
         } else{
             int indent = initialIndent;
             
-            if (isJustBeforeClosingTag(doc, dotPos)){
+            if (isJustBeforeClosingTag(tokenHierarchy, dotPos)){
                 indent -= getShiftWidth();
                 indent = indent < 0 ? 0 : indent;
             }
@@ -319,30 +324,27 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
     }
     
     @Override public int[] getReformatBlock(JTextComponent target, String typedText) {
-        BaseDocument doc = Utilities.getDocument(target);
-        
-        if (!hasValidSyntaxSupport(doc)){
+        TokenHierarchy tokenHierarchy = TokenHierarchy.get(target.getDocument());
+        if (tokenHierarchy == null){
+            logger.severe("Could not retrieve TokenHierarchy for document " + target.getDocument());
             return null;
         }
-        
         char lastChar = typedText.charAt(typedText.length() - 1);
         
         try{
             int dotPos = target.getCaret().getDot();
             
             if (lastChar == '>') {
-                TokenItem tknPrecedingToken = getTagTokenEndingAtPosition(doc, dotPos - 1);
+                int precedingTokenOffset = getTagEndingAtPosition(tokenHierarchy, dotPos - 1);
                 
-                if (isClosingTag(tknPrecedingToken)){
+                if (isClosingTag(tokenHierarchy, precedingTokenOffset)){
                     // user entered a closing tag
                     // - reformat code backwards to matching opening tag
                     
-                    TokenItem tknOpeningTag = getMatchingOpeningTag(tknPrecedingToken);
+                    int openingTagOffset = getMatchingOpeningTagStart(tokenHierarchy, precedingTokenOffset);
                     
-                    if (tknOpeningTag != null){
-                        int start = tknOpeningTag.getOffset();
-                        
-                        return new int[]{start, dotPos};
+                    if (openingTagOffset != -1){
+                        return new int[]{openingTagOffset, dotPos};
                     }
                 }
             }
@@ -353,34 +355,35 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
             }
             
         } catch (Exception e){
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            logger.log(Level.SEVERE, "Exception during code formatting", e); //NOI18N
         }
         
         return null;
     }
     
-    protected TokenItem getMatchingOpeningTag(TokenItem tknClosingTag){
-        String searchedTagName = extractTagName(tknClosingTag);
-        TokenItem token = tknClosingTag.getPrevious();
+    protected int getMatchingOpeningTagStart(TokenHierarchy tokenHierarchy, int closingTagOffset){
+        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+        tokenSequence.move(closingTagOffset);
+        
+        String searchedTagName = extractTagName(tokenHierarchy, closingTagOffset);
         int balance = 0;
         
-        while (token != null){
-            if (areTagNamesEqual(searchedTagName, extractTagName(token))){
-                if (isOpeningTag(token)){
+        while (tokenSequence.movePrevious()){
+            int currentTokenOffset = tokenSequence.offset();
+            if (areTagNamesEqual(searchedTagName, extractTagName(tokenHierarchy, currentTokenOffset))){
+                if (isOpeningTag(tokenHierarchy, currentTokenOffset)){
                     if (balance == 0){
-                        return token;
+                        return currentTokenOffset;
                     }
                     
                     balance --;
-                } else if (isClosingTag(token)){
+                } else if (isClosingTag(tokenHierarchy, currentTokenOffset)){
                     balance ++;
                 }
             }
-            
-            token = token.getPrevious();
         }
         
-        return null;
+        return -1;
     }
     
     protected int getInitialIndentFromPreviousLine(final BaseDocument doc, final int line) throws BadLocationException {
@@ -415,49 +418,45 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
         
         return initialIndent;
     }
-    
-    private boolean hasValidSyntaxSupport(BaseDocument doc){
-        ExtSyntaxSupport sup = getSyntaxSupport(doc);
-        
-        if (sup == null){
-            ErrorManager.getDefault().log(ErrorManager.WARNING,
-                    "TagBasedFormatter: failed to retrieve SyntaxSupport for document;" + //NOI18N
-                    " probably attempt to use incompatible indentation engine"); //NOI18N
-            
-            return false;
-        }
-        
-        return true;
-    }
 
     protected static int getNumberOfLines(BaseDocument doc) throws BadLocationException{
         return Utilities.getLineOffset(doc, doc.getLength() - 1) + 1;
     }
     
-    protected TokenItem getNextClosingTag(BaseDocument doc, int offset) throws BadLocationException{
-        ExtSyntaxSupport sup = getSyntaxSupport(doc);
-        TokenItem token = sup.getTokenChain(offset, offset + 1);
+    protected int getNextClosingTagOffset(TokenHierarchy tokenHierarchy, int offset) throws BadLocationException{
+        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+        tokenSequence.move(offset);
+        int currentOffset;
         
-        while (token != null){
-            if (isClosingTag(token)){
-                return token;
+        do{
+            currentOffset = tokenSequence.offset();
+            
+            if (isClosingTag(tokenHierarchy, currentOffset)){
+                return currentOffset;
             }
             
-            token = token.getNext();
-        }
-        
-        return null;
+        } while (tokenSequence.moveNext());
+
+        return -1;
     }
 
-    protected boolean isJustBeforeClosingTag(BaseDocument doc, int pos) throws BadLocationException {
-        ExtSyntaxSupport sup = getSyntaxSupport(doc);
-        TokenItem tknTag = sup.getTokenChain(pos, pos + 1);
-        
-        if (isClosingTag(tknTag)){
+    protected boolean isJustBeforeClosingTag(TokenHierarchy tokenHierarchy, int pos) throws BadLocationException {
+        // default, trivial implementation
+        if (isClosingTag(tokenHierarchy, pos)){
             return true;
         }
         
         return false;
+    }
+    
+    protected Token getTokenAtOffset(TokenHierarchy tokenHierarchy, int tagTokenOffset){
+        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+        
+        if (tokenSequence != null && tokenSequence.move(tagTokenOffset) != Integer.MAX_VALUE){
+            return tokenSequence.token();
+        }
+        
+        return null;
     }
     
     protected class InitialIndentData{
