@@ -89,9 +89,9 @@ public final class MultiGuardedSection {
 
     public void switchToEditable (String editableSectionID) {
         if (index < 0)
-            throw Debug.illegalState ("Section is closed already", multiGuardedID); // NOI18N
+            throw Debug.illegalState ("Section is already closed", multiGuardedID); // NOI18N
         if (! guarded)
-            throw Debug.illegalState ("Cannot switch to editable to editable", multiGuardedID, index, editableSectionID); // NOI18N
+            throw Debug.illegalState ("Cannot switch from editable to editable", multiGuardedID, index, editableSectionID); // NOI18N
         if (! isWriterCommitted ())
             throw Debug.illegalState ("Writer is not committed yet", multiGuardedID, index); // NOI18N
         writer = null;
@@ -141,7 +141,7 @@ public final class MultiGuardedSection {
             guardedSections.get (a).removeSection ();
         try {
             // TODO - check if there is no gurded section between begin and end. if so, then do not do anything to prevent data-lost
-            document.remove (begin.getOffset (), end.getOffset () - begin.getOffset ());
+            document.remove (begin.getOffset () + 1, end.getOffset () - (begin.getOffset () + 1));
         } catch (BadLocationException e) {
             throw Debug.error (e);
         }

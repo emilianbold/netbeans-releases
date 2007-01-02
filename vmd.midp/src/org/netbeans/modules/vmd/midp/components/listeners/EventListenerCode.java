@@ -206,6 +206,7 @@ class EventListenerCode {
             section.switchToGuarded ();
 
             section.getWriter ().write ("}\n").commit (); // NOI18N
+            section.close ();
         }
 
         private void resolveFirstLevel (MultiGuardedSection section, List<DesignComponent> sources) {
