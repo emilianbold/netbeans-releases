@@ -50,6 +50,7 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /** Can persist and read log records from streams.
@@ -258,7 +259,8 @@ public final class LogRecords {
     private static final class Parser extends DefaultHandler {
         private Handler callback;
         private static enum Elem {
-            uigestures, record, date, millis, sequence, level, thread, message, key;
+            UIGESTURES, RECORD, DATE, MILLIS, SEQUENCE, LEVEL, THREAD, 
+            MESSAGE, KEY;
                 
             public String parse(Map<Elem,String> values) {
                 String v = values.get(this);
@@ -296,9 +298,10 @@ public final class LogRecords {
             }
 
             try {
-                current = Elem.valueOf(qName);
+                current = Elem.valueOf(qName.toUpperCase());
             } catch (IllegalArgumentException ex) {
-                LOG.log(Level.WARNING, "Uknown tag " + qName, ex);
+                LOG.log(Level.FINE, "Uknown tag " + qName, ex);
+                current = null;
             }
             chars.setLength(0);
         }
@@ -311,12 +314,12 @@ public final class LogRecords {
             current = null;
             chars.setLength(0);
             if ("record".equals(qName)) { // NOI18N
-                String millis = Elem.millis.parse(values);
-                String seq = Elem.sequence.parse(values);
-                String lev = Elem.level.parse(values);
-                String thread = Elem.thread.parse(values);
-                String msg = Elem.message.parse(values);
-                String key = Elem.key.parse(values);
+                String millis = Elem.MILLIS.parse(values);
+                String seq = Elem.SEQUENCE.parse(values);
+                String lev = Elem.LEVEL.parse(values);
+                String thread = Elem.THREAD.parse(values);
+                String msg = Elem.MESSAGE.parse(values);
+                String key = Elem.KEY.parse(values);
                 
                 LogRecord r = new LogRecord(Level.parse(lev), msg);
                 r.setThreadID(Integer.parseInt(thread));
@@ -341,6 +344,10 @@ public final class LogRecords {
         }
 
         public void skippedEntity(String name) throws SAXException {
+        }
+
+        public void fatalError(SAXParseException e) throws SAXException {
+            LOG.log(Level.FINE, null, e);
         }
         
     }
