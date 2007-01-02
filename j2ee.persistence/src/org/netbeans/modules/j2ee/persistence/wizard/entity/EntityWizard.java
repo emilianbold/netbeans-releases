@@ -24,6 +24,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.io.IOException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -50,6 +51,7 @@ import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileObject;
+import sun.reflect.generics.tree.TypeTree;
 
 /**
  * A wizard for creating entity classes.
@@ -159,19 +161,13 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                 
                 String idFieldName = "id"; // NO18N
                 
-                // resolve the fully qualified name for the primary key class
-                String primaryKeyType = null;
-                if (isPrimitiveType(primaryKeyClassName)){
-                    primaryKeyType = primaryKeyClassName;
-                } else {
-                    TypeMirror type = workingCopy.getTreeUtilities().parseType(primaryKeyClassName, genUtils.getTypeElement());
-                    primaryKeyType = ((TypeElement) workingCopy.getTypes().asElement(type)).getQualifiedName().toString();
-                }
+                TypeMirror type = workingCopy.getTreeUtilities().parseType(primaryKeyClassName, genUtils.getTypeElement());
+                Tree typeTree = make.Type(type);
                 
-                VariableTree idField = genUtils.createField(genUtils.createModifiers(Modifier.PRIVATE), idFieldName, primaryKeyType);
+                VariableTree idField = make.Variable(genUtils.createModifiers(Modifier.PRIVATE), idFieldName, typeTree, null);
                 ModifiersTree idMethodModifiers = genUtils.createModifiers(Modifier.PUBLIC);
-                MethodTree idGetter = genUtils.createPropertyGetterMethod(idMethodModifiers, idFieldName, primaryKeyType);
-                MethodTree idSetter = genUtils.createPropertySetterMethod(idMethodModifiers, idFieldName, primaryKeyType);
+                MethodTree idGetter = genUtils.createPropertyGetterMethod(idMethodModifiers, idFieldName, typeTree);
+                MethodTree idSetter = genUtils.createPropertySetterMethod(idMethodModifiers, idFieldName, typeTree);
                 AnnotationTree idAnnotation = genUtils.createAnnotation("javax.persistence.Id"); //NO18N
                 ExpressionTree generationStrategy = genUtils.createAnnotationArgument("strategy", "javax.persistence.GenerationType", "AUTO"); //NO18N
                 AnnotationTree generatedValueAnnotation = genUtils.createAnnotation("javax.persistence.GeneratedValue", Collections.singletonList(generationStrategy)); //NO18N
@@ -183,8 +179,8 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                     idGetter = genUtils.addAnnotation(idGetter, idAnnotation);
                     idGetter = genUtils.addAnnotation(idGetter, generatedValueAnnotation);
                 }
+
                 modifiedClazz = genUtils.addClassFields(clazz, Collections.singletonList(idField));
-                
                 modifiedClazz = make.addClassMember(modifiedClazz, idSetter);
                 modifiedClazz = make.addClassMember(modifiedClazz, idGetter);
                 modifiedClazz = genUtils.addImplementsClause(modifiedClazz, "java.io.Serializable");
@@ -205,16 +201,6 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
             }
         }
         return entityFo;
-    }
-    
-    private static boolean isPrimitiveType(String typeName){
-        String[] primitiveTypes = {"boolean", "byte", "short", "int", "long", "char", "float", "double"};
-        for (String type : primitiveTypes){
-            if (type.equals(typeName)){
-                return true;
-            }
-        }
-        return false;
     }
     
     /**
