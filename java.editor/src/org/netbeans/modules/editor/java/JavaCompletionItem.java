@@ -582,19 +582,24 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     TypeMirror ta = tas.next();
                     sb.append("${PAR"); //NOI18N
                     sb.append(cnt++);
-                    sb.append(" type=\""); //NOI18N
                     if (ta.getKind() == TypeKind.TYPEVAR) {
+                        sb.append(" type=\""); //NOI18N
                         ta = ((TypeVariable)ta).getUpperBound();
                         sb.append(Utilities.getTypeName(ta, true));
                         sb.append("\"}"); //NOI18N
                     } else if (ta.getKind() == TypeKind.WILDCARD) {
+                        sb.append(" type=\""); //NOI18N
                         TypeMirror bound = ((WildcardType)ta).getExtendsBound();
                         if (bound == null)
                             bound = ((WildcardType)ta).getSuperBound();
                         sb.append(bound != null ? Utilities.getTypeName(bound, true) : "java.lang.Object"); //NOI18N
                         sb.append("\"}"); //NOI18N
                         asTemplate = true;
+                    } else if (ta.getKind() == TypeKind.ERROR) {
+                        sb.append(" default=\"\"}"); //NOI18N
+                        asTemplate = true;
                     } else {
+                        sb.append(" type=\""); //NOI18N
                         sb.append(Utilities.getTypeName(ta, true));
                         sb.append("\" editable=false}"); //NOI18N
                         asTemplate = true;
@@ -1855,18 +1860,22 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     TypeMirror ta = tas.next();
                     sb.append("${PAR#"); //NOI18N
                     sb.append(cnt++);
-                    sb.append(" type=\""); //NOI18N
                     if (ta.getKind() == TypeKind.TYPEVAR) {
+                        sb.append(" type=\""); //NOI18N
                         ta = ((TypeVariable)ta).getUpperBound();
                         sb.append(Utilities.getTypeName(ta, true));
                         sb.append("\"}"); //NOI18N
                     } else if (ta.getKind() == TypeKind.WILDCARD) {
+                        sb.append(" type=\""); //NOI18N
                         TypeMirror bound = ((WildcardType)ta).getExtendsBound();
                         if (bound == null)
                             bound = ((WildcardType)ta).getSuperBound();
                         sb.append(bound != null ? Utilities.getTypeName(bound, true) : "java.lang.Object"); //NOI18N
                         sb.append("\"}"); //NOI18N
+                    } else if (ta.getKind() == TypeKind.ERROR) {
+                        sb.append(" default=\"\"}"); //NOI18N
                     } else {
+                        sb.append(" type=\""); //NOI18N
                         sb.append(Utilities.getTypeName(ta, true));
                         sb.append("\" editable=false}"); //NOI18N
                     }
