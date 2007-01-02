@@ -13,7 +13,7 @@ If applicable, add the following below the CDDL Header, with the fields
 enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
-The Original Software is NetBeans. The Initial Developer of the 77Original
+The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
