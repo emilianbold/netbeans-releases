@@ -136,10 +136,11 @@ public final class AddInstanceVisualHostPortPanel extends JPanel {
         portValue = new javax.swing.JSpinner();
         spacingHack = new javax.swing.JLabel();
 
+        setFocusable(false);
         setLayout(new java.awt.GridBagLayout());
 
-        setFocusable(false);
-        description.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("TXT_hostPortDescription"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle"); // NOI18N
+        description.setText(bundle.getString("TXT_hostPortDescription")); // NOI18N
         description.setFocusable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -150,32 +151,28 @@ public final class AddInstanceVisualHostPortPanel extends JPanel {
         gridBagConstraints.weightx = 1.0;
         add(description, gridBagConstraints);
 
-        hostNameLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddInstanceVisualHostPortPanel.class, "MNM_hostNameLabel").charAt(0));
         hostNameLabel.setLabelFor(hostName);
-        hostNameLabel.setText(org.openide.util.NbBundle.getMessage(AddInstanceVisualHostPortPanel.class, "LBL_hostNameLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(hostNameLabel, org.openide.util.NbBundle.getMessage(AddInstanceVisualHostPortPanel.class, "LBL_hostNameLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 5, 6);
         add(hostNameLabel, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
         add(hostName, gridBagConstraints);
-        hostName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("DSC_hostName"));
+        hostName.getAccessibleContext().setAccessibleDescription(bundle.getString("DSC_hostName")); // NOI18N
 
-        portValueLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddInstanceVisualHostPortPanel.class, "MNM_portValueLabel").charAt(0));
         portValueLabel.setLabelFor(portValue);
-        portValueLabel.setText(org.openide.util.NbBundle.getMessage(AddInstanceVisualHostPortPanel.class, "LBL_portValueLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(portValueLabel, org.openide.util.NbBundle.getMessage(AddInstanceVisualHostPortPanel.class, "LBL_portValueLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 5, 6);
         add(portValueLabel, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
@@ -190,7 +187,6 @@ public final class AddInstanceVisualHostPortPanel extends JPanel {
         gridBagConstraints.gridy = 4;
         gridBagConstraints.weighty = 1.0;
         add(spacingHack, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
 
 

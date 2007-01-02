@@ -244,7 +244,8 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
 
         setLayout(new java.awt.GridBagLayout());
 
-        description.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("TXT_platformPanelDescription"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle"); // NOI18N
+        description.setText(bundle.getString("TXT_platformPanelDescription")); // NOI18N
         description.setFocusable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 5;
@@ -253,9 +254,8 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(description, gridBagConstraints);
 
-        platformFieldLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "MNM_platformFieldLabel").charAt(0));
         platformFieldLabel.setLabelFor(platformField);
-        platformFieldLabel.setText(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "platformFieldLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(platformFieldLabel, org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "platformFieldLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -273,26 +273,23 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 6);
         add(platformField, gridBagConstraints);
-        platformField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("DSC_platformField"));
+        platformField.getAccessibleContext().setAccessibleDescription(bundle.getString("DSC_platformField")); // NOI18N
 
-        openDirectoryCooser.setMnemonic(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "MNM_openDirectoryChooser").charAt(0));
-        openDirectoryCooser.setText(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "LBL_openDirectoryChooser"));
+        org.openide.awt.Mnemonics.setLocalizedText(openDirectoryCooser, org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "LBL_openDirectoryChooser")); // NOI18N
         openDirectoryCooser.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openDirectoryCooserActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.insets = new java.awt.Insets(6, 7, 5, 0);
         add(openDirectoryCooser, gridBagConstraints);
-        openDirectoryCooser.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("DSC_openDirectoryChooser"));
+        openDirectoryCooser.getAccessibleContext().setAccessibleDescription(bundle.getString("DSC_openDirectoryChooser")); // NOI18N
 
         instanceTypeButtonGroup.add(registerDefault);
-        registerDefault.setMnemonic(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "MNM_registerDefault").charAt(0));
-        registerDefault.setText(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "LBL_registerDeafult"));
+        org.openide.awt.Mnemonics.setLocalizedText(registerDefault, org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "LBL_registerDeafult")); // NOI18N
         registerDefault.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         registerDefault.setMargin(new java.awt.Insets(0, 0, 0, 0));
         registerDefault.addItemListener(new java.awt.event.ItemListener() {
@@ -300,7 +297,6 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
                 registerDefaultItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -308,7 +304,7 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 1, 5, 1);
         add(registerDefault, gridBagConstraints);
-        registerDefault.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("DSC_registerDefault"));
+        registerDefault.getAccessibleContext().setAccessibleDescription(bundle.getString("DSC_registerDefault")); // NOI18N
 
         instanceSelector.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         instanceSelector.addActionListener(new java.awt.event.ActionListener() {
@@ -316,7 +312,6 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
                 instanceSelectorActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -324,11 +319,10 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 11, 5, 0);
         add(instanceSelector, gridBagConstraints);
-        instanceSelector.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "Domain_A11Y_DESC"));
+        instanceSelector.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "Domain_A11Y_DESC")); // NOI18N
 
         instanceTypeButtonGroup.add(registerLocal);
-        registerLocal.setMnemonic(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "MNM_registerLocal").charAt(0));
-        registerLocal.setText(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "LBL_registerLocal"));
+        org.openide.awt.Mnemonics.setLocalizedText(registerLocal, org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "LBL_registerLocal")); // NOI18N
         registerLocal.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         registerLocal.setMargin(new java.awt.Insets(0, 0, 0, 0));
         registerLocal.addItemListener(new java.awt.event.ItemListener() {
@@ -336,7 +330,6 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
                 registerLocalItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -344,11 +337,10 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 5, 0);
         add(registerLocal, gridBagConstraints);
-        registerLocal.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("DSC_registerLocal"));
+        registerLocal.getAccessibleContext().setAccessibleDescription(bundle.getString("DSC_registerLocal")); // NOI18N
 
         instanceTypeButtonGroup.add(registerRemote);
-        registerRemote.setMnemonic(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "MNM_registerRemote").charAt(0));
-        registerRemote.setText(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "LBL_registerRemote"));
+        org.openide.awt.Mnemonics.setLocalizedText(registerRemote, org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "LBL_registerRemote")); // NOI18N
         registerRemote.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         registerRemote.setMargin(new java.awt.Insets(0, 0, 0, 0));
         registerRemote.addItemListener(new java.awt.event.ItemListener() {
@@ -356,7 +348,6 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
                 registerRemoteItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -364,11 +355,10 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 5, 0);
         add(registerRemote, gridBagConstraints);
-        registerRemote.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("DSC_registerRemote"));
+        registerRemote.getAccessibleContext().setAccessibleDescription(bundle.getString("DSC_registerRemote")); // NOI18N
 
         instanceTypeButtonGroup.add(createPersonal);
-        createPersonal.setMnemonic(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "MNM_createPersonal").charAt(0));
-        createPersonal.setText(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "LBL_createPersonal"));
+        org.openide.awt.Mnemonics.setLocalizedText(createPersonal, org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "LBL_createPersonal")); // NOI18N
         createPersonal.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         createPersonal.setMargin(new java.awt.Insets(0, 0, 0, 0));
         createPersonal.addItemListener(new java.awt.event.ItemListener() {
@@ -376,7 +366,6 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
                 createPersonalItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
@@ -384,7 +373,7 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(createPersonal, gridBagConstraints);
-        createPersonal.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("DSC_createPersonal"));
+        createPersonal.getAccessibleContext().setAccessibleDescription(bundle.getString("DSC_createPersonal")); // NOI18N
 
         spacingHack.setEnabled(false);
         spacingHack.setFocusable(false);
@@ -394,17 +383,15 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         gridBagConstraints.weighty = 1.0;
         add(spacingHack, gridBagConstraints);
 
-        instanceSelectorLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("MNM_instanceSelector").charAt(0));
         instanceSelectorLabel.setLabelFor(instanceSelector);
-        instanceSelectorLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_instanceSelectorLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(instanceSelectorLabel, bundle.getString("LBL_instanceSelectorLabel2")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(6, 23, 5, 6);
         add(instanceSelectorLabel, gridBagConstraints);
-        instanceSelectorLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "Domain_A11Y_DESC"));
-
+        instanceSelectorLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "Domain_A11Y_DESC")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     private void instanceSelectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_instanceSelectorActionPerformed

@@ -125,7 +125,8 @@ public final class AddInstanceVisualNamePasswordPanel extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        description.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("TXT_namePasswordDescription"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle"); // NOI18N
+        description.setText(bundle.getString("TXT_namePasswordDescription")); // NOI18N
         description.setFocusable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 2;
@@ -134,9 +135,8 @@ public final class AddInstanceVisualNamePasswordPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(description, gridBagConstraints);
 
-        adminNameLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddInstanceVisualNamePasswordPanel.class, "MNM_adminNameLabel").charAt(0));
         adminNameLabel.setLabelFor(adminName);
-        adminNameLabel.setText(org.openide.util.NbBundle.getMessage(AddInstanceVisualNamePasswordPanel.class, "LBL_adminNameLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(adminNameLabel, org.openide.util.NbBundle.getMessage(AddInstanceVisualNamePasswordPanel.class, "LBL_adminNameLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -144,18 +144,17 @@ public final class AddInstanceVisualNamePasswordPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 5, 6);
         add(adminNameLabel, gridBagConstraints);
 
-        adminName.setText(org.openide.util.NbBundle.getMessage(AddInstanceVisualNamePasswordPanel.class, "VAL_adminName_NOI18N"));
+        adminName.setText(org.openide.util.NbBundle.getMessage(AddInstanceVisualNamePasswordPanel.class, "VAL_adminName_NOI18N")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         add(adminName, gridBagConstraints);
-        adminName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("DSC_adminName"));
+        adminName.getAccessibleContext().setAccessibleDescription(bundle.getString("DSC_adminName")); // NOI18N
 
-        adminPasswordLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(AddInstanceVisualNamePasswordPanel.class, "MNM_adminPasswordLabel").charAt(0));
         adminPasswordLabel.setLabelFor(adminPassword);
-        adminPasswordLabel.setText(org.openide.util.NbBundle.getMessage(AddInstanceVisualNamePasswordPanel.class, "LBL_adminPasswordLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(adminPasswordLabel, org.openide.util.NbBundle.getMessage(AddInstanceVisualNamePasswordPanel.class, "LBL_adminPasswordLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -170,9 +169,9 @@ public final class AddInstanceVisualNamePasswordPanel extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         add(adminPassword, gridBagConstraints);
-        adminPassword.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("DSC_adminPassword"));
+        adminPassword.getAccessibleContext().setAccessibleDescription(bundle.getString("DSC_adminPassword")); // NOI18N
 
-        warning.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("TXT_namePasswordWarning"));
+        warning.setText(bundle.getString("TXT_namePasswordWarning")); // NOI18N
         warning.setFocusable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -190,7 +189,6 @@ public final class AddInstanceVisualNamePasswordPanel extends JPanel {
         gridBagConstraints.gridy = 5;
         gridBagConstraints.weighty = 1.0;
         add(spacingHack, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
 
 
