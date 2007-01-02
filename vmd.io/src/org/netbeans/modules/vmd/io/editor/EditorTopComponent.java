@@ -20,6 +20,7 @@ package org.netbeans.modules.vmd.io.editor;
 
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.openide.windows.TopComponent;
+import org.openide.nodes.Node;
 
 import javax.swing.*;
 import java.awt.*;
@@ -27,10 +28,8 @@ import java.awt.*;
 /**
  * @author David Kaspar
  */
-public class EditorTopComponent extends TopComponent /*implements ExplorerManager.Provider*/ {
+public class EditorTopComponent extends TopComponent {
 
-//    private ExplorerManager explorerManager;
-//    private EditorNode editorNode;
     private JComponent view;
 
     public EditorTopComponent (DataObjectContext context, JComponent view) {
@@ -38,21 +37,8 @@ public class EditorTopComponent extends TopComponent /*implements ExplorerManage
         setLayout (new BorderLayout ());
         setFocusable (true);
         add (view, BorderLayout.CENTER);
-//        explorerManager = new ExplorerManager ();
-//        editorNode = new EditorNode (context);
-//        explorerManager.setRootContext (editorNode);
-//        try {
-//            explorerManager.setSelectedNodes (new Node[] { editorNode });
-//        } catch (PropertyVetoException e) {
-//            ErrorManager.getDefault ().notify (e);
-//        }
-////        setActivatedNodes (new Node[] { editorNode });
-//        associateLookup (ExplorerUtils.createLookup (explorerManager, getActionMap ()));
+        setActivatedNodes (new Node[] { context.getDataObject ().getNodeDelegate () });
     }
-
-//    public ExplorerManager getExplorerManager () {
-//        return explorerManager;
-//    }
 
     public void requestFocus () {
         super.requestFocus ();
@@ -63,20 +49,5 @@ public class EditorTopComponent extends TopComponent /*implements ExplorerManage
         super.requestFocusInWindow ();
         return view.requestFocusInWindow ();
     }
-
-//    private static class EditorNode extends AbstractNode {
-//
-//        public EditorNode (DataObjectContext context) {
-//            super (Children.LEAF, Lookups.fixed (context.getDataObject ()));
-//        }
-//
-//        public Action[] getActions(boolean context) {
-//            Collection<DesignComponent> activeComponents = ActiveDocumentSupport.getDefault ().getActiveComponents ();
-//            if (activeComponents == null  ||  activeComponents.size () != 1)
-//                return null;
-//            return ActionsSupport.createAddActionArray(activeComponents.iterator ().next ());
-//        }
-//
-//    }
 
 }
