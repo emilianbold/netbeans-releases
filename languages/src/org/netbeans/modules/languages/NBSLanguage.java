@@ -179,9 +179,8 @@ public class NBSLanguage {
                     rule ("token3", new Object[] {}),
                     rule ("state", new Object[] {LT, IDENTIFIER, GT}),
                     rule ("tokenGroup", new Object[] {"tokensInGroup", BRACE2}),
-                    rule ("tokensInGroup", new Object[] {"tokenInGroup", "tokensInGroup"}),
+                    rule ("tokensInGroup", new Object[] {"token", "tokensInGroup"}),
                     rule ("tokensInGroup", new Object[] {}),
-                    rule ("tokenInGroup", new Object[] {KEYWORD_TOKEN, COLON, IDENTIFIER, COLON, PARENTHESIS, "regularExpression", PARENTHESIS2, "token3"}),
                     
                     rule ("regularExpression", new Object[] {"reChoice", "regularExpression1"}),
                     rule ("regularExpression1", new Object[] {OR, "reChoice", "regularExpression1"}),

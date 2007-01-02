@@ -81,9 +81,8 @@ tokenState = state tokenState1;
 tokenState1 = "{" tokenGroup;
 tokenState1 = ":" token;
 tokenGroup = tokensInGroup "}";
-tokensInGroup = tokenInGroup tokensInGroup;
+tokensInGroup = token tokensInGroup;
 tokensInGroup = ;
-tokenInGroup = "TOKEN" ":" <identifier> ":" "(" regularExpression ")" token3;
                     
 regularExpression = reChoice regularExpression1;
 regularExpression1 = "|" reChoice regularExpression1;
