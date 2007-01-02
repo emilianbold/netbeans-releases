@@ -134,7 +134,8 @@ public final class CreateDomainVisualDirectoryPanel extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        description.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("TXT_instanceDirectoryDescription2"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle"); // NOI18N
+        description.setText(bundle.getString("TXT_instanceDirectoryDescription2")); // NOI18N
         description.setEnabled(false);
         description.setFocusable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -147,16 +148,14 @@ public final class CreateDomainVisualDirectoryPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(description, gridBagConstraints);
 
-        parentDirectoryLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CreateDomainVisualDirectoryPanel.class, "MNM_instanceDirectoryLabel").charAt(0));
         parentDirectoryLabel.setLabelFor(parentDirectory);
-        parentDirectoryLabel.setText("Domain Parent Folder:");
+        org.openide.awt.Mnemonics.setLocalizedText(parentDirectoryLabel, org.openide.util.NbBundle.getMessage(CreateDomainVisualDirectoryPanel.class, "LBL_ParentFolder")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 6, 6);
         add(parentDirectoryLabel, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -165,34 +164,30 @@ public final class CreateDomainVisualDirectoryPanel extends JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 6, 6);
         add(parentDirectory, gridBagConstraints);
-        parentDirectory.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("DSC_instanceDirectory"));
+        parentDirectory.getAccessibleContext().setAccessibleDescription(bundle.getString("DSC_instanceDirectory")); // NOI18N
 
-        openInstanceDirectorySelector.setMnemonic(org.openide.util.NbBundle.getMessage(CreateDomainVisualDirectoryPanel.class, "MNM_openInstanceDirectorySelector").charAt(0));
-        openInstanceDirectorySelector.setText(org.openide.util.NbBundle.getMessage(CreateDomainVisualDirectoryPanel.class, "LBL_openInstanceDirectorySelector"));
+        org.openide.awt.Mnemonics.setLocalizedText(openInstanceDirectorySelector, org.openide.util.NbBundle.getMessage(CreateDomainVisualDirectoryPanel.class, "LBL_openInstanceDirectorySelector")); // NOI18N
         openInstanceDirectorySelector.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openInstanceDirectorySelectorActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 6, 0);
         add(openInstanceDirectorySelector, gridBagConstraints);
-        openInstanceDirectorySelector.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("DSC_openInstanceDirectorySelector"));
+        openInstanceDirectorySelector.getAccessibleContext().setAccessibleDescription(bundle.getString("DSC_openInstanceDirectorySelector")); // NOI18N
 
-        domainNameLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("MNM_adminPortLabel").charAt(0));
         domainNameLabel.setLabelFor(domainNameField);
-        domainNameLabel.setText(org.openide.util.NbBundle.getMessage(CreateDomainVisualDirectoryPanel.class, "LBL_domainNameLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(domainNameLabel, org.openide.util.NbBundle.getMessage(CreateDomainVisualDirectoryPanel.class, "LBL_domainNameLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 6);
         add(domainNameLabel, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -208,7 +203,6 @@ public final class CreateDomainVisualDirectoryPanel extends JPanel {
         gridBagConstraints.gridy = 4;
         gridBagConstraints.weighty = 1.0;
         add(spaceHack, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
     
     private void openInstanceDirectorySelectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openInstanceDirectorySelectorActionPerformed

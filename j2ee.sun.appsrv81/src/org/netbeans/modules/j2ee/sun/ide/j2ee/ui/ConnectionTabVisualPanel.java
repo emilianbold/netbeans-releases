@@ -77,6 +77,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         socketField = new javax.swing.JTextField();
         userNameField = new javax.swing.JTextField();
         passwordField = new javax.swing.JPasswordField();
@@ -91,12 +92,8 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         enableHttpMonitor = new javax.swing.JCheckBox();
         syncHttpProxies = new javax.swing.JCheckBox();
 
-        getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("Step_ChooseUserDefinedLocalServer"));
-        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("AddUserDefinedLocalServerPanel_Desc"));
         socketField.setColumns(30);
         socketField.setEditable(false);
-        socketField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_AdminPort"));
-        socketField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ACSD_AdminPort"));
 
         userNameField.setColumns(30);
         userNameField.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -105,9 +102,6 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
             }
         });
 
-        userNameField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Username"));
-        userNameField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ACSD_Username"));
-
         passwordField.setColumns(30);
         passwordField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
@@ -115,62 +109,38 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
             }
         });
 
-        passwordField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Pw"));
-        passwordField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ACSD_Pw"));
-
         domainField.setColumns(30);
         domainField.setEditable(false);
-        domainField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Domain"));
-        domainField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ACSD_Domain"));
 
         domainLocField.setColumns(30);
         domainLocField.setEditable(false);
-        domainLocField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_InstallRoot"));
-        domainLocField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ACSD_InstallRoot"));
 
-        portLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_AdminSocket_Mnemonic").charAt(0));
         portLabel.setLabelFor(socketField);
-        portLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_AdminSocket"));
-        portLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_AdminSocket"));
-        portLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ASCD_AdminSocket"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(portLabel, bundle.getString("LBL_AdminSocket")); // NOI18N
 
-        userNameLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Username_Mnemonic").charAt(0));
         userNameLabel.setLabelFor(userNameField);
-        userNameLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Username"));
-        userNameLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Username"));
-        userNameLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ACSD_Username"));
+        org.openide.awt.Mnemonics.setLocalizedText(userNameLabel, bundle.getString("LBL_Username")); // NOI18N
 
-        userPasswordLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Pw_Mnemonic").charAt(0));
         userPasswordLabel.setLabelFor(passwordField);
-        userPasswordLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Pw"));
-        userPasswordLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Pw"));
-        userPasswordLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ACSD_Pw"));
+        org.openide.awt.Mnemonics.setLocalizedText(userPasswordLabel, bundle.getString("LBL_Pw")); // NOI18N
 
-        domainLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Domain_Mnemonic").charAt(0));
         domainLabel.setLabelFor(domainField);
-        domainLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Domain"));
-        domainLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Domain"));
-        domainLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ACSD_Domain"));
+        org.openide.awt.Mnemonics.setLocalizedText(domainLabel, bundle.getString("LBL_Domain")); // NOI18N
 
-        domainLocLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_InstallRoot_Mnemonic").charAt(0));
         domainLocLabel.setLabelFor(domainLocField);
-        domainLocLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_DomainRoot"));
-        domainLocLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_InstallRoot"));
-        domainLocLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ACSD_InstallRoot"));
+        org.openide.awt.Mnemonics.setLocalizedText(domainLocLabel, bundle.getString("LBL_DomainRoot")); // NOI18N
 
         msgLabel.setForeground(new java.awt.Color(89, 79, 191));
 
-        enableHttpMonitor.setMnemonic(org.openide.util.NbBundle.getBundle(ConnectionTabVisualPanel.class).getString("MNE_Connection").charAt(0));
-        enableHttpMonitor.setText(org.openide.util.NbBundle.getBundle(ConnectionTabVisualPanel.class).getString("LBL_EnableHttpMonitor"));
+        org.openide.awt.Mnemonics.setLocalizedText(enableHttpMonitor, org.openide.util.NbBundle.getBundle(ConnectionTabVisualPanel.class).getString("LBL_EnableHttpMonitor")); // NOI18N
         enableHttpMonitor.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 enableHttpMonitorActionPerformed(evt);
             }
         });
 
-        enableHttpMonitor.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ACSD_EnableHttpMonitor"));
-
-        syncHttpProxies.setText(org.openide.util.NbBundle.getBundle(ConnectionTabVisualPanel.class).getString("LBL_SyncHttpProxy"));
+        org.openide.awt.Mnemonics.setLocalizedText(syncHttpProxies, org.openide.util.NbBundle.getBundle(ConnectionTabVisualPanel.class).getString("LBL_SyncHttpProxy")); // NOI18N
         syncHttpProxies.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 syncHttpProxiesActionPerformed(evt);
@@ -184,7 +154,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, msgLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, msgLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 479, Short.MAX_VALUE)
                     .add(enableHttpMonitor)
                     .add(syncHttpProxies)
                     .add(layout.createSequentialGroup()
@@ -196,13 +166,13 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
                             .add(domainLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(domainField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, domainLocField)
+                            .add(domainField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, domainLocField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(socketField))
-                            .add(passwordField)
-                            .add(userNameField))))
+                                .add(socketField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE))
+                            .add(passwordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)
+                            .add(userNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -239,6 +209,31 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
 
         layout.linkSize(new java.awt.Component[] {passwordField, userNameField}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
+        socketField.getAccessibleContext().setAccessibleName(bundle.getString("LBL_AdminPort")); // NOI18N
+        socketField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AdminPort")); // NOI18N
+        userNameField.getAccessibleContext().setAccessibleName(bundle.getString("LBL_Username")); // NOI18N
+        userNameField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Username")); // NOI18N
+        passwordField.getAccessibleContext().setAccessibleName(bundle.getString("LBL_Pw")); // NOI18N
+        passwordField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Pw")); // NOI18N
+        domainField.getAccessibleContext().setAccessibleName(bundle.getString("LBL_Domain")); // NOI18N
+        domainField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Domain")); // NOI18N
+        domainLocField.getAccessibleContext().setAccessibleName(bundle.getString("LBL_InstallRoot")); // NOI18N
+        domainLocField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_InstallRoot")); // NOI18N
+        portLabel.getAccessibleContext().setAccessibleName(bundle.getString("LBL_AdminSocket")); // NOI18N
+        portLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ASCD_AdminSocket")); // NOI18N
+        userNameLabel.getAccessibleContext().setAccessibleName(bundle.getString("LBL_Username")); // NOI18N
+        userNameLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Username")); // NOI18N
+        userPasswordLabel.getAccessibleContext().setAccessibleName(bundle.getString("LBL_Pw")); // NOI18N
+        userPasswordLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Pw")); // NOI18N
+        domainLabel.getAccessibleContext().setAccessibleName(bundle.getString("LBL_Domain")); // NOI18N
+        domainLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Domain")); // NOI18N
+        domainLocLabel.getAccessibleContext().setAccessibleName(bundle.getString("LBL_InstallRoot")); // NOI18N
+        domainLocLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_InstallRoot")); // NOI18N
+        enableHttpMonitor.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_EnableHttpMonitor")); // NOI18N
+        syncHttpProxies.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConnectionTabVisualPanel.class, "ACSD_SyncHttpProxy")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(bundle.getString("Step_ChooseUserDefinedLocalServer")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(bundle.getString("AddUserDefinedLocalServerPanel_Desc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     private void syncHttpProxiesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_syncHttpProxiesActionPerformed

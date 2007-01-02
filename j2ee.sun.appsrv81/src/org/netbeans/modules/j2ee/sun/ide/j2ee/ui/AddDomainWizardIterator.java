@@ -564,9 +564,8 @@ public final class AddDomainWizardIterator implements
             mainPanel.add(promptLabel, gridBagConstraints1);
             
             jLabel1 = new javax.swing.JLabel();
-            jLabel1.setText(bundle.getString("LAB_AUTH_User_Name"));
-            jLabel1.setDisplayedMnemonic(bundle.getString("LAB_AUTH_User_Name_Mnemonic").charAt(0));
-            
+            org.openide.awt.Mnemonics.setLocalizedText(jLabel1, 
+                    bundle.getString("LAB_AUTH_User_Name")); // NOI18N            
             gridBagConstraints1 = new java.awt.GridBagConstraints();
             gridBagConstraints1.insets = new java.awt.Insets(0, 0, 5, 12);
             gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
@@ -586,9 +585,8 @@ public final class AddDomainWizardIterator implements
             mainPanel.add(usernameField, gridBagConstraints1);
             
             jLabel2 = new javax.swing.JLabel();
-            jLabel2.setText(bundle.getString("LAB_AUTH_Password"));
-            jLabel2.setDisplayedMnemonic(bundle.getString("LAB_AUTH_Password_Mnemonic").charAt(0));
-            
+            org.openide.awt.Mnemonics.setLocalizedText(jLabel2, 
+                    bundle.getString("LAB_AUTH_Password")); // NOI18N            
             gridBagConstraints1 = new java.awt.GridBagConstraints();
             gridBagConstraints1.insets = new java.awt.Insets(0, 0, 0, 12);
             gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;

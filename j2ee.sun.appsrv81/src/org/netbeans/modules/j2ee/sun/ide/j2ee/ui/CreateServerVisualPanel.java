@@ -177,16 +177,13 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         spacingHack = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
 
+        setFocusable(false);
         setLayout(new java.awt.GridBagLayout());
 
-        setFocusable(false);
-        getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("Step_ChooseUserDefinedLocalServer"));
-        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("AddUserDefinedLocalServerPanel_Desc"));
         portConfPanel.setLayout(new java.awt.GridBagLayout());
 
-        adminJmxLbl.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_AdminJmxPort_Mnemonic").charAt(0));
         adminJmxLbl.setLabelFor(adminJmxPort);
-        adminJmxLbl.setText(org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_AdminJmxPort"));
+        org.openide.awt.Mnemonics.setLocalizedText(adminJmxLbl, org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_AdminJmxPort")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -195,9 +192,8 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 3);
         portConfPanel.add(adminJmxLbl, gridBagConstraints);
 
-        instancePortLbl.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_InstancePort_Mnemonic").charAt(0));
         instancePortLbl.setLabelFor(instanceHttpPort);
-        instancePortLbl.setText(org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_InstancePort"));
+        org.openide.awt.Mnemonics.setLocalizedText(instancePortLbl, org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_InstancePort")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -208,7 +204,7 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
 
         jmsPortLbl.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_JmsPort_Mnemonic").charAt(0));
         jmsPortLbl.setLabelFor(jmsPort);
-        jmsPortLbl.setText(org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_JmsPort"));
+        org.openide.awt.Mnemonics.setLocalizedText(jmsPortLbl, org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_JmsPort")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -217,9 +213,8 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 3);
         portConfPanel.add(jmsPortLbl, gridBagConstraints);
 
-        orbListenerPortLbl.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_OrbListener_Mnemonic").charAt(0));
         orbListenerPortLbl.setLabelFor(orbListenerPort);
-        orbListenerPortLbl.setText(org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_OrbListener"));
+        org.openide.awt.Mnemonics.setLocalizedText(orbListenerPortLbl, org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_OrbListener")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -228,9 +223,8 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 3);
         portConfPanel.add(orbListenerPortLbl, gridBagConstraints);
 
-        httpslPortLbl.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_HttpSslPort_Mnemonic").charAt(0));
         httpslPortLbl.setLabelFor(httpsPort);
-        httpslPortLbl.setText(org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_HttpSslPort"));
+        org.openide.awt.Mnemonics.setLocalizedText(httpslPortLbl, org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_HttpSslPort")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -239,9 +233,8 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 3);
         portConfPanel.add(httpslPortLbl, gridBagConstraints);
 
-        orbSslPortLbl.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_OrbSslPort_Mnemonic").charAt(0));
         orbSslPortLbl.setLabelFor(orbSslPort);
-        orbSslPortLbl.setText(org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_OrbSslPort"));
+        org.openide.awt.Mnemonics.setLocalizedText(orbSslPortLbl, org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_OrbSslPort")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -250,9 +243,8 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 3);
         portConfPanel.add(orbSslPortLbl, gridBagConstraints);
 
-        orbMutualauthPortLbl.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_OrbMutualauthPort_Mnemonic").charAt(0));
         orbMutualauthPortLbl.setLabelFor(orbMutualauthPort);
-        orbMutualauthPortLbl.setText(org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_OrbMutualauthPort"));
+        org.openide.awt.Mnemonics.setLocalizedText(orbMutualauthPortLbl, org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_OrbMutualauthPort")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -271,6 +263,8 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         portConfPanel.add(instanceHttpPort, gridBagConstraints);
+        instanceHttpPort.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSN_httpPort")); // NOI18N
+        instanceHttpPort.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSD_HTTP_PORT")); // NOI18N
 
         adminJmxPort.setModel(adminJmxPortValue);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -281,6 +275,8 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         portConfPanel.add(adminJmxPort, gridBagConstraints);
+        adminJmxPort.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSN_adminJmxPort")); // NOI18N
+        adminJmxPort.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSD_ADMIN_JMX_PORT")); // NOI18N
 
         jmsPort.setModel(jmsPortValue);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -291,6 +287,8 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         portConfPanel.add(jmsPort, gridBagConstraints);
+        jmsPort.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSN_JMS_PORT")); // NOI18N
+        jmsPort.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSD_JMS_PORT")); // NOI18N
 
         orbListenerPort.setModel(orbPortValue);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -301,6 +299,8 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         portConfPanel.add(orbListenerPort, gridBagConstraints);
+        orbListenerPort.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSN_ORB_PORT")); // NOI18N
+        orbListenerPort.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSD_ORB_PORT")); // NOI18N
 
         httpsPort.setModel(httpsPortValue);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -311,6 +311,8 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         portConfPanel.add(httpsPort, gridBagConstraints);
+        httpsPort.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSN_HTTPS_PORT")); // NOI18N
+        httpsPort.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSD_HTTPS_PORT")); // NOI18N
 
         orbSslPort.setModel(orbSslPortValue);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -321,6 +323,8 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         portConfPanel.add(orbSslPort, gridBagConstraints);
+        orbSslPort.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSN_ORB_SSL_PORT")); // NOI18N
+        orbSslPort.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSD_ORB_SSL_PORT")); // NOI18N
 
         orbMutualauthPort.setModel(orbMutualauthPortValue);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -330,10 +334,11 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         portConfPanel.add(orbMutualauthPort, gridBagConstraints);
+        orbMutualauthPort.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSN_ORB_MUTUALAUTH_PORT")); // NOI18N
+        orbMutualauthPort.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSD_ORB_MUTUALAUTH_PORT")); // NOI18N
 
-        adminPortLbl.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "MNM_adminPortLbl").charAt(0));
         adminPortLbl.setLabelFor(adminPort);
-        adminPortLbl.setText(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "LBL_adminPortLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(adminPortLbl, org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "LBL_adminPortLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -350,6 +355,8 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         portConfPanel.add(adminPort, gridBagConstraints);
+        adminPort.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSN_adminPort")); // NOI18N
+        adminPort.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateServerVisualPanel.class, "ACSD_AdminPort")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -367,7 +374,8 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         add(spacingHack, gridBagConstraints);
 
-        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("CreateServerVisualPanel_Desc"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle"); // NOI18N
+        jLabel1.setText(bundle.getString("CreateServerVisualPanel_Desc")); // NOI18N
         jLabel1.setFocusable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -377,6 +385,8 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
         add(jLabel1, gridBagConstraints);
 
+        getAccessibleContext().setAccessibleName(bundle.getString("Step_ChooseUserDefinedLocalServer")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(bundle.getString("AddUserDefinedLocalServerPanel_Desc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
    
     

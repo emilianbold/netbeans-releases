@@ -57,15 +57,15 @@ public class MasterPasswordInputPanel extends javax.swing.JPanel {
         jPasswordField1 = new javax.swing.JPasswordField();
         jLabel2 = new javax.swing.JLabel();
 
-        setLayout(new java.awt.GridBagLayout());
-
         setMinimumSize(new java.awt.Dimension(310, 157));
         setPreferredSize(new java.awt.Dimension(310, 157));
+        setLayout(new java.awt.GridBagLayout());
+
         jTextArea1.setBackground(java.awt.Color.lightGray);
         jTextArea1.setEditable(false);
-        jTextArea1.setFont(new java.awt.Font("Dialog", 0, 12));
         jTextArea1.setLineWrap(true);
-        jTextArea1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("MasterPasswordInputDialog_longtext"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle"); // NOI18N
+        jTextArea1.setText(bundle.getString("MasterPasswordInputDialog_longtext")); // NOI18N
         jTextArea1.setWrapStyleWord(true);
         jTextArea1.setFocusable(false);
         jTextArea1.setOpaque(false);
@@ -75,18 +75,17 @@ public class MasterPasswordInputPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 5, 12);
         add(jTextArea1, gridBagConstraints);
-        jTextArea1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("MasterPasswordInputDialog_longtext"));
+        jTextArea1.getAccessibleContext().setAccessibleDescription(bundle.getString("MasterPasswordInputDialog_longtext")); // NOI18N
 
-        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("MNM_MasterPassword").charAt(0));
         jLabel1.setLabelFor(jPasswordField1);
-        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("MasterPasswordInputDialog_text"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, bundle.getString("MasterPasswordInputDialog_text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 6);
         add(jLabel1, gridBagConstraints);
-        jLabel1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("MasterPasswordInputDialog_text"));
+        jLabel1.getAccessibleContext().setAccessibleDescription(bundle.getString("MasterPasswordInputDialog_text")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -103,7 +102,6 @@ public class MasterPasswordInputPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.weighty = 1.0;
         add(jLabel2, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
     
     
