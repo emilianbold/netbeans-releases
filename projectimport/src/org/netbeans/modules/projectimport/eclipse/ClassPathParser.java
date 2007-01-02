@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,7 +37,7 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * Parses a content of the .classpath file..
+ * Parses a content of the .classpath file.
  *
  * @author mkrauskopf
  */
@@ -48,6 +48,8 @@ final class ClassPathParser extends DefaultHandler {
     private static final String CLASSPATH_ENTRY = "classpathentry"; // NOI18N
     private static final String ATTRIBUTES = "attributes"; // NOI18N
     private static final String ATTRIBUTE = "attribute"; // NOI18N
+    private static final String ACCESSRULES = "accessrules"; // NOI18N
+    private static final String ACCESSRULE = "accessrule"; // NOI18N
     
     // attributes names
     private static final String KIND_ATTR = "kind"; // NOI18N
@@ -59,6 +61,8 @@ final class ClassPathParser extends DefaultHandler {
     private static final int POSITION_CLASSPATH_ENTRY = 2;
     private static final int POSITION_ATTRIBUTES = 3;
     private static final int POSITION_ATTRIBUTE = 4;
+    private static final int POSITION_ACCESSRULES = 5;
+    private static final int POSITION_ACCESSRULE = 6;
     
     private int position = POSITION_NONE;
     private StringBuffer chars;
@@ -67,7 +71,7 @@ final class ClassPathParser extends DefaultHandler {
     
     private ClassPathParser() {/* emtpy constructor */}
     
-    /** 
+    /**
      * Returns classpath content from a project's .classpath file.
      *
      * @param classPathFile the .classpath file
@@ -137,8 +141,7 @@ final class ClassPathParser extends DefaultHandler {
                     position = POSITION_CLASSPATH;
                     classPath = new ClassPath();
                 } else {
-                    throw (new SAXException("First element has to be " // NOI18N
-                            + CLASSPATH + ", but is " + localName)); // NOI18N
+                    unknownElementReached(position, localName);
                 }
                 break;
             case POSITION_CLASSPATH:
@@ -148,26 +151,47 @@ final class ClassPathParser extends DefaultHandler {
                             attributes.getValue(PATH_ATTR));
                     classPath.addEntry(entry);
                     position = POSITION_CLASSPATH_ENTRY;
+                } else {
+                    unknownElementReached(position, localName);
                 }
                 break;
             case POSITION_CLASSPATH_ENTRY:
                 if (localName.equals(ATTRIBUTES)) {
-                    // ignored in the meantime - prepared for future 
+                    // ignored in the meantime - prepared for future
                     // (probably since elicpse 3.1M6 - see #57661)
                     position = POSITION_ATTRIBUTES;
+                } else if (localName.equals(ACCESSRULES)) {
+                    // ignored in the meantime - prepared for future
+                    position = POSITION_ACCESSRULES;
+                } else {
+                    unknownElementReached(position, localName);
                 }
                 break;
             case POSITION_ATTRIBUTES:
                 if (localName.equals(ATTRIBUTE)) {
-                    // ignored in the meantime - prepared for future 
+                    // ignored in the meantime - prepared for future
                     // (probably since elicpse 3.1M6 - see #57661)
                     position = POSITION_ATTRIBUTE;
+                } else {
+                    unknownElementReached(position, localName);
+                }
+                break;
+            case POSITION_ACCESSRULES:
+                if (localName.equals(ACCESSRULE)) {
+                    // ignored in the meantime - prepared for future
+                    position = POSITION_ACCESSRULE;
+                } else {
+                    unknownElementReached(position, localName);
                 }
                 break;
             default:
-                throw (new SAXException("Unknown element reached: " // NOI18N
-                        + localName));
+                unknownElementReached(position, localName);
         }
+    }
+    
+    private void unknownElementReached(int position, String localName) throws SAXException {
+        throw new SAXException("Unknown element reached: " + // NOI18N
+                "position: " + position + ", element: " + localName); // NOI18N
     }
     
     public void endElement(String uri, String localName, String qName) throws
@@ -186,10 +210,16 @@ final class ClassPathParser extends DefaultHandler {
             case POSITION_ATTRIBUTE:
                 position = POSITION_ATTRIBUTES;
                 break;
+            case POSITION_ACCESSRULES:
+                position = POSITION_CLASSPATH_ENTRY;
+                break;
+            case POSITION_ACCESSRULE:
+                position = POSITION_ACCESSRULES;
+                break;
             default:
                 ErrorManager.getDefault().log(ErrorManager.WARNING,
                         "Unknown state reached in ClassPathParser, " + // NOI18N
-                        "position: " + position); // NOI18N
+                        "position: " + position + ", element: " + localName); // NOI18N
         }
         chars.setLength(0);
     }
@@ -199,12 +229,13 @@ final class ClassPathParser extends DefaultHandler {
     }
     
     public void error(SAXParseException e) throws SAXException {
-        ErrorManager.getDefault().log(ErrorManager.WARNING, "Error occurres: " + e);
+        ErrorManager.getDefault().log(ErrorManager.WARNING, "Error occurred: " + e);
         throw e;
     }
     
     public void fatalError(SAXParseException e) throws SAXException {
-        ErrorManager.getDefault().log(ErrorManager.WARNING, "Fatal error occurres: " + e);
+        ErrorManager.getDefault().log(ErrorManager.WARNING, "Fatal error occurred: " + e);
         throw e;
     }
+    
 }
