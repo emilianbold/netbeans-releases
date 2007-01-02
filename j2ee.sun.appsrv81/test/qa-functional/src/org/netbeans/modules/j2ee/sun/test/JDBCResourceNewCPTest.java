@@ -130,18 +130,20 @@ public class JDBCResourceNewCPTest extends NbTestCase implements WizardConstants
             Process p=Util.runAsadmin(commandds);
             Util.sleep(Util.SLEEP);
             BufferedReader error = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-            if(error.readLine()!=null)
-                throw new Exception(error.readLine());
+            String errorMess = error.readLine();
             BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String output=input.readLine();
+            if(errorMess!=null)
+                throw new Exception(errorMess+"\n"+output);
             System.out.println(output);
            Process pc=Util.runAsadmin(commandcp);
             Util.sleep(Util.SLEEP);
             BufferedReader errorcp = new BufferedReader(new InputStreamReader(pc.getErrorStream()));
-            if(errorcp.readLine()!=null)
-                throw new Exception(error.readLine());
+            errorMess = error.readLine();
             BufferedReader inputcp = new BufferedReader(new InputStreamReader(pc.getInputStream()));
             String outputcp=inputcp.readLine();
+            if(errorMess!=null)
+                throw new Exception(errorMess+"\n"+outputcp);
             System.out.println(outputcp);
             Util.closeProject(Util.WEB_PROJECT_NAME);
             Util.sleep(5000);

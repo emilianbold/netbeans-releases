@@ -71,10 +71,11 @@ public class WebServiceTest extends NbTestCase{
             Process p=Util.runAsadmin(command);
             Util.sleep(Util.SLEEP);
             BufferedReader error = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-            if(error.readLine()!=null)
-                throw new Exception(error.readLine());
+            String errorMess = error.readLine();
             BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String output=input.readLine();
+            if(errorMess!=null)
+                throw new Exception(errorMess+"\n"+output);
             System.out.println(output);
             if( Util.getModuleID(ModuleType.WAR, Util.WEBSERVICE_PROJECT_NAME,si,true)!=null)
                 throw new Exception("Disable of web service failed");
@@ -91,10 +92,11 @@ public class WebServiceTest extends NbTestCase{
             Process p=Util.runAsadmin(command);
             Util.sleep(Util.SLEEP);
             BufferedReader error = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-            if(error.readLine()!=null)
-                throw new Exception(error.readLine());
+            String errorMess = error.readLine();
             BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String output=input.readLine();
+            if(errorMess!=null)
+                throw new Exception(errorMess+"\n"+output);
             System.out.println(output);
             if( Util.getModuleID(ModuleType.WAR, Util.WEBSERVICE_PROJECT_NAME,si,true)==null)
                 throw new Exception("Enable of web service failed");

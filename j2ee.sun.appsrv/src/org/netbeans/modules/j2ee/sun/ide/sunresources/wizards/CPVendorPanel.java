@@ -29,7 +29,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Vector;
 import java.util.ArrayList;
-import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import javax.swing.ButtonGroup;
@@ -41,7 +40,6 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 
 import org.openide.util.HelpCtx;
 import org.openide.loaders.TemplateWizard;
-import org.openide.util.NbBundle;
 
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Field;
@@ -63,6 +61,8 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
     private String[] vendors;
     private boolean firstTime = true;
     private boolean setupValid = true;
+    
+    private static final String CONST_TRUE = "true"; // NOI18N
         
     /** Creates new form DBSchemaConnectionpanel */
     public CPVendorPanel(ResourceConfigHelper helper, Wizard wiardInfo) {
@@ -112,7 +112,7 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
             setExistingConnData();
         }
         
-        String vendorName = "other"; //NOI18N
+        //String vendorName = "other"; //NOI18N
         existingConnRadioButton.setEnabled(true);
         existingConnComboBox.setEnabled(true);
         newCofigRadioButton.setEnabled(true);
@@ -132,7 +132,7 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
         
         existingConnComboBox.getModel().addListDataListener(this);
         nameComboBox.getModel().addListDataListener(this);
-        isXA.setSelected(helper.getData().getString(__IsXA).equals("true"));  //NOI18N
+        isXA.setSelected(helper.getData().getString(__IsXA).equals(CONST_TRUE));  //NOI18N
         isXA.addChangeListener(this);
         newCofigRadioButton.addChangeListener(this);
         
@@ -359,8 +359,9 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
     }//GEN-LAST:event_nameComboBoxActionPerformed
 
     private void setNewConfigData(boolean replaceProps) {
-        if (firstTime)
+        if (firstTime) {
             return;
+        }
         int index = nameComboBox.getSelectedIndex();
 
         if (index > 0) {
@@ -372,21 +373,25 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
             String vendorName = vendors[index - 1];     
             String savedVendorName = data.getString(__DatabaseVendor);
             String savedXA = data.getString(__IsXA);
-            String XA = isXA.isSelected()?"true":"false";  //NOI18N
+            String XA = isXA.isSelected()?CONST_TRUE:"false";  //NOI18N
             boolean vendorNotChanged = vendorName.equals(savedVendorName);
             boolean isXANotChanged = XA.equals(savedXA);
 
-            if (vendorNotChanged && isXANotChanged)
+            if (vendorNotChanged && isXANotChanged) {
                 return;
-            if (!vendorNotChanged)
+            }
+            if (!vendorNotChanged) {
                 data.setString(__DatabaseVendor, vendorName);
-            if (!isXANotChanged)
+            }
+            if (!isXANotChanged) {
                 data.setString(__IsXA, XA);
+            }
             
             setDataSourceClassNameAndResTypeInData(vendorName);
             
-            if (replaceProps)
+            if (replaceProps) {
                 setPropertiesInData(vendorName);
+            }
         }    
     }
     
@@ -402,7 +407,7 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
         
         if (isXA.isSelected()) {
             data.setString(__ResType, "javax.sql.XADataSource");  //NOI18N
-            data.setString(__IsXA, "true");  //NOI18N
+            data.setString(__IsXA, CONST_TRUE);  //NOI18N
         }else {
             data.setString(__ResType, "javax.sql.DataSource");  //NOI18N
             data.setString(__IsXA, "false");  //NOI18N
@@ -443,7 +448,7 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
                 this.helper.getData().setResourceName(__JdbcConnectionPool);
                 useExistingConnection = true;  
             }
-            this.helper.getData().setString(__IsCPExisting, "true"); //NOI18N
+            this.helper.getData().setString(__IsCPExisting, CONST_TRUE); //NOI18N
             DatabaseConnection dbconn = (DatabaseConnection)dbconns.get(existingConnComboBox.getSelectedIndex() - 1);
             String url = dbconn.getDatabaseURL();
             String user = dbconn.getUser();
@@ -499,12 +504,13 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
                         }
                     }catch(java.lang.StringIndexOutOfBoundsException ex){
                     }
-                    if (name.equals(__DerbyPortNumber))
+                    if (name.equals(__DerbyPortNumber)) {
                         data.addProperty(name, portNumber);
-                    else if (name.equals(__DerbyDatabaseName))
+                    } else if (name.equals(__DerbyDatabaseName)) {
                         data.addProperty(name, databaseName);
-                    else if (name.equals(__ServerName))
+                    } else if (name.equals(__ServerName)) {
                         data.addProperty(name, hostName);
+                    }
                 }   
             }
         }
@@ -521,7 +527,7 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
     private javax.swing.JCheckBox isXA;
     // End of variables declaration//GEN-END:variables
 
-    private static final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"); //NOI18N
+//    private static final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"); //NOI18N
     
     public boolean isValid() {
         if(! setupValid){
@@ -580,14 +586,15 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
     }
 
     public void stateChanged(final javax.swing.event.ChangeEvent p1) {
-        if (firstTime)
+        if (firstTime) {
             return;
-        
-        if (p1.getSource().getClass() == javax.swing.JToggleButton.ToggleButtonModel.class)
+        }
+        if (p1.getSource().getClass() == javax.swing.JToggleButton.ToggleButtonModel.class) {
             if (existingConnRadioButton.isSelected()) {
                 //To solve a problem on Win2K only
-                if (firstTime)
+                if (firstTime) {
                     return;
+                }
                 existingConnComboBox.setEnabled(true);
                 nameComboBox.setEnabled(false);
 //                isXA.setEnabled(false);
@@ -596,7 +603,8 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
                 existingConnComboBox.setEnabled(false);
                 nameComboBox.setEnabled(true);
                 setNewConfigData(true);
-            }            
+            }  
+        }
         fireChange(this);
     }
     
@@ -634,7 +642,7 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
         this.wizDescriptor = (WizardDescriptor)settings;
         TemplateWizard wizard = (TemplateWizard)settings;
         String targetName = wizard.getTargetName();
-        if(this.helper.getData().getString(__DynamicWizPanel).equals("true")){ //NOI18N
+        if(this.helper.getData().getString(__DynamicWizPanel).equals(CONST_TRUE)){ //NOI18N
             targetName = null;
         }  
         FileObject setupFolder = ResourceUtils.getResourceDirectory(this.helper.getData().getTargetFileObject());
@@ -652,7 +660,7 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
         new setFocus(nameField);
     }
     
-    private boolean setupValid(){
-        return setupValid;
-    }
+//    private boolean setupValid(){
+//        return setupValid;
+//    }
 }

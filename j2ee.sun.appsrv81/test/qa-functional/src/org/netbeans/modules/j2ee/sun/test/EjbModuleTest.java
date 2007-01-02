@@ -63,11 +63,11 @@ public class EjbModuleTest extends NbTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("EjbModuleTest");
         // TODO : Retouche migration
-//        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
-//        suite.addTest(new EjbModuleTest("deployEjbModule"));
-//        suite.addTest(new EjbModuleTest("undeployEjbModule"));
-//        suite.addTest(new StartStopServerTest("stopServer"));
-//        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
+        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
+        suite.addTest(new EjbModuleTest("deployEjbModule"));
+        suite.addTest(new EjbModuleTest("undeployEjbModule"));
+        suite.addTest(new StartStopServerTest("stopServer"));
+        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
         return suite;
     }
 }

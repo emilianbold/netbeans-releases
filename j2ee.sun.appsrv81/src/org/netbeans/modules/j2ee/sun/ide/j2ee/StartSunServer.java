@@ -566,11 +566,11 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                     exitValue = process.waitFor();
                     
                     if (exitValue == 0) {
-                        if (hasCommandSucceeded()){
+//                        if (hasCommandSucceeded()){
                             return 0;
-                        } else {
-                            return -1;
-                        }
+//                        } else {
+//                            return -1;
+//                        }
                     } else {
                         if (null != io)
                             io.getOut().println(oos.toString());

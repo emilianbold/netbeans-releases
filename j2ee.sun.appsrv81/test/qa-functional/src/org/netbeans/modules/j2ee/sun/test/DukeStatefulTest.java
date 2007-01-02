@@ -70,10 +70,11 @@ public class DukeStatefulTest extends NbTestCase{
             Process p=Util.runAsadmin(command);
             Util.sleep(Util.SLEEP);
             BufferedReader error = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-            if(error.readLine()!=null)
-                throw new Exception(error.readLine());
+            String errorMess = error.readLine();
             BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String output=input.readLine();
+            if(errorMess!=null)
+                throw new Exception(errorMess+"\n"+output);
             System.out.println(output);
             if (Util.getModuleID(ModuleType.EAR, Util.STATEFUL_PROJECT_NAME, si,true)!=null)
                 throw new Exception("Disable of application failed.");
@@ -89,10 +90,11 @@ public class DukeStatefulTest extends NbTestCase{
             Process p=Util.runAsadmin(command);
             Util.sleep(Util.SLEEP);
             BufferedReader error = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-            if(error.readLine()!=null)
-                throw new Exception(error.readLine());
+            String errorMess = error.readLine();
             BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String output=input.readLine();
+            if(errorMess!=null)
+                throw new Exception(errorMess+"\n"+output);
             System.out.println(output);
         }catch(Exception e){
             fail(e.getMessage());
@@ -137,10 +139,11 @@ public class DukeStatefulTest extends NbTestCase{
             Util.sleep(Util.SLEEP);
             Process p = Runtime.getRuntime().exec(Util._PLATFORM_LOCATION+Util._SEP+"bin"+Util._SEP+"appclient -client "+Util.STATEFUL_PROJECT_NAME+"Client.jar");
             BufferedReader error = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-            if(error.readLine()!=null)
-                throw new Exception(error.readLine());
+            String errorMess = error.readLine();
             BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String output=input.readLine();
+            if(errorMess!=null)
+                throw new Exception(errorMess+"\n"+output);
             if (!output.equals("duke"))
                 throw new Exception("The client of application giving wrong results");
         }catch(Exception e){

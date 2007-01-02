@@ -85,10 +85,11 @@ public class JSFModuleTest extends NbTestCase {
             Process p=Util.runAsadmin(command);
             Util.sleep(Util.SLEEP);
             BufferedReader error = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-            if(error.readLine()!=null)
-                throw new Exception(error.readLine());
+            String errorMess = error.readLine();
             BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String output=input.readLine();
+            if(errorMess!=null)
+                throw new Exception(errorMess+"\n"+output);
             System.out.println(output);
             if(Util.getModuleID(ModuleType.WAR, Util.JSF_PROJECT_NAME, si,true)!=null)
                 throw new Exception("Disable of application failed.");
@@ -104,10 +105,11 @@ public class JSFModuleTest extends NbTestCase {
             Process p=Util.runAsadmin(command);
             Util.sleep(Util.SLEEP);
             BufferedReader error = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-            if(error.readLine()!=null)
-                throw new Exception(error.readLine());
+            String errorMess = error.readLine();
             BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String output=input.readLine();
+            if(errorMess!=null)
+                throw new Exception(errorMess+"\n"+output);
             System.out.println(output);
             executeJSFModule();
         }catch(Exception e){
@@ -219,20 +221,20 @@ public class JSFModuleTest extends NbTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("JSFModuleTest");
         // TODO : Retouche migration
-//        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
-//        suite.addTest(new StartStopServerTest("startServer"));
-//        suite.addTest(new JSFModuleTest("deployJSFModule"));
-//        suite.addTest(new JSFModuleTest("executeJSFModule"));
-//        suite.addTest(new JSFModuleTest("updateModule"));
-//        //suite.addTest(new JSFModuleTest("verifyJSFModule"));
-//        suite.addTest(new JSFModuleTest("disableJSFModule"));
-//        suite.addTest(new JSFModuleTest("enableJSFModule"));
-//        suite.addTest(new StartStopServerTest("restartServer"));
-//        suite.addTest(new JSFModuleTest("executeJSFModule"));
-//        suite.addTest(new JSFModuleTest("runJSFModule"));
-//        suite.addTest(new JSFModuleTest("undeployJSFModule"));
-//        suite.addTest(new StartStopServerTest("stopServer"));
-//        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
+        suite.addTest(new AddRemoveSjsasInstanceTest("addSjsasInstance"));
+        suite.addTest(new StartStopServerTest("startServer"));
+        suite.addTest(new JSFModuleTest("deployJSFModule"));
+        suite.addTest(new JSFModuleTest("executeJSFModule"));
+        suite.addTest(new JSFModuleTest("updateModule"));
+        //suite.addTest(new JSFModuleTest("verifyJSFModule"));
+        suite.addTest(new JSFModuleTest("disableJSFModule"));
+        suite.addTest(new JSFModuleTest("enableJSFModule"));
+        suite.addTest(new StartStopServerTest("restartServer"));
+        suite.addTest(new JSFModuleTest("executeJSFModule"));
+        suite.addTest(new JSFModuleTest("runJSFModule"));
+        suite.addTest(new JSFModuleTest("undeployJSFModule"));
+        suite.addTest(new StartStopServerTest("stopServer"));
+        suite.addTest(new AddRemoveSjsasInstanceTest("removeSjsasInstance"));
         return suite;
     }
 }

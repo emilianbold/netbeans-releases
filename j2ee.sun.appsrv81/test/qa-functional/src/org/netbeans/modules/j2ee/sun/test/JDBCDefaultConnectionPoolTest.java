@@ -107,14 +107,18 @@ public class JDBCDefaultConnectionPoolTest extends NbTestCase implements WizardC
         try {
             ServerInstance inst = ServerRegistry.getInstance().getServerInstance(Util._URL);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();
-            String[] command = new String[] {"delete-jdbc-connection-pool", "--user", "admin",  CONNECTION_POOL_NAME};
+            String[] command = new String[] {"delete-jdbc-connection-pool", 
+                "--user", 
+                "admin",  
+                CONNECTION_POOL_NAME};
             Process p=Util.runAsadmin(command);
             Util.sleep(Util.SLEEP);
             BufferedReader error = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-            if(error.readLine()!=null)
-                throw new Exception(error.readLine());
+            String mess = error.readLine();
             BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String output=input.readLine();
+            if(mess!=null)
+                fail(mess+" \n "+output);
             System.out.println(output);
             Util.closeProject(Util.WEB_PROJECT_NAME);
             Util.sleep(5000);

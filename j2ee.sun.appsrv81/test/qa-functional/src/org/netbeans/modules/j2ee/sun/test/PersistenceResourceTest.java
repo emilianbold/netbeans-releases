@@ -193,10 +193,11 @@ public class PersistenceResourceTest extends NbTestCase implements WizardConstan
             Process p=Util.runAsadmin(command);
             Util.sleep(Util.SLEEP);
             BufferedReader error = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-            if(error.readLine()!=null)
-                throw new Exception(error.readLine());
+            String errorMess = error.readLine();
             BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String output=input.readLine();
+            if(errorMess!=null)
+                throw new Exception(errorMess+"\n"+output);
             System.out.println(output);
             Util.closeProject(Util.WEB_PROJECT_NAME);
             Util.sleep(5000);
@@ -217,10 +218,11 @@ public class PersistenceResourceTest extends NbTestCase implements WizardConstan
             Process p=Util.runAsadmin(command);
             Util.sleep(Util.SLEEP);
             BufferedReader error = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-            if(error.readLine()!=null)
-                throw new Exception(error.readLine());
+            String errorMess = error.readLine();
             BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String output=input.readLine();
+            if(errorMess!=null)
+                throw new Exception(errorMess+"\n"+output);
             System.out.println(output);
             Util.closeProject(Util.WEB_PROJECT_NAME);
             Util.sleep(5000);
@@ -241,10 +243,11 @@ public class PersistenceResourceTest extends NbTestCase implements WizardConstan
             Process p=Util.runAsadmin(command);
             Util.sleep(Util.SLEEP);
             BufferedReader error = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-            if(error.readLine()!=null)
-                throw new Exception(error.readLine());
+            String errorMess = error.readLine();
             BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String output=input.readLine();
+            if(errorMess!=null)
+                throw new Exception(errorMess+"\n"+output);
             System.out.println(output);
             Util.closeProject(Util.WEB_PROJECT_NAME);
             Util.sleep(5000);

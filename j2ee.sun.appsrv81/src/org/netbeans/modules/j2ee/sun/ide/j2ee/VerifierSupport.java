@@ -692,9 +692,12 @@ public class VerifierSupport extends TopComponent{
      * This is the control panel of the Verifier GUI
      */
     public void CreateControlPanel() {
-        allButton = new JRadioButton(allString);
-        failButton = new JRadioButton(failString);
-        warnButton = new JRadioButton(warnString);
+        allButton = new JRadioButton(); //allString);
+        org.openide.awt.Mnemonics.setLocalizedText(allButton, allString); // NOI18N
+        failButton = new JRadioButton();//failString);
+        org.openide.awt.Mnemonics.setLocalizedText(failButton, failString); // NOI18N
+        warnButton = new JRadioButton();//warnString);
+        org.openide.awt.Mnemonics.setLocalizedText(warnButton, warnString); // NOI18N
         controlPanel = new JPanel();
         
         // 508 for this panel
@@ -715,15 +718,15 @@ public class VerifierSupport extends TopComponent{
         
         
         // set-up the radio buttons.
-        allButton.setMnemonic(KeyEvent.VK_L);
+        //allButton.setMnemonic(KeyEvent.VK_L);
         allButton.setActionCommand(allString);
         allButton.setSelected(true);//rifier.getReportLevel()==VerifierSupport.ALL);
         
-        failButton.setMnemonic(KeyEvent.VK_F);
+        //failButton.setMnemonic(KeyEvent.VK_F);
         failButton.setActionCommand(failString);
         //failButton.setSelected(Verifier.getReportLevel()==VerifierSupport.FAIL);
         
-        warnButton.setMnemonic(KeyEvent.VK_W);
+        //warnButton.setMnemonic(KeyEvent.VK_W);
         warnButton.setActionCommand(warnString);
         // warnButton.setSelected(Verifier.getReportLevel()==VerifierSupport.WARN);
         
