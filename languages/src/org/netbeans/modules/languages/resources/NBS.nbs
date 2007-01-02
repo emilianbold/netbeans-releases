@@ -71,9 +71,11 @@ S = grammarRule S;
 S = command S;
 S = ;
                     
-token = "TOKEN" ":" <identifier> ":" "(" regularExpression ")" token2;
-token2 = ":" state;
-token2 = ;
+token = "TOKEN" ":" <identifier> token2;
+token2 = ":" "(" regularExpression ")" token3;
+token2 = "{" properties "}";
+token3 = ":" state;
+token3 = ;
 state = "<" <identifier> ">";
 tokenState = state tokenState1;
 tokenState1 = "{" tokenGroup;
@@ -81,7 +83,7 @@ tokenState1 = ":" token;
 tokenGroup = tokensInGroup "}";
 tokensInGroup = tokenInGroup tokensInGroup;
 tokensInGroup = ;
-tokenInGroup = "TOKEN" ":" <identifier> ":" "(" regularExpression ")" token2;
+tokenInGroup = "TOKEN" ":" <identifier> ":" "(" regularExpression ")" token3;
                     
 regularExpression = reChoice regularExpression1;
 regularExpression1 = "|" reChoice regularExpression1;
@@ -141,6 +143,7 @@ properties = ;
 property = <identifier> ":" propertyValue ";";
 propertyValue = <string>;
 propertyValue = class;
+propertyValue = "(" regularExpression ")";
                     
 class = <identifier> class1;
 class1 = "." <identifier> class1;

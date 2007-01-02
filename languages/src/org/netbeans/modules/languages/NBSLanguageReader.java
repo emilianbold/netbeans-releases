@@ -155,15 +155,25 @@ public class NBSLanguageReader {
         Language language, 
         String state
     ) throws ParseException {
+        String startState = null;
+        String endState = null;
+        Pattern pattern = null;
         String name  = node.getTokenType ("identifier").getIdentifier ();
-        String patternString = node.getNode ("regularExpression").getAsText ();
-        String startState = node.getTokenTypeIdentifier ("state.identifier");
+        ASTNode pnode = node.getNode ("token2.properties");
+        if (pnode != null) {
+            Map properties = readProperties (pnode, language);
+            startState = getString (properties, "start_state", false);
+            endState = getString (properties, "end_state", false);
+            pattern = (Pattern) properties.get ("pattern");
+        } else {
+            String patternString = node.getNode ("token2.regularExpression").getAsText ();
+            endState = node.getTokenTypeIdentifier ("token2.token3.state.identifier");
+            pattern = Pattern.create (patternString, language.getMimeType ());
+        }
         if (startState != null && state != null) 
             throw new ParseException ("Start state should not be specified inside token group block!");
         if (startState == null) startState = state;
-        String endState = node.getTokenTypeIdentifier ("token2.state.identifier");
         if (endState == null) endState = state;
-        Pattern pattern = Pattern.create (patternString, language.getMimeType ());
         language.addToken (
             startState,
             SToken.create (
