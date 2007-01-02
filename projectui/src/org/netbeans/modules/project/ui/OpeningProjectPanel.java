@@ -56,19 +56,17 @@ public class OpeningProjectPanel extends javax.swing.JPanel {
         nameOfTheProject = new javax.swing.JTextField();
         jPanel1 = new javax.swing.JPanel();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(11, 11, 11, 11));
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(11, 11, 11, 11));
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(OpeningProjectPanel.class, "LBL_Opening_Projects", new Object[] {}));
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(OpeningProjectPanel.class, "LBL_Opening_Projects", new Object[] {})); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(jLabel1, gridBagConstraints);
 
-        innerPanel.setLayout(new java.awt.BorderLayout());
-
         innerPanel.add(progress, BorderLayout.CENTER);
-
+        innerPanel.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -81,7 +79,6 @@ public class OpeningProjectPanel extends javax.swing.JPanel {
         nameOfTheProject.setColumns(20);
         nameOfTheProject.setEditable(false);
         nameOfTheProject.setFont(javax.swing.UIManager.getFont("Label.font"));
-        nameOfTheProject.setText("jTextField1");
         nameOfTheProject.setBorder(null);
         nameOfTheProject.setDisabledTextColor(javax.swing.UIManager.getColor("Label.foreground"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -89,7 +86,6 @@ public class OpeningProjectPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(nameOfTheProject, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -98,9 +94,7 @@ public class OpeningProjectPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jPanel1, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
