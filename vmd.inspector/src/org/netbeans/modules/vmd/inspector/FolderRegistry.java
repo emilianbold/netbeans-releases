@@ -100,11 +100,11 @@ final class FolderRegistry {
         globalFolderRegistry.addListener(listener);
     }
 
-    void removeListener(Listener listener){
+    void removeListener(Listener listener) {
         globalFolderRegistry.removeListener(listener);
     }
 
-    interface Listener{
+    interface Listener {
         void notifyRegistryContentChange();
     }
 }

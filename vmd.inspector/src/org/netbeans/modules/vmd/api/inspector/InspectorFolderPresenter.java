@@ -270,7 +270,7 @@ public abstract class InspectorFolderPresenter extends DynamicPresenter {
         public Action[] getActions() {
             if (addAction == null)
                 addAction = new AddAction[]{AddAction.getInstance(filtersTypeID)};
-            addAction[0].setContext(getComponent());
+            addAction[0].setComponent(getComponent());
             
             return addAction;
         }

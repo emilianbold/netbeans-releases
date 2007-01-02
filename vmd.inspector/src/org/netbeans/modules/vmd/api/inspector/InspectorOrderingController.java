@@ -31,10 +31,10 @@ import org.netbeans.modules.vmd.api.model.TypeID;
  */
 public interface InspectorOrderingController {
 
-    public boolean isTypeIDSupported(TypeID typeID);
+    boolean isTypeIDSupported(TypeID typeID);
 
-    public List<InspectorFolder> getOrdered(DesignComponent component, Collection<InspectorFolder> folders);
+    List<InspectorFolder> getOrdered(DesignComponent component, Collection<InspectorFolder> folders);
 
-    public Integer getOrder();
+    Integer getOrder();
 
 }

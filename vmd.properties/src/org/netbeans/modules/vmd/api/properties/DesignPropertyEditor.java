@@ -25,13 +25,14 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-import org.netbeans.modules.vmd.api.model.Debug;
+
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignEvent;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.InplaceEditor;
+import org.openide.explorer.propertysheet.InplaceEditor.Factory;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
 
@@ -40,7 +41,7 @@ import org.openide.nodes.PropertySupport;
  * @author Karol Harezlak
  */
 
-public abstract class DesignPropertyEditor extends PropertyEditorSupport implements ExPropertyEditor, InplaceEditor.Factory {
+public abstract class DesignPropertyEditor extends PropertyEditorSupport implements ExPropertyEditor, Factory {
 
     private List<String> propertyNames;
     private DesignComponent component;
@@ -244,11 +245,5 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
         });
         
         return propertyValue;
-    }
-
-    public void setValue(Object value) {
-            Debug.warning("Value is not PropertyValue type and it wont be save to model " + value + " Check PropertyEditor "); //NOI18N
-        super.setValue(value);
-    }
-    
+    }    
 }

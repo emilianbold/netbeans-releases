@@ -35,7 +35,7 @@ import org.openide.util.NbBundle;
  *
  * @author Karol Harezlak
  */
-public final class GoToSourceAction extends SystemAction implements ActionContext {
+public final class GoToSourceAction extends SystemAction {
 
     public static final String DISPLAY_NAME = NbBundle.getMessage(GoToSourceAction.class, "NAME_GoToSourceAction"); //NOI18N
     
@@ -52,8 +52,6 @@ public final class GoToSourceAction extends SystemAction implements ActionContex
         return null;
     }
 
-    public void setContext(DesignComponent component) {
-    }
     //TODO Temporary disabled
     public boolean isEnabled() {
         return false;

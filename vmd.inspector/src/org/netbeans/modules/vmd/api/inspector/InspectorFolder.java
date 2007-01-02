@@ -30,15 +30,15 @@ import org.netbeans.modules.vmd.api.model.TypeID;
 
 public interface InspectorFolder extends  InspectorPositionController {
 
-    public TypeID getTypeID();
+    TypeID getTypeID();
 
-    public Long getComponentID();
+    Long getComponentID();
 
-    public Image getIcon();
+    Image getIcon();
 
-    public String getDisplayName();
+    String getDisplayName();
 
-    public String getName();
+    String getName();
 
     public Action[] getActions();
 

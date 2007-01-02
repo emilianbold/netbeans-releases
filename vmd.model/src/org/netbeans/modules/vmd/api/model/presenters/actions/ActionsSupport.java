@@ -127,7 +127,7 @@ public final class ActionsSupport {
                     assert relatedComponent != null : "No related component for ActionsPresenter "+ presenter ;//NOI18N
                     for (Action action : actions) {
                         if (action instanceof ActionContext)
-                            ((ActionContext) action).setContext(relatedComponent);
+                            ((ActionContext) action).setComponent(relatedComponent);
                     }
                     
                     if (document != null)

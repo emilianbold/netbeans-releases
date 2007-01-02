@@ -27,6 +27,6 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
  */
 public interface ActionContext {
 
-    public void setContext(DesignComponent component);
+    public void setComponent(DesignComponent component);
 
 }

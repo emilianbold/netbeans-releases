@@ -124,7 +124,7 @@ public abstract class MoveAction extends AbstractAction implements ActionContext
         return newArrayTypeID;
     }
     
-    public void setContext(DesignComponent component) {
+    public void setComponent(DesignComponent component) {
         this.component = component;
     }
     

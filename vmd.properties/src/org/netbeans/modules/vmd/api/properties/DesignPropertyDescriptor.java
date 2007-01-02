@@ -29,22 +29,23 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 
 public interface DesignPropertyDescriptor {
 
-    public List<String> getPropertyNames();
+    List<String> getPropertyNames();
 
-    public String getPropertyDisplayName();
+    String getPropertyDisplayName();
 
-    public String getPropertyToolTip();
+    String getPropertyToolTip();
 
-    public String getPropertyCategory();
+    String getPropertyCategory();
 
-    public PropertyBasicComponent getBasicPanelComponent();
+    PropertyBasicComponent getBasicPanelComponent();
 
-    public DesignPropertyEditor getPropertyEditor();
+    DesignPropertyEditor getPropertyEditor();
 
-    public DesignComponent getComponent();
+    DesignComponent getComponent();
     
-    public Class getPropertyEditorType();
+    @Deprecated
+    Class getPropertyEditorType();
     
-    public void init(DesignComponent component);
+    void init(DesignComponent component);
     
 }

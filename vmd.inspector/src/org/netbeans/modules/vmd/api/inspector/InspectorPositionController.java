@@ -28,6 +28,6 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 
 public interface InspectorPositionController {
 
-    public boolean isInside(InspectorFolderPath path, InspectorFolder folder, DesignComponent component);
+    boolean isInside(InspectorFolderPath path, InspectorFolder folder, DesignComponent component);
 
 }

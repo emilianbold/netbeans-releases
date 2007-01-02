@@ -111,9 +111,8 @@ public final class RenameAction extends SystemAction implements ActionContext {
         return DISPLAY_NAME;
     }
     
-    public void setContext(DesignComponent component) {
+    public void setComponent(DesignComponent component) {
         this.component = component;
-        
     }
     
 }

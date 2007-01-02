@@ -73,15 +73,12 @@ public final class AddAction extends AbstractAction  implements ActionContext, P
     private TypeID[] filtersTypeID =  new TypeID[0];
 
     private AddAction(TypeID ... filtersTypeID) {
+        this.putValue(Action.NAME, DISPLAY_NAME);
         if (filtersTypeID != null)
             this.filtersTypeID = filtersTypeID;
     }
     
     public void actionPerformed(ActionEvent e) {
-    }
-    
-    public String getName() {
-        return null;
     }
     
     public HelpCtx getHelpCtx() {
@@ -148,7 +145,7 @@ public final class AddAction extends AbstractAction  implements ActionContext, P
         return panel;
     }
 
-    public void setContext(DesignComponent component) {
+    public void setComponent(DesignComponent component) {
         this.component = component;
     }
    
