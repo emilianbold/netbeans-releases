@@ -412,7 +412,7 @@ public class LanguagesManager {
         sas.addAttribute (EditorStyleConstants.DisplayName, color);
         if (!sas.isDefined (EditorStyleConstants.Default)) {
             String def = color;
-            int i = def.lastIndexOf ('-');
+            int i = def.lastIndexOf ('_');
             if (i > 0) def = def.substring (i + 1);
             if (defaultsMap.containsKey (def))
                 sas.addAttribute (EditorStyleConstants.Default, def);
