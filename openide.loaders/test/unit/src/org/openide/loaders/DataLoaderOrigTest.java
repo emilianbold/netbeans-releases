@@ -19,10 +19,8 @@
 
 package org.openide.loaders;
 
-import junit.textui.TestRunner;
 
 import org.openide.filesystems.*;
-import org.openide.util.Lookup;
 import java.io.IOException;
 import java.util.*;
 import org.netbeans.junit.*;
