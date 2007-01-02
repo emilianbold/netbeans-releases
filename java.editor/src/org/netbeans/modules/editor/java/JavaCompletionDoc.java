@@ -139,7 +139,9 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                                 int startIdx = path.lastIndexOf(".."); //NOI18N
                                 startIdx = startIdx < 0 ? 0 : startIdx + 3;
                                 int endIdx = path.lastIndexOf('.'); //NOI18N
-                                String clsName = path.substring(startIdx, endIdx).replace('/', '.'); //NOI18N
+                                if (endIdx >= 0)
+                                    path = path.substring(startIdx, endIdx);
+                                String clsName = path.replace('/', '.'); //NOI18N
                                 Element e = controller.getElements().getTypeElement(clsName);
                                 if (e != null) {
                                     if (idx >= 0) {
@@ -447,15 +449,12 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                 SeeTag stag = (SeeTag)tag;
                 ClassDoc refClass = stag.referencedClass();
                 String memberName = stag.referencedMemberName();
+                String label = stag.label();
                 if (memberName != null) {
-                    see.append("<code>"); //NOI18N
-                    createLink(see, eu.elementFor(stag.referencedMember()), refClass.simpleTypeName() + "." + memberName); //NOI18N
-                    see.append("</code>"); //NOI18N
+                    createLink(see, eu.elementFor(stag.referencedMember()), "<code>" + (label != null && label.length() > 0 ? label : (refClass.simpleTypeName() + "." + memberName)) + "</code>"); //NOI18N
                     see.append(", "); //NOI18N
                 } else if (refClass != null) {
-                    see.append("<code>"); //NOI18N
-                    createLink(see, eu.elementFor(refClass), refClass.simpleTypeName());
-                    see.append("</code>"); //NOI18N
+                    createLink(see, eu.elementFor(refClass), "<code>" + (label != null && label.length() > 0 ? label : refClass.simpleTypeName()) + "</code>"); //NOI18N
                     see.append(", "); //NOI18N
                 }
             } else if (SINCE_TAG.equals(tag.kind())) {
@@ -489,14 +488,11 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                 SeeTag stag = (SeeTag)tag;
                 ClassDoc refClass = stag.referencedClass();
                 String memberName = stag.referencedMemberName();
+                String label = stag.label();
                 if (memberName != null) {
-                    sb.append("<code>"); //NOI18N
-                    createLink(sb, eu.elementFor(stag.referencedMember()), refClass.simpleTypeName() + "." + memberName); //NOI18N
-                    sb.append("</code>"); //NOI18N
+                    createLink(sb, eu.elementFor(stag.referencedMember()), "<code>" + (label != null && label.length() > 0 ? label : (refClass.simpleTypeName() + "." + memberName)) + "</code>"); //NOI18N
                 } else if (refClass != null) {
-                    sb.append("<code>"); //NOI18N
-                    createLink(sb, eu.elementFor(refClass), refClass.simpleTypeName());
-                    sb.append("</code>"); //NOI18N
+                    createLink(sb, eu.elementFor(refClass), "<code>" + (label != null && label.length() > 0 ? label : refClass.simpleTypeName()) + "</code>"); //NOI18N
                 }
             } else if (INHERIT_DOC_TAG.equals(tag.kind())) {
                 if (doc.isMethod()) {

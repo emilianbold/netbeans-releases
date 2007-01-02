@@ -53,7 +53,7 @@ public class HTMLDocView extends JEditorPane {
     }
 
     /** Sets the javadoc content as HTML document */
-    public void setContent(final String content) {
+    public void setContent(final String content, final String reference) {
         SwingUtilities.invokeLater(new Runnable(){
             public void run(){
                 Reader in = new StringReader("<HTML><BODY>"+content+"</BODY></HTML>");//NOI18N                
@@ -62,7 +62,15 @@ public class HTMLDocView extends JEditorPane {
                     doc.remove(0, doc.getLength());
                     getEditorKit().read(in, getDocument(), 0);  //!!! still too expensive to be called from AWT
                     setCaretPosition(0);
-                    scrollRectToVisible(new Rectangle(0,0,0,0));            
+                    if (reference != null) {
+                        SwingUtilities.invokeLater(new Runnable(){
+                            public void run(){
+                                scrollToReference(reference);
+                            }
+                        });
+                    } else {
+                        scrollRectToVisible(new Rectangle(0,0,0,0));
+                    }
                 }catch(IOException ioe){
                     ioe.printStackTrace();
                 }catch(BadLocationException ble){

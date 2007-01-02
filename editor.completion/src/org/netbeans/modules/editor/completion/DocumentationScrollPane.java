@@ -195,7 +195,12 @@ public class DocumentationScrollPane extends JScrollPane {
                     ((HTMLDocument)document).setBase(url);
                 }
             }
-            view.setContent(text);
+            if (currentDocumentation instanceof DefaultDoc) {
+                String ref = ((DefaultDoc)currentDocumentation).desc;
+                view.setContent(text, ref.startsWith("#") ? ref.substring(1) : null); //NOI18N
+            } else {
+                view.setContent(text, null);
+            }
         } else if (url != null){
             try{
                 view.setPage(url);
@@ -361,8 +366,7 @@ public class DocumentationScrollPane extends JScrollPane {
         
     }
 
-    private class MouseEventListener extends MouseAdapter {
-        
+    private class MouseEventListener extends MouseAdapter {        
         private JButton button;
         
         MouseEventListener(JButton button) {
@@ -400,30 +404,43 @@ public class DocumentationScrollPane extends JScrollPane {
                 final String desc = e.getDescription();
                 if (desc != null) {
                     CompletionDocumentation doc = currentDocumentation.resolveLink(desc);
-                    if (doc == null) {
-                        doc = new CompletionDocumentation() {
-                            private URL base = currentDocumentation.getURL();
-                            public Action getGotoSourceAction() {
-                                return null;
-                            }
-                            public String getText() {
-                                return null;
-                            }
-                            public URL getURL() {
-                                try {
-                                    return new URL(base, desc);
-                                } catch (MalformedURLException ex) {
-                                }
-                                return null;
-                            }
-                            public CompletionDocumentation resolveLink(String link) {
-                                return null;
-                            }
-                        };
-                    }
+                    if (doc == null)
+                        doc = new DefaultDoc(currentDocumentation, desc);
                     setData(doc);
                 }                    
             }
+        }
+    }
+    
+    private class DefaultDoc implements CompletionDocumentation {
+        
+        private CompletionDocumentation baseDoc = null;
+        private URL url = null;
+        private String desc = null;
+        
+        private DefaultDoc(CompletionDocumentation baseDoc, String desc) {
+            try {
+                url = new URL(baseDoc.getURL(), desc);
+            } catch (MalformedURLException ex) {
+                this.baseDoc = baseDoc;
+                this.desc = desc;
+            }
+        }
+    
+        public String getText() {
+            return baseDoc != null ? baseDoc.getText() : null;
+        }
+        
+        public URL getURL() {
+            return url;
+        }
+        
+        public CompletionDocumentation resolveLink(String link) {
+            return baseDoc != null ? baseDoc.resolveLink(link) : null;
+        }
+        
+        public Action getGotoSourceAction() {
+            return null;
         }
     }
     
