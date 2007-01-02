@@ -252,6 +252,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../ide/updatecenters</project>
                 <project>../ide/welcome</project>
                 <project>../image</project>
+                <project>../j2ee/archiveproject</project>
                 <project>../j2ee/clientproject</project>
                 <project>../j2ee/ddapi</project>
                 <project>../j2ee/debug</project>
@@ -264,6 +265,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../j2ee/persistence</project>
                 <project>../j2ee/persistenceapi</project>
                 <project>../j2ee/platform</project>
+                <project>../j2ee/samples</project>
                 <project>../j2ee/toplinklib</project>
                 <project>../j2ee/utilities</project>
                 <project>../j2eeserver</project>
@@ -362,6 +364,8 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../web/struts</project>
                 <project>../web/webapi</project>
                 <project>../websvc/clientapi</project>
+                <project>../websvc/core</project>
+                <project>../websvc/customization</project>
                 <project>../websvc/jaxrpc16</project>
                 <project>../websvc/jaxws20</project>
                 <project>../websvc/jaxwsapi</project>
@@ -381,6 +385,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../xml/tageditorsupport</project>
                 <project>../xml/tax</project>
                 <project>../xml/text-edit</project>
+                <project>../xml/tools</project>
                 <project>../xml/wsdl/api</project>
                 <project>../xml/xam</project>
                 <project>../xml/xdm</project>
