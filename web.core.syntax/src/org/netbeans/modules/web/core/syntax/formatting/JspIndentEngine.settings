@@ -5,7 +5,7 @@
     <instanceof class="org.openide.ServiceType"/>
     <instanceof class="org.openide.text.IndentEngine"/>
     <instanceof class="org.netbeans.modules.editor.FormatterIndentEngine"/>
-    <instanceof class="org.netbeans.modules.web.core.syntax.JspIndentEngine"/>
+<instanceof class="org.netbeans.modules.web.core.syntax.formatting.JspIndentEngine"/>
     <instanceof class="org.netbeans.modules.editor.java.JavaIndentEngine"/>
     <instance class="org.netbeans.modules.web.core.syntax.formatting.JspIndentEngine"/>
 </settings>
