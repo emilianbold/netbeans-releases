@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.util.Random;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -44,7 +45,7 @@ public class LogRecordsTest extends NbTestCase {
     }
     
     protected Level logLevel() {
-        return Level.INFO;
+        return Level.FINEST;
     }
 
     protected void setUp() throws Exception {
@@ -80,6 +81,42 @@ public class LogRecordsTest extends NbTestCase {
         }
         is.close();
     }
+    public void testMakeSureItIsScannable() throws Exception {
+        InputStream is = getClass().getResourceAsStream("NB1216449736.xml");
+        int cnt = 0;
+        
+        class H extends Handler {
+            int cnt;
+            
+            public void publish(LogRecord record) {
+                cnt++;
+            }
+
+            public void flush() {
+            }
+
+            public void close() throws SecurityException {
+            }
+        }
+        
+        for (;;) {
+            LOG.log(Level.INFO, "Reading {0}th record", cnt);
+            LogRecord r = LogRecords.read(is);
+            if (r == null) {
+                break;
+            }
+            LOG.log(Level.INFO, "Read {0}th record", cnt);
+            cnt++;
+        }
+        is.close();
+        
+        H h = new H();
+        is = getClass().getResourceAsStream("NB1216449736.xml");
+        LogRecords.scan(is, h);
+        is.close();
+        
+        assertEquals("The same amount of records", cnt, h.cnt);
+    }
 
     private void doWriteAndReadTest(long seed) throws Exception {
         Logger.getAnonymousLogger().info("seed is: " + seed);
@@ -90,7 +127,7 @@ public class LogRecordsTest extends NbTestCase {
         
         
         int cnt = r.nextInt(500);
-        LogRecord[] arr = new LogRecord[cnt];
+        final LogRecord[] arr = new LogRecord[cnt];
         for (int i = 0; i < cnt; i++) {
             LogRecord rec = generateLogRecord(r);
             arr[i] = rec;
@@ -99,12 +136,44 @@ public class LogRecordsTest extends NbTestCase {
         out.close();
         
 
-        DataInputStream in = new DataInputStream(new FileInputStream(file));
-        for (int i = 0; i < cnt; i++) {
-            LogRecord rec = LogRecords.read(in);
-            assertLog(i + "-th record is the same", rec, arr[i]);
+        {
+            DataInputStream in = new DataInputStream(new FileInputStream(file));
+            for (int i = 0; i < cnt; i++) {
+                LogRecord rec = LogRecords.read(in);
+                assertLog(i + "-th record is the same", rec, arr[i]);
+            }
+            in.close();
         }
-        in.close();
+        
+        class H extends Handler {
+            int cnt;
+            
+            public void publish(LogRecord rec) {
+                try {
+                    assertLog(cnt + "-th record is the same", rec, arr[cnt]);
+                } catch(Exception ex) {
+                    throw (RuntimeException)new RuntimeException().initCause(ex);
+                }
+                cnt++;
+            }
+
+            public void flush() {
+                assertEquals("All read", cnt, arr.length);
+                cnt = -1;
+            }
+
+            public void close() throws SecurityException {
+            }
+        }
+        
+        H h = new H();
+        {
+            LOG.info("Scanning " + file);
+            DataInputStream in = new DataInputStream(new FileInputStream(file));
+            LogRecords.scan(in, h);
+            in.close();
+        }
+        assertEquals("Cleared", -1, h.cnt);
     }
     
     private LogRecord generateLogRecord(Random r) throws UnsupportedEncodingException {
@@ -158,8 +227,15 @@ public class LogRecordsTest extends NbTestCase {
         int len = r.nextInt(50);
         byte[] arr = new byte[len];
         for (int i = 0; i < arr.length; i++) {
-            arr[i] = (byte)r.nextInt(128);
+            int ch = r.nextInt(256);
+            if (ch < 32) {
+                ch = 32;
+            }
+            if (ch > 'z') {
+                ch = 'z';
+            }
+            arr[i] = (byte)ch;
         }
-        return new String(arr, "utf-8");
+        return new String(new String(arr, "utf-8").getBytes(), "utf-8");
     }
 }

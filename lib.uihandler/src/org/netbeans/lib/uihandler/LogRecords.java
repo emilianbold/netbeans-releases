@@ -17,19 +17,40 @@
 
 package org.netbeans.lib.uihandler;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PushbackInputStream;
+import java.io.SequenceInputStream;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.logging.Formatter;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.XMLFormatter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import org.omg.CORBA.CharSeqHelper;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.DTDHandler;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /** Can persist and read log records from streams.
  *
@@ -39,6 +60,8 @@ public final class LogRecords {
     private LogRecords() {
     }
 
+    private static final Logger LOG = Logger.getLogger(LogRecords.class.getName());
+    
     private static final Formatter FORMATTER = new XMLFormatter();
     
     public static void write(OutputStream os, LogRecord rec) throws IOException {
@@ -47,6 +70,53 @@ public final class LogRecords {
         os.write(arr);
     }
 
+    public static void scan(InputStream is, Handler h) throws IOException {
+        PushbackInputStream wrap = new PushbackInputStream(is, 32);
+        byte[] arr = new byte[5];
+        int len = wrap.read(arr);
+        wrap.unread(arr, 0, len);
+        
+        if (arr[0] == '<' &&
+            arr[1] == '?' &&
+            arr[2] == 'x' &&
+            arr[3] == 'm' &&
+            arr[4] == 'l'
+        ) {
+            is = wrap;
+        } else {
+            ByteArrayInputStream header = new ByteArrayInputStream(
+    "<?xml version='1.0' encoding='UTF-8'?><uigestures version='1.0'>".getBytes()
+            );
+            ByteArrayInputStream footer = new ByteArrayInputStream(
+                "</uigestures>".getBytes()
+            );
+            is = new SequenceInputStream(
+                new SequenceInputStream(header, wrap),
+                footer
+            );
+        }
+        
+        SAXParserFactory f = SAXParserFactory.newInstance();
+        f.setValidating(false);
+        SAXParser p;
+        try {
+            p = f.newSAXParser();
+        } catch (ParserConfigurationException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw (IOException)new IOException(ex.getMessage()).initCause(ex);
+        } catch (SAXException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw (IOException)new IOException(ex.getMessage()).initCause(ex);
+        }
+        
+        Parser parser = new Parser(h);
+        try {
+            p.parse(is, parser);
+        } catch (SAXException ex) {
+            LOG.log(Level.WARNING, null, ex);
+            throw (IOException)new IOException(ex.getMessage()).initCause(ex);
+        }
+    }
     
     
     public static LogRecord read(InputStream is) throws IOException {
@@ -183,5 +253,95 @@ public final class LogRecords {
         }
         len[0] = index;
         return arr;
+    }
+    
+    private static final class Parser extends DefaultHandler {
+        private Handler callback;
+        private static enum Elem {
+            uigestures, record, date, millis, sequence, level, thread, message, key;
+                
+            public String parse(Map<Elem,String> values) {
+                String v = values.get(this);
+                return v;
+            }
+        }
+        private Map<Elem,String> values = new EnumMap<Elem,String>(Elem.class);
+        private Elem current;
+        private StringBuilder chars = new StringBuilder();
+        
+        public Parser(Handler c) {
+            this.callback = c;
+        }
+        
+        
+        public void setDocumentLocator(Locator locator) {
+        }
+
+        public void startDocument() throws SAXException {
+        }
+
+        public void endDocument() throws SAXException {
+            callback.flush();
+        }
+
+        public void startPrefixMapping(String prefix, String uri) throws SAXException {
+        }
+
+        public void endPrefixMapping(String prefix) throws SAXException {
+        }
+
+        public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.log(Level.FINEST, "uri: {0} localName: {1} qName: {2} atts: {3}", new Object[] { uri, localName, qName, atts });
+            }
+
+            try {
+                current = Elem.valueOf(qName);
+            } catch (IllegalArgumentException ex) {
+                LOG.log(Level.WARNING, "Uknown tag " + qName, ex);
+            }
+            chars.setLength(0);
+        }
+
+        public void endElement(String uri, String localName, String qName) throws SAXException {
+            if (current != null) {
+                values.put(current, chars.toString());
+            }
+            
+            current = null;
+            chars.setLength(0);
+            if ("record".equals(qName)) { // NOI18N
+                String millis = Elem.millis.parse(values);
+                String seq = Elem.sequence.parse(values);
+                String lev = Elem.level.parse(values);
+                String thread = Elem.thread.parse(values);
+                String msg = Elem.message.parse(values);
+                String key = Elem.key.parse(values);
+                
+                LogRecord r = new LogRecord(Level.parse(lev), msg);
+                r.setThreadID(Integer.parseInt(thread));
+                r.setSequenceNumber(Long.parseLong(seq));
+                r.setMillis(Long.parseLong(millis));
+                r.setResourceBundleName(key);
+                callback.publish(r);
+                
+                values.clear();
+            }
+            
+        }
+
+        public void characters(char[] ch, int start, int length) throws SAXException {
+            chars.append(ch, start, length);
+        }
+
+        public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+        }
+
+        public void processingInstruction(String target, String data) throws SAXException {
+        }
+
+        public void skippedEntity(String name) throws SAXException {
+        }
+        
     }
 }
