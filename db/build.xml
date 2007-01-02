@@ -22,7 +22,10 @@ Microsystems, Inc. All Rights Reserved.
     <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="init" depends="projectized.init">
-        <available property="have-jdbc-40" resource="java/sql/RowIdLifetime.class" classpath="${nbjdk.bootclasspath}"/>
+        <condition property="nbjdk.bootclasspath.available">
+            <isset property="nbjdk.bootclasspath"/>
+        </condition>
+        <available property="have-jdbc-40" classname="java.sql.RowIdLifetime" classpath="${nbjdk.bootclasspath}" ignoresystemclasses="${nbjdk.bootclasspath.available}"/>
     </target>
 
     <target name="compile-lib" depends="init,fake-jdbc-40">
