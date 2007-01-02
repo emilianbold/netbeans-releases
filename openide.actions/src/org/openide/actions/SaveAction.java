@@ -71,15 +71,6 @@ public class SaveAction extends CookieAction {
         return false;
     }
 
-    /**
-     * Extract a suitable after-save message. Will call
-     * <code>Node.getValue(&quot;saveName&quot;)</code> to allow the node to
-     * supply an appropriate name.  If null, it will simply return the
-     * node's display name.
-     *
-     * @param node that is being saved.
-     * @return name that should be printed to the user.
-     */
     private String getSaveMessage(Node n) {
         if (dataObject == null) {
             // read the class
