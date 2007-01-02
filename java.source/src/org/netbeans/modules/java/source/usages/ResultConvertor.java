@@ -77,8 +77,8 @@ public abstract class ResultConvertor<T> {
                 name = classBinaryName;
             }
             else {
-                assert index>0;
-                assert index<classBinaryName.length() - 1;
+                assert index>0 : classBinaryName;
+                assert index<classBinaryName.length() - 1 : classBinaryName;
                 folder = root.getFileObject(classBinaryName.substring(0,index));
                 name = classBinaryName.substring(index+1);
             }

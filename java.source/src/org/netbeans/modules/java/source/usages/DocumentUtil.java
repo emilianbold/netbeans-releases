@@ -93,7 +93,11 @@ class DocumentUtil {
         if (pkgField == null) {
             return snName;
         }        
-        return pkgField.stringValue() + PKG_SEPARATOR + snName;   //NO I18N
+        String pkg = pkgField.stringValue();
+        if (pkg.length() == 0) {
+            return snName;
+        }
+        return  pkg + PKG_SEPARATOR + snName;   //NO I18N
     }
     
     public static String getSimpleBinaryName (final Document doc) {
