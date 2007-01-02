@@ -62,7 +62,7 @@ public class ClassPathParserTest extends NbTestCase {
         assertEquals("nineteen classpath entries", 19, cp.getEntries().size());
     }
     
-    public void testParse_71770a() throws Exception {
+    public void testAccessrulesDoesNotCauseException() throws Exception { // #91669
         String cpS = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"  +
                 "<classpath>" +
                 "<classpathentry kind=\"src\" path=\"src/java5\"/>" +
@@ -75,7 +75,7 @@ public class ClassPathParserTest extends NbTestCase {
                 "<classpathentry kind=\"output\" path=\"build/classes\"/>" +
                 "</classpath>";
         ClassPath cp = ClassPathParser.parse(cpS);
-        assertEquals("nineteen classpath entries", 2, cp.getEntries().size());
+        assertEquals("two classpath entries", 2, cp.getEntries().size());
     }
     
 }
