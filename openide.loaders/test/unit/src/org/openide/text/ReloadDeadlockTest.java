@@ -72,7 +72,7 @@ public class ReloadDeadlockTest extends NbTestCase {
         
         int i = 1;
         do {
-            rootDir = new File(new File(System.getProperty("user.dir")), "TestRootDir"+(i++));
+            rootDir = new File(getWorkDir(), "TestRootDir"+(i++));
         } while(rootDir.exists() && !rootDir.isDirectory());
         
         System.err.println("root exists="+rootDir.exists()); 
