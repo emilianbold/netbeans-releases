@@ -107,8 +107,8 @@ public final class CompletionLayout {
     }
 
     public void showCompletion(List data, String title, int anchorOffset,
-    ListSelectionListener listSelectionListener, boolean showShortcutHints) {
-        completionPopup.show(data, title, anchorOffset, listSelectionListener, showShortcutHints);
+    ListSelectionListener listSelectionListener, boolean showShortcutHints, int selectedIndex) {
+        completionPopup.show(data, title, anchorOffset, listSelectionListener, showShortcutHints, selectedIndex);
         if (!visiblePopups.contains(completionPopup))
             visiblePopups.push(completionPopup);
     }
@@ -264,7 +264,7 @@ public final class CompletionLayout {
         private CompletionScrollPane completionScrollPane;
         
         public void show(List data, String title, int anchorOffset,
-        ListSelectionListener listSelectionListener, boolean showShortcutHints) {
+        ListSelectionListener listSelectionListener, boolean showShortcutHints, int selectedIndex) {
             
 	    JTextComponent editorComponent = getEditorComponent();
 	    if (editorComponent == null) {
@@ -318,7 +318,7 @@ public final class CompletionLayout {
                 }
             }
             // Set the new data
-            completionScrollPane.setData(data, title);
+            completionScrollPane.setData(data, title, selectedIndex);
             setAnchorOffset(anchorOffset);
 
             Dimension prefSize = getPreferredSize();

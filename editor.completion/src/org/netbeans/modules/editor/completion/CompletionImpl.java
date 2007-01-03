@@ -202,7 +202,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                     }
                 }
                 layout.showCompletion(Collections.singletonList(waitText),
-                        null, -1, CompletionImpl.this, false);
+                        null, -1, CompletionImpl.this, false, 0);
                 pleaseWaitDisplayed = true;
             }
         });
@@ -529,7 +529,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
             }
         } else {
             completionCancel();
-            layout.showCompletion(Collections.singletonList(NO_SUGGESTIONS), null, -1, CompletionImpl.this, false);
+            layout.showCompletion(Collections.singletonList(NO_SUGGESTIONS), null, -1, CompletionImpl.this, false, 0);
             pleaseWaitDisplayed = false;
         }
     }
@@ -709,8 +709,9 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                     } catch (BadLocationException ex) {
                     }
                 }
-
-                layout.showCompletion(noSuggestions ? Collections.singletonList(NO_SUGGESTIONS) : sortedResultItems, displayTitle, displayAnchorOffset, CompletionImpl.this, allowFallbacks && queryType == CompletionProvider.COMPLETION_QUERY_TYPE);
+                
+                int selectedIndex = getCompletionPreSelectionIndex(sortedResultItems);
+                layout.showCompletion(noSuggestions ? Collections.singletonList(NO_SUGGESTIONS) : sortedResultItems, displayTitle, displayAnchorOffset, CompletionImpl.this, allowFallbacks && queryType == CompletionProvider.COMPLETION_QUERY_TYPE, selectedIndex);
                 pleaseWaitDisplayed = false;
 
                 // Show documentation as well if set by default
@@ -726,6 +727,29 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             }
         };
         runInAWT(requestShowRunnable);
+    }
+    
+    private int getCompletionPreSelectionIndex(List<CompletionItem> items) {
+        String prefix = null;
+        BaseDocument doc = (BaseDocument)getActiveDocument();
+        int caretOffset = getActiveComponent().getSelectionStart();
+        try {
+            int[] block = Utilities.getIdentifierBlock(doc, caretOffset);
+            if (block != null) {
+                block[1] = caretOffset;
+                prefix = doc.getText(block);
+            }
+        } catch (BadLocationException ble) {
+        }
+        if (prefix != null && prefix.length() > 0) {
+            int idx = 0;
+            for (CompletionItem item : items) {
+                if (item.getInsertPrefix().toString().startsWith(prefix))
+                    return idx;
+                idx++;
+            }
+        }
+        return 0;
     }
 
     /**

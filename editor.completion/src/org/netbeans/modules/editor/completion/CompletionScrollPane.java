@@ -22,10 +22,10 @@ package org.netbeans.modules.editor.completion;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.List;
 import javax.swing.AbstractAction;
@@ -96,9 +96,13 @@ public class CompletionScrollPane extends JScrollPane {
         installKeybindings(editorComponent);
     }
     
-    public void setData(List data, String title) {
+    public void setData(List data, String title, int selectedIndex) {
         dataObj = data;
         view.setData(data);
+        view.setSelectedIndex(selectedIndex);
+        Point p = view.indexToLocation(selectedIndex);
+        if (p != null)
+            view.scrollRectToVisible(new Rectangle(p));
         setTitle(title);
         // Force the viewport preferred size to be taken into account
         // Otherwise the scroll pane attempts to retain its size
@@ -108,7 +112,7 @@ public class CompletionScrollPane extends JScrollPane {
         // Resetting of viewport fixes the problem.
         setViewportView(getViewport().getView());
     }
-
+    
     public CompletionItem getSelectedCompletionItem() {
         Object ret = view.getSelectedValue();
         return ret instanceof CompletionItem ? (CompletionItem) ret : null;
