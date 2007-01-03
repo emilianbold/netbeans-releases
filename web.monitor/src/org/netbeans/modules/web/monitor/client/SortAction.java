@@ -37,8 +37,6 @@ import javax.swing.JRadioButtonMenuItem;
 import org.netbeans.modules.web.monitor.client.Controller.CompAlpha;
 import org.netbeans.modules.web.monitor.client.Controller.CompTime;
 
-import org.openide.awt.Actions;
-import org.openide.awt.JMenuPlus;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -59,17 +57,17 @@ public class SortAction extends NodeAction {
     }
     
     public JMenuItem getPopupPresenter() {
-        JMenu menu = new JMenuPlus(NbBundle.getBundle(MonitorAction.class).getString("MON_Sort_by"));
+        JMenu menu = new JMenu(NbBundle.getMessage(MonitorAction.class, "MON_Sort_by"));
 
         TransactionView transView = TransactionView.getInstance();
         descSortMenuItem = createItem(
-            NbBundle.getBundle(MonitorAction.class).getString("MON_Sort_desc"), 
+            NbBundle.getMessage(MonitorAction.class, "MON_Sort_desc"), 
             transView.isDescButtonSelected());        
         ascSortMenuItem = createItem(
-            NbBundle.getBundle(MonitorAction.class).getString("MON_Sort_asc"), 
+            NbBundle.getMessage(MonitorAction.class, "MON_Sort_asc"), 
             transView.isAscButtonSelected());
         alphSortMenuItem = createItem(
-            NbBundle.getBundle(MonitorAction.class).getString("MON_Sort_alph"), 
+            NbBundle.getMessage(MonitorAction.class, "MON_Sort_alph"), 
             transView.isAlphButtonSelected());
         
         ActionListener listener = new RadioMenuItemActioListener();
@@ -86,13 +84,13 @@ public class SortAction extends NodeAction {
 
     private JMenuItem createItem(String dispName, boolean selected) {
         JMenuItem item = new JRadioButtonMenuItem();
-        Actions.setMenuText(item, dispName, false);
+        item.setText(dispName);
         item.setSelected(selected);
         return item;
     }     
     
     public String getName() {
-        return NbBundle.getBundle(MonitorAction.class).getString("MON_Sort_by");
+        return NbBundle.getMessage(MonitorAction.class, "MON_Sort_by");
     }
     
     protected void performAction(Node[] activatedNodes) {

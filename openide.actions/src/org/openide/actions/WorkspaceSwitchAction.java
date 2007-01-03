@@ -24,19 +24,16 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.WindowManager;
 import org.openide.windows.Workspace;
-
 import java.awt.event.ActionListener;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
-
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
+import org.openide.awt.Mnemonics;
 
 
 /** Switch to a different workspace.
@@ -58,7 +55,7 @@ public class WorkspaceSwitchAction extends CallableSystemAction {
         // can be legally called several times and menu component cannot be
         // contained in more than one component hierarchy
         JMenu menu = new org.openide.awt.JMenuPlus();
-        Actions.setMenuText(menu, getName(), true);
+        Mnemonics.setLocalizedText(menu, getName());
         menu.setHorizontalTextPosition(JMenu.RIGHT);
         menu.setHorizontalAlignment(JMenu.LEFT);
         menu.setIcon(getIcon());
@@ -210,7 +207,7 @@ public class WorkspaceSwitchAction extends CallableSystemAction {
     ) {
         // bugfix #6116 - change from getName() to getDisplayName()
         JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem();
-        Actions.setMenuText(menuItem, workspace.getDisplayName(), true);
+        Mnemonics.setLocalizedText(menuItem, workspace.getDisplayName());
         HelpCtx.setHelpIDString(menuItem, WorkspaceSwitchAction.class.getName());
 
         ActionListener listener = createActionListener(menuItem, currentDeskRef, menu2Workspace, workspace2Menu);
