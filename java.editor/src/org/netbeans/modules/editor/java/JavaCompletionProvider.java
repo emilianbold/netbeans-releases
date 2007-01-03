@@ -349,12 +349,15 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 Trees trees = controller.getTrees();
                                 final TypeMirror type = trees.getTypeMirror(path);
                                 final Element element = trees.getElement(path);
-                                final boolean isStatic = element != null && (element.getKind().isClass() || element.getKind().isInterface());
+                                final boolean isStatic = element != null && (element.getKind().isClass() || element.getKind().isInterface() || element.getKind() == TYPE_PARAMETER);
+                                final boolean isSuperCall = element != null && element.getKind().isField() && element.getSimpleName().contentEquals(SUPER_KEYWORD);
                                 final Scope scope = env.getScope();
                                 final TreeUtilities tu = controller.getTreeUtilities();
+                                TypeElement enclClass = scope.getEnclosingClass();
+                                final TypeMirror enclType = enclClass != null ? enclClass.asType() : null;
                                 ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                                     public boolean accept(Element e, TypeMirror t) {
-                                        return (!isStatic || e.getModifiers().contains(STATIC) || e.getKind() == CONSTRUCTOR) && tu.isAccessible(scope, e, t);
+                                        return (!isStatic || e.getModifiers().contains(STATIC) || e.getKind() == CONSTRUCTOR) && tu.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t);
                                     }
                                 };
                                 params = getMatchingParams(type, controller.getElementUtilities().getMembers(type, acceptor), ((MemberSelectTree)mid).getIdentifier().toString(), types, controller.getTypes());
@@ -364,7 +367,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 final Scope scope = env.getScope();
                                 final TreeUtilities tu = controller.getTreeUtilities();
                                 final TypeElement enclClass = scope.getEnclosingClass();
-                                final boolean isStatic = enclClass != null ? tu.isStaticContext(scope) : false;
+                                final boolean isStatic = enclClass != null ? (tu.isStaticContext(scope) || (env.getPath().getLeaf().getKind() == Tree.Kind.BLOCK && ((BlockTree)env.getPath().getLeaf()).isStatic())) : false;
                                 final Collection<? extends Element> illegalForwardRefs = env.getForwardReferences();
                                 final ExecutableElement method = scope.getEnclosingMethod();
                                 ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
@@ -2223,9 +2226,12 @@ public class JavaCompletionProvider implements CompletionProvider {
             final Types types = controller.getTypes();
             final TreeUtilities tu = controller.getTreeUtilities();
             TypeElement typeElem = type.getKind() == TypeKind.DECLARED ? (TypeElement)((DeclaredType)type).asElement() : null;
-            final boolean isStatic = elem != null && (elem.getKind().isClass() || elem.getKind().isInterface());
+            final boolean isStatic = elem != null && (elem.getKind().isClass() || elem.getKind().isInterface() || elem.getKind() == TYPE_PARAMETER);
+            final boolean isSuperCall = elem != null && elem.getKind().isField() && elem.getSimpleName().contentEquals(SUPER_KEYWORD);
             final Scope scope = env.getScope();
             final Set<TypeMirror> finalSmartTypes = smartTypes;
+            TypeElement enclClass = scope.getEnclosingClass();
+            final TypeMirror enclType = enclClass != null ? enclClass.asType() : null;
             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
                     if (!Utilities.startsWith(e.getSimpleName().toString(), prefix) ||
@@ -2236,7 +2242,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (((VariableElement)e).getConstantValue() == null)
                                 return false;
                         case ENUM_CONSTANT:
-                            return tu.isAccessible(scope, e, t) &&
+                            return tu.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t) &&
                                     isOfSmartType(asMemberOf(e, t, types), finalSmartTypes, types);
                         case CLASS:
                         case ENUM:
@@ -2278,16 +2284,19 @@ public class JavaCompletionProvider implements CompletionProvider {
             final TreeUtilities tu = controller.getTreeUtilities();
             TypeElement typeElem = type.getKind() == TypeKind.DECLARED ? (TypeElement)((DeclaredType)type).asElement() : null;
             final boolean isStatic = elem != null && (elem.getKind().isClass() || elem.getKind().isInterface() || elem.getKind() == TYPE_PARAMETER);
+            final boolean isSuperCall = elem != null && elem.getKind().isField() && elem.getSimpleName().contentEquals(SUPER_KEYWORD);
             final Scope scope = env.getScope();
             final Set<TypeMirror> finalSmartTypes = smartTypes;
             final boolean[] ctorSeen = {false};
+            TypeElement enclClass = scope.getEnclosingClass();
+            final TypeMirror enclType = enclClass != null ? enclClass.asType() : null;
             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
                     switch (e.getKind()) {
                         case FIELD:
                             if (!Utilities.startsWith(e.getSimpleName().toString(), prefix) ||
                                     !isOfKindAndType(asMemberOf(e, t, types), e, kinds, baseType, scope, trees, types) ||
-                                    !tu.isAccessible(scope, e, t) || 
+                                    !tu.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t) || 
                                     (isStatic && !e.getModifiers().contains(STATIC)) ||
                                     (!isStatic && e.getSimpleName().contentEquals(THIS_KEYWORD)) ||
                                     ((!isStatic || inImport) && e.getSimpleName().contentEquals(CLASS_KEYWORD)))
@@ -2306,7 +2315,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             tm = ((ExecutableType)asMemberOf(e, t, types)).getReturnType();
                             if (!Utilities.startsWith(e.getSimpleName().toString(), prefix) ||
                                     !isOfKindAndType(tm, e, kinds, baseType, scope, trees, types) ||
-                                    !tu.isAccessible(scope, e, t))
+                                    !tu.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t))
                                 return false;
                             return (!isStatic || e.getModifiers().contains(STATIC)) && isOfSmartType(tm, finalSmartTypes, types);
                         case CLASS:
@@ -3102,11 +3111,14 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     final Element el = controller.getTrees().getElement(path);
                                     final TreeUtilities tu = controller.getTreeUtilities();
                                     if (el != null && tm.getKind() == TypeKind.DECLARED) {
-                                        final boolean isStatic = el.getKind().isClass() || el.getKind().isInterface();
+                                        final boolean isStatic = el.getKind().isClass() || el.getKind().isInterface() || el.getKind() == TYPE_PARAMETER;
+                                        final boolean isSuperCall = el != null && el.getKind().isField() && el.getSimpleName().contentEquals(SUPER_KEYWORD);
                                         final Scope scope = env.getScope();
+                                        TypeElement enclClass = scope.getEnclosingClass();
+                                        final TypeMirror enclType = enclClass != null ? enclClass.asType() : null;
                                         ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                                             public boolean accept(Element e, TypeMirror t) {
-                                                return e.getKind() == METHOD && (!isStatic || e.getModifiers().contains(STATIC)) && tu.isAccessible(scope, e, t);
+                                                return e.getKind() == METHOD && (!isStatic || e.getModifiers().contains(STATIC)) && tu.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t);
                                             }
                                         };
                                         return getMatchingArgumentTypes(tm, controller.getElementUtilities().getMembers(tm, acceptor), name, args, controller.getTypes());
@@ -3118,7 +3130,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     final Scope scope = env.getScope();
                                     final TreeUtilities tu = controller.getTreeUtilities();
                                     final TypeElement enclClass = scope.getEnclosingClass();
-                                    final boolean isStatic = enclClass != null ? tu.isStaticContext(scope) : false;
+                                    final boolean isStatic = enclClass != null ? (tu.isStaticContext(scope) || (env.getPath().getLeaf().getKind() == Tree.Kind.BLOCK && ((BlockTree)env.getPath().getLeaf()).isStatic())) : false;
                                     if (SUPER_KEYWORD.equals(name) && enclClass != null) {
                                         ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                                             public boolean accept(Element e, TypeMirror t) {
