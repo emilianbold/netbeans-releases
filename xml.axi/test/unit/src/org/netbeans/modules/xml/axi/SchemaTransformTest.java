@@ -84,7 +84,7 @@ public class SchemaTransformTest extends AbstractTestCase {
         suite.addTest(new SchemaTransformTest("testPurchaseOrder"));
 //		suite.addTest(new SchemaTransformTest("testDiscardTransform"));
         suite.addTest(new SchemaTransformTest("testRenameAfterTransform"));
-        suite.addTest(new SchemaTransformTest("testNewApproach"));
+        //FIXME suite.addTest(new SchemaTransformTest("testNewApproach"));
         suite.addTest(new SchemaTransformTest("testMultiSchemaInclude"));
         suite.addTest(new SchemaTransformTest("testMultiSchemaImport"));
         suite.addTest(new SchemaTransformTest("testGlobalElementReuse"));
