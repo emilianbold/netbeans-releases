@@ -40,16 +40,6 @@ import org.netbeans.modules.collab.core.Debug;
  *
  */
 public class AccountTypePanel extends WizardPanelBase {
-    // Variables declaration - do not modify                     
-    private javax.swing.JCheckBox acceptCheckBox;
-    private javax.swing.ButtonGroup buttonGroup;
-    private javax.swing.JRadioButton existingAccountBtn;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JLabel messageLbl;
-    private javax.swing.JRadioButton newAccountBtn;
-    private javax.swing.JRadioButton newHostedServerAccountBtn;
-    private javax.swing.JLabel termsOfConditionLbl;
 
     /**
      *
@@ -150,29 +140,6 @@ public class AccountTypePanel extends WizardPanelBase {
     }
 
     public void initAccessibility() {
-        // MCF Notes
-        // I am not expert here, but it seems like there are a number of things
-        // which can/should be set
-        // 1. mnemonics are set thus
-        // fooLabel.setDisplayedMnemonic(bundle.getString (
-        //   "MNE_App_Name_Selection_Panel.name.mnemonic").charAt(0)); // NOI18N
-        // 2. a11y description and name set thus
-        // addButton.getAccessibleContext().setAccessibleDescription(
-        //  bundle.getString("ACSD_Map_Editor_Add_Button_DESC"));
-        // addButton.getAccessibleContext().setAccessibleName(
-        //  bundle.getString("ACSD_Map_Editor_Add_Button_NAME"));
-        // And i do not know if setLabelFor is for a11y or other situation?
-        //  appNameLabel.setLabelFor(appNameTextField);
-        newHostedServerAccountBtn.setMnemonic(
-            NbBundle.getMessage(AccountTypePanel.class, "MNE_AccountTypePanel_NewHostedServerAccount").charAt(0)
-        ); // NOI18N		
-        existingAccountBtn.setMnemonic(
-            NbBundle.getMessage(AccountTypePanel.class, "MNE_AccountTypePanel_ExistingAccount").charAt(0)
-        ); // NOI18N     
-        newAccountBtn.setMnemonic(
-            NbBundle.getMessage(AccountTypePanel.class, "MNE_AccountTypePanel_NewAccount").charAt(0)
-        ); // NOI18N  
-
         newHostedServerAccountBtn.getAccessibleContext().setAccessibleDescription(
             NbBundle.getMessage(AccountTypePanel.class, "ACSD_DESC_AccountTypePanel_NewHostedServerAccount")
         ); // NOI18N		
@@ -183,9 +150,6 @@ public class AccountTypePanel extends WizardPanelBase {
             NbBundle.getMessage(AccountTypePanel.class, "ACSD_DESC_AccountTypePanel_NewAccount")
         ); // NOI18N   
 
-        acceptCheckBox.setMnemonic(NbBundle.getMessage(
-            AccountTypePanel.class, "LBL_AccountTypePanel_AcceptCheckBox_Mnemonic").charAt(0)); // NOI18N  
-        
         newHostedServerAccountBtn.getAccessibleContext().setAccessibleName(
             NbBundle.getMessage(AccountTypePanel.class, "ACSD_NAME_AccountTypePanel_NewHostedServerAccount")
         ); // NOI18N		
@@ -221,21 +185,16 @@ public class AccountTypePanel extends WizardPanelBase {
         existingAccountBtn = new javax.swing.JRadioButton();
         messageLbl = new javax.swing.JLabel();
 
+        FormListener formListener = new FormListener();
+
+        setBorder(javax.swing.BorderFactory.createCompoundBorder(null, javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        setPreferredSize(new java.awt.Dimension(450, 300));
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(
-            new javax.swing.border.CompoundBorder(
-                null, new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5))
-            )
-        );
-        setPreferredSize(new java.awt.Dimension(450, 300));
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText(
-            java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/wizard/Bundle").getString(
-                "LBL_AccountTypePanel_AccountType"
-            )
-        );
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/wizard/Bundle"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, bundle.getString("LBL_AccountTypePanel_AccountType")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -245,19 +204,8 @@ public class AccountTypePanel extends WizardPanelBase {
         jPanel1.add(jLabel1, gridBagConstraints);
 
         buttonGroup.add(newHostedServerAccountBtn);
-        newHostedServerAccountBtn.setText(
-            java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/wizard/Bundle").getString(
-                "BTN_AccountTypePanel_NewHostedServerAccount"
-            )
-        );
-        newHostedServerAccountBtn.addChangeListener(
-            new javax.swing.event.ChangeListener() {
-                public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                    newHostedServerAccountBtnStateChanged(evt);
-                }
-            }
-        );
-
+        org.openide.awt.Mnemonics.setLocalizedText(newHostedServerAccountBtn, bundle.getString("BTN_AccountTypePanel_NewHostedServerAccount")); // NOI18N
+        newHostedServerAccountBtn.addChangeListener(formListener);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -266,39 +214,16 @@ public class AccountTypePanel extends WizardPanelBase {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         jPanel1.add(newHostedServerAccountBtn, gridBagConstraints);
 
-        acceptCheckBox.setText(
-            java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/wizard/Bundle").getString(
-                "LBL_AccountTypePanel_AcceptCheckBox"
-            )
-        );
+        org.openide.awt.Mnemonics.setLocalizedText(acceptCheckBox, bundle.getString("LBL_AccountTypePanel_AcceptCheckBox")); // NOI18N
         acceptCheckBox.setEnabled(false);
-        acceptCheckBox.setFocusPainted(true);
         acceptCheckBox.setMargin(new java.awt.Insets(2, 22, 2, 2));
-        acceptCheckBox.addChangeListener(
-            new javax.swing.event.ChangeListener() {
-                public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                    acceptCheckBoxStateChanged(evt);
-                }
-            }
-        );
-
+        acceptCheckBox.addChangeListener(formListener);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         jPanel1.add(acceptCheckBox, gridBagConstraints);
 
-        termsOfConditionLbl.setText(
-            java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/wizard/Bundle").getString(
-                "LBL_AccountTypePanel_TermsOfConditionLnk"
-            )
-        );
-        termsOfConditionLbl.addMouseListener(
-            new java.awt.event.MouseAdapter() {
-                public void mouseClicked(java.awt.event.MouseEvent evt) {
-                    termsOfConditionLblMouseClicked(evt);
-                }
-            }
-        );
-
+        org.openide.awt.Mnemonics.setLocalizedText(termsOfConditionLbl, bundle.getString("LBL_AccountTypePanel_TermsOfConditionLnk")); // NOI18N
+        termsOfConditionLbl.addMouseListener(formListener);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -307,11 +232,7 @@ public class AccountTypePanel extends WizardPanelBase {
         jPanel1.add(termsOfConditionLbl, gridBagConstraints);
 
         buttonGroup.add(newAccountBtn);
-        newAccountBtn.setText(
-            java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/wizard/Bundle").getString(
-                "BTN_AccountTypePanel_NewAccount"
-            )
-        );
+        org.openide.awt.Mnemonics.setLocalizedText(newAccountBtn, bundle.getString("BTN_AccountTypePanel_NewAccount")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
@@ -322,11 +243,7 @@ public class AccountTypePanel extends WizardPanelBase {
         jPanel1.add(newAccountBtn, gridBagConstraints);
 
         buttonGroup.add(existingAccountBtn);
-        existingAccountBtn.setText(
-            java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/wizard/Bundle").getString(
-                "BTN_AccountTypePanel_ExistingAccount"
-            )
-        );
+        org.openide.awt.Mnemonics.setLocalizedText(existingAccountBtn, bundle.getString("BTN_AccountTypePanel_ExistingAccount")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
@@ -343,7 +260,7 @@ public class AccountTypePanel extends WizardPanelBase {
         add(jPanel1, gridBagConstraints);
 
         messageLbl.setForeground(new java.awt.Color(255, 51, 0));
-        messageLbl.setText(" ");
+        org.openide.awt.Mnemonics.setLocalizedText(messageLbl, " ");
         messageLbl.setMaximumSize(new java.awt.Dimension(2147483647, 15));
         messageLbl.setMinimumSize(new java.awt.Dimension(61, 35));
         messageLbl.setPreferredSize(new java.awt.Dimension(644, 15));
@@ -357,7 +274,38 @@ public class AccountTypePanel extends WizardPanelBase {
         add(messageLbl, gridBagConstraints);
     }
 
-    // </editor-fold>//GEN-END:initComponents
+    // Code for dispatching events from components to event handlers.
+
+    private class FormListener implements java.awt.event.MouseListener, javax.swing.event.ChangeListener {
+        FormListener() {}
+        public void mouseClicked(java.awt.event.MouseEvent evt) {
+            if (evt.getSource() == termsOfConditionLbl) {
+                AccountTypePanel.this.termsOfConditionLblMouseClicked(evt);
+            }
+        }
+
+        public void mouseEntered(java.awt.event.MouseEvent evt) {
+        }
+
+        public void mouseExited(java.awt.event.MouseEvent evt) {
+        }
+
+        public void mousePressed(java.awt.event.MouseEvent evt) {
+        }
+
+        public void mouseReleased(java.awt.event.MouseEvent evt) {
+        }
+
+        public void stateChanged(javax.swing.event.ChangeEvent evt) {
+            if (evt.getSource() == newHostedServerAccountBtn) {
+                AccountTypePanel.this.newHostedServerAccountBtnStateChanged(evt);
+            }
+            else if (evt.getSource() == acceptCheckBox) {
+                AccountTypePanel.this.acceptCheckBoxStateChanged(evt);
+            }
+        }
+    }// </editor-fold>//GEN-END:initComponents
+
     private void acceptCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_acceptCheckBoxStateChanged
         setValid(acceptCheckBox.isSelected());
     }//GEN-LAST:event_acceptCheckBoxStateChanged
@@ -407,5 +355,16 @@ public class AccountTypePanel extends WizardPanelBase {
             Debug.debugNotify(me);
         }        
     }
-    // End of variables declaration                   
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox acceptCheckBox;
+    private javax.swing.ButtonGroup buttonGroup;
+    private javax.swing.JRadioButton existingAccountBtn;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel messageLbl;
+    private javax.swing.JRadioButton newAccountBtn;
+    private javax.swing.JRadioButton newHostedServerAccountBtn;
+    private javax.swing.JLabel termsOfConditionLbl;
+    // End of variables declaration//GEN-END:variables
 }
