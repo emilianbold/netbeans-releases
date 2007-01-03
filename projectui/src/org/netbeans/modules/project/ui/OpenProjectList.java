@@ -58,6 +58,8 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -107,6 +109,8 @@ public final class OpenProjectList {
     
     /** Property change listeners */
     private final PropertyChangeSupport pchSupport;
+    
+    private ProjectDeletionListener deleteListener = new ProjectDeletionListener();
     
     
     OpenProjectList() {
@@ -352,6 +356,8 @@ public final class OpenProjectList {
                     mainClosed = isMainProject( projects[i] );
                 }
                 openProjects.remove( projects[i] );
+                projects[i].getProjectDirectory().removeFileChangeListener(deleteListener);
+                
                 recentProjects.add( projects[i] );
                 notifyClosed( projects[i] );
                 someClosed = true;
@@ -622,7 +628,7 @@ public final class OpenProjectList {
                 return false;
             }
             openProjects.add(p);
-            
+            p.getProjectDirectory().addFileChangeListener(deleteListener);
             recentProjectsChanged = recentProjects.remove(p);
         }
         
@@ -1046,5 +1052,30 @@ public final class OpenProjectList {
         }
         
     }
+    
+    /**
+     * Closesdeleted projects.
+     */
+    private final class ProjectDeletionListener extends FileChangeAdapter {
+        
+        public ProjectDeletionListener() {}
+
+        public void fileDeleted(FileEvent fe) {
+            synchronized (OpenProjectList.this) {
+                Project toRemove = null;
+                for (Project prj : openProjects) {
+                    if (fe.getFile().equals(prj.getProjectDirectory())) {
+                        toRemove = prj;
+                        break;
+                    }
+                }
+                if (toRemove != null) {
+                    close(new Project[] {toRemove}, false);
+                }
+            }
+        }
+        
+    }
+    
     
 }
