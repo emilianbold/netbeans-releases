@@ -42,7 +42,6 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
     private TokenFactory tokenFactory;
     private Map         tokensMap;
     private Parser      parser;
-    private Integer     state = Integer.valueOf (-1);
     
     
     SLexer (
@@ -68,8 +67,8 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
         Evaluator.Method evaluator = null;
         token = parser.read(this, input);
         String stateName = parser.getState (state); // [PENDING] improve performance of parser.getState()
-        if (language != null) {
-            evaluator = (Evaluator.Method) language.getFeature (language.ANALYZE, language.getMimeType(), stateName);
+        if (language != null && properties != null) {
+            evaluator = (Evaluator.Method) properties.get ("call");
         }
         if (evaluator != null) {
             input.setIndex (index);
@@ -105,12 +104,19 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
     
     // Cookie implementation ...................................................
     
+    private Integer     state = Integer.valueOf (-1);
+    private Map         properties;
+    
     public int getState () {
         return state.intValue ();
     }
 
     public void setState (int state) {
         this.state = new Integer (state);
+    }
+
+    public void setProperties (Map properties) {
+        this.properties = properties;
     }
     
     

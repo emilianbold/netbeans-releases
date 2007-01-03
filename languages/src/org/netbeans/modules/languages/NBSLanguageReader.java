@@ -158,10 +158,11 @@ public class NBSLanguageReader {
         String startState = null;
         String endState = null;
         Pattern pattern = null;
+        Map properties = null;
         String name  = node.getTokenType ("identifier").getIdentifier ();
         ASTNode pnode = node.getNode ("token2.properties");
         if (pnode != null) {
-            Map properties = readProperties (pnode, language);
+            properties = readProperties (pnode, language);
             startState = getString (properties, "start_state", false);
             endState = getString (properties, "end_state", false);
             pattern = (Pattern) properties.get ("pattern");
@@ -176,13 +177,11 @@ public class NBSLanguageReader {
         if (endState == null) endState = state;
         language.addToken (
             startState,
-            SToken.create (
-                language.getMimeType (),
-                name,
-                null
-            ),
+            language.getMimeType (),
+            name,
             pattern,
-            endState
+            endState,
+            properties
         );
     }
     
@@ -454,15 +453,6 @@ public class NBSLanguageReader {
             language.addFeature (featureName, identifier, feature);
         } else
         if (Language.PARSE.equals (featureName)) {
-            if (identifier == null)
-                throw new ParseException ("Syntax error.");
-            if (feature == null)
-                throw new ParseException ("Syntax error.");
-            if (!(feature instanceof Evaluator))
-                throw new ParseException ("Syntax error.");
-            language.addFeature (featureName, identifier, feature);
-        } else
-        if (Language.ANALYZE.equals (featureName)) {
             if (identifier == null)
                 throw new ParseException ("Syntax error.");
             if (feature == null)

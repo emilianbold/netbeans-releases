@@ -20,6 +20,8 @@
 package org.netbeans.modules.languages.parser;
 
 import java.util.*;
+import org.netbeans.modules.languages.Language.TokenType;
+
 
 /**
  *
@@ -36,51 +38,10 @@ public class Parser {
         Parser p = new Parser ();
         Iterator it = rules.iterator ();
         while (it.hasNext ()) {
-            Rule r = (Rule) it.next ();
-            p.add (
-                r.getStartState (), 
-                r.getPattern (), 
-                r.getToken (), 
-                r.getEndState ()
-            );
+            TokenType r = (TokenType) it.next ();
+            p.add (r);
         }
         return p;
-    }
-    
-    public static Rule create (
-        String      startState,
-        Pattern     pattern,
-        SToken      token,
-        String      endState
-    ) {
-        return new Rule (
-            startState,
-            pattern,
-            token,
-            endState
-        );
-    }
-
-    private int priority = 1;
-    
-    private void add (
-        String startState, 
-        Pattern pattern, 
-        SToken tokenID, 
-        String endState
-    ) {
-        if (startState == null) startState = DEFAULT_STATE;
-        if (endState == null) endState = DEFAULT_STATE;
-        Pattern p = getPattern (startState);
-        mark (pattern, tokenID, priority++, endState);
-        tokens.add (tokenID);
-        patterns.put (startState, p.merge (pattern));
-    }
-    
-    private HashSet tokens = new HashSet ();
-    
-    public Set getTokens () {
-        return Collections.unmodifiableSet (tokens);
     }
     
     public SToken read (Cookie cookie, Input input) {
@@ -92,7 +53,7 @@ public class Parser {
         Object node = getNode (originalState);
         
         int     lastIndex = -1;
-        TT      lastTT = null;
+        TokenType    lastTT = null;
         
         while (!input.eof ()) {
             
@@ -105,7 +66,7 @@ public class Parser {
             }
             
             if (input.getIndex () > originalIndex) {
-                TT bestTT = getBestTT (pattern, node);
+                TokenType bestTT = getBestTT (pattern, node);
                 if (bestTT != null) {
                     lastTT = bestTT;
                     lastIndex = input.getIndex ();
@@ -124,14 +85,15 @@ public class Parser {
                     );
                     return null;
                 }
-                Pattern newPattern = getPattern (lastTT.state);
+                Pattern newPattern = getPattern (lastTT.getEndState ());
                 cookie.setState (
                     getState (newPattern.getDG ().getStartNode (), newPattern)
                 );
+                cookie.setProperties (lastTT.getProperties ());
                 input.setIndex (lastIndex);
                 return SToken.create (
-                    lastTT.token.getMimeType (),
-                    lastTT.token.getType (),
+                    lastTT.getMimeType (),
+                    lastTT.getType (),
                     input.getString (originalIndex, lastIndex),
                     originalIndex
                 );
@@ -141,7 +103,7 @@ public class Parser {
             node = nnode;
         }
         
-        TT bestTT = getBestTT (pattern, node);
+        TokenType bestTT = getBestTT (pattern, node);
         if (bestTT != null) {
             lastTT = bestTT;
             lastIndex = input.getIndex ();
@@ -152,21 +114,21 @@ public class Parser {
             return null;
         }
         return SToken.create (
-            lastTT.token.getMimeType (),
-            lastTT.token.getType (),
+            lastTT.getMimeType (),
+            lastTT.getType (),
             input.getString (originalIndex, lastIndex),
             originalIndex
         );
     }
     
-    private static TT getBestTT (Pattern pattern, Object node) {
+    private static TokenType getBestTT (Pattern pattern, Object node) {
         Map tts = (Map) pattern.getDG ().getProperties (node);
-        TT best = null;
+        TokenType best = null;
         Iterator it = tts.keySet ().iterator ();
         while (it.hasNext ()) {
             Integer i = (Integer) it.next ();
-            TT tt = (TT) tts.get (i);
-            if (best == null || best.priority > tt.priority)
+            TokenType tt = (TokenType) tts.get (i);
+            if (best == null || best.getPriority () > tt.getPriority ())
                 best = tt;
         }
         return best;
@@ -186,6 +148,28 @@ public class Parser {
         return null;
     }
     
+    private void add (TokenType tt) {
+        String startState = tt.getStartState ();
+        if (startState == null) startState = DEFAULT_STATE;
+        String endState = tt.getStartState ();
+        if (endState == null) endState = DEFAULT_STATE;
+        Pattern p = getPattern (startState);
+        mark (tt);
+        patterns.put (startState, p.merge (tt.getPattern ()));
+    }
+    
+    private static void mark (TokenType r) {
+        Iterator it = r.getPattern ().getDG ().getEnds ().iterator ();
+        while (it.hasNext ()) {
+            Object s = it.next ();
+            r.getPattern ().getDG ().setProperty (
+                s, 
+                new Integer (r.getPriority ()), 
+                r
+            );
+        }
+    }
+    
     private Pattern getPattern (String state) {
         Pattern p = (Pattern) patterns.get (state);
         if (p == null) {
@@ -193,23 +177,6 @@ public class Parser {
             patterns.put (state, p);
         }
         return p;
-    }
-    
-    private static void mark (
-        Pattern pattern, 
-        SToken token, 
-        int priority,
-        String state
-    ) {
-        Iterator it = pattern.getDG ().getEnds ().iterator ();
-        while (it.hasNext ()) {
-            Object s = it.next ();
-            pattern.getDG ().setProperty (
-                s, 
-                new Integer (priority), 
-                new TT (state, priority, token)
-            );
-        }
     }
     
     private Pattern getPattern (int state) {
@@ -392,64 +359,27 @@ public class Parser {
     
     // innerclasses ............................................................
     
-    public static final class Rule {
-        
-        private String  startState;
-        private Pattern pattern;
-        private SToken   token;
-        private String  endState;
-        
-        Rule (
-            String      startState,
-            Pattern     pattern,
-            SToken       token,
-            String      endState
-        ) {
-            this.startState = startState;
-            this.pattern = pattern;
-            this.token = token;
-            this.endState = endState;
-        }
-        
-        public String getStartState () {
-            return startState;
-        }
-        
-        public Pattern getPattern () {
-            return pattern;
-        }
-
-        public SToken getToken () {
-            return token;
-        }
-
-        public String getEndState () {
-            return endState;
-        }
-        
-        public String toString () {
-            return "Rule " + startState + " : " + token + " : " + endState;
-        }
-    }
-    
     public interface Cookie {
         public abstract int getState ();
         public abstract void setState (int state);
+        public abstract void setProperties (Map properties);
     }
-    
-    private static class TT {
-        private String state;
-        private int priority;
-        private SToken token;
-        
-        TT (String state, int priority, SToken token) {
-            this.state = state;
-            this.priority = priority;
-            this.token = token;
-        }
-        
-        public String toString () {
-            return "TT " + state + " : " + priority + " : " + token;
-        }
-    }
+//    
+//    private static class TT {
+//        private String      state;
+//        private int         priority;
+//        private String      mimeType;
+//        private String      type;
+//        
+//        TT (String state, int priority, String mimeType, String type) {
+//            this.state = state;
+//            this.priority = priority;
+//            this.mimeType = mimeType;
+//            this.type = type;
+//        }
+//        
+//        public String toString () {
+//            return "TT " + state + " : " + priority + " : " + mimeType + " : " + type;
+//        }
+//    }
 }

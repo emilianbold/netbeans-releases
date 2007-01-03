@@ -27,7 +27,6 @@ import javax.swing.text.StyleConstants;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
-import org.netbeans.modules.languages.parser.Parser.Rule;
 
 
 /**
@@ -48,7 +47,7 @@ public class Language {
     public static final String MARK = "MARK";
     public static final String NAVIGATOR = "NAVIGATOR";
     public static final String PARSE = "PARSE";
-    public static final String ANALYZE = "ANALYZE";
+    public static final String TOKEN = "TOKEN";
     public static final String PROPERTIES = "PROPERTIES";
     public static final String REFORMAT = "REFORMAT";
     public static final String SKIP = "SKIP";
@@ -56,12 +55,12 @@ public class Language {
     public static final String TOOLTIP = "TOOLTIP";
     
     
-    private Parser parser;
-    private List parserRules = new ArrayList ();
-    private Set skipTokenTypes = new HashSet ();
-    private String mimeType;
-    private LLSyntaxAnalyser analyser = null;
-    private Map analyserRules = new HashMap ();
+    private Parser              parser;
+    private List                tokenTypes = new ArrayList ();
+    private Set                 skipTokenTypes = new HashSet ();
+    private String              mimeType;
+    private LLSyntaxAnalyser    analyser = null;
+    private Map                 analyserRules = new HashMap ();
 
     
     /** Creates a new instance of Language */
@@ -78,8 +77,12 @@ public class Language {
 
     public Parser getParser () {
         if (parser == null)
-            parser = Parser.create (parserRules);
+            parser = Parser.create (tokenTypes);
         return parser;
+    }
+    
+    public List getTokens () {
+        return Collections.unmodifiableList (tokenTypes);
     }
     
     public Set getSkipTokenTypes () {
@@ -107,9 +110,6 @@ public class Language {
         Map m = (Map) properties.get (mimeType);
         return m.get (propertyName);
     }
-
-    
-    // package private interface ...............................................
     
     public static Identifier createIdentifier (List name) {
         Identifier result = new Identifier ();
@@ -130,20 +130,48 @@ public class Language {
         result.name = l;
         return result;
     }
+    
+    public static TokenType createTokenType (
+        String      startState,
+        Pattern     pattern,
+        String      mimeType,
+        String      type,
+        String      endState,
+        int         priority,
+        Map         properties
+    ) {
+        return new TokenType (
+            startState,
+            pattern,
+            mimeType,
+            type,
+            endState,
+            priority,
+            properties
+        );
+    }
+
+    
+    // package private interface ...............................................
 
     void addToken (
         String      startState,
-        SToken       token,
+        String      mimeType,
+        String      type,
         Pattern     pattern,
-        String      endState
+        String      endState,
+        Map         properties
     ) {
         if (parser != null)
             throw new InternalError ();
-        parserRules.add (Parser.create (
+        tokenTypes.add (createTokenType (
             startState,
             pattern,
-            token,
-            endState
+            mimeType,
+            type,
+            endState,
+            tokenTypes.size (),
+            properties
         ));
     }
     
@@ -190,14 +218,13 @@ public class Language {
         Evaluator stateEvaluator = (Evaluator) properties.get ("state");
         String state = stateEvaluator == null ? null : (String) stateEvaluator.evaluate ();
         
-        // import tokens
-        Iterator it = l.parserRules.iterator ();
+        // import tokenTypes
+        Iterator it = l.tokenTypes.iterator ();
         while (it.hasNext ()) {
-            Parser.Rule r = (Parser.Rule) it.next ();
-            String startState = r.getStartState ();
-            Pattern pattern = r.getPattern ().clonePattern ();
-            SToken token = (SToken) r.getToken ();
-            String endState = r.getEndState ();
+            TokenType tt = (TokenType) it.next ();
+            String startState = tt.getStartState ();
+            Pattern pattern = tt.getPattern ().clonePattern ();
+            String endState = tt.getEndState ();
             if (startState == null || Parser.DEFAULT_STATE.equals (startState)) 
                 startState = state;
             else
@@ -206,7 +233,7 @@ public class Language {
                 endState = state;
             else
                 endState = name + '-' + endState;
-            addToken (startState, token, pattern, endState);
+            addToken (startState, tt.getMimeType (), tt.getType (), pattern, endState, tt.getProperties ());
         }
         
         // import grammar rues
@@ -224,11 +251,10 @@ public class Language {
         importFeature (MARK, l);
         importFeature (NAVIGATOR, l);
         importFeature (PARSE, l);
-        importFeature (ANALYZE, l);
         // import properties
         this.properties.putAll (l.properties);
         importFeature (REFORMAT, l);
-        // import skip tokens
+        // import skip tokenTypes
         skipTokenTypes.addAll (l.skipTokenTypes);
         importFeature (STORE, l);
         importFeature (TOOLTIP, l);
@@ -393,9 +419,9 @@ public class Language {
     void print () {
         System.out.println("\nPrint " + mimeType);
         System.out.println("Tokens:");
-        Iterator it = parserRules.iterator ();
+        Iterator it = tokenTypes.iterator ();
         while (it.hasNext ()) {
-            Rule r = (Rule) it.next ();
+            TokenType r = (TokenType) it.next ();
             System.out.println("  " + r);
         }
         System.out.println("Grammar Rules:");
@@ -464,6 +490,67 @@ public class Language {
         
         public Evaluator isLeaf () {
             return isLeaf;
+        }
+    }
+    
+    public static final class TokenType {
+        
+        private String  startState;
+        private Pattern pattern;
+        private String  mimeType;
+        private String  type;
+        private String  endState;
+        private int     priority;
+        private Map     properties;
+        
+        private TokenType (
+            String      startState,
+            Pattern     pattern,
+            String      mimeType,
+            String      type,
+            String      endState,
+            int         priority,
+            Map         properties
+        ) {
+            this.startState = startState == null ? Parser.DEFAULT_STATE : startState;
+            this.pattern = pattern;
+            this.mimeType = mimeType;
+            this.type = type;
+            this.endState = endState == null ? Parser.DEFAULT_STATE : endState;
+            this.priority = priority;
+            this.properties = properties == null ? Collections.EMPTY_MAP : properties;
+        }
+
+        public String getMimeType () {
+            return mimeType;
+        }
+        
+        public String getType () {
+            return type;
+        }
+        
+        public String getStartState () {
+            return startState;
+        }
+        
+        public String getEndState () {
+            return endState;
+        }
+        
+        public Pattern getPattern () {
+            return pattern;
+        }
+        
+        public int getPriority () {
+            return priority;
+        }
+        
+        public Map getProperties () {
+            return properties;
+        }
+        
+        public String toString () {
+            return "Rule " + startState + " : mimeType " + mimeType + " : type " + type + " : " + endState;
         }
     }
 }

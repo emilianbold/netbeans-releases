@@ -26,8 +26,10 @@ import java.util.Iterator;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.modules.languages.Language;
+import org.netbeans.modules.languages.Language.TokenType;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.parser.ParseException;
+import org.netbeans.modules.languages.parser.Parser;
 import org.netbeans.modules.languages.parser.SToken;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -55,9 +57,9 @@ public class SLanguageHierarchy extends LanguageHierarchy<STokenId> {
         if (tokenIds == null) {
             tokenIds = new ArrayList ();
             tokensMap = new HashMap ();
-            Iterator it = getLanguage ().getParser ().getTokens ().iterator ();
+            Iterator it = getLanguage ().getTokens ().iterator ();
             while (it.hasNext ()) {
-                SToken t = (SToken) it.next ();
+                TokenType t = (TokenType) it.next ();
                 if (tokensMap.containsKey (t.getType ())) continue;
                 STokenId tokenId = new STokenId (
                     t.getType (), 

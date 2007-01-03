@@ -20,14 +20,11 @@
 package org.netbeans.modules.languages;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
+import org.netbeans.modules.languages.Language.TokenType;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 import org.netbeans.modules.languages.parser.ParseException;
 import org.netbeans.modules.languages.parser.Parser;
-import org.netbeans.modules.languages.parser.Parser.Rule;
 import org.netbeans.modules.languages.parser.Pattern;
 import org.netbeans.modules.languages.parser.SToken;
 
@@ -73,9 +70,9 @@ public class NBSLanguage {
     
     static Parser getNBSParser () throws ParseException {
         if (nbsParser == null) {
-            nbsParser = Parser.create (Arrays.asList (new Rule[] {
-                Parser.create (
-                    null,
+            nbsParser = Parser.create (Arrays.asList (new TokenType[] {
+                Language.createTokenType (
+                    Parser.DEFAULT_STATE,
                     Pattern.create (
                         "'ACTION' |" +
                         "'COLOR' |" +
@@ -88,7 +85,6 @@ public class NBSLanguage {
                         "'MARK' | " +
                         "'NAVIGATOR' |" +
                         "'PARSE' |" +
-                        "'ANALYZE' |" +
                         "'PROPERTIES' |" +
                         "'REFORMAT' |" +
                         "'SKIP' |" +
@@ -97,61 +93,82 @@ public class NBSLanguage {
                         "'TOOLTIP'",
                         NBS
                     ),
-                    KEYWORD,
+                    NBS,
+                    "keyword",
+                    Parser.DEFAULT_STATE,
+                    1,
                     null
                 ),
-                Parser.create (
-                    null,
+                Language.createTokenType (
+                    Parser.DEFAULT_STATE,
                     Pattern.create (
                         "['a'-'z' 'A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*",
                         NBS
                     ),
-                    IDENTIFIER,
+                    NBS,
+                    "identifier",
+                    Parser.DEFAULT_STATE,
+                    2,
                     null
                 ),
-                Parser.create (
-                    null,
+                Language.createTokenType (
+                    Parser.DEFAULT_STATE,
                     Pattern.create (
                         "':' | '*' | '?' | '+' | '-' | '[' | ']' | '<' | " +
                         "'>' | '^' | '|' | '{' | '}' | '(' | ')' | ',' | " +
                         "'=' | ';' | '.' | '$'",
                         NBS
                     ),
-                    OPERATOR,
+                    NBS,
+                    "operator",
+                    Parser.DEFAULT_STATE,
+                    3,
                     null
                 ),
-                Parser.create (
-                    null,
+                Language.createTokenType (
+                    Parser.DEFAULT_STATE,
                     Pattern.create (
                         "'\\\"' ([^'\\\"' '\\\\' '\\r' '\\n'] |" +
                         "('\\\\' ['r' 'n' 't' '\\\\' '\\\'' '\\\"']) )* '\\\"'",
                         NBS
                     ),
-                    STRING,
+                    NBS,
+                    "string",
+                    Parser.DEFAULT_STATE,
+                    4,
                     null
                 ),
-                Parser.create (
-                    null,
+                Language.createTokenType (
+                    Parser.DEFAULT_STATE,
                     Pattern.create (
                         "'\\\'' ([^'\\\'' '\\\\' '\\r' '\\n'] |" +
                         "('\\\\' ['r' 'n' 't' '\\\\' '\\\'' '\\\"']) )* '\\\''",
                         NBS
                     ),
-                    STRING,
+                    NBS,
+                    "string",
+                    Parser.DEFAULT_STATE,
+                    5,
                     null
                 ),
-                Parser.create (
-                    null,
+                Language.createTokenType (
+                    Parser.DEFAULT_STATE,
                     Pattern.create ("'#' [^'\\n' '\\r']* ['\\n' '\\r']+", NBS),
-                    COMMENT,
+                    NBS,
+                    "comment",
+                    Parser.DEFAULT_STATE,
+                    6,
                     null
                 ),
-                Parser.create (
-                    null,
+                Language.createTokenType (
+                    Parser.DEFAULT_STATE,
                     Pattern.create ("['\\n' '\\r' ' ' '\\t']+", NBS),
-                    WHITESPACE,
+                    NBS,
+                    "whitespace",
+                    Parser.DEFAULT_STATE,
+                    7,
                     null
-                    )
+                )
             }));
         }
         return nbsParser;

@@ -26,8 +26,10 @@ import java.util.HashSet;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.api.FontColorSettingsFactory;
+import org.netbeans.modules.languages.Language.TokenType;
 import org.netbeans.modules.languages.parser.LanguageDefinitionNotFoundException;
 import org.netbeans.modules.languages.parser.ParseException;
+import org.netbeans.modules.languages.parser.Parser;
 import org.netbeans.modules.languages.parser.SToken;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
@@ -380,11 +382,11 @@ public class LanguagesManager {
                 as
             );
         }
-        it = l.getParser ().getTokens ().iterator ();
+        it = l.getTokens ().iterator ();
         while (it.hasNext ()) {
-            SToken token = (SToken) it.next ();
+            TokenType token = (TokenType) it.next ();
             SimpleAttributeSet as = (SimpleAttributeSet) l.getFeature 
-                (Language.COLOR, token);
+                (Language.COLOR, token.getMimeType (), token.getType ());
             String colorName = as == null ? token.getType () :
                 (String) as.getAttribute (StyleConstants.NameAttribute);
             addColor (colorName, as, l, colorsMap, defaultsMap);
