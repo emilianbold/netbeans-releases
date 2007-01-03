@@ -23,13 +23,12 @@ import java.awt.event.*;
 import java.beans.*;
 import java.util.*;
 import javax.swing.*;
-
 import org.openide.util.*;
-
 import com.sun.collablet.Account;
 import com.sun.collablet.AccountManager;
 import com.sun.collablet.CollabManager;
 import org.netbeans.modules.collab.core.Debug;
+import org.openide.awt.Mnemonics;
 
 
 /**
@@ -45,23 +44,6 @@ public class LoginAccountPanel extends JPanel {
     ////////////////////////////////////////////////////////////////////////////
     // Instance variables
     ////////////////////////////////////////////////////////////////////////////
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox accountComboBox;
-    private javax.swing.JLabel accountLabel;
-    private javax.swing.JPanel accountPanel;
-    private javax.swing.JScrollPane accountScrollPane;
-    private javax.swing.JCheckBox autoLoginCheckBox;
-    private javax.swing.JButton cancelButton;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JSeparator jSeparator2;
-    private javax.swing.JButton loginButton;
-    private javax.swing.JLabel messageLabel;
-    private javax.swing.JButton newAccountLink;
-    private javax.swing.JPasswordField passwordField;
-    private javax.swing.JLabel passwordLabel;
-    private javax.swing.JCheckBox rememberPasswordCheckBox;
-    // End of variables declaration//GEN-END:variables
     private Image backgroundImage;
     private Set pendingLogins = Collections.synchronizedSet(new HashSet());
     private Account newAccount;
@@ -74,22 +56,6 @@ public class LoginAccountPanel extends JPanel {
     public LoginAccountPanel() {
         super();
         initialize();
-        setHelpCtx();
-    }
-
-    /**
-     *
-     *
-     */
-    private LoginAccountPanel(boolean embeded) {
-        this();
-
-        // HACK
-        if (embeded) {
-            loginButton.setVisible(false);
-            cancelButton.setVisible(false);
-        }
-
         setHelpCtx();
     }
 
@@ -111,7 +77,6 @@ public class LoginAccountPanel extends JPanel {
      */
     private void initialize() {
         initComponents();
-        newAccountLink.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle").getString("LBL_LoginAccountForm_newAccountLink_Mnemonic").charAt(0));
         newAccountLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         accountScrollPane.getVerticalScrollBar().setUnitIncrement(25);
 
@@ -238,12 +203,7 @@ public class LoginAccountPanel extends JPanel {
 
             if (addedAccount) {
                 // set link label to "Manage Accounts"
-                newAccountLink.setText(
-                    NbBundle.getMessage(LoginAccountPanel.class, "LBL_LoginAccountForm_manageAccountLink")
-                ); // NOI18N
-                newAccountLink.setMnemonic(
-                        java.util.ResourceBundle.getBundle("org/netbeans/modules/collab/ui/Bundle") // NOI18N
-                            .getString("LBL_LoginAccountForm_manageAccountLink_Mnemonic").charAt(0)); // NOI18N
+                Mnemonics.setLocalizedText(newAccountLink, NbBundle.getMessage(LoginAccountPanel.class, "LBL_LoginAccountForm_manageAccountLink"));
 
                 // If the default wasn't found, select the first valid account,
                 // or simply the first account if none are valid
@@ -657,6 +617,7 @@ public class LoginAccountPanel extends JPanel {
             }
         }
     }// </editor-fold>//GEN-END:initComponents
+
     private void rememberPasswordCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rememberPasswordCheckBoxItemStateChanged
 
         if (rememberPasswordCheckBox.isSelected()) {
@@ -896,4 +857,22 @@ public class LoginAccountPanel extends JPanel {
             updateSelectedAccountStatus(account);
         }
     }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox accountComboBox;
+    private javax.swing.JLabel accountLabel;
+    private javax.swing.JPanel accountPanel;
+    private javax.swing.JScrollPane accountScrollPane;
+    private javax.swing.JCheckBox autoLoginCheckBox;
+    private javax.swing.JButton cancelButton;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JButton loginButton;
+    private javax.swing.JLabel messageLabel;
+    private javax.swing.JButton newAccountLink;
+    private javax.swing.JPasswordField passwordField;
+    private javax.swing.JLabel passwordLabel;
+    private javax.swing.JCheckBox rememberPasswordCheckBox;
+    // End of variables declaration//GEN-END:variables
 }

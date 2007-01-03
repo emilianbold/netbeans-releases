@@ -34,11 +34,6 @@ import org.netbeans.modules.collab.core.Debug;
  * @author  sherylsu
  */
 public class AddContactGroupForm extends javax.swing.JPanel {
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel groupLbl;
-    private javax.swing.JTextField groupTextField;
-
-    // End of variables declaration//GEN-END:variables
     private CollabSession session;
     private DialogDescriptor dialogDescriptor;
 
@@ -162,4 +157,9 @@ public class AddContactGroupForm extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(groupTextField, gridBagConstraints);
     }//GEN-END:initComponents
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel groupLbl;
+    private javax.swing.JTextField groupTextField;
+    // End of variables declaration//GEN-END:variables
 }

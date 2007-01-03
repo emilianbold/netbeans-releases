@@ -18,69 +18,29 @@
  */
 package org.netbeans.modules.collab.ui;
 
-import java.awt.Frame;
 import java.awt.event.*;
 import java.beans.*;
 import java.util.*;
 import javax.swing.SwingUtilities;
-
 import org.openide.awt.StatusDisplayer;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
-
 import com.sun.collablet.*;
+import java.awt.EventQueue;
 import org.netbeans.modules.collab.core.Debug;
 import org.netbeans.modules.collab.ui.options.CollabSettings;
 
 /**
  *
- *
  * @author        Todd Fast, todd.fast@sun.com
  */
 public class Install extends ModuleInstall {
-    ////////////////////////////////////////////////////////////////////////////
-    // Class variables
-    ////////////////////////////////////////////////////////////////////////////
-    private static final long serialVersionUID = 1L; // DO NOT CHANGE!
 
-    /**
-     *
-     *
-     */
     public Install() {
         super();
     }
 
-    /**
-     *
-     *
-     */
-    public void validate() {
-        // Do nothing
-    }
-
-    /**
-     *
-     *
-     */
-    public void installed() {
-        Introspector.flushCaches();
-    }
-
-    /**
-     *
-     *
-     */
-    public void updated(int release, String specVersion) {
-        // Do nothing
-        Introspector.flushCaches();
-    }
-
-    /**
-     *
-     *
-     */
     public void uninstalled() {
         try {
             if (CollabManager.getDefault() != null) {
@@ -95,71 +55,24 @@ public class Install extends ModuleInstall {
         }
     }
 
-    /**
-     *
-     *
-     */
     public void restored() {
         // Add a shutdown hook to log off all sessions
         //		shutdownHook=new ShutdownTask();
         //		Runtime.getRuntime().addShutdownHook(shutdownHook);
         // Auto-login when the main IDE window shows
-        SwingUtilities.invokeLater(
-            new Runnable() {
-                public void run() {
-                    Frame frame = WindowManager.getDefault().getMainWindow();
-
-                    if (frame != null) {
-                        frame.addWindowListener(new AutoLoginWindowListener());
-                    }
-                }
-            }
-        );
+        WindowManager.getDefault().invokeWhenUIReady(new AutoLoginJob());
     }
 
-    /**
-     *
-     *
-     */
     public boolean closing() {
         final CollabManager manager = CollabManager.getDefault();
 
         if (manager != null) {
-            //			if (CollabSettings.getDefault().getAutoLogin()!=null &&
-            //				CollabSettings.getDefault().getAutoLogin().booleanValue())
-            //			{
-            //				// Reset all accounts
-            //				Account[] autoLoginAccounts=getAutoLoginAccounts();
-            //				for (int i=0; i<autoLoginAccounts.length; i++)
-            //				{
-            //					manager.getUserInterface().setAutoLoginAccount(
-            //						autoLoginAccounts[i],false);
-            //				}
-            //
-            //				// Remember the logged in accounts and make then auto-login
-            //				CollabSession[] sessions=manager.getSessions();
-            //				for (int i=0; i<sessions.length; i++)
-            //				{
-            //					Account account=sessions[i].getAccount();
-            //					if (account.isValid())
-            //					{
-            //						manager.getUserInterface().setAutoLoginAccount(
-            //							account,true);
-            //					}
-            //				}
-            //			}
-            // Log off all sessions.  If we don't do this, then the server will
-            // show people as still logged on due to a bug in IM server.
             manager.invalidate();
         }
 
         return true;
     }
 
-    /**
-     *
-     *
-     */
     public void close() {
         // No need to run hook if we're shutting down gracefully
         //		if (shutdownHook!=null)
@@ -196,62 +109,11 @@ public class Install extends ModuleInstall {
         return (Account[]) result.toArray(new Account[result.size()]);
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Inner class
-    ////////////////////////////////////////////////////////////////////////////
-
     /**
-     *
-     *
      */
-    protected static class ShutdownTask extends Thread implements Runnable {
-        /**
-         *
-         *
-         */
+    protected static class AutoLoginJob implements Runnable {
+        
         public void run() {
-            try {
-                System.out.println("Running collaboration " + // NOI18N
-                    "shutdown hook on abnormal module shutdown"
-                ); // NOI18N
-
-                // Log off all sessions.  If we don't do this, then the 
-                // server will show people as still logged on due to a 
-                // bug in IM server.
-                final CollabManager manager = CollabManager.getDefault();
-
-                if (manager != null) {
-                    System.out.println("Invalidating collaboration manager..."); // NOI18N
-
-                    manager.invalidate();
-
-                    System.out.println("Collaboration manager " + // NOI18N
-                        "invalidated successfully"
-                    ); // NOI18N
-                } else {
-                    System.out.println("No collaboration manager found"); // NOI18N
-                }
-            } catch (Throwable e) {
-                System.out.println("Exception invalidating collaboration manager"); // NOI18N
-                e.printStackTrace(System.out);
-            }
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Inner class
-    ////////////////////////////////////////////////////////////////////////////
-
-    /**
-     *
-     *
-     */
-    protected static class AutoLoginWindowListener extends WindowAdapter {
-        /**
-         *
-         *
-         */
-        public void windowOpened(WindowEvent event) {
             // Note, we make the check for auto-login here because we 
             // effectively assured the settings objects will have been 
             // deserialized by this point
@@ -283,13 +145,8 @@ public class Install extends ModuleInstall {
                 }
             }
 
-            WindowManager.getDefault().getMainWindow().removeWindowListener(this);
         }
     }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Inner class
-    ////////////////////////////////////////////////////////////////////////////
 
     /**
      * Runs in AWT thread
@@ -333,61 +190,40 @@ public class Install extends ModuleInstall {
 
                     // Use the stored password to login.  Note, the 
                     // following call is asynchronous.
-                    ui.login(accounts[i], accounts[i].getPassword(), new LoginSuccessTask(), new LoginFailureTask());
+                    ui.login(accounts[i], accounts[i].getPassword(), new PostLoginTask(true), new PostLoginTask(false));
                 }
             }
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Inner class
-    ////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Runs in AWT thread
-     *
+    /** Updates status and shows collab UI if logged in.
      */
-    protected static class LoginSuccessTask extends Object implements Runnable {
-        /**
-         *
-         *
-         */
+    protected static class PostLoginTask extends Object implements Runnable {
+        
+        private boolean logged;
+        
+        PostLoginTask(boolean status) {
+            logged= status;
+        }
+        
         public void run() {
+            assert EventQueue.isDispatchThread();
+            
             CollabExplorerPanel.getInstance().getLoginAccountPanel().unlock();
 
-            StatusDisplayer.getDefault().setStatusText(
-                NbBundle.getMessage(Install.class, "MSG_Install_AutoLoginSuccess")
-            ); // NOI18N
+            if (logged) {
+                StatusDisplayer.getDefault().setStatusText(
+                    NbBundle.getMessage(Install.class, "MSG_Install_AutoLoginSuccess")
+                ); // NOI18N
 
-            // Show the collab explorer
-            CollabExplorerPanel.getInstance().showComponent(CollabExplorerPanel.COMPONENT_EXPLORER);
+                // Show the collab explorer
+                CollabExplorerPanel.getInstance().showComponent(CollabExplorerPanel.COMPONENT_EXPLORER);
+            }
+            else {
+                StatusDisplayer.getDefault().setStatusText(
+                        NbBundle.getMessage(Install.class, "MSG_Install_AutoLoginFailure")
+                        ); // NOI18N
+            }
         }
     }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Inner class
-    ////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Runs in AWT thread
-     *
-     */
-    protected static class LoginFailureTask extends Object implements Runnable {
-        /**
-         *
-         *
-         */
-        public void run() {
-            CollabExplorerPanel.getInstance().getLoginAccountPanel().unlock();
-
-            StatusDisplayer.getDefault().setStatusText(
-                NbBundle.getMessage(Install.class, "MSG_Install_AutoLoginFailure")
-            ); // NOI18N
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Instance variables
-    ////////////////////////////////////////////////////////////////////////////
-    //	private Thread shutdownHook;
 }
