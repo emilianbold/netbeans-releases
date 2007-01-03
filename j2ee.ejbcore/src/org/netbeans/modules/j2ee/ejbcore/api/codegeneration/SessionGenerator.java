@@ -163,12 +163,17 @@ public final class SessionGenerator {
         session.setEjbName(ejbName);
         session.setDisplayName(ejbName); // TODO: add SB suffix?
         Project project = FileOwnerQuery.getOwner(pkg);
-        session.setEjbClass(EjbGenerationUtil.getSelectedPackageName(pkg, project) + ejbClassName);
+        String packageNameWithDot = EjbGenerationUtil.getSelectedPackageName(pkg, project) + ".";
+        session.setEjbClass(packageNameWithDot + ejbClassName);
 
-        session.setRemote(remoteName);
-        session.setLocal(localName);
-        session.setHome(remoteHomeName);
-        session.setLocalHome(localHomeName);
+        if (hasRemote) {
+            session.setRemote(packageNameWithDot + remoteName);
+            session.setHome(packageNameWithDot + remoteHomeName);
+        }
+        if (hasLocal) {
+            session.setLocal(packageNameWithDot + localName);
+            session.setLocalHome(packageNameWithDot + localHomeName);
+        }
         String sessionType = Session.SESSION_TYPE_STATELESS;
         if (isStateful) {
             sessionType = Session.SESSION_TYPE_STATEFUL;
