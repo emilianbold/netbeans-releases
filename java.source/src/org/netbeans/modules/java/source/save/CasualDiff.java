@@ -205,8 +205,14 @@ public class CasualDiff {
             output.writeTo(printer.toString());
             output.writeTo(origText.substring(pointer));
         } catch (Exception e) {
-            Logger.getAnonymousLogger().log(Level.ALL, "Chyba!", e);
-            System.err.println(e);
+            // report an exception and do not any change in source to prevent deletion of code!
+            Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).log(Level.SEVERE, "Error during generating!", e);
+            this.output = new StringSourceRewriter();
+            try {
+                this.output.writeTo(origText);
+            } catch (BadLocationException ex) {
+            } catch (IOException ex) {
+            }
         }
     }
     
@@ -231,9 +237,7 @@ public class CasualDiff {
         }
     }
     
-    private void diffPackageStatement(JCCompilationUnit oldT, JCCompilationUnit newT) 
-        throws IOException, BadLocationException
-    {
+    private void diffPackageStatement(JCCompilationUnit oldT, JCCompilationUnit newT) throws IOException, BadLocationException {
         ChangeKind change = getChangeKind(oldT.pid, newT.pid);
         printer.reset(0);
         switch (change) {
@@ -283,7 +287,7 @@ public class CasualDiff {
     // parameter which delegates to original one visitMethodDef().
     private Name origClassName = null;
     
-    protected int diffClassDef(JCClassDecl oldT, JCClassDecl newT, int[] bounds) throws IOException, BadLocationException {
+    protected int diffClassDef(JCClassDecl oldT, JCClassDecl newT, int[] bounds) {
         int localPointer =  bounds[0];
         int insertHint = localPointer;
         JCTree opar = oldParent;
@@ -404,7 +408,7 @@ public class CasualDiff {
         return bounds[1];
     }
 
-    protected int diffMethodDef(JCMethodDecl oldT, JCMethodDecl newT, int[] bounds) throws IOException, BadLocationException {
+    protected int diffMethodDef(JCMethodDecl oldT, JCMethodDecl newT, int[] bounds) {
         int localPointer = bounds[0];
         if (oldT.mods != newT.mods) {
             if (newT.mods.toString().length() > 0) {
@@ -480,7 +484,7 @@ public class CasualDiff {
         return bounds[1];
     }
 
-    protected int diffVarDef(JCVariableDecl oldT, JCVariableDecl newT, int[] bounds) throws IOException, BadLocationException {
+    protected int diffVarDef(JCVariableDecl oldT, JCVariableDecl newT, int[] bounds) {
        int localPointer = bounds[0];
         if (oldT.mods != newT.mods) {
             if (newT.mods.toString().length() > 0) {
@@ -507,7 +511,7 @@ public class CasualDiff {
         return bounds[1];
     }
 
-    protected int diffBlock(JCBlock oldT, JCBlock newT, int lastPrinted) throws IOException, BadLocationException {
+    protected int diffBlock(JCBlock oldT, JCBlock newT, int lastPrinted) {
         int localPointer = lastPrinted;
         if (oldT.flags != newT.flags)
             append(Diff.flags(oldT.pos, endPos(oldT), oldT.flags, newT.flags));
@@ -667,12 +671,14 @@ public class CasualDiff {
         diffTree(oldT.encl, newT.encl);
         diffParameterList(oldT.typeargs, newT.typeargs, localPointer);
         localPointer = diffTree(oldT.clazz, newT.clazz, localPointer);
-        diffParameterList(oldT.args, newT.args, localPointer);
+        localPointer = diffParameterList(oldT.args, newT.args, localPointer);
         // let diffClassDef() method notified that anonymous class is printed.
-        printer.print(origText.substring(localPointer, getOldPos(oldT.def)));
-        anonClass = true; 
-        localPointer = diffTree(oldT.def, newT.def, new int[] { getOldPos(oldT.def), endPos(oldT.def)});
-        anonClass = false;
+        if (oldT.def != null) {
+            printer.print(origText.substring(localPointer, getOldPos(oldT.def)));
+            anonClass = true; 
+            localPointer = diffTree(oldT.def, newT.def, new int[] { getOldPos(oldT.def), endPos(oldT.def)});
+            anonClass = false;
+        }
         printer.print(origText.substring(localPointer, bounds[1]));
         return bounds[1];
     }
@@ -794,7 +800,7 @@ public class CasualDiff {
         diffParameterList(oldT.args, newT.args, -1);
     }
     
-    protected int diffModifiers(JCModifiers oldT, JCModifiers newT, JCTree parent, int lastPrinted) throws IOException, BadLocationException {
+    protected int diffModifiers(JCModifiers oldT, JCModifiers newT, JCTree parent, int lastPrinted) {
         if (oldT == newT) {
             // modifiers wasn't changed, return the position lastPrinted.
             return lastPrinted;
@@ -1276,7 +1282,7 @@ public class CasualDiff {
             PositionEstimator estimator,
             Measure measure, 
             VeryPretty printer)
-    throws IOException, BadLocationException {
+    {
         int[] ret = new int[] { -1, -1 };
         if (oldList == newList) {
             return ret;
@@ -1593,23 +1599,6 @@ public class CasualDiff {
         if (oldT == null && newT != null)
             throw new IllegalArgumentException("Null is not allowed in parameters.");
  
-        try {
-            return diffTreeX(oldT, newT, elementBounds);
-        } catch (Exception e) {
-            Logger.getAnonymousLogger().log(Level.ALL, "Err!", e);
-        }
-        return -1;
-    }
-    
-    private void diffTree(JCTree oldT, JCTree newT) {
-        diffTree(oldT, newT, new int[] { -1, -1 });
-    }
-    
-    private int diffTree(JCTree oldT, JCTree newT, int lastPrinted) {
-        return diffTree(oldT, newT, new int[] { lastPrinted, -1 });
-    }
-    
-    private int diffTreeX(JCTree oldT, JCTree newT, int[] elementBounds) throws IOException, BadLocationException {
         if (oldT == newT)
             return elementBounds[0];
         diffPrecedingComments(oldT, newT);
@@ -1818,6 +1807,15 @@ public class CasualDiff {
         return retVal;
     }
 
+    // #todo (#pf): this method should be removed!
+    private void diffTree(JCTree oldT, JCTree newT) {
+        diffTree(oldT, newT, new int[] { -1, -1 });
+    }
+    
+    private int diffTree(JCTree oldT, JCTree newT, int lastPrinted) {
+        return diffTree(oldT, newT, new int[] { lastPrinted, -1 });
+    }
+    
     protected boolean listsMatch(List<? extends JCTree> oldList, List<? extends JCTree> newList) {
         if (oldList == newList)
             return true;
