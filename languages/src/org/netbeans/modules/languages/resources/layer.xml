@@ -20,17 +20,6 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     
-    <folder name="Actions">
-        <folder name="Tools">
-            <file name="org-netbeans-modules-languages-LanguagesManagerAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.languages.LanguagesManagerAction"/>
-            </file>
-        </folder>
-        <folder name="Window">
-            <file name="org-netbeans-modules-languages-browser-TokensBrowserAction.instance"/>
-            <file name="org-netbeans-modules-languages-browser-ASTBrowserAction.instance"/>
-        </folder>
-    </folder>
     <folder name="Editors">
         <folder name="AnnotationTypes">
             <file name="Error.xml" url="Error.xml"/>
@@ -44,24 +33,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 
-    <folder name="Menu">
-        <folder name="Tools">
-            <attr name="ServerManagerAction.instance/org-netbeans-modules-languages-LanguagesManagerAction.shadow" boolvalue="true"/>
-            <file name="org-netbeans-modules-languages-LanguagesManagerAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-languages-LanguagesManagerAction.instance"/>
-            </file>
-            <attr name="org-netbeans-modules-languages-LanguagesManagerAction.shadow/LibrariesCustomizerAction.instance" boolvalue="true"/>
-        </folder>
-        <folder name="Window">
-            <file name="TokensBrowserAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-languages-browser-TokensBrowserAction.instance"/>
-            </file>
-            <file name="ASTBrowserAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-languages-browser-ASTBrowserAction.instance"/>
-            </file>
-        </folder>
-    </folder>
-  
     <folder name="Loaders">
         <folder name="Languages">
             <folder name="Actions">
@@ -106,18 +77,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="Languagesresolver.xml" url="Languagesresolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.Bundle"/>
             </file>
-        </folder>
-    </folder>
-    <folder name="Windows2">
-        <folder name="Components">
-            <file name="TokensBrowserTopComponent.settings" url="TokensBrowserTopComponentSettings.xml"/>
-            <file name="ASTBrowserTopComponent.settings" url="ASTBrowserTopComponentSettings.xml"/>
-        </folder>
-        <folder name="Modes">
-            <folder name="explorer">
-                <file name="TokensBrowserTopComponent.wstcref" url="TokensBrowserTopComponentWstcref.xml"/>
-                <file name="ASTBrowserTopComponent.wstcref" url="ASTBrowserTopComponentWstcref.xml"/>
-            </folder>
         </folder>
     </folder>
 </filesystem>
