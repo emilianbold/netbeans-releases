@@ -95,44 +95,65 @@ public class SessionGeneratorTest extends TestBase {
         FileObject[] sources = new FileObject[] {dataDir.getFileObject("EJBModule1/src/java")};
         ejbJarProvider.setEjbModule(EjbProjectConstants.J2EE_14_LEVEL, ddFileObject, sources);
         classPathProvider.setClassPath(sources);
+        projectImpl.setProjectDirectory(dataDir.getFileObject("EJBModule1"));
         
         // Session EJB 2.1
-        FileObject pkg = sources[0].getFileObject("stateless21");
+        FileObject pkg = sources[0].getFileObject("ejb21");
         if (pkg != null) {
             pkg.delete();
         }
-        pkg = sources[0].createFolder("stateless21");
+        pkg = sources[0].createFolder("ejb21");
+        // stateless with remote and local interfaces
+        checkEJB21("StatelessEJB21RL", pkg, ddFileObject, true, true, false);
+        // stateful with remote interface
+//        checkEJB21("StatefulEJB21R", pkg, ddFileObject, true, false, true);
         
-        projectImpl.setProjectDirectory(dataDir.getFileObject("EJBModule1"));
-        
-        final String name = "Stateless21";
-        SessionGenerator sessionGenerator = SessionGenerator.create(name, pkg, true, true, false, false, false, true);
+        // Session EJB 3.0
+    }
+    
+    private void checkEJB21(String name, FileObject pkg, FileObject ddFileObject,
+            boolean hasRemote, boolean hasLocal, boolean isStateful) throws IOException {
+        SessionGenerator sessionGenerator = SessionGenerator.create(name, pkg, hasRemote, hasLocal, isStateful, false, false, true);
         sessionGenerator.generate();
         EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ddFileObject);
         EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
         String ejbName = ejbNames.getSessionEjbNamePrefix() + name + ejbNames.getSessionEjbNameSuffix();
         Session session = (Session) enterpriseBeans.findBeanByName(EnterpriseBeans.SESSION, Session.EJB_NAME, ejbName);
         final String JAVA = "java";
+        assertEquals(session.getSessionType(), isStateful ? Session.SESSION_TYPE_STATEFUL : Session.SESSION_TYPE_STATELESS);
         
         FileObject ejbClass = pkg.getFileObject(ejbNames.getSessionEjbClassPrefix() + name + ejbNames.getSessionEjbClassSuffix(), JAVA);
         assertNotNull(ejbClass);
         checkEjbClass21(ejbClass, name, session);
         
         FileObject remote = pkg.getFileObject(ejbNames.getSessionRemotePrefix() + name + ejbNames.getSessionRemoteSuffix(), JAVA);
-        assertNotNull(remote);
-        checkRemote21(remote, name, session);
-        
         FileObject remoteHome = pkg.getFileObject(ejbNames.getSessionRemoteHomePrefix() + name + ejbNames.getSessionRemoteHomeSuffix(), JAVA);
-        assertNotNull(remoteHome);
-        checkRemoteHome21(remoteHome, name, session);
+        if (hasRemote) {
+            assertNotNull(remote);
+            checkRemote21(remote, name, session);
+            assertNotNull(remoteHome);
+            checkRemoteHome21(remoteHome, name, session);
+        } else {
+            assertNull(remote);
+            assertNull(session.getRemote());
+            assertNull(remoteHome);
+            assertNull(session.getHome());
+        }
         
         FileObject local = pkg.getFileObject(ejbNames.getSessionLocalPrefix() + name + ejbNames.getSessionLocalSuffix(), JAVA);
-        assertNotNull(local);
-        checkLocal21(local, name, session);
-        
         FileObject localHome = pkg.getFileObject(ejbNames.getSessionLocalHomePrefix() + name + ejbNames.getSessionLocalHomeSuffix(), JAVA);
-        assertNotNull(localHome);
-        checkLocalHome21(localHome, name, session);
+        if (hasLocal) {
+            assertNotNull(local);
+            checkLocal21(local, name, session);
+            assertNotNull(localHome);
+            checkLocalHome21(localHome, name, session);
+        } else {
+            assertNull(local);
+            assertNull(session.getLocal());
+            assertNull(localHome);
+            assertNull(session.getLocalHome());
+        }
+        
     }
     
     private void checkEjbClass21(final FileObject ejbClass, final String name, final Session session) throws IOException {
