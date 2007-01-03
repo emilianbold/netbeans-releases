@@ -133,6 +133,9 @@ public final class LogRecords {
         if (s.indexOf("record>") == -1) { // NOI18N
             Logger.getLogger(LogRecords.class.getName()).info("Skipping: " + s); // NOI18N
             data = readXMLBlock(is, end);
+            if (data == null) {
+                return null;
+            }
             s = new String(data, 0, end[0]);
         }
         

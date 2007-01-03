@@ -65,6 +65,10 @@ public class ReadBigDataTest extends NbTestCase {
         }
 
         File[] arr = dir.listFiles();
+        if (arr == null) {
+            return;
+        }
+        
         int[] cnts = new int[arr.length];
         int err1 = readAsAStream(cnts, arr, 0);
         int err2 = readAsSAX(cnts, 0, arr);

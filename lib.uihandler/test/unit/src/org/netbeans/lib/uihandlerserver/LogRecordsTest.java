@@ -81,6 +81,22 @@ public class LogRecordsTest extends NbTestCase {
         }
         is.close();
     }
+    public void testCanReadEmpty() throws Exception {
+        InputStream is = getClass().getResourceAsStream("Empty.xml");
+        int cnt = 0;
+        for (;;) {
+            LOG.log(Level.INFO, "Reading {0}th record", cnt);
+            LogRecord r = LogRecords.read(is);
+            if (r == null) {
+                break;
+            }
+            LOG.log(Level.INFO, "Read {0}th record", cnt);
+            cnt++;
+        }
+        is.close();
+        
+        assertEquals("No records", 0, cnt);
+    }
     public void testMakeSureItIsScannable() throws Exception {
         InputStream is = getClass().getResourceAsStream("NB1216449736.xml");
         int cnt = 0;
