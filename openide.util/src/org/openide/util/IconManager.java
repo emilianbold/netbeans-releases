@@ -20,11 +20,13 @@
 package org.openide.util;
 
 import java.awt.Component;
+import java.awt.HeadlessException;
 import java.awt.Image;
 import java.awt.MediaTracker;
 import java.awt.Toolkit;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import java.awt.image.ImageObserver;
 import java.lang.ref.SoftReference;
 import java.util.HashMap;
@@ -340,9 +342,7 @@ final class IconManager extends Object {
         boolean bitmask = (image1 instanceof Transparency) && ((Transparency)image1).getTransparency() != Transparency.TRANSLUCENT
                 && (image2 instanceof Transparency) && ((Transparency)image2).getTransparency() != Transparency.TRANSLUCENT;
 
-        java.awt.image.ColorModel model = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment()
-                                                                      .getDefaultScreenDevice().getDefaultConfiguration()
-                                                                      .getColorModel(bitmask? Transparency.BITMASK: Transparency.TRANSLUCENT);
+        ColorModel model = colorModel(bitmask? Transparency.BITMASK: Transparency.TRANSLUCENT);
         java.awt.image.BufferedImage buffImage = new java.awt.image.BufferedImage(
                 model, model.createCompatibleWritableRaster(w, h), model.isAlphaPremultiplied(), null
             );
@@ -361,14 +361,26 @@ final class IconManager extends Object {
             return new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB_PRE);
         }
 
-        java.awt.image.ColorModel model = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment()
-                                                                      .getDefaultScreenDevice().getDefaultConfiguration()
-                                                                      .getColorModel(java.awt.Transparency.TRANSLUCENT);
+        ColorModel model = colorModel(java.awt.Transparency.TRANSLUCENT);
         java.awt.image.BufferedImage buffImage = new java.awt.image.BufferedImage(
                 model, model.createCompatibleWritableRaster(width, height), model.isAlphaPremultiplied(), null
             );
 
         return buffImage;
+    }
+    
+    static private ColorModel colorModel(int transparency) {
+        ColorModel model;
+        try {
+            model = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment()
+                .getDefaultScreenDevice().getDefaultConfiguration()
+                .getColorModel(transparency);
+        }
+        catch(HeadlessException he) {
+            model = ColorModel.getRGBdefault();
+        }
+
+        return model;
     }
 
     /**
