@@ -19,7 +19,21 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
+import com.sun.source.util.SourcePositions;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.PrintStream;
 import java.util.List;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TestUtilities;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileUtil;
 import static com.sun.source.tree.Tree.*;
 
 /**
@@ -29,10 +43,11 @@ import static com.sun.source.tree.Tree.*;
  * 
  * @author Pavel Flaska
  */
-public class TreeMakerDemo  {
+public class TreeMakerDemo extends NbTestCase {
     
     /* Prevent instantiation */
-    private TreeMakerDemo() {
+    public TreeMakerDemo(String name) {
+        super(name);
     }
     
     public static String reverse(Tree tree) {
@@ -48,7 +63,7 @@ public class TreeMakerDemo  {
         indent(indent, builder);
         switch (size) {
             case 0:
-                builder.append("Collections.<typePar>emptyList(),");
+                builder.append("Collections.emptyList(),");
                 return; // finished, exit immediately, no ) is needed
             case 1:
                 builder.append("Collections.<typePar>singletonList(");
@@ -147,6 +162,50 @@ public class TreeMakerDemo  {
                 if (Kind.CHAR_LITERAL == tree.getKind()) builder.append('\'');
                 builder.append("),");
                 return;
+            case CLASS:
+                builder.append("make.Class(");
+                ClassTree classTree = (ClassTree) tree;
+                ++indent;
+                reverse(classTree.getModifiers(), indent, builder, true);
+                reverse(classTree.getSimpleName(), indent, builder);
+                reverse(classTree.getTypeParameters(), indent, builder, true);
+                reverse(classTree.getExtendsClause(), indent, builder, true);
+                reverse(classTree.getImplementsClause(), indent, builder, true);
+                reverse(classTree.getMembers(), indent, builder, false);
+                break;
+            case METHOD:
+                builder.append("make.Method(");
+                MethodTree methodTree = (MethodTree) tree;
+                ++indent;
+                reverse(methodTree.getModifiers(), indent, builder, true);
+                reverse(methodTree.getTypeParameters(), indent, builder, true);
+                reverse(methodTree.getReturnType(), indent, builder, true);
+                reverse(methodTree.getName(), indent, builder);
+                reverse(methodTree.getParameters(), indent, builder, true);
+                reverse(methodTree.getThrows(), indent, builder, true);
+                reverse(methodTree.getBody(), indent, builder, true);
+                reverse(methodTree.getDefaultValue(), indent, builder, false);
+                break;
+            case PRIMITIVE_TYPE:
+                builder.append("make.PrimitiveType(TypeKind.");
+                PrimitiveTypeTree primitiveTypeTree = (PrimitiveTypeTree) tree;
+                builder.append(primitiveTypeTree.getPrimitiveTypeKind().toString());
+                builder.append("),");
+                return;
+            case MODIFIERS:
+                builder.append("make.Modifiers(");
+                ModifiersTree modifiersTree = (ModifiersTree) tree;
+                ++indent; 
+                // todo: not finished!
+                builder.append("),");
+                return;
+            case BLOCK:
+                builder.append("make.Block(");
+                BlockTree blockTree = (BlockTree) tree;
+                ++indent;
+                reverse(blockTree.getStatements(), indent, builder, true);
+                builder.append(' ').append(blockTree.isStatic());
+                break;
             default:
                 builder.append("\"<");
                 builder.append(tree.getKind());
@@ -164,11 +223,55 @@ public class TreeMakerDemo  {
             builder.append("    ");
     }
     
+    public void test() throws Exception {
+        main(null);
+    }
+    
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
-        // TODO code application logic here
+    public static void main(String[] args) throws Exception {
+        File testFile = new File("/tmp/Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.*;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        JavaSource tutorialSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        final String statementText = 
+                "            new Runnable() {" +
+                "                public void run() {" +
+                "                }" +
+                "            };";
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                
+                SourcePositions[] positions = new SourcePositions[1];
+                final TreeUtilities treeUtils = workingCopy.getTreeUtilities();
+                StatementTree body = treeUtils.parseStatement(statementText, positions);
+                System.err.println(TreeMakerDemo.reverse(body));
+            }
+            
+            public void cancel() {
+            }
+        };
+
+        tutorialSource.runModificationTask(task).commit();
+        
+        // print the result to the System.err to see the changes in console.
+        BufferedReader in = new BufferedReader(new FileReader(testFile));
+        PrintStream out = System.out;
+        String str;
+        while ((str = in.readLine()) != null) {
+            out.println(str);
+        }
+        in.close();
     }
-    
 }
