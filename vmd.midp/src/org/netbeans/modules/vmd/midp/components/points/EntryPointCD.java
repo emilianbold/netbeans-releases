@@ -27,11 +27,13 @@ import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.sources.EntryStartEventSourceCD;
+import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.openide.util.Utilities;
 
 import javax.swing.text.StyledDocument;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * @author David Kaspar
@@ -56,6 +58,11 @@ public class EntryPointCD extends ComponentDescriptor {
         return Arrays.asList (
                 new PropertyDescriptor (PROP_START, EntryStartEventSourceCD.TYPEID, PropertyValue.createNull (), false, false, Versionable.FOREVER)
         );
+    }
+
+    protected void gatherPresenters (ArrayList<Presenter> presenters) {
+        MidpActionsSupport.addCommonActionsPresenters (presenters, false, true, true, true, true);
+        super.gatherPresenters (presenters);
     }
 
     protected List<? extends Presenter> createPresenters () {
