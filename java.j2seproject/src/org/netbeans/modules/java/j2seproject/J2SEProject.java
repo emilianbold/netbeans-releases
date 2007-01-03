@@ -214,6 +214,8 @@ public final class J2SEProject implements Project, AntProjectListener {
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         final J2SEProjectClassPathModifier cpMod = new J2SEProjectClassPathModifier(this, this.updateHelper, eval, refHelper);
+        final JaxWsModel jaxWsModel = getJaxWsModel();
+        assert jaxWsModel != null;
         Lookup base = Lookups.fixed(new Object[] {
             new Info(),
             aux,
@@ -242,7 +244,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             new J2SEConfigurationProvider(this),
             new J2SEProjectWebServicesSupportProvider(),
             new J2SEPersistenceProvider(this),
-            getJaxWsModel(),
+            jaxWsModel,
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger()
