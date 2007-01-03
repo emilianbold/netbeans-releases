@@ -49,6 +49,7 @@ public class LabelWidget extends Widget {
     private String label;
     private Alignment alignment = Alignment.LEFT;
     private VerticalAlignment verticalAlignment = VerticalAlignment.BASELINE;
+    private boolean paintAsDisabled;
 
     /**
      * Creates a label widget.
@@ -125,6 +126,25 @@ public class LabelWidget extends Widget {
     }
 
     /**
+     * Returns whether the label is painted as disabled.
+     * @return true, if the label is painted as disabled
+     */
+    public boolean isPaintAsDisabled () {
+        return paintAsDisabled;
+    }
+
+    /**
+     * Sets whether the label is painted as disabled.
+     * @param paintAsDisabled if true, then the label is painted as disabled
+     */
+    public void setPaintAsDisabled (boolean paintAsDisabled) {
+        boolean repaint = this.paintAsDisabled != paintAsDisabled;
+        this.paintAsDisabled = paintAsDisabled;
+        if (repaint)
+            repaint ();
+    }
+
+    /**
      * Calculates a client area for the label.
      * @return the client area
      */
@@ -144,7 +164,6 @@ public class LabelWidget extends Widget {
         if (label == null)
             return;
         Graphics2D gr = getGraphics ();
-        gr.setColor (getForeground ());
         gr.setFont (getFont ());
 
         FontMetrics fontMetrics = gr.getFontMetrics ();
@@ -186,7 +205,17 @@ public class LabelWidget extends Widget {
                 return;
         }
 
-        gr.drawString (label, x, y);
+        Paint background = getBackground ();
+        if (paintAsDisabled  &&  background instanceof Color) {
+            Color color = ((Color) background);
+            gr.setColor (color.brighter ());
+            gr.drawString (label, x + 1, y + 1);
+            gr.setColor (color.brighter ());
+            gr.drawString (label, x, y);
+        } else {
+            gr.setColor (getForeground ());
+            gr.drawString (label, x, y);
+        }
     }
 
 }

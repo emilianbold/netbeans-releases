@@ -18,6 +18,9 @@
  */
 package org.netbeans.api.visual.widget;
 
+import org.openide.ErrorManager;
+
+import javax.swing.*;
 import java.awt.*;
 
 /**
@@ -28,7 +31,9 @@ import java.awt.*;
 public class ImageWidget extends Widget {
 
     private Image image;
+    private Image disabledImage;
     private int width, height;
+    private boolean paintAsDisabled;
 
     /**
      * Creates an image widget.
@@ -67,6 +72,7 @@ public class ImageWidget extends Widget {
         int oldHeight = height;
 
         this.image = image;
+        this.disabledImage = null;
         width = image != null ? image.getWidth (null) : 0;
         height = image != null ? image.getHeight (null) : 0;
 
@@ -74,6 +80,25 @@ public class ImageWidget extends Widget {
             repaint ();
         else
             revalidate ();
+    }
+
+    /**
+     * Returns whether the label is painted as disabled.
+     * @return true, if the label is painted as disabled
+     */
+    public boolean isPaintAsDisabled () {
+        return paintAsDisabled;
+    }
+
+    /**
+     * Sets whether the label is painted as disabled.
+     * @param paintAsDisabled if true, then the label is painted as disabled
+     */
+    public void setPaintAsDisabled (boolean paintAsDisabled) {
+        boolean repaint = this.paintAsDisabled != paintAsDisabled;
+        this.paintAsDisabled = paintAsDisabled;
+        if (repaint)
+            repaint ();
     }
 
     /**
@@ -93,8 +118,22 @@ public class ImageWidget extends Widget {
         if (image == null)
             return;
         Graphics2D gr = getGraphics ();
-        if (image != null)
-            gr.drawImage (image, 0, 0, null);
+        if (image != null) {
+            if (paintAsDisabled) {
+                if (disabledImage == null) {
+                    disabledImage = GrayFilter.createDisabledImage (image);
+                    MediaTracker tracker = new MediaTracker (getScene ().getView ());
+                    tracker.addImage (disabledImage, 0);
+                    try {
+                        tracker.waitForAll ();
+                    } catch (InterruptedException e) {
+                        ErrorManager.getDefault ().notify (e);
+                    }
+                }
+                gr.drawImage (disabledImage, 0, 0, null);
+            } else
+                gr.drawImage (image, 0, 0, null);
+        }
     }
 
 }
