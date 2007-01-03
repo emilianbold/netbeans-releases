@@ -34,7 +34,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midp.components.displayables.AlertCD;
+import org.netbeans.modules.vmd.midp.components.items.GaugeCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorUserCode;
 import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorElement;
 import org.openide.awt.Mnemonics;
@@ -42,18 +42,17 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Karol Harezlak
  * @author Anton Chechel
  */
-public final class PropertyEditorTimeout extends PropertyEditorUserCode implements PropertyEditorElement {
+public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode implements PropertyEditorElement {
     
-    private static final String FOREVER_TEXT = NbBundle.getMessage(PropertyEditorTimeout.class, "LBL_TIMEOUTPE_FOREVER_TXT"); // NOI18N
-    private static final String FOREVER_NUM_TEXT = String.valueOf(AlertCD.FOREVER_VALUE.getValue());
+    private static final String INDEFINITE_TEXT = NbBundle.getMessage(PropertyEditorGaugeMaxValue.class, "LBL_MAX_VALUE_INDEFINITE_TXT"); // NOI18N
+    private static final String INDEFINITE_NUM_TEXT = String.valueOf(GaugeCD.VALUE_INDEFINITE);
     
     private CustomEditor customEditor;
     private JRadioButton radioButton;
     
-    private PropertyEditorTimeout() {
+    private PropertyEditorGaugeMaxValue() {
         super();
         initComponents();
         
@@ -62,13 +61,13 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
         initElements(elements);
     }
     
-    public static final PropertyEditorTimeout createInstance() {
-        return new PropertyEditorTimeout();
+    public static final PropertyEditorGaugeMaxValue createInstance() {
+        return new PropertyEditorGaugeMaxValue();
     }
     
     private void initComponents() {
         radioButton = new JRadioButton();
-        Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorTimeout.class, "LBL_TIMEOUT_STR")); // NOI18N
+        Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorGaugeMaxValue.class, "LBL_GAUGE_MAX_VALUE_STR")); // NOI18N
         customEditor = new CustomEditor();
     }
     
@@ -90,12 +89,15 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
             return superText;
         }
         
-        Object valueValue = ((PropertyValue) super.getValue()).getValue();
-        Object foreverValueValue = AlertCD.FOREVER_VALUE.getValue();
-        if (foreverValueValue.equals(valueValue)) {
-            return FOREVER_TEXT;
+        PropertyValue value = (PropertyValue) super.getValue();
+        if (value == null) {
+            return INDEFINITE_TEXT;
         }
-        return String.valueOf(valueValue);
+        int intValue = MidpTypes.getInteger(value);
+        if (intValue == GaugeCD.VALUE_INDEFINITE) {
+            return INDEFINITE_TEXT;
+        }
+        return String.valueOf(intValue);
     }
     
     public void setText(String text) {
@@ -109,7 +111,7 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
     public void setPropertyValue(PropertyValue value) {
         if (isCurrentValueANull() || value == null) {
             customEditor.unsetForever(true);
-        } else if (AlertCD.FOREVER_VALUE.getValue().equals(value.getValue())) {
+        } else if (MidpTypes.getInteger(value) == GaugeCD.VALUE_INDEFINITE) {
             customEditor.setForever(true);
         } else {
             customEditor.unsetForever(true);
@@ -120,8 +122,8 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
     
     private void saveValue(String text) {
         if (text.length() > 0) {
-            if (FOREVER_TEXT.equals(text) || FOREVER_NUM_TEXT.equals(text)) {
-                super.setValue(AlertCD.FOREVER_VALUE);
+            if (INDEFINITE_TEXT.equals(text) || INDEFINITE_NUM_TEXT.equals(text)) {
+                super.setValue(MidpTypes.createIntegerValue(GaugeCD.VALUE_INDEFINITE));
                 return;
             }
             
@@ -147,8 +149,8 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
             if (value == null) {
                 return false;
             }
-            Object foreverValueValue = AlertCD.FOREVER_VALUE.getValue();
-            return !foreverValueValue.equals(value.getValue());
+            int intValue = MidpTypes.getInteger(value);
+            return intValue != GaugeCD.VALUE_INDEFINITE;
         }
         return false;
     }
@@ -166,7 +168,7 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
             
             foreverCheckBox = new JCheckBox();
             foreverCheckBox.addActionListener(this);
-            Mnemonics.setLocalizedText(foreverCheckBox, NbBundle.getMessage(PropertyEditorTimeout.class, "LBL_TIMEOUTPE_FOREVER")); // NOI18N
+            Mnemonics.setLocalizedText(foreverCheckBox, NbBundle.getMessage(PropertyEditorGaugeMaxValue.class, "LBL_MAX_VALUE_INDEFINITE")); // NOI18N
             add(foreverCheckBox, BorderLayout.NORTH);
             
             textField = new JTextField();
@@ -183,7 +185,7 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
         }
         
         public void setForever(boolean changeCheckBox) {
-            setText(FOREVER_NUM_TEXT);
+            setText(INDEFINITE_NUM_TEXT);
             textField.setEditable(false);
             if (changeCheckBox) {
                 foreverCheckBox.setSelected(true);
@@ -218,7 +220,7 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
         
         public void changedUpdate(DocumentEvent evt) {
         }
-
+        
         private void checkText() {
             String text = textField.getText();
             if (text.length() > 0) {

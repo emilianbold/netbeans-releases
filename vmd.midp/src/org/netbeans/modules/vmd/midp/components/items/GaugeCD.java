@@ -34,6 +34,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorGaugeMaxValue;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorInteger;
 
 /**
@@ -85,7 +86,7 @@ public class GaugeCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter()
                     .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
                         .addProperty("Is Interactive", PropertyEditorBooleanUC.createInstance(), PROP_INTERACTIVE)
-                        .addProperty("Maximum Value", PropertyEditorInteger.createInstance(), PROP_MAX_VALUE)
+                        .addProperty("Maximum Value", PropertyEditorGaugeMaxValue.createInstance(), PROP_MAX_VALUE)
                         .addProperty("Value", PropertyEditorInteger.createInstance(), PROP_VALUE );
     }
     
