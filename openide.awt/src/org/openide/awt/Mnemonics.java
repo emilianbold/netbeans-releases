@@ -48,8 +48,9 @@ public final class Mnemonics extends Object {
      */
     private static void setLocalizedText2(Object item, String text) {
         // #17664. Handle null text also.
-        if (text == null) {
-            setText(item, null);
+        // & in HTML should be ignored
+        if (text == null || text.startsWith("<html>")) { // NOI18N
+            setText(item, text);
 
             return;
         }
@@ -91,11 +92,11 @@ public final class Mnemonics extends Object {
      * Sets the text for a menu item or other subclass of AbstractButton.
      * <p>Examples:</p>
      * <table cellspacing="2" cellpadding="3" border="1">
-     *   <tr><th>Input String</th>                                   <th>View under JDK 1.3</th>                      <th>View under JDK 1.4 or later</th></tr>
-     *   <tr><td><code>Save &amp;As<code></td>                       <td>S<u>a</u>ve As</td>                          <td>Save <u>A</u>s</td></tr>
-     *   <tr><td><code>Rock &amp; Roll<code></td>                    <td>Rock &amp; Roll</td>                         <td>Rock &amp; Roll</td></tr>
-     *   <tr><td><code>Drag &amp; &amp;Drop<code></td>               <td><u>D</u>rag &amp; Drop</td>                  <td>Drag &amp; <u>D</u>rop</td></tr>
-     *   <tr><td><code>&amp;&#1060;&#1072;&#1081;&#1083;</code></td> <td>&#1060;&#1072;&#1081;&#1083; (<u>F</u>)</td> <td><u>&#1060;</u>&#1072;&#1081;&#1083;</td></tr>
+     *   <tr><th>Input String</th>                                   <th>View under JDK 1.4 or later</th></tr>
+     *   <tr><td><code>Save &amp;As<code></td>                       <td>Save <u>A</u>s</td></tr>
+     *   <tr><td><code>Rock &amp; Roll<code></td>                    <td>Rock &amp; Roll</td></tr>
+     *   <tr><td><code>Drag &amp; &amp;Drop<code></td>               <td>Drag &amp; <u>D</u>rop</td></tr>
+     *   <tr><td><code>&amp;&#1060;&#1072;&#1081;&#1083;</code></td> <td><u>&#1060;</u>&#1072;&#1081;&#1083;</td></tr>
      * </table>
      * @param item a button whose text will be changed
      * @param text new label
@@ -124,6 +125,8 @@ public final class Mnemonics extends Object {
      * <li>"&File", "Save &As..." - do have mnemonic ampersand.
      * <li>"Rock & Ro&ll", "Underline the '&' &character" - also do have
      *      mnemonic ampersand, but the second one.
+     * <li>"&lt;html&gt;Smith&Wesson" - doesn't have mnemonic ampersand.
+     *      Ampersands in HTML texts are not searched.
      * </ul>
      * @param text text to search
      * @return the position of mnemonic ampersand in text, or -1 if there is none
@@ -131,6 +134,9 @@ public final class Mnemonics extends Object {
     public static int findMnemonicAmpersand(String text) {
         int i = -1;
 
+        if (text != null && text.startsWith("<html>"))
+            return i;
+        
         do {
             // searching for the next ampersand
             i = text.indexOf('&', i + 1);
@@ -187,9 +193,6 @@ public final class Mnemonics extends Object {
      * Wrapper for the
      * <code>AbstractButton.setMnemonicIndex</code> or
      * <code>JLabel.setDisplayedMnemonicIndex</code> method.
-     *  <li>Under JDK1.4 calls the method on item
-     *  <li>Under JDK1.3 adds " (&lt;latin character&gt;)" (if needed)
-     *      to label and sets the latin character as mnemonics.
      * @param item AbstractButton/JLabel or subclasses
      * @param index Index of the Character to underline under JDK1.4
      * @param latinCode Latin Character Keycode to underline under JDK1.3

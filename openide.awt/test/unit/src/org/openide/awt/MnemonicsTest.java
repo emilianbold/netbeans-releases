@@ -51,4 +51,13 @@ public class MnemonicsTest extends NbTestCase {
         // XXX test that actual Japanese mnemonics work as expected...
     }
     
+    public void testMnemonicHTML() throws Exception {
+        JButton b = new JButton();
+        Mnemonics.setLocalizedText(b, "<html>Smith&Wesson");
+        assertEquals("<html>Smith&Wesson", b.getText());
+        assertEquals(0, b.getMnemonic());
+        assertEquals(-1, b.getDisplayedMnemonicIndex());
+        assertEquals("Execute (Force Reload)", Actions.cutAmpersand("Execute (&Force Reload)"));
+    }
+    
 }
