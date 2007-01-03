@@ -85,17 +85,8 @@ public final class ClasspathInfo {
         JavaFileFilterImplementation filter, boolean backgroundCompilation) {
         assert archiveProvider != null && bootCp != null && compileCp != null;
         this.cpListener = new ClassPathListener ();
-        this.archiveProvider = archiveProvider;
-        if (bootCp.entries().size() == 0) {
-            //Broken platform, use the default one
-            JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
-            assert defaultPlatform != null;
-            this.bootClassPath = defaultPlatform.getBootstrapLibraries();
-            assert this.bootClassPath.entries().size() > 0;
-        }
-        else {
-            this.bootClassPath = CacheClassPath.forClassPath(bootCp);
-        }
+        this.archiveProvider = archiveProvider;        
+        this.bootClassPath = CacheClassPath.forBootPath(bootCp);
         this.compileClassPath = CacheClassPath.forClassPath(compileCp);
 	this.bootClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.bootClassPath));
 	this.compileClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.compileClassPath));

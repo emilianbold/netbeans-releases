@@ -29,6 +29,8 @@ import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -43,16 +45,18 @@ import org.openide.util.WeakListeners;
  */
 public class CacheClassPath implements ClassPathImplementation, PropertyChangeListener {
     
-    private ClassPath cp;    
-    private boolean translate;
+    private final ClassPath cp;    
+    private final boolean translate;
+    private final boolean isBoot;
     private PropertyChangeSupport listeners;
     private List<PathResourceImplementation> cache;
     
     /** Creates a new instance of CacheClassPath */
-    private CacheClassPath (ClassPath cp, boolean translate) {
+    private CacheClassPath (ClassPath cp, boolean translate, boolean isBoot) {
         this.listeners = new PropertyChangeSupport (this);
         this.cp = cp;
         this.translate = translate;
+        this.isBoot = isBoot;
         this.cp.addPropertyChangeListener (WeakListeners.propertyChange(this,cp));
     }
 
@@ -76,44 +80,55 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
     public synchronized List<? extends PathResourceImplementation> getResources() {
         if (this.cache == null) {            
             List<ClassPath.Entry> entries = this.cp.entries();
-            boolean hasSigFiles = true;
-            if (!translate) {
-                for (ClassPath.Entry entry : entries) {
-                    if (!"file".equals(entry.getURL().getProtocol()))  {  //NOI18N
-                        hasSigFiles = false;
-                        break;
-                    }
-                }
-            }            
             this.cache = new LinkedList<PathResourceImplementation> ();
-            final GlobalSourcePath gsp = GlobalSourcePath.getDefault();
-            for (ClassPath.Entry entry : entries) {
-                URL url = entry.getURL();
-                URL[] sourceUrls;
-                if (translate) {
-                    sourceUrls = gsp.getSourceRootForBinaryRoot(url, this.cp, true);
+            if (isBoot && entries.size() == 0) {
+                JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
+                assert defaultPlatform != null;
+                entries = defaultPlatform.getBootstrapLibraries().entries();
+                assert entries.size() > 0;
+                for (ClassPath.Entry entry : entries) {
+                    this.cache.add (ClassPathSupport.createResource(entry.getURL()));
                 }
-                else if (hasSigFiles) {        
-                    sourceUrls = new URL[] {url};
-                }
-                else {
-                    sourceUrls = new URL[0];
-                }
-                if (sourceUrls != null) {
-                    for (URL sourceUrl : sourceUrls) {
-                        try {
-                            File cacheFolder = Index.getClassFolder(new File (URI.create(sourceUrl.toExternalForm())));
-                            URL cacheUrl = cacheFolder.toURI().toURL();
-                            if (!cacheFolder.exists()) {                                
-                                cacheUrl = new URL (cacheUrl.toExternalForm()+"/");     //NOI18N
-                            }
-                            this.cache.add(ClassPathSupport.createResource(cacheUrl));
-                        } catch (IOException ioe) {
-                            ErrorManager.getDefault().notify(ioe);
+            }
+            else {
+                boolean hasSigFiles = true;
+                if (!translate) {
+                    for (ClassPath.Entry entry : entries) {
+                        if (!"file".equals(entry.getURL().getProtocol()))  {  //NOI18N
+                            hasSigFiles = false;
+                            break;
                         }
                     }
-                } else {
-                    this.cache.add (ClassPathSupport.createResource(url));
+                }                
+                final GlobalSourcePath gsp = GlobalSourcePath.getDefault();
+                for (ClassPath.Entry entry : entries) {
+                    URL url = entry.getURL();
+                    URL[] sourceUrls;
+                    if (translate) {
+                        sourceUrls = gsp.getSourceRootForBinaryRoot(url, this.cp, true);
+                    }
+                    else if (hasSigFiles) {        
+                        sourceUrls = new URL[] {url};
+                    }
+                    else {
+                        sourceUrls = new URL[0];
+                    }
+                    if (sourceUrls != null) {
+                        for (URL sourceUrl : sourceUrls) {
+                            try {
+                                File cacheFolder = Index.getClassFolder(new File (URI.create(sourceUrl.toExternalForm())));
+                                URL cacheUrl = cacheFolder.toURI().toURL();
+                                if (!cacheFolder.exists()) {                                
+                                    cacheUrl = new URL (cacheUrl.toExternalForm()+"/");     //NOI18N
+                                }
+                                this.cache.add(ClassPathSupport.createResource(cacheUrl));
+                            } catch (IOException ioe) {
+                                ErrorManager.getDefault().notify(ioe);
+                            }
+                        }
+                    } else {
+                        this.cache.add (ClassPathSupport.createResource(url));
+                    }
                 }
             }
         }
@@ -123,12 +138,17 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
     
     public static ClassPath forClassPath (final ClassPath cp) {
         assert cp != null;
-        return ClassPathFactory.createClassPath(new CacheClassPath(cp,true));
+        return ClassPathFactory.createClassPath(new CacheClassPath(cp,true,false));
+    }
+    
+    public static ClassPath forBootPath (final ClassPath cp) {
+        assert cp != null;
+        return ClassPathFactory.createClassPath(new CacheClassPath(cp,true,true));
     }
     
     public static ClassPath forSourcePath (final ClassPath sourcePath) {
         assert sourcePath != null;
-        return ClassPathFactory.createClassPath(new CacheClassPath(sourcePath,false));
+        return ClassPathFactory.createClassPath(new CacheClassPath(sourcePath,false,false));
     }
     
 }
