@@ -132,7 +132,9 @@ final class ProjectUtilities {
         if (scanRoot.isFolder() && projectManager.isProject(scanRoot)) {
             try {
                 Project prj = projectManager.findProject(scanRoot);
-                projects.add(prj);
+                if(prj != null) {
+                    projects.add(prj);   
+                }                
             } catch (IOException e) {
                 // it happens for all apisupport projects unless
                 // checked out into directory that contains nbbuild and openide folders
