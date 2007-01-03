@@ -62,7 +62,7 @@ public final class DisplayCD extends ComponentDescriptor {
         return Arrays.asList (
             // code
             createSwitchDisplayCodePresenter (),
-            CodeNamePresenter.fixed ("switchDisplayable", "getDisplay", "__previousDisplayable"),
+            CodeNamePresenter.fixed ("switchDisplayable", "getDisplay", "__previousDisplayables", "switchToPreviousDisplayable"),
             // delete
             DeletePresenter.createIndeliblePresenter ()
         );
@@ -71,8 +71,22 @@ public final class DisplayCD extends ComponentDescriptor {
     private CodeClassLevelPresenter.Adapter createSwitchDisplayCodePresenter () {
         return new CodeClassLevelPresenter.Adapter() {
             protected void generateFieldSectionCode (MultiGuardedSection section) {
-                if (! DocumentSupport.gatherAllComponentsOfTypeID (getComponent ().getDocument (), PreviousScreenEventHandlerCD.TYPEID).isEmpty ())
-                    section.getWriter ().write ("private Displayable __previousDisplayable;\n");
+                if (isPreviousScreenEventHandlerUsed ())
+                    section.getWriter ().write ("private java.util.Hashtable __previousDisplayables = new java.util.Hashtable ();\n");
+            }
+
+            protected void generateMethodSectionCode (MultiGuardedSection section) {
+                if (isPreviousScreenEventHandlerUsed ()) {
+                    section.getWriter ().write ("private void switchToPreviousDisplayable () {\n"); // NOI18N
+                    section.getWriter ().write ("Displayable __currentDisplayable = getDisplay ().getCurrent ();\n"); // NOI18N
+                    section.getWriter ().write ("if (__currentDisplayable != null) {\n"); // NOI18N
+                    section.getWriter ().write ("Displayable __nextDisplayable = (Displayable) __previousDisplayables.get (__currentDisplayable);\n"); // NOI18N
+                    section.getWriter ().write ("if (__nextDisplayable != null) {\n"); // NOI18N
+                    section.getWriter ().write ("switchDisplayable (null, __nextDisplayable);\n"); // NOI18N
+                    section.getWriter ().write ("}\n"); // NOI18N
+                    section.getWriter ().write ("}\n"); // NOI18N
+                    section.getWriter ().write ("}\n"); // NOI18N
+                }
             }
 
             protected void generateClassBodyCode (StyledDocument document) {
@@ -85,8 +99,12 @@ public final class DisplayCD extends ComponentDescriptor {
 
                 section.switchToGuarded ();
                 section.getWriter ().write ("Display display = getDisplay ();\n"); // NOI18N
-                if (! DocumentSupport.gatherAllComponentsOfTypeID (getComponent ().getDocument (), PreviousScreenEventHandlerCD.TYPEID).isEmpty ())
-                    section.getWriter ().write ("__previousDisplayable = display.getCurrent ();\n"); // NOI18N
+                if (isPreviousScreenEventHandlerUsed ()) {
+                    section.getWriter ().write ("Displayable __currentDisplayable = display.getCurrent ();\n"); // NOI18N
+                    section.getWriter ().write ("if (__currentDisplayable != null  &&  nextDisplayable != null) {\n"); // NOI18N
+                    section.getWriter ().write ("__previousDisplayables.put (__currentDisplayable, nextDisplayable);\n"); // NOI18N
+                    section.getWriter ().write ("}\n"); // NOI18N
+                }
                 section.getWriter ().write ("if (alert == null) {\n"); // NOI18N
                 section.getWriter ().write ("display.setCurrent (nextDisplayable);\n"); // NOI18N
                 section.getWriter ().write ("} else {\n"); // NOI18N
@@ -101,6 +119,11 @@ public final class DisplayCD extends ComponentDescriptor {
 
                 section.close ();
             }
+
+            private boolean isPreviousScreenEventHandlerUsed () {
+                return ! DocumentSupport.gatherAllComponentsOfTypeID (getComponent ().getDocument (), PreviousScreenEventHandlerCD.TYPEID).isEmpty ();
+            }
+
         };
     }
 

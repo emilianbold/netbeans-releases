@@ -67,7 +67,7 @@ public class PreviousScreenEventHandlerCD extends ComponentDescriptor {
             // code
             new CodeMultiGuardedLevelPresenter () {
                 protected void generateMultiGuardedSectionCode (MultiGuardedSection section) {
-                    section.getWriter ().write ("switchDisplayable (null, __previousDisplayable);\n"); // NOI18N
+                    section.getWriter ().write ("switchToPreviousDisplayable ();\n"); // NOI18N
                 }
             }
         );
