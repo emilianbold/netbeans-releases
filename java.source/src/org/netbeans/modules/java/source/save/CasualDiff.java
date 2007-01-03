@@ -580,10 +580,15 @@ public class CasualDiff {
         diffTree(oldT.body, newT.body);
     }
 
-    protected void diffTry(JCTry oldT, JCTry newT) {
-        diffTree(oldT.body, newT.body);
+    protected int diffTry(JCTry oldT, JCTry newT, int[] bounds) {
+        int localPointer = bounds[0];
+        int[] bodyPos = new int[] { getOldPos(oldT.body), endPos(oldT.body) };
+        printer.print(origText.substring(localPointer, bodyPos[0]));
+        localPointer = diffTree(oldT.body, newT.body, bodyPos);
         diffList(oldT.catchers, newT.catchers, LineInsertionType.BEFORE, oldT.body.endpos + 1);
         diffTree(oldT.finalizer, newT.finalizer);
+        printer.print(origText.substring(localPointer, bounds[1]));
+        return bounds[1];
     }
 
     protected void diffCatch(JCCatch oldT, JCCatch newT) {
@@ -1669,7 +1674,7 @@ public class CasualDiff {
               diffSynchronized((JCSynchronized)oldT, (JCSynchronized)newT);
               break;
           case JCTree.TRY:
-              diffTry((JCTry)oldT, (JCTry)newT);
+              retVal = diffTry((JCTry)oldT, (JCTry)newT, elementBounds);
               break;
           case JCTree.CATCH:
               diffCatch((JCCatch)oldT, (JCCatch)newT);

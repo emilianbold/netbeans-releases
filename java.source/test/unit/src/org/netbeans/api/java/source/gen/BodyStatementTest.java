@@ -29,9 +29,16 @@ import com.sun.source.tree.IfTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.TryTree;
+import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import static org.netbeans.api.java.source.JavaSource.*;
@@ -62,6 +69,7 @@ public class BodyStatementTest extends GeneratorTest {
 //        suite.addTest(new BodyStatementTest("testRenameInIfStatement"));
 //        suite.addTest(new BodyStatementTest("testRenameInLocalDecl"));
 //        suite.addTest(new BodyStatementTest("testRenameInInvocationPars"));
+//        suite.addTest(new BodyStatementTest("testAddMethodToAnnInTry"));
         return suite;
     }
     
@@ -351,6 +359,84 @@ public class BodyStatementTest extends GeneratorTest {
                 IdentifierTree identToRename = (IdentifierTree) invocation.getArguments().get(0);
                 IdentifierTree copy = make.setLabel(identToRename, "element");
                 workingCopy.rewrite(identToRename, copy);
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    /**
+     * Adds method to annonymous class declared in try section.
+     */
+    public void testAddMethodToAnnInTry() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "import javax.swing.text.Element;\n" +
+            "import java.util.Collections;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "   public void method() {\n" +
+            "        try {\n" +
+            "            new Runnable() {\n" +
+            "            };\n" +
+            "        } finally {\n" +
+            "            System.err.println(\"Got a problem.\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n" +
+            "}\n");
+
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "import javax.swing.text.Element;\n" +
+            "import java.util.Collections;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "   public void method() {\n" +
+            "        try {\n" +
+            "            new Runnable() {\n" +
+            "                public void run() {\n" +
+            "                }\n\n" +
+            "            };\n" +
+            "        } finally {\n" +
+            "            System.err.println(\"Got a problem.\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                // rename in parameter
+                TryTree tryStmt = (TryTree) method.getBody().getStatements().get(0);
+                ExpressionStatementTree exprStmt = (ExpressionStatementTree) tryStmt.getBlock().getStatements().get(0);
+                NewClassTree newClassTree = (NewClassTree) exprStmt.getExpression();
+                ClassTree anonClassTree = newClassTree.getClassBody();
+                MethodTree methodToAdd = make.Method(
+                    make.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC)),
+                    "run",
+                    make.PrimitiveType(TypeKind.VOID),
+                    Collections.<TypeParameterTree>emptyList(),
+                    Collections.<VariableTree>emptyList(),
+                    Collections.<ExpressionTree>emptyList(),
+                    make.Block(Collections.<StatementTree>emptyList(), false),
+                    null
+                );
+                ClassTree copy = make.addClassMember(anonClassTree, methodToAdd);
+                workingCopy.rewrite(anonClassTree, copy);
             }
             
             public void cancel() {
