@@ -206,6 +206,15 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
         Point location;
         String tool = scene.getActiveTool ();
 
+        WidgetAction.Chain priorActions = scene.getPriorActions ();
+        if (! priorActions.getActions ().isEmpty ()) {
+            location = scene.getLocation ();
+            event.translatePoint (location.x, location.y);
+            if (operator.operate (priorActions, scene, event).isConsumed ())
+                return WidgetAction.State.CONSUMED;
+            event.translatePoint (- location.x, - location.y);
+        }
+
         if (lockedAction != null) {
             location = lockedWidget.convertSceneToLocal (new Point ());
             event.translatePoint (location.x, location.y);
@@ -278,6 +287,11 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
     private WidgetAction.State processOperator (Operator operator, WidgetAction.WidgetEvent event) {
         WidgetAction.State state;
         String tool = scene.getActiveTool ();
+
+        WidgetAction.Chain priorActions = scene.getPriorActions ();
+        if (! priorActions.getActions ().isEmpty ())
+            if (operator.operate (priorActions, scene, event).isConsumed ())
+                return WidgetAction.State.CONSUMED;
 
         if (lockedAction != null) {
             state = operator.operate (lockedAction, lockedWidget, event);
@@ -378,6 +392,11 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
     private WidgetAction.State processKeyOperator (Operator operator, WidgetAction.WidgetKeyEvent event) {
         WidgetAction.State state;
         String tool = scene.getActiveTool ();
+
+        WidgetAction.Chain priorActions = scene.getPriorActions ();
+        if (! priorActions.getActions ().isEmpty ())
+            if (operator.operate (priorActions, scene, event).isConsumed ())
+                return WidgetAction.State.CONSUMED;
 
         if (lockedAction != null) {
             state = operator.operate (lockedAction, lockedWidget, event);

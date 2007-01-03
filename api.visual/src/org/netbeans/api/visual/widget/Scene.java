@@ -73,6 +73,8 @@ public class Scene extends Widget {
 
     private EventProcessingType keyEventProcessingType = EventProcessingType.ALL_WIDGETS;
 
+    private WidgetAction.Chain priorActions = new WidgetAction.Chain ();
+
     private Widget focusedWidget = this;
     private WidgetAction widgetHoverAction;
 
@@ -320,7 +322,7 @@ public class Scene extends Widget {
      * Returns a key events processing type of the scene.
      * @return the processing type for key events
      */
-    public EventProcessingType getKeyEventProcessingType () {
+    public final EventProcessingType getKeyEventProcessingType () {
         return keyEventProcessingType;
     }
 
@@ -328,9 +330,18 @@ public class Scene extends Widget {
      * Sets a key events processing type of the scene.
      * @param keyEventProcessingType the processing type for key events
      */
-    public void setKeyEventProcessingType (EventProcessingType keyEventProcessingType) {
+    public final void setKeyEventProcessingType (EventProcessingType keyEventProcessingType) {
         assert keyEventProcessingType != null;
         this.keyEventProcessingType = keyEventProcessingType;
+    }
+
+    /**
+     * Returns a prior actions. These actions are executed before any other action in the scene.
+     * If any of these actions consumes an event that the event processsing is stopped. Action locking is ignored.
+     * @return the prior actions
+     */
+    public final WidgetAction.Chain getPriorActions () {
+        return priorActions;
     }
 
     /**
