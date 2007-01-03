@@ -19,9 +19,16 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
 import java.io.File;
+import java.io.IOException;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.JavaSource;
+import static org.netbeans.api.java.source.JavaSource.*;
 import org.netbeans.api.java.source.TestUtilities;
-import org.netbeans.jackpot.transform.Transformer;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -73,21 +80,28 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitClass(ClassTree node, Object p) {
-                    super.visitClass(node, p);
-                    if ("Test".contentEquals(node.getSimpleName())) {
-                        ClassTree copy = make.addClassImplementsClause(
-                            node, make.Identifier("List")
-                        );
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    ClassTree copy = make.addClassImplementsClause(
+                        clazz, make.Identifier("List")
+                    );
+                    workingCopy.rewrite(clazz, copy);
                 }
             }
-        );
+            
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -111,24 +125,31 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitClass(ClassTree node, Object p) {
-                    super.visitClass(node, p);
-                    if ("Test".contentEquals(node.getSimpleName())) {
-                        ClassTree copy = make.addClassImplementsClause(
-                            node, make.Identifier("Collection")
-                        );
-                        copy = make.addClassImplementsClause(
-                            copy, make.Identifier("List")
-                        );
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    ClassTree copy = make.addClassImplementsClause(
+                        clazz, make.Identifier("Collection")
+                    );
+                    copy = make.addClassImplementsClause(
+                        copy, make.Identifier("List")
+                    );
+                    workingCopy.rewrite(clazz, copy);
                 }
             }
-        );
+        
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -152,21 +173,28 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitClass(ClassTree node, Object p) {
-                    super.visitClass(node, p);
-                    if ("Test".contentEquals(node.getSimpleName())) {
-                        ClassTree copy = make.removeClassImplementsClause(node, 0);
-                        copy = make.removeClassImplementsClause(copy, 0);
-                        copy = make.removeClassImplementsClause(copy, 0);
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    ClassTree copy = make.removeClassImplementsClause(clazz, 0);
+                    copy = make.removeClassImplementsClause(copy, 0);
+                    copy = make.removeClassImplementsClause(copy, 0);
+                    workingCopy.rewrite(clazz, copy);
                 }
             }
-        );
+        
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -190,21 +218,28 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitClass(ClassTree node, Object p) {
-                    super.visitClass(node, p);
-                    if ("Test".contentEquals(node.getSimpleName())) {
-                        ClassTree copy = make.addClassImplementsClause(
-                            node, make.Identifier("Collection")
-                        );
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    ClassTree copy = make.addClassImplementsClause(
+                        clazz, make.Identifier("Collection")
+                    );
+                    workingCopy.rewrite(clazz, copy);
                 }
             }
-        );
+        
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -228,21 +263,28 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitClass(ClassTree node, Object p) {
-                    super.visitClass(node, p);
-                    if ("Test".contentEquals(node.getSimpleName())) {
-                        ClassTree copy = make.insertClassImplementsClause(
-                            node, 0, make.Identifier("Serializable")
-                        );
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    ClassTree copy = make.insertClassImplementsClause(
+                        clazz, 0, make.Identifier("Serializable")
+                    );
+                    workingCopy.rewrite(clazz, copy);
                 }
             }
-        );
+        
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -266,19 +308,26 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitClass(ClassTree node, Object p) {
-                    super.visitClass(node, p);
-                    if ("Test".contentEquals(node.getSimpleName())) {
-                        ClassTree copy = make.removeClassImplementsClause(node, 1);
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    ClassTree copy = make.removeClassImplementsClause(clazz, 1);
+                    workingCopy.rewrite(clazz, copy);
                 }
             }
-        );
+            
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -302,19 +351,26 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitClass(ClassTree node, Object p) {
-                    super.visitClass(node, p);
-                    if ("Test".contentEquals(node.getSimpleName())) {
-                        ClassTree copy = make.removeClassImplementsClause(node, 0);
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    ClassTree copy = make.removeClassImplementsClause(clazz, 0);
+                    workingCopy.rewrite(clazz, copy);
                 }
             }
-        );
+        
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -338,19 +394,26 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitClass(ClassTree node, Object p) {
-                    super.visitClass(node, p);
-                    if ("Test".contentEquals(node.getSimpleName())) {
-                        ClassTree copy = make.removeClassImplementsClause(node, 2);
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    ClassTree copy = make.removeClassImplementsClause(clazz, 2);
+                    workingCopy.rewrite(clazz, copy);
                 }
             }
-        );
+            
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -374,20 +437,27 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitClass(ClassTree node, Object p) {
-                    super.visitClass(node, p);
-                    if ("Test".contentEquals(node.getSimpleName())) {
-                        ClassTree copy = make.removeClassImplementsClause(node, 1);
-                        copy = make.removeClassImplementsClause(copy, 0);
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    ClassTree copy = make.removeClassImplementsClause(clazz, 1);
+                    copy = make.removeClassImplementsClause(copy, 0);
+                    workingCopy.rewrite(clazz, copy);
                 }
             }
-        );
+            
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -410,21 +480,29 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             "    public void taragui() {\n" +
             "    }\n" +
             "}\n";
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitClass(ClassTree node, Object p) {
-                    super.visitClass(node, p);
-                    if ("Test".contentEquals(node.getSimpleName())) {
-                        ClassTree copy = make.addClassImplementsClause(
-                            node, make.Identifier("List")
-                        );
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    ClassTree copy = make.addClassImplementsClause(
+                        clazz, make.Identifier("List")
+                    );
+                    workingCopy.rewrite(clazz, copy);
                 }
             }
-        );
+        
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -447,21 +525,29 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             "    public void taragui() {\n" +
             "    }\n" +
             "}\n";
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitClass(ClassTree node, Object p) {
-                    super.visitClass(node, p);
-                    if ("Test".contentEquals(node.getSimpleName())) {
-                        ClassTree copy = make.removeClassImplementsClause(
-                            node, 0
-                        );
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    ClassTree copy = make.removeClassImplementsClause(
+                        clazz, 0
+                    );
+                    workingCopy.rewrite(clazz, copy);
                 }
             }
-        );
+            
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -484,21 +570,29 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             "    public void taragui() {\n" +
             "    }\n" +
             "}\n";
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitClass(ClassTree node, Object p) {
-                    super.visitClass(node, p);
-                    if ("Test".contentEquals(node.getSimpleName())) {
-                        ClassTree copy = make.addClassImplementsClause(
-                            node, make.Identifier("List")
-                        );
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    ClassTree copy = make.addClassImplementsClause(
+                        clazz, make.Identifier("List")
+                    );
+                    workingCopy.rewrite(clazz, copy);
                 }
             }
-        );
+            
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -521,21 +615,29 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
             "    public void taragui() {\n" +
             "    }\n" +
             "}\n";
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitClass(ClassTree node, Object p) {
-                    super.visitClass(node, p);
-                    if ("Test".contentEquals(node.getSimpleName())) {
-                        ClassTree copy = make.removeClassImplementsClause(
-                            node, 0
-                        );
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    ClassTree copy = make.removeClassImplementsClause(
+                        clazz, 0
+                    );
+                    workingCopy.rewrite(clazz, copy);
                 }
             }
-        );
+        
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
