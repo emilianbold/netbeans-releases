@@ -61,6 +61,30 @@ public class ColorEditorTest extends TestCase {
         assertEquals ("Generate Java source with UI color.", "javax.swing.UIManager.getDefaults().getColor(\"TextField.inactiveBackground\")", propEd.getJavaInitializationString ());
     }
     
+    public void testStoreToXmlWhenUIResourceIsMissing() throws Exception {
+        ColorEditor.SuperColor sc = new ColorEditor.SuperColor(
+                "Fake.inactiveBackground", 
+                ColorEditor.SWING_PALETTE, 
+                Color.BLUE);
+        System.out.println("original "+sc);
+        XMLPropertyEditor propEd = new ColorEditor();
+        propEd.setValue(sc);
+        Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+        Node element = propEd.storeToXML(doc);
+
+        NamedNodeMap nodeMap = element.getAttributes();
+        for (int i = 0; i < nodeMap.getLength(); i++) {
+            System.out.println("attr "+i+", "+nodeMap.item(i));
+        }
+        
+        propEd.readFromXML(element);
+        Color restoredColor = (Color)propEd.getValue();
+        System.out.println("restoredColor "+restoredColor);
+        assertEquals("Restored value has to be the same", sc, restoredColor);
+        assertTrue("It is SuperColor", restoredColor instanceof ColorEditor.SuperColor);
+        assertEquals ("Generate Java source with UI color.", "javax.swing.UIManager.getDefaults().getColor(\"Fake.inactiveBackground\")", propEd.getJavaInitializationString ());
+    }
+    
     public void testGetValue () throws Exception {
         Color c = new Color (16, 16, 16);
         System.out.println("original "+c);

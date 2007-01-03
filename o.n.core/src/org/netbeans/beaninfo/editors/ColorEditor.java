@@ -358,9 +358,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
         case SYSTEM_PALETTE:
             return "java.awt.SystemColor." + systemGenerate [getIndex (getSystemColorNames(), superColor.getID())]; // NOI18N
         case SWING_PALETTE:
-            initSwingConstants();
-            int i = getIndex (swingColorNames, superColor.getID());
-            if (i < 0) return "new java.awt.Color(" + superColor.getRed() + ", " + superColor.getGreen() + // NOI18N
+            if (superColor.getID() == null) return "new java.awt.Color(" + superColor.getRed() + ", " + superColor.getGreen() + // NOI18N
                                   ", " + superColor.getBlue() + ")"; // NOI18N
             return "javax.swing.UIManager.getDefaults().getColor(\"" + // NOI18N
                    superColor.getID() + "\")"; // NOI18N
