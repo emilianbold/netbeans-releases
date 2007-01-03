@@ -33,6 +33,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
 import javax.tools.JavaFileObject.Kind;
 
 import com.sun.source.tree.*;
@@ -627,37 +628,28 @@ out:                for (URL e : roots) {
             js.runUserActionTask(new CancellableTask<CompilationController>() {            
                 public void run(final CompilationController control) throws Exception {
                     if (control.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED).compareTo (JavaSource.Phase.ELEMENTS_RESOLVED)>=0) {
+                        final Elements elements = control.getElements();
                         new TreePathScanner<Void,Void> () {
-                           public Void visitMethod(MethodTree node, Void p) {
-                               ExecutableElement method = (ExecutableElement) control.getTrees().getElement(getCurrentPath());
-                               if (SourceUtils.isMainMethod(method) && isAccessible(method.getEnclosingElement())) {
-                                   result.add (ElementHandle.create((TypeElement)method.getEnclosingElement()));
-                               }
+                           @Override
+                           public Void visitClass(ClassTree node, Void p) {
+                               TypeElement type = (TypeElement) control.getTrees().getElement(getCurrentPath());                               
+                               List<? extends ExecutableElement> methods = ElementFilter.methodsIn(elements.getAllMembers(type));
+                               for (ExecutableElement method : methods) {
+                                   if (SourceUtils.isMainMethod(method)) {
+                                       result.add (ElementHandle.create(type));
+                                       break;
+                                   }
+                               }                               
+                               return super.visitClass(node, p);
+                           }
+                           
+                           @Override
+                           public Void visitMethod (MethodTree tree, Void p) {
                                return null;
                            }
                         }.scan(control.getCompilationUnit(), null);
                     }                   
-                }
-
-                private boolean isAccessible (Element element) {
-                    ElementKind kind = element.getKind();
-                    while (kind != ElementKind.PACKAGE) {
-                        if (!kind.isClass() && !kind.isInterface()) {
-                            return false;
-                        }                    
-                        Set<Modifier> modifiers = ((TypeElement)element).getModifiers();
-                        if (!modifiers.contains(Modifier.PUBLIC)) {
-                            return false;
-                        }
-                        Element parent = element.getEnclosingElement();
-                        if (parent.getKind() != ElementKind.PACKAGE && !modifiers.contains(Modifier.STATIC)) {
-                            return false;
-                        }
-                        element = parent;
-                        kind = element.getKind();
-                    }
-                    return true;
-                }
+                }                
 
                 public void cancel() {}
 
@@ -685,11 +677,12 @@ out:                for (URL e : roots) {
             js.runUserActionTask(new CancellableTask<CompilationController>() {
 
                 public void run(CompilationController control) throws Exception {
-                    TypeElement type = control.getElements().getTypeElement(qualifiedName);
-                    if (type == null) {
+                    Elements elements = control.getElements();
+                    TypeElement type = elements.getTypeElement(qualifiedName);
+                    if (type == null || isAnon(type)) {
                         return;
                     }
-                    List<? extends ExecutableElement> methods = ElementFilter.methodsIn(type.getEnclosedElements());
+                    List<? extends ExecutableElement> methods = ElementFilter.methodsIn(elements.getAllMembers(type));
                     for (ExecutableElement method : methods) {
                         if (SourceUtils.isMainMethod(method)) {
                             result[0] = true;
@@ -759,8 +752,8 @@ out:                for (URL e : roots) {
                     public void run(CompilationController control) throws Exception {
                         for (ElementHandle<TypeElement> cls : classes) {
                             TypeElement te = cls.resolve(control);
-                            if (te != null) {
-                                Iterable<? extends ExecutableElement> methods = ElementFilter.methodsIn(te.getEnclosedElements());
+                            if (te != null && !isAnon(te)) {
+                                Iterable<? extends ExecutableElement> methods = ElementFilter.methodsIn(control.getElements().getAllMembers(te));
                                 for (ExecutableElement method : methods) {
                                     if (isMainMethod(method)) {
                                         result.add (cls);
@@ -778,6 +771,11 @@ out:                for (URL e : roots) {
             }
         }
         return result;
+    }
+    
+    private static boolean isAnon (TypeElement te) {
+        assert te != null;
+        return te.getSimpleName().length() == 0;
     }
     
     private static boolean isCaseSensitive () {
