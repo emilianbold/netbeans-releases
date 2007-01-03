@@ -343,7 +343,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             // Change in the project name
             String projectName = projectNameTextField.getText();
             String projectFolder = projectLocationTextField.getText();
-            String projFolderPath = getCanonicalPath(new File(projectFolder));
+            String projFolderPath = FileUtil.normalizeFile(new File(projectFolder)).getAbsolutePath();
             if (projFolderPath.endsWith(File.separator)) {
                 createdFolderTextField.setText(projFolderPath + projectName);
             } else {
@@ -359,14 +359,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         } catch (IOException e) {
             return null;
         }
-    }
-    
-    static String getCanonicalPath(File f) {
-        try {
-            return f.getCanonicalPath();
-        } catch (IOException e) {
-            return "";
-        }
-    }
+    }    
 
 }
