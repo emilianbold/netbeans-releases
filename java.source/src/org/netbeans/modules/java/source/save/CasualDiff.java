@@ -206,7 +206,7 @@ public class CasualDiff {
             output.writeTo(origText.substring(pointer));
         } catch (Exception e) {
             // report an exception and do not any change in source to prevent deletion of code!
-            Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).log(Level.SEVERE, "Error during generating!", e);
+            Logger.getLogger("global").log(Level.SEVERE, "Error during generating!", e);
             this.output = new StringSourceRewriter();
             try {
                 this.output.writeTo(origText);
