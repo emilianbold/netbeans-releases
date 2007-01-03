@@ -19,14 +19,11 @@
 
 package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 
-import java.io.EOFException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
@@ -216,7 +213,7 @@ public class SessionGeneratorTest extends TestBase {
         for (ExecutableElement executableElement : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
             if (MethodModelSupport.isSameMethod(controller, executableElement, methodModel)) {
                 return true;
-            };
+            }
         }
         return false;
     }
@@ -273,8 +270,7 @@ public class SessionGeneratorTest extends TestBase {
             case OTHER :
             case PACKAGE :
             case TYPEVAR :
-            case WILDCARD :  
-                System.out.println("### getTypeName unknown type: " + typeMirror + ", " + typeKind + ", " + typeMirror.getClass().getName());
+            case WILDCARD :
                 break;
         }
         return null;
