@@ -20,7 +20,6 @@
 package org.netbeans.modules.welcome.content;
 
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -100,7 +99,6 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
     
     public void setContent( Component content ) {
         setViewportView( content );
-        setCursor( Cursor.getDefaultCursor() );
         firePropertyChange( FEED_CONTENT_PROPERTY, null, content );
     }
 
@@ -153,8 +151,6 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
             try {
                 lastReload = System.currentTimeMillis();
 
-                setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
-                
                 ArrayList itemList = buildItemList();
                 final JPanel contentPanel = new NoHorizontalScrollPanel();
                 contentPanel.setOpaque( false );
@@ -220,21 +216,18 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
                 reloadTimer = RequestProcessor.getDefault().post( this, RSS_FEED_TIMER_RELOAD_MILLIS );
 
             } catch( UnknownHostException uhE ) {
-                setCursor( Cursor.getDefaultCursor() );
                 SwingUtilities.invokeLater( new Runnable() {
                     public void run() {
                         setContent( buildProxyPanel() );
                     }
                 });
             } catch( SocketException sE ) {
-                setCursor( Cursor.getDefaultCursor() );
                 SwingUtilities.invokeLater( new Runnable() {
                     public void run() {
                         setContent( buildProxyPanel() );
                     }
                 });
             } catch( Exception e ) {
-                setCursor( Cursor.getDefaultCursor() );
                 SwingUtilities.invokeLater( new Runnable() {
                     public void run() {
                         setContent( buildErrorLabel() );
