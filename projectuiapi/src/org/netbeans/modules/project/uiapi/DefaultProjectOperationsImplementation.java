@@ -77,7 +77,7 @@ public final class DefaultProjectOperationsImplementation {
     //the rename and delete operation use a different approach:
     private static final double NOTIFY_WORK = 0.1;
     private static final double FIND_PROJECT_WORK = 0.1;
-    private static final int    MAX_WORK = 100;
+    static final int    MAX_WORK = 100;
     
     private DefaultProjectOperationsImplementation() {
     }
