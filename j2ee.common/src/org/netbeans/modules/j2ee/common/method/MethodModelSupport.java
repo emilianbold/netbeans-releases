@@ -226,6 +226,7 @@ public final class MethodModelSupport {
     
     //TODO: RETOUCHE move/reuse in SourceUtil, or best - get from java/source!
     // package private only for unit test
+    // see #90968
     static String getTypeName(CompilationController controller, TypeMirror typeMirror) {
         TypeKind typeKind = typeMirror.getKind();
         switch (typeKind) {
