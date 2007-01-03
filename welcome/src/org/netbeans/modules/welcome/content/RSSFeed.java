@@ -257,10 +257,14 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
         try {
             Date date = parsingDateFormat.parse( strDateTime );
             return printingDateFormat.format( date );
+        } catch( NumberFormatException nfE ) {
+            //ignore
         } catch( ParseException pE ) {
             try {
                 Date date = parsingDateFormatShort.parse( strDateTime );
                 return printingDateFormatShort.format( date );
+            } catch( NumberFormatException nfE ) {
+                //ignore
             } catch( ParseException otherPE ) {
                 //ignore
             }
