@@ -1544,6 +1544,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     
     private static void dumpTopLevel (final ClassSymbol classSym, final JavaFileManager fileManager, final JavaFileObject source, final com.sun.tools.javac.code.Types types,
         com.sun.tools.javac.util.Name.Table nameTable) throws IOException {
+        assert source != null;
         if (classSym.getSimpleName() != nameTable.error) {
             final String sourceName = fileManager.inferBinaryName(StandardLocation.SOURCE_PATH, source);
             final StringBuilder classNameBuilder = new StringBuilder ();

@@ -62,7 +62,8 @@ public class OutputFileManager extends CachingFileManager {
             else {
                 index = getActiveRoot (FileObjects.convertPackage2Folder(className));
             }
-            assert index >= 0 && index < this.files.length;
+            assert index >= 0 : "class: " + className +" sibling: " + sibling +" roots: " + dumpRoots(sourceRoots);
+            assert index < this.files.length;
             File activeRoot = this.files[index];
             String baseName = className.replace('.', File.separatorChar);       //NOI18N
             String nameStr = baseName + '.' + FileObjects.SIG;
@@ -158,6 +159,15 @@ public class OutputFileManager extends CachingFileManager {
             Logger.getLogger("global").log(Level.INFO, message);
         }
         return true;
+    }
+    
+    private static String dumpRoots (FileObject[] roots) {
+        StringBuilder builder = new StringBuilder ();
+        for (FileObject root : roots) {
+            builder.append(FileUtil.getFileDisplayName(root));
+            builder.append(", ");
+        }
+        return builder.toString();
     }
     
 }

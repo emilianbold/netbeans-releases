@@ -198,6 +198,7 @@ public class ProxyFileManager implements JavaFileManager {
     
     
     public String inferBinaryName(JavaFileManager.Location location, JavaFileObject javaFileObject) {
+        assert javaFileObject != null;
         //If cached return it dirrectly
         if (javaFileObject == lastInfered) {
             return lastInferedResult;
