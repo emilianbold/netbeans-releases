@@ -41,11 +41,16 @@ import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.common.source.SourceUtils;
+import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
+import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
 import org.netbeans.modules.j2ee.ejbcore.test.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.ejbcore.test.EjbJarProviderImpl;
 import org.netbeans.modules.j2ee.ejbcore.test.FakeJavaDataLoaderPool;
 import org.netbeans.modules.j2ee.ejbcore.test.FileOwnerQueryImpl;
+import org.netbeans.modules.j2ee.ejbcore.test.ProjectImpl;
 import org.netbeans.modules.j2ee.ejbcore.test.TestBase;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.openide.filesystems.FileObject;
@@ -59,6 +64,7 @@ public class SessionGeneratorTest extends TestBase {
     
     private EjbJarProviderImpl ejbJarProvider;
     private ClassPathProviderImpl classPathProvider;
+    private ProjectImpl projectImpl;
     private FileObject dataDir;
     private EJBNameOptions ejbNames;
 
@@ -66,17 +72,18 @@ public class SessionGeneratorTest extends TestBase {
         super(testName);
     }
     
-    protected void setUp() throws Exception {
+    protected void setUp() throws IOException {
         clearWorkDir();
         File file = new File(getWorkDir(),"cache");	//NOI18N
         file.mkdirs();
         IndexUtil.setCacheFolder(file);
         ejbJarProvider = new EjbJarProviderImpl();
         classPathProvider = new ClassPathProviderImpl();
+        projectImpl = new ProjectImpl();
         setLookups(
                 ejbJarProvider, 
                 classPathProvider, 
-                new FileOwnerQueryImpl(),
+                new FileOwnerQueryImpl(projectImpl),
                 new FakeJavaDataLoaderPool()
                 );
         dataDir = FileUtil.toFileObject(getDataDir());
@@ -95,64 +102,78 @@ public class SessionGeneratorTest extends TestBase {
             pkg.delete();
         }
         pkg = sources[0].createFolder("stateless21");
+        
+        projectImpl.setProjectDirectory(dataDir.getFileObject("EJBModule1"));
+        
         final String name = "Stateless21";
         SessionGenerator sessionGenerator = SessionGenerator.create(name, pkg, true, true, false, false, false, true);
         sessionGenerator.generate();
-        FileObject ejbClass = pkg.getFileObject(ejbNames.getSessionEjbClassPrefix() + name + ejbNames.getSessionEjbClassSuffix() + ".java");
+        EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ddFileObject);
+        EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
+        String ejbName = ejbNames.getSessionEjbNamePrefix() + name + ejbNames.getSessionEjbNameSuffix();
+        Session session = (Session) enterpriseBeans.findBeanByName(EnterpriseBeans.SESSION, Session.EJB_NAME, ejbName);
+        final String JAVA = "java";
+        
+        FileObject ejbClass = pkg.getFileObject(ejbNames.getSessionEjbClassPrefix() + name + ejbNames.getSessionEjbClassSuffix(), JAVA);
         assertNotNull(ejbClass);
-        checkEjbClass21(ejbClass, name);
-        FileObject remote = pkg.getFileObject(ejbNames.getSessionRemotePrefix() + name + ejbNames.getSessionRemoteSuffix() + ".java");
+        checkEjbClass21(ejbClass, name, session);
+        
+        FileObject remote = pkg.getFileObject(ejbNames.getSessionRemotePrefix() + name + ejbNames.getSessionRemoteSuffix(), JAVA);
         assertNotNull(remote);
-        checkRemote21(remote, name);
-        FileObject remoteHome = pkg.getFileObject(ejbNames.getSessionRemoteHomePrefix() + name + ejbNames.getSessionRemoteHomeSuffix() + ".java");
+        checkRemote21(remote, name, session);
+        
+        FileObject remoteHome = pkg.getFileObject(ejbNames.getSessionRemoteHomePrefix() + name + ejbNames.getSessionRemoteHomeSuffix(), JAVA);
         assertNotNull(remoteHome);
-        checkRemoteHome21(remoteHome, name);
-        FileObject local = pkg.getFileObject(ejbNames.getSessionLocalPrefix() + name + ejbNames.getSessionLocalSuffix() + ".java");
+        checkRemoteHome21(remoteHome, name, session);
+        
+        FileObject local = pkg.getFileObject(ejbNames.getSessionLocalPrefix() + name + ejbNames.getSessionLocalSuffix(), JAVA);
         assertNotNull(local);
-        checkLocal21(local, name);
-        FileObject localHome = pkg.getFileObject(ejbNames.getSessionLocalHomePrefix() + name + ejbNames.getSessionLocalHomeSuffix() + ".java");
+        checkLocal21(local, name, session);
+        
+        FileObject localHome = pkg.getFileObject(ejbNames.getSessionLocalHomePrefix() + name + ejbNames.getSessionLocalHomeSuffix(), JAVA);
         assertNotNull(localHome);
-        checkLocalHome21(localHome, name);
+        checkLocalHome21(localHome, name, session);
     }
     
-    private void checkEjbClass21(final FileObject ejbClass, final String name) throws Exception {
+    private void checkEjbClass21(final FileObject ejbClass, final String name, final Session session) throws IOException {
         runUserActionTask(ejbClass, new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
-                controller.toPhase(JavaSource.Phase.RESOLVED);
+                final String VOID = "void";
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                 TypeElement clazz = sourceUtils.getTypeElement();
                 assertTrue(clazz.getSimpleName().contentEquals(ejbNames.getSessionEjbClassPrefix() + name + ejbNames.getSessionEjbClassSuffix()));
                 assertDirectlyImplements(controller, clazz, new String[] {"javax.ejb.SessionBean"});
                 assertTrue(contains(controller, clazz, MethodModel.create(
-                            "setSessionContext", "void", "", 
+                            "setSessionContext", VOID, "", 
                             Collections.singletonList(MethodModel.Variable.create("javax.ejb.SessionContext", "aContext")), 
                             Collections.<String>emptyList(), 
                             Collections.singleton(Modifier.PUBLIC)
                             )));
                 assertTrue(contains(controller, clazz, MethodModel.create(
-                            "ejbActivate", "void", "", 
+                            "ejbActivate", VOID, "", 
                             Collections.<MethodModel.Variable>emptyList(), 
                             Collections.<String>emptyList(), 
                             Collections.singleton(Modifier.PUBLIC)
                             )));
                 assertTrue(contains(controller, clazz, MethodModel.create(
-                            "ejbPassivate", "void", "", 
+                            "ejbPassivate", VOID, "", 
                             Collections.<MethodModel.Variable>emptyList(), 
                             Collections.<String>emptyList(), 
                             Collections.singleton(Modifier.PUBLIC)
                             )));
                 assertTrue(contains(controller, clazz, MethodModel.create(
-                            "ejbRemove", "void", "", 
+                            "ejbRemove", VOID, "", 
                             Collections.<MethodModel.Variable>emptyList(), 
                             Collections.<String>emptyList(), 
                             Collections.singleton(Modifier.PUBLIC)
                             )));
                 assertTrue(contains(controller, clazz, MethodModel.Variable.create("javax.ejb.SessionContext", "context")));
+                assertTrue(clazz.getQualifiedName().contentEquals(session.getEjbClass()));
             }
         });
     }
     
-    private void checkRemote21(final FileObject remote, final String name) throws Exception {
+    private void checkRemote21(final FileObject remote, final String name, final Session session) throws IOException {
         runUserActionTask(remote, new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
@@ -160,11 +181,12 @@ public class SessionGeneratorTest extends TestBase {
                 assertTrue(clazz.getSimpleName().contentEquals(ejbNames.getSessionRemotePrefix() + name + ejbNames.getSessionRemoteSuffix()));
                 assertDirectlyImplements(controller, clazz, new String[] {"javax.ejb.EJBObject"});
                 assertTrue(clazz.getEnclosedElements().isEmpty());
+                assertTrue(clazz.getQualifiedName().contentEquals(session.getRemote()));
             }
         });
     }
     
-    private void checkRemoteHome21(final FileObject remote, final String name) throws Exception {
+    private void checkRemoteHome21(final FileObject remote, final String name, final Session session) throws IOException {
         runUserActionTask(remote, new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
@@ -172,11 +194,12 @@ public class SessionGeneratorTest extends TestBase {
                 assertTrue(clazz.getSimpleName().contentEquals(ejbNames.getSessionRemoteHomePrefix() + name + ejbNames.getSessionRemoteHomeSuffix()));
                 assertDirectlyImplements(controller, clazz, new String[] {"javax.ejb.EJBHome"});
                 assertTrue(clazz.getEnclosedElements().isEmpty());
+                assertTrue(clazz.getQualifiedName().contentEquals(session.getHome()));
             }
         });
     }
     
-    private void checkLocal21(final FileObject remote, final String name) throws Exception {
+    private void checkLocal21(final FileObject remote, final String name, final Session session) throws IOException {
         runUserActionTask(remote, new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
@@ -184,11 +207,12 @@ public class SessionGeneratorTest extends TestBase {
                 assertTrue(clazz.getSimpleName().contentEquals(ejbNames.getSessionLocalPrefix() + name + ejbNames.getSessionLocalSuffix()));
                 assertDirectlyImplements(controller, clazz, new String[] {"javax.ejb.EJBLocalObject"});
                 assertTrue(clazz.getEnclosedElements().isEmpty());
+                assertTrue(clazz.getQualifiedName().contentEquals(session.getLocal()));
             }
         });
     }
     
-    private void checkLocalHome21(final FileObject remote, final String name) throws Exception {
+    private void checkLocalHome21(final FileObject remote, final String name, final Session session) throws IOException {
         runUserActionTask(remote, new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
@@ -196,6 +220,7 @@ public class SessionGeneratorTest extends TestBase {
                 assertTrue(clazz.getSimpleName().contentEquals(ejbNames.getSessionLocalHomePrefix() + name + ejbNames.getSessionLocalHomeSuffix()));
                 assertDirectlyImplements(controller, clazz, new String[] {"javax.ejb.EJBLocalHome"});
                 assertTrue(clazz.getEnclosedElements().isEmpty());
+                assertTrue(clazz.getQualifiedName().contentEquals(session.getLocalHome()));
             }
         });
     }
@@ -238,7 +263,7 @@ public class SessionGeneratorTest extends TestBase {
         return false;
     }
     
-    private static void runUserActionTask(FileObject javaFile, CancellableTask<CompilationController> taskToTest) throws Exception {
+    private static void runUserActionTask(FileObject javaFile, CancellableTask<CompilationController> taskToTest) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(javaFile);
         javaSource.runUserActionTask(taskToTest, true);
     }

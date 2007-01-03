@@ -19,19 +19,10 @@
 
 package org.netbeans.modules.j2ee.ejbcore.test;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.URI;
-import java.util.Iterator;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -41,8 +32,8 @@ public class FileOwnerQueryImpl implements FileOwnerQueryImplementation {
     
     private final Project project;
     
-    public FileOwnerQueryImpl() {
-        project = new ProjectImpl();
+    public FileOwnerQueryImpl(Project project) {
+        this.project = project;
     }
     
     public Project getOwner(URI file) {
@@ -52,94 +43,5 @@ public class FileOwnerQueryImpl implements FileOwnerQueryImplementation {
     public Project getOwner(FileObject file) {
         return project;
     }
-    
-    private static final class ProjectImpl implements Project {
-        
-        private final Lookup lookup;
-        
-        public ProjectImpl() {
-            lookup = Lookups.singleton(new J2eeModuleProviderImpl());
-        }
-        
-        public FileObject getProjectDirectory() {
-            return null;
-        }
-        
-        public Lookup getLookup() {
-            return lookup;
-        }
-    }
-    
-    private static final class J2eeModuleProviderImpl extends J2eeModuleProvider {
-        
-        public J2eeModule getJ2eeModule() {
-            return new J2eeModuleImpl();
-        }
-        
-        public ModuleChangeReporter getModuleChangeReporter() {
-            return null;
-        }
-        
-        public File getDeploymentConfigurationFile(String name) {
-            return null;
-        }
-        
-        public FileObject findDeploymentConfigurationFile(String name) {
-            return null;
-        }
-        
-        public void setServerInstanceID(String severInstanceID) {
-        }
-        
-        public String getServerInstanceID () {
-            return null;
-        }
-
-        public String getServerID () {
-            return null;
-        }
-        
-    }
-    
-    private static final class J2eeModuleImpl implements J2eeModule {
-        
-    
-        public String getModuleVersion() {
-            return null;
-        }
-
-        public Object getModuleType() {
-            return J2eeModule.EJB;
-        }
-
-        public String getUrl() {
-            return null;
-        }
-
-        public void setUrl(String url) {
-        }
-
-        public FileObject getArchive() throws IOException {
-            return null;
-        }
-
-        public Iterator getArchiveContents() throws IOException {
-            return null;
-        }
-
-        public FileObject getContentDirectory() throws IOException {
-            return null;
-        }
-
-        public BaseBean getDeploymentDescriptor(String location) {
-            return null;
-        }
-
-        public void addVersionListener(VersionListener listener) {
-        }
-
-        public void removeVersionListener(VersionListener listener) {
-        }
-}
     
 }
