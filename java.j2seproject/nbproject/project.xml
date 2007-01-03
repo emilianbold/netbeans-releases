@@ -273,9 +273,6 @@ Microsystems, Inc. All Rights Reserved.
                         <code-name-base>org.netbeans.api.progress</code-name-base>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.progress.ui</code-name-base>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.openide.options</code-name-base>
                     </test-dependency>
                     <test-dependency>
