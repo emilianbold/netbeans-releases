@@ -203,17 +203,18 @@ public final class FolderList extends javax.swing.JPanel {
     }//GEN-LAST:event_removeButtonActionPerformed
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        JFileChooser chooser = new JFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+        JFileChooser chooser = new JFileChooser();        
         chooser.setDialogTitle(this.fcMessage);
         chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
         chooser.setMultiSelectionEnabled(true);
+        File curDir = null;
         if (this.lastUsedFolder != null && this.lastUsedFolder.isDirectory()) {
-            chooser.setCurrentDirectory (this.lastUsedFolder);
+            curDir = this.lastUsedFolder;
         }        
         else if (this.projectFolder != null && this.projectFolder.isDirectory()) {
-            chooser.setCurrentDirectory (this.projectFolder);            
+            curDir = this.projectFolder;
         }                        
+        FileUtil.preventFileChooserSymlinkTraversal(chooser, curDir);
         if (chooser.showOpenDialog(this)== JFileChooser.APPROVE_OPTION) {
             File[] files = chooser.getSelectedFiles();
             int[] indecesToSelect = new int[files.length];
