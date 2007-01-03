@@ -250,6 +250,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     private class FindTask implements CancellableTask<WorkingCopy> {
 
         private RefactoringElementsBag elements;
+        private volatile boolean cancelled;
 
         public FindTask(RefactoringElementsBag elements) {
             super();
@@ -257,9 +258,12 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         }
 
         public void cancel() {
+            cancelled=true;
         }
 
         public void run(WorkingCopy compiler) throws IOException {
+            if (cancelled)
+                return ;
             compiler.toPhase(Phase.RESOLVED);
             CompilationUnitTree cu = compiler.getCompilationUnit();
             if (cu == null) {
