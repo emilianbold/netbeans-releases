@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mode PUBLIC
+          "-//NetBeans//DTD Mode Properties 2.0//EN"
+          "http://www.netbeans.org/dtds/mode-properties2_0.dtd">
+
+<mode version="2.0">
+    <module name="org.netbeans.modules.collab.ui/1" spec="1.0.0" />
+    <name unique="collaboration" />
+	<kind type="view" />
+	<state type="joined" />
+	<constraints>
+		<path orientation="vertical" number="20" weight="0.7" />
+		<path orientation="horizontal" number="60" weight="0.2" />
+		<path orientation="vertical" number="40" weight="0.3" />
+	</constraints>
+<!--
+	<bounds x="1200" y="327" width="240" height="175" />
+	<frame state="0" />
+-->
+    <relative-bounds x="75" y="28" width="15" height="15" />
+    <active-tc id="CollaborationExplorer" />
+
+    <empty-behavior permanent="true" />
+</mode>

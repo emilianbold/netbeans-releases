@@ -177,18 +177,18 @@ Microsystems, Inc. All Rights Reserved.
 
 	<folder name="Windows2">
 		<folder name="Components">
-			<file name="CollaborationExplorer.settings" url="Components/CollaborationExplorer.settings"/>
+			<file name="CollaborationExplorer.settings" url="CollaborationExplorer.settings"/>
 		</folder>
 		<folder name="Groups">
-			<file name="collaboration.wsgrp" url="Groups/collaboration.wsgrp"/>
+			<file name="collaboration.wsgrp" url="collaboration.wsgrp"/>
 			<folder name="collaboration">
-				<file name="CollaborationExplorer.wstcgrp" url="Groups/collaboration/CollaborationExplorer.wstcgrp"/>
+				<file name="CollaborationExplorer.wstcgrp" url="CollaborationExplorer.wstcgrp"/>
 			</folder>
 		</folder>
 		<folder name="Modes">
-			<file name="collaboration.wsmode" url="Modes/collaboration.wsmode"/>
+			<file name="collaboration.wsmode" url="collaboration.wsmode"/>
 			<folder name="collaboration">
-				<file name="CollaborationExplorer.wstcref" url="Modes/collaboration/CollaborationExplorer.wstcref"/>
+				<file name="CollaborationExplorer.wstcref" url="CollaborationExplorer.wstcref"/>
 			</folder>
 		</folder>
 	</folder>
