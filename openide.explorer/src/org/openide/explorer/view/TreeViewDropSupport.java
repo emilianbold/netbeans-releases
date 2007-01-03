@@ -419,7 +419,9 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
     }
 
     private void removeDropLine() {
-        dropPane.setDropLine(null);
+        if( null != dropPane ) {
+            dropPane.setDropLine(null);
+        }
 
         if (lastNodeArea != null) {
             NodeRenderer.dragExit();
