@@ -17,27 +17,32 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.languages.ext;
+package org.netbeans.api.languages;
 
-import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.ASTNode;
+import java.util.Set;
+import org.netbeans.modules.languages.LanguagesManagerImpl;
 
 /**
  *
  * @author Jan Jancura
  */
-public class NBS {
+public abstract class LanguagesManager {
     
-    public static Runnable hyperlink (final ASTNode n) {
-        return new Runnable () {
-            public void run () {
-                String link = n.getAsText ();
-                int i = link.lastIndexOf ('.');
-                String className = link.substring (0, i).trim ();
-                String method = link.substring (i + 1).trim ();
-                System.out.println("className " + className);
-                System.out.println("method " + method);
-            }
-        };
+    private static LanguagesManager manager;
+    
+    public static LanguagesManager getDefault () {
+        if (manager == null) {
+            manager = new LanguagesManagerImpl ();
+        }
+        return manager;
     }
+
+    public abstract Set getSupportedMimeTypes ();
+
+//    public abstract Language getLanguage (String mimeType) throws ParseException;
+//    public abstract void addLanguagesManagerListener (LanguagesManagerListener l);
+//    public abstract void removeLanguagesManagerListener (LanguagesManagerListener l);
 }
+
+
+

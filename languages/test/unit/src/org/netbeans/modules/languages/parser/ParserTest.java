@@ -7,9 +7,14 @@
 
 package org.netbeans.modules.languages.parser;
 
+import java.util.Map;
+import org.netbeans.api.languages.CharInput;
+import org.netbeans.api.languages.ParseException;
+import org.netbeans.api.languages.SToken;
 import java.util.ArrayList;
 import java.util.List;
 import junit.framework.*;
+import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.parser.Parser.Cookie;
 
 /**
@@ -115,11 +120,14 @@ public class ParserTest extends TestCase {
         for (i = 0; i < k; i+=4) {
             String tokenName = (String) l [i + 1];
             String pattern = (String) l [i + 2];
-            rules.add (Parser.create (
+            rules.add (Language.createTokenType (
                 (String) l [i],
                 Pattern.create (pattern, "text/test"),
-                SToken.create ("text/test", tokenName, null),
-                (String) l [i + 3]
+                "text/test",
+                tokenName,
+                (String) l [i + 3],
+                i / 4,
+                null
             ));
         }
         return Parser.create (rules);
@@ -139,7 +147,7 @@ public class ParserTest extends TestCase {
         });
         
         System.out.println (parser);
-        Input in = Input.create (
+        CharInput in = new StringInput (
             "/** dsfsf\n" +
             " asd as * asdf */ " +
             "package ifa.vv.b;\n" +
@@ -183,7 +191,7 @@ public class ParserTest extends TestCase {
             "IN_ATTRIBUTE2", "WHITESPACE", "[' ''\\t''\\n''\\r']*", "IN_ATTRIBUTE2"
         });
         
-        Input in = Input.create (
+        CharInput in = new StringInput (
             "<test a=\"asz\"> \n" +
             " \" sdf\" = sdf" +
             "<!-- NewPage" +
@@ -223,6 +231,9 @@ public class ParserTest extends TestCase {
 
         public void setState (int state) {
             this.state = state;
+        }
+    
+        public void setProperties (Map properties) {
         }
     }
 }

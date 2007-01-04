@@ -20,15 +20,17 @@
 package org.netbeans.modules.languages.lexer;
 
 import java.util.Map;
+
+import org.netbeans.api.languages.CharInput;
+import org.netbeans.api.languages.SToken;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.modules.languages.Evaluator;
-import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.parser.Input;
-import org.netbeans.modules.languages.parser.Parser;
-import org.netbeans.modules.languages.parser.SToken;
+import org.netbeans.api.languages.SToken;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.TokenFactory;
+import org.netbeans.modules.languages.Evaluator;
+import org.netbeans.modules.languages.Language;
+import org.netbeans.modules.languages.parser.Parser;
 
 
 /**
@@ -37,11 +39,11 @@ import org.netbeans.spi.lexer.TokenFactory;
  */
 public class SLexer implements Lexer<STokenId>, Parser.Cookie {
     
-    private Language    language;
-    private Input       input;
-    private TokenFactory tokenFactory;
-    private Map         tokensMap;
-    private Parser      parser;
+    private Language        language;
+    private CharInput       input;
+    private TokenFactory    tokenFactory;
+    private Map             tokensMap;
+    private Parser          parser;
     
     
     SLexer (
@@ -65,14 +67,16 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
         int index = input.getIndex ();
         SToken token = null;
         Evaluator.Method evaluator = null;
-        token = parser.read(this, input);
+        token = parser.read (this, input);
         String stateName = parser.getState (state); // [PENDING] improve performance of parser.getState()
         if (language != null && properties != null) {
             evaluator = (Evaluator.Method) properties.get ("call");
         }
         if (evaluator != null) {
             input.setIndex (index);
-            token = (SToken) evaluator.evaluate (new Object[] {this, language, input});
+            Object[] r = (Object[]) evaluator.evaluate (new Object[] {input, language.getMimeType ()});
+            token = (SToken) r [0];
+            setState (((Integer) r [1]).intValue ());
         }
         
         if (token == null) {
@@ -122,7 +126,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
     
     // innerclasses ............................................................
     
-    private static class InputBridge extends Input {
+    private static class InputBridge extends CharInput {
         
         private LexerInput input;
         private int index = 0;

@@ -7,15 +7,10 @@
 
 package org.netbeans.modules.languages.parser;
 
-import junit.framework.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import junit.framework.TestCase;
+import org.netbeans.api.languages.CharInput;
+import org.netbeans.api.languages.ParseException;
+import org.netbeans.modules.languages.parser.StringInput;
 
 /**
  *
@@ -137,7 +132,7 @@ public class PatternTest extends TestCase {
         boolean result,
         String ext
     ) throws ParseException {
-        Input in = Input.create (text, "test");
+        CharInput in = new StringInput (text, "test");
         Pattern p = Pattern.create (expression, "text/test");
         assertEquals (expression + " <" + text + ">", result, p.next (in) != null);
         assertEquals (expression + " <" + text + ">", ext, in.toString ());

@@ -19,10 +19,14 @@
 
 package org.netbeans.modules.languages.parser;
 
+import org.netbeans.api.languages.ParseException;
+import org.netbeans.api.languages.CharInput;
+import org.netbeans.api.languages.SToken;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import org.netbeans.modules.languages.parser.StringInput;
 
 public class Pattern {
     
@@ -36,16 +40,16 @@ public class Pattern {
     
     public static Pattern create (String input, String mimeType) throws ParseException {
         if (input.length () == 0) throw new ParseException ();
-        return create (Input.create (input, ""), mimeType);
+        return create (new StringInput (input, ""), mimeType);
     }
     
-    public static Pattern create (Input input, String mimeType) throws ParseException {
+    public static Pattern create (CharInput input, String mimeType) throws ParseException {
         Pattern p = createIn (input, mimeType);
         DG ndg = DGUtils.reduce (p.dg);
         return new Pattern (ndg);
     }
     
-    private static Pattern createIn (Input input, String mimeType) throws ParseException {
+    private static Pattern createIn (CharInput input, String mimeType) throws ParseException {
         Pattern pattern = new Pattern ();
         Pattern last = null;
         char ch = input.next ();
@@ -300,7 +304,7 @@ public class Pattern {
         return pattern;
     }
 
-    private static SToken readToken (Input input, String mimeType) throws ParseException {
+    private static SToken readToken (CharInput input, String mimeType) throws ParseException {
         StringBuilder sb = new StringBuilder ();
         char ch = input.next ();
         while (ch != ',' && ch != '>') {
@@ -355,7 +359,7 @@ public class Pattern {
         whitespace.add (new Character ('\t'));
     }
     
-    private static void skipWhitespaces (Input input) {
+    private static void skipWhitespaces (CharInput input) {
         while (whitespace.contains (new Character (input.next ())))
             input.read ();
     }
@@ -504,11 +508,11 @@ public class Pattern {
         return dg.getEnds ().contains (state);
     }
 
-    public Object next (Input input) {
+    public Object next (CharInput input) {
         return next (dg.getStartNode (), input);
     }
     
-    public Object next (Object state, Input input) {
+    public Object next (Object state, CharInput input) {
         int lastIndex = input.getIndex ();
         int originalIndex = lastIndex;
         Object lastState = null;

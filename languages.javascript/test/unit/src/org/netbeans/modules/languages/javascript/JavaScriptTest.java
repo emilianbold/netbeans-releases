@@ -17,14 +17,14 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 import junit.framework.TestCase;
+
+import org.netbeans.api.languages.ParseException;
+import org.netbeans.api.languages.TokenInput;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.NBSLanguageReader;
-import org.netbeans.modules.languages.parser.ASTNode;
 import org.netbeans.modules.languages.parser.AnalyserAnalyser;
-import org.netbeans.modules.languages.parser.Input;
-import org.netbeans.modules.languages.parser.ParseException;
 import org.netbeans.modules.languages.parser.Petra;
-import org.netbeans.modules.languages.parser.TokenInput;
+import org.netbeans.modules.languages.parser.StringInput;
 
 
 /**
@@ -70,7 +70,7 @@ public class JavaScriptTest extends TestCase {
         }
         TokenInput ti = TokenInput.create (
             l.getParser (), 
-            Input.create (sb.toString (), "NBS.nbs"),
+            new StringInput (sb.toString (), "NBS.nbs"),
             l.getSkipTokenTypes ()
         );
         assertEquals ("identifier", ti.read ().getType ());

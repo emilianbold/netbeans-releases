@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.languages.parser;
 
+import org.netbeans.api.languages.CharInput;
+import org.netbeans.api.languages.SToken;
 import java.util.*;
 import org.netbeans.modules.languages.Language.TokenType;
 
@@ -44,7 +46,7 @@ public class Parser {
         return p;
     }
     
-    public SToken read (Cookie cookie, Input input) {
+    public SToken read (Cookie cookie, CharInput input) {
         if (input.eof ()) return null;
         int originalState = cookie.getState ();
         int originalIndex = input.getIndex ();

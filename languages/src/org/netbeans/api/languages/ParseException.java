@@ -17,27 +17,45 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.languages.ext;
+package org.netbeans.api.languages;
 
-import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.ASTNode;
 
 /**
  *
  * @author Jan Jancura
  */
-public class NBS {
+public class ParseException extends Exception {
+        
+    public ParseException () {}
     
-    public static Runnable hyperlink (final ASTNode n) {
-        return new Runnable () {
-            public void run () {
-                String link = n.getAsText ();
-                int i = link.lastIndexOf ('.');
-                String className = link.substring (0, i).trim ();
-                String method = link.substring (i + 1).trim ();
-                System.out.println("className " + className);
-                System.out.println("method " + method);
-            }
-        };
+    public ParseException (String text) {
+        super (text);
+    }
+    
+    public ParseException (Exception ex) {
+        super (ex);
+        if (ex instanceof ParseException)
+            node = ((ParseException) ex).getASTNode ();
+    }
+    
+    private ASTNode node;
+    
+    public ParseException (String text, ASTNode node) {
+        super (text);
+        this.node = node;
+    }
+    
+    public ParseException (Exception ex, ASTNode node) {
+        super (ex);
+        this.node = node;
+    }
+    
+    public ASTNode getASTNode () {
+        return node;
+    }
+    
+    void setASTNode (ASTNode node) {
+        this.node = node;
     }
 }
+

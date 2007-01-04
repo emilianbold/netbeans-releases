@@ -20,19 +20,16 @@
 
 package org.netbeans.modules.languages.parser;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import org.netbeans.api.languages.ParseException;
+import org.netbeans.api.languages.TokenInput;
+import org.netbeans.api.languages.ASTNode;
+import org.netbeans.api.languages.SToken;
 import java.util.*;
 import org.netbeans.modules.languages.Evaluator;
 import org.netbeans.modules.languages.Evaluator;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.Evaluator;
-import org.openide.ErrorManager;
-import org.openide.util.Lookup;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
+
 
 /**
  *
@@ -83,9 +80,9 @@ public class LLSyntaxAnalyser {
         return read (input, false, skipErrors);
     }
     
-    private ASTNodeImpl read (TokenInput input, boolean embeded, boolean skipErrors) throws ParseException {
+    private ASTNode read (TokenInput input, boolean embeded, boolean skipErrors) throws ParseException {
         if (rules.isEmpty () || input.eof ())
-            return new ASTNodeImpl (null, "Root", -1, 0);
+            return ASTNode.create (null, "Root", -1, 0);
         if (first == null) {
             first = Petra.first2 (rules);
             boolean hasConflicts = AnalyserAnalyser.printConflicts (first, null);
@@ -97,7 +94,7 @@ public class LLSyntaxAnalyser {
         AnalyserAnalyser.printUndefinedNTs (rules, null);
         
         Stack stack = new Stack ();
-        ASTNodeImpl root = null, node = null;
+        ASTNode root = null, node = null;
         Iterator it = Collections.singleton ("S").iterator ();
         String mimeType = input.next (1).getMimeType ();
         List initialWhitespaces = new ArrayList ();
@@ -110,17 +107,17 @@ public class LLSyntaxAnalyser {
                 ASTNode n = read (input, true, skipErrors);
                 if (n != null) {// embeded language without grammer definition
                     if (node == null) {
-                        root = node = new ASTNodeImpl (mimeType, "Root", -1, 0);
+                        root = node = ASTNode.create (mimeType, "Root", -1, 0);
                         Iterator it2 = initialWhitespaces.iterator ();
                         while (it2.hasNext ())
                             node.addToken ((SToken) it2.next ());
                     }
-                    node.addNode ((ASTNodeImpl) n);
+                    node.addNode (n);
                 }
             }
             while (!it.hasNext ()) {
                 if (stack.empty ()) break;
-                node = (ASTNodeImpl) stack.pop ();
+                node = (ASTNode) stack.pop ();
                 it = (Iterator) stack.pop ();
             }
             if (!it.hasNext ()) break;
@@ -136,7 +133,7 @@ public class LLSyntaxAnalyser {
                         throw new ParseException ("No rule for " + input.next (1) + " in " + input, root);
                     if (input.eof ()) {
                         if (node == null)
-                            root = node = new ASTNodeImpl (mimeType, "Root", -1, offset);
+                            root = node = ASTNode.create (mimeType, "Root", -1, offset);
                         getErrorNode (node, offset);
                         //S ystem.out.println(input.getIndex () + ": unexpected eof " + nt);
                         return root;
@@ -156,7 +153,7 @@ public class LLSyntaxAnalyser {
                         stack.push (it);
                         stack.push (node);
                         it = Collections.EMPTY_LIST.iterator ();
-                        node = (ASTNodeImpl) evaluator.evaluate (
+                        node = (ASTNode) evaluator.evaluate (
                             new Object[] {input, stack, node}
                         );
                         //S ystem.out.println(input.getIndex () + ": >>Java " + nt + "&" + evaluator.getValue ());
@@ -166,7 +163,7 @@ public class LLSyntaxAnalyser {
                                 stack.push (it);
                                 stack.push (node);
                             } else {
-                                ASTNodeImpl nnode = new ASTNodeImpl (mimeType, rule.getNT (), newRule, offset);
+                                ASTNode nnode = ASTNode.create (mimeType, rule.getNT (), newRule, offset);
                                 if (node != null) {
                                     node.addNode (nnode);
                                     stack.push (it);
@@ -212,17 +209,17 @@ public class LLSyntaxAnalyser {
     
     // helper methods ..........................................................
     
-    private ASTNodeImpl getErrorNode (ASTNodeImpl node, int offset) {
+    private ASTNode getErrorNode (ASTNode node, int offset) {
         if (node != null) {
             List l = node.getChildren ();
             if (l.size () > 0) {
                 Object possibleErrorNode = l.get (l.size () - 1);
-                if (possibleErrorNode instanceof ASTNodeImpl)
-                    if (((ASTNodeImpl) possibleErrorNode).getNT ().equals ("ERROR"))
-                        return (ASTNodeImpl) possibleErrorNode;
+                if (possibleErrorNode instanceof ASTNode)
+                    if (((ASTNode) possibleErrorNode).getNT ().equals ("ERROR"))
+                        return (ASTNode) possibleErrorNode;
             }
         }
-        ASTNodeImpl errorNode = new ASTNodeImpl (
+        ASTNode errorNode = ASTNode.create (
             node == null ? "?" : node.getMimeType (), 
             "ERROR", 
             -2, 
@@ -294,87 +291,6 @@ public class LLSyntaxAnalyser {
     
     // innerclasses ............................................................
     
-    static class ASTNodeImpl extends ASTNode {
-
-        private String      mimeType;
-        private String      nt;
-        private int         rule;
-        private List        children;
-        private ASTNode     parent;
-        private int         offset;
-
-        ASTNodeImpl (
-            String      mimeType, 
-            String      nt, 
-            int         rule, 
-            int         offset
-        ) {
-            this.mimeType = mimeType;
-            this.nt =       nt;
-            this.rule =     rule;
-            this.offset =   offset;
-            children =      new ArrayList ();
-        }
-
-        ASTNodeImpl (
-            String      mimeType, 
-            String      nt, 
-            int         rule, 
-            int         offset,
-            List        children
-        ) {
-            this (mimeType, nt, rule, offset);
-            Iterator it = children.iterator ();
-            while (it.hasNext ()) {
-                Object o = it.next ();
-                if (o instanceof SToken)
-                    addToken ((SToken) o);
-                else
-                    addNode ((ASTNodeImpl) o);
-            }
-                
-            
-        }
-
-        public String getMimeType () {
-            return mimeType;
-        }
-
-        public String getNT () {
-            return nt;
-        }
-
-        public int getRule () {
-            return rule;
-        }
-
-        public ASTNode getParent () {
-            return parent;
-        }
-        
-        public int getOffset () {
-            return offset;
-        }
-        
-        public void addNode (ASTNode n) {
-            if (n == null)
-                throw new NullPointerException ();
-            if (((ASTNodeImpl) n).parent != null)
-                throw new IllegalArgumentException ();
-            ((ASTNodeImpl) n).parent = this;
-            children.add (n);
-        }
-        
-        public void addToken (SToken t) {
-            if (t == null)
-                throw new NullPointerException ();
-            children.add (t);
-        }
-
-        public List getChildren () {
-            return children;
-        }
-    }
     
     public static class Rule {
         
@@ -461,7 +377,7 @@ public class LLSyntaxAnalyser {
             return toString;
         }
     }
-    
+
     public static class T {
         String type;
         String identifier;

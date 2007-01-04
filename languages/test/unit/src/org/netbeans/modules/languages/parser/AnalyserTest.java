@@ -7,16 +7,20 @@
 
 package org.netbeans.modules.languages.parser;
 
+import junit.framework.TestCase;
+import org.netbeans.api.languages.CharInput;
+import org.netbeans.api.languages.ParseException;
+import org.netbeans.api.languages.SToken;
+import org.netbeans.api.languages.TokenInput;
+import org.netbeans.api.languages.ASTNode;
+
 import java.util.Arrays;
-import junit.framework.*;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.languages.*;
+import org.netbeans.modules.languages.Language;
+import org.netbeans.modules.languages.NBSLanguageReader;
+
 
 /**
  *
@@ -113,7 +117,7 @@ public class AnalyserTest extends TestCase {
             "otherClasses = ;",
             mimeType
         );
-        Input input = Input.create (
+        CharInput input = new StringInput (
             "package org.test.foo;" +
             "import a.bb.ccc;" +
             "import qq.ww.ee;" +
@@ -154,7 +158,7 @@ public class AnalyserTest extends TestCase {
             "modifiers = ;",
             mimeType
         );
-        Input input = Input.create (
+        CharInput input = new StringInput (
             "void a;" +
             "public ii name;",
             "source"
@@ -281,7 +285,7 @@ public class AnalyserTest extends TestCase {
             "E = <identifier,'e'>;",
             mimeType
         );
-        Input input = Input.create (
+        CharInput input = new StringInput (
             "a if e then if e then b else b b",
             "source"
         );
@@ -316,7 +320,7 @@ public class AnalyserTest extends TestCase {
             "E = <identifier,'e'>;",
             mimeType
         );
-        Input input = Input.create (
+        CharInput input = new StringInput (
             "a if e then if e then b else b b",
             "source"
         );

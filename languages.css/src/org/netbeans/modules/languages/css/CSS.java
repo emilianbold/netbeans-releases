@@ -19,12 +19,10 @@
 
 package org.netbeans.modules.languages.css;
 
+import org.netbeans.api.languages.ASTNode;
+import org.netbeans.api.languages.SyntaxCookie;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.modules.languages.Cookie;
-import org.netbeans.modules.languages.SyntaxCookie;
-import org.netbeans.modules.languages.parser.ASTNode;
-import org.netbeans.modules.languages.parser.PTPath;
-import org.netbeans.modules.languages.parser.SToken;
+import org.netbeans.api.languages.Cookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;

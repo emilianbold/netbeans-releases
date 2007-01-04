@@ -9,6 +9,9 @@
 
 package org.netbeans.modules.languages.parser;
 
+import org.netbeans.api.languages.ParseException;
+import org.netbeans.api.languages.TokenInput;
+import org.netbeans.api.languages.ASTNode;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,7 +66,7 @@ public class NBSTest extends TestCase {
         }
         TokenInput ti = TokenInput.create (
             l.getParser (), 
-            Input.create (sb.toString (), "NBS.nbs"),
+            new StringInput (sb.toString (), "NBS.nbs"),
             l.getSkipTokenTypes ()
         );
         ASTNode n = l.getAnalyser ().read (ti, false);

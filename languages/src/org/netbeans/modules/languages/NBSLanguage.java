@@ -19,14 +19,16 @@
 
 package org.netbeans.modules.languages;
 
+import org.netbeans.api.languages.ParseException;
+import org.netbeans.api.languages.SToken;
 import java.util.Arrays;
 import java.util.HashSet;
 import org.netbeans.modules.languages.Language.TokenType;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
-import org.netbeans.modules.languages.parser.ParseException;
+import org.netbeans.api.languages.ParseException;
 import org.netbeans.modules.languages.parser.Parser;
 import org.netbeans.modules.languages.parser.Pattern;
-import org.netbeans.modules.languages.parser.SToken;
+import org.netbeans.api.languages.SToken;
 
     
     

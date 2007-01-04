@@ -7,8 +7,7 @@
  * and open the template in the editor.
  */
 
-package org.netbeans.modules.languages.css;
-
+package org.netbeans.modules.language.css;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,15 +16,15 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 import junit.framework.TestCase;
+
+import org.netbeans.api.languages.ASTNode;
+import org.netbeans.api.languages.ParseException;
+import org.netbeans.api.languages.TokenInput;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.NBSLanguageReader;
-import org.netbeans.modules.languages.parser.ASTNode;
 import org.netbeans.modules.languages.parser.AnalyserAnalyser;
-import org.netbeans.modules.languages.parser.Input;
-import org.netbeans.modules.languages.parser.ParseException;
 import org.netbeans.modules.languages.parser.Petra;
-import org.netbeans.modules.languages.parser.TokenInput;
+import org.netbeans.modules.languages.parser.StringInput;
 
 
 /**
@@ -71,7 +70,7 @@ public class NBSTest extends TestCase {
         }
         TokenInput ti = TokenInput.create (
             l.getParser (), 
-            Input.create (sb.toString (), "netbeans.css2"),
+            new StringInput (sb.toString (), "netbeans.css2"),
             l.getSkipTokenTypes ()
         );
         ASTNode n = l.getAnalyser ().read (ti, false);

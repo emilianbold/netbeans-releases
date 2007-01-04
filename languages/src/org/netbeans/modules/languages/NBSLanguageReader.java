@@ -19,6 +19,10 @@
 
 package org.netbeans.modules.languages;
 
+import org.netbeans.api.languages.ParseException;
+import org.netbeans.api.languages.CharInput;
+import org.netbeans.api.languages.TokenInput;
+import org.netbeans.api.languages.SToken;
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -41,14 +45,14 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.modules.languages.Evaluator;
 import org.netbeans.modules.languages.Language.Identifier;
 import org.netbeans.modules.languages.Language.Navigator;
-import org.netbeans.modules.languages.parser.ASTNode;
+import org.netbeans.api.languages.ASTNode;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
-import org.netbeans.modules.languages.parser.Input;
-import org.netbeans.modules.languages.parser.ParseException;
+import org.netbeans.api.languages.ParseException;
 import org.netbeans.modules.languages.parser.Parser;
 import org.netbeans.modules.languages.parser.Pattern;
-import org.netbeans.modules.languages.parser.SToken;
-import org.netbeans.modules.languages.parser.TokenInput;
+import org.netbeans.api.languages.SToken;
+import org.netbeans.api.languages.TokenInput;
+import org.netbeans.modules.languages.parser.StringInput;
 import org.openide.ErrorManager;
 
 import org.openide.filesystems.FileObject;
@@ -101,7 +105,7 @@ public class NBSLanguageReader {
         String      s, 
         String      mimeType
     ) {
-        Input input = Input.create (s, fo.toString ());
+        CharInput input = new StringInput (s, fo.toString ());
         try {
             Parser parser = NBSLanguage.getNBSParser ();
             Language language = new Language (mimeType);

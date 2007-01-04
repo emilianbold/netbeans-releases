@@ -10,6 +10,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
+                        <release-version>0</release-version>
                         <specification-version>1.11</specification-version>
                     </run-dependency>
                 </dependency>

@@ -19,6 +19,35 @@
 
 package org.netbeans.modules.languages.javascript;
 
+import org.netbeans.api.languages.TokenInput;
+import org.netbeans.api.languages.DatabaseManager;
+import org.netbeans.api.languages.LibrarySupport;
+import org.netbeans.api.languages.ASTNode;
+import org.netbeans.api.languages.PTPath;
+import org.netbeans.api.languages.SyntaxCookie;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.api.languages.Cookie;
+import org.netbeans.api.languages.LibrarySupport;
+import org.netbeans.api.languages.SyntaxCookie;
+import org.netbeans.api.languages.ASTNode;
+import org.netbeans.api.languages.SToken;
+import org.netbeans.api.languages.TokenInput;
+import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
+import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
+import org.openide.loaders.DataObject;
+import org.openide.text.Line;
+import org.openide.text.NbDocument;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
@@ -35,30 +64,6 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.languages.Cookie;
-import org.netbeans.modules.languages.LibrarySupport;
-import org.netbeans.modules.languages.SyntaxCookie;
-import org.netbeans.modules.languages.fold.DatabaseManager;
-import org.netbeans.modules.languages.parser.ASTNode;
-import org.netbeans.modules.languages.parser.PTPath;
-import org.netbeans.modules.languages.parser.SToken;
-import org.netbeans.modules.languages.parser.TokenInput;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
-import org.openide.cookies.EditCookie;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.SaveCookie;
-import org.openide.loaders.DataObject;
-import org.openide.text.Line;
-import org.openide.text.NbDocument;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
 
 
 /**
@@ -104,9 +109,10 @@ public class JavaScript {
             (ASTNode) path.get (path.size () - 2) :
             null;
         String name = t.getIdentifier ();
-        List list = DatabaseManager.get (n, name, false);
+        DatabaseManager databaseManager = DatabaseManager.getDefault ();
+        List list = databaseManager.get (n, name, false);
         if (list.isEmpty ()) 
-            list = DatabaseManager.get (DatabaseManager.FOLDER, name);
+            list = databaseManager.get (DatabaseManager.FOLDER, name);
         if (list.isEmpty ()) return null;
         final Line.Part l = (Line.Part) list.get (0);
         if (l == null) return null;
@@ -178,9 +184,10 @@ public class JavaScript {
         if (!(cookie instanceof SyntaxCookie)) return completionItems;
         PTPath path = ((SyntaxCookie) cookie).getPTPath ();
         ArrayList l = new ArrayList ();
-        Collection c = DatabaseManager.getIds ((ASTNode) path.get (path.size () - 2), true);
+        DatabaseManager databaseManager = DatabaseManager.getDefault ();
+        Collection c = databaseManager.getIds ((ASTNode) path.get (path.size () - 2), true);
         l.addAll (c);
-        c = DatabaseManager.getIds (DatabaseManager.FOLDER);
+        c = databaseManager.getIds (DatabaseManager.FOLDER);
         l.addAll (c);
         return l;
     }
@@ -223,9 +230,10 @@ public class JavaScript {
         if (!(cookie instanceof SyntaxCookie)) return completionDescriptions;
         PTPath path = ((SyntaxCookie) cookie).getPTPath ();
         ArrayList l = new ArrayList ();
-        Collection c = DatabaseManager.getIds ((ASTNode) path.get (path.size () - 2), true);
+        DatabaseManager databaseManager = DatabaseManager.getDefault ();
+        Collection c = databaseManager.getIds ((ASTNode) path.get (path.size () - 2), true);
         l.addAll (c);
-        c = DatabaseManager.getIds (DatabaseManager.FOLDER);
+        c = databaseManager.getIds (DatabaseManager.FOLDER);
         l.addAll (c);
         l.addAll (completionDescriptions);
         return l;

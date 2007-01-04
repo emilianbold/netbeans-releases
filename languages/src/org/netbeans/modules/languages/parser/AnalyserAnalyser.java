@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.languages.parser;
 
+import org.netbeans.api.languages.SToken;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;

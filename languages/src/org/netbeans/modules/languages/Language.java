@@ -19,6 +19,11 @@
 
 package org.netbeans.modules.languages;
 
+import org.netbeans.api.languages.LanguagesManager;
+import org.netbeans.api.languages.ParseException;
+import org.netbeans.api.languages.ASTNode;
+import org.netbeans.api.languages.SToken;
+import org.netbeans.modules.languages.LanguagesManagerImpl;
 import org.netbeans.modules.languages.parser.*;
 
 import javax.swing.text.AttributeSet;
@@ -27,6 +32,7 @@ import javax.swing.text.StyleConstants;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 
 
 /**
@@ -214,7 +220,7 @@ public class Language {
         Map properties
     ) throws ParseException {
         String mimeType = (String) ((Evaluator) properties.get ("mimeType")).evaluate ();
-        Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
+        Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).getLanguage (mimeType);
         Evaluator stateEvaluator = (Evaluator) properties.get ("state");
         String state = stateEvaluator == null ? null : (String) stateEvaluator.evaluate ();
         
