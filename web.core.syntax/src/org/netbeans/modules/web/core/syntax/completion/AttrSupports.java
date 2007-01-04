@@ -21,9 +21,9 @@ package org.netbeans.modules.web.core.syntax.completion;
 
 import java.util.*;
 import java.beans.*;
+import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import javax.swing.ImageIcon;
-import javax.swing.text.Document;
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
@@ -31,11 +31,10 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.netbeans.modules.web.core.syntax.*;
+import org.netbeans.modules.web.core.syntax.completion.JavaJSPCompletionProvider.CompletionQueryDelegatedToJava;
 import org.netbeans.modules.web.core.syntax.completion.JspCompletionQuery.JspCompletionResult;
+import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
-
-import static org.netbeans.modules.web.core.syntax.completion.VirtualJavaFromJSPCreator.FakedJavaClass;
-
 
 
 /** Support for code completion of default JSP tags.
@@ -43,7 +42,7 @@ import static org.netbeans.modules.web.core.syntax.completion.VirtualJavaFromJSP
  * @author  pjiricka
  */
 public class AttrSupports extends Object {
-    
+    private static final Logger logger = Logger.getLogger(AttrSupports.class.getName());
     public static class ScopeSupport extends AttributeValueSupport.Default {
         
         public ScopeSupport(boolean tag, String longName, String attrName) {
@@ -124,7 +123,7 @@ public class AttrSupports extends Object {
         
     }
     
-    /** 
+    /**
      * Provides code completion for a class name context
      */
     public static class ClassNameSupport extends AttributeValueSupport.Default {
@@ -137,28 +136,28 @@ public class AttrSupports extends Object {
             return new ArrayList();
         }
         
-        protected FakedJavaClass getFakedJavaClass(Document doc, int caretOffset, String prefix){
-            
-            if (prefix != null){
-                String fakedClassBody = "class Foo extends " + prefix; //NOI18N
-                FakedJavaClass fakedJavaClass = new FakedJavaClass(fakedClassBody, fakedClassBody.length());
-                
-                return fakedJavaClass;
-            }
-            
-            
-            return null;
+        protected String getFakedClassBody(String prefix){
+            return "class Foo extends " + prefix; //NOI18N
         }
         
         /** Returns the complete result that contains elements from getCompletionItems.   */
         public CompletionQuery.Result getResult(JTextComponent component, int offset,
                 JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
             
-            FakedJavaClass fakedJavaClass = getFakedJavaClass(component.getDocument(), offset, valuePart);
-            List data = VirtualJavaFromJSPCreator.delegatedQuery(fakedJavaClass, component.getDocument(),
-                    offset, CompletionProvider.COMPLETION_QUERY_TYPE);
+            String fakedClassBody = getFakedClassBody(valuePart);
+            int shiftedOffset = fakedClassBody.length();
             
-            JspCompletionResult result = new JspCompletionResult(component, null, data, offset, valuePart.length(), -1);
+            logger.fine("JSP CC: delegating CC query to java file:\n" //NOI18N
+                            + fakedClassBody.substring(0, shiftedOffset)
+                            + "|" + fakedClassBody.substring(shiftedOffset)); //NOI18N
+            
+            CompletionQueryDelegatedToJava delegate = new CompletionQueryDelegatedToJava(
+                    offset, shiftedOffset, CompletionProvider.COMPLETION_QUERY_TYPE);
+            
+            delegate.create(component.getDocument(), fakedClassBody);
+            List<? extends CompletionItem> items =  delegate.getCompletionItems();
+            
+            JspCompletionResult result = new JspCompletionResult(component, null, items, offset, valuePart.length(), -1);
             //TODO: put the results here
             return result;
         }
@@ -172,7 +171,7 @@ public class AttrSupports extends Object {
         
     }
     
-    /** 
+    /**
      * Provides code completion for a comma-separated list of imports context
      */
     public static class PackageListSupport extends ClassNameSupport {
@@ -181,25 +180,15 @@ public class AttrSupports extends Object {
             super(tag, longName, attrName);
         }
         
-        protected FakedJavaClass getFakedJavaClass(Document doc, int caretOffset, String prefix){
+        @Override protected String getFakedClassBody(String prefix){
+            int commaPos = prefix.lastIndexOf(",");
             
-            if (prefix != null){
-                int commaPos = prefix.lastIndexOf(",");
-                
-                if (commaPos > -1){
-                    prefix = prefix.substring(commaPos + 1);
-                }
-                
-                String fakedClassBody = "import " + prefix; //NOI18N
-                FakedJavaClass fakedJavaClass = new FakedJavaClass(fakedClassBody, fakedClassBody.length());
-                
-                return fakedJavaClass;
+            if (commaPos > -1){
+                prefix = prefix.substring(commaPos + 1);
             }
             
-            
-            return null;
+            return "import " + prefix; //NOI18N
         }
-        
     }
     
     public static class GetSetPropertyName extends AttributeValueSupport.Default {

@@ -18,24 +18,27 @@
  */
 
 package org.netbeans.modules.web.core.syntax.completion;
+import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.java.JavaCompletionProvider;
-import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
+import org.netbeans.modules.web.core.syntax.SimplifiedJSPServlet;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
-import static org.netbeans.modules.web.core.syntax.completion.VirtualJavaFromJSPCreator.FakedJavaClass;
+import org.openide.filesystems.FileObject;
 
 /**
  * Code completion functionality for Java code embedded in JSP files:
@@ -59,7 +62,7 @@ public class JavaJSPCompletionProvider implements CompletionProvider {
                 return new AsyncCompletionTask(new EmbeddedJavaCompletionQuery(component, queryType), component);
             }
         }
-
+        
         return null;
     }
     
@@ -71,7 +74,7 @@ public class JavaJSPCompletionProvider implements CompletionProvider {
             Object tokenID = tokenSequence.token().id();
             if (tokenID == JspTokenId.SCRIPTLET){
                 return true;
-            } else if (tokenID == JspTokenId.SYMBOL2) { 
+            } else if (tokenID == JspTokenId.SYMBOL2) {
                 // maybe the caret is placed just before the ending script delimiter?
                 tokenSequence.movePrevious();
                 
@@ -98,35 +101,61 @@ public class JavaJSPCompletionProvider implements CompletionProvider {
             this.component = component;
         }
         
-        protected FakedJavaClass getFakedJavaClass(Document doc, int caretOffset){
-            JspSyntaxSupport sup = (JspSyntaxSupport)Utilities.getSyntaxSupport(component);
-            VirtualJavaFromJSPCreator javaCreator = new VirtualJavaFromJSPCreator(sup, doc);
-            
-            try{
-                javaCreator.process(caretOffset);
-                String dummyJavaClass = javaCreator.getDummyJavaClassBody();
-                
-                FakedJavaClass fakedJavaClass = new FakedJavaClass(dummyJavaClass, javaCreator.getShiftedOffset());
-                
-                return fakedJavaClass;
-            } catch (BadLocationException ex) {
-                logger.log(java.util.logging.Level.SEVERE, ex.getMessage(), ex);
-            }
-            
-            return null;
-        }
-        
         protected void query(CompletionResultSet resultSet, Document doc,
                 int caretOffset) {
-            FakedJavaClass fakedJavaClass = getFakedJavaClass(doc, caretOffset);
-            List<? extends CompletionItem> items = VirtualJavaFromJSPCreator.delegatedQuery(fakedJavaClass,
-                    doc, caretOffset, queryType);
             
-            resultSet.addAllItems(items);
-            resultSet.finish();
+            SimplifiedJSPServlet simplifiedJSPServlet = new SimplifiedJSPServlet(doc);
+            try{
+                simplifiedJSPServlet.process();
+                String fakedClassBody = simplifiedJSPServlet.getVirtualClassBody();
+                int shiftedOffset = simplifiedJSPServlet.getShiftedOffset(caretOffset);
+                
+                if (shiftedOffset >= 0){
+                    logger.fine("JSP CC: delegating CC query to java file:\n" //NOI18N
+                            + fakedClassBody.substring(0, shiftedOffset)
+                            + "|" + fakedClassBody.substring(shiftedOffset)); //NOI18N
+                    
+                    CompletionQueryDelegatedToJava delegate = new CompletionQueryDelegatedToJava(
+                            caretOffset, shiftedOffset, queryType);
+                    
+                    delegate.create(doc, fakedClassBody);
+                    List<? extends CompletionItem> items =  delegate.getCompletionItems();
+                    resultSet.addAllItems(items);
+                    resultSet.finish();
+                }
+                else{
+                    logger.severe("caretOffset outside of embedded java code"); //NOI18N
+                }
+            } catch (BadLocationException e){
+                logger.log(Level.SEVERE, e.getMessage(), e);
+            }
+        }
+    }
+    
+    static class CompletionQueryDelegatedToJava extends SimplifiedJSPServlet.VirtualJavaClass{
+        private int caretOffset;
+        private int queryType;
+        private int shiftedOffset;
+        private List<? extends CompletionItem> completionItems;
+        
+        CompletionQueryDelegatedToJava(int caretOffset, int shiftedOffset, int queryType){
+            this.caretOffset = caretOffset;
+            this.shiftedOffset = shiftedOffset;
+            this.queryType = queryType;
         }
         
+        protected void process(FileObject fileObject, JavaSource javaSource){
+            try{
+                completionItems = JavaCompletionProvider.query(
+                        javaSource, queryType, shiftedOffset, caretOffset);
+            } catch (IOException e){
+                logger.log(Level.SEVERE, e.getMessage(), e);
+            }
+        }
         
+        List<? extends CompletionItem> getCompletionItems(){
+            return completionItems;
+        }
     }
     
 }
