@@ -37,12 +37,31 @@ public class CustomizerRootNodeProvider {
 	}
 	return customizerNodes;
     }
+    
+    public Vector getCustomizerNodes(boolean advanced) {
+        Vector ret = new Vector();
+        CustomizerNode[] nodes = getCustomizerNodesAsArray();
+        for (int i = 0; i < nodes.length; i++) {
+            if (nodes[i].advanced == advanced)
+                ret.add(nodes[i]);
+        }
+        return ret;
+    }
 
     public CustomizerNode[] getCustomizerNodesAsArray() {
 	Vector cn = getCustomizerNodes();
 	return (CustomizerNode[]) cn.toArray(new CustomizerNode[cn.size()]);
     }
-
+    
+    public CustomizerNode getCustomizerNode(String id) {
+        CustomizerNode[] nodes = getCustomizerNodesAsArray();
+        for (int i = 0; i < nodes.length; i++) {
+            if (nodes[i].name.equals(id))
+                return nodes[i];
+        }
+        return null;
+    }
+    
     public void addCustomizerNode(CustomizerNode node) {
 	synchronized(getCustomizerNodes()) {
 	    getCustomizerNodes().add(node);
@@ -53,14 +72,5 @@ public class CustomizerRootNodeProvider {
 	synchronized(getCustomizerNodes()) {
 	    getCustomizerNodes().remove(node);
 	}
-    }
-    
-    public CustomizerNode getCustomizerNode(String id) {
-        CustomizerNode[] nodes = getCustomizerNodesAsArray();
-        for (int i = 0; i < nodes.length; i++) {
-            if (nodes[i].name.equals(id))
-                return nodes[i];
-        }
-        return null;
     }
 }

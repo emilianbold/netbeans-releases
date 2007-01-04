@@ -20,7 +20,11 @@
 /*
  * GdbConsoleWindow.java
  *
- * Created on June 6, 2006, 3:15 PM
+ * @author Nik Molchanov
+ *
+ * Originally this class was in org.netbeans.modules.cnd.debugger.gdb package.
+ * Later a new "proxy" package was created and this class was moved, that's how
+ * it lost its history. To view the history look at the previous location.
  */
 
 package org.netbeans.modules.cnd.debugger.gdb.proxy;
@@ -33,6 +37,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
+import java.util.ResourceBundle;
+import java.util.Vector;
 
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
@@ -49,16 +55,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.accessibility.AccessibleContext;
-import org.netbeans.modules.cnd.debugger.gdb.*;
 
 import org.netbeans.spi.viewmodel.Models;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-
-import java.util.ResourceBundle;
-import java.util.Vector;
-
 import org.openide.util.NbBundle;
 
 /**
@@ -89,9 +90,9 @@ public final class GdbConsoleWindow  extends TopComponent
     private JComboBox cp_commandList;
     private JLabel hp_name;
     private String program;
-    private final String PROGRAM = "Program: "; //NOI18N
+    private final String LC_ProgramName;
     private String status;
-    private final String STATUS = "Status: "; //NOI18N
+    private final String LC_ProgramStatus;
     private String selected_text = null;
     private Vector messagesToProcess;
     
@@ -101,8 +102,10 @@ public final class GdbConsoleWindow  extends TopComponent
     public GdbConsoleWindow() {
         name = getString("TITLE_GdbConsoleWindow");    //NOI18N
         view_name = getString("TITLE_GdbConsoleWindow"); //NOI18N
-        program = PROGRAM;
-        status = STATUS + "not loaded"; //FIXUP
+        LC_ProgramName = getString("LABEL_ProgramName"); //NOI18N
+        LC_ProgramStatus = getString("LABEL_ProgramStatus"); //NOI18N
+        status = LC_ProgramStatus + ' ' + getString("MSG_NotLoaded"); //NOI18N
+        program = LC_ProgramName;
         super.setName(name);
         messagesToProcess = new Vector();
         //setIcon(org.openide.util.Utilities.loadImage(getString("ICON_GdbConsoleWindow"))); // NOI18N
@@ -196,10 +199,10 @@ public final class GdbConsoleWindow  extends TopComponent
     public void updateStatus(String program, String status) {
         synchronized (messagesToProcess) {
             if (program != null) {
-                this.program = PROGRAM + program;
+                this.program = LC_ProgramName + ' ' + program;
             }
             if (status != null) {
-                this.status = STATUS + status;
+                this.status = LC_ProgramStatus + ' ' + status;
             }
         }
         updateWindow();
@@ -352,7 +355,7 @@ public final class GdbConsoleWindow  extends TopComponent
     
     class HideTextAction extends AbstractAction {
         public HideTextAction() {
-            super("Hide Text", new ImageIcon("cut.gif")); //FIXUP
+            super("Hide Text", new ImageIcon("cut.gif")); //FIXUP //NOI18N
         }
         public void actionPerformed(ActionEvent ev) {
             //System.out.println("HideTextAction.ActionPerformed(Hide Text)"); //DEBUG
@@ -361,7 +364,7 @@ public final class GdbConsoleWindow  extends TopComponent
     
     class ShowDynamicHelpPageAction extends AbstractAction {
         public ShowDynamicHelpPageAction() {
-            super("More Info", new ImageIcon("help.gif")); //FIXUP
+            super("More Info", new ImageIcon("help.gif")); //FIXUP //NOI18N
         }
         public void actionPerformed(ActionEvent ev) {
             //System.out.println("ShowDynamicHelpPageAction.ActionPerformed(More Info)");

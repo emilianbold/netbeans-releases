@@ -1,0 +1,10 @@
+!     
+! File:   %<%NAME%>%.f90
+! Author: %<%USER%>%
+!
+! Created on %<%DATE%>%, %<%TIME%>%
+!
+
+PRINT*,'Hello World'
+END
+

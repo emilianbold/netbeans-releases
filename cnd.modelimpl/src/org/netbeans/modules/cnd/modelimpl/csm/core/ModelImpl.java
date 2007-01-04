@@ -22,16 +22,16 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.WeakList;
 import org.netbeans.modules.cnd.modelimpl.Installer;
-import org.netbeans.modules.cnd.modelimpl.csm.Diagnostic;
 
 import java.util.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryListener;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryNotifier;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
-import java.lang.ref.WeakReference;
+
         
 /**
  * CsmModel implementation
@@ -90,7 +90,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
                 prj = (ProjectBase) platf2csm.get(id);
                 if( prj == null && id instanceof Project) {
                     // for compatibility 
-                    if (Diagnostic.DEBUG) {
+                    if (TraceFlags.DEBUG) {
                         System.err.println("getProject called with Project... expected NativeProject");
                         new Throwable().printStackTrace(System.err);
                     }

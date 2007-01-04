@@ -25,7 +25,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.antlr2.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 import org.netbeans.modules.cnd.modelimpl.platform.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;

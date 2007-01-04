@@ -1,0 +1,47 @@
+/* 
+ * File:   __NAME__.java
+ * Author: __USER__
+ *
+ * Created on __DATE__, __TIME__
+ */
+
+/**
+ * Simple class which serves only to call a native function.
+ */
+class __NAME__ {
+
+    /**
+     * "wrapper" around native function.
+     */
+    public native void displayHelloWorld();
+    
+    /**
+     * Call to load the relevant shared object when
+     * this class is loaded.
+     */
+    static {
+	/* Most of this initializer block is here to get the absolute path of
+	 * the shared library. You can delete this block and substitute the 
+	 * absolute path in the line "System.load(path);" below.
+	 */
+        Class c = null;
+        try {
+            c = Class.forName("__PACKAGE_AND_NAME__");
+        } catch (ClassNotFoundException noclass) {
+            System.out.println("ClassNotFoundException: Could not find class \"" + "__PACKAGE_AND_NAME__" + "\"");
+        }
+        String path = c.getResource("lib__NAME__.so").getPath();
+        System.load(path);
+    }
+    
+    /**
+     * Instantiates an instance of this class and
+     * calls the native function.
+     */
+    public static void main(String[] args) {
+	__NAME__ instance = new __NAME__();
+	
+	// JNI call:
+	instance.displayHelloWorld();
+    }
+}

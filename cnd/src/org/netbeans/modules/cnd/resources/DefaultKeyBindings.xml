@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.0//EN"
+                          "http://www.netbeans.org/dtds/EditorKeyBindings-1_0.dtd">
+
+  <!-- IMPORTANT:  To handle Apple-specific keybindings, there is another copy of
+     this file, with minor diffs, in ide/applemenu.  Any changes made here should
+     be made there too -->                            
+<bindings>
+    <bind actionName="comment" key="DS-T"/>
+    <bind actionName="uncomment" key="DS-D"/>
+    <bind actionName="goto-declaration" key="O-G"/>    
+</bindings>

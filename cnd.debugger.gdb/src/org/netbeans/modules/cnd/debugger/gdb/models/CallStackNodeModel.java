@@ -61,7 +61,7 @@ public class CallStackNodeModel implements NodeModel {
     
     public String getDisplayName(Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT) {
-            return NbBundle.getBundle(CallStackNodeModel.class).getString("CTL_CallstackModel_Column_Name_Name");
+            return NbBundle.getBundle(CallStackNodeModel.class).getString("CTL_CallstackModel_Column_Name_Name"); // NOI18N
         } else if (o instanceof CallStackFrame) {
             CallStackFrame sf = (CallStackFrame) o;
             CallStackFrame ccsf = debugger.getCurrentCallStackFrame();
@@ -70,10 +70,10 @@ public class CallStackNodeModel implements NodeModel {
 			true, false, null);
 	    }
             return getCSFName(session, sf, false);
-        } else if ("No current thread" == o) {
-            return NbBundle.getMessage(CallStackNodeModel.class, "NoCurrentThread");
-        } else if ("Thread is running" == o) {
-            return NbBundle.getMessage(CallStackNodeModel.class, "ThreadIsRunning");
+        } else if ("No current thread" == o) { // NOI18N
+            return NbBundle.getMessage(CallStackNodeModel.class, "NoCurrentThread"); // NOI18N
+        } else if ("Thread is running" == o) { // NOI18N
+            return NbBundle.getMessage(CallStackNodeModel.class, "ThreadIsRunning"); // NOI18N
         } else {
 	    throw new UnknownTypeException(o);
 	}
@@ -81,14 +81,14 @@ public class CallStackNodeModel implements NodeModel {
     
     public String getShortDescription(Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT) {
-            return NbBundle.getBundle(CallStackNodeModel.class).getString("CTL_CallstackModel_Column_Name_Desc");
+            return NbBundle.getBundle(CallStackNodeModel.class).getString("CTL_CallstackModel_Column_Name_Desc"); // NOI18N
         } else if (o instanceof CallStackFrame) {
             CallStackFrame sf = (CallStackFrame) o;
             return getCSFName(session, sf, true);
-        } else if ("No current thread" == o) {
-            return NbBundle.getMessage(CallStackNodeModel.class, "NoCurrentThread");
-        } else if ("Thread is running" == o) {
-            return NbBundle.getMessage(CallStackNodeModel.class, "ThreadIsRunning");
+        } else if ("No current thread" == o) { // NOI18N
+            return NbBundle.getMessage(CallStackNodeModel.class, "NoCurrentThread"); // NOI18N
+        } else if ("Thread is running" == o) { // NOI18N
+            return NbBundle.getMessage(CallStackNodeModel.class, "ThreadIsRunning"); // NOI18N
         } else {
 	    throw new UnknownTypeException (o);
 	}
@@ -147,7 +147,7 @@ public class CallStackNodeModel implements NodeModel {
     public static String getCSFName(Session s, CallStackFrame csf, boolean useFullName) {
         final String DOUBLE_QUESTION = "??"; // NOI18N
         
-        String csfName = "";
+        String csfName = ""; // NOI18N
         String functionName = csf.getFunctionName();
         if (functionName != null && !functionName.equals(DOUBLE_QUESTION)) {
             // By default use function name
@@ -174,9 +174,9 @@ public class CallStackNodeModel implements NodeModel {
         {
             String fileName = csf.getFileName();
             if (fileName != null && ln>=0)
-                csfName += "; " + fileName + ":" + ln;
+                csfName += ';' + ' ' + fileName + ':' + ln;
 	}
-        return csfName; // NOI18N
+        return csfName;
     }
             
     

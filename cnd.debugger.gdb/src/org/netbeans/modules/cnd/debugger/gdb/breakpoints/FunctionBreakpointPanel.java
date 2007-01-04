@@ -65,11 +65,11 @@ public class FunctionBreakpointPanel extends JPanel implements Controller, org.o
     private static FunctionBreakpoint createBreakpoint () {
         FunctionBreakpoint mb = FunctionBreakpoint.create (
             // EditorContextBridge.getCurrentFunction ()
-            "main" // DEBUG
+            "main" // DEBUG // NOI18N
         );
         mb.setPrintText (
-            NbBundle.getBundle (FunctionBreakpointPanel.class).getString 
-                ("CTL_Function_Breakpoint_Print_Text")
+            NbBundle.getBundle (FunctionBreakpointPanel.class).getString
+                ("CTL_Function_Breakpoint_Print_Text") // NOI18N
         );
         return mb;
     }
@@ -103,7 +103,7 @@ public class FunctionBreakpointPanel extends JPanel implements Controller, org.o
         setupConditionPane();
         
         actionsPanel = new ActionsPanel (b);
-        pActions.add (actionsPanel, "Center");
+        pActions.add (actionsPanel, "Center"); // NOI18N
     }
     
     private static int findNumLines(String url) {
@@ -331,7 +331,7 @@ public class FunctionBreakpointPanel extends JPanel implements Controller, org.o
     private String valiadateMsg () {
         String function = tfLineNumber.getText().trim();
         // Empty string is not a valid function name
-        if ((function == null) || (function.equals(""))) {
+        if ((function == null) || (function.equals(""))) { // NOI18N
             return NbBundle.getBundle (FunctionBreakpointPanel.class).getString 
                 ("MSG_No_Function_Name_Spec"); // NOI18N
         }

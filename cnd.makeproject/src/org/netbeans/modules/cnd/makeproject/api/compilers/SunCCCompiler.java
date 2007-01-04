@@ -203,12 +203,11 @@ public class SunCCCompiler extends CCCCompiler {
         try {
             systemIncludeDirectoriesList = new PersistentList();
             systemPreprocessorSymbolsList = new PersistentList();
-        getSystemIncludesAndDefines(platform, compilerStderrCommand, false);
-        getSystemIncludesAndDefines(platform, compilerStderrCommand2, false);
-        systemIncludeDirectoriesList.add("/usr/include"); // NOI18N
+            getSystemIncludesAndDefines(platform, compilerStderrCommand, false);
+            getSystemIncludesAndDefines(platform, compilerStderrCommand2, false);
+            systemIncludeDirectoriesList.add("/usr/include"); // NOI18N
             saveOK = true;
-    }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             String errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", getName());
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
             saveOK = false;
@@ -232,6 +231,10 @@ public class SunCCCompiler extends CCCCompiler {
                     if (spaceIndex > 0) {
                         token = line.substring(includeIndex+2, spaceIndex);
                         systemIncludeDirectoriesList.add(token);
+                        if (token.endsWith("Cstd")) { // NOI18N
+                            // See 89872 "Parser Settings" for Sun Compilers Collection are incorrect
+                            systemIncludeDirectoriesList.add(token.substring(0, token.length()-4) + "std"); // NOI18N
+                        }
                         // Hack to handle -compat flag. If this flag is added,
                         // the compiler looks in in CC4 and not in CC. Just adding CC4 doesn't
                         // fix this problem but it may work for some include files

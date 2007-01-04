@@ -38,8 +38,8 @@ import org.openide.util.Utilities;
  */
 public class EditorContextBridge {
     
-    public static final String FUNCTION = "function";
-    public static final String LINE = "line";
+    public static final String FUNCTION = "function"; // NOI18N
+    public static final String LINE = "line"; // NOI18N
     
     private static EditorContext context;
     
@@ -333,7 +333,7 @@ public class EditorContextBridge {
     }
 
     public static String getRelativePath(String className) {
-        String sourceName = className.replace('.', '/') + ".java";
+        String sourceName = className.replace('.', '/') + ".java"; // NOI18N
         return sourceName;
     }
     

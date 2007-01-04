@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--
+Copyright &copy; 2006 Sun Microsystems, Inc. All rights reserved.
+Use is subject to license terms.
+ -->
+<html>
+<head>
+<link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" 
+type="text/css">
+<title>Memory Requirements</title>
+</head>
+<body>
+<h2>Memory Requirements</h2>
+<p>
+The NetBeans IDE has a default heap size of 128 MB. This heap size is adequate 
+if you are using NetBeans C/C++ Development Pack to develop small applications 
+with up to 100 source files. If you are 
+developing applications 
+with more than 100 source files,
+you need to increase the heap size or  
+you might get out of memory exceptions from the built-in parser.
+</p>
+<p>
+You can set the heap size for the JVM 
+on which the NetBeans IDE runs in the <tt>netbeans.conf</tt> 
+file. 
+<p><b>To change the heap size:</b></p>
+<ol>
+<li>Copy the <tt>netbeans.conf</tt> from the <tt>etc</tt> 
+folder in the NetBeans 
+installation directory
+into the <tt>etc</tt> directory in your NetBeans user directory (<tt>$HOME/.netbeans/5.5/etc</tt>).
+You might need to create the <tt>etc</tt> directory.
+</li>
+<li>In the <tt>netbeans.conf</tt> file in your user
+directory, edit the <tt>-J-Xmx</tt> 
+command line Java startup switch (bolded below) in the <tt>netbeans.conf</tt> file, 
+and then restart the IDE. 
+<pre>
+# command line switches
+netbeans_default_options="-J-Xms32m <b>-J-Xmx128m</b> -J-XX:PermSize=32m 
+-J-XX:MaxPermSize=96m -J-Xverify:none -J-Dapple.laf.useScreenMenuBar=true"
+</pre></li>
+</ol><p>
+The recommended heap sizes for NetBeans C/C++ 
+Development Pack for medium-sized and large applications are:
+<ul>
+<li>For developing medium-sized applications (100-2000 
+source files) on a system with one CPU and 1 GB of RAM: 512 MB</li>
+<li>For developing large applications (more than 2000 source files) on a system with 
+one or multiple CPUS and 2 GB of RAM): 1.5 GB</li>
+</ul>
+<p>To insure that you do not run out of memory while the built-in parser is 
+running, you can also add the garbage collector switches <tt>-J-XX:+UseConcMarkSweepGC</tt>
+(concurrent collector) and <tt>-J-XX:+UseParNewGC</tt> (parallel collector) to the 
+<tt>netbeans.conf</tt> file.
+<hr>
+<small>
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

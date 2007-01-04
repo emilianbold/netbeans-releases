@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -19,7 +19,11 @@
 
 package org.netbeans.modules.cnd.classview;
 
-import org.netbeans.modules.cnd.classview.model.BaseNode;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import org.netbeans.modules.cnd.classview.model.CVUtil;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
@@ -30,7 +34,6 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.*;
-import org.openide.util.RequestProcessor;
 //import org.openide.util.NbBundle;
 import org.netbeans.modules.cnd.classview.resources.I18n;
 
@@ -40,7 +43,7 @@ import org.netbeans.modules.cnd.classview.resources.I18n;
  * @author Vladimir Kvasihn
  */
 public class ClassView extends JComponent implements ExplorerManager.Provider, CsmModelListener, CsmModelStateListener {
-
+    
     /** composited view */
     protected BeanTreeView view;
     
@@ -51,7 +54,7 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
     private ExplorerManager manager;
     
     private boolean listening = false;
-
+    
     private static final boolean TRACE_MODEL_CHANGE_EVENTS = Boolean.getBoolean("cnd.classview.trace.events");
     
     public ClassView() {
@@ -63,6 +66,7 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
         add(view, BorderLayout.CENTER);
         
         this.manager = new ExplorerManager();
+        
         ActionMap map = this.getActionMap();
         map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
 //        map.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(manager));
@@ -73,10 +77,89 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
 //        associateLookup (ExplorerUtils.createLookup (manager, map));
         
         setupRootContext(createEmptyRoot());
+        addViewListeners();
+    }
+
+    private void addViewListeners(Component comp){
+        comp.addMouseListener(new MouseListener() {
+            public void mouseClicked(MouseEvent e) {
+                setUserActivity();
+            }
+            public void mouseEntered(MouseEvent e) {
+                setUserActivity();
+            }
+            public void mouseExited(MouseEvent e) {
+                setUserActivity();
+            }
+            public void mousePressed(MouseEvent e) {
+                setUserActivity();
+            }
+            public void mouseReleased(MouseEvent e) {
+                setUserActivity();
+            }
+        });
+        comp.addMouseMotionListener(new MouseMotionListener() {
+            public void mouseDragged(MouseEvent e) {
+                setUserActivity();
+            }
+            public void mouseMoved(MouseEvent e) {
+                setUserActivity();
+            }
+        });
+    }
+    
+    private void addViewListeners(){
+        Component[] scroll = view.getComponents();
+        if (scroll != null){
+            for(int i = 0; i < scroll.length; i++){
+                Component comp = scroll[i];
+                if (comp instanceof JScrollBar) {
+                    addViewListeners(comp);
+                }
+            }
+        }
+        JViewport port = view.getViewport();
+        Component[] comp = port.getComponents();
+        if (comp != null && comp.length>0) {
+            addViewListeners(comp[0]);
+        }
+    }
+    
+    private Timer userActivity = null;
+    /**
+     * delay on user activity.
+     */
+    private static final int USER_MOUSE_ACTIVITY_DELAY = 2000;
+
+    private void setUserActivity(){
+        if (userActivity == null) {
+            userActivity = new Timer(USER_MOUSE_ACTIVITY_DELAY, new ActionListener() {
+                public void actionPerformed(ActionEvent evt) {
+                    stopViewModify();
+                }
+            });
+        }
+        userActivity.restart();
+        if (model != null && !model.isUserActivity()) {
+            model.setUserActivity(true);
+            //System.out.println("Start user activity");
+        }
+    }
+    
+    private void stopViewModify(){
+        if (model != null) {
+            model.setUserActivity(false);
+        }
+        //System.out.println("Stop user activity");
+        userActivity.stop();
     }
     
     public void startup() {
         if( Diagnostic.DEBUG ) Diagnostic.trace(">>> ClassView is starting up");
+        if( model != null ) {
+            model.dispose();
+        }
+        model = new ClassViewModel();
         addRemoveListeners(true);
         startFillingModel();
     }
@@ -86,6 +169,7 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
         addRemoveListeners(false);
         if( model != null ) {
             model.dispose();
+            model = null;
         }
     }
     
@@ -93,27 +177,26 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
         if( add ) {
             if( Diagnostic.DEBUG ) Diagnostic.trace(">>> adding model listeners");
             CsmModelAccessor.getModel().addModelListener(this);
-        }
-        else {
+        } else {
             if( Diagnostic.DEBUG ) Diagnostic.trace(">>> removing model listeners");
             CsmModelAccessor.getModel().removeModelListener(this);
         }
     }
-
+    
     public ExplorerManager getExplorerManager() {
         return manager;
     }
-
+    
     public void projectOpened(CsmProject project) {
         if( Diagnostic.DEBUG ) Diagnostic.trace("\n@@@ PROJECT OPENED " + project);
-	model.updateProjects();
-	setupRootContext(model.getRoot());
+        model.updateProjects();
+        setupRootContext(model.getRoot());
     }
-
+    
     public void projectClosed(CsmProject project) {
         if( Diagnostic.DEBUG ) Diagnostic.trace("\n@@@ PROJECT CLOSEED " + project);
-	model.updateProjects();
-	setupRootContext(model.getRoot());
+        model.updateProjects();
+        setupRootContext(model.getRoot());
         // release Class View project nodes when projects are closed
         if (CsmModelAccessor.getModel().projects().size()==0){
             model.dispose();
@@ -123,28 +206,27 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
     }
     
     public void modelChanged(CsmChangeEvent e) {
-	if( TRACE_MODEL_CHANGE_EVENTS ) {
-	    new CsmTracer().dumpModelChangeEvent(e);
-	}
-	model.scheduleUpdate(e);
+        if( TRACE_MODEL_CHANGE_EVENTS ) {
+            new CsmTracer().dumpModelChangeEvent(e);
+        }
+        model.scheduleUpdate(e);
     }
     
     public void modelStateChanged(CsmModelState newState, CsmModelState oldState) {
         if( newState == CsmModelState.OFF ) {
             shutdown();
-        }
-        else if( newState == CsmModelState.ON ) {
+        } else if( newState == CsmModelState.ON ) {
             startup();
         }
     }
     
     
     private void startFillingModel() {
-	
-	if( CsmModelAccessor.getModel().projects().isEmpty() ) {
-	    return;
-	}
-		
+        
+        if( CsmModelAccessor.getModel().projects().isEmpty() ) {
+            return;
+        }
+        
         synchronized(this) {
             if( Diagnostic.DEBUG ) Diagnostic.trace("startFillingModel; fillingModel=" + fillingModel + " this.hash=" + this.hashCode());
             if( fillingModel ) {
@@ -157,11 +239,11 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
         
         setupRootContext(CVUtil.createLoadingRoot());
         // We are in event queue now.
-	// So though Filler.run seems not to be rather light 
-	// we better launch it in a thread!
+        // So though Filler.run seems not to be rather light
+        // we better launch it in a thread!
         ModelFiller filler = new ModelFiller();
         //filler.run();
-	CsmModelAccessor.getModel().enqueue(filler, "Class View initial filler");
+        CsmModelAccessor.getModel().enqueue(filler, "Class View initial filler");
         
 //        SwingUtilities.invokeLater(new Runnable() {
 //            public void run() {
@@ -199,13 +281,16 @@ public class ClassView extends JComponent implements ExplorerManager.Provider, C
             
             if( Diagnostic.DEBUG ) Diagnostic.trace("ModelFiller started");
             if( model != null ) {
-                model.dispose();
+                if( Diagnostic.DEBUG ) Diagnostic.trace("Dispose old model");
+                //model.dispose();
             }
-            model = new ClassViewModel();
-
+            if (model == null) {
+                model = new ClassViewModel();
+            }
+            
             long t = System.currentTimeMillis();
             final Node root = model.getRoot();
-                    
+            
             t = System.currentTimeMillis() - t;
             if( Diagnostic.DEBUG ) Diagnostic.trace("#### Model filling took " + t + " ms");
             

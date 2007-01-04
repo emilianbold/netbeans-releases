@@ -138,7 +138,7 @@ public class AbstractVariable implements //NM ObjectVariable,
         // set new value to remote veriable
         //NM setValue (value);
         // Adjust value according to the type
-        if(genericType.equals("char *")) {
+        if(genericType.equals("char *")) { // NOI18N
             // There are 2 values: pointer and string
             // First check if pointer is changed
             // Second check if string value is changed
@@ -176,7 +176,7 @@ public class AbstractVariable implements //NM ObjectVariable,
                         if (c != oldstrValue.charAt(n)) {
                             if (n < 2) break; // First 2 characters must match (\")
                             int k = n - 2;
-                            debugger.setVariableValue(name+"["+k+"]", "'"+c+"'");
+                            debugger.setVariableValue(name+"["+k+"]", "'"+c+"'"); // NOI18N
                         }
                     }
                 }
@@ -219,7 +219,7 @@ NM*/
             //} else if (bean instanceof Value) {
             //    setValue((Value) bean); -- do not call directly
             } else {
-                throw new IllegalArgumentException(""+bean);
+                throw new IllegalArgumentException(""+bean); // NOI18N
             }
         } catch (InvalidExpressionException ieex) {
             IllegalArgumentException iaex = new IllegalArgumentException(ieex.getLocalizedMessage());
@@ -487,7 +487,7 @@ NM*/
      */
     public String getType () {
         if (genericType != null) return genericType;
-        return ""; //NM
+        return ""; // NOI18N
         /*NM TEMPORARY COMMENTED OUT 
         if (getInnerValue () == null) return "";
         try {
@@ -547,21 +547,21 @@ NM*/
         int c = signature.read();
         switch (c) {
         case 'Z':
-            return "boolean";
+            return "boolean"; // NOI18N
         case 'B':
-            return "byte";
+            return "byte"; // NOI18N
         case 'C':
-            return "char";
+            return "char"; // NOI18N
         case 'S':
-            return "short";
+            return "short"; // NOI18N
         case 'I':
-            return "int";
+            return "int"; // NOI18N
         case 'J':
-            return "long";
+            return "long"; // NOI18N
         case 'F':
-            return "float";
+            return "float"; // NOI18N
         case 'D':
-            return "double";
+            return "double"; // NOI18N
         case '[':
         {
             int arrayCount = 1;
@@ -571,7 +571,7 @@ NM*/
                     break;
                 }
             }
-            return getTypeDescription(signature) + " " + brackets(arrayCount);
+            return getTypeDescription(signature) + ' ' + brackets(arrayCount);
         }
         case 'L':
         {
@@ -579,14 +579,14 @@ NM*/
             for (;;) {
                 c = signature.read();
                 if (c == ';') {
-                    int idx = typeName.lastIndexOf("/");
+                    int idx = typeName.lastIndexOf("/"); // NOI18N
                     return idx == -1 ? 
                         typeName.toString() : typeName.substring(idx + 1);
                 }
                 else if (c == '<') {
-                    int idx = typeName.lastIndexOf("/");
+                    int idx = typeName.lastIndexOf("/"); // NOI18N
                     if (idx != -1) typeName.delete(0, idx + 1);
-                    typeName.append("<");
+                    typeName.append("<"); // NOI18N
                     for (;;) {
                         String td = getTypeDescription(signature);
                         typeName.append(td);
@@ -596,7 +596,7 @@ NM*/
                         typeName.append(',');
                     }
                     signature.read();   // should be a semicolon
-                    typeName.append(">");
+                    typeName.append(">"); // NOI18N
                     return typeName.toString();
                 }
                 typeName.append((char)c);
@@ -609,7 +609,7 @@ NM*/
     private static String brackets (int arrayCount) {
         StringBuffer sb = new StringBuffer (arrayCount * 2);
         do {
-            sb.append ("[]");
+            sb.append ("[]"); // NOI18N
         } while (--arrayCount > 0);
         return sb.toString ();
     }
@@ -763,72 +763,80 @@ NM*/
     }
     
     public String toString () {
-        return "ObjectVariable ";
+        return "ObjectVariable "; // NOI18N
     }
-    
+
+    /*
+     * Commented out private method convertToStringInitializer(String s)
+     * because it is not used anywhere. Looks like we don't need it.
+     *
     private static String convertToStringInitializer (String s) {
         StringBuffer sb = new StringBuffer ();
         int i, k = s.length ();
         for (i = 0; i < k; i++)
             switch (s.charAt (i)) {
                 case '\b':
-                    sb.append ("\\b");
+                    sb.append ("\\b"); // NOI18N
                     break;
                 case '\f':
-                    sb.append ("\\f");
+                    sb.append ("\\f"); // NOI18N
                     break;
                 case '\\':
-                    sb.append ("\\\\");
+                    sb.append ("\\\\"); // NOI18N
                     break;
                 case '\t':
-                    sb.append ("\\t");
+                    sb.append ("\\t"); // NOI18N
                     break;
                 case '\r':
-                    sb.append ("\\r");
+                    sb.append ("\\r"); // NOI18N
                     break;
                 case '\n':
-                    sb.append ("\\n");
+                    sb.append ("\\n"); // NOI18N
                     break;
                 case '\"':
-                    sb.append ("\\\"");
+                    sb.append ("\\\""); // NOI18N
                     break;
                 default:
                     sb.append (s.charAt (i));
             }
         return sb.toString();
     }
-    
+    */
+    /*
+     * Commented out private method convertToCharInitializer(String s)
+     * because it is not used anywhere. Looks like we don't need it.
+     *
     private static String convertToCharInitializer (String s) {
         StringBuffer sb = new StringBuffer ();
         int i, k = s.length ();
         for (i = 0; i < k; i++)
             switch (s.charAt (i)) {
                 case '\b':
-                    sb.append ("\\b");
+                    sb.append ("\\b"); // NOI18N
                     break;
                 case '\f':
-                    sb.append ("\\f");
+                    sb.append ("\\f"); // NOI18N
                     break;
                 case '\\':
-                    sb.append ("\\\\");
+                    sb.append ("\\\\"); // NOI18N
                     break;
                 case '\t':
-                    sb.append ("\\t");
+                    sb.append ("\\t"); // NOI18N
                     break;
                 case '\r':
-                    sb.append ("\\r");
+                    sb.append ("\\r"); // NOI18N
                     break;
                 case '\n':
-                    sb.append ("\\n");
+                    sb.append ("\\n"); // NOI18N
                     break;
                 case '\'':
-                    sb.append ("\\\'");
+                    sb.append ("\\\'"); // NOI18N
                     break;
                 default:
                     sb.append (s.charAt (i));
             }
         return sb.toString();
     }
-    
+    */
 }
 

@@ -1,0 +1,124 @@
+/* 
+ * File:   %<%NAME%>%.c
+ * Author: %<%USER%>%
+ *
+ * Created on %<%DATE%>%, %<%TIME%>%
+ */
+
+#include <stdlib.h>
+#include <X11/Xatom.h>
+#include <X11/Intrinsic.h>
+#include <X11/Shell.h>
+#include <Xm/Xm.h>
+#include <Xm/PushB.h>
+#include %<%QUOTES%>%%<%CROPPEDNAME%>%_gui.h%<%QUOTES%>%
+
+void
+OnFileQuit(Widget, XtPointer, XtPointer) {
+	exit(0);
+}
+
+void
+OnFileNew(Widget w, XtPointer client_data, XtPointer xt_call_data) {
+	XmPushButtonCallbackStruct *call_data =
+		(XmPushButtonCallbackStruct *) xt_call_data ;
+
+	// Your code here:
+}
+
+void
+OnFileOpen(Widget w, XtPointer client_data, XtPointer xt_call_data) {
+	XmPushButtonCallbackStruct *call_data =
+		(XmPushButtonCallbackStruct *) xt_call_data ;
+
+	// Your code here:
+}
+
+void
+OnFileClose(Widget w, XtPointer client_data, XtPointer xt_call_data) {
+	XmPushButtonCallbackStruct *call_data =
+		(XmPushButtonCallbackStruct *) xt_call_data ;
+
+	// Your code here:
+}
+
+void
+OnFileSave(Widget w, XtPointer client_data, XtPointer xt_call_data) {
+	XmPushButtonCallbackStruct *call_data =
+		(XmPushButtonCallbackStruct *) xt_call_data ;
+
+	// Your code here:
+}
+
+void
+OnFileSaveAs(Widget w, XtPointer client_data, XtPointer xt_call_data) {
+	XmPushButtonCallbackStruct *call_data =
+		(XmPushButtonCallbackStruct *) xt_call_data ;
+
+	// Your code here:
+}
+
+void
+OnFileRevert(Widget w, XtPointer client_data, XtPointer xt_call_data) {
+	XmPushButtonCallbackStruct *call_data =
+		(XmPushButtonCallbackStruct *) xt_call_data ;
+
+	// Your code here:
+}
+
+void
+OnFilePrint(Widget w, XtPointer client_data, XtPointer xt_call_data) {
+	XmPushButtonCallbackStruct *call_data =
+		(XmPushButtonCallbackStruct *) xt_call_data ;
+
+	// Your code here:
+}
+
+void
+OnEditUndo(Widget w, XtPointer client_data, XtPointer xt_call_data) {
+	XmPushButtonCallbackStruct *call_data =
+		(XmPushButtonCallbackStruct *) xt_call_data ;
+
+	// Your code here:
+}
+
+void
+OnEditCut(Widget w, XtPointer client_data, XtPointer xt_call_data) {
+	XmPushButtonCallbackStruct *call_data =
+		(XmPushButtonCallbackStruct *) xt_call_data ;
+
+	// Your code here:
+}
+
+void
+OnEditCopy(Widget w, XtPointer client_data, XtPointer xt_call_data) {
+	XmPushButtonCallbackStruct *call_data =
+		(XmPushButtonCallbackStruct *) xt_call_data ;
+
+	// Your code here:
+}
+
+void
+OnEditPaste(Widget w, XtPointer client_data, XtPointer xt_call_data) {
+	XmPushButtonCallbackStruct *call_data =
+		(XmPushButtonCallbackStruct *) xt_call_data ;
+
+	// Your code here:
+}
+
+void
+OnEditClear(Widget w, XtPointer client_data, XtPointer xt_call_data) {
+	XmPushButtonCallbackStruct *call_data =
+		(XmPushButtonCallbackStruct *) xt_call_data ;
+
+	// Your code here:
+}
+
+void
+OnHelpHelp(Widget w, XtPointer client_data, XtPointer xt_call_data) {
+	XmPushButtonCallbackStruct *call_data =
+		(XmPushButtonCallbackStruct *) xt_call_data ;
+
+	// Your code here:
+}
+

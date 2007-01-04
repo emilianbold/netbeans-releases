@@ -1,0 +1,65 @@
+## -*- Makefile -*-
+##
+## File: %<%NAME%>%.mk
+## Author: %<%USER%>%
+## Created on: %<%DATE%>%, %<%TIME%>%
+##
+## This file is generated automatically -- Changes will be lost if regenerated
+##
+
+
+all: sparc/%<%NAME%>%
+
+#### Compiler and tool definitions shared by all build targets #####
+BASICOPTS=-g
+CFLAGS=$(BASICOPTS) -xCC
+CCFLAGS=$(BASICOPTS)
+CCADMIN=CCadmin
+
+
+# Define the target directories
+TARGETDIR_%<%NAME%>%=sparc
+
+
+## Target: %<%NAME%>%
+OBJS_%<%NAME%>% =  \
+	$(TARGETDIR_%<%NAME%>%)/%<%NAME%>%_stubs.o \
+	$(TARGETDIR_%<%NAME%>%)/%<%NAME%>%_main.o \
+	$(TARGETDIR_%<%NAME%>%)/%<%NAME%>%_gui.o
+SYSLIBS_%<%NAME%>% = -L/usr/openwin/lib -L/usr/dt/lib -R/usr/openwin/lib -R/usr/dt/lib -lXm -lXt -lXext -lX11 
+LDLIBS_%<%NAME%>% = $(USERLIBS_%<%NAME%>%) $(SYSLIBS_%<%NAME%>%)
+
+
+# Link or archive
+$(TARGETDIR_%<%NAME%>%)/%<%NAME%>%: $(TARGETDIR_%<%NAME%>%) $(OBJS_%<%NAME%>%) $(DEPLIBS_%<%NAME%>%)
+	$(LINK.cc) $(CCFLAGS_%<%NAME%>%) $(CPPFLAGS_%<%NAME%>%) -o $@ $(OBJS_%<%NAME%>%) $(LDLIBS_%<%NAME%>%)
+
+
+# Compile source files into .o's
+$(TARGETDIR_%<%NAME%>%)/%<%NAME%>%_stubs.o: $(TARGETDIR_%<%NAME%>%) %<%NAME%>%_stubs.cc
+	$(COMPILE.cc) $(CCFLAGS_%<%NAME%>%) $(CPPFLAGS_%<%NAME%>%) -o $@ %<%NAME%>%_stubs.cc
+$(TARGETDIR_%<%NAME%>%)/%<%NAME%>%_main.o: $(TARGETDIR_%<%NAME%>%) %<%NAME%>%_main.cc
+	$(COMPILE.cc) $(CCFLAGS_%<%NAME%>%) $(CPPFLAGS_%<%NAME%>%) -o $@ %<%NAME%>%_main.cc
+$(TARGETDIR_%<%NAME%>%)/%<%NAME%>%_gui.o: $(TARGETDIR_%<%NAME%>%) %<%NAME%>%_gui.cc
+	$(COMPILE.cc) $(CCFLAGS_%<%NAME%>%) $(CPPFLAGS_%<%NAME%>%) -o $@ %<%NAME%>%_gui.cc
+
+
+#### Clean target. Deletes all generated files ####
+clean::
+	$(RM) \
+		$(TARGETDIR_%<%NAME%>%)/%<%NAME%>% \
+		$(TARGETDIR_%<%NAME%>%)/%<%NAME%>%_stubs.o \
+		$(TARGETDIR_%<%NAME%>%)/%<%NAME%>%_main.o \
+		$(TARGETDIR_%<%NAME%>%)/%<%NAME%>%_gui.o
+	$(CCADMIN) -clean
+	$(RM) -r sparc
+
+
+# Create the target directory (if needed)
+sparc:
+	@mkdir -p sparc
+
+
+# Enable dependency checking
+.KEEP_STATE:
+

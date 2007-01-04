@@ -24,7 +24,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
-import org.netbeans.modules.cnd.modelimpl.csm.Diagnostic;
+import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -40,6 +40,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
 import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
 import org.openide.cookies.EditorCookie;
@@ -233,7 +234,7 @@ public class ModelSupport implements PropertyChangeListener {
             NativeFileItem elem = (NativeFileItem) it.next();
             File file = elem.getFile();
             assert (file != null) : "native file item must have valid File object";
-            if( Diagnostic.DEBUG ) {
+            if( TraceFlags.DEBUG ) {
                 trace(elem);
             }
             visitor.visit(elem, isSourceFile);
@@ -280,7 +281,7 @@ public class ModelSupport implements PropertyChangeListener {
     }
     
     public void visitProjectFiles(ProjectBase csmProjectImpl, Object platformProject, FileVisitor visitor) {
-        if( Diagnostic.DEBUG ) Diagnostic.trace("ModelSupport.visitProjectFiles for " + csmProjectImpl.getName());
+        if( TraceFlags.DEBUG ) Diagnostic.trace("ModelSupport.visitProjectFiles for " + csmProjectImpl.getName());
         NativeProject nativeProject = platformProject instanceof NativeProject ? (NativeProject)platformProject : null;
         if (platformProject instanceof Project ) {
             Project project = (Project) platformProject;
@@ -288,7 +289,7 @@ public class ModelSupport implements PropertyChangeListener {
         }
         if( nativeProject != null ) {
             try {
-                if( Diagnostic.DEBUG ) Diagnostic.trace("Using new NativeProject API");
+                if( TraceFlags.DEBUG ) Diagnostic.trace("Using new NativeProject API");
                 // first of all visit sources, then headers
                 List/*<NativeFileItem>*/ sources = nativeProject.getAllSourceFiles();
                 List/*<NativeFileItem>*/ headers = nativeProject.getAllHeaderFiles();
@@ -325,11 +326,11 @@ public class ModelSupport implements PropertyChangeListener {
     }
     
     private void addProject(Project project) {
-        if( Diagnostic.DEBUG ) Diagnostic.trace("### ModelSupport.addProject: " + toString(project));
+        if( TraceFlags.DEBUG ) Diagnostic.trace("### ModelSupport.addProject: " + toString(project));
         NativeProject nativeProject = (NativeProject) project.getLookup().lookup(NativeProject.class);
         if (nativeProject != null) {
             openedProjects.add(project);
-            if( Diagnostic.DEBUG ) {
+            if( TraceFlags.DEBUG ) {
                 dumpProjectFiles(nativeProject);
             }
             model.addProject(nativeProject, nativeProject.getProjectDisplayName());
@@ -337,7 +338,7 @@ public class ModelSupport implements PropertyChangeListener {
     }
     
     private void dumpProjectFiles(NativeProject nativeProject) {
-        if( Diagnostic.DEBUG ) {
+        if( TraceFlags.DEBUG ) {
             Diagnostic.trace("+++ Sources:");
             for (Iterator it = nativeProject.getAllSourceFiles().iterator(); it.hasNext();) {
                 NativeFileItem elem = (NativeFileItem) it.next();
@@ -352,7 +353,7 @@ public class ModelSupport implements PropertyChangeListener {
     }
     
     private void removeProject(Project project) {
-        if( Diagnostic.DEBUG ) Diagnostic.trace("### ModelSupport.removeProject: " + toString(project));
+        if( TraceFlags.DEBUG ) Diagnostic.trace("### ModelSupport.removeProject: " + toString(project));
         NativeProject nativeProject = (NativeProject) project.getLookup().lookup(NativeProject.class);
         if (nativeProject != null) {
             model.removeProject(nativeProject);
@@ -461,7 +462,7 @@ public class ModelSupport implements PropertyChangeListener {
 //        }
         
         public void stateChanged(ChangeEvent e) {
-            if( Diagnostic.DEBUG ) {
+            if( TraceFlags.DEBUG ) {
                 Diagnostic.trace("state of registry changed:");
                 Diagnostic.indent();
                 if (e != null) {

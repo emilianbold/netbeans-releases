@@ -1,0 +1,98 @@
+/* 
+ * File:   %<%NAME%>%.c
+ * Author: %<%USER%>%
+ *
+ * Created on %<%DATE%>%, %<%TIME%>%
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+
+/*
+ * Define the options that this utility will accept.
+ * A colon after the option letter means it accepts an argument
+ */
+#define OPTION_LETTERS "abo:"
+#define A_OPTION 'a'
+#define B_OPTION 'b'
+#define OUTPUT_OPTION 'o'
+
+/*
+ * Error messages and status codes (these should be internationalized)
+ */
+#define ERROR_NO_OPERANDS "%s: Error 2: Expected one or more operands\n"
+#define ERROR_TOO_MANY_OPERANDS "%s: Error 3: Expected operands"
+#define ERROR_NO_FILE "%s: Error 6: Expected file to be specified (-o name)\n"
+#define ERROR_INTERNAL_ERROR "%s: Error 125: Internal error\n"
+
+#define EXIT_NO_OPERANDS 2
+#define EXIT_NO_FILE 3
+#define EXIT_INTERNAL_ERROR 125
+
+
+/*
+ * Simple main() function for a command line utility.  Uses
+ * getopt(3c) to process command line arguments.
+ * This sample defines a utility with this syntax:
+ *   %<%NAME%>% [-ab] [-o <filename>] operand...
+ */
+int
+main(int argc, char** argv) {
+    extern char *optarg; /* argument to optChar option */
+    extern int optind; /* next option to process */
+    extern int optopt; /* set to 0 to suppress errors */
+    int optchar;
+    int status = EXIT_SUCCESS; /* from stdlib */
+    int index;
+    char* outputfile = NULL;
+
+    while ((optchar = getopt(argc, argv, OPTION_LETTERS)) != EOF) {
+        switch (optchar) {
+        case A_OPTION:
+	    /* Do something for -a */
+            break;
+        case B_OPTION:
+	    /* Do something for -b */
+            break;
+        case OUTPUT_OPTION:
+            outputfile = optarg;
+            break;
+        case '?':
+	    /* getopt has already printed a message */ 
+	    status = EXIT_FAILURE;
+	    break;
+        default:
+	    fprintf(stderr, ERROR_INTERNAL_ERROR, argv[0]);
+	    status = EXIT_INTERNAL_ERROR;
+	    break;
+        }
+    }
+
+    /*
+     * Check error conditions
+     */
+    if (status == EXIT_SUCCESS) {
+        if (optind >= argc) {
+  	    fprintf(stderr, ERROR_NO_OPERANDS, argv[0]);
+	    status = EXIT_NO_OPERANDS;
+        } else if (outputfile == NULL) {
+  	    fprintf(stderr, ERROR_NO_FILE, argv[0]);
+	    status = EXIT_NO_FILE;
+        }
+    }
+
+    /*
+     * Process operands if all went well.
+     */
+    if (status == EXIT_SUCCESS) {
+        printf("Operands are: \n");
+        for (index = optind; index < argc; index++) {
+            printf("\t%s\n", argv[index]);
+        }
+    }
+
+    return status;
+}
+
+
+

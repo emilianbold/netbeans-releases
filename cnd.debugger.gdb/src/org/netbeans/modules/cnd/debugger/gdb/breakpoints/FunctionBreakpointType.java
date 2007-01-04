@@ -54,7 +54,7 @@ public class FunctionBreakpointType extends BreakpointType {
     
     public boolean isDefault() {
 	String mime = EditorContextBridge.getContext().getMostRecentMIMEType();
-	return mime.equals("text/x-c++") || mime.equals("text/x-c") || mime.equals("text/x-fortran");
+	return mime.equals("text/x-c++") || mime.equals("text/x-c") || mime.equals("text/x-fortran"); // NOI18N
     }
 }
 

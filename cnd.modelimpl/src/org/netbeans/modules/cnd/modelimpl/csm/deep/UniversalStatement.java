@@ -28,8 +28,8 @@ import org.netbeans.modules.cnd.api.model.deep.*;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.antlr2.CsmAST;
-import org.netbeans.modules.cnd.modelimpl.antlr2.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
  * For different kinds of statements, which doesn't return specific information - continue, break, etc

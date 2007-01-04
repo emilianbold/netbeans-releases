@@ -29,10 +29,7 @@ import javax.swing.tree.*;
 import antlr.*;
 import antlr.debug.misc.*;
 import antlr.collections.*;
-
-import org.netbeans.modules.cnd.modelimpl.antlr2.*;
-import org.netbeans.modules.cnd.modelimpl.antlr2.generated.CPPLexer;
-import org.netbeans.modules.cnd.modelimpl.antlr2.generated.CPPParser;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPParser;
 
 /**
  * @author Vladimir Kvasihn

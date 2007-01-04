@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.debugger.gdb.IOManager;
 public class BreakpointOutput extends LazyActionsManagerListener
                 implements DebuggerManagerListener, GdbBreakpointListener, PropertyChangeListener {
 
-   private static final Pattern backslashEscapePattern = Pattern.compile("\\\\");
+    private static final Pattern backslashEscapePattern = Pattern.compile("\\\\"); // NOI18N
     private static final Pattern threadNamePattern = Pattern.compile("\\{threadName\\}"); // NOI18N
     private static final Pattern fileNamePattern = Pattern.compile("\\{fileName\\}"); // NOI18N
     private static final Pattern functionNamePattern = Pattern.compile("\\{functionName\\}"); // NOI18N
@@ -229,7 +229,7 @@ public class BreakpointOutput extends LazyActionsManagerListener
          */
         Throwable thr = event.getConditionException();
         if (thr != null) {
-            printText = printText + "\n***\n"+ thr.getLocalizedMessage()+"\n***\n";
+            printText = printText + "\n***\n"+ thr.getLocalizedMessage()+"\n***\n"; // NOI18N
         }
         return printText;
     }

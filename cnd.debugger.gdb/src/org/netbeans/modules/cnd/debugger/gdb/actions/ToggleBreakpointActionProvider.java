@@ -97,7 +97,9 @@ public class ToggleBreakpointActionProvider extends ActionsProviderSupport imple
     public void propertyChange(PropertyChangeEvent evt) {
         int lnum = EditorContextBridge.getContext().getCurrentLineNumber();
         String mimeType = EditorContextBridge.getContext().getCurrentMIMEType();
-	boolean isValid = (mimeType.equals("text/x-c") || mimeType.equals("text/x-c++")) && lnum > 0;
+	boolean isValid = (mimeType.equals("text/x-c") // NOI18N
+                        || mimeType.equals("text/x-c++")) // NOI18N
+                        && lnum > 0;
         setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, isValid);
     }
 }

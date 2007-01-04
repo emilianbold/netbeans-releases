@@ -19,11 +19,11 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.modules.cnd.modelimpl.antlr2.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.antlr2.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 import org.netbeans.modules.cnd.modelimpl.platform.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -100,13 +100,16 @@ public class ClassImpl extends ClassEnumBase implements CsmClass, CsmMember {
                         if( typedefs != null && typedefs.length > 0 ) {
                             for (int i = 0; i < typedefs.length; i++) {
                                 addMember((MemberTypedef) typedefs[i]);
+                                ((FileImpl)getContainingFile()).getProjectImpl().registerDeclaration(typedefs[i]);
                             }
                         }
+                        renderVariableInClassifier(token, innerClass, null, null);
                         break;
                     case CPPTokenTypes.CSM_ENUM_DECLARATION:
                         EnumImpl innerEnum = new EnumImpl(token, getContainingNamespaceImpl(), getContainingFile(), ClassImpl.this);
                         innerEnum.setVisibility(curentVisibility);
                         addMember(innerEnum);
+                        renderVariableInClassifier(token, innerEnum, null, null);
                         break;
 
                     // other members
@@ -127,6 +130,7 @@ public class ClassImpl extends ClassEnumBase implements CsmClass, CsmMember {
                             if( typedefs != null && typedefs.length > 0 ) {
                                 for (int i = 0; i < typedefs.length; i++) {
                                     addMember((MemberTypedef) typedefs[i]);
+                                    ((FileImpl)getContainingFile()).getProjectImpl().registerDeclaration(typedefs[i]);
                                 }
                             }
                         }

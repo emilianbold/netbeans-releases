@@ -152,14 +152,14 @@ public class FunctionBreakpoint extends GdbBreakpoint {
                     if (Utilities.isWindows()) {
                         path = fo.getPath();
                     } else {
-                        path = "/" + fo.getPath();
+                        path = "/" + fo.getPath(); // NOI18N
                     }
                 }
             } catch (MalformedURLException mue) {
-                assert !Boolean.getBoolean("gdb.assertions.enabled");
+                assert !Boolean.getBoolean("gdb.assertions.enabled"); // NOI18N
                 return;
             } catch (Exception ex) {
-                assert !Boolean.getBoolean("gdb.assertions.enabled");
+                assert !Boolean.getBoolean("gdb.assertions.enabled"); // NOI18N
             }
             old = this.url;
             this.url = url;
@@ -239,7 +239,7 @@ public class FunctionBreakpoint extends GdbBreakpoint {
         String old;
         synchronized (this) {
             if (c == null) {
-                c = "";
+                c = ""; // NOI18N
             }
             c = c.trim();
             if ((c == condition) ||
@@ -258,7 +258,7 @@ public class FunctionBreakpoint extends GdbBreakpoint {
      * @return  a string representation of the object
      */
     public String toString() {
-        return "FunctionBreakpoint " + function;
+        return "FunctionBreakpoint " + function; // NOI18N
     }
     
     private static class FunctionBreakpointComparable extends FunctionBreakpoint implements Comparable {

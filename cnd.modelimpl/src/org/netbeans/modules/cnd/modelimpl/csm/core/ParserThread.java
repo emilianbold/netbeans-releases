@@ -19,8 +19,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import org.netbeans.modules.cnd.modelimpl.apt.support.APTPreprocState;
-import org.netbeans.modules.cnd.modelimpl.csm.Diagnostic;
+import org.netbeans.modules.cnd.apt.support.APTPreprocState;
+import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  *
@@ -46,7 +47,6 @@ public class ParserThread implements Runnable {
                     }
                     Diagnostic.StopWatch stw = (TraceFlags.TIMING_PARSE_PER_FILE_FLAT && ! file.isParsed()) ? new Diagnostic.StopWatch() : null;
                     try {
-                        if (TraceFlags.USE_APT) {
                             APTPreprocState preprocState = null;
                             if (entry.getPreprocStateState() != null) {
                                 // init from entry
@@ -54,9 +54,6 @@ public class ParserThread implements Runnable {
                                 preprocState.setState(entry.getPreprocStateState());
                             }
                             file.ensureParsed(preprocState);
-                        } else {
-                            file.ensureParsed(entry.getCallback());
-                        }
                     }
                     catch( Throwable thr ) {
                         thr.printStackTrace(System.err);

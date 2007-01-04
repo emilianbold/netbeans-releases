@@ -23,7 +23,7 @@ import java.util.*;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.modelimpl.csm.core.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  *

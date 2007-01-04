@@ -1,0 +1,26 @@
+## -*- Makefile -*- ##
+##
+## File: %<%NAME%>%.mk
+## Author: %<%USER%>%
+## Created on: %<%DATE%>%, %<%TIME%>%
+##
+## Makefile which builds the generic interval example
+##
+
+all: %<%NAME%>%
+
+# Compiler flags
+CCFLAGS=-xia
+
+# Compiler to use
+CCC=CC
+
+# Source files
+FILES=%<%NAME%>%.cc
+
+# CCC should be defined by make (on Solaris, in /usr/share/lib/make/make.rules)
+%<%NAME%>%: $(FILES)
+	$(CCC) $(CCFLAGS) -o $@ $(FILES)
+
+clean:
+	rm -f  %<%NAME%>% %<%NAME%>%.o

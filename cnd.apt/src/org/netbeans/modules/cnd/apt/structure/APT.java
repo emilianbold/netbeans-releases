@@ -1,0 +1,117 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.cnd.apt.structure;
+
+import antlr.Token;
+
+/**
+ * Abstract Preprocessing Tree
+ * LISP-like trees:
+ * ROOT
+ * |
+ * Child1-Child2
+ * 
+ * the original idea is antlr.AST approach, but no setters => immutable =>
+ * could be used at the same time by multiple APT Visitors.
+ *
+ * @author Vladimir Voskresensky
+ */
+public interface APT {
+    public interface Type {
+        public static final int INVALID             = 0;
+        public static final int FILE                = INVALID + 1;
+        public static final int TOKEN_STREAM        = FILE + 1;
+        public static final int INCLUDE             = TOKEN_STREAM + 1;
+        public static final int INCLUDE_NEXT        = INCLUDE + 1;
+        public static final int DEFINE              = INCLUDE_NEXT + 1;
+        public static final int UNDEF               = DEFINE + 1;
+        public static final int CONDITION_CONTAINER = UNDEF + 1;
+        public static final int IFDEF               = CONDITION_CONTAINER + 1;
+        public static final int IFNDEF              = IFDEF + 1;
+        public static final int IF                  = IFNDEF + 1;
+        public static final int ELIF                = IF + 1;
+        public static final int ELSE                = ELIF + 1;
+        public static final int ENDIF               = ELSE + 1;
+        public static final int PRAGMA              = ENDIF + 1;
+        public static final int LINE                = PRAGMA + 1;
+        public static final int ERROR               = LINE + 1;
+        public static final int PREPROC_UNKNOWN     = ERROR + 1; // unrecognized #-directive
+    }
+    
+    /** method called consequently token by token to let APT node to init itself 
+     * when initializing is finished APT node returns false (not accepted token)
+     */
+    public boolean accept(Token token);
+    
+    /** Get the associated token */
+    public Token getToken();
+    
+    /** dispose **/
+    public void dispose();
+    
+//    /** Add a (rightmost) child to this node */
+//    public void addChild(APT child);
+    
+    /** Get the first child of this node; null if no children */
+    public APT getFirstChild();
+
+    /** Get	the next sibling in line after this one */
+    public APT getNextSibling();
+
+    /** Get the token text for this node */
+    public String getText();
+
+    /** Get the type for this node */
+    public int/*Type*/ getType();
+
+    /** Get start offset of the node's first wrapped token */
+    public int getOffset();
+    
+    /** Get end offset of the node's last wrapped token */
+    public int getEndOffset();
+    
+//    /** Need for error handling */
+//    public int getLine();
+//
+//    /** Need for error handling */
+//    public int getColumn();
+
+//    /** Get number of children of this node; if leaf, returns 0 */
+//    public int getNumberOfChildren();
+    
+    /** Set the first child of a node. */
+    public void setFirstChild(APT child);
+
+    /** Set the next sibling after this one. */
+    public void setNextSibling(APT next);
+//
+//    /** Set the token text for this node */
+//    public void setText(String text);
+//
+//    /** Set the type for this node */
+//    public void setType(int/*Type*/ type);
+
+//    public String toString();
+
+//    public String toStringList();
+//
+//    public String toStringTree();
+    
+}

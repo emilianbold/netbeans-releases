@@ -1,0 +1,36 @@
+## -*- Makefile -*- ##
+##
+## File: %<%NAME%>%.mk
+## Author: %<%USER%>%
+## Created on: %<%DATE%>%, %<%TIME%>%
+##
+## Makefile which builds the JNI template
+##
+
+#
+# WARNING - in some versions of the jdk, "javah" (invoked below)
+# does not work correctly if your template name includes an "_".
+# For instance, if your template name was "jni_app", you would get an error
+# when you executed this makefile. A jni header file will be created with an
+# incorrect name. In the example above, you would get a generated header file
+# with the name "jni_0005fapp.h". This name should actually be "jni_app.h".
+# Change the name and re-execute the makefile to get by this problem.
+#
+
+## Set this to point to your Java installation
+JAVAHOME=/usr/j2se
+
+all: %<%NAME%>%
+
+%<%NAME%>%: %<%NAME%>%.h %<%NAME%>%.c
+	cc -g -G -I$(JAVAHOME)/include -I$(JAVAHOME)/include/solaris \
+		%<%NAME%>%.c -o lib%<%NAME%>%.so
+
+%<%NAME%>%.h: %<%NAME%>%.class
+	$(JAVAHOME)/bin/javah -classpath . %<%NAME%>%
+
+%<%NAME%>%.class: %<%NAME%>%.java
+	$(JAVAHOME)/bin/javac -g %<%NAME%>%.java
+
+clean:
+	rm %<%NAME%>%.class %<%NAME%>%.h lib%<%NAME%>%.so

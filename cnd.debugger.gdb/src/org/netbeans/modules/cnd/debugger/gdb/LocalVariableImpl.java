@@ -94,7 +94,7 @@ public class LocalVariableImpl implements LocalVariable, Field {
         //String value = debugger.evaluateIn (expression);
         String value = expression;
         // Adjust value according to the type
-        if(type.equals("char *")) {
+        if(type.equals("char *")) { // NOI18N
             // There are 2 values: pointer and string
             // First check if pointer is changed
             // Second check if string value is changed
@@ -132,7 +132,7 @@ public class LocalVariableImpl implements LocalVariable, Field {
                         if (c != oldstrValue.charAt(n)) {
                             if (n < 2) break; // First 2 characters must match (\")
                             int k = n - 2;
-                            debugger.setVariableValue(name+"["+k+"]", "'"+c+"'");
+                            debugger.setVariableValue(name+"["+k+"]", "'"+c+"'"); // NOI18N
                         }
                     }
                 }
@@ -148,7 +148,7 @@ public class LocalVariableImpl implements LocalVariable, Field {
     }
     
     public String getType() {
-        if (type != null && !type.equals("")) {
+        if (type != null && !type.equals("")) { // NOI18N
             return type;
         }
         type = debugger.getVariableType(name);
@@ -163,18 +163,18 @@ public class LocalVariableImpl implements LocalVariable, Field {
     private boolean typeIsSimple() {
         String type = getType();
         if (type == null) return false;
-        if ((type.equals("char")) 
-            || (type.equals("short")) 
-            || (type.equals("int")) 
-            || (type.equals("long")) 
-            || (type.equals("long long")) 
-            || (type.equals("double")) 
-            || (type.equals("long double")) 
-            || (type.equals("unsigned char")) 
-            || (type.equals("unsigned short")) 
-            || (type.equals("unsigned int")) 
-            || (type.equals("unsigned long")) 
-            || (type.equals("unsigned long long")) 
+        if ((type.equals("char")) // NOI18N
+            || (type.equals("short")) // NOI18N
+            || (type.equals("int")) // NOI18N
+            || (type.equals("long")) // NOI18N
+            || (type.equals("long long")) // NOI18N
+            || (type.equals("double")) // NOI18N
+            || (type.equals("long double")) // NOI18N
+            || (type.equals("unsigned char")) // NOI18N
+            || (type.equals("unsigned short")) // NOI18N
+            || (type.equals("unsigned int")) // NOI18N
+            || (type.equals("unsigned long")) // NOI18N
+            || (type.equals("unsigned long long")) // NOI18N
         ) {
             return true;
         }
@@ -284,9 +284,9 @@ public class LocalVariableImpl implements LocalVariable, Field {
                 if (index < 0) break;
                 String sName = v.substring(cp, index);
                 // Add parent's name
-                sName = name + "." + sName;
+                sName = name + '.' + sName;
                 String sType = debugger.getVariableType(sName);
-                String sValue = "UNKNOWN VALUE"; // FIXUP
+                String sValue = "UNKNOWN VALUE"; // FIXUP // NOI18N
                 cp = index + 3;
                 index = v.indexOf(", ", cp); // NOI18N
                 if (index < 0) index = v.length();

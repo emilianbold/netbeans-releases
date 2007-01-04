@@ -1,0 +1,28 @@
+/* 
+ * File:   %<%NAME%>%.c
+ * Author: %<%USER%>%
+ *
+ * Created on %<%DATE%>%, %<%TIME%>%
+ */
+
+#include <jni.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "%<%NAME%>%.h"
+
+/*
+ * Retrieves the value of an environment variable with
+ * a C library call, and then prints a message to stdout.
+ */
+JNIEXPORT void JNICALL 
+Java_%<%PACKAGE_AND_NAME%>%_displayHelloWorld(JNIEnv *env, jobject obj) {
+    char *value = getenv("USER");
+
+    if (value != NULL) {
+	printf("Hello %s\n", value);
+    } else {
+    	printf("Hello world!\n");
+    }
+
+    return;
+}

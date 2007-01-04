@@ -20,9 +20,7 @@
 package org.netbeans.modules.cnd.classview.model;
 
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import java.awt.Image;
 import org.openide.nodes.*;
-import org.openide.util.Utilities;
 
 import  org.netbeans.modules.cnd.api.model.*;
 
@@ -31,6 +29,7 @@ import  org.netbeans.modules.cnd.api.model.*;
  * @author Vladimir Kvasihn
  */
 public class MemberNode extends ObjectNode {
+    private int weight;
 
     public MemberNode(CsmMember mem) {
         super(mem, Children.LEAF);
@@ -38,13 +37,22 @@ public class MemberNode extends ObjectNode {
         String text = mem.getName();
         if( mem.getKind() == CsmDeclaration.Kind.CLASS ) {
             isTemplate = ((CsmClass) mem) .isTemplate();
-        } else if( mem.getKind() == CsmDeclaration.Kind.FUNCTION ) {
+        } else if( CsmKindUtilities.isFunction(mem) ) {
             CsmFunction fun = (CsmFunction) mem;
             isTemplate = fun.isTemplate();
             text = CVUtil.getSignature(fun);
             if( ((CsmMethod) mem).isConst() ) {
                 text += " const";
             }
+        } 
+        if( CsmKindUtilities.isClassifier(mem) || CsmKindUtilities.isEnum(mem) || CsmKindUtilities.isTypedef(mem)) {
+            weight = CLASSIFIER_WEIGHT;
+        } else if( CsmKindUtilities.isFunction(mem) ) {
+            weight = FUNCTION_WEIGHT;
+        } else if( CsmKindUtilities.isVariable(mem) ) {
+            weight = VARIABLE_WEIGHT;
+        } else {
+            weight = OTHER_WEIGHT;
         }
         
         String name = text + (isTemplate ? "<>" : "");
@@ -55,6 +63,10 @@ public class MemberNode extends ObjectNode {
     
     public CsmMember getMember() {
         return (CsmMember) getObject();
+    }
+
+    protected int getWeight() {
+        return weight;
     }
     
 }

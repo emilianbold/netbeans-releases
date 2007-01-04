@@ -23,11 +23,11 @@ import java.io.File;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
-import org.netbeans.modules.cnd.modelimpl.antlr2.PPCallback;
-import org.netbeans.modules.cnd.modelimpl.antlr2.PPCallbackImpl;
-import org.netbeans.modules.cnd.modelimpl.apt.support.APTDriver;
-import org.netbeans.modules.cnd.modelimpl.apt.support.APTPreprocState;
+import org.netbeans.modules.cnd.apt.support.APTDriver;
+import org.netbeans.modules.cnd.apt.support.APTPreprocState;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
+import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 import org.netbeans.modules.cnd.modelimpl.platform.*;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
@@ -45,42 +45,17 @@ public class ProjectImpl extends ProjectBase {
     protected void createIfNeed(NativeFileItem nativeFile, boolean isSourceFile) {
         assert (nativeFile != null && nativeFile.getFile() != null);
         File file = nativeFile.getFile();
-        if (TraceFlags.USE_APT) {
-            APTPreprocState preprocState = getDefaultPreprocState(nativeFile);
-            if (preprocState != null && getPreprocStateState(file) == null){
-                putPreprocStateState(file,preprocState.getState());
-            }
-            if (isSourceFile) {
-                findFile(file, FileImpl.SOURCE_FILE, preprocState, true);
-            } else {
-                findFile(file, FileImpl.HEADER_FILE, preprocState, true);
-            }
-        } else {
-            PPCallback callback = getDefaultCallback(nativeFile);
-            findFile(file, callback, true);            
-        }
+		APTPreprocState preprocState = getDefaultPreprocState(nativeFile);
+		if (preprocState != null && getPreprocStateState(file) == null){
+			putPreprocStateState(file,preprocState.getState());
+		}
+		if (isSourceFile) {
+			findFile(file, FileImpl.SOURCE_FILE, preprocState, true);
+		} else {
+			findFile(file, FileImpl.HEADER_FILE, preprocState, true);
+		}
     }
     
-    protected FileImpl findFile(File file, PPCallback callback, boolean scheduleParseIfNeed) {
-        FileImpl impl = (FileImpl) getFile(file);
-        if( impl == null ) {
-            synchronized( getFiles() ) {
-                impl = (FileImpl) getFile(file);
-                if( impl == null ) {
-                    callback = callback == null ? getCallback(file) : callback;
-                    impl = new FileImpl(ModelSupport.instance().getFileBuffer(file), this, callback);
-                    putFile(file, impl);
-                    // NB: parse only after putting into a map
-                    if( scheduleParseIfNeed ) {
-                        ParserQueue.instance().addLast(impl);
-                    }
-                }
-            }
-        }
-        return impl;
-    }
-    
-    // copy
     protected FileImpl findFile(File file, int fileType, APTPreprocState preprocState, boolean scheduleParseIfNeed) {
         FileImpl impl = (FileImpl) getFile(file);
         if( impl == null ) {
@@ -112,7 +87,7 @@ public class ProjectImpl extends ProjectBase {
     }
     
     public void onFileEditStart(FileBuffer buf) {
-        if( Diagnostic.DEBUG ) Diagnostic.trace("------------------------- onFileEditSTART " + buf.getFile().getName());
+        if( TraceFlags.DEBUG ) Diagnostic.trace("------------------------- onFileEditSTART " + buf.getFile().getName());
         FileImpl file = (FileImpl) getFile(buf.getFile());
         if( file == null ) {
             file = new FileImpl(buf, this); // don't enqueue here!
@@ -131,7 +106,7 @@ public class ProjectImpl extends ProjectBase {
     }
     
     public void onFileEditEnd(FileBuffer buf) {
-        if( Diagnostic.DEBUG ) Diagnostic.trace("------------------------- onFileEditEND " + buf.getFile().getName());
+        if( TraceFlags.DEBUG ) Diagnostic.trace("------------------------- onFileEditEND " + buf.getFile().getName());
         FileImpl file = (FileImpl) getFile(buf.getFile());
         if( file != null ) {
             synchronized( editedFiles ) {
@@ -148,6 +123,9 @@ public class ProjectImpl extends ProjectBase {
             File file = nativeFile.getFile();
             FileImpl impl = (FileImpl) getFile(file);
             if( impl != null ) {
+                synchronized( editedFiles ) {
+                    editedFiles.remove(impl);
+                }
                 impl.dispose();
                 removeFile(file);
                 if (TraceFlags.USE_AST_CACHE) {
@@ -161,10 +139,6 @@ public class ProjectImpl extends ProjectBase {
             //Notificator.instance().endTransaction();
             Notificator.instance().flush();
         }
-    }
-    
-    protected PPCallback getDefaultCallback(File file) {
-        return new PPCallbackImpl(this, file.getAbsolutePath(), false);
     }
     
     public void onFileAdded(NativeFileItem nativeFile) {
@@ -191,6 +165,9 @@ public class ProjectImpl extends ProjectBase {
     }
     
     protected boolean hasChangedFiles(CsmFile skipFile) {
+        if (skipFile == null) {
+            return false;
+        }
 	synchronized( editedFiles ) {
 	    for( Iterator iter = editedFiles.iterator(); iter.hasNext(); ) {
 		FileImpl file = (FileImpl) iter.next();

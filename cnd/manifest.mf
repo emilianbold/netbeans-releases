@@ -1,0 +1,92 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.cnd/1
+OpenIDE-Module-Install: org/netbeans/modules/cnd/CndModule.class
+OpenIDE-Module-Specification-Version: 1.1
+OpenIDE-Module-Implementation-Version: 1
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/cnd/Bundle.properties
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.editor/3 > 1.26.1.1, 
+    org.netbeans.modules.editor.fold/1 > 1.5.1, 
+    org.netbeans.modules.editor.lib/1 > 1.9.1.1, 
+    org.openide.actions > 6.5.1, 
+    org.openide.awt > 6.7.1, 
+    org.openide.dialogs > 6.5.1, 
+    org.openide.execution > 1.8.1, 
+    org.openide.explorer > 6.5.1, 
+    org.openide.filesystems > 6.4.1, 
+    org.openide.io > 1.9.1, 
+    org.openide.loaders > 5.9.1, 
+    org.openide.modules > 6.5.1, 
+    org.openide.nodes > 6.7.1, 
+    org.openide.options > 6.4.1, 
+    org.openide.src > 1.8.1, 
+    org.openide.text > 6.9.1, 
+    org.openide.util > 6.8.1, 
+    org.openide.windows > 6.5.1
+OpenIDE-Module-Layer: org/netbeans/modules/cnd/resources/mf-layer.xml
+OpenIDE-Module-Public-Packages: org.netbeans.modules.cnd.**
+
+Name: org/netbeans/modules/cnd/loaders/CDataLoader.class
+OpenIDE-Module-Class: Loader
+Install-After: com.sun.forte.developer.ipe.loaders.VisuSrcObject,
+    org.netbeans.modules.java.JavaDataObject
+
+Name: org/netbeans/modules/cnd/loaders/FortranDataLoader.class
+OpenIDE-Module-Class: Loader
+Install-After: com.sun.forte.developer.ipe.loaders.VisuSrcObject
+    org.netbeans.modules.java.JavaDataObject,
+    org.netbeans.modules.cnd.loaders.CSrcObject
+
+Name: org/netbeans/modules/cnd/loaders/AsmDataLoader.class
+OpenIDE-Module-Class: Loader
+Install-After: com.sun.forte.developer.ipe.loaders.VisuSrcObject
+    org.netbeans.modules.java.JavaDataObject,
+    org.netbeans.modules.cnd.loaders.CSrcObject,
+    org.netbeans.modules.cnd.loaders.FortranSrcObject
+
+Name: org/netbeans/modules/cnd/loaders/CCDataLoader.class
+OpenIDE-Module-Class: Loader
+Install-After: com.sun.forte.developer.ipe.loaders.VisuSrcObject,
+    org.netbeans.modules.java.JavaDataObject,
+    org.netbeans.modules.cnd.loaders.CSrcObject,
+    org.netbeans.modules.cnd.loaders.FortranSrcObject,
+    org.netbeans.modules.cnd.loaders.AssemSrcObject
+
+Name: org/netbeans/modules/cnd/loaders/HDataLoader.class
+OpenIDE-Module-Class: Loader
+Install-After: com.sun.forte.developer.ipe.loaders.VisuSrcObject
+    org.netbeans.modules.java.JavaDataObject,
+    org.netbeans.modules.cnd.loaders.CSrcObject,
+    org.netbeans.modules.cnd.loaders.FortranSrcObject,
+    org.netbeans.modules.cnd.loaders.AssemSrcObject,
+    org.netbeans.modules.cnd.loaders.CCSrcObject
+
+Name: org/netbeans/modules/cnd/loaders/MakefileDataLoader.class
+OpenIDE-Module-Class: Loader
+Install-After: org.netbeans.modules.cnd.loaders.CSrcObject,
+    org.netbeans.modules.cnd.loaders.CCSrcObject,
+    org.netbeans.modules.cnd.loaders.HDataObject,
+    org.netbeans.modules.cnd.loaders.FortranSrcObject,
+    org.netbeans.modules.cnd.loaders.AssemSrcObject,
+    com.sun.forte.developer.ipe.loaders.VisuSrcObject,
+    org.netbeans.modules.java.JavaDataObject
+
+Name: org/netbeans/modules/cnd/loaders/ExeLoader.class
+OpenIDE-Module-Class: Loader
+Install-Before: org.netbeans.modules.cnd.loaders.MakefileDataObject,
+Install-After: org.openide.loaders.XMLDataObject,
+    org.netbeans.modules.xml.XMLDataObject,
+    org.netbeans.modules.jarpackager.JarDataObject,
+    org.netbeans.modules.text.TXTDataObject,
+    org.netbeans.modules.web.context.WebClassesObject,
+    org.netbeans.modules.web.context.WebAppObject
+
+Name: org/netbeans/modules/cnd/loaders/ShellDataLoader.class
+OpenIDE-Module-Class: Loader
+Install-After: org.netbeans.modules.cnd.loaders.CSrcObject,
+    org.netbeans.modules.cnd.loaders.CCSrcObject,
+    org.netbeans.modules.cnd.loaders.HDataObject,
+    org.netbeans.modules.cnd.loaders.FortranSrcObject,
+    org.netbeans.modules.cnd.loaders.AssemSrcObject,
+    com.sun.forte.developer.ipe.loaders.VisuSrcObject,
+    org.netbeans.modules.java.JavaDataObject
+

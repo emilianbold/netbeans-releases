@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -48,64 +48,80 @@ import org.netbeans.modules.cnd.debugger.gdb.Field;
  *
  * @author Nik Molchanov (copied from Jan Jancura's JPDA implementation)
  */
-public class VariablesNodeModel implements NodeModel { 
-
+public class VariablesNodeModel implements NodeModel {
+    
     public static final String FIELD =
-        "org/netbeans/modules/debugger/resources/watchesView/Field";
+            "org/netbeans/modules/debugger/resources/watchesView/Field"; // NOI18N
     public static final String LOCAL =
-        "org/netbeans/modules/debugger/resources/localsView/LocalVariable";
+            "org/netbeans/modules/debugger/resources/localsView/LocalVariable"; // NOI18N
     public static final String FIXED_WATCH =
-        "org/netbeans/modules/debugger/resources/watchesView/FixedWatch";
+            "org/netbeans/modules/debugger/resources/watchesView/FixedWatch"; // NOI18N
     public static final String STATIC_FIELD =
-        "org/netbeans/modules/debugger/resources/watchesView/StaticField";
+            "org/netbeans/modules/debugger/resources/watchesView/StaticField"; // NOI18N
     public static final String SUPER =
-        "org/netbeans/modules/debugger/resources/watchesView/SuperVariable";
-
+            "org/netbeans/modules/debugger/resources/watchesView/SuperVariable"; // NOI18N
+    
     private GdbDebugger      debugger;
     private ContextProvider  lookupProvider;
     
     private RequestProcessor evaluationRP = new RequestProcessor();
-    private final Collection modelListeners = new HashSet();    
+    private final Collection modelListeners = new HashSet();
     
-    public VariablesNodeModel (ContextProvider lookupProvider) {
+    // Localizable messages
+    private String LC_NoInfo = NbBundle.getMessage(VariablesNodeModel.class,
+            "CTL_No_Info"); // NOI18N
+    private String LC_NoCurrentThreadVar = NbBundle.getMessage(VariablesNodeModel.class,
+            "NoCurrentThreadVar"); // NOI18N
+    private String LC_LocalsModelColumnNameName = NbBundle.getMessage(VariablesNodeModel.class,
+            "CTL_LocalsModel_Column_Name_Name"); // NOI18N
+    private String LC_LocalsModelColumnNameDesc = NbBundle.getMessage(VariablesNodeModel.class,
+            "CTL_LocalsModel_Column_Name_Desc"); // NOI18N
+    
+    // Non-localized magic strings
+    private final String strEmpty = ""; // NOI18N
+    private final String strNoInfo = "NoInfo"; // NOI18N
+    private final String strSubArray = "SubArray"; // NOI18N
+    private final String strNoCurrentThread = "No current thread"; // NOI18N
+    
+    public VariablesNodeModel(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
         debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
-    }    
+    }
     
-    public String getDisplayName (Object o) throws UnknownTypeException {
+    public String getDisplayName(Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT)
-            return NbBundle.getBundle (VariablesNodeModel.class).getString 
-                ("CTL_LocalsModel_Column_Name_Name");
+            return LC_LocalsModelColumnNameName;
         if (o instanceof Field)
-            return ((Field) o).getName ();
+            return ((Field) o).getName();
         if (o instanceof LocalVariable)
-            return ((LocalVariable) o).getName ();
+            return ((LocalVariable) o).getName();
         /*NM TEMPORARY COMMENTED OUT
         if (o instanceof Super)
             return "super"; // NOI18N
         if (o instanceof This)
             return "this"; // NOI18N
-        */
-        if (o == "NoInfo") // NOI18N
-            return NbBundle.getMessage(VariablesNodeModel.class, "CTL_No_Info");
-        if (o == "No current thread") { // NOI18N
-            return NbBundle.getMessage(VariablesNodeModel.class, "NoCurrentThreadVar");
-        }
+         */
         String str = o.toString();
-        if (str.startsWith("SubArray")) { // NOI18N
+        if (str.equals(strNoInfo)) {
+            return LC_NoInfo;
+        }
+        if (str.equals(strNoCurrentThread)) {
+            return LC_NoCurrentThreadVar;
+        }
+        if (str.startsWith(strSubArray)) {
             int index = str.indexOf('-');
             //int from = Integer.parseInt(str.substring(8, index));
             //int to = Integer.parseInt(str.substring(index + 1));
-            return NbBundle.getMessage (VariablesNodeModel.class,
-                    "CTL_LocalsModel_Column_Name_SubArray",
+            return NbBundle.getMessage(VariablesNodeModel.class,
+                    "CTL_LocalsModel_Column_Name_SubArray", // NOI18N
                     str.substring(8, index), str.substring(index + 1));
         }
-        throw new UnknownTypeException (o);
+        throw new UnknownTypeException(o);
     }
     
     private Map shortDescriptionMap = new HashMap();
     
-    public String getShortDescription (final Object o) throws UnknownTypeException {
+    public String getShortDescription(final Object o) throws UnknownTypeException {
         synchronized (shortDescriptionMap) {
             Object shortDescription = shortDescriptionMap.remove(o);
             if (shortDescription instanceof String) {
@@ -119,21 +135,21 @@ public class VariablesNodeModel implements NodeModel {
         evaluationRP.post(new Runnable() {
             public void run() {
                 Object shortDescription = getShortDescriptionSynch(o);
-                if (shortDescription != null && !"".equals(shortDescription)) {
+                if (shortDescription != null && !strEmpty.equals(shortDescription)) {
                     synchronized (shortDescriptionMap) {
                         shortDescriptionMap.put(o, shortDescription);
                     }
                     fireModelChange(new ModelEvent.NodeChanged(VariablesNodeModel.this,
-                        o, ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK));
+                            o, ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK));
                 }
             }
         });
-        return "";
+        return strEmpty;
     }
     
-    private String getShortDescriptionSynch (Object o) {
+    private String getShortDescriptionSynch(Object o) {
         if (o == TreeModel.ROOT)
-            return NbBundle.getBundle(VariablesNodeModel.class).getString("CTL_LocalsModel_Column_Name_Desc");
+            return LC_LocalsModelColumnNameDesc;
         if (o instanceof Field) {
         /*NM TEMPORARY COMMENTED OUT
             if (o instanceof ObjectVariable) {
@@ -141,22 +157,22 @@ public class VariablesNodeModel implements NodeModel {
                 String declaredType = ((Field) o).getDeclaredType ();
                 if (type.equals (declaredType))
                     try {
-                        return "(" + type + ") " + 
+                        return "(" + type + ") " +
                             ((ObjectVariable) o).getToStringValue ();
                     } catch (InvalidExpressionException ex) {
                         return ex.getLocalizedMessage ();
                     }
                 else
                     try {
-                        return "(" + declaredType + ") " + "(" + type + ") " + 
+                        return "(" + declaredType + ") " + "(" + type + ") " +
                             ((ObjectVariable) o).getToStringValue ();
                     } catch (InvalidExpressionException ex) {
                         return ex.getLocalizedMessage ();
                     }
             } else
         NM*/
-                return "(" + ((Field) o).getDeclaredType () + ") " + 
-                    ((Field) o).getValue ();
+            return "(" + ((Field) o).getDeclaredType() + ") " +  // NOI18N
+                    ((Field) o).getValue();
         }
         if (o instanceof LocalVariable) {
             /*NM TEMPORARY COMMENTED OUT
@@ -165,47 +181,48 @@ public class VariablesNodeModel implements NodeModel {
                 String declaredType = ((LocalVariable) o).getDeclaredType ();
                 if (type.equals (declaredType))
                     try {
-                        return "(" + type + ") " + 
+                        return "(" + type + ") " +
                             ((ObjectVariable) o).getToStringValue ();
                     } catch (InvalidExpressionException ex) {
                         return ex.getLocalizedMessage ();
                     }
                 else
                     try {
-                        return "(" + declaredType + ") " + "(" + type + ") " + 
+                        return "(" + declaredType + ") " + "(" + type + ") " +
                             ((ObjectVariable) o).getToStringValue ();
                     } catch (InvalidExpressionException ex) {
                         return ex.getLocalizedMessage ();
                     }
             }
-            */
-            return "(" + ((LocalVariable) o).getDeclaredType () + ") " + 
-                    ((LocalVariable) o).getValue ();
+             */
+            return "(" + ((LocalVariable) o).getDeclaredType() + ") " +  // NOI18N
+                    ((LocalVariable) o).getValue();
         }
         /*NM TEMPORARY COMMENTED OUT
         if (o instanceof Super)
             return ((Super) o).getType ();
         if (o instanceof This)
             try {
-                return "(" + ((This) o).getType () + ") " + 
+                return "(" + ((This) o).getType () + ") " +
                     ((This) o).getToStringValue ();
             } catch (InvalidExpressionException ex) {
                 return ex.getLocalizedMessage ();
             }
-        */
+         */
         String str = o.toString();
-        if (str.startsWith("SubArray")) { // NOI18N
+        if (str.startsWith(strSubArray)) {
             int index = str.indexOf('-');
-            return NbBundle.getMessage (VariablesNodeModel.class,
-                    "CTL_LocalsModel_Column_Descr_SubArray",
+            return NbBundle.getMessage(VariablesNodeModel.class,
+                    "CTL_LocalsModel_Column_Descr_SubArray", // NOI18N
                     str.substring(8, index), str.substring(index + 1));
         }
-        if (o == "NoInfo") // NOI18N
-            return NbBundle.getMessage(VariablesNodeModel.class, "CTL_No_Info_descr");
-        if (o == "No current thread") { // NOI18N
-            return NbBundle.getMessage(VariablesNodeModel.class, "NoCurrentThreadVar");
+        if (str.equals(strNoInfo)) {
+            return LC_NoInfo;
         }
-        return "";
+        if (str.equals(strNoCurrentThread)) {
+            return LC_NoCurrentThreadVar;
+        }
+        return strEmpty;
         //NM throw new UnknownTypeException (o);
     }
     
@@ -216,17 +233,17 @@ public class VariablesNodeModel implements NodeModel {
         //NM if (o instanceof Super) return ;
         //NM if (o instanceof This) return ;
         String str = o.toString();
-        if (str.startsWith("SubArray")) return ; // NOI18N
-        if (o == "NoInfo") return ; // NOI18N
-        if (o == "No current thread") return ; // NOI18N
-        throw new UnknownTypeException (o);
+        if (str.startsWith(strSubArray)) return ;
+        if (str.equals(strNoInfo)) return ;
+        if (str.equals(strNoCurrentThread)) return ;
+        throw new UnknownTypeException(o);
     }
     
-    public String getIconBase (Object o) throws UnknownTypeException {
+    public String getIconBase(Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT)
             return FIELD;
         if (o instanceof Field) {
-            if (((Field) o).isStatic ())
+            if (((Field) o).isStatic())
                 return STATIC_FIELD;
             else
                 return FIELD;
@@ -238,21 +255,22 @@ public class VariablesNodeModel implements NodeModel {
             return SUPER;
         if (o instanceof This)
             return FIELD;
-        */
-        if (o.toString().startsWith("SubArray")) // NOI18N
+         */
+        String str = o.toString();
+        if (str.startsWith(strSubArray))
             return LOCAL;
-        if (o == "NoInfo" || o == "No current thread") // NOI18N
+        if (str.equals(strNoInfo) || str.equals(strNoCurrentThread))
             return null;
-        throw new UnknownTypeException (o);
+        throw new UnknownTypeException(o);
     }
-
-    public void addModelListener (ModelListener l) {
+    
+    public void addModelListener(ModelListener l) {
         synchronized (modelListeners) {
             modelListeners.add(l);
         }
     }
-
-    public void removeModelListener (ModelListener l) {
+    
+    public void removeModelListener(ModelListener l) {
         synchronized (modelListeners) {
             modelListeners.remove(l);
         }

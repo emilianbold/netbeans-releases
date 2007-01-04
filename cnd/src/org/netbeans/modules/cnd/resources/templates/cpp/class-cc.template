@@ -1,0 +1,23 @@
+// 
+// File:   %<%NAME%>%.cc
+// Author: %<%USER%>%
+//
+// Created on %<%DATE%>%, %<%TIME%>%
+//
+
+#include %<%QUOTES%>%%<%NAME%>%.h%<%QUOTES%>%
+
+//
+// Constructor
+///
+%<%NAME%>%::%<%NAME%>%()
+{
+}
+
+//
+// Destructor
+//
+%<%NAME%>%::~%<%NAME%>%()
+{
+}
+

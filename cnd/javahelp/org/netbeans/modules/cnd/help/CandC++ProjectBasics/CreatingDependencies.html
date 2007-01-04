@@ -1,0 +1,57 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--
+Copyright &copy; 2006 Sun Microsystems, Inc. All rights reserved.
+Use is subject to license terms.
+ -->
+<html>
+<head>
+<link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" 
+type="text/css">
+<title>Creating Dependencies Between C or C++ Projects</title>
+</head>
+<body>
+<h2>Creating Dependencies Between C or C++ Projects</h2>
+<p><small><a href="#seealso">See Also</a>&nbsp; </small>
+<p>A C or C++ application or dynamic library often depends on static or dynamic libraries that 
+are linked with the object code by the linker. These libraries can be separate projects 
+that you designate as required projects of your C or C++ Application project.  
+Whenever you
+clean and build the project, the IDE also cleans and builds the required projects.
+</p>
+<p><b>To add a project dependency:</b></p>
+<ol>
+<li>In the Projects window, right-click the project and choose Properties.
+</li>
+<li>In the Project Properties dialog box, expand the Linker node and select 
+Libraries.
+</li>
+<li>In the Libraries panel, click the browse button.
+</li>
+<li>In the Libraries dialog box, click Add Project.
+</li>
+<li>In the Add Project dialog box, select the library project on which your 
+Application project depends. Click Add Project Library.
+</li>
+<li>Click OK in the Libraries dialog box and the Project Properties dialog box.
+</li>
+</ol>
+<table>
+<tr>
+<th colspan="2" align="left"><a name="seealso">See also</a></th>
+</tr>
+<tr>
+<td width="23"></td>
+<td><a href="Libraries.html">Libraries Dialog Box</a>
+</td>
+</tr>
+</table>
+<hr>
+<small>
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

@@ -174,11 +174,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-cnd-makeproject-api-actions-ConfigurationManagerAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.ConfigurationManagerAction"/>
             </file>
-            <!--
-            <file name="org-netbeans-modules-cnd-makeproject-api-actions-MoveIntoProject.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.MoveIntoProject"/>
-            </file>
-            -->
                                     
         </folder>
     </folder>

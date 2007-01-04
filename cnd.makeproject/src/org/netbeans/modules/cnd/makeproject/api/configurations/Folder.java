@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -275,21 +276,14 @@ public class Folder {
     }
     
     public Item[] getItemsAsArray() {
-        int count = 0;
-        Iterator iter = getElements().iterator();
-        while (iter.hasNext()) {
-            if (iter.next() instanceof Item)
-                count++;
-        }
-        Item[] items = new Item[count];
-        int i = 0;
-        iter = getElements().iterator();
+        Vector found = new Vector();
+        Iterator iter = new ArrayList(getElements()).iterator();
         while (iter.hasNext()) {
             Object o = iter.next();
             if (o instanceof Item)
-                items[i++] = (Item)o;
+                found.add(o);
         }
-        return items; // FIXUP
+        return (Item[])found.toArray(new Item[found.size()]);
     }
     
     /*
@@ -297,7 +291,7 @@ public class Folder {
      */
     public Set/*<FileObject>*/ getItemsAsFileObjectSet() {
         Vector files = new Vector();
-        Iterator iter = getElements().iterator();
+        Iterator iter = new ArrayList(getElements()).iterator();
         while (iter.hasNext()) {
             Item item = (Item)iter.next();
             if (item instanceof Item) {
@@ -316,7 +310,7 @@ public class Folder {
         Vector files = new Vector();
         
         if (!projectFilesOnly || isProjectFiles()) {
-            Iterator iter = getElements().iterator();
+            Iterator iter = new ArrayList(getElements()).iterator();
             while (iter.hasNext()) {
                 Object item = iter.next();
                 if (item instanceof Item) {
@@ -338,7 +332,7 @@ public class Folder {
      */
     public Set/*<DataObject>*/ getItemsAsDataObjectSet(String MIMETypeFilter) {
         Vector files = new Vector();
-        Iterator iter = getElements().iterator();
+        Iterator iter = new ArrayList(getElements()).iterator();
         while (iter.hasNext()) {
             Item item = (Item)iter.next();
             if (item instanceof Item) {
@@ -357,12 +351,11 @@ public class Folder {
         Vector files = new Vector();
         
         if (!projectFilesOnly || isProjectFiles()) {
-            Iterator iter = getElements().iterator();
+            Iterator iter = new ArrayList(getElements()).iterator();
             while (iter.hasNext()) {
                 Object item = iter.next();
                 if (item instanceof Item) {
                     DataObject da  = ((Item)item).getDataObject();
-                    System.out.println("MINE " + da.getPrimaryFile().getMIMEType());
                     if (da != null && (MIMETypeFilter == null || da.getPrimaryFile().getMIMEType().contains(MIMETypeFilter)))
                         files.add(da);
                 }
@@ -396,7 +389,7 @@ public class Folder {
      */
     public Vector getFolders() {
         Vector folders = new Vector();
-        Iterator iter = getElements().iterator();
+        Iterator iter = new ArrayList(getElements()).iterator();
         while (iter.hasNext()) {
             Object item = iter.next();
             if (item instanceof Folder) {
@@ -413,7 +406,7 @@ public class Folder {
         Vector folders = new Vector();
         
         if (!projectFilesOnly || isProjectFiles()) {
-            Iterator iter = getElements().iterator();
+            Iterator iter = new ArrayList(getElements()).iterator();
             while (iter.hasNext()) {
                 Object item = iter.next();
                 if (item instanceof Folder) {

@@ -481,6 +481,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         boolean isCompileConfiguration = ((MakeConfiguration)selectedConfigurations[0]).isCompileConfiguration();
         boolean includeLinkerDescription = true;
         boolean includeArchiveDescription = true;
+        boolean includeRunDebugDescriptions = true;
         
         for (int i = 0; i < selectedConfigurations.length; i++) {
             MakeConfiguration makeConfiguration = (MakeConfiguration)selectedConfigurations[i];
@@ -505,12 +506,22 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 includeMakefileDescription = false;
                 includeLinkerDescription = false;
             }
+            if (makeConfiguration.isLibraryConfiguration()) {
+                includeRunDebugDescriptions = false;
+            }
         }
         
         Vector descriptions = new Vector();
         descriptions.add(createGeneralDescription(project));
-        descriptions.add(getAuxDescription("Running")); // NOI18N
-        descriptions.add(getAuxDescription("Debug")); // NOI18N
+        // Add customizer nodes
+        if (includeRunDebugDescriptions) {
+            descriptions.add(getAuxDescription("Running")); // NOI18N
+            descriptions.add(getAuxDescription("Debug")); // NOI18N
+    //      descriptions.addAll(CustomizerRootNodeProvider.getInstance().getCustomizerNodes(false));
+            CustomizerNode advanced = getAdvancedCutomizerNode(descriptions);
+            if (advanced != null)
+                descriptions.add(advanced);
+        }
         if (includeMakefileDescription)
             descriptions.add(createMakefileDescription(project));
         if (includeNewDescription)
@@ -524,6 +535,32 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 "Configuration Properties", getString("CONFIGURATION_PROPERTIES"), (CustomizerNode[])descriptions.toArray(new CustomizerNode[descriptions.size()]));  // NOI18N
         
         return new ConfigurationNode(rootDescription);
+    }
+    
+    CustomizerNode getAdvancedCutomizerNode(Vector descriptions) {
+//      Vector advancedNodes = CustomizerRootNodeProvider.getInstance().getCustomizerNodes(true);
+        Vector advancedNodes = new Vector();
+        CustomizerNode[] nodes = CustomizerRootNodeProvider.getInstance().getCustomizerNodesAsArray();
+        for (int i = 0; i < nodes.length; i++) {
+            if (!descriptions.contains(nodes[i]))
+                advancedNodes.add(nodes[i]);
+        }
+        if (advancedNodes.size() == 0)
+            return null;
+        return new CustomizerNode(
+                "advanced", // NOI18N
+                getString("ADVANCED_CUSTOMIZER_NODE"), // NOI18N
+                (CustomizerNode[])advancedNodes.toArray(new CustomizerNode[advancedNodes.size()]));
+    }
+    
+    private CustomizerNode getAuxDescription(String nodeName) {
+        CustomizerNode node = CustomizerRootNodeProvider.getInstance().getCustomizerNode(nodeName);
+        if (node != null)
+            return node;
+        return new CustomizerNode(
+                nodeName, // NOI18N
+                nodeName + " - not found", // NOI18N
+                null);
     }
     
     private Node createRootNodeItem(Project project, Item item) {
@@ -576,16 +613,6 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 "Configuration Properties", getString("CONFIGURATION_PROPERTIES"), descriptions );  // NOI18N
         
         return new ConfigurationNode(rootDescription);
-    }
-    
-    private CustomizerNode getAuxDescription(String nodeName) {
-        CustomizerNode node = CustomizerRootNodeProvider.getInstance().getCustomizerNode(nodeName);
-        if (node != null)
-            return node;
-        return new CustomizerNode(
-                nodeName, // NOI18N
-                nodeName + " - not found", // NOI18N
-                null);
     }
     
     private CustomizerNode createGeneralDescription(Project project) {

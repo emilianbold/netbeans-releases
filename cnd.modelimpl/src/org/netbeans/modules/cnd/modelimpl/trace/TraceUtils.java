@@ -21,7 +21,7 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 
 import antlr.Token;
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.antlr2.generated.CPPParser;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPParser;
 
 /**
  * Misc trace-related utilities

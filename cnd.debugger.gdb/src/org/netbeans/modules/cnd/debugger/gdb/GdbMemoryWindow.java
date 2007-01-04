@@ -200,7 +200,7 @@ public final class GdbMemoryWindow extends TopComponent
 //System.out.println("GdbMemoryWindow.actionPerformed("+actionEvent+")  getActionCommand()="+actionEvent.getActionCommand());
         String ac = actionEvent.getActionCommand();
         //System.out.println("  GdbMemoryWindow.actionPerformed()  actionEvent.getActionCommand()="+ac);
-        if (ac.equals("comboBoxEdited")) {
+        if (ac.equals("comboBoxEdited")) { //NOI18N
             // Changed start address
             JComboBox cb = (JComboBox)actionEvent.getSource();
             memory_start=(String)cb.getSelectedItem();
@@ -279,8 +279,7 @@ public final class GdbMemoryWindow extends TopComponent
                     }
                 }
             }
-            current_addrs.add("   " + memaddr + "  " + memvalue +
-                    "\n");
+            current_addrs.add("   " + memaddr + "  " + memvalue + "\n"); //NOI18N
         }
         updateWindow();
     }
@@ -309,7 +308,7 @@ public final class GdbMemoryWindow extends TopComponent
                 for ( ; j < total_len ; j++) {
                     c = memvalue.charAt(j);
                     if ((c == ' ') || (c == '\t')) {
-                        new_memvalue = new_memvalue + " "; // NOI18N
+                        new_memvalue = new_memvalue + ' ';
                         continue;
                     }
                     break;
@@ -364,14 +363,13 @@ public final class GdbMemoryWindow extends TopComponent
             ta.setEditable(false);
             ta.setWrapStyleWord(false);
             Font f = ta.getFont();
-            ta.setFont(new Font("Monospaced", f.getStyle(),
-                    f.getSize())); //NOI18N
+            ta.setFont(new Font("Monospaced", f.getStyle(), f.getSize())); //NOI18N
             
             hp = new JPanel(new BorderLayout());
-            JLabel hp_name = new JLabel("        Address                       ");
-            JLabel hp_value = new JLabel("                                Value");
-            hp_name.setToolTipText("Address in virtual memory (hexadecimal)");
-            hp_value.setToolTipText("Memory value");
+            JLabel hp_name = new JLabel("        " + getString("LBL_HP_Name") + "                       "); //NOI18N
+            JLabel hp_value = new JLabel("                                " + getString("LBL_HP_Value")); //NOI18N
+            hp_name.setToolTipText(getString("TTT_HP_Name")); //NOI18N
+            hp_value.setToolTipText(getString("TTT_HP_Value")); //NOI18N
             hp.add(hp_name, BorderLayout.WEST);
             hp.add(hp_value, BorderLayout.CENTER);
             
@@ -381,20 +379,20 @@ public final class GdbMemoryWindow extends TopComponent
             memory_format = 1;
             
             cp = new JPanel(new FlowLayout());
-            cp.setToolTipText("Control panel to set the start address and length. Use pop-up menu to specify output format.");
+            cp.setToolTipText(getString("TTT_Control_Panel")); //NOI18N
             cp_addressList = new JComboBox();
             cp_addressList.addItem(memory_start);
             cp_addressList.setEditable(true);
             cp_addressList.addActionListener(this);
-            JLabel cp_text1 = new JLabel("Address");
-            cp_text1.setToolTipText("Start address (hexadecimal)");
-            JLabel cp_text2 = new JLabel("Length");
-            cp_text2.setToolTipText("Length in words (decimal)");
+            JLabel cp_text1 = new JLabel(getString("LBL_CP_Text1")); //NOI18N
+            cp_text1.setToolTipText(getString("TTT_CP_Text1")); //NOI18N
+            JLabel cp_text2 = new JLabel(getString("LBL_CP_Text2")); //NOI18N
+            cp_text2.setToolTipText(getString("TTT_CP_Text2")); //NOI18N
             memory_length_jtf = new JTextField(6);
             memory_length_jtf.setText(memory_length);
             memory_length_jtf.addActionListener(this);
-            JLabel cp_text3 = new JLabel("Format");
-            cp_text3.setToolTipText("Output format");
+            JLabel cp_text3 = new JLabel(getString("LBL_CP_Text3")); //NOI18N
+            cp_text3.setToolTipText(getString("TTT_CP_Text3")); //NOI18N
             format_jcb = new JComboBox(memory_formats);
             format_jcb.setSelectedIndex(memory_format);
             format_jcb.addActionListener(this);
@@ -409,7 +407,7 @@ public final class GdbMemoryWindow extends TopComponent
             tree.add(ta_sp, BorderLayout.CENTER);
             tree.add(cp, BorderLayout.SOUTH);
             AccessibleContext ac = tree.getAccessibleContext();
-            ac.setAccessibleDescription("Window to view and change memory"); // NOI18N
+            ac.setAccessibleDescription(getString("AD_GdbMemoryView")); //NOI18N
             ac.setAccessibleName(getString("TITLE_GdbMemoryView")); // NOI18N
             add(tree, "Center");  //NOI18N
             
@@ -535,8 +533,7 @@ public final class GdbMemoryWindow extends TopComponent
     
     class FollowSelectedPointerAction extends AbstractAction {
         public FollowSelectedPointerAction() {
-            super("Follow Selected Pointer",
-                    new ImageIcon("paste.gif"));
+            super("Follow Selected Pointer", new ImageIcon("paste.gif")); //NOI18N
         }
         public void actionPerformed(ActionEvent ev) {
             FollowSelectedPointer(selected_text);
@@ -545,8 +542,7 @@ public final class GdbMemoryWindow extends TopComponent
     
     class RefreshMemoryAction extends AbstractAction {
         public RefreshMemoryAction() {
-            super("Refresh",
-                    new ImageIcon("paste.gif"));
+            super("Refresh", new ImageIcon("paste.gif")); //NOI18N
         }
         public void actionPerformed(ActionEvent ev) {
             String s=(String)((cp_addressList.getEditor()).getItem());
@@ -559,8 +555,7 @@ public final class GdbMemoryWindow extends TopComponent
     
     class HideTextAction extends AbstractAction {
         public HideTextAction() {
-            super("Hide Text",
-                    new ImageIcon("cut.gif"));
+            super("Hide Text", new ImageIcon("cut.gif")); //NOI18N
         }
         public void actionPerformed(ActionEvent ev) {
 //System.out.println("HideTextAction.ActionPerformed(Hide Text)");
@@ -569,8 +564,7 @@ public final class GdbMemoryWindow extends TopComponent
     
     class ShowDynamicHelpPageAction extends AbstractAction {
         public ShowDynamicHelpPageAction() {
-            super("More Info",
-                    new ImageIcon("help.gif"));
+            super("More Info", new ImageIcon("help.gif")); //NOI18N
         }
         public void actionPerformed(ActionEvent ev) {
 //System.out.println("ShowDynamicHelpPageAction.ActionPerformed(More Info)");

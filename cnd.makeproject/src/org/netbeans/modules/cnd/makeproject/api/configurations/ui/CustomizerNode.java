@@ -30,12 +30,18 @@ public class CustomizerNode {
 
     public String name;
     public String displayName;
+    public boolean advanced;
     public CustomizerNode[] children;
         
+    public CustomizerNode(String name, String displayName, boolean advanced, CustomizerNode[] children) {
+        this.name = name;
+        this.displayName = displayName;
+        this.advanced = advanced;
+        this.children = children;
+    }
+    
     public CustomizerNode(String name, String displayName, CustomizerNode[] children) {
-            this.name = name;
-            this.displayName = displayName;
-            this.children = children;
+        this(name, displayName, false, children);
     }
 
     public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {

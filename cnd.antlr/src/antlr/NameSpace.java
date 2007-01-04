@@ -9,8 +9,6 @@ package antlr;
  * nested, so this contains a vector of all the nested names.
  *
  * @author David Wagner (JPL/Caltech) 8-12-00
- *
- * $Id$
  */
 
 import java.util.Vector;

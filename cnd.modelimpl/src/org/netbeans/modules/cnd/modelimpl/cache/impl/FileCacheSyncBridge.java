@@ -24,15 +24,15 @@ import antlr.collections.AST;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.modelimpl.apt.impl.structure.APTBuilder;
-import org.netbeans.modules.cnd.modelimpl.apt.impl.support.APTTokenStreamBuilder;
-import org.netbeans.modules.cnd.modelimpl.apt.structure.APTFile;
-import org.netbeans.modules.cnd.modelimpl.apt.support.APTPreprocState;
-import org.netbeans.modules.cnd.modelimpl.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.apt.support.APTBuilder;
+import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTPreprocState;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.cache.FileCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  * synchronized bridge to cache file
@@ -293,7 +293,7 @@ final class FileCacheSyncBridge {
 
                     TokenStream ts = APTTokenStreamBuilder.buildTokenStream(path, stream);
                     // build apt from token stream
-                    APTFile aptFull = new APTBuilder().buildAPT(path, ts);
+                    APTFile aptFull = APTBuilder.buildAPT(path, ts);
                     if (aptFull != null) {
                         storage.setAPT(aptFull);
                         APTFile aptLight = (APTFile) APTBuilder.buildAPTLight(aptFull);

@@ -1,0 +1,11 @@
+!     
+! File:   %<%NAME%>%.f90
+! Author: %<%USER%>%
+!
+! Created on %<%DATE%>%, %<%TIME%>%
+!
+
+MODULE %<%NAME%>%
+
+
+END MODULE %<%NAME%>%

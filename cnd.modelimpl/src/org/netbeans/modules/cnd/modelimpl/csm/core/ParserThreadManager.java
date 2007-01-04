@@ -22,6 +22,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.openide.util.RequestProcessor;
 
 /**

@@ -42,5 +42,9 @@ public class TypedefNode extends ObjectNode {
         setDisplayName(shortName);
         setShortDescription(longName);
     }
+
+    protected int getWeight() {
+        return CLASSIFIER_WEIGHT;
+    }
     
 }

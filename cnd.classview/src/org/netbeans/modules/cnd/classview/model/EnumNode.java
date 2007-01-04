@@ -19,37 +19,37 @@
 
 package org.netbeans.modules.cnd.classview.model;
 
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.classview.Diagnostic;
-import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
-import java.awt.Image;
 import java.util.*;
 import org.openide.nodes.*;
-import org.openide.util.Utilities;
 
 import  org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.classview.model.CVUtil.FillingDone;
 
 /**
  * @author Vladimir Kvasihn
  */
-public class EnumNode extends ObjectNode {
+public class EnumNode extends ClassifierNode {
 
     public EnumNode(CsmEnum enumeration) {
-        super(enumeration, new Children.SortedArray());
+        super(enumeration, new FillingDone());
         String shortName = enumeration.getName();
         String longName = enumeration.getQualifiedName();
         setName(shortName);
         setDisplayName(shortName);
         setShortDescription(longName);
-        fill();
     }
-    
-    private void fill() {
-        List nodes = new LinkedList();
+
+    protected void objectChanged() {
+        final List nodes = new LinkedList();
 	for (Iterator iter = ((CsmEnum) getObject()).getEnumerators().iterator(); iter.hasNext();) {
 	    nodes.add(new EnumeratorNode((CsmEnumerator) iter.next()));
 	}
-	getChildren().remove(getChildren().getNodes());
-        getChildren().add( (Node[]) nodes.toArray(new Node[nodes.size()]) );
+        final Children children = getChildren();
+        children.MUTEX.writeAccess(new Runnable(){
+            public void run() {
+                children.remove(getChildren().getNodes());
+                children.add( (Node[]) nodes.toArray(new Node[nodes.size()]) );
+            }
+        });
     }
 }

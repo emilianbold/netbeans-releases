@@ -1,0 +1,496 @@
+/* 
+ * File:   %<%NAME%>%.c
+ * Author: %<%USER%>%
+ *
+ * Created on %<%DATE%>%, %<%TIME%>%
+ */
+
+#include <stdlib.h>
+#include <X11/Xatom.h>
+#include <X11/Intrinsic.h>
+#include <X11/Shell.h>
+
+#include <Xm/Xm.h>
+#include <Xm/CascadeB.h>
+#include <Xm/DialogS.h>
+#include <Xm/Form.h>
+#include <Xm/Label.h>
+#include <Xm/PushB.h>
+#include <Xm/RowColumn.h>
+#include <Xm/ScrollBar.h>
+#include <Xm/ScrolledW.h>
+#include <Xm/Separator.h>
+
+#include %<%QUOTES%>%%<%NAME%>%.h%<%QUOTES%>%
+
+typedef struct PixelResources_s { 
+	Pixel buttonBackground;
+} PixelResources_t, *PixelResources_p;
+
+extern void OnFileNew(Widget, XtPointer, XtPointer) ;
+extern void OnFileOpen(Widget, XtPointer, XtPointer) ;
+extern void OnFileClose(Widget, XtPointer, XtPointer) ;
+extern void OnFileSave(Widget, XtPointer, XtPointer) ;
+extern void OnFileSaveAs(Widget, XtPointer, XtPointer) ;
+extern void OnFileRevert(Widget, XtPointer, XtPointer) ;
+extern void OnFilePrint(Widget, XtPointer, XtPointer) ;
+extern void OnFileQuit(Widget, XtPointer, XtPointer) ;
+extern void OnEditUndo(Widget, XtPointer, XtPointer) ;
+extern void OnEditCut(Widget, XtPointer, XtPointer) ;
+extern void OnEditCopy(Widget, XtPointer, XtPointer) ;
+extern void OnEditPaste(Widget, XtPointer, XtPointer) ;
+extern void OnEditClear(Widget, XtPointer, XtPointer) ;
+extern void OnHelpHelp(Widget, XtPointer, XtPointer) ;
+
+
+/* Global Declarations */
+
+uiShell_p uiShell = (uiShell_p) NULL;
+static int _xd_initialised = 0 ;
+static PixelResources_t pixel_resources;
+
+
+/*
+ * initialise_objects
+ */
+static void
+initialise_objects(Widget parent) {
+	XrmValue from_value, to_value; /* For resource conversions */
+	if (_xd_initialised) return ;
+	_xd_initialised = 1;
+	while ( XtParent ( parent ) )
+		parent = XtParent ( parent );
+	if (DefaultDepthOfScreen(DefaultScreenOfDisplay(XtDisplay(parent))) != 1) {
+                from_value.addr = (char *)"#b0b0c4c4dede";
+	        from_value.size = strlen(from_value.addr)+1;
+	        to_value.addr = NULL;
+	        XtConvertAndStore( parent, XmRString, &from_value,
+				   XmRPixel, &to_value);
+		if ( to_value.addr )
+		        pixel_resources.buttonBackground =
+			          *(Pixel*)to_value.addr;
+	}
+}
+
+/*
+ * create_uiShell
+ */
+uiShell_p
+create_uiShell (Display *display, char *app_name, int app_argc, char **app_argv) {
+	Widget children[11];           /* Children to manage */
+	Arg al[64];                    /* Arg List */
+	register int ac = 0;           /* Arg Count */
+	XrmValue from_value, to_value; /* For resource conversion */
+	XtPointer tmp_value;          /* ditto */
+	XmString xmstrings[16];    /* temporary storage for XmStrings */
+
+	uiShell_p uiShell = (uiShell_p)NULL;
+	Widget separator6 = (Widget)NULL;
+	Widget separator7 = (Widget)NULL;
+	Widget separator8 = (Widget)NULL;
+	Widget separator9 = (Widget)NULL;
+	Widget separator10 = (Widget)NULL;
+
+	uiShell = (uiShell_p) XtMalloc (  sizeof ( uiShell_t ) );
+
+	XtSetArg(al[ac], XmNwidth, 600); ac++;
+	XtSetArg(al[ac], XmNheight, 500); ac++;
+	XtSetArg(al[ac], XmNallowShellResize, TRUE); ac++;
+	XtSetArg(al[ac], XmNtitle, "untitled"); ac++;
+	XtSetArg(al[ac], XmNargc, app_argc); ac++;
+	XtSetArg(al[ac], XmNargv, app_argv); ac++;
+	uiShell->uiShell = XtAppCreateShell ( app_name, "XApplication", applicationShellWidgetClass, display, al, ac );
+	initialise_objects ( uiShell->uiShell );
+
+	ac = 0;
+	XtSetArg(al[ac], XmNautoUnmanage, FALSE); ac++;
+	XtSetArg(al[ac], XmNheight, 500); ac++;
+	XtSetArg(al[ac], XmNwidth, 500); ac++;
+	uiShell->mainForm = XmCreateForm ( uiShell->uiShell, (char *) "mainForm", al, ac );
+
+	ac = 0;
+	uiShell->menuBar = XmCreateMenuBar ( uiShell->mainForm, (char *) "menuBar", al, ac );
+	from_value.addr = (char *) "F" ;
+	from_value.size = strlen( from_value.addr ) + 1;
+	to_value.addr = NULL;
+	XtConvertAndStore (uiShell->menuBar, XmRString, &from_value, XmRKeySym, &to_value);
+	if ( to_value.addr )
+	{
+		XtSetArg(al[ac], XmNmnemonic, *(KeySym *) to_value.addr); ac++;
+	}
+	uiShell->File = XmCreateCascadeButton ( uiShell->menuBar, (char *) "File", al, ac );
+
+	ac = 0;
+	uiShell->fileMenu = XmCreatePulldownMenu ( uiShell->menuBar, (char *) "fileMenu", al, ac );
+	from_value.addr = (char *)"N" ;
+	from_value.size = strlen( from_value.addr ) + 1;
+	to_value.addr = NULL;
+	XtConvertAndStore (uiShell->fileMenu, XmRString, &from_value, XmRKeySym, &to_value);
+	if ( to_value.addr )
+	{
+		XtSetArg(al[ac], XmNmnemonic, *(KeySym *) to_value.addr); ac++;
+	}
+	xmstrings[0] = XmStringCreateLtoR ( (char *) "Ctrl+N", (XmStringCharSet)XmFONTLIST_DEFAULT_TAG );
+	XtSetArg(al[ac], XmNacceleratorText, xmstrings[0]); ac++;
+	uiShell->newItem = XmCreatePushButton ( uiShell->fileMenu, (char *) "New", al, ac );
+	XmStringFree ( xmstrings [ 0 ] );
+
+	ac = 0;
+	from_value.addr = (char *)"O" ;
+	from_value.size = strlen( from_value.addr ) + 1;
+	to_value.addr = NULL;
+	XtConvertAndStore (uiShell->fileMenu, XmRString, &from_value, XmRKeySym, &to_value);
+	if ( to_value.addr )
+	{
+		XtSetArg(al[ac], XmNmnemonic, *(KeySym *) to_value.addr); ac++;
+	}
+	xmstrings[0] = XmStringCreateLtoR ( (char *) "Ctrl+O", (XmStringCharSet)XmFONTLIST_DEFAULT_TAG );
+	XtSetArg(al[ac], XmNacceleratorText, xmstrings[0]); ac++;
+	uiShell->openItem = XmCreatePushButton ( uiShell->fileMenu, (char *) "Open...", al, ac );
+	XmStringFree ( xmstrings [ 0 ] );
+
+	ac = 0;
+	from_value.addr = (char *)"C" ;
+	from_value.size = strlen( from_value.addr ) + 1;
+	to_value.addr = NULL;
+	XtConvertAndStore (uiShell->fileMenu, XmRString, &from_value, XmRKeySym, &to_value);
+	if ( to_value.addr )
+	{
+		XtSetArg(al[ac], XmNmnemonic, *(KeySym *) to_value.addr); ac++;
+	}
+	uiShell->closeItem = XmCreatePushButton ( uiShell->fileMenu, (char *) "Close", al, ac );
+
+	ac = 0;
+	separator6 = XmCreateSeparator ( uiShell->fileMenu, (char *) "separator6", al, ac );
+	from_value.addr = (char *)"S" ;
+	from_value.size = strlen( from_value.addr ) + 1;
+	to_value.addr = NULL;
+	XtConvertAndStore (uiShell->fileMenu, XmRString, &from_value, XmRKeySym, &to_value);
+	if ( to_value.addr )
+	{
+		XtSetArg(al[ac], XmNmnemonic, *(KeySym *) to_value.addr); ac++;
+	}
+	xmstrings[0] = XmStringCreateLtoR ( (char *) "Ctrl+S", (XmStringCharSet)XmFONTLIST_DEFAULT_TAG );
+	XtSetArg(al[ac], XmNacceleratorText, xmstrings[0]); ac++;
+	uiShell->saveItem = XmCreatePushButton ( uiShell->fileMenu, (char *) "Save", al, ac );
+	XmStringFree ( xmstrings [ 0 ] );
+
+	ac = 0;
+	from_value.addr = (char *)"A" ;
+	from_value.size = strlen( from_value.addr ) + 1;
+	to_value.addr = NULL;
+	XtConvertAndStore (uiShell->fileMenu, XmRString, &from_value, XmRKeySym, &to_value);
+	if ( to_value.addr )
+	{
+		XtSetArg(al[ac], XmNmnemonic, *(KeySym *) to_value.addr); ac++;
+	}
+	uiShell->saveAsItem = XmCreatePushButton ( uiShell->fileMenu, (char *) "Save As...", al, ac );
+
+	ac = 0;
+	from_value.addr = (char *)"R" ;
+	from_value.size = strlen( from_value.addr ) + 1;
+	to_value.addr = NULL;
+	XtConvertAndStore (uiShell->fileMenu, XmRString, &from_value, XmRKeySym, &to_value);
+	if ( to_value.addr )
+	{
+		XtSetArg(al[ac], XmNmnemonic, *(KeySym *) to_value.addr); ac++;
+	}
+	uiShell->revertItem = XmCreatePushButton ( uiShell->fileMenu, (char *) "Revert to Saved", al, ac );
+
+	ac = 0;
+	separator7 = XmCreateSeparator ( uiShell->fileMenu, (char *) "separator7", al, ac );
+	from_value.addr = (char *)"P" ;
+	from_value.size = strlen( from_value.addr ) + 1;
+	to_value.addr = NULL;
+	XtConvertAndStore (uiShell->fileMenu, XmRString, &from_value, XmRKeySym, &to_value);
+	if ( to_value.addr )
+	{
+		XtSetArg(al[ac], XmNmnemonic, *(KeySym *) to_value.addr); ac++;
+	}
+	xmstrings[0] = XmStringCreateLtoR ( (char *) "Ctrl+P", (XmStringCharSet)XmFONTLIST_DEFAULT_TAG );
+	XtSetArg(al[ac], XmNacceleratorText, xmstrings[0]); ac++;
+	uiShell->printItem = XmCreatePushButton ( uiShell->fileMenu, (char *) "Print...", al, ac );
+	XmStringFree ( xmstrings [ 0 ] );
+
+	ac = 0;
+	separator8 = XmCreateSeparator ( uiShell->fileMenu, (char *) "separator8", al, ac );
+	from_value.addr = (char *)"E" ;
+	from_value.size = strlen( from_value.addr ) + 1;
+	to_value.addr = NULL;
+	XtConvertAndStore (uiShell->fileMenu, XmRString, &from_value, XmRKeySym, &to_value);
+	if ( to_value.addr )
+	{
+		XtSetArg(al[ac], XmNmnemonic, *(KeySym *) to_value.addr); ac++;
+	}
+	xmstrings[0] = XmStringCreateLtoR ( (char *) "Ctrl+E", (XmStringCharSet)XmFONTLIST_DEFAULT_TAG );
+	XtSetArg(al[ac], XmNacceleratorText, xmstrings[0]); ac++;
+	uiShell->quitItem = XmCreatePushButton ( uiShell->fileMenu, (char *) "Exit", al, ac );
+	XmStringFree ( xmstrings [ 0 ] );
+
+	ac = 0;
+	from_value.addr = (char *)"E" ;
+	from_value.size = strlen( from_value.addr ) + 1;
+	to_value.addr = NULL;
+	XtConvertAndStore (uiShell->menuBar, XmRString, &from_value, XmRKeySym, &to_value);
+	if ( to_value.addr )
+	{
+		XtSetArg(al[ac], XmNmnemonic, *(KeySym *) to_value.addr); ac++;
+	}
+	uiShell->Edit = XmCreateCascadeButton ( uiShell->menuBar, (char *) "Edit", al, ac );
+
+	ac = 0;
+	uiShell->editMenu = XmCreatePulldownMenu ( uiShell->menuBar, (char *) "editMenu", al, ac );
+	from_value.addr = (char *)"U" ;
+	from_value.size = strlen( from_value.addr ) + 1;
+	to_value.addr = NULL;
+	XtConvertAndStore (uiShell->editMenu, XmRString, &from_value, XmRKeySym, &to_value);
+	if ( to_value.addr )
+	{
+		XtSetArg(al[ac], XmNmnemonic, *(KeySym *) to_value.addr); ac++;
+	}
+	xmstrings[0] = XmStringCreateLtoR ( (char *) "Ctrl+Z", (XmStringCharSet)XmFONTLIST_DEFAULT_TAG );
+	XtSetArg(al[ac], XmNacceleratorText, xmstrings[0]); ac++;
+	uiShell->undoItem = XmCreatePushButton ( uiShell->editMenu, (char *) "Undo", al, ac );
+	XmStringFree ( xmstrings [ 0 ] );
+
+	ac = 0;
+	separator9 = XmCreateSeparator ( uiShell->editMenu, (char *) "separator9", al, ac );
+	from_value.addr = (char *)"t" ;
+	from_value.size = strlen( from_value.addr ) + 1;
+	to_value.addr = NULL;
+	XtConvertAndStore (uiShell->editMenu, XmRString, &from_value, XmRKeySym, &to_value);
+	if ( to_value.addr )
+	{
+		XtSetArg(al[ac], XmNmnemonic, *(KeySym *) to_value.addr); ac++;
+	}
+	xmstrings[0] = XmStringCreateLtoR ( (char *) "Ctrl+X", (XmStringCharSet)XmFONTLIST_DEFAULT_TAG );
+	XtSetArg(al[ac], XmNacceleratorText, xmstrings[0]); ac++;
+	uiShell->cutItem = XmCreatePushButton ( uiShell->editMenu, (char *) "Cut", al, ac );
+	XmStringFree ( xmstrings [ 0 ] );
+
+	ac = 0;
+	from_value.addr = (char *) "C" ;
+	from_value.size = strlen( from_value.addr ) + 1;
+	to_value.addr = NULL;
+	XtConvertAndStore (uiShell->editMenu, XmRString, &from_value, XmRKeySym, &to_value);
+	if ( to_value.addr )
+	{
+		XtSetArg(al[ac], XmNmnemonic, *(KeySym *) to_value.addr); ac++;
+	}
+	xmstrings[0] = XmStringCreateLtoR ( (char *) "Ctrl+C", (XmStringCharSet)XmFONTLIST_DEFAULT_TAG );
+	XtSetArg(al[ac], XmNacceleratorText, xmstrings[0]); ac++;
+	uiShell->copyItem = XmCreatePushButton ( uiShell->editMenu, (char *) "Copy", al, ac );
+	XmStringFree ( xmstrings [ 0 ] );
+
+	ac = 0;
+	from_value.addr = (char *)"P" ;
+	from_value.size = strlen( from_value.addr ) + 1;
+	to_value.addr = NULL;
+	XtConvertAndStore (uiShell->editMenu, XmRString, &from_value, XmRKeySym, &to_value);
+	if ( to_value.addr )
+	{
+		XtSetArg(al[ac], XmNmnemonic, *(KeySym *) to_value.addr); ac++;
+	}
+	xmstrings[0] = XmStringCreateLtoR ( (char *) "Ctrl+V", (XmStringCharSet)XmFONTLIST_DEFAULT_TAG );
+	XtSetArg(al[ac], XmNacceleratorText, xmstrings[0]); ac++;
+	uiShell->pasteItem = XmCreatePushButton ( uiShell->editMenu, (char *) "Paste", al, ac );
+	XmStringFree ( xmstrings [ 0 ] );
+
+	ac = 0;
+	separator10 = XmCreateSeparator ( uiShell->editMenu, (char *) "separator10", al, ac );
+	from_value.addr = (char *)"e" ;
+	from_value.size = strlen( from_value.addr ) + 1;
+	to_value.addr = NULL;
+	XtConvertAndStore (uiShell->editMenu, XmRString, &from_value, XmRKeySym, &to_value);
+	if ( to_value.addr )
+	{
+		XtSetArg(al[ac], XmNmnemonic, *(KeySym *) to_value.addr); ac++;
+	}
+	xmstrings[0] = XmStringCreateLtoR ( (char *) "Del", (XmStringCharSet)XmFONTLIST_DEFAULT_TAG );
+	XtSetArg(al[ac], XmNacceleratorText, xmstrings[0]); ac++;
+	uiShell->clearItem = XmCreatePushButton ( uiShell->editMenu, (char *) "Clear", al, ac );
+	XmStringFree ( xmstrings [ 0 ] );
+
+	ac = 0;
+	from_value.addr = (char *)"H" ;
+	from_value.size = strlen( from_value.addr ) + 1;
+	to_value.addr = NULL;
+	XtConvertAndStore (uiShell->menuBar, XmRString, &from_value, XmRKeySym, &to_value);
+	if ( to_value.addr )
+	{
+		XtSetArg(al[ac], XmNmnemonic, *(KeySym *) to_value.addr); ac++;
+	}
+	uiShell->Help = XmCreateCascadeButton ( uiShell->menuBar, (char *) "Help", al, ac );
+
+	ac = 0;
+	uiShell->helpMenu = XmCreatePulldownMenu ( uiShell->menuBar, (char *) "helpMenu", al, ac );
+	from_value.addr = (char *)"O" ;
+	from_value.size = strlen( from_value.addr ) + 1;
+	to_value.addr = NULL;
+	XtConvertAndStore (uiShell->helpMenu, XmRString, &from_value, XmRKeySym, &to_value);
+	if ( to_value.addr )
+	{
+		XtSetArg(al[ac], XmNmnemonic, *(KeySym *) to_value.addr); ac++;
+	}
+	uiShell->onVersionItem = XmCreatePushButton ( uiShell->helpMenu, (char *) "On Version...", al, ac );
+
+	ac = 0;
+	from_value.addr = (char *)"H" ;
+	from_value.size = strlen( from_value.addr ) + 1;
+	to_value.addr = NULL;
+	XtConvertAndStore (uiShell->helpMenu, XmRString, &from_value, XmRKeySym, &to_value);
+	if ( to_value.addr )
+	{
+		XtSetArg(al[ac], XmNmnemonic, *(KeySym *) to_value.addr); ac++;
+	}
+	uiShell->helpItem = XmCreatePushButton ( uiShell->helpMenu, (char *) "Help...", al, ac );
+
+	ac = 0;
+	XtSetArg(al[ac], XmNmenuHelpWidget, uiShell->Help); ac++;
+	XtSetValues ( uiShell->menuBar, al, ac );
+
+	ac = 0;
+	XtSetArg(al[ac], XmNscrollingPolicy, XmAUTOMATIC); ac++;
+	uiShell->scrolledWin = XmCreateScrolledWindow ( uiShell->mainForm, (char *) "scrolledWin", al, ac );
+	
+	ac = 0;
+	XtSetArg(al[ac], XmNhorizontalScrollBar, &uiShell->hsb); ac++;
+	XtSetArg(al[ac], XmNverticalScrollBar, &uiShell->vsb); ac++;
+	XtGetValues(uiShell->scrolledWin, al, ac );
+
+	ac = 0;
+	XtSetArg(al[ac], XmNspacing, 0); ac++;
+	XtSetArg(al[ac], XmNorientation, XmHORIZONTAL); ac++;
+	XtSetArg(al[ac], XmNbottomAttachment, XmATTACH_FORM); ac++;
+	uiShell->statusBar = XmCreateRowColumn ( uiShell->mainForm, (char *)"statusBar", al, ac );
+
+	ac = 0;
+	xmstrings[0] = XmStringCreateLtoR ( (char *)"Help prompts go here.", (XmStringCharSet)XmFONTLIST_DEFAULT_TAG );
+	XtSetArg(al[ac], XmNlabelString, xmstrings[0]); ac++;
+	XtSetArg(al[ac], XmNalignment, XmALIGNMENT_BEGINNING); ac++;
+	uiShell->statusLabel = XmCreateLabel ( uiShell->statusBar, (char *)"statusLabel", al, ac );
+	XmStringFree ( xmstrings [ 0 ] );
+
+	ac = 0;
+	XtSetArg(al[ac], XmNtopAttachment, XmATTACH_FORM); ac++;
+	XtSetArg(al[ac], XmNleftAttachment, XmATTACH_FORM); ac++;
+	XtSetArg(al[ac], XmNrightAttachment, XmATTACH_FORM); ac++;
+	XtSetValues ( uiShell->menuBar,al, ac );
+
+	ac = 0;
+	XtSetArg(al[ac], XmNtopAttachment, XmATTACH_WIDGET); ac++;
+	XtSetArg(al[ac], XmNtopWidget, uiShell->menuBar); ac++;
+	XtSetArg(al[ac], XmNbottomAttachment, XmATTACH_WIDGET); ac++;
+	XtSetArg(al[ac], XmNbottomWidget, uiShell->statusBar); ac++;
+	XtSetArg(al[ac], XmNleftAttachment, XmATTACH_FORM); ac++;
+	XtSetArg(al[ac], XmNrightAttachment, XmATTACH_FORM); ac++;
+	XtSetValues ( uiShell->scrolledWin,al, ac );
+	ac = 0;
+
+	XtSetArg(al[ac], XmNtopAttachment, XmATTACH_NONE); ac++;
+	XtSetArg(al[ac], XmNbottomAttachment, XmATTACH_FORM); ac++;
+	XtSetArg(al[ac], XmNleftAttachment, XmATTACH_FORM); ac++;
+	XtSetArg(al[ac], XmNrightAttachment, XmATTACH_FORM); ac++;
+	XtSetValues ( uiShell->statusBar,al, ac );
+
+	ac = 0;
+	XtSetArg(al[ac], XmNsubMenuId, uiShell->fileMenu); ac++;
+	XtSetValues(uiShell->File, al, ac );
+
+	ac = 0;
+	children[ac++] = uiShell->newItem;
+	children[ac++] = uiShell->openItem;
+	children[ac++] = uiShell->closeItem;
+	children[ac++] = separator6;
+	children[ac++] = uiShell->saveItem;
+	children[ac++] = uiShell->saveAsItem;
+	children[ac++] = uiShell->revertItem;
+	children[ac++] = separator7;
+	children[ac++] = uiShell->printItem;
+	children[ac++] = separator8;
+	children[ac++] = uiShell->quitItem;
+	XtManageChildren(children, ac);
+
+	ac = 0;
+	children[ac++] = uiShell->undoItem;
+	children[ac++] = separator9;
+	children[ac++] = uiShell->cutItem;
+	children[ac++] = uiShell->copyItem;
+	children[ac++] = uiShell->pasteItem;
+	children[ac++] = separator10;
+	children[ac++] = uiShell->clearItem;
+	XtManageChildren(children, ac);
+
+	ac = 0;
+	XtSetArg(al[ac], XmNsubMenuId, uiShell->editMenu); ac++;
+	XtSetValues(uiShell->Edit, al, ac );
+
+	ac = 0;
+	children[ac++] = uiShell->onVersionItem;
+	children[ac++] = uiShell->helpItem;
+	XtManageChildren(children, ac);
+
+	ac = 0;
+	XtSetArg(al[ac], XmNsubMenuId, uiShell->helpMenu); ac++;
+	XtSetValues(uiShell->Help, al, ac );
+
+	ac = 0;
+	children[ac++] = uiShell->File;
+	children[ac++] = uiShell->Edit;
+	children[ac++] = uiShell->Help;
+	XtManageChildren(children, ac);
+
+	ac = 0;
+	children[ac++] = uiShell->statusLabel;
+	XtManageChildren(children, ac);
+
+	ac = 0;
+	children[ac++] = uiShell->menuBar;
+	children[ac++] = uiShell->scrolledWin;
+	children[ac++] = uiShell->statusBar;
+	XtManageChildren(children, ac);
+	XtManageChild (uiShell->mainForm);
+
+	if (uiShell->newItem)
+		XtAddCallback( uiShell->newItem, XmNactivateCallback, OnFileNew, (XtPointer) uiShell );
+	if (uiShell->openItem)
+		XtAddCallback( uiShell->openItem, XmNactivateCallback, OnFileOpen, (XtPointer) uiShell );
+	if (uiShell->closeItem)
+		XtAddCallback( uiShell->closeItem, XmNactivateCallback, OnFileClose, (XtPointer) uiShell );
+	if (uiShell->saveItem)
+		XtAddCallback( uiShell->saveItem, XmNactivateCallback, OnFileSave, (XtPointer) uiShell );
+	if (uiShell->saveAsItem)
+		XtAddCallback( uiShell->saveAsItem, XmNactivateCallback, OnFileSaveAs, (XtPointer) uiShell );
+	if (uiShell->revertItem)
+		XtAddCallback( uiShell->revertItem, XmNactivateCallback, OnFileRevert, (XtPointer) uiShell );
+	if (uiShell->printItem)
+		XtAddCallback( uiShell->printItem, XmNactivateCallback, OnFilePrint, (XtPointer) uiShell );
+	if (uiShell->quitItem)
+		XtAddCallback( uiShell->quitItem, XmNactivateCallback, OnFileQuit, (XtPointer) uiShell );
+	if (uiShell->undoItem)
+		XtAddCallback( uiShell->undoItem, XmNactivateCallback, OnEditUndo, (XtPointer) uiShell );
+	if (uiShell->cutItem)
+		XtAddCallback( uiShell->cutItem, XmNactivateCallback, OnEditCut, (XtPointer) uiShell );
+	if (uiShell->copyItem)
+		XtAddCallback( uiShell->copyItem, XmNactivateCallback, OnEditCopy, (XtPointer) uiShell );
+	if (uiShell->pasteItem)
+		XtAddCallback( uiShell->pasteItem, XmNactivateCallback, OnEditPaste, (XtPointer) uiShell );
+	if (uiShell->clearItem)
+		XtAddCallback( uiShell->clearItem, XmNactivateCallback, OnEditClear, (XtPointer) uiShell );
+	if (uiShell->helpItem)
+		XtAddCallback( uiShell->helpItem, XmNactivateCallback, OnHelpHelp, (XtPointer) uiShell );
+
+	XmScrolledWindowSetAreas(uiShell->scrolledWin, uiShell->hsb, uiShell->vsb, (Widget) NULL );
+	return uiShell;
+}
+
+
+/*
+ * delete_uiShell
+ */
+void
+delete_uiShell (uiShell_p uiShell) {
+	if ( ! uiShell )
+		return;
+	XtFree ( ( char * )uiShell );
+}

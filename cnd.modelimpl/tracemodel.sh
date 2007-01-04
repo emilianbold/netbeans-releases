@@ -66,6 +66,8 @@ function classpath() {
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-modelimpl.jar
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-antlr.jar
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd.jar
+    CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-apt.jar
+    CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-folding.jar
 
     local error=""
 

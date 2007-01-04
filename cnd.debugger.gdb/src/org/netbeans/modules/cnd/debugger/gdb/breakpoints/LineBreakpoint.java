@@ -44,11 +44,11 @@ public class LineBreakpoint extends GdbBreakpoint {
     public static final String          PROP_URL = "url"; // NOI18N
     public static final String          PROP_CONDITION = "condition"; // NOI18N
     
-    private String                      url = "";
-    private String                      path = "";
+    private final String                emptyString = ""; // NOI18N
+    private String                      url = emptyString;
+    private String                      path = emptyString;
     private int                         lineNumber;
-    private String                      condition = ""; // NOI18N
-
+    private String                      condition = emptyString;
     
     /**
      * Creates a new breakpoint for given parameters.
@@ -95,14 +95,14 @@ public class LineBreakpoint extends GdbBreakpoint {
 		    if (Utilities.isWindows()) {
 			path = fo.getPath();
 		    } else {
-			path = "/" + fo.getPath();
+			path = "/" + fo.getPath(); // NOI18N
 		    }
 		}
             } catch (MalformedURLException mue) {
-                assert !Boolean.getBoolean("gdb.assertions.enabled");
+                assert !Boolean.getBoolean("gdb.assertions.enabled"); // NOI18N
                 return;
             } catch (Exception ex) {
-                assert !Boolean.getBoolean("gdb.assertions.enabled");
+                assert !Boolean.getBoolean("gdb.assertions.enabled"); // NOI18N
             }
             old = this.url;
             this.url = url;
@@ -163,7 +163,7 @@ public class LineBreakpoint extends GdbBreakpoint {
         String old;
         synchronized (this) {
             if (c == null) {
-		c = "";
+		c = emptyString;
 	    }
             c = c.trim();
             if ((c == condition) ||
@@ -182,7 +182,7 @@ public class LineBreakpoint extends GdbBreakpoint {
      * @return  a string representation of the object
      */
     public String toString() {
-        return "LineBreakpoint " + url + " : " + lineNumber;
+        return "LineBreakpoint " + url + " : " + lineNumber; // NOI18N
     }
     
     private static class LineBreakpointComparable extends LineBreakpoint implements Comparable {

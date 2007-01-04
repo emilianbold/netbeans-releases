@@ -222,10 +222,11 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
      * Support method for simple patterns.
      */
     static boolean match(String name, String pattern) {
-        if (pattern.startsWith("*"))
+        String star = "*"; // NOI18N
+        if (pattern.startsWith(star))
             return name.endsWith(pattern.substring(1));
         else
-        if (pattern.endsWith("*")) {
+        if (pattern.endsWith(star)) {
             return name.startsWith(pattern.substring(0, pattern.length() - 1));
         }
         return name.equals(pattern);

@@ -42,16 +42,7 @@ class LoadingNode extends BaseNode {
     public Image getIcon(int param) {
         return Utilities.loadImage("org/netbeans/modules/cnd/classview/resources/waitNode.gif");
     }
-    
-    public int compareTo(Object o) {
-        if( o instanceof LoadingNode ) {
-            // this shoud never be true, but...
-            return super.compareTo(o);
-        }
-        else {
-            return -1;
-        }
+    protected int getWeight() {
+        return LOADING_WEIGHT;
     }
-
-   
 }

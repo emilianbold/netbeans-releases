@@ -19,52 +19,47 @@
 
 package org.netbeans.modules.cnd.classview.model;
 
-import java.awt.Image;
-import java.util.Comparator;
-import java.util.Iterator;
-import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
-import org.openide.nodes.*;
-import org.openide.util.Utilities;
-
 import  org.netbeans.modules.cnd.api.model.*;
-
+import org.netbeans.modules.cnd.classview.SmartChangeEvent;
+import org.netbeans.modules.cnd.classview.model.CVUtil.FillingDone;
 
 /**
  * @author Vladimir Kvasihn
  */
 public class NamespaceNode extends NPNode {
-
-    public NamespaceNode(CsmNamespace ns, boolean fillAtCreation) {
-        super();
-//        super(new Children.SortedArray());
-//        ((Children.SortedArray) getChildren()).setComparator(new CVUtil.NamespaceNodesComparator());
-        this.ns = ns;
+    private String id;
+    private CsmProject project;
+    
+    public NamespaceNode(CsmProject prj, CsmNamespace ns) {
+        super(prj, ns, new FillingDone());
+        //this.ns = ns;
+        id = ns.getQualifiedName();
+        project = prj;
         setName(ns.getQualifiedName());
         setDisplayName(ns./*getName*/getQualifiedName());
         setShortDescription(ns.getQualifiedName());
-        if( fillAtCreation ) {
-            fill();
-        }
     }
-    
-    protected Comparator getComparator() {
-        return new CVUtil.NamespaceNodesComparator();
-    }
-    
+
     public CsmNamespace getNamespace() {
-        return ns;
+        return project.findNamespace(id);
     }
     
     protected boolean isSubNamspace(CsmNamespace ns) {
-        return ns!= null && ns.getParent() == this.ns;
+        return ns!= null && ns.getParent() == getNamespace();
     }
-    
+
+    public boolean update(SmartChangeEvent e) {
+	if( !isDismissed() && isInited()) {
+            return super.update(e);
+	}
+        return false;
+    }
+   
     public void dismiss() {
         setDismissed();
-        super.dismiss();
-        ns = null;
+        if (isInited()){
+            super.dismiss();
+        }
     }
-    
-    private CsmNamespace ns;
 
 }

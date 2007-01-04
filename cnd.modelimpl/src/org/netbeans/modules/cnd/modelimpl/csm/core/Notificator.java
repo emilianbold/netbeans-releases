@@ -22,7 +22,8 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.modelimpl.csm.Diagnostic;
+import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  * Coordiates all change notifications.
@@ -52,7 +53,7 @@ public class Notificator {
     public void startTransaction() {
 	synchronized( this ) {
 	    transactionLevel++;
-            if( Diagnostic.DEBUG ) Diagnostic.trace("    > " + transactionLevel + ' ' + getCurrThreadString());
+            if( TraceFlags.DEBUG ) Diagnostic.trace("    > " + transactionLevel + ' ' + getCurrThreadString());
 	    resetEvent();
 	}
     }
@@ -60,7 +61,7 @@ public class Notificator {
     public void endTransaction() {
 	synchronized( this ) {
 	    transactionLevel--;
-            if( Diagnostic.DEBUG ) Diagnostic.trace("    < " + transactionLevel + ' ' + getCurrThreadString());
+            if( TraceFlags.DEBUG ) Diagnostic.trace("    < " + transactionLevel + ' ' + getCurrThreadString());
 	    if( transactionLevel <= 0 ) {
 		flush();
 	    }

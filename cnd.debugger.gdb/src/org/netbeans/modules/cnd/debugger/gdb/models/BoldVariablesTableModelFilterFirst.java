@@ -103,32 +103,32 @@ public class BoldVariablesTableModelFilterFirst implements TableModelFilter, Con
             return null;
         }
         StringBuffer sb = new StringBuffer();
-        sb.append("<html>");
+        sb.append("<html>"); // NOI18N
         if (bold) {
-            sb.append("<b>");
+            sb.append("<b>"); // NOI18N
         }
         if (italics) {
-            sb.append("<i>");
+            sb.append("<i>"); // NOI18N
         }
         if (color != null) {
-            sb.append("<font color=");
+            sb.append("<font color="); // NOI18N
             sb.append(Integer.toHexString ((color.getRGB () & 0xffffff)));
-            sb.append(">");
+            sb.append(">"); // NOI18N
         }
-        text = text.replaceAll("&", "&amp;");
-        text = text.replaceAll("<", "&lt;");
-        text = text.replaceAll(">", "&gt;");
+        text = text.replaceAll("&", "&amp;"); // NOI18N
+        text = text.replaceAll("<", "&lt;"); // NOI18N
+        text = text.replaceAll(">", "&gt;"); // NOI18N
         sb.append(text);
         if (color != null) {
-            sb.append("</font>");
+            sb.append("</font>"); // NOI18N
         }
         if (italics) {
-            sb.append("</i>");
+            sb.append("</i>"); // NOI18N
         }
         if (bold) {
-            sb.append("</b>");
+            sb.append("</b>"); // NOI18N
         }
-        sb.append("</html>");
+        sb.append("</html>"); // NOI18N
         return sb.toString();
     }
 }

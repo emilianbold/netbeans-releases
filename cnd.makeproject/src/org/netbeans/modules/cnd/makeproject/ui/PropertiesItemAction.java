@@ -22,6 +22,7 @@ package org.netbeans.modules.cnd.makeproject.ui;
 import java.util.List;
 import java.util.Vector;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.openide.nodes.Node;

@@ -38,7 +38,7 @@ public class GdbEngineProvider extends DebuggerEngineProvider {
     }
     
     public String[] getLanguages() {
-        return new String[] {"C", "C++"};
+        return new String[] {"C", "C++"}; // NOI18N
     }
 
     public String getEngineTypeID() {

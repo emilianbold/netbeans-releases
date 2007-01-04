@@ -26,23 +26,23 @@ import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.modelimpl.antlr2.MacroExpander;
-import org.netbeans.modules.cnd.modelimpl.antlr2.PPCallback;
-import org.netbeans.modules.cnd.modelimpl.apt.impl.support.APTFileMacroMap;
-import org.netbeans.modules.cnd.modelimpl.apt.impl.support.APTIncludeHandlerImpl;
-import org.netbeans.modules.cnd.modelimpl.apt.impl.support.parser.APTParseFileWalker;
-import org.netbeans.modules.cnd.modelimpl.apt.impl.support.parser.APTPreprocStateImpl;
-import org.netbeans.modules.cnd.modelimpl.apt.impl.support.parser.APTSystemStorage;
-import org.netbeans.modules.cnd.modelimpl.apt.structure.APTFile;
-import org.netbeans.modules.cnd.modelimpl.apt.support.APTDriver;
-import org.netbeans.modules.cnd.modelimpl.apt.support.APTIncludeHandler;
-import org.netbeans.modules.cnd.modelimpl.apt.support.APTMacroMap;
-import org.netbeans.modules.cnd.modelimpl.apt.support.APTPreprocState;
-import org.netbeans.modules.cnd.modelimpl.apt.utils.APTMacroUtils;
+import org.netbeans.modules.cnd.apt.impl.support.APTFileMacroMap;
+import org.netbeans.modules.cnd.apt.impl.support.APTIncludeHandlerImpl;
+import org.netbeans.modules.cnd.modelimpl.parser.apt.APTPreprocStateImpl;
+import org.netbeans.modules.cnd.modelimpl.parser.apt.APTSystemStorage;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTDriver;
+import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
+import org.netbeans.modules.cnd.apt.support.APTMacroMap;
+import org.netbeans.modules.cnd.apt.support.APTPreprocState;
+import org.netbeans.modules.cnd.apt.utils.APTMacroUtils;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
+import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 import org.netbeans.modules.cnd.modelimpl.platform.*;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
+import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 
 /**
  * Base class for CsmProject implementation
@@ -274,54 +274,17 @@ public abstract class ProjectBase implements CsmProject, Disposable {
 	}
     }
     
-    protected abstract PPCallback getDefaultCallback(File file);
-    
         
     protected APTPreprocState createDefaultPreprocState(File file) {
         return new APTPreprocStateImpl(new APTFileMacroMap(), new APTIncludeHandlerImpl(), false);
     }
     
-    protected PPCallback getDefaultCallback(NativeFileItem nativeFile) {
-        assert (nativeFile != null);
-        assert (nativeFile.getFile() != null);
-        PPCallback callback = updateCallback(getDefaultCallback(nativeFile.getFile()), nativeFile);      
-        return callback;
-    }
-    
-    // copy
     protected APTPreprocState getDefaultPreprocState(NativeFileItem nativeFile) {
         assert (nativeFile != null);
         APTMacroMap macroMap = getMacroMap(nativeFile);
         APTIncludeHandler inclHandler = getIncludeHandler(nativeFile);
         APTPreprocState preprocState = new APTPreprocStateImpl(macroMap, inclHandler, isSourceFile(nativeFile));
         return preprocState;
-    }
-    
-    public static void fillCallback(PPCallback callback, 
-            List/*<String>*/ userMacros, List/*<String>*/ sysMacros, 
-            List/*<String>*/ quotedIncludePaths, List/*<String>*/systemIncludePaths, 
-            File file) {
-        // update callback with user macros information      
-        putMacrosInCallback(callback, userMacros, false, file);
-
-        // update callback with system macros information
-        putMacrosInCallback(callback, sysMacros, true, file);       
-        // update callback with include paths
-        if (Diagnostic.DEBUG) {
-            if (quotedIncludePaths.size() > 0) {
-                System.err.println("adding quoted include paths " + quotedIncludePaths +
-                        " to callback of file " + file.getAbsolutePath());
-            }          
-        }
-        callback.addQuoteIncludePaths(quotedIncludePaths);
-
-        if (Diagnostic.DEBUG) {
-            if (systemIncludePaths.size() > 0) {
-                System.err.println("adding system include paths " + systemIncludePaths +
-                        " to callback of file " + file.getAbsolutePath());
-            }          
-        }
-        callback.addSystemIncludePaths(systemIncludePaths);
     }
     
     private APTIncludeHandler getIncludeHandler(NativeFileItem nativeFile) {
@@ -363,38 +326,6 @@ public abstract class ProjectBase implements CsmProject, Disposable {
         return map;
     }
     
-    private PPCallback updateCallback(PPCallback callback, NativeFileItem nativeFile) {
-        fillCallback(callback, 
-                    nativeFile.getUserMacroDefinitions(), 
-                    nativeFile.getSystemMacroDefinitions(), 
-                    nativeFile.getUserIncludePaths(), 
-                    nativeFile.getSystemIncludePaths(), 
-                    nativeFile.getFile());
-        return callback;
-    }
-    
-    static private void putMacrosInCallback(PPCallback callback, List/*<String>*/ macros, boolean system, File file) {
-        // update callback with user macros information
-        for (Iterator it = macros.iterator(); it.hasNext();) {
-            String macro = (String) it.next();
-            if (Diagnostic.DEBUG) {
-                System.err.println("adding " + (system?"system":"user") +" macro with body " + macro +
-                        " to callback of file " + file.getAbsolutePath());
-            }
-            MacroExpander.putMacroInCallback(macro, callback, false);
-        }        
-    } 
-    
-    public PPCallback getCallback(File file) { 
-        PPCallback callback = getDefaultCallback(file);
-        PPCallback.State state = (PPCallback.State) filesCallbacks.get(file.getAbsolutePath());
-        if (state != null) {
-            callback.setState(state);
-        }        
-        return callback;
-    }
-    
-    // copy
     public APTPreprocState getPreprocState(File file) {
         APTPreprocState preprocState = createDefaultPreprocState(file);
         APTPreprocState.State state = getPreprocStateState(file);
@@ -406,22 +337,6 @@ public abstract class ProjectBase implements CsmProject, Disposable {
     
     /**
      * This method for testing purpose only. Used from TraceModel
-     */
-    public CsmFile testParseFile(String file, PPCallback callback) {
-        PPCallback.State state = (PPCallback.State) filesCallbacks.get(file);
-        boolean firsTime = (state == null);
-        if( firsTime ) {           
-            // remember the first callback state
-            filesCallbacks.put(file, callback.getState());
-        } else {            
-            callback.setState(state);
-        }               
-        CsmFile csmFile = findFile(file, callback, true);
-        return csmFile;        
-    }
-    
-    /**
-     * copy
      */
     public CsmFile testAPTParseFile(String file, APTPreprocState preprocState) {
         APTPreprocState.State state = (APTPreprocState.State) getPreprocStateState(new File(file));
@@ -447,53 +362,17 @@ public abstract class ProjectBase implements CsmProject, Disposable {
     }
     
     public void invalidateFiles() {
-        filesCallbacks.clear();
         filesHandlers.clear();
         for (Iterator it = getLibraries().iterator(); it.hasNext();) {
             ProjectBase lib = (ProjectBase) it.next();
             lib.invalidateFiles();
         }
     }
-    /**
-     * called to inform that file was #included from another file with specific callback
-     * @param file included file path
-     * @param callback callback with which the file is including
-     * @return true if it's first time of file including
-     *          false if file was included before
-     */
-    public CsmFile onFileIncluded(String file, PPCallback callback) {
-        PPCallback.State state = (PPCallback.State) filesCallbacks.get(file);
-        boolean firsTime = (state == null);
-        if( firsTime ) {
-            // TODO: now remember the first callback state
-            filesCallbacks.put(file, callback.getState());
-        }   
-        if( ONLY_LEX_INCLUDES || 
-                (NO_REPARSE_INCLUDE && LEX_NEXT_INCLUDES && !firsTime )) {          
-            return null;
-        }            
-            
-        CsmFile csmFile = findFile(file, callback, false);
-        if( NO_REPARSE_INCLUDE ) {
-            if (csmFile instanceof FileImpl) {             
-                ((FileImpl) csmFile).ensureParsed(callback);
-            }
-            return csmFile;
-        }
-        if (/*!firsTime &&*/ csmFile instanceof FileImpl) {             
-            FileImpl fileImpl = (FileImpl)csmFile;
-            // need to reparse file
-            // we needn't restore old callback since it's always null
-            fileImpl.parse(callback);
-        }
-        return csmFile;
-    }   
     
     public static final int GATHERING_MACROS    = 0;
     public static final int GATHERING_TOKENS    = 1;
     
     /**
-     * COPY
      * called to inform that file was #included from another file with specific preprocState
      * 
      * @param file included file path
@@ -554,7 +433,6 @@ public abstract class ProjectBase implements CsmProject, Disposable {
         return state;
     }
     
-    protected Map/*<String, PPCallback.State>*/ filesCallbacks = new HashMap(/*<File, PPCallback.State>*/);
     protected Map/*<String, APTPreprocState.State>*/ filesHandlers = Collections.synchronizedMap(new HashMap(/*<File, APTPreprocState.State>*/));
  
     public ProjectBase resolveFileProject(String absPath) {
@@ -593,39 +471,29 @@ public abstract class ProjectBase implements CsmProject, Disposable {
     }
 
     protected abstract void createIfNeed(NativeFileItem nativeFile, boolean isSourceFile);
-    protected abstract FileImpl findFile(File file, PPCallback callback, boolean scheduleParseIfNeed);
     protected abstract FileImpl findFile(File file, int fileType, APTPreprocState preprocState, boolean scheduleParseIfNeed);
     public abstract void onFileAdded(NativeFileItem nativeFile);
     public abstract void onFileRemoved(NativeFileItem nativeFile);
     protected abstract void scheduleIncludedFileParsing(FileImpl csmFile, APTPreprocState.State state);
 
     public CsmFile findFile(String absolutePath) {
-        if (TraceFlags.USE_APT) {
-            APTPreprocState preprocState = null;
-            if (getPreprocStateState(new File(absolutePath)) == null){
-                // Try to find native file
-                if (getPlatformProject() instanceof NativeProject){
-                    NativeProject prj = (NativeProject)getPlatformProject();
-                    if (prj != null){
-                        NativeFileItem nativeFile = prj.findFileItem(new File(absolutePath));
-			if( nativeFile == null ) {
-			    nativeFile = new DefaultFileItem(prj, absolutePath);
+		APTPreprocState preprocState = null;
+		if (getPreprocStateState(new File(absolutePath)) == null){
+			// Try to find native file
+			if (getPlatformProject() instanceof NativeProject){
+				NativeProject prj = (NativeProject)getPlatformProject();
+				if (prj != null){
+					NativeFileItem nativeFile = prj.findFileItem(new File(absolutePath));
+		if( nativeFile == null ) {
+			nativeFile = new DefaultFileItem(prj, absolutePath);
+		}
+					preprocState = getDefaultPreprocState(nativeFile);
+				}
 			}
-                        preprocState = getDefaultPreprocState(nativeFile);
-                    }
-                }
-            }
-            return findFile(absolutePath, FileImpl.UNDEFINED_FILE, preprocState, true);
-        } else {
-            return findFile(absolutePath, (PPCallback)null, true);
-        }
+		}
+		return findFile(absolutePath, FileImpl.UNDEFINED_FILE, preprocState, true);
     }
-    
-    public FileImpl findFile(String absolutePath, PPCallback callback, boolean scheduleParseIfNeed) {
-        return findFile(new File(absolutePath), callback, scheduleParseIfNeed);
-    }
-    
-    // copy
+
     public FileImpl findFile(String absolutePath, int fileType, APTPreprocState preprocState, boolean scheduleParseIfNeed) {
         return findFile(new File(absolutePath), fileType, preprocState, scheduleParseIfNeed);
     }
@@ -712,6 +580,18 @@ public abstract class ProjectBase implements CsmProject, Disposable {
             }
         }        
         platformProject = null;
+	// we have clear all collections
+	// to protect IDE against the code model client
+	// that stores the instance of the project
+	// and does not release it upon project closure
+	namespaces.clear();
+	files.clear();
+	classifiers.clear();
+	declarations.clear();
+	globalNamespace = new NamespaceImpl(this, true);
+	filesHandlers.clear();
+	sysAPTData = new APTSystemStorage();
+	unresolved = null;
     }
     
     protected ModelImpl getModel() {

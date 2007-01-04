@@ -84,22 +84,27 @@ public class LineBreakpointImpl extends BreakpointImpl {
      * 
      * @param path path to normalize
      * @return normalized path without "." and ".." elements
-     */ 
+     */
+    /* This algorithm is not correct in general case, because it
+     * does not handle symbolic links properly. I commented out
+     * this method (it is not used anywhere), and I suggest to
+     * remove it. 
     private static String normalize(String path) {
-	Pattern thisDirectoryPattern = Pattern.compile("(/|\\A)\\./");
-	Pattern parentDirectoryPattern = Pattern.compile("(/|\\A)([^/]+?)/\\.\\./");
+	Pattern thisDirectoryPattern = Pattern.compile("(/|\\A)\\./"); // NOI18N
+	Pattern parentDirectoryPattern = Pattern.compile("(/|\\A)([^/]+?)/\\.\\./"); // NOI18N
 
 	for (Matcher m = thisDirectoryPattern.matcher(path); m.find(); ) {
-	    path = m.replaceAll("$1");
+	    path = m.replaceAll("$1"); // NOI18N
 	    m = thisDirectoryPattern.matcher(path);
 	}
 	for (Matcher m = parentDirectoryPattern.matcher(path); m.find(); ) {
-	    if (!m.group(2).equals("..")) {
+	    if (!m.group(2).equals("..")) { // NOI18N
 		path = path.substring(0, m.start()) + m.group(1) + path.substring(m.end());
 		m = parentDirectoryPattern.matcher(path);        
 	    }
 	}
 	return path;
     }
+     **/
 }
 

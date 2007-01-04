@@ -20,14 +20,15 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.antlr2.FakeAST;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import java.util.*;
 
 import antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
-import org.netbeans.modules.cnd.modelimpl.antlr2.CsmAST;
-import org.netbeans.modules.cnd.modelimpl.antlr2.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 import org.netbeans.modules.cnd.modelimpl.csm.deep.*;
 
@@ -240,7 +241,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
                     else {
                         //assert namePart.getType() == CPPTokenTypes.SCOPE;
                         if( templateDepth == 0 && namePart.getType() != CPPTokenTypes.SCOPE ) {
-                            if (Diagnostic.DEBUG) {
+                            if (TraceFlags.DEBUG) {
                                 StringBuffer tokenText = new StringBuffer();
                                 tokenText.append('[').append(namePart.getText());
                                 if (namePart.getNumberOfChildren() == 0) {

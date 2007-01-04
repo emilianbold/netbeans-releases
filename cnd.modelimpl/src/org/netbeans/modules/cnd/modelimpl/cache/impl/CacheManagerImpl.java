@@ -42,13 +42,14 @@ import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.modelimpl.apt.structure.APTFile;
-import org.netbeans.modules.cnd.modelimpl.apt.support.APTPreprocState;
-import org.netbeans.modules.cnd.modelimpl.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTPreprocState;
+import org.netbeans.modules.cnd.apt.utils.APTStringManager;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.cache.FileCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ParserThreadManager;
-import org.netbeans.modules.cnd.modelimpl.csm.core.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  * cache manager implementation

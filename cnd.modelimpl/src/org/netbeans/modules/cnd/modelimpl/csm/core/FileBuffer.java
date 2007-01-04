@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
 
 /**
  * Represents the file state change event.
@@ -31,13 +32,7 @@ import javax.swing.event.ChangeListener;
  * from saved to edited or vice versa.
  * @author Vladimir Kvashin
  */
-public interface FileBuffer {
-
-    public File getFile();
-
-    //boolean isSaved();
-
-    public InputStream getInputStream() throws IOException;
+public interface FileBuffer extends APTFileBuffer {
 
     public void addChangeListener(ChangeListener listener);
     public void removeChangeListener(ChangeListener listener);

@@ -20,7 +20,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.modelimpl.antlr2.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import java.util.*;
 
 import org.netbeans.modules.cnd.modelimpl.platform.*;

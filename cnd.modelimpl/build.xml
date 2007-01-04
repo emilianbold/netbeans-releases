@@ -23,9 +23,6 @@ Microsystems, Inc. All Rights Reserved.
 <project name="org.netbeans.modules.cnd.modelimpl" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.modules.cnd.modelimpl.</description>
     <import file="nbproject/build-impl.xml"/>
-    <target name="netbeans" depends="projectized-common.netbeans">
-	<chmod file="${cluster}/bin/stdouterr.sh" perm="ugo+rx"/>
-    </target>
     
     <target name="compile" depends="antlr,projectized-common.compile">
         <chmod file="tracemodel.sh" perm="ugo+rx"/>
@@ -33,45 +30,38 @@ Microsystems, Inc. All Rights Reserved.
  
     <target name="init-antlr">
         <!-- ANTLR output directories -->
-        <property name="antlr.folding.dir" location="src/org/netbeans/modules/cnd/modelimpl/antlr"/>
-        <property name="antlr.output.dir" location="src/org/netbeans/modules/cnd/modelimpl/antlr2/generated"/>
-        <property name="antlr.apt.output.dir" location="src/org/netbeans/modules/cnd/modelimpl/apt/impl/support/generated"/>
+		<!--        
+		<property name="antlr.folding.dir" location="src/org/netbeans/modules/cnd/modelimpl/antlr"/> 
+		-->
+        <property name="antlr.output.dir" location="src/org/netbeans/modules/cnd/modelimpl/parser/generated"/>
+        <property name="antlr.jar" location="../suite/build/cluster/modules/org-netbeans-modules-cnd-antlr.jar"/>
+        <property name="antlr.grammar.dir" location="src/org/netbeans/modules/cnd/modelimpl/parser"/>
+
+        <property name="antlr.apt.grammar.dir" location="../apt/src/org/netbeans/modules/cnd/apt/impl/support"/>
+        <property name="antlr.apt.output.dir" location="${antlr.apt.grammar.dir}/generated"/>
     </target>
     
     <target name="clean" depends="projectized-common.clean, init-antlr">
         <delete dir="${antlr.output.dir}"/>   
+		<!--
+        <delete dir="${antlr.apt.output.dir}"/>   
         <property name="antlr.folding.dir" location="src/org/netbeans/modules/cnd/modelimpl/antlr"/>
         <delete>
             <fileset dir="${antlr.folding.dir}" includes="CPPFolding*"/>
         </delete>   
-        <delete dir="${antlr.apt.output.dir}"/>   
+		-->
     </target>
     
     <target name="antlr" depends="init-antlr" unless="up-to-date">
-	<property name="antlr.jar" location="../suite/build/cluster/modules/org-netbeans-modules-cnd-antlr.jar"/>
-	<antlr target="${antlr.folding.dir}/cppjx.g"
+		<!--
+		<antlr target="${antlr.folding.dir}/cppjx.g"
             outputdirectory="${antlr.folding.dir}">
                 <classpath path="${antlr.jar}"/>
         </antlr>
-        <property name="antlr.grammar.dir" location="src/org/netbeans/modules/cnd/modelimpl/antlr2"/>
-        <mkdir dir="${antlr.output.dir}"/>
-        <antlr target="${antlr.grammar.dir}/cpplexer.g"
-            outputdirectory="${antlr.output.dir}">
-                <classpath path="${antlr.jar}"/>
-        </antlr>  
-        <antlr target="${antlr.grammar.dir}/ppeparser.g"
-            outputdirectory="${antlr.output.dir}">
-                <classpath path="${antlr.jar}"/>
-        </antlr>        
-        <antlr target="${antlr.grammar.dir}/cppparser.g"
-            outputdirectory="${antlr.output.dir}">
-                <classpath path="${antlr.jar}"/>
-        </antlr>
-        <property name="antlr.apt.grammar.dir" location="src/org/netbeans/modules/cnd/modelimpl/apt/impl/support"/>
+		-->
+		<!-- APT staff -->
+                <!--
         <mkdir dir="${antlr.apt.output.dir}"/>
-        <copy file="${antlr.output.dir}/CPPLexerTokenTypes.txt"
-                    todir="${antlr.apt.output.dir}" 
-                    overwrite="true"/>        
         <antlr  target="${antlr.apt.grammar.dir}/aptlexer.g"
                 outputdirectory="${antlr.apt.output.dir}">
                 <classpath path="${antlr.jar}"/>
@@ -79,7 +69,27 @@ Microsystems, Inc. All Rights Reserved.
         <antlr  target="${antlr.apt.grammar.dir}/aptexpr.g"
                 outputdirectory="${antlr.apt.output.dir}">
                 <classpath path="${antlr.jar}"/>
-        </antlr>          
+        </antlr> 
+        -->
+		<!-- CPP grammar -->
+        <mkdir dir="${antlr.output.dir}"/>
+        <copy file="${antlr.apt.output.dir}/APTTokenTypes.txt"
+                    todir="${antlr.output.dir}" 
+                    overwrite="true"/>        
+		<!--
+        <antlr target="${antlr.grammar.dir}/cpplexer.g"
+            outputdirectory="${antlr.output.dir}">
+                <classpath path="${antlr.jar}"/>
+        </antlr>  
+        <antlr target="${antlr.grammar.dir}/ppeparser.g"
+            outputdirectory="${antlr.output.dir}">
+                <classpath path="${antlr.jar}"/>
+        </antlr>      
+		-->
+        <antlr target="${antlr.grammar.dir}/cppparser.g"
+            outputdirectory="${antlr.output.dir}">
+                <classpath path="${antlr.jar}"/>
+        </antlr>         
     </target>
     
     

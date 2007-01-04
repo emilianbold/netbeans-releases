@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+
+<fontscolors>
+    <!-- <fontcolor name="cc-annotation" foreColor="ff006f00" default="default"/> -->
+    <fontcolor name="cc-block-comment" default="comment"/>
+    <fontcolor name="cc-char-literal" default="char"/>
+    <fontcolor name="cc-errors" default="error"/>
+    <fontcolor name="cc-identifier" default="identifier"/>
+    <fontcolor name="cc-keywords" default="keyword"/>
+    <!--
+    <fontcolor name="cc-layer-method" default="default">
+        <font style="bold"/>
+    </fontcolor>
+    -->
+    <fontcolor name="cc-line-comment" default="comment"/>
+    <fontcolor name="cc-numeric-literals" default="number"/>
+    <fontcolor name="cc-operators" default="operator"/>
+    <!-- use bold "char" settings as default for preprocessor-->
+    <fontcolor name="cc-preprocessor" default="char">
+        <font style="bold"/>
+    </fontcolor> 
+    <fontcolor name="cc-sys-include" default="string"/>
+    <fontcolor name="cc-user-include" default="string"/>
+    <fontcolor name="cc-string-literal" default="string"/>
+    <fontcolor name="cc-whitespace" default="whitespace"/>
+</fontscolors>

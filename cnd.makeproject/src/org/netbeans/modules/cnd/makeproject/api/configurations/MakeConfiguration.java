@@ -29,6 +29,7 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CompilerSets;
 import org.netbeans.modules.cnd.makeproject.api.compilers.Tool;
+import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.openide.filesystems.FileObject;
@@ -391,5 +392,26 @@ public class MakeConfiguration extends Configuration {
             }
         }
         return subProjectOutputLocations;
+    }
+    
+    public String getAbsoluteOutputValue() {
+        String output;
+        if (isLinkerConfiguration()) {
+            output = getLinkerConfiguration().getOutputValue();
+        }
+        else if (isArchiverConfiguration())
+            output = getArchiverConfiguration().getOutputValue();
+        else if (isMakefileConfiguration())
+            output = getMakefileConfiguration().getOutput().getValue();
+        else
+            output = null;
+        
+        if (output == null || IpeUtils.isPathAbsolute(output))
+            return output;
+        else {
+            output = getBaseDir() + "/" + output; // NOI18N
+            output = FilePathAdaptor.normalize(output);
+            return output;
+        }
     }
 }

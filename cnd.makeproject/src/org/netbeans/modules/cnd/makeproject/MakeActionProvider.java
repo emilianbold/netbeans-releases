@@ -477,7 +477,7 @@ public class MakeActionProvider implements ActionProvider {
                                 true);
                         actionEvents.add(projectActionEvent);
                         // Build commandLine
-                        commandLine = "make -f nbproject" + '/' + "Makefile-" + conf.getName() + ".mk " + outputFile; // Unix path // NOI18N
+                        commandLine = MakeOptions.getInstance().getMakeCommand() + " -f nbproject" + '/' + "Makefile-" + conf.getName() + ".mk " + outputFile; // Unix path // NOI18N
                         args = ""; // NOI18N
                         index = commandLine.indexOf(' '); // NOI18N
                         if (index > 0) {

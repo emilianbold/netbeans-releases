@@ -1,0 +1,120 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<!DOCTYPE index PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Index Version 2.0//EN"
+                       "http://java.sun.com/products/javahelp/index_2_0.dtd">
+
+<index version="2.0">
+	<indexitem text="abbreviations">
+		<indexitem text="C and C++, see code templates" />
+	</indexitem>
+	<indexitem text="archiver options, C and C++, setting" target="ArchiverOptions" />
+	<indexitem text="breakpoints">
+		<indexitem text="C and C++">
+			<indexitem text="about" target="C&amp;C++Breakpoints" />
+			<indexitem text="setting" target="SettingCorC++Breakpoint" />
+		</indexitem>
+	</indexitem>
+	<indexitem text="call stack">
+		<indexitem text="C and C++, using" target="UsingCorC++CallStack" />
+	</indexitem>
+	<indexitem text="Class View, C and C++ projects" target="UsingClassView" />
+	<indexitem text="code completion">
+		<indexitem text="C and C++" target="UsingCodeCompletion" />
+		<indexitem text="setting the C ancd C++ code completion box delay" target="SettingCompletionBoxDelay" />
+	</indexitem>
+	<indexitem text="code folding">
+		<indexitem text="C and C++" target="UsingCodeFolding" />
+	</indexitem>
+	<indexitem text="code templates">
+		<indexitem text="C and C++" target="UsingAbbreviations" />
+	</indexitem>
+	<indexitem text="compiler options, C and C++, setting" target="CompilerOptions" />
+	<indexitem text="compiling">
+		<indexitem text="C and C++ projects" target="BuildingCorC++Project" />
+		<indexitem text="single C or C++ file" target="CompilingSingleC&amp;C++File" />
+	</indexitem>
+	<indexitem text="configurations, C and C++ projects" target="ManagingProjectConfigurations" />
+	<indexitem text="configuring IDE">
+		<indexitem text="C and C++ project settings" target="Configuring" />
+	</indexitem>
+	<indexitem text="dependencies between C or C++ projects" target="CreatingDependencies" />
+	<indexitem text="debugging">
+		<indexitem text="breakpoints, setting, C and C++" target="SettingCorC++Breakpoint" />
+		<indexitem text="current context in, C and C++" target="C&amp;C++DebuggerContext" />
+		<indexitem text="sessions">
+			<indexitem text="finishing, C and C++" target="FinishingCorC++DebugSession" />
+			<indexitem text="starting, C and C++" target="StartingLocalDebuggingSession" />
+		</indexitem>
+		<indexitem text="stepping through C and C++ code" target="SteppingThroughCorC++" />
+		<indexitem text="variables, viewing, C and C++" target="CorC++Variables&amp;Expressions" />
+		<indexitem text="watches, setting, C and C++" target="CandC++Watches" />
+	</indexitem>
+	<indexitem text="editing">
+		<indexitem text="C and C++ files" target="EditingSourceFiles" />
+	</indexitem>
+	<indexitem text="expressions">
+		<indexitem text="C and C++, completing in Source Editor" target="UsingCodeCompletion" />
+		<indexitem text="C and C++, watching in debugger" target="CreatingCorC++Watch" />
+	</indexitem>
+	<indexitem text="files">
+		<indexitem text="adding to C or C++ projects" target="AddingFiles&amp;Folders" />
+		<indexitem text="C and C++, setting properties of" target="SettingC&amp;C++FileProperties" />
+	</indexitem>
+	<indexitem text="Files window, C and C++ projects" target="FilesWindow" mergetype="javax.help.SortMerge" />
+	<indexitem text="folders">
+		<indexitem text="adding to C or C++ projects" target="AddingFiles&amp;Folders" />
+	</indexitem>
+	<indexitem text="hyperlink navigation, C and C++" target="UsingHyperlinks" />
+	<indexitem text="linker options, C and C++, setting" target="LinkerOptions" />
+	<indexitem text="makefile" target="CreatingMakefile">
+		<indexitem text="creating" target="CreatingMakefile" mergetype="javax.help.SortMerge" />
+		<indexitem text="project with existing" target="AboutCandC++Projects" />
+	</indexitem>
+	<indexitem text="memory requirements, C and C++ projects" target="Memory" />
+	<indexitem text="pair completion, C and C++" target="UsingPairCompletion" />
+	<indexitem text="projects">
+		<indexitem text="C and C++">
+			<indexitem text="about" target="AboutCandC++Projects" />
+			<indexitem text="adding files and folders to" target="AddingFiles&amp;Folders" />
+			<indexitem text="Application" target="AboutCandC++Projects" />
+			<indexitem text="building" target="BuildingCorC++Project" />
+			<indexitem text="configuring" target="ManagingProjectConfigurations" />
+			<indexitem text="copying" target="MovingCorC++Project" />
+			<indexitem text="creating" target="CreatingCorC++Project" mergetype="javax.help.SortMerge" />
+			<indexitem text="deleting" target="DeletingCorC++Project" />
+			<indexitem text="dependencies between" target="CreatingDependencies" mergetype="javax.help.SortMerge" />
+			<indexitem text="Dynamic Library" target="AboutCandC++Projects" />
+			<indexitem text="from existing code" target="AboutCandC++Projects" mergetype="javax.help.SortMerge" />
+			<indexitem text="main C or C++ project, setting" target="SettingMainCorC++Project." />
+			<indexitem text="moving" target="MovingCorC++Project" />
+			<indexitem text="Projects window, C and C++" target="ProjectsWindow" />
+			<indexitem text="properties, setting" target="ProjectProperties" />
+			<indexitem text="renaming" target="MovingCorC++Project" />
+			<indexitem text="running" target="RunningCorC++Project" />
+			<indexitem text="Static Library" target="AboutCandC++Projects" />
+			<indexitem text="working with" target="WorkingWithCandC++Projects" mergetype="javax.help.SortMerge" />
+		</indexitem>
+		<indexitem text="main project, C or C++, setting" target="SettingMainCorC++Project." />
+		<indexitem text="settings">
+			<indexitem text="C and C++" target="Configuring" />
+		</indexitem>
+	</indexitem>
+	<indexitem text="Projects window, C and C++ projects" target="ProjectsWindow" mergetype="javax.help.SortMerge" />
+	<indexitem text="running" mergetype="javax.help.SortMerge">
+		<indexitem text="C or C++ project" target="RunningCorC++Project" />
+	</indexitem>
+	<indexitem text="Source Editor">
+		<indexitem text="C and C++">
+			<indexitem text="code completion" target="UsingCodeCompletion" />
+			<indexitem text="code folding" target="UsingCodeFolding" />
+			<indexitem text="code templates" target="UsingAbbreviations" />
+			<indexitem text="collapsing blocks of code" target="UsingCodeFolding" />
+		</indexitem>
+	</indexitem>
+	<indexitem text="variables">
+		<indexitem text="watching value of" target="CreatingCorC++Watch" />
+		<indexitem text="modifying value of" target="CandC++LocalVariables." />
+	</indexitem>
+	<indexitem text="watching">
+		<indexitem text="C and C++ variables" />
+	</indexitem>
+</index>

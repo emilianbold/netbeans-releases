@@ -3,8 +3,6 @@ package antlr;
 /* ANTLR Translator Generator
  * Project led by Terence Parr at http://www.cs.usfca.edu
  * Software rights: http://www.antlr.org/license.html
- *
- * $Id$
  */
 
 /**A Stream of characters fed to the lexer from a InputStream that can

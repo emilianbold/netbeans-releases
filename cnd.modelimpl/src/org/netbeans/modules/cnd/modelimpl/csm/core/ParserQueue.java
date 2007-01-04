@@ -22,9 +22,9 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.util.WeakList;
-import org.netbeans.modules.cnd.modelimpl.antlr2.PPCallback;
-import org.netbeans.modules.cnd.modelimpl.apt.support.APTPreprocState;
-import org.netbeans.modules.cnd.modelimpl.csm.Diagnostic;
+import org.netbeans.modules.cnd.apt.support.APTPreprocState;
+import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  * A queue that hold a list of files to parse.
@@ -35,7 +35,6 @@ public class ParserQueue {
     public static class Entry {
         
         private FileImpl file;
-        private PPCallback callback;
         private APTPreprocState.State ppStateState;
         private Entry prev;
         private Entry next;
@@ -51,10 +50,6 @@ public class ParserQueue {
         
         public FileImpl getFile() {
             return file;
-        }
-        
-        public PPCallback getCallback() {
-            return callback;
         }
         
         public APTPreprocState.State getPreprocStateState() {

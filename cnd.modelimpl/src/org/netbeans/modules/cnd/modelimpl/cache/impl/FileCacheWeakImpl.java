@@ -22,8 +22,8 @@ package org.netbeans.modules.cnd.modelimpl.cache.impl;
 import antlr.collections.AST;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
-import org.netbeans.modules.cnd.modelimpl.apt.structure.APTFile;
-import org.netbeans.modules.cnd.modelimpl.apt.support.APTPreprocState;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTPreprocState;
 import org.netbeans.modules.cnd.modelimpl.cache.*;
 
 /**

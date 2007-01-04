@@ -19,18 +19,17 @@
 
 package org.netbeans.modules.cnd.classview.model;
 
-import java.awt.Image;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
+import java.util.Map.Entry;
 import org.openide.nodes.*;
-import org.openide.util.Utilities;
 
 import  org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.classview.SmartChangeEvent;
+import org.netbeans.modules.cnd.classview.model.CVUtil.FillingDone;
+import org.netbeans.modules.cnd.classview.model.CVUtil.LazyNamespaceSorteddArray;
 
 
 /**
@@ -38,40 +37,43 @@ import  org.netbeans.modules.cnd.api.model.*;
  * @author vk155633
  */
 public abstract class NPNode extends BaseNode  {
-
-    protected NPNode() {
-        super(new Children.SortedArray());
-        ((Children.SortedArray) getChildren()).setComparator(getComparator());
+    private FillingDone inited;
+    
+    protected NPNode(CsmProject prj, CsmNamespace ns, FillingDone init) {
+        super(new  LazyNamespaceSorteddArray(prj, ns, init));
+        inited = init;
     }
 
-    protected abstract CsmNamespace getNamespace();
-    protected abstract Comparator getComparator();
-    protected abstract boolean isSubNamspace(CsmNamespace ns);
-
-    protected void fill() {
-        CsmNamespace ns = getNamespace();
-        if( ns != null ) {
-            NodeUtil.fillNodeWithNamespaceContent(this, ns, true);
+    public boolean isInited(){
+        synchronized (inited){
+            return inited.isFillingDone(); 
         }
     }
+    
+    protected abstract CsmNamespace getNamespace();
+    protected abstract boolean isSubNamspace(CsmNamespace ns);
 
     /** Implements AbstractCsmNode.getData() */
     public CsmObject getCsmObject() {
 	return getNamespace();
     }
     
+    protected int getWeight() {
+        return NAMESPACE_WEIGHT;
+    }
 
-    public boolean update(CsmChangeEvent e) {
+    public boolean update(SmartChangeEvent e) {
         
         boolean updated = false;
 
         if (!isDismissed()) {
             if( ! e.getNewNamespaces().isEmpty() ) {
-                List namespaces = new ArrayList();
-                for( Iterator iter = e.getNewNamespaces().iterator(); iter.hasNext(); ) {
-                    CsmNamespace ns = (CsmNamespace) iter.next();
+                List<Entry<CsmNamespace,CsmProject>> namespaces = new ArrayList<Entry<CsmNamespace,CsmProject>>();
+                for( Iterator<Entry<CsmNamespace,CsmProject>> iter = e.getNewNamespaces().entrySet().iterator(); iter.hasNext(); ) {
+                    Entry<CsmNamespace,CsmProject> entry = iter.next();
+                    CsmNamespace ns = entry.getKey();
                     if( isSubNamspace(ns) ) {
-                        namespaces.add(ns);
+                        namespaces.add(entry);
                     }
                 }
                 if( ! namespaces.isEmpty() ) {
@@ -80,132 +82,57 @@ public abstract class NPNode extends BaseNode  {
                 }
             }
             List decls = new ArrayList();
-            for( Iterator iter = e.getNewDeclarations().iterator(); iter.hasNext(); ) {
+            for( Iterator<CsmDeclaration> iter = e.getNewDeclarations().iterator(); iter.hasNext(); ) {
                 if(isDismissed()){
                     break;
                 }
-                CsmDeclaration decl = (CsmDeclaration) iter.next();
+                CsmDeclaration decl = iter.next();
                 CsmDeclaration.Kind kind = decl.getKind();
                 if( kind == CsmDeclaration.Kind.CLASS || kind == CsmDeclaration.Kind.STRUCT || kind == CsmDeclaration.Kind.UNION ) {
                     if( ((CsmClass) decl).getContainingNamespace() == getNamespace() ) {
-                        //fill();
-                        //return true;
-//                      if( "Cursor".equals(decl.getName()) ) {
-//                            System.err.println("Cursor");
-//                        }
-                        //addDeclaration(decl);
                         decls.add(decl);
                         updated = true;
                     }
                 }
                 else if( kind == CsmDeclaration.Kind.ENUM ) {
                     if( ((CsmEnum) decl).getScope() == getNamespace() ) {
-                        //fill();
-                        //return true;
-                        //addDeclaration(decl);
                         decls.add(decl);
                         updated = true;
                     }
                 }
                 else if( kind == CsmDeclaration.Kind.FUNCTION || kind == CsmDeclaration.Kind.FUNCTION_DEFINITION ) {
                     if( ((CsmFunction) decl).getScope() == getNamespace() ) {
-                        //fill();
-                        //return true;
-                        //addDeclaration(decl);
                         decls.add(decl);
                         updated = true;
                     }
                 }
                 else if( kind == CsmDeclaration.Kind.VARIABLE/* || kind == CsmDeclaration.Kind.VARIABLE_DEFINITION*/ ) {
                     if( ((CsmVariable) decl).getScope() == getNamespace() ) {
-                        //fill();
-                        //return true;
-                        //addDeclaration(decl);
                         decls.add(decl);
                         updated = true;
                     }
                 }
                 else if( kind == CsmDeclaration.Kind.TYPEDEF ) {
                     if( ((CsmTypedef) decl).getScope() == getNamespace() ) {
-                        //fill();
-                        //return true;
-                        //addDeclaration(decl);
                         decls.add(decl);
                         updated = true;
                     }
                 }
             }
             addDeclarations(decls, false);
-            decls = new ArrayList();
-            for( Iterator iter = e.getChangedDeclarations().iterator(); iter.hasNext(); ) {
-                if(isDismissed()){
-                    break;
-                }
-                CsmDeclaration decl = (CsmDeclaration) iter.next();
-                CsmDeclaration.Kind kind = decl.getKind();
-                if( kind == CsmDeclaration.Kind.CLASS || kind == CsmDeclaration.Kind.STRUCT ||
-                    kind == CsmDeclaration.Kind.UNION || kind == CsmDeclaration.Kind.ENUM ) {
-                    if( ((CsmCompoundClassifier) decl).getContainingNamespace() == getNamespace() ) {
-                        decls.add(decl);
-                        updated = true;
-                    }
-                }
-            }
-            changeDeclarations(decls);
             updated |= super.update(e);
         }
         return updated;
     }
     
-    private void changeDeclarations(List decls) {
-       if (!isDismissed() && decls.size()>0){
-            final List nodes = new ArrayList();
-            for( int i = 0; i < decls.size(); i++) {
-                BaseNode node = NodeUtil.createNode((CsmClassifier)decls.get(i));
-                if (node != null){
-                    nodes.add(node);
-                }
-            }
-            if (nodes.size()>0){
-                final Children children = getChildren();
-                children.MUTEX.writeAccess(new Runnable(){
-                    public void run() {
-                        HashMap map = new HashMap();
-                        Node[] arr = children.getNodes();
-                        for(int i = 0; i < arr.length; i++){
-                            CsmObject x = ((BaseNode)arr[i]).getCsmObject();
-                            if (x instanceof CsmClassifier){
-                                CsmClassifier cls = (CsmClassifier) ((BaseNode)arr[i]).getCsmObject();
-                                map.put(((CsmClassifier)x).getQualifiedName(),arr[i]);
-                            }
-                        }
-                        List toRemove = new ArrayList();
-                        for(int i = 0; i < nodes.size(); i++){
-                            BaseNode n = (BaseNode)nodes.get(i);
-                            CsmClassifier x  = (CsmClassifier)n.getCsmObject();
-                            Node oldNode = (Node) map.get(x.getQualifiedName());
-                            if (oldNode != null){
-                                toRemove.add(oldNode);
-                                //System.out.println("Replace duplicated node "+oldNode.getDisplayName());
-                            }
-                        }
-                        if (toRemove.size()>0){
-                            children.remove((Node[])toRemove.toArray(new Node[toRemove.size()]));
-                        }
-                        children.add((Node[])nodes.toArray(new Node[nodes.size()]));
-                    }
-                });
-            }
-       }
-    }
-
     private void addDeclarations(List decls, boolean isNamespaces) {
        if (!isDismissed() && decls.size()>0){
             final List nodes = new ArrayList();
             for( int i = 0; i < decls.size(); i++) {
                 BaseNode node;
                 if (isNamespaces) {
-                    node = new NamespaceNode((CsmNamespace)decls.get(i), false);
+                    Entry entry = (Entry)decls.get(i);
+                    node = new NamespaceNode((CsmProject)entry.getValue(), (CsmNamespace)entry.getKey());
                 } else {
                     node = NodeUtil.createNode((CsmDeclaration)decls.get(i));
                 }

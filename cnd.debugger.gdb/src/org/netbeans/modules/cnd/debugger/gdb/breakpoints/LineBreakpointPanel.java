@@ -96,7 +96,7 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
 	 * but writable.
 	 */
 	if (url.length() > 0 && mime != null &&
-		    (mime.equals("text/x-c++") || mime.equals("text/x-c") || mime.equals("text/x-fortran"))) {
+		    (mime.equals("text/x-c++") || mime.equals("text/x-c") || mime.equals("text/x-fortran"))) { // NOI18N
 	    try {
 		URI uri = new URI(url);
 		String path = uri.getPath();
@@ -123,7 +123,7 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
 	int lnum = EditorContextBridge.getMostRecentLineNumber();
 	
 	LineBreakpoint lb = LineBreakpoint.create(url, lnum);
-        lb.setPrintText(NbBundle.getBundle(LineBreakpointPanel.class).getString("CTL_Line_Breakpoint_Print_Text"));
+        lb.setPrintText(NbBundle.getBundle(LineBreakpointPanel.class).getString("CTL_Line_Breakpoint_Print_Text")); // NOI18N
         return lb;
     }
     
@@ -395,7 +395,7 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
 	
 	// First, validate the path
 	if (path == null || path.length() == 0) {
-	    return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_No_File_Name_Spec");
+	    return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_No_File_Name_Spec"); // NOI18N
 	}
 	if (path.charAt(0) == '/' || path.charAt(0) == '\'') { // Can't rely on direction of slash on Windows
 	    file = new File(path);

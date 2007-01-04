@@ -27,18 +27,13 @@ import java.util.*;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
-import org.netbeans.modules.cnd.modelimpl.antlr2.CsmToken;
-import org.netbeans.modules.cnd.modelimpl.apt.impl.support.generated.APTTokenTypes;
-import org.netbeans.modules.cnd.modelimpl.apt.support.APTToken;
-import org.netbeans.modules.cnd.modelimpl.apt.utils.ListBasedTokenStream;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.antlr2.CPPParserEx;
-import org.netbeans.modules.cnd.modelimpl.antlr2.CsmAST;
-import org.netbeans.modules.cnd.modelimpl.antlr2.generated.CPPTokenTypes;
-import org.netbeans.modules.cnd.modelimpl.apt.utils.APTUtils;
-import org.netbeans.modules.cnd.modelimpl.csm.Diagnostic;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
  * Common ancestor for all ... statements
@@ -121,7 +116,7 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
         }
 	else {
 	    try {
-		for( Token next = stream.nextToken(); next != null && next.getType() != APTTokenTypes.EOF; next = stream.nextToken() ) {
+		for( Token next = stream.nextToken(); next != null && next.getType() != CPPTokenTypes.EOF; next = stream.nextToken() ) {
 		    assert (next instanceof APTToken ) : "we have only APTTokens in token stream";
                     int currOffset = ((APTToken) next).getOffset();
                     if( currOffset == firstTokenOffset ) {
@@ -154,13 +149,13 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
         AST out = curAst;
         if (curAst != null) {
             int flags = CPPParserEx.CPP_CPLUSPLUS;
-            if( ! TraceFlags.REPORT_PARSING_ERRORS || Diagnostic.DEBUG ) {
+            if( ! TraceFlags.REPORT_PARSING_ERRORS || TraceFlags.DEBUG ) {
                 flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
             }            
             CPPParserEx parser = CPPParserEx.getInstance(getContainingFile().getName(), tokenStream, flags);
             parser.setLazyCompound(false);
             try {
-                parser.compound_statement(false);
+                parser.compound_statement();
                 if (false) {
                     throw new RecognitionException();
                 }

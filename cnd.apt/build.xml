@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 2001-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!-- You may freely edit this file. See harness/README in the NetBeans platform -->
+<!-- for some information on what you could do (e.g. targets to override). -->
+<!-- If you delete this file and reopen the project it will be recreated. -->
+<project name="org.netbeans.modules.cnd.apt" default="netbeans" basedir=".">
+    <description>Builds, tests, and runs the project org.netbeans.modules.cnd.apt.</description>
+    <import file="nbproject/build-impl.xml"/>
+    
+    <target name="compile" depends="antlr,projectized-common.compile">
+    </target>
+ 
+    <target name="init-antlr">
+        <property name="antlr.apt.output.dir" location="src/org/netbeans/modules/cnd/apt/impl/support/generated"/>
+        <property name="antlr.jar" location="../suite/build/cluster/modules/org-netbeans-modules-cnd-antlr.jar"/>
+        <property name="antlr.apt.grammar.dir" location="src/org/netbeans/modules/cnd/apt/impl/support"/>
+        <property name="antlr.apt.output.tokenTypes" location="src/org/netbeans/modules/cnd/apt/support/APTTokenTypes.java"/>
+    </target>
+    
+    <target name="clean" depends="projectized-common.clean, init-antlr">
+        <delete dir="${antlr.apt.output.dir}"/>   
+<!--        <delete file="${antlr.apt.output.tokenTypes}"/> -->
+    </target>
+    
+    <target name="antlr" depends="init-antlr" unless="up-to-date">
+        <mkdir dir="${antlr.apt.output.dir}"/>
+        <antlr  target="${antlr.apt.grammar.dir}/aptlexer.g"
+                outputdirectory="${antlr.apt.output.dir}">
+                <classpath path="${antlr.jar}"/>
+        </antlr>  
+        <antlr  target="${antlr.apt.grammar.dir}/aptexpr.g"
+                outputdirectory="${antlr.apt.output.dir}">
+                <classpath path="${antlr.jar}"/>
+        </antlr> 	
+        <copy file="${antlr.apt.output.dir}/APTGeneratedTokenTypes.txt" 
+                tofile="${antlr.apt.output.dir}/APTTokenTypes.txt"
+                overwrite="true"/>
+        <!--
+        <patch patchfile="${antlr.apt.grammar.dir}/APTTokenTypes.patch" 
+                originalfile="${antlr.apt.output.dir}/APTGeneratedTokenTypes.java"
+                destfile="${antlr.apt.output.tokenTypes}"
+                quiet="true"/>
+        <copy file="${antlr.apt.output.dir}/APTTokenTypes.java" 
+                todir="${antlr.apt.output.tokenTypes.dir}"
+                overwrite="true">
+        </copy>
+        -->
+    </target>    
+</project>

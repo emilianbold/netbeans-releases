@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -19,31 +19,28 @@
 
 package org.netbeans.modules.cnd.classview.model;
 import javax.swing.*;
-import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.netbeans.modules.cnd.classview.Diagnostic;
 import org.openide.nodes.*;
 
 import  org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.classview.SmartChangeEvent;
 import org.netbeans.modules.cnd.classview.actions.GoToDeclarationAction;
 
 /**
  * @author Vladimir Kvasihn
  */
-public class ObjectNode extends BaseNode {
-
-    //private CsmOffsetableDeclaration declaration;
+public abstract class ObjectNode extends BaseNode {
     private String uniqueName;
     private CsmProject project;
-
-    private CsmOffsetableDeclaration declaration;
-
+    // for unnamed declatarions
+    private CsmOffsetableDeclaration unnamedDeclaration;
+    
     public ObjectNode(CsmOffsetableDeclaration declaration) {
         this(declaration, Children.LEAF);
     }
     
     public ObjectNode(CsmOffsetableDeclaration declaration, Children children) {
         super(children);
-        //this.declaration = declaration;
         setObject(declaration);
         if( project.findDeclaration(uniqueName) == null ) {
             if( Diagnostic.DEBUG && declaration.getName().length() > 0 ) {
@@ -58,7 +55,7 @@ public class ObjectNode extends BaseNode {
     
     /** Implements AbstractCsmNode.getData() */
     public CsmObject getCsmObject() {
-	return getObject();
+        return getObject();
     }
     
     public CsmOffsetableDeclaration getObject() {
@@ -68,24 +65,30 @@ public class ObjectNode extends BaseNode {
             if (prj != null) {
                 object = (CsmOffsetableDeclaration) prj.findDeclaration(uniqueName);
                 if( object == null ) {
-                    if( Diagnostic.DEBUG && declaration.getName().length() > 0 ) {
+                    if( Diagnostic.DEBUG) {
                         System.err.println("Can't find object by unique name " + uniqueName);
                     }
-                    return declaration;
+                    object =unnamedDeclaration;
                 }
             }
         }
         return object;
     }
-   
-    private CsmProject getDeclarationProject(){
+    
+    protected CsmProject getDeclarationProject(){
         return project;
     }
     
-    private void setObject(CsmOffsetableDeclaration declaration) {
+    protected String getUniqueName(){
+        return uniqueName;
+    }
+    
+    protected void setObject(CsmOffsetableDeclaration declaration) {
         uniqueName = declaration.getUniqueName();
         project = declaration.getContainingFile().getProject();
-        this.declaration = declaration;
+        if (declaration.getName().length()==0){
+            unnamedDeclaration = declaration;
+        }
     }
     
     public Action getPreferredAction() {
@@ -103,42 +106,25 @@ public class ObjectNode extends BaseNode {
     protected void objectChanged() {
     }
     
-//    public void update(CsmChangeEvent e) {
-//	//super.update(e);
-//	CsmOffsetableDeclaration decl = getObject();
-//	if( e.getRemovedDeclarations().contains(decl) ) {
-//	    //getChildren().remove(getChildren().getNodes());
-//            String uniqueName = decl.getUniqueName();
-//	    CsmDeclaration newDecl = decl.getContainingFile().getProject().findDeclaration(uniqueName);
-//	    if( newDecl instanceof CsmOffsetableDeclaration ) {
-//		if( newDecl.getKind() == decl.getKind() ) {
-//		    setObject((CsmOffsetableDeclaration) newDecl);
-//		    objectChanged();
-//		}
-//	    }
-//	    else {
-//		getParentNode().getChildren().remove(new Node[] { this });
-//	    }
-//	}
-//    }
-    
-    public boolean update(CsmChangeEvent e) {
-	//super.update(e);
+    public boolean update(SmartChangeEvent e) {
+        //super.update(e);
         if (!isDismissed()) {
-            CsmOffsetableDeclaration decl = getObject();
-            if( e.getChangedDeclarations().contains(decl) ) {
-                //getChildren().remove(getChildren().getNodes());
-                String uniqueName = decl.getUniqueName();
-                CsmDeclaration newDecl = decl.getContainingFile().getProject().findDeclaration(uniqueName);
-                if( newDecl instanceof CsmOffsetableDeclaration ) {
-                    if( newDecl.getKind() == decl.getKind() ) {
-                        setObject((CsmOffsetableDeclaration) newDecl);
-                        objectChanged();
-                        return true;
-                    }
+            String uniqueName = getUniqueName();
+            if( e.getChangedUniqueNames().contains(uniqueName) ) {
+                CsmOffsetableDeclaration decl = getObject();
+                if (decl != null){
+                    setObject(decl);
+                    objectChanged();
+                    return true;
+                } else {
+                    final Children children = getParentNode().getChildren();
+                    children.MUTEX.writeAccess(new Runnable(){
+                        public void run() {
+                            children.remove(new Node[] { ObjectNode.this });
+                        }
+                    });
                 }
-            }
-            else if( e.getRemovedDeclarations().contains(decl) ) {
+            } else if( e.getRemovedUniqueNames().contains(uniqueName) ) {
                 final Children children = getParentNode().getChildren();
                 children.MUTEX.writeAccess(new Runnable(){
                     public void run() {
@@ -157,10 +143,5 @@ public class ObjectNode extends BaseNode {
         super.dismiss();
         project = null;
     }
-    
-//    public int compareTo(Object o) {
-//        return CsmSortUtilities.NATURAL_NAMESPACE_MEMBER_COMPARATOR.compare(this, o);
-//    }
-    
     
 }

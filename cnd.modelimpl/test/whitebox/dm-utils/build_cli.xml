@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+
+<project name="ModelUtils" default="jar" basedir=".">
+    <property name="module-jar-name" value="ModelUtils.jar"/>
+    <property name="src.dir" value="./src"/>
+    <property name="build.dir" value="./build"/>
+    <property name="dist.dir" value="./dist"/>
+    <property name="classes.dir" value="./build/classes"/>
+
+    <property name="build.compiler.debug" value="yes"/>
+    <property name="test.args" value=""/>
+    <property name="main.class" value="modelutils.ModelUtils"/>
+
+    <target name="clean">
+        <delete dir="${classes.dir}"/>
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+
+    <target name="deps-jar">
+    </target>
+
+
+    <target name="jar" depends="deps-jar, compile">
+        <mkdir dir="${dist.dir}"/>
+        <jar jarfile="${dist.dir}/${module-jar-name}"
+                        basedir="${src.dir}"
+                        compress="false">
+                        <fileset dir="${build.dir}/classes" />
+                        <fileset dir="${src.dir}"
+                                includes="**/META-INF/**, **/resources/**, **/Bundle.properties, **/*.gif"
+                        />
+        </jar>
+    </target>
+
+    <target name="compile">
+                <mkdir dir="${classes.dir}" />
+                <javac
+                        srcdir="${src.dir}"
+                        source="1.5"
+                        destdir="${classes.dir}"
+                        deprecation="${build.compiler.deprecation}"
+                        debug="${build.compiler.debug}"
+                        excludes="**/SCCS/*.java" >
+                        <classpath>
+                        </classpath>
+                </javac>
+    </target>
+
+    <target name="run" depends="jar">
+        <echo message="Running ${main.class} with parameters ${test.args}"/>
+        <java
+                        classname="${main.class}"
+                        fork="true"
+                        dir="${test.dir}">
+            <classpath>
+                    <pathelement location="${dist.dir}/${module-jar-name}"/>
+            </classpath>
+            <arg line="${test.args}"/>
+        </java>
+    </target>
+
+
+</project>
+

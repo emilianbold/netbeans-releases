@@ -19,9 +19,7 @@
 
 package org.netbeans.modules.cnd.classview.model;
 
-import java.awt.Image;
 import org.openide.nodes.*;
-import org.openide.util.Utilities;
 
 import  org.netbeans.modules.cnd.api.model.*;
 
@@ -47,4 +45,7 @@ public class GlobalFuncNode extends ObjectNode {
 	}
     }
 
+    protected int getWeight() {
+        return FUNCTION_WEIGHT;
+    }
 }

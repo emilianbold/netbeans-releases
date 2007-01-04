@@ -1,0 +1,28 @@
+/* 
+ * File:   %<%NAME%>%.cc
+ * Author: %<%USER%>%
+ *
+ * Created on %<%DATE%>%, %<%TIME%>%
+ */
+
+#include <stdlib.h>
+#include <suninterval.h>
+
+#if __cplusplus >= 199711
+using namespace SUNW_interval;
+#endif
+
+/*
+ * See C++ Interval Arithmetic Programming Reference
+ */
+int
+main(int argc, char** argv) {
+    
+    return (EXIT_SUCCESS);
+}
+
+
+
+
+
+

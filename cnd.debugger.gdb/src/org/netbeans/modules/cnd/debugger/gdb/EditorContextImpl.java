@@ -106,7 +106,7 @@ public class EditorContextImpl extends EditorContext {
             return false;
         }
         if (fronting != null) {
-            if (fronting.equals("true"))
+            if (fronting.equals("true")) // NOI18N
                 l.show(Line.SHOW_TOFRONT); //FIX 47825
             else
                 l.show(Line.SHOW_GOTO);
@@ -323,7 +323,7 @@ public class EditorContextImpl extends EditorContext {
      * @return name of method currently selected in editor or empty string
      */
     public String getCurrentFunctionName() {
-        return "";  // FIXUP
+        return "";  // FIXUP // NOI18N
     }
 
     /**
@@ -389,7 +389,7 @@ public class EditorContextImpl extends EditorContext {
             return ""; // NOI18N
         }
             */
-        return ""; // XXX - Fixup
+        return ""; // XXX - Fixup // NOI18N
     }
     
     /**
@@ -587,7 +587,7 @@ public class EditorContextImpl extends EditorContext {
 		for (int i = 0; i < nodes.length; i++) {
 		    ec = (EditorCookie) nodes[i].getCookie(EditorCookie.class);
 		    if (ec != null) {
-			System.err.println("Got it!");
+			System.err.println("Got it!"); // NOI18N
 		    }
 		}
 	    }

@@ -22,7 +22,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.modelimpl.csm.Diagnostic;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 
 /**
@@ -39,7 +39,7 @@ public class Utils {
         // do not change it
         if (LOG_LEVEL == -1) {
             // command line param has priority for logging
-            if (Diagnostic.DEBUG) {
+            if (TraceFlags.DEBUG) {
                 LOG.setLevel(Level.ALL);
             } else {
                 LOG.setLevel(Level.SEVERE);

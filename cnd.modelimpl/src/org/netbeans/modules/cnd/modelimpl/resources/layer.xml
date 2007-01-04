@@ -19,4 +19,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+<!--
+layer is empty and not used. When it is used => update manifest file with line:
+OpenIDE-Module-Layer: org/netbeans/modules/cnd/modelimpl/resources/layer.xml
+-->    
 </filesystem>

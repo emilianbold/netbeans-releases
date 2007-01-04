@@ -1,0 +1,26 @@
+/* 
+ * File:   %<%NAME%>%.cc
+ * Author: %<%USER%>%
+ *
+ * Created on %<%DATE%>%, %<%TIME%>%
+ */
+
+#include <stdlib.h>
+#include <suninterval.h>
+
+using namespace SUNW_interval;
+
+/*
+ * See man pages: nvector(3C++), nmatrix(3C++)
+ */
+int
+main(int argc, char** argv) {
+    
+    return (EXIT_SUCCESS);
+}
+
+
+
+
+
+

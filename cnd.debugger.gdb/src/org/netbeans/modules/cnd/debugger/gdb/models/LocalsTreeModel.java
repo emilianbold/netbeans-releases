@@ -290,7 +290,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
             CallStackFrameImpl callStackFrame = (CallStackFrameImpl) debugger.
                     getCurrentCallStackFrame();
             if (callStackFrame == null)
-                return new String [] {"No current thread"};
+                return new String [] {"No current thread"}; // NOI18N
             /*NM TEMPORARY COMMENTED OUT
             StackFrame stackFrame = callStackFrame.getStackFrame ();
             if (stackFrame == null)
@@ -442,7 +442,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                 // cancel old task
                 task.cancel();
                 if (verbose)
-                    System.out.println("LTM cancel old task " + task);
+                    System.out.println("LTM cancel old task " + task); // NOI18N
                 task = null;
             }
         }
@@ -474,23 +474,23 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                     // cancel old task
                     task.cancel();
                     if (verbose)
-                        System.out.println("LTM cancel old task " + task);
+                        System.out.println("LTM cancel old task " + task); // NOI18N
                     task = null;
                 }
                 task = RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         if (debugger.getState() != debugger.STATE_STOPPED) {
                             if (verbose)
-                                System.out.println("LTM cancel started task " + task);
+                                System.out.println("LTM cancel started task " + task); // NOI18N
                             return;
                         }
                         if (verbose)
-                            System.out.println("LTM do task " + task);
+                            System.out.println("LTM do task " + task); // NOI18N
                         ltm.fireTreeChanged();
                     }
                 }, 500);
                 if (verbose)
-                    System.out.println("LTM  create task " + task);
+                    System.out.println("LTM  create task " + task); // NOI18N
             } else
                 if ( (e.getPropertyName() == debugger.PROP_STATE) &&
                     (debugger.getState() != debugger.STATE_STOPPED) &&
@@ -500,7 +500,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                 // =>> cancel task
                 task.cancel();
                 if (verbose)
-                    System.out.println("LTM cancel task " + task);
+                    System.out.println("LTM cancel task " + task); // NOI18N
                 task = null;
                 }
         }

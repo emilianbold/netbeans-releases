@@ -67,7 +67,7 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
     }
     
     public String[] getProperties() {
-        return new String[] {"asd"};
+        return new String[] {"asd"}; // NOI18N
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -98,10 +98,10 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
     public void watchAdded(Watch watch) {}
     public void watchRemoved(Watch watch) {}
     public void engineAdded(DebuggerEngine engine) {
-        System.err.println("BEL.engineAdded: ");
+        System.err.println("BEL.engineAdded: "); // NOI18N
     }
     public void engineRemoved(DebuggerEngine engine) {
-        System.err.println("BEL.engineRemoved: ");
+        System.err.println("BEL.engineRemoved: "); // NOI18N
     }
 
 

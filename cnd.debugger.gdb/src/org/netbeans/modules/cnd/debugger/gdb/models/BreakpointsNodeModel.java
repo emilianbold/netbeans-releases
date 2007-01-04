@@ -37,9 +37,9 @@ import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 public class BreakpointsNodeModel implements NodeModel {
 
     public static final String BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/NonLineBreakpoint";
+        "org/netbeans/modules/debugger/resources/breakpointsView/NonLineBreakpoint"; // NOI18N
     public static final String LINE_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint";
+        "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint"; // NOI18N
 
     private Vector listeners = new Vector();
 
@@ -83,7 +83,7 @@ public class BreakpointsNodeModel implements NodeModel {
                     EditorContextBridge.getFileName(b), line));
         } else if (o instanceof FunctionBreakpoint) {
             FunctionBreakpoint b = (FunctionBreakpoint) o;
-            String className = "";
+            String className = ""; // NOI18N
             //NM Commented out code below, because it leads to NPE
             // String[] fs = null; // XXX - Unimplemented
             // if (fs.length > 0) {
@@ -91,15 +91,15 @@ public class BreakpointsNodeModel implements NodeModel {
             // }
             if (b.getFunctionName().equals("")) {
                 return bold(b, NbBundle.getMessage(BreakpointsNodeModel.class,
-                        "CTL_All_Functions_Breakpoint", getShort(className)));
+                        "CTL_All_Functions_Breakpoint", getShort(className))); // NOI18N
             } else {
 		String clazz = getShort(className);
 		if (clazz != null && clazz.length() > 0) {
 		    return bold(b, NbBundle.getMessage(BreakpointsNodeModel.class,
-			"CTL_Function_Breakpoint_With_Class", getShort(className), b.getFunctionName()));
+			"CTL_Function_Breakpoint_With_Class", getShort(className), b.getFunctionName())); // NOI18N
 		} else {
 		    return bold(b, NbBundle.getMessage(BreakpointsNodeModel.class,
-			"CTL_Function_Breakpoint", b.getFunctionName()));
+			"CTL_Function_Breakpoint", b.getFunctionName())); // NOI18N
 		}
             }
         } else {

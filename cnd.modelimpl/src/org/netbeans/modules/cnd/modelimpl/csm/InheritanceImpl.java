@@ -19,11 +19,12 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.modules.cnd.modelimpl.antlr2.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.antlr2.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 import org.netbeans.modules.cnd.modelimpl.platform.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -97,7 +98,7 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
                     }
                     else 
                     {
-                        if (Diagnostic.DEBUG && !(o instanceof CsmNamespace))
+                        if (TraceFlags.DEBUG && !(o instanceof CsmNamespace))
                             System.out.println( "Unknown token instead of Namespace/Class: " + token.getText());
                     }
                     return; // it's definitely the last!; besides otherwise we get NPE in for 

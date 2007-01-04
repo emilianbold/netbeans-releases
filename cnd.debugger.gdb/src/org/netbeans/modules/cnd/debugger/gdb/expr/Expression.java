@@ -26,14 +26,14 @@ package org.netbeans.modules.cnd.debugger.gdb.expr;
  */
 public class Expression {
     
-    public static final     String LANGUAGE_CPLUSPLUS = "C++";
-    public static final     String LANGAUGE_C = "C";
+    public static final     String LANGUAGE_CPLUSPLUS = "C++"; // NOI18N
+    public static final     String LANGAUGE_C = "C"; // NOI18N
     
     private String          strExpression;
     private String          language;
     
     public static Expression parse(String expr, String language) throws ParseException {
-        System.err.println("Expression.parse: expr = " + expr);
+        System.err.println("Expression.parse: expr = " + expr); // NOI18N
         if (expr == null) {
             throw new ParseException();
         }

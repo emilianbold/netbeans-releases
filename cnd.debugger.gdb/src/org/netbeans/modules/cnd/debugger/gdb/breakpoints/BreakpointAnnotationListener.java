@@ -145,7 +145,7 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter {
                     } else {
                         // Drive letter is not case sensitive - let's try to ignore case
                         String fb_url = fb.getURL();
-                        if ((fb_url.startsWith("file:/")) && (url.startsWith("file:/"))) {
+                        if ((fb_url.startsWith("file:/")) && (url.startsWith("file:/"))) { // NOI18N
                             if((fb_url.charAt(7) == ':') && (url.charAt(7) == ':')) {
                                 String url_lc = url.substring(0, 8);
                                 url_lc = url_lc.toLowerCase() + url.substring(8);

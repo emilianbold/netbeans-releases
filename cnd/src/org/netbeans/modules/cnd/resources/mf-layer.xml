@@ -1,0 +1,472 @@
+<?xml version="1.0"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 2001-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<filesystem>
+
+    <folder name="Menu">
+	<folder name="Help">
+            <attr name="using-netbeans.url/NetBeansCCDevelopmentPack.url" boolvalue="true"/>
+            <file name="NetBeansCCDevelopmentPack.url" url="nbresloc:/org/netbeans/modules/cnd/resources/NetBeansCCDevelopmentPack.url">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+            </file>
+	</folder> <!-- Help -->
+    </folder> <!-- Menu -->
+
+    <folder name="OptionsDialog">
+        <folder name="PreviewExamples">
+            <folder name="text">
+                <file name="x-c++" url="cplusplus/CCExample"/>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="Editors">
+	<folder name="AnnotationTypes">
+	  <file name="org-netbeans-modules-cnd-error.xml" url="error-annotation.xml"/>
+	</folder>
+
+	<folder name="text">
+
+	    <folder name="x-c++">
+		<file name="Settings.settings" url="CCOptions.settings"/>
+                <folder name="Defaults">
+                    <file name="keybindings.xml" url="DefaultKeyBindings.xml"/>
+                </folder>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                  
+                <folder name="NetBeans">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="cplusplus/Netbeans-CC-fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.cplusplus.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+                <folder name="CityLights">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="cplusplus/CityLights-CC-fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.BundleColors"/>
+                        </file>
+                    </folder>
+                </folder>                
+
+		<file name="EditorKit.instance">
+		    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CCKit"/>
+		</file>
+
+		<folder name="SideBar">
+		    <file name="org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance"/>
+		    <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance" boolvalue="true"/>
+		</folder>
+
+		<folder name="FoldManager">
+		    <file name="org-netbeans-modules-cnd-editor-CppFoldManager$Factory.instance"/>
+		</folder>
+                <folder name="Popup">
+                    <attr name="org-openide-actions-GotoAction.instance/goto" boolvalue="true"/>
+                    <folder name="goto">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                        <file name="goto"/> <!-- action Go To Line... -->
+                    </folder>
+                    <attr name="goto/org-netbeans-modules-editor-NbSelectInPopupAction.instance" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-editor-NbSelectInPopupAction.instance/SeparatorBeforeFormat.instance" boolvalue="true"/>
+                    <attr name="SeparatorBeforeFormat.instance/format" boolvalue="true"/>
+                    <attr name="format/SeparatorAfterFormat.instance" boolvalue="true"/>
+                    <attr name="SeparatorAfterFormat.instance/org-netbeans-modules-cnd-debugger-gdb-actions-ToggleBreakpointAction.shadow" boolvalue="true"/>
+                    <attr name="org-openide-actions-PasteAction.instance/SeparatorAfterPaste.instance" boolvalue="true"/>
+                    <attr name="SeparatorAfterPaste.instance/generate-fold-popup" boolvalue="true"/>
+
+                    <file name="SeparatorBeforeFormat.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <file name="format"/>                    
+                    <file name="SeparatorAfterFormat.instance">
+			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <file name="SeparatorAfterPaste.instance">
+			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <file name="generate-fold-popup"/>
+                </folder>
+	    </folder>
+
+	    <folder name="x-c">
+                <!-- 
+                    Seems it's not necessary to register here colorings, settings, other?
+                    because C is used with C++ 
+                -->
+
+		<folder name="Defaults">
+                    <file name="keybindings.xml" url="DefaultKeyBindings.xml"/>
+                </folder>
+                <file name="EditorKit.instance">
+		    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CCKit"/>
+		</file>
+
+		<folder name="SideBar">
+		    <file name="org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance"/>
+		    <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance" boolvalue="true"/>
+		</folder>
+
+		<folder name="FoldManager">
+		    <file name="org-netbeans-modules-cnd-editor-CppFoldManagerxx$Factory.instance"/>
+		</folder>
+                <folder name="Popup">
+                    <attr name="org-openide-actions-GotoAction.instance/goto" boolvalue="true"/>
+                    <folder name="goto">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                        <file name="goto"/> <!-- action Go To Line... -->
+                    </folder>
+                    <attr name="goto/org-netbeans-modules-editor-NbSelectInPopupAction.instance" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-editor-NbSelectInPopupAction.instance/SeparatorBeforeFormat.instance" boolvalue="true"/>
+                    <attr name="SeparatorBeforeFormat.instance/format" boolvalue="true"/>
+                    <attr name="format/SeparatorAfterFormat.instance" boolvalue="true"/>
+                    <attr name="SeparatorAfterFormat.instance/org-netbeans-modules-cnd-debugger-gdb-actions-ToggleBreakpointAction.shadow" boolvalue="true"/>
+                    <attr name="org-openide-actions-PasteAction.instance/SeparatorAfterPaste.instance" boolvalue="true"/>
+                    <attr name="SeparatorAfterPaste.instance/generate-fold-popup" boolvalue="true"/>
+
+                    <file name="SeparatorBeforeFormat.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <file name="format"/>                    
+                    <file name="SeparatorAfterFormat.instance">
+			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <file name="SeparatorAfterPaste.instance">
+			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <file name="generate-fold-popup"/>
+                </folder>
+	    </folder>
+
+	    <folder name="x-fortran">
+		<folder name="Defaults">
+                    <file name="keybindings.xml" url="DefaultKeyBindings.xml"/>
+                </folder>
+                <file name="Settings.settings" url="FOptions.settings"/>
+
+		<folder name="Toolbars">
+		    <folder name="Default">
+			<file name="org-netbeans-modules-cnd-editor-parser-NavigateAction.instance"/>
+			<attr name="org-netbeans-modules-cnd-editor-parser-NavigateAction.instance/Separator0.instance" boolvalue="true"/>
+
+                        <attr name="stop-macro-recording/Separator-before-comment-fortran.instance" boolvalue="true"/>
+                        <file name="Separator-before-comment-fortran.instance">
+                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        </file>
+
+			<attr name="Separator-before-comment-fortran.instance/comment" boolvalue="true"/>
+			<file name="comment"/>
+
+			<attr name="comment/uncomment" boolvalue="true"/>
+			<file name="uncomment"/>                                                
+		    </folder>
+		</folder>
+
+		<file name="EditorKit.instance">
+		    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.fortran.FKit"/>
+		</file>
+	    </folder>
+
+	    <folder name="x-make">
+		<file name="Settings.settings" url="MakefileOptions.settings"/>
+		<file name="EditorKit.instance">
+		    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.makefile.MakefileKit"/>
+		</file>
+	    </folder>
+
+	    <folder name="x-shell">
+		<file name="Settings.settings" url="ShellOptions.settings"/>
+		<file name="EditorKit.instance">
+		    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.shell.ShellKit"/>
+		</file>
+	    </folder>
+	</folder>
+    </folder>
+
+    <folder name="Services">
+        <folder name="Hidden">
+	    <file name="org-netbeans-modules-cnd-loaders-MIMEResolver.instance">
+		<attr name="instanceOf" stringvalue="org.openide.filesystems.MIMEResolver"/>
+	    </file>
+        </folder>
+
+	<file name="org-netbeans-modules-cnd-settings-CppSettings.settings" url="CppSettings.settings">
+	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.settings.Bundle"/>
+	    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
+            <attr name="SystemFileSystem.layer" stringvalue="project"/>
+	</file>
+
+	<file name="org-netbeans-modules-cnd-settings-ShellSettings.settings" url="ShellSettings.settings">
+	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.settings.Bundle"/>
+	    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
+            <attr name="SystemFileSystem.layer" stringvalue="project"/>
+	</file>
+
+	<file name="org-netbeans-modules-cnd-settings-MakeSettings.settings" url="MakeSettings.settings">
+	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.settings.Bundle"/>
+	    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/MakefileSettings.gif"/>
+	</file>
+
+	<folder name="MIMEResolver">
+	    <file name="org-netbeans-modules-cnd-mime-resolver.xml" url="mime-resolver.xml">
+		<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+		<attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/MakefileDataIcon.gif"/>
+	    </file>
+	</folder>
+
+	<folder name="JavaHelp">
+	    <attr name="org-netbeans-modules-usersguide-below-regular.txt/org-netbeans-modules-cnd-helpset.xml" boolvalue="true"/>
+            <file name="org-netbeans-modules-cnd-helpset.xml" url="helpset-decl.xml"/>
+        </folder> <!-- JavaHelp -->
+
+        <folder name="IndentEngine">
+            <file name="org-netbeans-modules-cnd-editor-cplusplus-CCIndentEngine.settings" url="CCIndentEngine.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle"/>
+            </file>
+
+            <file name="org-netbeans-modules-cnd-editor-fortran-FIndentEngine.settings" url="FIndentEngine.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.fortran.Bundle"/>
+            </file>
+
+            <file name="org-netbeans-modules-cnd-editor-makefile-MakefileIndentEngine.settings" url="MakefileIndentEngine.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.makefile.Bundle"/>
+            </file>
+        </folder> <!-- IndentEngine -->
+    </folder>	<!-- Services -->
+
+    <folder name="UI">
+	<folder name="Services">
+	    <folder name="Building">
+		<file name="org-netbeans-modules-cnd-MakeSettings.shadow">
+		    <attr name="originalFile" stringvalue="Services/org-netbeans-modules-cnd-settings-MakeSettings.settings"/>
+		</file>
+	    </folder> <!-- Building -->
+
+	    <folder name="Editing">
+		<file name="org-netbeans-modules-cnd-CppSettings.shadow">
+		    <attr name="originalFile" stringvalue="Services/org-netbeans-modules-cnd-settings-CppSettings.settings"/>
+		</file>
+	    </folder> <!-- Editing -->
+
+	    <folder name="DebuggingAndExecuting">
+		<file name="org-netbeans-modules-cnd-ShellSettings.shadow">
+		    <attr name="originalFile" stringvalue="Services/org-netbeans-modules-cnd-settings-ShellSettings.settings"/>
+		</file>
+	    </folder> <!-- Editing -->
+	</folder> <!-- Services -->
+    </folder> <!-- UI -->
+
+    <folder name="Templates">
+        <folder name="cFiles">
+	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+      	    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/cFiles.html"/>
+	    
+	    <file name="file.c" url="templates/c/empty-c.template">
+		<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+              	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/empty-c.html"/>
+		<attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+		<attr name="templateCategory" stringvalue="c-types"/>
+            </file>
+
+	    <attr name="file.c/main.c" boolvalue="true"/>
+	    <file name="main.c" url="templates/c/simple-c.template">
+		<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+              	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-c.html"/>
+		<attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+		<attr name="templateCategory" stringvalue="c-types"/>
+            </file>
+
+	    <attr name="main.c/file.h" boolvalue="true"/>
+	    <file name="file.h" url="templates/c/simple-h.template">
+		<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+              	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-c-h.html"/>
+		<attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+		<attr name="templateCategory" stringvalue="c-types"/>
+            </file>
+        </folder> <!-- End cFiles folder -->
+
+        <attr name="cFiles/cppFiles" boolvalue="true"/>
+        <folder name="cppFiles">
+	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+      	    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/cppFiles.html"/>
+
+	    <file name="file.cc" url="templates/cpp/empty-cc.template">
+	        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+              	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/empty-cc.html"/>
+		<attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+		<attr name="templateCategory" stringvalue="cpp-types"/>
+            </file>
+
+	    <attr name="file.cc.c/main.cc" boolvalue="true"/>
+            <file name="main.cc" url="templates/cpp/simple-cc.template">
+	        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+              	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-cc.html"/>
+		<attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+		<attr name="templateCategory" stringvalue="cpp-types"/>
+            </file>
+
+	    <attr name="main.cc/file.h" boolvalue="true"/>
+            <file name="file.h" url="templates/cpp/header-h.template">
+	        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+              	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simple-cc-h.html"/>
+		<attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+		<attr name="templateCategory" stringvalue="cpp-types"/>
+            </file>
+
+        </folder> <!-- End cppFiles folder -->
+
+        <attr name="cppFiles/fortranFiles" boolvalue="true"/>
+        <folder name="fortranFiles">
+	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+      	    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/fortranFiles.html"/>
+
+	    <file name="fortranEmptyFile.f90" url="templates/fortran/empty-f90.template">
+		<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+              	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/empty-f90.html"/>
+		<attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+		<attr name="templateCategory" stringvalue="fortran-types"/>
+            </file>
+	    <file name="fortranFixedFormatFile.f" url="templates/fortran/fixed-fortran-f.template">
+		<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+              	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/fixed-fortran-f.html"/>
+		<attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+		<attr name="templateCategory" stringvalue="fortran-types"/>
+            </file>
+	    <file name="fortranFreeFormatFile.f90" url="templates/fortran/free-fortran-f90.template">
+		<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+              	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/free-fortran-f90.html"/>
+		<attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+		<attr name="templateCategory" stringvalue="fortran-types"/>
+            </file>
+	    <file name="fortranModuleFile.f90" url="templates/fortran/module-f90.template">
+		<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+              	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/module-f90.html"/>
+		<attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+		<attr name="templateCategory" stringvalue="fortran-types"/>
+            </file>
+        </folder> <!-- End fortranFiles folder -->
+
+        <attr name="fortranFiles/shells" boolvalue="true"/>
+        <folder name="shells">
+	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+      	    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/shells.html"/>
+
+	    <file name="shell.bash" url="templates/shell/simple-shell.template">
+		<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+              	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/bashShell.html"/>
+		<attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+		<attr name="templateCategory" stringvalue="shell-types"/>
+            </file>
+	    <file name="shell.csh" url="templates/shell/simple-shell.template">
+		<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+              	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/cshShell.html"/>
+		<attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+		<attr name="templateCategory" stringvalue="shell-types"/>
+            </file>
+	    <file name="shell.ksh" url="templates/shell/simple-shell.template">
+		<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+              	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/kshShell.html"/>
+		<attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+		<attr name="templateCategory" stringvalue="shell-types"/>
+            </file>
+	    <file name="shell.sh" url="templates/shell/simple-shell.template">
+		<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+              	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/shShell.html"/>
+		<attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+		<attr name="templateCategory" stringvalue="shell-types"/>
+            </file>
+	    <file name="shell.zsh" url="templates/shell/simple-shell.template">
+		<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+              	<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/zshShell.html"/>
+		<attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.CCFSrcFileIterator"/>
+		<attr name="templateCategory" stringvalue="shell-types"/>
+            </file>
+        </folder> <!-- End cFiles folder -->
+
+        <attr name="shells/MakeTemplates" boolvalue="true"/>
+	<folder name="MakeTemplates">
+	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+	    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/makefiles.html"/>
+	    
+	    <attr name="ComplexMakefile/SimpleMakefiles" boolvalue="true"/>
+	    <file name="ComplexMakefile">
+		<attr name="template" boolvalue="true"/>
+		<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+		<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/complexMakefile.html"/> 
+		<attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.makewizard.MakefileWizardComplex"/>
+		<attr name="templateCategory" stringvalue="makefile-types"/>
+	    </file>
+	    <folder name="SimpleMakefiles">
+		<attr name="ComplexMakefile/SimpleMakefiles" boolvalue="true"/>
+		<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+		<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/simpleMakefiles.html"/> 
+		<file name="ExecutableMakefile">
+		    <attr name="template" boolvalue="true"/>
+		    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+		    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/executableMakefile.html"/> 
+		    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.makewizard.MakefileWizardExecutable"/>
+		    <attr name="templateCategory" stringvalue="makefile-types"/>
+		</file>
+		<file name="StaticLibMakefile">
+		    <attr name="template" boolvalue="true"/>
+		    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+		    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/staticLibMakefile.html"/> 
+		    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.makewizard.MakefileWizardStaticLib"/>
+		    <attr name="templateCategory" stringvalue="makefile-types"/>
+		</file>
+		<file name="SharedLibMakefile">
+		    <attr name="template" boolvalue="true"/>
+		    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+		    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/sharedLibMakefile.html"/> 
+		    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.makewizard.MakefileWizardSharedLib"/>
+		    <attr name="templateCategory" stringvalue="makefile-types"/>
+		</file>
+	    </folder>
+	</folder>
+        <attr name="MakeTemplates/XML" boolvalue="true"/>
+
+    </folder> <!-- Templates -->
+
+    <folder name="Actions">
+	<folder name="Build">
+	    <file name="org-netbeans-modules-cnd-actions-MakeAction.instance"/>
+	    <file name="org-netbeans-modules-cnd-actions-MakeCleanAction.instance"/>
+            <file name="org-netbeans-modules-cnd-actions-ShellRunAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.actions.ShellRunAction"/>
+            </file>
+	</folder>    
+    </folder> <!-- Actions -->
+
+</filesystem>

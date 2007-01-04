@@ -19,11 +19,9 @@
 
 package org.netbeans.modules.cnd.classview.model;
 
-import java.io.PrintStream;
-import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
-import java.awt.Image;
+import java.util.Comparator;
 import java.util.Enumeration;
-import org.netbeans.modules.cnd.classview.Diagnostic;
+import org.netbeans.modules.cnd.classview.SmartChangeEvent;
 import org.openide.nodes.*;
 import org.netbeans.modules.cnd.modelutil.*;
 
@@ -42,7 +40,7 @@ public abstract class BaseNode extends AbstractCsmNode implements Comparable {
         super(children);
     }
 
-    public boolean update(CsmChangeEvent e) {
+    public boolean update(SmartChangeEvent e) {
         if (!isDismissed()) {
             for( Enumeration children = getChildren().nodes(); children.hasMoreElements(); ) {
                 Node child = (Node) children.nextElement();
@@ -54,13 +52,19 @@ public abstract class BaseNode extends AbstractCsmNode implements Comparable {
         return false;
     }
     
+    private static Comparator ourComparator = new CVUtil.ClassViewComparator();
+
+    protected static int LOADING_WEIGHT = 0;
+    protected static int NAMESPACE_WEIGHT = 1;
+    protected static int CLASSIFIER_WEIGHT = 2;
+    protected static int VARIABLE_WEIGHT = 3;
+    protected static int FUNCTION_WEIGHT = 4;
+    protected static int OTHER_WEIGHT = 5;
+    
+    protected abstract int getWeight();
+    
     public int compareTo(Object o) {
-        if( o instanceof Node ) {
-            return this.getDisplayName().compareTo(((Node) o).getDisplayName());
-        }
-        else {
-            return -1;
-        }
+        return ourComparator.compare(this,o);
     }
     
     protected interface Callback {

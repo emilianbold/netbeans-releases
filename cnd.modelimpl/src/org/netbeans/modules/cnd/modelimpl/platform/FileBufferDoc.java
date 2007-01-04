@@ -32,9 +32,9 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.modules.cnd.modelimpl.apt.support.APTDriver;
+import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
-import org.netbeans.modules.cnd.modelimpl.csm.core.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  * FileBuffer implementation

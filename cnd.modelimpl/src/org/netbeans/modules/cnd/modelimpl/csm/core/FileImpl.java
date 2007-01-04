@@ -25,29 +25,29 @@ import antlr.TokenStreamException;
 import antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
-import org.netbeans.modules.cnd.modelimpl.antlr2.CPPParserEx;
-import org.netbeans.modules.cnd.modelimpl.antlr2.PPCallback;
-import org.netbeans.modules.cnd.modelimpl.antlr2.PPCallbackImpl;
+import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
 
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.modelimpl.apt.support.APTLanguageFilter;
-import org.netbeans.modules.cnd.modelimpl.apt.support.APTLanguageSupport;
+import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
+import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.cache.FileCache;
 import org.netbeans.modules.cnd.modelimpl.cache.impl.FileCacheImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.modelimpl.apt.impl.support.APTFileMacroMap;
-import org.netbeans.modules.cnd.modelimpl.apt.impl.support.APTIncludeHandlerImpl;
-import org.netbeans.modules.cnd.modelimpl.apt.impl.support.parser.APTPreprocStateImpl;
-import org.netbeans.modules.cnd.modelimpl.apt.structure.APTFile;
-import org.netbeans.modules.cnd.modelimpl.apt.support.APTDriver;
-import org.netbeans.modules.cnd.modelimpl.apt.support.APTPreprocState;
-import org.netbeans.modules.cnd.modelimpl.apt.impl.support.parser.APTParseFileWalker;
-import org.netbeans.modules.cnd.modelimpl.apt.support.APTWalker;
-import org.netbeans.modules.cnd.modelimpl.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.apt.impl.support.APTFileMacroMap;
+import org.netbeans.modules.cnd.apt.impl.support.APTIncludeHandlerImpl;
+import org.netbeans.modules.cnd.modelimpl.parser.apt.APTPreprocStateImpl;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTDriver;
+import org.netbeans.modules.cnd.apt.support.APTPreprocState;
+import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
+import org.netbeans.modules.cnd.apt.support.APTWalker;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  * CsmFile implementations
@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.apt.utils.APTUtils;
 public class FileImpl implements 
 	CsmFile, MutableDeclarationsContainer, ChangeListener, Disposable {
     
-    public static final boolean reportErrors = TraceFlags.REPORT_PARSING_ERRORS | Diagnostic.DEBUG;
+    public static final boolean reportErrors = TraceFlags.REPORT_PARSING_ERRORS | TraceFlags.DEBUG;
     private static final boolean reportParse = Boolean.getBoolean("parser.log.parse");
     
     private static final boolean emptyAstStatictics = Boolean.getBoolean("parser.empty.ast.statistics");
@@ -87,7 +87,6 @@ public class FileImpl implements
 
     private int fileType = UNDEFINED_FILE;
     
-    private PPCallback callback;
     private APTPreprocState preprocState;
     
     private Object stateLock = new Object();
@@ -99,13 +98,6 @@ public class FileImpl implements
             return "fakeLock in FileImpl "+hashCode();
         }
     };
-    
-    public FileImpl(FileBuffer fileBuffer, ProjectBase project, PPCallback callback) {
-        setBuffer(fileBuffer);
-        this.project = project;
-        this.callback = callback;
-        Notificator.instance().registerNewFile(this);
-    }
 
     public FileImpl(FileBuffer fileBuffer, ProjectBase project, int fileType, APTPreprocState preprocState) {
         setBuffer(fileBuffer);
@@ -135,20 +127,6 @@ public class FileImpl implements
         if (fileType != SOURCE_FILE) {
             fileType = HEADER_FILE;
         }
-    }
-    
-    private PPCallback getCreateCallback() {
-        // use current
-        PPCallback callback = this.callback;
-        // else ask project
-        if (callback == null && (getProjectImpl() != null)) {
-            callback = getProjectImpl().getCallback(fileBuffer.getFile());
-        }
-        // otherwise create default
-        if (callback == null) {
-            callback = new PPCallbackImpl(getProjectImpl(), getAbsolutePath());
-        }
-        return callback;
     }
     
     // TODO: consider using macro map and __cplusplus here instead of just checking file name
@@ -194,22 +172,6 @@ public class FileImpl implements
         return this.fileBuffer;
     }
     
-    public void ensureParsed(PPCallback callback) {
-        synchronized( stateLock ) {
-            switch( state ) {
-                case STATE_INITIAL:
-                    parse(callback);
-		    if( TraceFlags.DUMP_PARSE_RESULTS ) new CsmTracer().dumpModel(this);
-                    break;
-                case STATE_MODIFIED:
-                    reparse(callback);
-		    if( TraceFlags.DUMP_PARSE_RESULTS || TraceFlags.DUMP_REPARSE_RESULTS ) new CsmTracer().dumpModel(this);
-                    break;
-            }
-        }
-    }
-    
-    // copy
     public void ensureParsed(APTPreprocState preprocState) {
         synchronized( stateLock ) {
             switch( state ) {
@@ -255,29 +217,6 @@ public class FileImpl implements
      * Removes old content from te file and model,
      * then parses the current buffer
      */
-    public void reparse(PPCallback callback) {
-        synchronized( stateLock ) {
-            state = STATE_BEING_PARSED;
-            try {
-                if( callback != null ) {
-                    setCallback(callback);
-                }
-                _reparse();
-            }
-            finally {
-                synchronized (changeStateLock) {
-                    if (state != STATE_MODIFIED) {
-                        state = STATE_PARSED;
-                    }
-                }
-                stateLock.notifyAll();
-            }
-        }
-    }
-    
-    /**
-     * C&P of above
-     */
     public void reparse(APTPreprocState preprocState) {
         synchronized( stateLock ) {
             state = STATE_BEING_PARSED;
@@ -304,21 +243,12 @@ public class FileImpl implements
             Diagnostic.trace(text);
             new Throwable(text).printStackTrace(System.err);
         }
-        if( Diagnostic.DEBUG ) Diagnostic.trace("------ reparsing " + fileBuffer.getFile().getName());
+        if( TraceFlags.DEBUG ) Diagnostic.trace("------ reparsing " + fileBuffer.getFile().getName());
 	//Notificator.instance().startTransaction();
 	try {
             includes.clear();
             macros.clear();
-            AST ast = null;
-            if (TraceFlags.USE_AST_CACHE) {
-                ast = doCachedASTParse();
-            } else {
-                org.netbeans.modules.cnd.modelimpl.old.cache.FileCache cache = doParse();
-                if( cache != null ) {
-                    org.netbeans.modules.cnd.modelimpl.old.cache.CacheManager.instance().storeCache(getProject(), fileBuffer.getFile(), cache.getAST(), cache.getIncludes());
-                    ast = cache.getAST();
-                }
-            }
+            AST ast = doCachedASTParse();
             if (ast != null) {
                 disposeAll(false);
                 render(ast);
@@ -357,27 +287,6 @@ public class FileImpl implements
         }
     }
         
-    public AST parse(PPCallback callback) {
-        synchronized( stateLock ) {
-            state = STATE_BEING_PARSED;
-            try {
-                if( callback != null ) {
-                    setCallback(callback);
-                }
-                return _parse();
-            }
-            finally {
-                synchronized (changeStateLock) {
-                    if (state != STATE_MODIFIED) {
-                        state = STATE_PARSED;
-                    }
-                }
-                stateLock.notifyAll();
-            }
-        }
-    }
-    
-    // C&P of above
     public AST parse(APTPreprocState preprocState) {
         synchronized( stateLock ) {
             state = STATE_BEING_PARSED;
@@ -410,28 +319,7 @@ public class FileImpl implements
 	
 	Diagnostic.StopWatch sw = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
 	
-        AST ast = null;
-        if (TraceFlags.USE_AST_CACHE) {
-            ast = doCachedASTParse();
-        } else {
-            org.netbeans.modules.cnd.modelimpl.old.cache.FileCache cache =
-                    org.netbeans.modules.cnd.modelimpl.old.cache.CacheManager.instance().getCache(getProject(), fileBuffer.getFile());
-            if( cache == null ) {
-                cache = doParse();
-                if (state != STATE_MODIFIED) {
-                    org.netbeans.modules.cnd.modelimpl.old.cache.CacheManager.instance().storeCache(getProject(), fileBuffer.getFile(), cache.getAST(), cache.getIncludes());
-                }
-            } else {
-                if( Diagnostic.DEBUG ) Diagnostic.trace("# Getting AST from cache " + fileBuffer.getFile().getPath());
-                // TODO: review due to new CsmInclude interface implementation
-                // TODO: restore macros
-                addIncludes(cache.getIncludes());
-            }
-            if (cache != null) {
-                ast = cache.getAST();                
-            }
-        }       
-	
+        AST ast = doCachedASTParse();
         if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) sw.stopAndReport("Parsing of " + fileBuffer.getFile().getName() + " took \t");
 
         if( ast != null ) {            
@@ -450,73 +338,7 @@ public class FileImpl implements
         }
         return null;
     }
-    
-    private org.netbeans.modules.cnd.modelimpl.old.cache.FileCache doParse() {
-        if (TraceFlags.USE_APT) {
-            return doAPTParse();
-        } else {
-            return doOldParse();
-        }
-    }
 
-    
-    private org.netbeans.modules.cnd.modelimpl.old.cache.FileCache doOldParse() {
-//        if( "cursor.hpp".equals(fileBuffer.getFile().getName()) ) {
-//            System.err.println("cursor.hpp");
-//        }  
-        if( reportParse || Diagnostic.DEBUG ) {
-            System.err.println("# Parsing " + fileBuffer.getFile().getPath() + " (Thread=" + Thread.currentThread().getName() + ')');
-        }
-        InputStream fileStream = null;
-        try {
-            int flags = CPPParserEx.CPP_CPLUSPLUS;
-            if( ! reportErrors ) {
-                flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
-            }
-            PPCallback callback = getCreateCallback();
-            fileStream = fileBuffer.getInputStream();
-            CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile(), fileStream, callback, flags);
-            long time = (emptyAstStatictics) ? System.currentTimeMillis() : 0;
-            parser.translation_unit();
-            if( emptyAstStatictics ) {
-                time = System.currentTimeMillis() - time;
-                System.err.println("PARSED FILE " + getAbsolutePath() + (AstUtil.isEmpty(parser.getAST(), true) ? " EMPTY" : "") + ' ' + time + " ms");
-            }
-            if( TraceFlags.DUMP_AST ) {
-                System.err.println("\n");
-                System.err.print("AST: ");
-		System.err.print(getAbsolutePath());
-		System.err.print(' ');
-                AstUtil.toStream(parser.getAST(), System.err);
-                System.err.println("\n");
-                
-            }
-            Collection/*<CsmInclude>*/ includes = callback.getIncludes(fileBuffer.getFile().getAbsolutePath());   
-            Collection/*<CsmMacro>*/ macros = callback.getMacros(fileBuffer.getFile().getAbsolutePath());
-	    setCallback(null);
-            errorCount = parser.getErrorCount();
-            
-//            addIncludes(parser.getIncludes());
-            addIncludes(includes);
-            addMacros(macros);
-            
-            // TODO: need to update includes of FileCache
-            return new org.netbeans.modules.cnd.modelimpl.old.cache.FileCache(parser.getAST(), parser.getIncludes());
-
-        } catch(Exception e) {
-            e.printStackTrace(System.err);
-        } finally {
-            if (fileStream != null) {
-                try {
-                    fileStream.close();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }
-        return null;        
-    }
-    
     public TokenStream getTokenStream() {
         APTPreprocState preprocState = getCreatePreprocState(); 
         APTFile apt = null;
@@ -537,83 +359,11 @@ public class FileImpl implements
         return walker.getFilteredTokenStream(getLanguageFilter());
     }
     
-    private org.netbeans.modules.cnd.modelimpl.old.cache.FileCache doAPTParse() {
-//        if( "cursor.hpp".equals(fileBuffer.getFile().getName()) ) {
-//            System.err.println("cursor.hpp");
-//        }  
-        if( reportParse || Diagnostic.DEBUG ) {
-            System.err.println("# APT-based Parsing " + fileBuffer.getFile().getPath() + " (Thread=" + Thread.currentThread().getName() + ')');
-        }
-        
-        int flags = CPPParserEx.CPP_CPLUSPLUS;
-        if( ! reportErrors ) {
-            flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
-        }
-
-        APTPreprocState preprocState = getCreatePreprocState(); 
-        APTFile apt = null;
-        try {
-            apt = APTDriver.getInstance().findAPT(fileBuffer);
-        } catch (IOException ex) {
-            ex.printStackTrace(System.err);
-        }
-        if (apt == null) {
-            return null;
-        }
-            
-        APTParseFileWalker walker = new APTParseFileWalker(apt, this, preprocState);
-        CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter()), flags);
-        long time = (emptyAstStatictics) ? System.currentTimeMillis() : 0;
-        try {
-            parser.translation_unit();
-//            if (TraceFlags.APT_DISPOSE_TOKENS) {
-//                // we need token stream only once, dispose tokens to free memory
-//                apt.dispose();
-//            }
-            if (false) {
-                throw new RecognitionException();
-            }
-        } catch (RecognitionException ex) {
-            ex.printStackTrace(System.err);
-        } catch (TokenStreamException ex) {
-            ex.printStackTrace(System.err);
-        }
-        if( emptyAstStatictics ) {
-            time = System.currentTimeMillis() - time;
-            System.err.println("PARSED FILE " + getAbsolutePath() + (AstUtil.isEmpty(parser.getAST(), true) ? " EMPTY" : "") + ' ' + time + " ms");
-        }
-        if( TraceFlags.DUMP_AST ) {
-            System.err.println("\n");
-            System.err.print("AST: ");
-            System.err.print(getAbsolutePath());
-            System.err.print(' ');
-            AstUtil.toStream(parser.getAST(), System.err);
-            System.err.println("\n");
-
-        }
-        errorCount = parser.getErrorCount();
-        // we need keeping state for TraceModel. It will set it to null afterwards
-        if( ! ParserThreadManager.instance().isStandalone() ) {
-            setPreprocState(null);
-        }
-        AST ast = parser.getAST();
-        if (TraceFlags.CACHE_AST) {
-            AST test = AstUtil.testASTSerialization(getBuffer(), ast);
-            if (test != null) {
-                ast = test;
-            } else {
-                System.err.println("error on serialization ast for file " + getAbsolutePath());
-            }
-        }
-        // TODO: need to update includes of FileCache
-        return new org.netbeans.modules.cnd.modelimpl.old.cache.FileCache(ast, parser.getIncludes());
-    }
-    
     private AST doCachedASTParse() {
 //        if( "cursor.hpp".equals(fileBuffer.getFile().getName()) ) {
 //            System.err.println("cursor.hpp");
 //        }  
-        if( reportParse || Diagnostic.DEBUG ) {
+        if( reportParse || TraceFlags.DEBUG ) {
             System.err.println("# APT-based AST-cached Parsing " + fileBuffer.getFile().getPath() + " (Thread=" + Thread.currentThread().getName() + ')');
         }
         
@@ -753,7 +503,7 @@ public class FileImpl implements
                 dest.add(elem);
             }
         }
-        if( Diagnostic.DEBUG) {
+        if( TraceFlags.DEBUG) {
             System.err.println((macrosVsIncludes?"#Defined":"#Included")+" in file " + fileBuffer.getFile().getPath());
             if (dest.size() == 0) {
                 System.err.println("   no elements");
@@ -820,7 +570,7 @@ public class FileImpl implements
 //        try {
 //            LightParser lp = new LightParser(this, callback, (NamespaceImpl) project.getGlobalNamespace());
 //            try {
-//                if( Diagnostic.DEBUG ) Diagnostic.trace("Parsing " + this.getName() + "...");
+//                if( TraceFlags.DEBUG ) Diagnostic.trace("Parsing " + this.getName() + "...");
 //                lp.parse();
 //            }
 //            catch( LightParser.SyntaxError e ) {
@@ -969,10 +719,6 @@ public class FileImpl implements
     public boolean isValid() {
         CsmProject project = getProject();
         return project != null && project.isValid();    
-    }
-
-    public void setCallback(PPCallback callback) {
-        this.callback = callback;
     }
 
     public void setPreprocState(APTPreprocState preprocState) {

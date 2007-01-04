@@ -21,70 +21,105 @@ package org.netbeans.modules.cnd.classview;
 
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
-import java.awt.Image;
-import java.util.Enumeration;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.classview.Diagnostic;
-import org.openide.nodes.*;
+
 /**
  *
  * @author vk155633
  */
-class SmartChangeEvent {
-
-    private Collection/*<CsmNamespace>*/ newNamespaces;
-    private Collection/*<CsmDeclaration>*/ newDeclarations;
-    private Collection/*<CsmDeclaration>*/ removedDeclarations;
-    private Collection/*<CsmDeclaration>*/ changedDeclarations;
+public class SmartChangeEvent {
+    protected Map<CsmNamespace,CsmProject>  newNamespaces = new HashMap<CsmNamespace,CsmProject>();
+    protected Set<CsmDeclaration> newDeclarations = new HashSet<CsmDeclaration>();
+    protected Set<CsmDeclaration> removedDeclarations = new HashSet<CsmDeclaration>();
+    protected Set<CsmDeclaration> changedDeclarations = new HashSet<CsmDeclaration>();
+    protected Set<CsmProject> changedProjects = new HashSet<CsmProject>();
+    protected Set<String> changedUniqNames;
+    protected Set<String> removedUniqNames;
     
-    /** Creates a new instance of SmartChangeEvent */
-    public SmartChangeEvent(CsmChangeEvent ev, CsmProject project) {
-
-        newDeclarations = new LinkedList/*<CsmDeclaration>*/();
-        removedDeclarations = new LinkedList/*<CsmDeclaration>*/();
-        changedDeclarations = new LinkedList/*<CsmDeclaration>*/();
-        
-        if( ev.getChangedProjects().contains(project) ) {
-            newNamespaces = new LinkedList/*<CsmNamespace>*/(ev.getNewNamespaces());
+    // to trace only
+    private int count = 1;
+    
+    public SmartChangeEvent(CsmChangeEvent e){
+        //super(e.getSource());
+        changedProjects.addAll(e.getChangedProjects());
+        CsmProject project = (CsmProject)e.getChangedProjects().iterator().next();
+        for(Iterator it = e.getNewNamespaces().iterator(); it.hasNext();){
+            newNamespaces.put((CsmNamespace)it.next(), project);
         }
-        else {
-            newNamespaces = new LinkedList/*<CsmNamespace>*/();
-            return;
+        newDeclarations.addAll(e.getNewDeclarations());
+        removedDeclarations.addAll(e.getRemovedDeclarations());
+        changedDeclarations.addAll(e.getChangedDeclarations());
+        changedDeclarations.removeAll(e.getNewDeclarations());
+    }
+    
+    public boolean addChangeEvent(CsmChangeEvent e){
+        if (/*getChangedProjects().size() == 1 && e.getChangedProjects().size() == 1 &&
+                getChangedProjects().iterator().next() == e.getChangedProjects().iterator().next() &&*/
+                getRemovedDeclarations().size() == 0 && e.getRemovedDeclarations().size() == 0){
+            doAdd(e);
+            count++;
+            return true;
         }
-        
-        addProjectDeclarations(newDeclarations, ev.getNewDeclarations(), project);
-        addProjectDeclarations(removedDeclarations, ev.getRemovedDeclarations(), project);
-        addProjectDeclarations(changedDeclarations, ev.getChangedDeclarations(), project);
+        return false;
     }
     
-    private void addProjectDeclarations(Collection/*<CsmDeclaration>*/ toAdd, Collection/*<CsmDeclaration>*/ declarations, CsmProject project) {
-        for (Iterator it = declarations.iterator(); it.hasNext();) {
-            CsmDeclaration decl = (CsmDeclaration) it.next();
-            if( decl instanceof CsmOffsetable ) { // paranoya
-                if( ((CsmOffsetable) decl).getContainingFile().getProject() == project  ) {
-                    toAdd.add(decl);
-                }
-            }
-        }        
+    int getCount(){
+        return count;
     }
     
-    public Collection/*<CsmNamespace>*/ getNewNamespaces() {        
-        return newNamespaces;
+    private void doAdd(CsmChangeEvent e){
+        getChangedProjects().addAll(e.getChangedProjects());
+        CsmProject project = (CsmProject)e.getChangedProjects().iterator().next();
+        for(Iterator it = e.getNewNamespaces().iterator(); it.hasNext();){
+            newNamespaces.put((CsmNamespace)it.next(), project);
+        }
+        getNewDeclarations().addAll(e.getNewDeclarations());
+        getChangedDeclarations().addAll(e.getChangedDeclarations());
+        getChangedDeclarations().removeAll(getNewDeclarations());
     }
     
-    public Collection/*<CsmDeclaration>*/ getNewDeclarations() {
+    public Collection<CsmDeclaration> getNewDeclarations() {
         return newDeclarations;
     }
     
-    public Collection/*<CsmDeclaration>*/ getRemovedDeclarations() {
+    Collection<CsmDeclaration> getRemovedDeclarations() {
         return removedDeclarations;
-        
+    }
+
+    public Collection<String> getRemovedUniqueNames() {
+        if (removedUniqNames == null){
+            removedUniqNames = new HashSet();
+            for (Iterator<CsmDeclaration> it = getRemovedDeclarations().iterator(); it.hasNext();){
+                CsmDeclaration decl = it.next();
+                removedUniqNames.add(decl.getUniqueName());
+            }
+        }
+        return removedUniqNames;
     }
     
-    public Collection/*<CsmDeclaration>*/ getChangedDeclarations() {
+    Collection<CsmDeclaration> getChangedDeclarations() {
         return changedDeclarations;
-    } 
+    }
+    
+    public Collection<String> getChangedUniqueNames() {
+        if (changedUniqNames == null){
+            changedUniqNames = new HashSet();
+            for (Iterator<CsmDeclaration> it = getChangedDeclarations().iterator(); it.hasNext();){
+                CsmDeclaration decl = it.next();
+                changedUniqNames.add(decl.getUniqueName());
+            }
+        }
+        return changedUniqNames;
+    }
+   
+    public Collection<CsmProject> getChangedProjects() {
+        return changedProjects;
+    }
+    
+    public Map<CsmNamespace,CsmProject> getNewNamespaces() {
+        return newNamespaces;
+    }
     
 }

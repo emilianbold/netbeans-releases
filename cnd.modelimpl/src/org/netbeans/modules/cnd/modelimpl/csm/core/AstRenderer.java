@@ -26,8 +26,8 @@ import antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 
-import org.netbeans.modules.cnd.modelimpl.antlr2.CsmAST;
-import org.netbeans.modules.cnd.modelimpl.antlr2.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.*;
@@ -355,7 +355,7 @@ public class AstRenderer {
                             // store only 1-st one - the others (if any) follows,
                             // so it's TypeImpl.createType() responsibility to process them all
                             if( ptrOperator == null ) {
-                                ptrOperator = ast;
+                                ptrOperator = curr;
                             }
                             break;
                         case CPPTokenTypes.CSM_QUALIFIED_ID:    
@@ -365,6 +365,7 @@ public class AstRenderer {
                             break;
                         case CPPTokenTypes.LSQUARE:
                             arrayDepth++;
+                            break;
                         case CPPTokenTypes.COMMA:
                         case CPPTokenTypes.SEMICOLON:
                             TypeImpl typeImpl = null;

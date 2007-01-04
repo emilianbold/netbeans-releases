@@ -112,12 +112,12 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             String type = v.getType ();
             String value = v.getValue ();
             if ((type != null) && (type.length() > 0)) {
-                toolTipText = expression + " = " +  "(" + type + ") " + value;
+                toolTipText = expression + " = " +  "(" + type + ") " + value; // NOI18N
             } else {
-                toolTipText = expression + " = " + value;
+                toolTipText = expression + " = " + value; // NOI18N
             }
         } catch (InvalidExpressionException e) {
-            toolTipText = expression + " = >" + e.getMessage () + "<";
+            toolTipText = expression + " = >" + e.getMessage () + "<"; // NOI18N
         }
         firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTipText);
     }

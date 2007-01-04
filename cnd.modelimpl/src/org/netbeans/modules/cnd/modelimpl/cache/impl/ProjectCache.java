@@ -23,7 +23,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /** 
  * cache manager entry for one project

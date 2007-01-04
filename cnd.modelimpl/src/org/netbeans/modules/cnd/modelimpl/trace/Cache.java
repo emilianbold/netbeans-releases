@@ -23,7 +23,7 @@ import java.io.*;
 import antlr.collections.*;
 
 import java.util.zip.*;
-import org.netbeans.modules.cnd.modelimpl.csm.core.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  *

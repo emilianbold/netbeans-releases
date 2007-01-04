@@ -176,6 +176,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                     pae.getID() == ProjectActionEvent.CLEAN) {
                 String exe = IpeUtils.quoteIfNecessary(pae.getExecutable());
                 String args = pae.getProfile().getArgsFlat();
+                boolean showInput = pae.getID() == ProjectActionEvent.RUN;
                 
                 if (pae.getID() == ProjectActionEvent.RUN) {
                     int conType = pae.getProfile().getConsoleType().getValue();
@@ -186,6 +187,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                                 NbBundle.getMessage(DefaultProjectActionHandler.class, "Err_NoTermFound"))); // NOI18N
                     } else {
+                        showInput = false;
                         if (conType == RunProfile.CONSOLE_TYPE_DEFAULT) {
                             conType = pae.getProfile().getDefaultConsoleType();
                         }
@@ -214,7 +216,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                         pae.getTabName(),
                         pae.getActionName(),
                         pae.getID() == ProjectActionEvent.BUILD,
-                        pae.getID() == ProjectActionEvent.RUN);
+                        showInput);
                 projectExecutor.addExecutionListener(this);
                 try {
                     projectExecutor.execute(getTab());

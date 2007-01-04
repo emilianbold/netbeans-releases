@@ -19,16 +19,9 @@
 
 package org.netbeans.modules.cnd.classview.model;
 
-import javax.swing.Action;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.classview.Diagnostic;
-import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import java.awt.Image;
-import java.util.*;
-import org.netbeans.modules.cnd.classview.actions.GoToDeclarationAction;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.openide.nodes.*;
-import org.openide.util.Utilities;
 
 import  org.netbeans.modules.cnd.api.model.*;
 
@@ -60,28 +53,14 @@ public class EnumeratorNode extends BaseNode {
 	return null;
     }
     
-//
-// temporarily commented out
-//    
-//    public Action getPreferredAction() {
-//        return createOpenAction();
-//    }
-//
-//    protected Action createOpenAction() {
-//        return new GoToDeclarationAction(enumerator);
-//    }   
-//    
-//    public Action[] getActions(boolean context) {
-//        return new Action[] { createOpenAction() };
-//    }    
-    
     public void dismiss() {
         setDismissed();
         //enumerator = null;
         super.dismiss();
     }
-    
 
-
+    protected int getWeight() {
+        return OTHER_WEIGHT;
+    }
 }
 

@@ -1,0 +1,13 @@
+/** Block comment. */
+#include <iostream.h>
+#include "file.h"
+struct S {
+    char ch;
+};
+int main(int argc, char** argv) {
+    cout << "string";
+    // line comment
+    S var;
+    var.ch = 'c'; 
+    return 1234;
+}

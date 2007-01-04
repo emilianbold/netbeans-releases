@@ -1,0 +1,137 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+
+<project name="Dwarf-vs-Model" default="jar" basedir=".">
+    <property name="project.ModelUtils" value="../dm-utils"/>
+    <property name="project.ModelDump" value="../model-dump"/>
+    <property name="project.DwarfDump" value="../dwarf-dump"/>
+
+    <property name="module-jar-name" value="Dwarf-vs-Model.jar"/>
+    <property name="src.dir" value="./src"/>
+    <property name="build.dir" value="./build"/>
+    <property name="dist.dir" value="./dist"/>
+    <property name="classes.dir" value="./build/classes"/>
+
+    <property name="args" value=""/>
+    <property name="jvmargs" value="-Xmx512M"/>
+    <property name="test.dir" value="."/>
+    <property name="main.class" value="dwarfvsmodel.ModelComparator"/>
+    <property name="build.compiler.debug" value="yes"/>
+
+    <property name="nbdist.path" value="/opt/netbeans/5.5"/>
+    <property name="platform" value="platform6"/>
+    <property name="ide" value="ide7"/>
+    
+    <property name="cnddist.path" value="../../../../suite/build/cluster"/>
+    
+    <path id="cnd.modules">
+        <fileset dir="${cnddist.path}/modules">
+	    <include name="org-netbeans-modules-cnd-dwarfdump.jar"/>
+            <include name="org-netbeans-modules-cnd-api-model.jar"/>
+            <include name="org-netbeans-modules-cnd-modelimpl.jar"/>
+            <include name="org-netbeans-modules-cnd-antlr.jar"/>
+            <include name="org-netbeans-modules-cnd-makeproject.jar"/>
+            <include name="org-netbeans-modules-cnd-apt.jar"/>
+            <include name="org-netbeans-modules-cnd.jar"/>
+        </fileset>
+    </path>
+
+    <path id="platform.modules">
+        <fileset dir="${nbdist.path}/${platform}/modules">
+            <include name="org-openide-loaders.jar"/>
+            <include name="org-openide-nodes.jar"/>
+        </fileset>
+        <fileset dir="${nbdist.path}/${platform}/lib">
+            <include name="org-openide-util.jar"/>
+        </fileset>
+        <fileset dir="${nbdist.path}/${platform}/core">
+            <include name="org-openide-filesystems.jar"/>
+        </fileset>
+    </path>
+
+    <path id="ide.modules">
+        <fileset dir="${nbdist.path}/${ide}/modules">
+            <include name="org-netbeans-modules-projectapi.jar"/>
+        </fileset>
+    </path>
+
+
+    <path id="nb.jars">
+        <path refid="cnd.modules"/>
+        <path refid="platform.modules"/>
+        <path refid="ide.modules"/>
+    </path>
+
+    <target name="deps-clean">
+        <ant target="clean" inheritall="false" antfile="${project.ModelUtils}/build_cli.xml"/>
+        <ant target="clean" inheritall="false" antfile="${project.ModelDump}/build_cli.xml"/>
+        <ant target="clean" inheritall="false" antfile="${project.DwarfDump}/build_cli.xml"/>
+    </target>
+
+    <target name="clean" depends="deps-clean">
+        <delete dir="${classes.dir}"/>
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+
+    <target name="deps-jar">
+        <ant target="jar" inheritall="false" antfile="${project.ModelUtils}/build_cli.xml"/>
+        <ant target="jar" inheritall="false" antfile="${project.ModelDump}/build_cli.xml"/>
+        <ant target="jar" inheritall="false" antfile="${project.DwarfDump}/build_cli.xml"/>
+    </target>
+
+
+    <target name="jar" depends="deps-jar, compile">
+        <mkdir dir="${dist.dir}"/>
+        <jar jarfile="${dist.dir}/${module-jar-name}"
+                        basedir="${src.dir}"
+                        compress="false">
+                        <fileset dir="${build.dir}/classes" />
+                        <fileset dir="${src.dir}"
+                                includes="**/META-INF/**, **/resources/**, **/Bundle.properties, **/*.gif"
+                        />
+        </jar>
+    </target>
+
+    <target name="compile">
+                <mkdir dir="${classes.dir}" />
+                <javac
+                        srcdir="${src.dir}"
+                        source="1.5"
+                        destdir="${classes.dir}"
+                        deprecation="${build.compiler.deprecation}"
+                        debug="${build.compiler.debug}"
+                        excludes="**/SCCS/*.java" >
+                        <classpath refid="nb.jars"/>
+                        <classpath>
+                                <pathelement location="${project.ModelUtils}/dist/ModelUtils.jar"/>
+                                <pathelement location="${project.ModelDump}/dist/ModelDump.jar"/>
+                                <pathelement location="${project.DwarfDump}/dist/DwarfDump.jar"/>
+                        </classpath>
+                </javac>
+    </target>
+
+    <target name="run" depends="jar">
+	
+        <echo message="Running ${main.class} with parameters ${args}"/>
+        <echo message="Path to NB:  ${nbdist.path}"/>
+        <echo message="Path to CND: ${cnddist.path}"/>
+        <java
+            classname="${main.class}"
+            fork="true"
+            dir="${test.dir}">
+            <classpath refid="nb.jars"/>
+            <classpath>
+                <pathelement location="${dist.dir}/${module-jar-name}"/>
+                <pathelement location="${project.ModelUtils}/dist/ModelUtils.jar"/>
+                <pathelement location="${project.ModelDump}/dist/ModelDump.jar"/>
+                <pathelement location="${project.DwarfDump}/dist/DwarfDump.jar"/>
+
+            </classpath>
+            <classpath refid="nb.jars"/>
+            <arg line="${args}"/>
+            <jvmarg line="${jvmargs}"/>
+        </java>
+    </target>
+
+
+</project>

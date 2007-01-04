@@ -19,19 +19,13 @@
 
 package org.netbeans.modules.cnd.classview;
 
-import java.awt.Image;
 import java.util.*;
 import java.io.*;
-import javax.swing.*;
 import org.openide.nodes.*;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.project.*;
-import org.openide.filesystems.*;
 
 import  org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.classview.actions.GoToDeclarationAction;
 import org.netbeans.modules.cnd.classview.model.*;
 /**
  *
@@ -69,7 +63,7 @@ import org.netbeans.modules.cnd.classview.model.*;
         Children.Array children = new Children.SortedArray();
         children.add(nodes);
         
-        if( showLibs ) {
+        if( isShowLibs() ) {
             addLibNodes(children, projects);
         }
         
@@ -98,6 +92,14 @@ import org.netbeans.modules.cnd.classview.model.*;
         return libs;
     }
     
+    public boolean isShowLibs(){
+        return showLibs;
+    }
+    
+    public boolean isLibProject(CsmProject project){
+        return !CsmModelAccessor.getModel().projects().contains(project);
+    }
+    
     public void updateProjects() {
         
         if( root == null ) { // paranoya
@@ -109,7 +111,7 @@ import org.netbeans.modules.cnd.classview.model.*;
         
         final Collection/*<CsmProject>*/ modelAll = new HashSet();
         modelAll.addAll(modelProjects);
-        if( showLibs ) {
+        if( isShowLibs() ) {
             Collection/*<CsmProject>*/ modelLibraries = gatherLibs(modelProjects);
             modelAll.addAll(modelLibraries);
         }
@@ -138,12 +140,6 @@ import org.netbeans.modules.cnd.classview.model.*;
                         if( nodes[i] instanceof  BaseNode ) {
                             ((BaseNode) nodes[i]).dismiss();
                         }
-                        // release Class View project nodes when projects are closed
-                        try {
-                            nodes[i].destroy();
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                        }
                     }
                     children.remove(nodes);
                 }
@@ -166,23 +162,38 @@ import org.netbeans.modules.cnd.classview.model.*;
     public void scheduleUpdate(CsmChangeEvent e) {
 	updater.scheduleUpdate(e);
     }
+ 
+    private volatile boolean userActivity = false;
+    public void setUserActivity(boolean active){
+        userActivity = active;
+    }
+    public boolean isUserActivity(){
+        return userActivity;
+    }
     
     public void dispose() {
         requestProcessor.stop();
     }
     
-    public void update(CsmChangeEvent e) {
+    public void update(final SmartChangeEvent e) {
 	update(getRoot(), e);
     }
     
-    private void update(Node node, CsmChangeEvent e) {
-	if( node instanceof BaseNode ) {
-	    ((BaseNode) node).update(e);
-	}
-        else if( node instanceof ProjectNode ) {
-            if( e.getChangedProjects().contains(((ProjectNode) node).getProject()) ) {
-                ((ProjectNode) node).update(e);
+    private void update(Node node, SmartChangeEvent e) {
+        if( node instanceof ProjectNode) {
+            ProjectNode project = (ProjectNode) node;
+            CsmProject csmProject = project.getProject();
+            if (project.isInited() && !csmProject.isStable(null)){
+                project.addLoadingNode();
             }
+            if( e.getChangedProjects().contains(csmProject) ) {
+                project.update(e);
+            }
+            if (csmProject.isStable(null)){
+                project.removeLoadingNode();
+            }
+        } else if( node instanceof BaseNode ) {
+	    ((BaseNode) node).update(e);
         }
 	else {
        	    for( Enumeration children = node.getChildren().nodes(); children.hasMoreElements(); ) {
