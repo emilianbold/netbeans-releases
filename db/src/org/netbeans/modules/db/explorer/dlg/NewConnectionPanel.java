@@ -27,8 +27,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataListener;
 
-import org.netbeans.lib.ddl.DBConnection;
-
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
@@ -377,7 +375,9 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
             connection.setDriverName(driver.getName());
             connection.setDriver(driver.getClassName());
         }
-        connection.setDatabase((String) urlComboBox.getSelectedItem());
+        // issue 86967: using getEditor().getItem() instead of getSelectedItem()
+        // because the it may happen that the user hasn't pressed Enter yet when this method is called
+        connection.setDatabase(urlComboBox.getEditor().getItem().toString());
         connection.setUser(userTextField.getText());
         connection.setPassword(getPassword());
         connection.setRememberPassword(passwordCheckBox.isSelected());
