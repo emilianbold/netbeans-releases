@@ -56,6 +56,9 @@ import javax.swing.text.AttributeSet;
  */
 public abstract class FontColorSettings {
 
+    /**
+     * @deprecated This should have never been made public. Nobody can listen on this property.
+     */
     public static final String PROP_FONT_COLORS = "fontColors"; //NOI18N
     
     /**
