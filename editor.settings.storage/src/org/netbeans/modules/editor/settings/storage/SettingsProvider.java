@@ -22,14 +22,19 @@ package org.netbeans.modules.editor.settings.storage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
+import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
@@ -44,7 +49,9 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public final class SettingsProvider implements MimeDataProvider {
 
-    private Map<MimePath, WeakReference<Lookup>> cache = new WeakHashMap<MimePath, WeakReference<Lookup>>();
+    private static final Logger LOG = Logger.getLogger(SettingsProvider.class.getName());
+    
+    private final Map<MimePath, WeakReference<Lookup>> cache = new WeakHashMap<MimePath, WeakReference<Lookup>>();
     
     public SettingsProvider () {
     }
@@ -68,9 +75,12 @@ public final class SettingsProvider implements MimeDataProvider {
                         throw new IllegalStateException("Invalid mimePath: " + path); //NOI18N
                     }
                     
+                    // Get the special test profile name and the real mime path
+                    String profile = path.substring(0, idx);
                     MimePath realMimePath = MimePath.parse(path.substring(idx + 1));
+                    
                     lookup = new ProxyLookup(new Lookup [] {
-                        new MyLookup(mimePath),
+                        new MyLookup(realMimePath, profile),
                         Lookups.exclude(
                             MimeLookup.getLookup(realMimePath),
                             new Class [] {
@@ -79,7 +89,7 @@ public final class SettingsProvider implements MimeDataProvider {
                             })
                     });
                 } else {
-                    lookup = new MyLookup(mimePath);
+                    lookup = new MyLookup(mimePath, null);
                 }
                 
                 cache.put(mimePath, new WeakReference<Lookup>(lookup));
@@ -89,59 +99,166 @@ public final class SettingsProvider implements MimeDataProvider {
         }
     }
     
-    interface Factory {
-        void addPropertyChangeListener (PropertyChangeListener l);
-        Object createInstance();
-    }
-    
     private static final class MyLookup extends AbstractLookup implements PropertyChangeListener {
         
-        private MimePath mimePath;
+        private final MimePath mimePath;
+        private final MimePath [] allMimePaths;
+        private final boolean specialFcsProfile;
+        private String fcsProfile;
         
-        private Factory[] factories;
-        private Object[] instances;
-        private InstanceContent ic;
-        private List removedInstances;
+        private final InstanceContent ic;
+        private Object fontColorSettings = null;
+        private Object keyBindingSettings = null;
         
-        public MyLookup(MimePath mimePath) {
-            this(mimePath, new InstanceContent());
+        private KeyBindingSettingsImpl kbsi;
+        
+        public MyLookup(MimePath mimePath, String profile) {
+            this(mimePath, profile, new InstanceContent());
         }
         
-        private MyLookup(MimePath mimePath, InstanceContent ic) {
+        private MyLookup(MimePath mimePath, String profile, InstanceContent ic) {
             super(ic);
+
             this.mimePath = mimePath;
-            this.ic = ic;
-        }
-        
-        protected void initialize() {
-            factories = new Factory [] {
-                (Factory) FontColorSettingsImpl.get(mimePath),
-                (Factory) KeyBindingSettingsImpl.get(mimePath),
-            };
-            instances = new Object [factories.length];
+            this.allMimePaths = computeInheritedMimePaths(mimePath);
             
-            for (int i = 0; i < factories.length; i++) {
-                instances[i] = factories[i].createInstance();
+            if (profile == null) {
+                // Use the selected current profile
+                String currentProfile = EditorSettings.getDefault().getCurrentFontColorProfile();
+                this.fcsProfile = EditorSettingsImpl.getInstance().getInternalFontColorProfile(currentProfile);
+                this.specialFcsProfile = false;
+            } else {
+                // This is the special test profile derived from the mime path.
+                // It will never change.
+                this.fcsProfile = profile;
+                this.specialFcsProfile = true;
             }
             
-            ic.set(Arrays.asList(instances), null);
+            this.ic = ic;
             
-            for (int i = 0; i < factories.length; i++) {
-                factories[i].addPropertyChangeListener(
-                    WeakListeners.propertyChange(this, factories[i]));
+            // Start listening
+            EditorSettings es = EditorSettings.getDefault();
+            es.addPropertyChangeListener(WeakListeners.propertyChange(this, es));
+            
+            this.kbsi = KeyBindingSettingsImpl.get(mimePath);
+            this.kbsi.addPropertyChangeListener(WeakListeners.propertyChange(this, this.kbsi));
+        }
+
+        protected void initialize() {
+            synchronized (this) {
+                fontColorSettings = new CompositeFCS(allMimePaths, fcsProfile);
+                keyBindingSettings = this.kbsi.createInstanceForLookup();
+
+                ic.set(Arrays.asList(new Object [] {
+                    fontColorSettings,
+                    keyBindingSettings
+                }), null);
             }
         }
         
         public void propertyChange(PropertyChangeEvent evt) {
-            Factory f = (Factory)evt.getSource();
-            for (int i = 0; i < factories.length; i++) {
-                if (factories[i] == f) {
-                    instances[i] = f.createInstance();
-                    assert instances[i] != null;
-            
-                    ic.set(Arrays.asList(instances), null);
-                    break;
+            synchronized (this) {
+                boolean fcsChanged = false;
+                boolean kbsChanged = false;
+
+//                if (mimePath.getPath().contains("xml")) {
+//                    System.out.println("@@@ propertyChange: mimePath = " + mimePath.getPath() + " profile = " + fcsProfile + " property = " + evt.getPropertyName() + " oldValue = " + (evt.getOldValue() instanceof MimePath ? ((MimePath) evt.getOldValue()).getPath() : evt.getOldValue()) + " newValue = " + evt.getNewValue());
+//                }
+                
+                // Determine what has changed
+                if (this.kbsi == evt.getSource()) {
+                    kbsChanged = true;
+                    
+                } else if (evt.getPropertyName() == null) {
+                    // reset all
+                    if (!specialFcsProfile) {
+                        String currentProfile = EditorSettings.getDefault().getCurrentFontColorProfile();
+                        fcsProfile = EditorSettingsImpl.getInstance().getInternalFontColorProfile(currentProfile);
+                    }
+                    fcsChanged = true;
+                    
+                } else if (evt.getPropertyName().equals(EditorSettingsImpl.PROP_HIGHLIGHT_COLORINGS)) {
+                    String changedProfile = (String) evt.getNewValue();
+                    if (changedProfile.equals(fcsProfile)) {
+                        fcsChanged = true;
+                    }
+                    
+                } else if (evt.getPropertyName().equals(EditorSettingsImpl.PROP_TOKEN_COLORINGS)) {
+                    String changedProfile = (String) evt.getNewValue();
+                    if (changedProfile.equals(fcsProfile)) {
+                        MimePath changedMimePath = (MimePath) evt.getOldValue();
+                        if (isDerivedFromMimePath(changedMimePath)) {
+                            fcsChanged = true;
+                        }
+                    }
+                    
+                } else if (evt.getPropertyName().equals(EditorSettingsImpl.PROP_CURRENT_FONT_COLOR_PROFILE)) {
+                    if (!specialFcsProfile) {
+                        String newProfile = (String) evt.getNewValue();
+                        fcsProfile = EditorSettingsImpl.getInstance().getInternalFontColorProfile(newProfile);
+                        fcsChanged = true;
+                    }
                 }
+                
+                // Update lookup contents
+                boolean updateContents = false;
+                
+                if (fcsChanged && fontColorSettings != null) {
+                    fontColorSettings = new CompositeFCS(allMimePaths, fcsProfile);
+                    updateContents = true;
+                }
+                
+                if (kbsChanged  && keyBindingSettings != null) {
+                    keyBindingSettings = this.kbsi.createInstanceForLookup();
+                    updateContents = true;
+                }
+                
+                if (updateContents) {
+                    ic.set(Arrays.asList(new Object [] {
+                        fontColorSettings,
+                        keyBindingSettings
+                    }), null);
+                }
+            }
+        }
+
+        private boolean isDerivedFromMimePath(MimePath mimePath) {
+            for(MimePath mp : allMimePaths) {
+                if (mp == mimePath) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        private static MimePath [] computeInheritedMimePaths(MimePath mimePath) {
+            List<String> paths = callSwitchLookupComputePaths(mimePath);
+
+            if (paths != null) {
+                ArrayList<MimePath> mimePaths = new ArrayList<MimePath>(paths.size());
+
+                for (String path : paths) {
+                    mimePaths.add(MimePath.parse(path));
+                }
+
+                return mimePaths.toArray(new MimePath[mimePaths.size()]);
+            } else {
+                return new MimePath [] { mimePath, MimePath.EMPTY };
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        private static List<String> callSwitchLookupComputePaths(MimePath mimePath) {
+            try {
+                ClassLoader classLoader = Lookup.getDefault().lookup(ClassLoader.class);
+                Class clazz = classLoader.loadClass("org.netbeans.modules.editor.mimelookup.impl.SwitchLookup"); //NOI18N
+                Method method = clazz.getDeclaredMethod("computePaths", MimePath.class, String.class, String.class); //NOI18N
+                method.setAccessible(true);
+                List<String> paths = (List<String>) method.invoke(null, mimePath, null, null);
+                return paths;
+            } catch (Exception e) {
+                LOG.log(Level.WARNING, "Can't call org.netbeans.modules.editor.mimelookup.impl.SwitchLookup.computePath(MimeLookup, String, String).", e); //NOI18N
+                return null;
             }
         }
     } // End of MyLookup class

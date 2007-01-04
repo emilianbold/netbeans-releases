@@ -29,6 +29,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
@@ -47,18 +49,17 @@ import org.openide.filesystems.Repository;
  */
 public class EditorSettingsImpl extends EditorSettings {
 
+    private static final Logger LOG = Logger.getLogger(EditorSettingsImpl.class.getName());
+    
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
-    /** 
-     * The name of the property change event for 'All Languages' font and colors.
-     */
-    public static final String PROP_DEFAULT_FONT_COLORS = "defaultFontColors";
-    
-    /** 
-     * The name of the property change event for 'Highlighting' font and colors.
-     */
-    public static final String PROP_EDITOR_FONT_COLORS = "editorFontColors";
-    
+    /** The name of the property change event for 'Highlighting' font and colors. */
+    public static final String PROP_HIGHLIGHT_COLORINGS = "editorFontColors"; //NOI18N
+
+    /** The name of the property change event for 'Token' font and colors. */
+    public static final String PROP_TOKEN_COLORINGS = "fontColors"; //NOI18N
+        
+        
     /** The name of the default profile. */
     public static final String DEFAULT_PROFILE = "NetBeans"; //NOI18N
     
@@ -71,6 +72,15 @@ public class EditorSettingsImpl extends EditorSettings {
     /** Storage folder for the current keybindings profile attribute. */
     private static final String KEYMAPS_FOLDER = "Keymaps"; // NOI18N
 
+    private static EditorSettingsImpl instance = null;
+    
+    public static synchronized EditorSettingsImpl getInstance() {
+        if (instance == null) {
+            instance = new EditorSettingsImpl();
+        }
+        return instance;
+    }
+    
     /**
      * Returns set of mimetypes.
      *
@@ -97,6 +107,11 @@ public class EditorSettingsImpl extends EditorSettings {
 
     
     // FontColors ..............................................................
+
+    /* package */ void notifyTokenFontColorChange(MimePath mimePath, String profile) {
+        // XXX: this is hack, we should not abuse the event values like that
+        pcs.firePropertyChange(PROP_TOKEN_COLORINGS, mimePath, profile);
+    }
     
     /**
      * Gets display names of all font & color profiles.
@@ -302,37 +317,34 @@ public class EditorSettingsImpl extends EditorSettings {
                 (MimePath.EMPTY, internalProfile, false, false);
             highlightings.remove (internalProfile);
             init ();
-            pcs.firePropertyChange (PROP_EDITOR_FONT_COLORS, null, null);
-            return;
+        } else {
+
+            if (fontColors.equals (highlightings.get (internalProfile))) return;
+
+            // 2) save new values to cache
+            fontColors = Utils.immutize(fontColors);
+            highlightings.put (internalProfile, fontColors);
+
+            // 3) save new values to disk
+            if (!internalProfile.startsWith ("test")) {
+                ColoringStorage.saveColorings (
+                    MimePath.EMPTY, 
+                    internalProfile, 
+                    false,
+                    false,
+                    fontColors.values ()
+                );
+                if (fontColorProfiles.get (profile) == null)
+                    fontColorProfiles.put (profile, profile);
+            }
         }
         
-        if (fontColors.equals (highlightings.get (internalProfile))) return;
-        
-        // 2) save new values to cache
-        highlightings.put (internalProfile, fontColors);
-        
-        // 3) save new values to disk
-        if (!internalProfile.startsWith ("test")) {
-            ColoringStorage.saveColorings (
-                MimePath.EMPTY, 
-                internalProfile, 
-                false,
-                false,
-                fontColors.values ()
-            );
-            if (fontColorProfiles.get (profile) == null)
-                fontColorProfiles.put (profile, profile);
-        }
-        
-        if (internalProfile.startsWith ("test"))
-            pcs.firePropertyChange (internalProfile, null, null);
-        else
-            pcs.firePropertyChange (PROP_EDITOR_FONT_COLORS, null, null);
+        pcs.firePropertyChange(PROP_HIGHLIGHT_COLORINGS, MimePath.EMPTY, internalProfile);
     }  
     
     
     // KeyMaps .................................................................
-    
+
     /**
      * Returns set of keymap profiles.
      *
@@ -453,6 +465,10 @@ public class EditorSettingsImpl extends EditorSettings {
     private Map<String, String> keyMapProfiles;
     private Map<String, String> mimeToLanguage;
 
+    private EditorSettingsImpl() {
+        
+    }
+    
     private void init () {
 	fontColorProfiles = new HashMap<String, String>();
 	keyMapProfiles = new HashMap<String, String>();
@@ -570,22 +586,26 @@ public class EditorSettingsImpl extends EditorSettings {
     }
     
     public KeyBindingSettingsFactory getKeyBindingSettings (String[] mimeTypes) {
-        MimePath mimePath = MimePath.EMPTY;
-        
-        for (int i = 0; i < mimeTypes.length; i++) {
-            mimePath = MimePath.get(mimePath, mimeTypes[i]);
-        }
-        
-        return KeyBindingSettingsImpl.get(mimePath);
+        mimeTypes = filter(mimeTypes);
+        return KeyBindingSettingsImpl.get(Utils.mimeTypes2mimePath(mimeTypes));
     }
 
     public FontColorSettingsFactory getFontColorSettings (String[] mimeTypes) {
-        MimePath mimePath = MimePath.EMPTY;
-        
-        for (int i = 0; i < mimeTypes.length; i++) {
-            mimePath = MimePath.get(mimePath, mimeTypes[i]);
+        mimeTypes = filter(mimeTypes);
+        return FontColorSettingsImpl.get(Utils.mimeTypes2mimePath(mimeTypes));
+    }
+    
+    private String [] filter(String [] mimeTypes) {
+        if (mimeTypes.length > 0 && mimeTypes[0].startsWith("test")) { //NOI18N
+            String [] filtered = new String [mimeTypes.length];
+            System.arraycopy(mimeTypes, 0, filtered, 0, mimeTypes.length);
+            filtered[0] = mimeTypes[0].substring(mimeTypes[0].indexOf('_') + 1); //NOI18N
+            
+            LOG.log(Level.INFO, "Don't use 'test' mime type to access settings through the editor/settings/storage API!", new Throwable("Stacktrace"));
+            
+            return filtered;
+        } else {
+            return mimeTypes;
         }
-        
-        return FontColorSettingsImpl.get(mimePath);
     }
 }

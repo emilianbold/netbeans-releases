@@ -24,6 +24,7 @@ import java.awt.Font;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -35,6 +36,8 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.KeyStroke;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -263,4 +266,48 @@ public class Utils {
             return bundleInfo;
         }
     }
+    
+    /**
+     * Converts an array of mime types to a <code>MimePath</code> instance.
+     */
+    public static MimePath mimeTypes2mimePath(String[] mimeTypes) {
+        MimePath mimePath = MimePath.EMPTY;
+        
+        for (int i = 0; i < mimeTypes.length; i++) {
+            mimePath = MimePath.get(mimePath, mimeTypes[i]);
+        }
+        
+        return mimePath;
+    }
+
+    /**
+     * Creates unmodifiable copy of the original map converting <code>AttributeSet</code>s
+     * to their immutable versions.
+     */
+    public static Map<String, AttributeSet> immutize(Map<String, AttributeSet> map) {
+        Map<String, AttributeSet> immutizedMap = new HashMap<String, AttributeSet>();
+        
+        for(String name : map.keySet()) {
+            AttributeSet attribs = map.get(name);
+            immutizedMap.put(name, AttributesUtilities.createImmutable(attribs));
+        }
+        
+        return Collections.unmodifiableMap(immutizedMap);
+    }
+    
+    public static Map<String, AttributeSet> immutize(Collection<AttributeSet> set) {
+        Map<String, AttributeSet> immutizedMap = new HashMap<String, AttributeSet>();
+    
+        for(AttributeSet as : set) {
+            Object nameObject = as.getAttribute(StyleConstants.NameAttribute);
+            if (nameObject instanceof String) {
+                immutizedMap.put((String) nameObject, as);
+            } else {
+                LOG.warning("Ignoring AttributeSet with invalid StyleConstants.NameAttribute. AttributeSet: " + as); //NOI18N
+            }
+        }
+            
+        return Collections.unmodifiableMap(immutizedMap);
+    }
+    
 }

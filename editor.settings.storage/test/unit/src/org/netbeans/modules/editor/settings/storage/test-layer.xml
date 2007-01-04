@@ -53,6 +53,22 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instanceOf" methodvalue="org.netbeans.modules.editor.settings.storage.SettingsProviderTest$Marker" />
                 </file>
             </folder>
+
+            <folder name="ant+xml">
+                <folder name="NetBeans">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="fonts-and-colors-3.xml"/>
+                    </folder>
+                </folder>
+            </folder>
+
+            <folder name="xml">
+                <folder name="NetBeans">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="fonts-and-colors-4.xml"/>
+                    </folder>
+                </folder>
+            </folder>
         </folder>
     </folder>
 

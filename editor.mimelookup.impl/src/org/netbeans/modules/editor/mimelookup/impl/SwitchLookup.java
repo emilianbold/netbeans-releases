@@ -96,7 +96,7 @@ public class SwitchLookup extends Lookup {
     }
 
     private Lookup createLookup(ClassInfoStorage.Info classInfo) {
-        List paths = computePaths(mimePath, classInfo.getExtraPath());
+        List paths = computePaths(mimePath, ROOT_FOLDER, classInfo.getExtraPath());
         Lookup lookup;
         
         if (classInfo.getInstanceProviderClass() != null) {
@@ -149,7 +149,7 @@ public class SwitchLookup extends Lookup {
             }
 
             if (currentClassInfo.getInstanceProviderClass() == null) {
-                List currentPaths = computePaths(mimePath, currentClassInfo.getExtraPath());
+                List currentPaths = computePaths(mimePath, ROOT_FOLDER, currentClassInfo.getExtraPath());
 
                 // Remove the className from the list of users of the current paths
                 Set currentPathsUsers = (Set) pathsToClasses.get(currentPaths);
@@ -170,7 +170,7 @@ public class SwitchLookup extends Lookup {
         }
     }
     
-    /* package */ static List computePaths(MimePath mimePath, String extraPath) {
+    /* package */ static List computePaths(MimePath mimePath, String prefixPath, String suffixPath) {
         ArrayList arrays = new ArrayList(mimePath.size());
 
         for (int i = mimePath.size(); i >= 0 ; i--) {
@@ -210,16 +210,22 @@ public class SwitchLookup extends Lookup {
             String [] path = (String []) i.next();
             StringBuffer sb = new StringBuffer(10 * path.length + 20);
 
-            sb.append(ROOT_FOLDER);
+            if (prefixPath != null && prefixPath.length() > 0) {
+                sb.append(prefixPath);
+            }
             for (int ii = 0; ii < path.length; ii++) {
                 if (path[ii].length() > 0) {
-                    sb.append('/'); //NOI18N
+                    if (sb.length() > 0) {
+                        sb.append('/'); //NOI18N
+                    }
                     sb.append(path[ii]);
                 }
             }
-            if (extraPath != null && extraPath.length() > 0) {
-                sb.append('/'); //NOI18N
-                sb.append(extraPath);
+            if (suffixPath != null && suffixPath.length() > 0) {
+                if (sb.length() > 0) {
+                    sb.append('/'); //NOI18N
+                }
+                sb.append(suffixPath);
             }
 
             paths.add(sb.toString());

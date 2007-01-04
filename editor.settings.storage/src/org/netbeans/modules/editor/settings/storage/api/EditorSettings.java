@@ -36,21 +36,13 @@ import org.netbeans.modules.editor.settings.storage.EditorSettingsImpl;
  */
 public abstract class EditorSettings {
 
-
-    private static WeakReference<EditorSettings> editorSettings;
-
     /**
      * Returns default instance of EditorSettings.
      *
      * @return default instance of EditorSettings
      */
-    public static synchronized EditorSettings getDefault () {
-        EditorSettings es = editorSettings == null ? null : editorSettings.get();
-        if (es == null) {
-            es = new EditorSettingsImpl();
-            editorSettings = new WeakReference<EditorSettings>(es);
-        }
-        return es;
+    public static EditorSettings getDefault () {
+        return EditorSettingsImpl.getInstance();
     }
     
     /**
@@ -80,7 +72,7 @@ public abstract class EditorSettings {
      * general contract clients should listen on mime type specific Lookup for
      * changes in editor settings.
      */
-    public static final String PROP_DEFAULT_FONT_COLORS = EditorSettingsImpl.PROP_DEFAULT_FONT_COLORS;
+    public static final String PROP_DEFAULT_FONT_COLORS = "defaultFontColors"; //NOI18N
     
     /** 
      * The name of the property change event for 'Highlighting' font and colors.

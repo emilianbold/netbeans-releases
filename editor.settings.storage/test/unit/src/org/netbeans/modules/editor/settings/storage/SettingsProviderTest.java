@@ -19,9 +19,12 @@
 
 package org.netbeans.modules.editor.settings.storage;
 
+import java.awt.Color;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.Collection;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
@@ -106,10 +109,10 @@ public class SettingsProviderTest extends NbTestCase {
         
         FontColorSettings fcs = c.iterator().next();
         assertNotNull("FCS should not be null", fcs);
-        assertTrue("Wrong fcs impl", fcs instanceof FontColorSettingsImpl.Immutable);
+        assertTrue("Wrong fcs impl", fcs instanceof CompositeFCS);
         
-        FontColorSettingsImpl.Immutable fcsi = (FontColorSettingsImpl.Immutable) fcs;
-        assertNull("Wrong fcsi test string", fcsi.test);
+        CompositeFCS compositeFcs = (CompositeFCS) fcs;
+        assertEquals("CompositeFCS using wrong profile", EditorSettingsImpl.DEFAULT_PROFILE, compositeFcs.profile);
     }
 
     public void testColoringsForSpecialTestMimeType() throws Exception {
@@ -124,10 +127,10 @@ public class SettingsProviderTest extends NbTestCase {
         
         FontColorSettings fcs = c.iterator().next();
         assertNotNull("FCS should not be null", fcs);
-        assertTrue("Wrong fcs impl", fcs instanceof FontColorSettingsImpl.Immutable);
+        assertTrue("Wrong fcs impl", fcs instanceof CompositeFCS);
         
-        FontColorSettingsImpl.Immutable fcsi = (FontColorSettingsImpl.Immutable) fcs;
-        assertEquals("Wrong fcsi test string", "test123456", fcsi.test);
+        CompositeFCS compositeFcs = (CompositeFCS) fcs;
+        assertEquals("CompositeFCS should be using special test profile", "test123456", compositeFcs.profile);
     }
 
     public void testKeybindingsForSpecialTestMimeType() throws Exception {
@@ -152,15 +155,18 @@ public class SettingsProviderTest extends NbTestCase {
         assertSame("FontColorSettings instances should be the same", fcs1, fcs2);
     }
 
-    public void testLookupsGCed() {
+    public void testLookupsGCedAfterFcs() {
         MimePath mimePath = MimePath.parse("text/x-type-A");
+        FontColorSettingsImpl fcsi = FontColorSettingsImpl.get(mimePath);
         Lookup lookup = MimeLookup.getLookup(mimePath);
         FontColorSettings fcs = lookup.lookup(FontColorSettings.class);
 
+        WeakReference<FontColorSettingsImpl> fcsiRef = new WeakReference<FontColorSettingsImpl>(fcsi);
         WeakReference<MimePath> mimePathRef = new WeakReference<MimePath>(mimePath);
         WeakReference<Lookup> lookupRef = new WeakReference<Lookup>(lookup);
         WeakReference<FontColorSettings> fcsRef = new WeakReference<FontColorSettings>(fcs);
     
+        fcsi = null;
         mimePath = null;
         lookup = null;
         fcs = null;
@@ -170,9 +176,54 @@ public class SettingsProviderTest extends NbTestCase {
             MimePath.parse("text/x-type-" + ('Z' + i));
         }
         
+        assertGC("FCSI hasn't been GCed", fcsiRef);
         assertGC("MimePath hasn't been GCed", mimePathRef);
         assertGC("Lookup hasn't been GCed", lookupRef);
         assertGC("FCS hasn't been GCed", fcsRef);
+    }
+
+    public void testLookupsGCedAfterKbs() {
+        MimePath mimePath = MimePath.parse("text/x-type-A");
+        KeyBindingSettingsImpl kbsi = KeyBindingSettingsImpl.get(mimePath);
+        Lookup lookup = MimeLookup.getLookup(mimePath);
+        KeyBindingSettings kbs = lookup.lookup(KeyBindingSettings.class);
+
+        WeakReference<KeyBindingSettingsImpl> kbsiRef = new WeakReference<KeyBindingSettingsImpl>(kbsi);
+        WeakReference<MimePath> mimePathRef = new WeakReference<MimePath>(mimePath);
+        WeakReference<Lookup> lookupRef = new WeakReference<Lookup>(lookup);
+        WeakReference<KeyBindingSettings> kbsRef = new WeakReference<KeyBindingSettings>(kbs);
+    
+        kbsi = null;
+        mimePath = null;
+        lookup = null;
+        kbs = null;
+        
+        // release text/x-type-A from MimePath's LRU
+        for(int i = 0; i < 10; i++) {
+            MimePath.parse("text/x-type-" + ('Z' + i));
+        }
+        
+        assertGC("KBSI hasn't been GCed", kbsiRef);
+        assertGC("MimePath hasn't been GCed", mimePathRef);
+        assertGC("Lookup hasn't been GCed", lookupRef);
+        assertGC("KBS hasn't been GCed", kbsRef);
+    }
+
+    public void testInheritanceForAntPlusXml() {
+        MimePath mimePath = MimePath.parse("text/ant+xml");
+        FontColorSettings fcs = MimeLookup.getLookup(mimePath).lookup(FontColorSettings.class);
+        
+        AttributeSet antXmlAttribs = fcs.getTokenFontColors("test-inheritance-ant-xml");
+        assertNotNull("Can't find coloring defined for text/ant+xml", antXmlAttribs);
+        assertEquals("Wrong bgColor in coloring defined for text/ant+xml", new Color(0xAA0000), antXmlAttribs.getAttribute(StyleConstants.Background));
+        
+        AttributeSet xmlAttribs = fcs.getTokenFontColors("test-inheritance-xml");
+        assertNotNull("Can't find coloring defined for text/xml", xmlAttribs);
+        assertEquals("Wrong bgColor in coloring defined for text/xml", new Color(0x00BB00), xmlAttribs.getAttribute(StyleConstants.Background));
+        
+        AttributeSet attribs = fcs.getTokenFontColors("test-all-languages-super-default");
+        assertNotNull("Can't find coloring defined for root", attribs);
+        assertEquals("Wrong bgColor in coloring defined for root", new Color(0xABCDEF), attribs.getAttribute(StyleConstants.Background));
     }
     
     public static Marker createMarker(FileObject f) {

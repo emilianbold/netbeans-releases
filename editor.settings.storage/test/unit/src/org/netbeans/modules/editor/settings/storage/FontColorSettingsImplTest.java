@@ -78,7 +78,7 @@ public class FontColorSettingsImplTest extends NbTestCase {
     }
 
     public void testAllLanguagesTheCrapWay() {
-        Collection<AttributeSet> colorings = EditorSettings.getDefault().getDefaultFontColors(EditorSettingsImpl.DEFAULT_PROFILE);
+        Collection<AttributeSet> colorings = EditorSettings.getDefault().getFontColorSettings(new String[0]).getAllFontColors(EditorSettingsImpl.DEFAULT_PROFILE);
         assertNotNull("Can't get colorings for all languages", colorings);
         
         AttributeSet attribs = null;

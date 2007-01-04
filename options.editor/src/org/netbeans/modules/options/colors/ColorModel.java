@@ -66,11 +66,11 @@ import org.openide.filesystems.Repository;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
 
-public class ColorModel {
+public final class ColorModel {
     
-    static final String         ALL_LANGUAGES = NbBundle.getMessage
-                                    (ColorModel.class, "CTL_All_Languages");
-    static final String         HIGHLIGHTING_LANGUAGE = "Highlighting";
+    /* package */ static final String ALL_LANGUAGES = NbBundle.getMessage(ColorModel.class, "CTL_All_Languages"); //NOI18N
+    private static final String HIGHLIGHTING_LANGUAGE = "Highlighting"; //NOI18N
+    private static final String [] EMPTY_MIMEPATH = new String[0];
     
     private EditorSettings      editorSettings = EditorSettings.getDefault ();
     
@@ -235,9 +235,10 @@ public class ColorModel {
 	String profile, 
 	String language
     ) {
-        if (language.equals (ALL_LANGUAGES))
-            return editorSettings.getDefaultFontColors (profile);
-
+        if (language.equals(ALL_LANGUAGES)) {
+            return editorSettings.getFontColorSettings(EMPTY_MIMEPATH).getAllFontColors(profile);
+        }
+        
         String mimeType = getMimeType (language);
 	FontColorSettingsFactory fcs = EditorSettings.getDefault ().
             getFontColorSettings (new String[] {mimeType});
@@ -248,9 +249,10 @@ public class ColorModel {
 	String profile, 
 	String language
     ) {
-        if (language.equals (ALL_LANGUAGES))
-            return editorSettings.getDefaultFontColorDefaults (profile);
-
+        if (language.equals(ALL_LANGUAGES)) {
+            return editorSettings.getFontColorSettings(EMPTY_MIMEPATH).getAllFontColorDefaults(profile);
+        }
+        
         String mimeType = getMimeType (language);
 	FontColorSettingsFactory fcs = EditorSettings.getDefault ().
             getFontColorSettings (new String[] {mimeType});
@@ -263,10 +265,7 @@ public class ColorModel {
         Collection categories
     ) {
         if (language.equals (ALL_LANGUAGES)) {
-            editorSettings.setDefaultFontColors (
-                profile,
-                categories
-            );
+            editorSettings.getFontColorSettings(EMPTY_MIMEPATH).setAllFontColors(profile, categories);
             return;
         }
         
@@ -342,20 +341,20 @@ public class ColorModel {
                     if (!language.equals (currentLanguage)) {
                         updateMimeType (language);
                         currentLanguage = language;
-                        internalMimeType = languageToInternalMimeType 
-                            (language);
+                        internalMimeType = languageToInternalMimeType(language, false);
                         fontColorSettings = EditorSettings.getDefault ().
                             getFontColorSettings (new String[] {internalMimeType});
                     }
                     
-                    if (internalMimeType == null)
-                        internalMimeType = languageToInternalMimeType 
-                            (language);
-                    if (defaults != null)
-                        editorSettings.setDefaultFontColors (
-                            "test" + ColorModel.this.hashCode (),
+                    if (internalMimeType == null) {
+                        internalMimeType = languageToInternalMimeType(language, false);
+                    }
+                    if (defaults != null) {
+                        editorSettings.getFontColorSettings(EMPTY_MIMEPATH).setAllFontColors(
+                            "test" + ColorModel.this.hashCode(),
                             defaults
                         );
+                    }
                     if (highlightings != null)
                         editorSettings.setHighlightings (
                             "test" + ColorModel.this.hashCode (),
@@ -374,7 +373,7 @@ public class ColorModel {
          * Sets given mime type to preview and loads proper example text.
          */
         private void updateMimeType (String language) {
-            String internalMimeType = languageToInternalMimeType (language);
+            String internalMimeType = languageToInternalMimeType(language, true);
             Document document = editorPane.getDocument ();
             document.putProperty ("mimeType", internalMimeType);
             editorPane.setEditorKit (CloneableEditorSupport.getEditorKit(internalMimeType));
@@ -439,14 +438,19 @@ public class ColorModel {
             }
         }
 
-        private String languageToInternalMimeType (String language) {
+        private String languageToInternalMimeType (String language, boolean encodeTestProfileName) {
             String mimeType = (
                 language == HIGHLIGHTING_LANGUAGE || 
                 language == ALL_LANGUAGES
             ) ? 
-                "text/x-java" : // Highlighting & All Languages
+                "text/x-java" : //NOI18N      Highlighting & All Languages
                 getMimeType (language);
-            return "test" + ColorModel.this.hashCode () + "_" + mimeType;
+            
+            if (encodeTestProfileName) {
+                return "test" + ColorModel.this.hashCode () + "_" + mimeType; //NOI18N
+            } else {
+                return mimeType;
+            }
         }
     }
     

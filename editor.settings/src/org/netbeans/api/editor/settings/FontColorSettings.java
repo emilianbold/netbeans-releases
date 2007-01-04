@@ -63,7 +63,7 @@ public abstract class FontColorSettings {
      */
     public FontColorSettings() {
         // Control instantiation of the allowed subclass only
-        if (!"org.netbeans.modules.editor.settings.storage.FontColorSettingsImpl$Immutable".equals(getClass().getName())) { // NOI18N
+        if (!getClass().getName().startsWith("org.netbeans.modules.editor.settings.storage")) { // NOI18N
             throw new IllegalStateException("Instantiation prohibited. " + getClass().getName()); // NOI18N
         }
     }
