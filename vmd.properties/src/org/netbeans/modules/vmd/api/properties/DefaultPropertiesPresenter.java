@@ -20,8 +20,6 @@
 package org.netbeans.modules.vmd.api.properties;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -258,7 +256,8 @@ public final class DefaultPropertiesPresenter extends PropertiesPresenter {
 
             if (designerPropertyDescriptor.getPropertyEditor() != null) 
                 designerPropertyDescriptor.getPropertyEditor().init(component);
-                designerPropertyDescriptor.init(component);
+
+            designerPropertyDescriptor.init(component);
         
         }
     }
