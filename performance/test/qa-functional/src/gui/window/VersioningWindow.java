@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,9 +22,10 @@ package gui.window;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.modules.javacvs.VersioningOperator;
-
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.StringComparator;
 
 /**
  * Test opening Versioning Tab.
@@ -53,13 +54,20 @@ public class VersioningWindow extends org.netbeans.performance.test.utilities.Pe
     
     protected void initialize() {
         MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window") + '|' + 
-               Bundle.getStringTrimmed("org.netbeans.modules.versioning.system.cvss.ui.actions.status.Bundle","BK0001");
+               Bundle.getStringTrimmed("org.netbeans.modules.versioning.Bundle","Menu/Window/Versioning") + '|' +
+               Bundle.getStringTrimmed("org.netbeans.modules.versioning.system.cvss.ui.actions.status.Bundle", "BK0001"); // Window | Versioning | CVS
     }
     
     public ComponentOperator open() {
         // invoke Versioning from the main menu
         new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
-        return new VersioningOperator();
+        
+        // the name of the window varies depends on opened projects - so we need to change the way we are looking for the window by name
+        StringComparator oldComparator = MainWindowOperator.getDefault().getComparator();
+        MainWindowOperator.getDefault().setComparator(new Operator.DefaultStringComparator(false, false));
+        VersioningOperator vo =  new VersioningOperator();
+        MainWindowOperator.getDefault().setComparator(oldComparator);
+        return vo;
     }
     
     public void close() {
@@ -75,4 +83,3 @@ public class VersioningWindow extends org.netbeans.performance.test.utilities.Pe
     }
     
 }
-
