@@ -72,7 +72,7 @@ public class CodeResolver implements DesignDocumentAwareness {
             boolean modelModified = CodeResolver.this.document != document || CodeResolver.this.documentState != document.getListenerManager ().getDocumentState ();
             boolean switchedFromModelToCode = kind != null && kind.equals (DataEditorView.Kind.CODE) && viewKind != null && viewKind.equals (DataEditorView.Kind.MODEL);
             final boolean switchedFromCodeToModel = kind != null && kind.equals (DataEditorView.Kind.MODEL) && viewKind != null && viewKind.equals (DataEditorView.Kind.CODE);
-            final boolean regenerateSourceCode = modelModified  &&  switchedFromModelToCode;
+            final boolean regenerateSourceCode = modelModified  &&  (switchedFromModelToCode  ||  kind == null);
 
             final long eventID = document.getTransactionManager ().writeAccess (new Runnable() {
                 public void run () {
