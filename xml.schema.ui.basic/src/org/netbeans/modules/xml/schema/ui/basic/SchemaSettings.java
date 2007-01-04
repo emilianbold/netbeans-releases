@@ -21,18 +21,18 @@ package org.netbeans.modules.xml.schema.ui.basic;
 
 import java.io.IOException;
 import java.io.ObjectInput;
-import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  * Manages the schema editor options.
  *
  * @author  Nathan Fiedler
  */
-public class SchemaSettings extends SystemOption {
-    /** serial version UID - DO NOT CHANGE */
-    private static final long serialVersionUID = 4676303715879953034L;
+public class SchemaSettings {
+    /** Singleton instance of SchemaSettings */
+    private static SchemaSettings INSTANCE = new SchemaSettings();
     /** Name of the connection timeout setting. */
     public static final String PROP_VIEW_MODE = "viewMode";
     /** Name of the user language selection setting. */
@@ -45,6 +45,10 @@ public class SchemaSettings extends SystemOption {
         TREE, COLUMN
     };
 
+    private SchemaSettings() {
+        setDefaults();
+    }
+    
     public String displayName() {
         return NbBundle.getMessage(getClass(), "CTL_SchemaSettings_name");
     }
@@ -55,7 +59,7 @@ public class SchemaSettings extends SystemOption {
      * @return  the instance.
      */
     public static SchemaSettings getDefault() {
-        return (SchemaSettings) findObject(SchemaSettings.class, true);
+        return INSTANCE;
     }
 
     public HelpCtx getHelpCtx() {
@@ -69,22 +73,15 @@ public class SchemaSettings extends SystemOption {
      */
     public ViewMode getViewMode() {
         String mode = (String) getProperty(PROP_VIEW_MODE);
-        try {
-            return ViewMode.valueOf(mode);
-        } catch (IllegalArgumentException iae) {
-            // The enum values changed, use a reasonable default.
+        if(mode == null)
             return ViewMode.COLUMN;
-        }
-    }
-
-    protected void initialize() {
-        super.initialize();
-        setDefaults();
+        
+        return ViewMode.valueOf(mode);
     }
 
     public void readExternal(ObjectInput in) throws
             IOException, ClassNotFoundException {
-        super.readExternal(in);
+        //super.readExternal(in);
         // Upgrade the restored instance to include the latest settings.
         setDefaults();
     }
@@ -105,7 +102,7 @@ public class SchemaSettings extends SystemOption {
      */
     public void setViewMode(ViewMode mode) {
         // Store the enum as a String.
-        putProperty(PROP_VIEW_MODE, mode.toString(), true);
+        putProperty(PROP_VIEW_MODE, mode.toString());
     }
 
     /**
@@ -124,7 +121,21 @@ public class SchemaSettings extends SystemOption {
      */
     public void setLanguage(String language) {
         // Store the enum as a String.
-        putProperty(PROP_LANGUAGE, language, true);
+        putProperty(PROP_LANGUAGE, language);
+    }
+    
+    protected final String putProperty(String key, String value) {
+        String retval = NbPreferences.forModule(SchemaSettings.class).get(key, null);
+        if (value != null) {
+            NbPreferences.forModule(SchemaSettings.class).put(key, value);
+        } else {
+            NbPreferences.forModule(SchemaSettings.class).remove(key);
+        }
+        return retval;
+    }
+    
+    protected final String getProperty(String key) {
+        return NbPreferences.forModule(SchemaSettings.class).get(key, ViewMode.COLUMN.toString());
     }
 
 }
