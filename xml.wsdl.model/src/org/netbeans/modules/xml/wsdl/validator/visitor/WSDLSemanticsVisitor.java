@@ -789,31 +789,27 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
                         mMsg.getString(FIX_OPERATION_DOES_NOT_EXIST_IN_PORT_TYPE, portType.getName()));
             } else{
                 //check if the signatures match
-                boolean bindingOpHasInput = bindingOp.getBindingInput() != null;
-                boolean bindingOpHasOutput = bindingOp.getBindingOutput() != null;
-                boolean matchingOpHasInput = matchingOp.getInput() != null;
-                boolean matchingOpHasOutput = matchingOp.getOutput() != null;
                 Collection<BindingFault> bindingFaults =  bindingOp.getBindingFaults();
                 Collection<Fault> matchingFaults = matchingOp.getFaults();
                 
-                if(bindingOpHasInput != matchingOpHasInput){
+                 if(!inputsMatch(bindingOp, matchingOp)){
                     //Input in portType operation does not match input in binding operation
                     getValidateSupport().fireToDo
-                            (Validator.ResultType.ERROR, bindingOp,
+                            (Validator.ResultType.WARNING, bindingOp,
                             mMsg.getString(VAL_OPERATION_DOES_NOT_MATCH_INPUT_IN_PORT_TYPE, operationName, binding.getName(), portTypeName),
                             mMsg.getString(FIX_OPERATION_DOES_NOT_MATCH_INPUT_IN_PORT_TYPE, operationName));
                 }
-                if(bindingOpHasOutput != matchingOpHasOutput){
+                if(!outputsMatch(bindingOp, matchingOp)){
                     //Output in portType operation does not match output in binding operation
                     getValidateSupport().fireToDo
-                            (Validator.ResultType.ERROR, bindingOp,
+                            (Validator.ResultType.WARNING, bindingOp,
                             mMsg.getString(VAL_OPERATION_DOES_NOT_MATCH_OUTPUT_IN_PORT_TYPE, operationName, binding.getName(), portTypeName),
                             mMsg.getString(FIX_OPERATION_DOES_NOT_MATCH_OUTPUT_IN_PORT_TYPE, operationName));
                 }
                 if(!faultsMatch(bindingFaults, matchingFaults)){
                     //Faults do not match
                     getValidateSupport().fireToDo
-                            (Validator.ResultType.ERROR, bindingOp,
+                            (Validator.ResultType.WARNING, bindingOp,
                             mMsg.getString(VAL_OPERATION_DOES_NOT_MATCH_FAULTS_IN_PORT_TYPE, operationName, binding.getName(), portTypeName),
                             mMsg.getString(FIX_OPERATION_DOES_NOT_MATCH_FAULTS_IN_PORT_TYPE, operationName));
                 }
@@ -825,6 +821,40 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
         //}
         visitChildren(bindingOp);
         // return true;
+    }
+    
+     private boolean inputsMatch(BindingOperation bindingOp, Operation portTypeOp){
+        BindingInput bindingInput = bindingOp.getBindingInput();
+        Input portTypeInput = portTypeOp.getInput();
+        boolean bindingOpHasInput = bindingInput != null;
+        boolean portTypeOpHasInput = portTypeInput != null;
+        if(bindingOpHasInput != portTypeOpHasInput){
+            return false;
+        }
+        if(bindingOpHasInput){
+            String bindingInputName = bindingInput.getName();
+            if(bindingInputName != null){
+                return bindingInputName.equals(portTypeInput.getName());
+            }
+        }
+        return true;
+    }
+    
+    private boolean outputsMatch(BindingOperation bindingOp, Operation portTypeOp){
+        BindingOutput bindingOutput = bindingOp.getBindingOutput();
+        Output portTypeOutput = portTypeOp.getOutput();
+        boolean bindingOpHasOutput = bindingOutput != null;
+        boolean portTypeOpHasOutput = portTypeOutput != null;
+        if(bindingOpHasOutput != portTypeOpHasOutput){
+            return false;
+        }
+        if(bindingOpHasOutput){
+            String bindingOutputName = bindingOutput.getName();
+            if(bindingOutputName != null){
+                return bindingOutputName.equals(portTypeOutput.getName());
+            }
+        }
+        return true;
     }
     
     private boolean faultsMatch(Collection<BindingFault> bindingFaults, Collection<Fault> portTypeFaults){
