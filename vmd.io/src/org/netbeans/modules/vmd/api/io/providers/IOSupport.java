@@ -153,22 +153,19 @@ public final class IOSupport {
      */
     public static CloneableEditorSupport.Pane createEditorSupportPane (DataObjectContext context, ShowingType showingType, CloseOperationHandler closeHandler) {
         Collection<DataEditorView> views = EditorViewFactorySupport.createEditorViews (context);
-        DataEditorView defaultView = null;
-        switch (showingType) {
-            case OPEN:
+        DataEditorView defaultView;
+        if (showingType == ShowingType.EDIT) {
                 defaultView = Collections.max (views, new Comparator<DataEditorView>() {
                     public int compare (DataEditorView o1, DataEditorView o2) {
                         return o1.getOpenPriority () - o2.getOpenPriority ();
                     }
                 });
-                break;
-            case EDIT:
-                defaultView = Collections.max (views, new Comparator<DataEditorView>() {
-                    public int compare (DataEditorView o1, DataEditorView o2) {
-                        return o1.getEditPriority () - o2.getEditPriority ();
-                    }
-                });
-                break;
+        } else {
+            defaultView = Collections.max (views, new Comparator<DataEditorView>() {
+                public int compare (DataEditorView o1, DataEditorView o2) {
+                    return o1.getEditPriority () - o2.getEditPriority ();
+                }
+            });
         }
         ArrayList<EditorViewDescription> descriptions = new ArrayList<EditorViewDescription> ();
         EditorViewDescription defaultDescription = null;
