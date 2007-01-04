@@ -36,32 +36,32 @@ import org.netbeans.api.lexer.Token;
 import javax.swing.text.JTextComponent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.util.Map;
+import java.util.Enumeration;
 import java.util.WeakHashMap;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.openide.util.Lookup;
 
-class LexerLayer extends DrawLayer.AbstractLayer {
+final class LexerLayer extends DrawLayer.AbstractLayer {
 
-    private static final boolean debug = Boolean.getBoolean("netbeans.debug.lexer.layer");
-    
-    public static final String NAME = "lexer-layer";
+    public static final String NAME = "lexer-layer"; //NOI18N
     
     public static final int VISIBILITY = 1050;
 
+    private static final Coloring NULL_COLORING = new Coloring();
+    
     private final JTextComponent component;
 
-    private FontColorSettings fontColorSettings;
-
-    private final Map<LanguagePath, Map<TokenId, Coloring>> token2Coloring= new WeakHashMap<LanguagePath, Map<TokenId, Coloring>>();
-
+    private final WeakHashMap<AttributeSet, Coloring> colorings = new WeakHashMap<AttributeSet, Coloring>();
+    
     private Listener listener;
 
     private TokenHierarchy listenerHierarchy;
@@ -88,10 +88,11 @@ class LexerLayer extends DrawLayer.AbstractLayer {
         component.addPropertyChangeListener(
             new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    if ("document".equals(evt.getPropertyName())) {
+                    if ("document".equals(evt.getPropertyName())) { //NOI18N
                         // Remove old listening
                         if (listenerHierarchy != null) {
                             listenerHierarchy.removeTokenHierarchyListener(listener);
+                            listenerHierarchy = null;
                         }
                     }
                 }
@@ -107,11 +108,9 @@ class LexerLayer extends DrawLayer.AbstractLayer {
         coloring = null;
         tokenEndOffset = 0;
         int startOffset = ctx.getStartOffset();
-        String mimeType = component.getUI().getEditorKit(component).getContentType();
-        fontColorSettings = (FontColorSettings)MimeLookup.getMimeLookup(mimeType).lookup(FontColorSettings.class);
 
         TokenHierarchy hi = tokenHierarchy();
-        active = (hi != null) && (fontColorSettings != null);
+        active = (hi != null);
 
         if (active) {
             pastSequences = new Stack<TokenSequence>();
@@ -216,122 +215,206 @@ class LexerLayer extends DrawLayer.AbstractLayer {
         }
         
         setNextActivityChangeOffset(tokenEndOffset);
-        coloring = findColoring(token, path, fontColorSettings);
+        coloring = findColoring(token.id(), path);
     }
 
-    private static final Coloring NULL_COLORING = new Coloring();
-    
-    private Coloring findColoring(Token token,
-    LanguagePath languagePath, FontColorSettings fcs) {
-        TokenId id = token.id();
-        Map<TokenId, Coloring> id2Coloring = token2Coloring.get(languagePath);
+    private Coloring findColoring(TokenId tokenId, LanguagePath languagePath) {
+        MimePath mimePath = languagePathToMimePathHack(languagePath);
+        Lookup lookup = MimeLookup.getLookup(mimePath);
+        FontColorSettings fcs = lookup.lookup(FontColorSettings.class);
+        AttributeSet attribs = findFontAndColors(fcs, tokenId, languagePath.innerLanguage());
+     
+//        dumpAttribs(attribs, tokenId.name(), languagePath.mimePath());
         
-        if (id2Coloring == null) {
-            token2Coloring.put(languagePath, id2Coloring = new WeakHashMap<TokenId, Coloring>());
-        }
-        
-        Coloring c = id2Coloring.get(id);
-        
-        if (c == null) {
-            AttributeSet as = findColoringImpl(id, languagePath, fcs);
-            
-            if (as == null) {
-                c = NULL_COLORING;
-            } else {
-                c = toColoring(as);
-            }
-            
-            id2Coloring.put(id, c);
-        }
-        
-        return c;
+        return attribs == null ? NULL_COLORING : toColoring(attribs);
     }
-    
-    private AttributeSet findColoringImpl(TokenId id,
-    LanguagePath languagePath, FontColorSettings fcs) {
-        AttributeSet as = fcs.getTokenFontColors(updateColoringName(id.name()));
 
-        if (as == null) { // no direct name for the token -> try primary category
-            String primaryCategory = id.primaryCategory();
-            if (primaryCategory == null || ((as = fcs.getTokenFontColors(
-                    updateColoringName(primaryCategory))) == null)
-            ) {
-                @SuppressWarnings("unchecked") List<String> cats
-                        = ((Language<TokenId>)languagePath.innerLanguage()).nonPrimaryTokenCategories(id);
-                for (int i = 0; i < cats.size(); i++) {
-                    String cat = (String)cats.get(i);
-                    as = fcs.getTokenFontColors(updateColoringName(cat));
-                    if (as != null) {
-                        if (debug) {
-                            /*DEBUG*/System.err.println("Coloring found for category " + cat + ": " + as);
-                        }
-                        break;
-                    }
+    private void dumpAttribs(AttributeSet attribs, String token, String lang) {
+//        if (!lang.contains("xml")) {
+//            return;
+//        }
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append("Attribs for token '"); //NOI18N
+        sb.append(token);
+        sb.append("', language '"); //NOI18N
+        sb.append(lang);
+        sb.append("' = {"); //NOI18N
+        
+        if (attribs != null) {
+            Enumeration<?> keys = attribs.getAttributeNames();
+            while (keys.hasMoreElements()) {
+                Object key = keys.nextElement();
+                Object value = attribs.getAttribute(key);
+
+                sb.append("'" + key + "' = '" + value + "'"); //NOI18N
+                if (keys.hasMoreElements()) {
+                    sb.append(", "); //NOI18N
                 }
-            } else if (debug) { // valid coloring for primary category and in debugging mode
-                /*DEBUG*/System.err.println("Coloring found for primary category " + primaryCategory + ": " + as);
             }
-        } else if (debug) { // valid coloring found and in debug mode
-            /*DEBUG*/System.err.println("Coloring found for id=" + id + ": " + as);
         }
         
-        return as;
+        sb.append("} LexerLayer.this = "); //NOI18N
+        sb.append(this.toString());
+        
+        System.out.println(sb.toString());
+    }
+    
+    // XXX: This hack is here to make sure that preview panels in Tools-Options
+    // work. Currently there is no way how to force a particular JTextComponent
+    // to use a particular MimeLookup. They all use MimeLookup common for all components
+    // and for the mime path of things displayed in that component. The preview panels
+    // however need special MimeLookup that loads colorings from a special profile
+    // (i.e. not the currently active coloring profile, which is used normally by
+    // all the other components).
+    //
+    // The hack is that Tools-Options modifies mime type of the document loaded
+    // in the preview panel and prepend 'textXXXX_' at the beginning. The normal
+    // MimeLookup for this mime type and any mime path derived from this mime type
+    // is empty. The editor/settings/storage however provides a special handling
+    // for these 'test' mime paths and bridge them to the MimeLookup that you would
+    // normally get for the mime path without the 'testXXXX_' at the beginning, plus
+    // they supply special colorings from the profile called 'testXXXX'. This way
+    // the preview panels can have different colorings from the rest of the IDE.
+    //
+    // This is obviously very fragile and not fully transparent for clients as
+    // you can see here. We need a better solution for that. Generally it should
+    // be posible to ask somewhere for a component-specific MimeLookup. This would
+    // normally be a standard MimeLookup as you know it, but in special cases it
+    // could be modified by the client code that created the component - e.g. Tools-Options
+    // panel.
+    private MimePath languagePathToMimePathHack(LanguagePath languagePath) {
+        String mimeType = getMimeType(component);
+        if (languagePath.size() == 1) {
+            return MimePath.parse(mimeType);
+        } else if (languagePath.size() > 1) {
+            return MimePath.parse(mimeType + "/" + languagePath.subPath(1).mimePath()); //NOI18N
+        } else {
+            throw new IllegalStateException("LanguagePath should not be empty."); //NOI18N
+        }
     }
 
+    private String getMimeType(JTextComponent c) {
+        Object mimeTypeProp = c.getDocument().getProperty("mimeType"); //NOI18N
+        if (mimeTypeProp instanceof String) {
+            return (String) mimeTypeProp;
+        } else {
+            return c.getUI().getEditorKit(c).getContentType();
+        }
+    }
+    
     private String updateColoringName(String coloringName) {
         EditorKit kit = component.getUI().getEditorKit(component);
         if (kit instanceof LexerEditorKit) {
-            coloringName = ((LexerEditorKit)kit).updateColoringName(coloringName);
+            String updatedName = ((LexerEditorKit)kit).updateColoringName(coloringName);
+            if (updatedName != null) {
+                coloringName = updatedName;
+            }
         }
         return coloringName;
     }
     
-    private Coloring toColoring(AttributeSet as) {
-        int fontApplyMode = 0;
-        int fontStyle = 0;
-        int fontSize;
-        String fontFamily = (String)as.getAttribute(StyleConstants.FontFamily);
-        Integer sz = (Integer)as.getAttribute(StyleConstants.FontSize);
-        boolean bold = Boolean.TRUE.equals(as.getAttribute(StyleConstants.Bold));
-        boolean italic = Boolean.TRUE.equals(as.getAttribute(StyleConstants.Italic));
-        if (fontFamily != null) {
-            fontApplyMode |= Coloring.FONT_MODE_APPLY_NAME;
-        } else {
-            fontFamily = "Monospaced";
+    private AttributeSet findFontAndColors(FontColorSettings fcs, TokenId tokenId, Language lang) {
+        // First try the token's name
+        String name = tokenId.name();
+        AttributeSet attribs = fcs.getTokenFontColors(updateColoringName(name));
+
+        // Then try the primary category
+        if (attribs == null) {
+            String primary = tokenId.primaryCategory();
+            if (primary != null) {
+                attribs = fcs.getTokenFontColors(updateColoringName(primary));
+            }
         }
-        if (sz != null) {
-            fontSize = sz.intValue();
-            fontApplyMode |= Coloring.FONT_MODE_APPLY_SIZE;
-        } else {
-            fontSize = 10;
+
+        // Then try all the other categories
+        if (attribs == null) {
+            @SuppressWarnings("unchecked") //NOI18N
+            List<String> categories = ((Language<TokenId>)lang).nonPrimaryTokenCategories(tokenId);
+            for(String c : categories) {
+                attribs = fcs.getTokenFontColors(updateColoringName(c));
+                if (attribs != null) {
+                    break;
+                }
+            }
         }
-        if (bold) {
-            fontStyle |= Font.BOLD;
-            fontApplyMode |= Coloring.FONT_MODE_APPLY_STYLE;
-        }
-        if (italic) {
-            fontStyle |= Font.ITALIC;
-            fontApplyMode |= Coloring.FONT_MODE_APPLY_STYLE;
-        }
-        
-        Font font = new Font(
-                fontFamily,
-                fontStyle,
-                fontSize
-                );
-        
-        return new Coloring(
-                font,
-                fontApplyMode,
-                (Color) as.getAttribute(StyleConstants.Foreground),
-                (Color) as.getAttribute(StyleConstants.Background),
-                (Color) as.getAttribute(StyleConstants.Underline),
-                (Color) as.getAttribute(StyleConstants.StrikeThrough),
-                (Color) as.getAttribute(EditorStyleConstants.WaveUnderlineColor)
-                );
-        
+
+        return attribs;
     }
 
+    private Coloring toColoring(AttributeSet as) {
+        synchronized (colorings) {
+            Coloring coloring = colorings.get(as);
+
+            if (coloring == null) {
+                Object [] fontObj = toFont(as);
+
+                coloring = new Coloring(
+                    (Font) fontObj[0],
+                    ((Integer) fontObj[1]).intValue(),
+                    (Color) as.getAttribute(StyleConstants.Foreground),
+                    (Color) as.getAttribute(StyleConstants.Background),
+                    (Color) as.getAttribute(StyleConstants.Underline),
+                    (Color) as.getAttribute(StyleConstants.StrikeThrough),
+                    (Color) as.getAttribute(EditorStyleConstants.WaveUnderlineColor)
+                );
+
+                colorings.put(as, coloring);
+            }
+
+            return coloring;
+        }
+    }
+
+    private Object [] toFont(AttributeSet as) {
+        int applyMode = 0;
+
+        // Determine font family
+        String fontFamily = null;
+        {
+            Object fontFamilyObj = as.getAttribute(StyleConstants.FontFamily);
+            if (fontFamilyObj instanceof String) {
+                fontFamily = (String) fontFamilyObj;
+                applyMode += Coloring.FONT_MODE_APPLY_NAME;
+            }
+        }
+
+        // Determine font size
+        int fontSize = 0;
+        {
+            Object fontSizeObj = as.getAttribute(StyleConstants.FontSize);
+            if (fontSizeObj instanceof Integer) {
+                fontSize = ((Integer) fontSizeObj).intValue();
+                applyMode += Coloring.FONT_MODE_APPLY_SIZE;
+            }
+        }
+
+        // Determine font style
+        int style = 0;
+        {
+            Object boldStyleObj = as.getAttribute(StyleConstants.Bold);
+            Object italicStyleObj = as.getAttribute(StyleConstants.Italic);
+
+            if (boldStyleObj != null || italicStyleObj != null) {
+                if (Boolean.TRUE.equals(boldStyleObj)){
+                    style += Font.BOLD;
+                }
+
+                if (Boolean.TRUE.equals(italicStyleObj)){
+                    style += Font.ITALIC;
+                }
+
+                applyMode += Coloring.FONT_MODE_APPLY_STYLE;
+            }
+        }
+
+        // TODO: cache the Font objects somehow
+        return new Object [] {
+            new Font(fontFamily, style, fontSize),
+            new Integer(applyMode)
+        };
+    }
+    
     private final class Listener implements TokenHierarchyListener {
 
         public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
@@ -341,7 +424,7 @@ class LexerLayer extends DrawLayer.AbstractLayer {
             ui.damageRange(component, startRepaintOffset, endRepaintOffset);
         }
 
-    }
+    } // End of Listener class
 
 }
 
