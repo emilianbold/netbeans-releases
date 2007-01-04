@@ -712,11 +712,26 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.a = 1.0-alpha-2
 
   <h2>I would like to use <samp>%CLASSPATH%</samp> / <samp>$CLASSPATH</samp></h2>
 
-  <p><strong>XXX</strong></p>
+  <p>NetBeans ignores <samp>%CLASSPATH%</samp> / <samp>$CLASSPATH</samp> environment variables
+     and defines its own classpath containing minimal set of classes required to start
+     the application using <code>-classpath</code> parameter passed to JVM.
+     All other classes are loaded by classloaders created during runtime and briefly described 
+     in this document. 
+     If it is really neceseary to add more classes or resources to application classloader
+     <code>--cp:a</code> or <code>--cp:p</code> options of launcher can be used.
+ </p>
 
   <h2>Using <samp>lib/ext/</samp> or <samp>-cp</samp> sounds much easier but someone told me not to do it</h2>
 
-  <p><strong>XXX</strong></p>
+  <p>The reason is similar to why JDK documentation about setting the class path for
+     <a href="http://java.sun.com/j2se/1.5.0/docs/tooldocs/windows/classpath.html">Windows</a> or
+     <a href="http://java.sun.com/j2se/1.5.0/docs/tooldocs/solaris/classpath.html">Solaris</a>
+     states that <code>-classpath</code> is prefered over environment variables.
+     Adding classes (resources) to <samp>lib/ext/</samp> affects all Java applications
+     running using this Java installation. 
+     Use of <samp>--cp</samp> affects all modules and for example prevents the possibility 
+     to have more modules depending on different version of the same library.
+  </p>
 
   <h2>I need to install a JDBC driver, JNDI provider, Logging implementation, Look &amp; Feel, XML parser, XSLT processor, ...</h2>
 
