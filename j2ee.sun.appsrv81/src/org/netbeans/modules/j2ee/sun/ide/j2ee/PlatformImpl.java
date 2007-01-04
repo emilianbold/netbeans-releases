@@ -351,7 +351,9 @@ public class PlatformImpl extends J2eePlatformImpl {
                     new File(root, "lib/jaxrpc-api.jar"),       //NOI18N
                     new File(root, "lib/jaxrpc-impl.jar"),      //NOI18N
                     new File(root, "lib/endorsed/jaxp-api.jar"),//NOI18N
-                    new File(root, APPSERV_WS_JAR)        //NOI18N  possibly for AS 9
+                    new File(root, APPSERV_WS_JAR),        // possibly for AS 9
+                    new File(root, WEBSERVICES_TOOLS_JAR), // possibly for AS 9.1
+                    new File(root, WEBSERVICES_RT_JAR),    // possibly for AS 9.1
                 };
             }
         }
@@ -454,7 +456,7 @@ public class PlatformImpl extends J2eePlatformImpl {
             File jwsdpJar = new File(root, JWSDP_JAR);  //NOI18N
             File wsToolsJar = new File(root, WEBSERVICES_TOOLS_JAR);  //NOI18N
 
-            if ((wsToolsJar != null) && (wsToolsJar.exists())) {          // WSIT installed on top
+            if (wsToolsJar.exists()) {          // WSIT installed on top
                 if (isValidPlatformRoot(root).equals("")) {
                     return new File[] {
                         new File(root, WEBSERVICES_TOOLS_JAR),     // NOI18N
@@ -468,7 +470,7 @@ public class PlatformImpl extends J2eePlatformImpl {
                         new File(root, ACTIVATION_JAR)  //NOI18N
                     };
                 }
-            } else if ((jwsdpJar != null) && (jwsdpJar.exists())) { // JWSDP installed on top
+            } else if (jwsdpJar.exists()) { // JWSDP installed on top
                 if (isValidPlatformRoot (root).equals("")) {
                     return new File[] {
                         new File(root, JWSDP_JAR),      //NOI18N
