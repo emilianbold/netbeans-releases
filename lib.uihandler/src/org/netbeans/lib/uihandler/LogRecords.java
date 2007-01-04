@@ -301,9 +301,9 @@ public final class LogRecords {
             if (current != null) {
                 values.put(current, chars.toString());
             }
-            
             current = null;
             chars.setLength(0);
+            
             if ("record".equals(qName)) { // NOI18N
                 String millis = Elem.MILLIS.parse(values);
                 String seq = Elem.SEQUENCE.parse(values);
