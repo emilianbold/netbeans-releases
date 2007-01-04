@@ -33,7 +33,7 @@ import java.util.logging.LogRecord;
 public class UIHandler extends Handler {
     private final Queue<LogRecord> logs;
     private final boolean exceptionOnly;
-    private static PropertyChangeSupport SUPPORT = new PropertyChangeSupport(UIHandler.class);
+    static final PropertyChangeSupport SUPPORT = new PropertyChangeSupport(UIHandler.class);
     private static int MAX_LOGS = 1000;
     
     public UIHandler(Queue<LogRecord> l, boolean exceptionOnly) {

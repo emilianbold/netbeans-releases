@@ -177,6 +177,7 @@ public class Installer extends ModuleInstall {
         synchronized (UIHandler.class) {
             logs.clear();
         }
+        UIHandler.SUPPORT.firePropertyChange(null, null, null);
     }
     
     public boolean closing() {
