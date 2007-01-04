@@ -41,16 +41,13 @@ import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.dd.ORMMetadata;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
-// TODO: RETOUCHE
-//import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
+import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.Entity;
 import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.EntityMappings;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ChangeSupport;
-// TODO: RETOUCHE
-//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -412,21 +409,21 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
     
     void read(WizardDescriptor settings) {
         project = Templates.getProject(settings);
-//        try {
-            synchronized (this) {
-                waitForMappings.clear();
-                if (getPersistenceUnit() == null){
-                    // TODO: RETOUCHE
-                    //                    waitForMappings.addAll(PersistenceUtils.getEntityMappings(project));
-                } else {
-                    // there are no persistence units in the project but one was created from this wizard
-                    // TODO: RETOUCHE
-                    //                    waitForMappings.add(PersistenceUtils.getAnnotationEntityMappings(project));
-                }
+        //        try {
+        synchronized (this) {
+            waitForMappings.clear();
+            if (getPersistenceUnit() == null){
+                // TODO: RETOUCHE
+                //                    waitForMappings.addAll(PersistenceUtils.getEntityMappings(project));
+            } else {
+                // there are no persistence units in the project but one was created from this wizard
+                // TODO: RETOUCHE
+                //                    waitForMappings.add(PersistenceUtils.getAnnotationEntityMappings(project));
             }
-//        } catch (IOException e) {
-//            ErrorManager.getDefault().notify(e);
-//        }
+        }
+        //        } catch (IOException e) {
+        //            ErrorManager.getDefault().notify(e);
+        //        }
         //        entityClosure = new EntityClosure(Collections.<Entity>emptySet());
         //        entityClosure.setClosureEnabled(cbAddRelated.isSelected());
         //        listAvailable.setModel(new EntityListModel(entityClosure, true));
@@ -459,21 +456,22 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
     public void updatePersistenceUnitButton() {
         boolean visible = getPersistenceUnit() == null;
         if (ProviderUtil.isValidServerInstanceOrNone(project) && visible) {
-            // TODO: RETOUCHE
-            //            PersistenceScope scopes[] = PersistenceUtils.getPersistenceScopes(project);
-            //            for (int i = 0; i < scopes.length; i++) {
-            //                FileObject persistenceXml = scopes[i].getPersistenceXml();
-            //                if (persistenceXml != null) {
-            //                    try {
-            //                        Persistence persistence = PersistenceMetadata.getDefault().getRoot(persistenceXml);
-            //                        if (persistence.getPersistenceUnit().length > 0) {
-            //                            visible = false;
-            //                            break;
-            //                        }
-            //                    } catch (IOException ex) {
-            //                    }
-            //                }
-            //            }
+            PersistenceScope scopes[] = PersistenceUtils.getPersistenceScopes(project);
+            for (int i = 0; i < scopes.length; i++) {
+                FileObject persistenceXml = scopes[i].getPersistenceXml();
+                if (persistenceXml != null) {
+                    try {
+                        Persistence persistence = PersistenceMetadata.getDefault().getRoot(persistenceXml);
+                        // TODO: should ask the user which pu should be used
+                        if (persistence.getPersistenceUnit().length > 0) {
+                            visible = false;
+                            break;
+                        }
+                    } catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ex);
+                    }
+                }
+            }
         }
         createPUButton.setVisible(visible);
     }
