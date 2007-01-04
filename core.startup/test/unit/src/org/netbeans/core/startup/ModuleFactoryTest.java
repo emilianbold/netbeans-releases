@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import org.netbeans.DuplicateException;
 import org.netbeans.Events;
 import org.netbeans.InvalidException;
 import org.netbeans.JarClassLoader;
@@ -163,7 +162,7 @@ public class ModuleFactoryTest extends ModuleManagerTest {
     }
     
     public static final class MyModuleFactory extends ModuleFactory {
-        public Module create(File jar, Object history, boolean reloadable, boolean autoload, boolean eager, ModuleManager mgr, Events ev) throws IOException, DuplicateException {
+        public Module create(File jar, Object history, boolean reloadable, boolean autoload, boolean eager, ModuleManager mgr, Events ev) throws IOException {
             if (testingDummyModule || testingParentClassloaders) {
                 return new DummyModule(mgr, ev, history, reloadable, autoload, eager);
             }
@@ -171,7 +170,7 @@ public class ModuleFactoryTest extends ModuleManagerTest {
             return super.create(jar, history, reloadable, autoload, eager, mgr, ev);
         }
         
-        public Module createFixed(Manifest mani, Object history, ClassLoader loader, ModuleManager mgr, Events ev) throws InvalidException, DuplicateException {
+        public Module createFixed(Manifest mani, Object history, ClassLoader loader, ModuleManager mgr, Events ev) throws InvalidException {
             numberOfFixed++;
             return super.createFixed(mani, history, loader, mgr, ev);
         }

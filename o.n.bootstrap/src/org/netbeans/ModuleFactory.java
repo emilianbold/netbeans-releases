@@ -39,7 +39,7 @@ public class ModuleFactory {
      */
     public Module create(File jar, Object history, boolean reloadable,
             boolean autoload, boolean eager, ModuleManager mgr, Events ev)
-            throws IOException, DuplicateException {
+            throws IOException {
         return new StandardModule(mgr, ev, jar, history, reloadable, autoload, eager);
     }
     /**
@@ -50,7 +50,7 @@ public class ModuleFactory {
      */
     public Module createFixed(Manifest mani, Object history,
             ClassLoader loader, ModuleManager mgr, Events ev)
-            throws InvalidException, DuplicateException {
+            throws InvalidException {
         return new FixedModule(mgr, ev, mani, history, loader);
     }
     /**
