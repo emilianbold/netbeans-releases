@@ -89,7 +89,7 @@ public class MeasureActions  {
         
         suite.addTest(new CreateProject("testCreateJavaApplicationProject", "Create Java Application project"));
         suite.addTest(new CreateProject("testCreateJavaLibraryProject", "Create Java Library project"));
-        suite.addTest(new CreateProject("testCreateWebApplicationProject", "Create Web Application project"));
+//TODO tomcat is no more part of the build        suite.addTest(new CreateProject("testCreateWebApplicationProject", "Create Web Application project"));
         //TODO    suite.addTest(new CreateProject("testCreateJavaProjectWithExistingSources", "Create Java Project with Existing sources"));
         
         suite.addTest(new CreateNBProject("testCreateModuleProject", "Create Module Project"));

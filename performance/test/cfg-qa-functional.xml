@@ -417,7 +417,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <!-- Web Project workflow -->
-    <testbag testattribs="footprint_all or web_project" prio="320"
+<!--TODO tomcat is no more part of the build    <testbag testattribs="footprint_all or web_project" prio="320"
              executor="ide_footprint" name="Footprint - Web project workflow" >
         <testset dir="footprint/src">
             <patternset>
@@ -443,7 +443,7 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-    
+-->    
     <!-- Find Usages -->
     <testbag testattribs="footprint_all or find_usages" prio="330"
              executor="ide_footprint" name="Footprint - Find usages" >
