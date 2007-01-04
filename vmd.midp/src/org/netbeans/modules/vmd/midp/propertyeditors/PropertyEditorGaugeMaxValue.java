@@ -32,7 +32,10 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.items.GaugeCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorUserCode;
@@ -124,6 +127,14 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
         if (text.length() > 0) {
             if (INDEFINITE_TEXT.equals(text) || INDEFINITE_NUM_TEXT.equals(text)) {
                 super.setValue(MidpTypes.createIntegerValue(GaugeCD.VALUE_INDEFINITE));
+                
+                final DesignComponent component = ActiveDocumentSupport.getDefault().getActiveComponents().iterator().next();
+                DesignDocument document = component.getDocument();
+                document.getTransactionManager().writeAccess( new Runnable() {
+                    public void run() {
+                        component.writeProperty(GaugeCD.PROP_VALUE, MidpTypes.createIntegerValue(GaugeCD.VALUE_CONTINUOUS_IDLE));
+                    }
+                });
                 return;
             }
             
