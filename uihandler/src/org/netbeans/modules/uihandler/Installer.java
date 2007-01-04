@@ -144,7 +144,7 @@ public class Installer extends ModuleInstall {
             return true;
         }
         
-        if (explicit) {
+        if (!explicit) {
             boolean dontAsk = NbPreferences.forModule(Installer.class).getBoolean("ask.never.again." + msg, false); // NOI18N
             if (dontAsk) {
                 LOG.log(Level.INFO, "UI Gesture Collector's ask.never.again.{0} is true, exiting", msg); // NOI18N

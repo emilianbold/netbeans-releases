@@ -21,9 +21,6 @@ package org.netbeans.modules.uihandler;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 import java.util.logging.Handler;
 import java.util.logging.Level;
