@@ -65,7 +65,7 @@ public abstract class GraphLayout<N,E> {
      * Invokes graph-oriented layout on a GraphScene.
      * @param graphScene the graph scene
      */
-    public final <N,E> void layoutGraph (GraphScene<N,E> graphScene) {
+    public final void layoutGraph (GraphScene<N,E> graphScene) {
         GraphLayoutListener<N,E>[] listeners = createListenersCopy ();
 
         UniversalGraph<N,E> graph = UniversalGraph.createUniversalGraph (graphScene);
@@ -92,7 +92,7 @@ public abstract class GraphLayout<N,E> {
      * Invokes graph-oriented layout on a GraphPinScene.
      * @param graphPinScene the graph pin scene
      */
-    public final <N,E> void layoutGraph (GraphPinScene<N,E,?> graphPinScene) {
+    public final void layoutGraph (GraphPinScene<N,E,?> graphPinScene) {
         GraphLayoutListener<N,E>[] listeners = createListenersCopy ();
 
         UniversalGraph<N,E> graph = UniversalGraph.createUniversalGraph (graphPinScene);
@@ -111,7 +111,7 @@ public abstract class GraphLayout<N,E> {
      * @param graphScene the graph scene
      * @param nodes the collection of nodes to resolve
      */
-    public final <N,E> void layoutNodes (GraphScene<N,E> graphScene, Collection<N> nodes) {
+    public final void layoutNodes (GraphScene<N,E> graphScene, Collection<N> nodes) {
         GraphLayoutListener<N,E>[] listeners = createListenersCopy ();
 
         UniversalGraph<N, E> graph = UniversalGraph.createUniversalGraph (graphScene);
@@ -130,7 +130,7 @@ public abstract class GraphLayout<N,E> {
      * @param graphPinScene the graph pin scene
      * @param nodes the collection of nodes to resolve
      */
-    public final <N,E> void layoutNodes (GraphPinScene<N,E,?> graphPinScene, Collection<N> nodes) {
+    public final void layoutNodes (GraphPinScene<N,E,?> graphPinScene, Collection<N> nodes) {
         GraphLayoutListener<N,E>[] listeners = createListenersCopy ();
 
         UniversalGraph<N, E> graph = UniversalGraph.createUniversalGraph (graphPinScene);
@@ -150,7 +150,7 @@ public abstract class GraphLayout<N,E> {
      * @param node the node with resolved location
      * @param newPreferredLocation the new resolved location
      */
-    protected final <N,E> void setResolvedNodeLocation (UniversalGraph<N,E> graph, N node, Point newPreferredLocation) {
+    protected final void setResolvedNodeLocation (UniversalGraph<N,E> graph, N node, Point newPreferredLocation) {
         ObjectScene scene = graph.getScene ();
 
         Widget widget = scene.findWidget (node);
@@ -175,7 +175,7 @@ public abstract class GraphLayout<N,E> {
      * Call <code>GraphLayout.setResolvedNodeLocation</code> method for setting the resolved node location.
      * @param graph the universal graph on which the layout should be performed
      */
-    protected abstract <N,E> void performGraphLayout (UniversalGraph<N,E> graph);
+    protected abstract void performGraphLayout (UniversalGraph<N,E> graph);
 
     /**
      * Implements and performs particular location resolution of a collection of nodes in a UniversalGraph.
@@ -183,6 +183,6 @@ public abstract class GraphLayout<N,E> {
      * @param graph the universal graph on which the nodes should be resolved
      * @param nodes the collection of nodes to be resolved
      */
-    protected abstract <N,E> void performNodesLayout (UniversalGraph<N,E> graph, Collection<N> nodes);
+    protected abstract void performNodesLayout (UniversalGraph<N,E> graph, Collection<N> nodes);
 
 }

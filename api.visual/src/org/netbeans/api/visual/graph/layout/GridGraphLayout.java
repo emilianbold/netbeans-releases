@@ -54,7 +54,7 @@ public final class GridGraphLayout<N,E> extends GraphLayout<N,E> {
      * Performs the grid graph layout on an universal graph.
      * @param graph the universal graph
      */
-    protected <N,E> void performGraphLayout (UniversalGraph<N, E> graph) {
+    protected void performGraphLayout (UniversalGraph<N, E> graph) {
         Collection<N> allNodes = graph.getNodes ();
         HashSet<N> unresolvedNodes = new HashSet<N> (allNodes);
 
@@ -224,7 +224,7 @@ public final class GridGraphLayout<N,E> extends GraphLayout<N,E> {
      * @param graph the universal graph
      * @param nodes the collection of nodes to resolve
      */
-    protected <N,E> void performNodesLayout (UniversalGraph<N, E> graph, Collection<N> nodes) {
+    protected void performNodesLayout (UniversalGraph<N, E> graph, Collection<N> nodes) {
         throw new UnsupportedOperationException (); // TODO
     }
 

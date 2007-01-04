@@ -178,7 +178,7 @@ public final class LayoutFactory {
      * @param graphLayout the graph layout
      * @return the scene layout
      */
-    public static <N,E> SceneLayout createSceneGraphLayout (final GraphPinScene<N,?,E> graphPinScene, final GraphLayout<N,E> graphLayout) {
+    public static <N,E> SceneLayout createSceneGraphLayout (final GraphPinScene<N,E,?> graphPinScene, final GraphLayout<N,E> graphLayout) {
         assert graphPinScene != null && graphLayout != null;
         return new SceneLayout(graphPinScene) {
             protected void performLayout () {
