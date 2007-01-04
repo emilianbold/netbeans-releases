@@ -30,14 +30,14 @@
 <%--CC
 <% tBean.setN|
 ...
-<% tBean.setName()
+<% tBean.setName(name)
 --%>
 
 <%-- completion for String object inside scriptlets --%>
 <%--CC
 <% "Hello World !".conc|
 ...
-<% "Hello World !".concat()
+<% "Hello World !".concat(arg0)
 --%>
 
     </body>
