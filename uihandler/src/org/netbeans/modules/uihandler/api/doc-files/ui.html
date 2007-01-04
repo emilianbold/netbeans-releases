@@ -9,8 +9,8 @@
 <body>
 <h1>UI of Gestures Collector</h1>
 <dl>
- <dt><em>Version:</em></dt>
- <dd>Nov 29, 2006</dd>
+ <dt><em>Ve rsion:</em></dt>
+ <dd>$Date$</dd>
  <dt><em>Author:</em></dt>
  <dd>Jaroslav  Tulach</dd>
  <dt><em>Abstract:</em></dt>
@@ -37,12 +37,11 @@
 </p>
 
 <p>
-    When the user is about to exit the IDE, it is presented with a dialog
-    describing the purpose of UI Gestures Collector and is encouraged 
-    to submit the data to the server by pressing a button. When submitted,
-    a new browser window is opened showing confirmation of successful upload,
-    thanking the user for doing it and providing some useful information that
-    the user may need and would not know otherwise.
+    It is important to find the <q>right moment</q> for offering the user to do
+    the upload. Current proposal counts with two options - when an exception
+    occurs, the user is offered to send feedback to the server, also there
+    is a UI button in the toolbar that shall visually attract user attention
+    and encourage him to submit the data.
 </p>
 
 <p>
@@ -80,7 +79,7 @@
     of the data to be submitted. The main submit screen will have a button to
     open a view of the logged data, the user will be able to browse thru them
     and then submit or cancel the transfer. There will be two views - one 
-    human friendly - a tree with records, icons, descriptions, etc.
+    human friendly - a list with records, icons, descriptions, etc.
     Second raw data - some kind of not very human readable XML
     in a text editor that represents the actual data to be sent to the logging
     server.
@@ -108,7 +107,7 @@
 <h3>Scenario: We need reliable submissions</h3>
 
 <p>
-    We are not interested for logs from people who just play with the system
+    We are not interested in logs from people who just play with the system
     (especially testers). We need real data and we need the data to be
     of the same quality - e.g. contain similar amount of information.
 </p>
@@ -161,7 +160,7 @@
 <h3>Submittion Dialog</h3>
 
 <p>
-    This dialog appears when the user is closing the IDE.
+    This dialog appears when the user presses the button in toolbar:
 </p>
 
 <pre>
@@ -175,8 +174,8 @@
 |                                                                               |
 |                                                                               |
 |                                                                               |
-|         An HTML page describing the purpose of UI Gestures Collector          |
-|      encourages to send the data, for the trade of nice tip of the day        |
+|         An <a href="http://logger.netbeans.org/nonav/welcome/index.html">HTML page</a> describing the purpose of UI Gestures Collector          |
+|      encourages to send the data, for the trade of nice statistics            |
 |                                                                               |
 |                                                                               |
 |                                                                               |
@@ -186,7 +185,7 @@
 |                                                                               |
 |                                                                               |
 |                                                                               |
-| [[_G_et Tip of the Day]] [[_V_iew the Data]]  [[_E_xit without sending data]] | 
+|               [[_S_ubmit Data]] [[_V_iew Data]]  [[_C_ancel]]                 | 
 +-------------------------------------------------------------------------------+
 </pre>
 
@@ -195,7 +194,10 @@
 
 <p>
     When the user chooses to see the data about the be transfered to the server,
-    then he will get following dialog.
+    then he will get following dialog. They are available in two forms, the 
+    raw one is just one huge XML document which precisely describes the bits
+    to be sent to the server. The Structured view splits the document to
+    individual records:
 </p>
 
 <pre>
@@ -204,12 +206,17 @@
 +-------------------------------------------------------------------------------+
 | Structured | Raw |                                                            |
 |-------------------------------------------------------------------------------|
-|                                                                               |
-|                                                                               |
-|                                                                               |
-|                                                                               |
-|                                                                               |
-|         Either raw view or tree view depending on the selected tab            |
+| list with records, first is the newest one                                    |
+| second is the second newest one                                               |
+| 3rd                                                                           |
+| 4th                                                                           |
+| 5th                                                                           |
+| 6th                                                                           |
+|-------------------------------------------------------------------------------|
+| The exact text of the select record to be sent to server. XML format.         |
+| &lt;record&gt;                                                                      |
+| &lt;message&gt;Invoking Build &lt;/message&gt;                                            |
+| &lt;/record&gt;                                                                     |  
 |                                                                               |
 |                                                                               |
 |                                                                               |
@@ -217,10 +224,42 @@
 |                                                                               |
 |                                                                               |
 |-------------------------------------------------------------------------------|
-|            [[_G_et Tip of the Day]] [[_E_xit without sending data]]           | 
+|               [[_S_ubmit Data]] [[_V_iew Data]]  [[_C_ancel]]                 | 
 +-------------------------------------------------------------------------------+
 </pre>
 
+
+<h3>Error Dialog</h3>
+
+<p>
+    This dialog appears when an exception occurs in the system:
+</p>
+
+<pre>
++-------------------------------------------------------------------------------+
+| UI Gestures Collector                                                       X |
++-------------------------------------------------------------------------------+
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|         An <a href="http://logger.netbeans.org/nonav/welcome/error.html">HTML page</a> describing that an exception happened and that it        |
+|      would be reasonably to report it by submitting the data to the server    |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+| [[_S_ubmit Data]] [[_V_iew Data]] [[_N_ever Ask Again]] [[_C_ancel]]          | 
++-------------------------------------------------------------------------------+
+</pre>
 
 </body>
     
