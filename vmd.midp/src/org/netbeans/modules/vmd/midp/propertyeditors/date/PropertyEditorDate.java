@@ -29,6 +29,8 @@ import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -44,6 +46,7 @@ import org.openide.util.NbBundle;
 public final class PropertyEditorDate extends PropertyEditorUserCode implements PropertyEditorElement {
     
     private static final DateFormat DATE_TIME_FORMAT = DateFormat.getDateTimeInstance();
+    private static final String NON_DATE_TEXT = NbBundle.getMessage(PropertyEditorDate.class, "MSG_NON_DATE"); // NOI18N
     
     private CustomEditor customEditor;
     private JRadioButton radioButton;
@@ -95,7 +98,7 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
     public String getText() {
         return null;
     }
-
+    
     public void setPropertyValue(PropertyValue value) {
         if (isCurrentValueANull() || value == null) {
             customEditor.setText("");
@@ -128,7 +131,7 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         return DATE_TIME_FORMAT.format(date);
     }
     
-    private class CustomEditor extends JPanel {
+    private class CustomEditor extends JPanel implements DocumentListener {
         private JFormattedTextField textField;
         
         public CustomEditor() {
@@ -138,7 +141,8 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         private void initComponents() {
             setLayout(new BorderLayout());
             textField = new JFormattedTextField(DATE_TIME_FORMAT);
-            textField.setToolTipText("Enter date in \"dd.mm.yyyy hh:mm:ss\" format");
+            textField.getDocument().addDocumentListener(this);
+            textField.setToolTipText(NbBundle.getMessage(PropertyEditorDate.class, "TTP_DATE")); // NOI18N
             add(textField, BorderLayout.CENTER);
         }
         
@@ -148,6 +152,28 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         
         public String getText() {
             return textField.getText();
+        }
+        
+        private void checkText() {
+            try {
+                DATE_TIME_FORMAT.parse(textField.getText());
+                clearErrorStatus();
+            } catch (ParseException e) {
+                displayWarning(NON_DATE_TEXT);
+            }
+        }
+        
+        public void insertUpdate(DocumentEvent evt) {
+            radioButton.setSelected(true);
+            checkText();
+        }
+        
+        public void removeUpdate(DocumentEvent evt) {
+            radioButton.setSelected(true);
+            checkText();
+        }
+        
+        public void changedUpdate(DocumentEvent evt) {
         }
     }
 }

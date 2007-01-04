@@ -190,6 +190,7 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
     }
     
     public void init(DesignComponent component) {
+        super.init(component);
         item = component;
         document = component.getDocument();
     }
