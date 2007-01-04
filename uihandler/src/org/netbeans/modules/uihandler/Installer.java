@@ -32,6 +32,7 @@ import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -372,10 +373,17 @@ public class Installer extends ModuleInstall {
             String exitMsg = NbBundle.getMessage(Installer.class, "MSG_" + msg + "_EXIT"); // NOI18N
             URL url = null;
             Object[] buttons = new Object[] { exitMsg };
-            try {
-                String uri = NbBundle.getMessage(Installer.class, msg);
-                if (uri != null && uri.length() > 0) {
-                    url = new URL(uri); // NOI18N
+            for (;;) {
+                try {
+                    if (url == null) {
+                        String uri = NbBundle.getMessage(Installer.class, msg);
+                        if (uri == null || uri.length() == 0) {
+                            okToExit = true;
+                            return;
+                        }
+                        url = new URL(uri); // NOI18N
+                    }
+                    
                     URLConnection conn = url.openConnection();
                     conn.setReadTimeout(5000);
                     File tmp = File.createTempFile("uigesture", ".html");
@@ -391,16 +399,18 @@ public class Installer extends ModuleInstall {
                     }
                     is.close();
                     url = tmp.toURI().toURL();
-                } else {
-                    okToExit = true;
-                    return;
+                } catch (ParserConfigurationException ex) {
+                    LOG.log(Level.WARNING, null, ex);
+                } catch (SAXException ex) {
+                    LOG.log(Level.WARNING, url.toExternalForm(), ex);
+                } catch (UnknownHostException ex) {
+                    LOG.log(Level.INFO, url.toExternalForm(), ex);
+                    url = getClass().getResource("UnknownHostException.html");
+                    continue;
+                } catch (IOException ex) {
+                    LOG.log(Level.WARNING, url.toExternalForm(), ex);
                 }
-            } catch (ParserConfigurationException ex) {
-                LOG.log(Level.WARNING, null, ex);
-            } catch (SAXException ex) {
-                LOG.log(Level.WARNING, url.toExternalForm(), ex);
-            } catch (IOException ex) {
-                LOG.log(Level.WARNING, url.toExternalForm(), ex);
+                break;
             }
 
             List<LogRecord> recs = getLogs();
