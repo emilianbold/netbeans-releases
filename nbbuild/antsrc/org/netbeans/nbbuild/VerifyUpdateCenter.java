@@ -106,7 +106,7 @@ public final class VerifyUpdateCenter extends Task {
                 try {
                     oldManifests = loadManifests(oldUpdates);
                 } catch (Exception x) {
-                    log("Could not load " + oldUpdates, x, Project.MSG_WARN);
+                    log("Could not load " + oldUpdates + ": " + x, Project.MSG_WARN);
                     return;
                 }
                 for (Manifest m : oldManifests) {
