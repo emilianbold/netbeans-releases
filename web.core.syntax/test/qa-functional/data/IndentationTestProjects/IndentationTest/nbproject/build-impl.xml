@@ -102,6 +102,14 @@
         <property value="${build.web.dir}/META-INF" name="build.meta.inf.dir"/>
         <property name="build.classes.dir.real" value="${build.classes.dir}"/>
         <property name="build.web.dir.real" value="${build.web.dir}"/>
+        <condition property="application.args.param" value="${application.args}" else="">
+            <and>
+                <isset property="application.args"/>
+                <not>
+                    <equals arg1="${application.args}" arg2="" trim="true"/>
+                </not>
+            </and>
+        </condition>
     </target>
     <target name="-post-init">
         <!-- Empty placeholder for easier customization. -->
@@ -213,6 +221,7 @@
         <macrodef name="debug" uri="http://www.netbeans.org/ns/web-project/1">
             <attribute name="classname" default="${main.class}"/>
             <attribute name="classpath" default="${debug.classpath}"/>
+            <attribute name="args" default="${application.args.param}"/>
             <sequential>
                 <java fork="true" classname="@{classname}">
                     <jvmarg value="-Xdebug"/>
@@ -227,6 +236,7 @@
                         <propertyref prefix="run-sys-prop."/>
                         <mapper type="glob" from="run-sys-prop.*" to="*"/>
                     </syspropertyset>
+                    <arg line="@{args}"/>
                 </java>
             </sequential>
         </macrodef>
@@ -566,7 +576,7 @@
     </target>
     <target name="javadoc" depends="init,javadoc-build,javadoc-browse" description="Build Javadoc."/>
     <!--
-
+                
                 JUNIT COMPILATION SECTION
             -->
     <target name="-pre-pre-compile-test" if="have.tests" depends="init,compile">
@@ -608,7 +618,7 @@
     </target>
     <target name="compile-test-single" depends="init,compile,-pre-pre-compile-test,-pre-compile-test-single,-do-compile-test-single,-post-compile-test-single"/>
     <!--
-
+                
                 JUNIT EXECUTION SECTION
             -->
     <target name="-pre-test-run" if="have.tests" depends="init">
@@ -635,7 +645,7 @@
     </target>
     <target name="test-single" depends="init,compile-test-single,-pre-test-run-single,-do-test-run-single,-post-test-run-single" description="Run single unit test."/>
     <!--
-
+                
                 JUNIT DEBUGGING SECTION
             -->
     <target name="-debug-start-debuggee-test" if="have.tests" depends="init,compile-test">
@@ -651,7 +661,7 @@
     </target>
     <target name="debug-fix-test" if="netbeans.home" depends="init,-pre-debug-fix,-do-debug-fix-test"/>
     <!--
-
+                
                 CLEANUP SECTION
             -->
     <target name="deps-clean" depends="init" if="no.dist.ear.dir" unless="no.deps"/>
