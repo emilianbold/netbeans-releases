@@ -25,15 +25,14 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import junit.framework.TestCase;
 import org.netbeans.junit.MockServices;
+import org.netbeans.junit.NbTestCase;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Lookup;
 
 /**
  */
-public class EnabledModulesCollectorTest extends TestCase {
+public class EnabledModulesCollectorTest extends NbTestCase {
     private Installer installer;
     
     public EnabledModulesCollectorTest(String testName) {

@@ -21,6 +21,8 @@ package org.netbeans.modules.uihandler;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,6 +30,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -46,6 +49,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import javax.swing.JButton;
 import javax.xml.parsers.DocumentBuilder;
@@ -78,11 +82,29 @@ public class Installer extends ModuleInstall {
     private static UIHandler ui = new UIHandler(logs, false);
     private static UIHandler handler = new UIHandler(logs, true);
     static final Logger LOG = Logger.getLogger(Installer.class.getName());
-        
-    
     
     public void restored() {
+        File logFile = logFile();
+        if (logFile != null && logFile.canRead()) {
+            InputStream is = null;
+            try {
+                is = new GZIPInputStream(new BufferedInputStream(new FileInputStream(logFile)));
+                LogRecords.scan(is, ui);
+            } catch (IOException ex) {
+                LOG.log(Level.INFO, "Cannot read " + logFile, ex);
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (Exception ex) {
+                        LOG.log(Level.INFO, "Cannot read " + logFile, ex);
+                    }
+                }
+            }
+        }
+        
         Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
+        log.setUseParentHandlers(false);
         log.setLevel(Level.FINEST);
         log.addHandler(ui);
         Logger all = Logger.getLogger("");
@@ -113,6 +135,21 @@ public class Installer extends ModuleInstall {
         log.removeHandler(ui);
         Logger all = Logger.getLogger(""); // NOI18N
         all.removeHandler(handler);
+
+        File logFile = logFile();
+        if (logFile != null) {
+            try {
+                logFile.getParentFile().mkdirs();
+                // flush all the unsend data to disk
+                OutputStream os = new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(logFile)));
+                for (LogRecord r : getLogs()) {
+                    LogRecords.write(os, r);
+                }
+                os.close();
+            } catch (IOException ex) {
+                LOG.log(Level.INFO, "Cannot write " + logFile, ex);
+            }
+        }
     }
     
     public static int getLogsSize() {
@@ -125,7 +162,18 @@ public class Installer extends ModuleInstall {
         }
     }
     
-    private static void clearLogs() {
+    private static File logFile() {
+        String ud = System.getProperty("netbeans.user"); // NOI18N
+        if (ud == null || "memory".equals(ud)) { // NOI18N
+            return null;
+        }
+        
+        File userDir = new File(ud); // NOI18N
+        File logFile = new File(new File(new File(userDir, "var"), "log"), "uigestures.gz");
+        return logFile;
+    }
+    
+    static void clearLogs() {
         synchronized (UIHandler.class) {
             logs.clear();
         }

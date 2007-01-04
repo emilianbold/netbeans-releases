@@ -22,15 +22,16 @@ package org.netbeans.modules.uihandler;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import javax.swing.JButton;
-import junit.framework.TestCase;
 import junit.framework.*;
 import java.net.URL;
+import java.util.logging.Logger;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author Jaroslav Tulach
  */
-public class InstallerTest extends TestCase {
+public class InstallerTest extends NbTestCase {
     
     public InstallerTest(String testName) {
         super(testName);
@@ -41,9 +42,39 @@ public class InstallerTest extends TestCase {
     }
 
     protected void setUp() throws Exception {
+        clearWorkDir();
+        
+        Installer installer = Installer.findObject(Installer.class, true);
+        assertNotNull(installer);
+
+        System.setProperty("netbeans.user", getWorkDirPath());
+        
+        // setup the listing
+        installer.restored();
     }
 
     protected void tearDown() throws Exception {
+        Installer installer = Installer.findObject(Installer.class, true);
+        assertNotNull(installer);
+        installer.close();
+    }
+    
+    public void testLogsRereadOnStartup() throws Exception {
+        Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
+        log.warning("Something happened");
+        
+        Installer installer = Installer.findObject(Installer.class, true);
+        assertNotNull(installer);
+        installer.close();
+        Installer.clearLogs();
+        
+        assertEquals("No logs right now", 0, Installer.getLogsSize());
+        
+        installer.restored();
+        assertEquals("One log is available: " + Installer.getLogs(), 1, Installer.getLogsSize());
+        assertEquals("The right message is there", 
+            "Something happened", Installer.getLogs().get(0).getMessage()
+        );
     }
 
     public void testReadListOfSubmitButtons() throws Exception {

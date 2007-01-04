@@ -25,8 +25,8 @@ import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JDialog;
-import junit.framework.TestCase;
 import org.netbeans.junit.MockServices;
+import org.netbeans.junit.NbTestCase;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -36,7 +36,7 @@ import org.openide.NotifyDescriptor;
  *
  * @author Jaroslav Tulach
  */
-public class BugTriggersTest extends TestCase {
+public class BugTriggersTest extends NbTestCase {
     private static Installer o;
     
     static {
@@ -58,7 +58,7 @@ public class BugTriggersTest extends TestCase {
 
     protected void tearDown() throws Exception {
     }
-
+    
     public void testErrorMgrShowsDialogOnException() throws Exception {
         DD.toReturn = 0;
         IOException ex = new IOException("Chyba");
