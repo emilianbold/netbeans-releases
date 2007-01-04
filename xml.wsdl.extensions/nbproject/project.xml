@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
 The contents of this file are subject to the terms of the Common Development
 and Distribution License (the License). You may not use this file except in
@@ -18,7 +17,6 @@ enclosed by brackets [] replaced by your own identifying information:
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  Microsystems, Inc. All Rights Reserved.
 -->
-
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
@@ -60,6 +58,8 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.bpel.model</friend>
+                <friend>org.netbeans.modules.bpel.project</friend>
                 <friend>org.netbeans.modules.compapp.projects.jbi</friend>
                 <friend>org.netbeans.modules.xml.wsdlui</friend>
                 <package>org.netbeans.modules.xml.wsdl.model.extensions.bpel</package>
