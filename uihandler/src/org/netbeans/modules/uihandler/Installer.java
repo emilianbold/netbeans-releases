@@ -490,6 +490,13 @@ public class Installer extends ModuleInstall {
                 d.setVisible(false);
                 return;
             }
+            
+            if ("exit".equals(e.getActionCommand())) {
+                // this should close the descriptor
+                dd.setValue(DialogDescriptor.CLOSED_OPTION);
+                d.setVisible(false);
+                return;
+            }
 
         }
     } // end Submit
