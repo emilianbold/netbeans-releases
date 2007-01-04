@@ -530,10 +530,12 @@ public class Installer extends ModuleInstall {
                     List<LogRecord> recs = getLogs();
                     root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", recs.size(), new Date()));
                     root.setIconBaseWithExtension("org/netbeans/modules/uihandler/logs.gif");
+                    LinkedList<Node> reverted = new LinkedList<Node>();
                     for (LogRecord r : recs) {
-                        root.getChildren().add(new Node[] { UINode.create(r) });
+                        reverted.addFirst(UINode.create(r));
                         panel.addRecord(r);
                     }
+                    root.getChildren().add(reverted.toArray(new Node[0]));
                     panel.getExplorerManager().setRootContext(root);
                 }
                 dd.setMessage(panel);
