@@ -466,8 +466,6 @@ public final class CustomizerSupport {
                     mne = NbBundle.getMessage(CustomizerSupport.class, "MNE_AddZip").charAt(0);
                     ad = NbBundle.getMessage(CustomizerSupport.class, "AD_AddZip");
                 }
-                //this.addButton.setText(text);
-                //this.addButton.setMnemonic(mne);
                 org.openide.awt.Mnemonics.setLocalizedText(this.addButton, text); // NOI18N
                 this.addButton.getAccessibleContext().setAccessibleDescription (ad);
                 addButton.addActionListener( new ActionListener () {
@@ -484,9 +482,9 @@ public final class CustomizerSupport {
                 c.insets = new Insets (0,6,0,6);
                 ((GridBagLayout)this.getLayout()).setConstraints(addButton,c);
                 this.add (addButton);
-                //removeButton = new JButton (NbBundle.getMessage(CustomizerSupport.class, "CTL_Remove"));
-                //removeButton.setMnemonic(NbBundle.getMessage(CustomizerSupport.class, "MNE_Remove").charAt(0));
-                org.openide.awt.Mnemonics.setLocalizedText(this.addButton, text); // NOI18N
+                removeButton = new JButton ();
+                org.openide.awt.Mnemonics.setLocalizedText(this.removeButton, 
+                        NbBundle.getMessage(CustomizerSupport.class, "CTL_Remove")); // NOI18N
                 removeButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(CustomizerSupport.class,"AD_Remove"));
                 removeButton.addActionListener( new ActionListener () {
                     public void actionPerformed(ActionEvent e) {
@@ -503,9 +501,9 @@ public final class CustomizerSupport {
                 c.insets = new Insets (12,6,0,6);
                 ((GridBagLayout)this.getLayout()).setConstraints(removeButton,c);
                 this.add (removeButton);
-//                moveUpButton = new JButton (NbBundle.getMessage(CustomizerSupport.class, "CTL_Up"));
-//                moveUpButton.setMnemonic(NbBundle.getMessage(CustomizerSupport.class, "MNE_Up").charAt(0));
-                org.openide.awt.Mnemonics.setLocalizedText(this.addButton, text); // NOI18N
+                moveUpButton = new JButton ();
+                org.openide.awt.Mnemonics.setLocalizedText(this.moveUpButton, 
+                        NbBundle.getMessage(CustomizerSupport.class, "CTL_Up")); // NOI18N
                 moveUpButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(CustomizerSupport.class,"AD_Up"));
                 moveUpButton.addActionListener( new ActionListener () {
                     public void actionPerformed(ActionEvent e) {
@@ -522,9 +520,9 @@ public final class CustomizerSupport {
                 c.insets = new Insets (12,6,0,6);
                 ((GridBagLayout)this.getLayout()).setConstraints(moveUpButton,c);
                 this.add (moveUpButton);
-//                moveDownButton = new JButton (NbBundle.getMessage(CustomizerSupport.class, "CTL_Down"));
-//                moveDownButton.setMnemonic (NbBundle.getMessage(CustomizerSupport.class, "MNE_Down").charAt(0));
-                org.openide.awt.Mnemonics.setLocalizedText(this.addButton, text); // NOI18N
+                moveDownButton = new JButton ();
+                org.openide.awt.Mnemonics.setLocalizedText(this.moveDownButton, 
+                        NbBundle.getMessage(CustomizerSupport.class, "CTL_Down")); // NOI18N
                 moveDownButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSupport.class,"AD_Down"));
                 moveDownButton.addActionListener( new ActionListener () {
                     public void actionPerformed(ActionEvent e) {
