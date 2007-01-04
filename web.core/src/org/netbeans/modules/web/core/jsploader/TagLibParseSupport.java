@@ -22,15 +22,13 @@ package org.netbeans.modules.web.core.jsploader;
 import java.lang.ref.WeakReference;
 import java.lang.ref.SoftReference;
 import java.util.*;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.web.core.jsploader.api.TagLibParseCookie;
 import org.netbeans.modules.web.core.syntax.spi.ErrorAnnotation;
-
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
-
 import org.openide.filesystems.FileObject;
-
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
@@ -343,6 +341,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
                 
                 locResult = parser.analyzePage(jspFile, JspParserAccess.getJspParserWM (getWebModule (jspFile)), JspParserAPI.ERROR_IGNORE);
                 assert locResult != null;
+                
                 synchronized (TagLibParseSupport.this.parseResultLock) {
                     parseResultRef = new SoftReference(locResult);
                     if (locResult.isParsingSuccess()) {
@@ -354,25 +353,32 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
                         //set icon withouth errors
                         if (hasError){
                             //remove all errors
-                            annotations.annotate(new ErrorAnnotation.ErrorInfo[] {});
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    annotations.annotate(new ErrorAnnotation.ErrorInfo[] {});
+                                }
+                            });
                             hasError = false;
                         }
-                    }
-                    if (!locResult.isParsingSuccess()){
-                        for (int i = 0; i < locResult.getErrors().length; i ++){
-                            JspParserAPI.ErrorDescriptor err = locResult.getErrors()[i];
-                            annotations.annotate(new ErrorAnnotation.ErrorInfo[] {
-                                    new ErrorAnnotation.ErrorInfo(translate(err.getErrorMessage()), 
-                                            err.getLine(), 
-                                            err.getColumn(),
-                                            ErrorAnnotation.JSP_ERROR)
-                            } );
-                        }
-                        // set icon with error.
-                        if (!hasError){
-                            hasError = true;
-                        }
-                        
+                    } else {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                for (int i = 0; i < locResult.getErrors().length; i ++){
+                                    JspParserAPI.ErrorDescriptor err = locResult.getErrors()[i];
+                                    annotations.annotate(new ErrorAnnotation.ErrorInfo[] {
+                                        new ErrorAnnotation.ErrorInfo(translate(err.getErrorMessage()),
+                                                err.getLine(),
+                                                err.getColumn(),
+                                                ErrorAnnotation.JSP_ERROR)
+                                    } );
+                                }
+                                // set icon with error.
+                                if (!hasError){
+                                    hasError = true;
+                                }
+                                
+                            }
+                        });
                     }
                     PageInfo pageInfo = locResult.getPageInfo();
                     
