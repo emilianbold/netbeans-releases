@@ -419,11 +419,13 @@ public class JavaCompletionProvider implements CompletionProvider {
                         path = new TreePath(path, nc.getIdentifier());
                         Trees trees = controller.getTrees();
                         final TypeMirror type = trees.getTypeMirror(path);
+                        final Element el = trees.getElement(path);
                         final Scope scope = env.getScope();
                         final TreeUtilities tu = controller.getTreeUtilities();
+                        final boolean isAnonymous = nc.getClassBody() != null || el.getKind().isInterface() || el.getModifiers().contains(ABSTRACT);
                         ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                             public boolean accept(Element e, TypeMirror t) {
-                                return e.getKind() == CONSTRUCTOR && tu.isAccessible(scope, e, t);
+                                return e.getKind() == CONSTRUCTOR && (tu.isAccessible(scope, e, t) || isAnonymous && e.getModifiers().contains(PROTECTED));
                             }
                         };
                         List<List<String>> params = getMatchingParams(type, controller.getElementUtilities().getMembers(type, acceptor), INIT, types, controller.getTypes());
@@ -3180,9 +3182,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                             final TreeUtilities tu = controller.getTreeUtilities();
                             if (el != null && tm.getKind() == TypeKind.DECLARED) {
                                 final Scope scope = env.getScope();
+                                final boolean isAnonymous = nc.getClassBody() != null || el.getKind().isInterface() || el.getModifiers().contains(ABSTRACT);
                                 ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                                     public boolean accept(Element e, TypeMirror t) {
-                                        return e.getKind() == CONSTRUCTOR && tu.isAccessible(scope, e, t);
+                                        return e.getKind() == CONSTRUCTOR && (tu.isAccessible(scope, e, t) || isAnonymous && e.getModifiers().contains(PROTECTED));
                                     }
                                 };
                                 return getMatchingArgumentTypes(tm, controller.getElementUtilities().getMembers(tm, acceptor), INIT, args, controller.getTypes());
