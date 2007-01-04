@@ -131,7 +131,7 @@ public class Installer extends ModuleInstall {
     }
     
     public boolean closing() {
-        if (getLogs().isEmpty()) {
+        if (getLogsSize() == 0) {
             return true;
         }
         
