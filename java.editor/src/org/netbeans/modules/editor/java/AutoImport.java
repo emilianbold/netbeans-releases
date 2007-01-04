@@ -85,11 +85,14 @@ public class AutoImport extends SimpleTypeVisitor6<Void, Void> {
     
     @Override
     public Void visitDeclared(DeclaredType type, Void p) {
-        String name = ((TypeElement)type.asElement()).getQualifiedName().toString();
-        try {
-            name = SourceUtils.resolveImport(info, path, name);
-        } catch (Exception e) {
-            Logger.getLogger("global").log(Level.INFO, null, e); //NOI18N
+        TypeElement element = (TypeElement)type.asElement();
+        String name = element.getQualifiedName().toString();
+        if (element.getEnclosingElement().getKind().isClass() || element.getEnclosingElement().getKind().isClass()) {
+            try {
+                name = SourceUtils.resolveImport(info, path, name);
+            } catch (Exception e) {
+                Logger.getLogger("global").log(Level.INFO, null, e); //NOI18N
+            }
         }
         builder.append(name);
         Iterator<? extends TypeMirror> it = type.getTypeArguments().iterator();
