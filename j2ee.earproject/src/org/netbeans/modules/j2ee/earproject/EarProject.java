@@ -33,6 +33,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.earproject.classpath.ClassPathProviderImpl;
@@ -46,6 +47,7 @@ import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -87,6 +89,7 @@ import org.w3c.dom.Text;
 public final class EarProject implements Project, AntProjectListener, FileChangeListener, ProjectPropertyProvider {
     
     private static final Icon EAR_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/j2ee/earproject/ui/resources/projectIcon.gif")); // NOI18N
+    public static final String ARTIFACT_TYPE_EAR = "ear";
     
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
@@ -144,7 +147,7 @@ public final class EarProject implements Project, AntProjectListener, FileChange
     
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
-
+        
         // XXX unnecessarily creates a SourcesHelper, which is then GC's
         // as it is not hold. This is probably unneeded now that issue 63359 was fixed.
         final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
@@ -179,7 +182,8 @@ public final class EarProject implements Project, AntProjectListener, FileChange
             ),
             this,
             new EarProjectOperations(this),
-            brokenProjectSupport
+            brokenProjectSupport,
+            new AntArtifactProviderImpl()
         });
     }
     
@@ -446,7 +450,7 @@ public final class EarProject implements Project, AntProjectListener, FileChange
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
             "Templates/XML/XMLWizard", // NOI18N
-                    "Templates/Other/Folder" // NOI18N
+            "Templates/Other/Folder" // NOI18N
         };
         public String[] getRecommendedTypes() {
             return TYPES;
@@ -522,9 +526,18 @@ public final class EarProject implements Project, AntProjectListener, FileChange
     public EarProjectProperties getProjectProperties() {
         return new EarProjectProperties(this, refHelper, abpt);
     }
-
+    
     public GeneratedFilesHelper getGeneratedFilesHelper() {
         return genFilesHelper;
+    }
+    
+    private final class AntArtifactProviderImpl implements AntArtifactProvider{
+        public AntArtifact[] getBuildArtifacts() {
+            return new AntArtifact[] {
+                helper.createSimpleAntArtifact(ARTIFACT_TYPE_EAR, "dist.jar", evaluator(), "dist", "clean"), // NOI18N
+            };
+        }
+        
     }
     
 }
