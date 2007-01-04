@@ -21,18 +21,18 @@ package org.netbeans.modules.xml.wsdl.ui.netbeans.module;
 
 import java.io.IOException;
 import java.io.ObjectInput;
-import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  * Manages the WSDL editor options.
  *
  * @author  Nathan Fiedler
  */
-public class WSDLSettings extends SystemOption {
-    /** serial version UID - DO NOT CHANGE */
-    private static final long serialVersionUID = -6445293321879342418L;
+public class WSDLSettings {
+    /** Singleton instance of SchemaSettings */
+    private static WSDLSettings INSTANCE = new WSDLSettings();
     /** Name of the connection timeout setting. */
     public static final String PROP_VIEW_MODE = "viewMode";
 
@@ -47,13 +47,17 @@ public class WSDLSettings extends SystemOption {
         return NbBundle.getMessage(getClass(), "CTL_WSDLSettings_name");
     }
 
+    private WSDLSettings() {
+        setDefaults();
+    }
+    
     /**
      * Returns the single instance of this class.
      *
      * @return  the instance.
      */
     public static WSDLSettings getDefault() {
-        return (WSDLSettings) findObject(WSDLSettings.class, true);
+        return INSTANCE;
     }
 
     public HelpCtx getHelpCtx() {
@@ -67,22 +71,15 @@ public class WSDLSettings extends SystemOption {
      */
     public ViewMode getViewMode() {
         String mode = (String) getProperty(PROP_VIEW_MODE);
-        try {
-            return ViewMode.valueOf(mode);
-        } catch (IllegalArgumentException iae) {
-            // The enum values changed, use a reasonable default.
+        if(mode == null)
             return ViewMode.COLUMN;
-        }
-    }
-
-    protected void initialize() {
-        super.initialize();
-        setDefaults();
+        
+        return ViewMode.valueOf(mode);
     }
 
     public void readExternal(ObjectInput in) throws
             IOException, ClassNotFoundException {
-        super.readExternal(in);
+        //super.readExternal(in);
         // Upgrade the restored instance to include the latest settings.
         setDefaults();
     }
@@ -103,6 +100,20 @@ public class WSDLSettings extends SystemOption {
      */
     public void setViewMode(ViewMode mode) {
         // Store the enum as a String.
-        putProperty(PROP_VIEW_MODE, mode.toString(), true);
+        putProperty(PROP_VIEW_MODE, mode.toString());
+    }
+    
+    protected final String putProperty(String key, String value) {
+        String retval = NbPreferences.forModule(WSDLSettings.class).get(key, null);
+        if (value != null) {
+            NbPreferences.forModule(WSDLSettings.class).put(key, value);
+        } else {
+            NbPreferences.forModule(WSDLSettings.class).remove(key);
+        }
+        return retval;
+    }
+    
+    protected final String getProperty(String key) {
+        return NbPreferences.forModule(WSDLSettings.class).get(key, ViewMode.TREE.toString());
     }
 }
