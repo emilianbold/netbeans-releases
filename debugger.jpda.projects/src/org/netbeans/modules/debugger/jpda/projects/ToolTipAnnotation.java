@@ -20,10 +20,13 @@
 package org.netbeans.modules.debugger.jpda.projects;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
+import org.openide.ErrorManager;
 
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
@@ -195,12 +198,32 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
      *
      * Used in: ToolTipAnnotation
      */
-    private static JEditorPane getCurrentEditor () {
+    private static JEditorPane getCurrentEditor_() {
         EditorCookie e = getCurrentEditorCookie ();
         if (e == null) return null;
         JEditorPane[] op = e.getOpenedPanes ();
         if ((op == null) || (op.length < 1)) return null;
         return op [0];
+    }
+    
+    private static JEditorPane getCurrentEditor () {
+        if (SwingUtilities.isEventDispatchThread()) {
+            return getCurrentEditor_();
+        } else {
+            final JEditorPane[] ce = new JEditorPane[1];
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        ce[0] = getCurrentEditor_();
+                    }
+                });
+            } catch (InvocationTargetException ex) {
+                ErrorManager.getDefault().notify(ex.getTargetException());
+            } catch (InterruptedException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+            return ce[0];
+        }
     }
     
     /** 
