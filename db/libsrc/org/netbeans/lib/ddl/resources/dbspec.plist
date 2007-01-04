@@ -807,6 +807,7 @@
     TriggerEventListDelimiter = ", ";
     TypeMap = {
       java.sql.Types.BIGINT = BIGINT;
+      java.sql.Types.BLOB = BLOB;
       java.sql.Types.CHAR = CHAR;
       java.sql.Types.BINARY = "CHAR FOR BIT DATA";
       java.sql.Types.CLOB = CLOB;
