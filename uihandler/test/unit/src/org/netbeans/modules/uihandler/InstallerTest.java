@@ -28,7 +28,7 @@ import java.net.URL;
 
 /**
  *
- * @author Jaroslav Tulachs
+ * @author Jaroslav Tulach
  */
 public class InstallerTest extends TestCase {
     
