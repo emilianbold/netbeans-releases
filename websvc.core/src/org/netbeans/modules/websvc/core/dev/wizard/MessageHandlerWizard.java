@@ -63,7 +63,7 @@ public class MessageHandlerWizard implements WizardDescriptor.InstantiatingItera
         //create the Java Project chooser
         firstPanel = JavaTemplates.createPackageChooser(project,sourceGroups, new BottomPanel());
         JComponent c = (JComponent)firstPanel.getComponent();
-        Util.changeLabelInComponent(c, NbBundle.getMessage(Util.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"), //NOI18N
+        Util.changeLabelInComponent(c, NbBundle.getMessage(MessageHandlerWizard.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"), //NOI18N
                 NbBundle.getMessage(MessageHandlerWizard.class, "LBL_Handler_Name") ); //NOI18N
         c.putClientProperty("WizardPanel_contentData", //NOI18N
                 HANDLER_STEPS);

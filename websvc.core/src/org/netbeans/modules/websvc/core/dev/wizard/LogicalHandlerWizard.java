@@ -69,7 +69,7 @@ public class LogicalHandlerWizard implements WizardDescriptor.InstantiatingItera
             firstPanel = new FinishableProxyWizardPanel(JavaTemplates.createPackageChooser(project, sourceGroups, new BottomPanel(), true));
         
         JComponent c = (JComponent) firstPanel.getComponent();
-        Util.changeLabelInComponent(c, NbBundle.getMessage(Util.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"), //NOI18N
+        Util.changeLabelInComponent(c, NbBundle.getMessage(LogicalHandlerWizard.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"), //NOI18N
                 NbBundle.getMessage(LogicalHandlerWizard.class, "LBL_LogicalHandler_Name") ); //NOI18N
         c.putClientProperty("WizardPanel_contentData", //NOI18N
                 HANDLER_STEPS);

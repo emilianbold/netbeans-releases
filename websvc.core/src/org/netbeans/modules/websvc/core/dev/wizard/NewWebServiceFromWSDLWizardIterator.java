@@ -91,8 +91,8 @@ public class NewWebServiceFromWSDLWizardIterator implements TemplateWizard.Itera
             firstPanel = new FinishableProxyWizardPanel(JavaTemplates.createPackageChooser(project, sourceGroups, bottomPanel, true));
 
         JComponent comp = (JComponent) firstPanel.getComponent();
-        Util.changeLabelInComponent(comp, NbBundle.getMessage(Util.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"), NbBundle.getMessage(NewWebServiceWizardIterator.class, "LBL_Webservice_Name") );
-        Util.hideLabelAndLabelFor(comp, NbBundle.getMessage(Util.class, "LBL_JavaTargetChooserPanelGUI_CreatedFile_Label"));        
+        Util.changeLabelInComponent(comp, NbBundle.getMessage(NewWebServiceFromWSDLWizardIterator.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"), NbBundle.getMessage(NewWebServiceWizardIterator.class, "LBL_Webservice_Name") );
+        Util.hideLabelAndLabelFor(comp, NbBundle.getMessage(NewWebServiceFromWSDLWizardIterator.class, "LBL_JavaTargetChooserPanelGUI_CreatedFile_Label"));        
         
         panels = new WizardDescriptor.Panel[] {
             firstPanel,
