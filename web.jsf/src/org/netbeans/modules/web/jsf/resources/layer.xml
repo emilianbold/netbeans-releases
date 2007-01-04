@@ -113,6 +113,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.ManagedBeanIterator"/>          
             </file>
         </folder>
+        <!--  Removed due the issue #91200. It has to be enabled back when the functionality will be work again.
         <folder name="Persistence">
             <attr name="Entity/JsfFromDB" boolvalue="true"/>
             <attr name="RelatedCMP/JsfFromDB" boolvalue="true"/>
@@ -127,6 +128,7 @@ Microsystems, Inc. All Rights Reserved.
                           urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/jsp16.gif"/>
             </file>
         </folder>
+        -->
     </folder>
 
     <folder name="org-netbeans-api-project-libraries">
