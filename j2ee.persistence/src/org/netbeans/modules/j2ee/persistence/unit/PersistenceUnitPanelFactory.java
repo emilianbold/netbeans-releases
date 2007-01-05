@@ -24,6 +24,8 @@ import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
+import org.netbeans.modules.xml.multiview.ui.InnerPanelFactory;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
@@ -34,8 +36,8 @@ import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
  * @author mkuchtiak
  * @author Erno Mononen
  */
-public class PersistenceUnitPanelFactory implements org.netbeans.modules.xml.multiview.ui.InnerPanelFactory, PropertyChangeListener {
-   
+public class PersistenceUnitPanelFactory implements InnerPanelFactory, PropertyChangeListener {
+    
     private PUDataObject dObj;
     private ToolBarDesignEditor editor;
     /**
@@ -51,9 +53,14 @@ public class PersistenceUnitPanelFactory implements org.netbeans.modules.xml.mul
         dObj.addPropertyChangeListener(this);
     }
     
+    /**
+     * Gets the inner panel associated with the given key or creates a new inner
+     * panel if the key had no associated panel yet.
+     * @param key the persistence unit whose associated panel should be retrieved.
+     */ 
     public SectionInnerPanel createInnerPanel(Object key) {
         if (!(key instanceof PersistenceUnit)) {
-            return null;
+            throw new IllegalArgumentException("The given key must be an instance of PersistenceUnit"); //NO18N
         }
         PersistenceUnit punit = (PersistenceUnit) key;
         PersistenceUnitPanel panel = cache.get(punit);
@@ -65,8 +72,9 @@ public class PersistenceUnitPanelFactory implements org.netbeans.modules.xml.mul
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
-        // we'll clear the whole cache if anything changes (could be optimized further if needed)
-        cache.clear();
+        if (!XmlMultiViewDataObject.PROPERTY_DATA_MODIFIED.equals(evt.getPropertyName())){
+            cache.clear();
+        }
     }
 }
 
