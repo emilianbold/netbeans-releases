@@ -97,6 +97,9 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
             return false;
         }
         FileObject fileObject = activatedNodes[0].getLookup().lookup(FileObject.class);
+        if (fileObject == null) {
+            return false;
+        }
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         final String[] className = new String[1];
         try {
