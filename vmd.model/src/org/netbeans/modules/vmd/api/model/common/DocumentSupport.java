@@ -43,6 +43,25 @@ public class DocumentSupport {
     }
 
     /**
+     * Gathers all components in a document that are containing presenter of presenterClass.
+     * @param document the document
+     * @param presenterClass the presenterClass
+     * @return the list of components
+     */
+    public static <T extends Presenter> List<DesignComponent> gatherAllComponentsContainingPresenterClass (DesignDocument document, Class<T> presenterClass) {
+        ArrayList<DesignComponent> list = new ArrayList<DesignComponent> ();
+        gatherAllComponentsContainingPresenterClass (list, document.getRootComponent (), presenterClass);
+        return list;
+    }
+
+    private static <T extends Presenter> void gatherAllComponentsContainingPresenterClass (ArrayList<DesignComponent> list, DesignComponent component, Class<T> presenterClass) {
+        if (component.getPresenter (presenterClass) != null)
+            list.add (component);
+        for (DesignComponent child : component.getComponents ())
+            gatherAllComponentsContainingPresenterClass (list, child, presenterClass);
+    }
+
+    /**
      * Gathers all components under specified component.
      * It returns a list of components that are or inherits a specific type-id using DescriptorRegistry.isInHierarchy method.
      * @param component the component underneath which it searches
