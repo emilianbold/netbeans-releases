@@ -28,6 +28,7 @@ import junit.framework.*;
 
 import org.netbeans.junit.*;
 
+import org.openide.util.Mutex;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.*;
 
@@ -84,7 +85,7 @@ implements CloneableEditorSupport.Env {
         support.open();
         waitEQ();
 
-        JEditorPane[] arr = support.getOpenedPanes();
+        JEditorPane[] arr = getPanes();
         assertNotNull("There is one opened pane", arr);
         
         java.awt.Component c = arr[0];
@@ -107,10 +108,17 @@ implements CloneableEditorSupport.Env {
         assertEquals("The right text is there", txt, "Ahoj");
         assertEquals("Nothing has been saved", "", content);
         
-        arr = support.getOpenedPanes();
+        arr = getPanes();
         assertNotNull("Panes are still open", arr);
     }
 
+    private JEditorPane[] getPanes() {
+        return Mutex.EVENT.readAccess(new Mutex.Action<JEditorPane[]>() {
+            public JEditorPane[] run() {
+                return support.getOpenedPanes();
+            }
+        });
+    }
     
 
     private void waitEQ() throws InterruptedException, InvocationTargetException {
