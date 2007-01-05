@@ -451,10 +451,20 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                 String memberName = stag.referencedMemberName();
                 String label = stag.label();
                 if (memberName != null) {
-                    createLink(see, eu.elementFor(stag.referencedMember()), "<code>" + (label != null && label.length() > 0 ? label : (refClass.simpleTypeName() + "." + memberName)) + "</code>"); //NOI18N
+                    if (refClass != null) {
+                        createLink(see, eu.elementFor(stag.referencedMember()), "<code>" + (label != null && label.length() > 0 ? label : (refClass.simpleTypeName() + "." + memberName)) + "</code>"); //NOI18N
+                    } else {
+                        see.append(stag.referencedClassName());
+                        see.append('.'); //NOI18N
+                        see.append(memberName);
+                    }
                     see.append(", "); //NOI18N
-                } else if (refClass != null) {
-                    createLink(see, eu.elementFor(refClass), "<code>" + (label != null && label.length() > 0 ? label : refClass.simpleTypeName()) + "</code>"); //NOI18N
+                } else {
+                    if (refClass != null) {
+                        createLink(see, eu.elementFor(refClass), "<code>" + (label != null && label.length() > 0 ? label : refClass.simpleTypeName()) + "</code>"); //NOI18N
+                    } else {
+                        see.append(stag.referencedClassName());
+                    }
                     see.append(", "); //NOI18N
                 }
             } else if (SINCE_TAG.equals(tag.kind())) {
@@ -490,9 +500,19 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                 String memberName = stag.referencedMemberName();
                 String label = stag.label();
                 if (memberName != null) {
-                    createLink(sb, eu.elementFor(stag.referencedMember()), "<code>" + (label != null && label.length() > 0 ? label : (refClass.simpleTypeName() + "." + memberName)) + "</code>"); //NOI18N
-                } else if (refClass != null) {
-                    createLink(sb, eu.elementFor(refClass), "<code>" + (label != null && label.length() > 0 ? label : refClass.simpleTypeName()) + "</code>"); //NOI18N
+                    if (refClass != null) {
+                        createLink(sb, eu.elementFor(stag.referencedMember()), "<code>" + (label != null && label.length() > 0 ? label : (refClass.simpleTypeName() + "." + memberName)) + "</code>"); //NOI18N
+                    } else {
+                        sb.append(stag.referencedClassName());
+                        sb.append('.'); //NOI18N
+                        sb.append(memberName);
+                    }
+                } else {
+                    if (refClass != null) {
+                        createLink(sb, eu.elementFor(refClass), "<code>" + (label != null && label.length() > 0 ? label : refClass.simpleTypeName()) + "</code>"); //NOI18N
+                    } else {
+                        sb.append(stag.referencedClassName());
+                    }
                 }
             } else if (INHERIT_DOC_TAG.equals(tag.kind())) {
                 if (doc.isMethod()) {
