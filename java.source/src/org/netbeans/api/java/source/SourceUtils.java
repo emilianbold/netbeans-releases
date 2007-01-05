@@ -441,13 +441,14 @@ public class SourceUtils {
                 assert root != null;
                 FileObject[] sourceRoots = SourceForBinaryQuery.findSourceRoots(root.getURL()).getRoots();                        
                 ClassPath sourcePath = ClassPathSupport.createClassPath(sourceRoots);
-                List<FileObject> folders = (List<FileObject>) sourcePath.findAllResources(pkgName);
+                LinkedList<FileObject> folders = new LinkedList<FileObject>(sourcePath.findAllResources(pkgName));
                 if (pkg) {
-                    return folders.isEmpty() ? null : folders.get(0);
+                    return folders.isEmpty() ? fo : folders.get(0);
                 }
                 else {               
                     boolean caseSensitive = isCaseSensitive ();
                     String sourceFileName = getSourceFileName (className);
+                    folders.addFirst(fo);
                     for (FileObject folder : folders) {
                         FileObject[] children = folder.getChildren();
                         for (FileObject child : children) {
