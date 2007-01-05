@@ -120,7 +120,7 @@ public class J2MEDataObject extends MultiDataObject {
 
     public static class J2MEEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie, PrintCookie, EditorCookie.Observable {
         
-        final private ProjectConfigurationsHelper pch;
+        private ProjectConfigurationsHelper pch;
         private static Method setAlreadyModified = null;
     
         private J2MEKit kit;
@@ -184,8 +184,6 @@ public class J2MEDataObject extends MultiDataObject {
         public J2MEEditorSupport(J2MEDataObject dataObject) {
             super(dataObject, new Environment(dataObject));
             setMIMEType("text/x-java"); // NOI18N
-            Project p = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
-            pch = p == null ? null : (ProjectConfigurationsHelper)p.getLookup().lookup(ProjectConfigurationsHelper.class);
         }
         
         public static String getFileEncoding(FileObject someFile) {
@@ -220,6 +218,10 @@ public class J2MEDataObject extends MultiDataObject {
                 }
 
             };
+            if (pch == null) {
+                Project p = FileOwnerQuery.getOwner(getDataObject().getPrimaryFile());
+                pch = p == null ? null : (ProjectConfigurationsHelper)p.getLookup().lookup(ProjectConfigurationsHelper.class);
+            }
             final ProjectConfiguration defCfg = pch == null ? null : pch.getDefaultConfiguration();
             final HashMap<String,String> identifiers = new HashMap<String,String>();
             if (defCfg !=null) {
@@ -264,6 +266,10 @@ public class J2MEDataObject extends MultiDataObject {
                 }
 
             };
+            if (pch == null) {
+                Project p = FileOwnerQuery.getOwner(getDataObject().getPrimaryFile());
+                pch = p == null ? null : (ProjectConfigurationsHelper)p.getLookup().lookup(ProjectConfigurationsHelper.class);
+            }
             final ProjectConfiguration conf = pch == null ? null : pch.getActiveConfiguration();
             final HashMap<String,String> identifiers=new HashMap<String,String>();
             if (conf != null) {
