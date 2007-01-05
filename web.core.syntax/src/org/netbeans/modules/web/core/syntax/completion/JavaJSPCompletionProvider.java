@@ -121,13 +121,13 @@ public class JavaJSPCompletionProvider implements CompletionProvider {
                     delegate.create(doc, fakedClassBody);
                     List<? extends CompletionItem> items =  delegate.getCompletionItems();
                     resultSet.addAllItems(items);
-                    resultSet.finish();
-                }
-                else{
+                } else{
                     logger.severe("caretOffset outside of embedded java code"); //NOI18N
                 }
             } catch (BadLocationException e){
                 logger.log(Level.SEVERE, e.getMessage(), e);
+            } finally{
+                resultSet.finish();
             }
         }
     }
