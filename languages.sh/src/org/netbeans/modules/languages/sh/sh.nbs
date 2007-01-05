@@ -32,22 +32,33 @@ TOKEN:keyword:(
     "break" |
     "case" |
     "continue" |
+    "do" |
+    "done" |
+    "elif" |
     "else" |
     "end" |
     "endif" |
     "endsw" |
+    "esac" |
+    "exit" |
+    "fi" |
+    "for" |
     "foreach" |
     "history" |
     "if" |
     "ignoreeof" |
+    "in" |
     "noclobber" |
     "path" |
     "prompt" |
+    "return" |
     "set" |
     "setenv" |
     "shift" |
     "switch"|
     "term" |
+    "then" |
+    "trap" |
     "unalias" |
     "unset" |
     "while"
@@ -59,7 +70,7 @@ TOKEN:number: (["0"-"9"] ["0"-"9" "."]*)
 
 TOKEN:whitespace: ([" " "\t" "\n" "\r"]+)
 
-TOKEN:identifier:( . )
+TOKEN:identifier:( [^ "\"" "\n" "\r" "\t" " "]+ )
 
 TOKEN:string: (
     "\""
