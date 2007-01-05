@@ -547,13 +547,20 @@ public class CasualDiff {
         diffTree(oldT.body, newT.body);
     }
 
-    protected void diffForLoop(JCForLoop oldT, JCForLoop newT) {
+    protected int diffForLoop(JCForLoop oldT, JCForLoop newT, int[] bounds) {
+        int localPointer = bounds[0];
         int initListHint = oldT.cond != null ? oldT.cond.pos - 1 : Query.NOPOS;
         int stepListHint = oldT.cond != null ? endPos(oldT.cond) + 1 : Query.NOPOS;
-        diffList(oldT.init, newT.init, LineInsertionType.NONE, initListHint);
-        diffTree(oldT.cond, newT.cond);
-        diffList(oldT.step, newT.step, LineInsertionType.NONE, stepListHint);
-        diffTree(oldT.body, newT.body);
+        printer.print(origText.substring(bounds[0], getOldPos(oldT.init.head)));
+        localPointer = diffList(oldT.init, newT.init, LineInsertionType.NONE, initListHint);
+        printer.print(origText.substring(localPointer, getOldPos(oldT.cond)));
+        localPointer = diffTree(oldT.cond, newT.cond, new int[] { getOldPos(oldT.cond), endPos(oldT.cond) });
+        printer.print(origText.substring(localPointer, getOldPos(oldT.step.head)));
+        localPointer = diffList(oldT.step, newT.step, LineInsertionType.NONE, stepListHint);
+        printer.print(origText.substring(localPointer, getOldPos(oldT.body)));
+        localPointer = diffTree(oldT.body, newT.body, new int[] { getOldPos(oldT.body), endPos(oldT.body) });
+        printer.print(origText.substring(localPointer, bounds[1]));
+        return bounds[1];
     }
     
     protected void diffForeachLoop(JCEnhancedForLoop oldT, JCEnhancedForLoop newT) {
@@ -624,7 +631,8 @@ public class CasualDiff {
     }
 
     protected int diffExec(JCExpressionStatement oldT, JCExpressionStatement newT, int[] bounds) {
-        int localPointer = bounds[0];
+        int localPointer = getOldPos(oldT);
+        printer.print(origText.substring(bounds[0], localPointer));
         localPointer = diffTree(oldT.expr, newT.expr, bounds);
         printer.print(origText.substring(localPointer, bounds[1]));
         return bounds[1];
@@ -657,7 +665,6 @@ public class CasualDiff {
 
     protected int diffApply(JCMethodInvocation oldT, JCMethodInvocation newT, int[] bounds) {
         int localPointer = bounds[0];
-        printer.print(origText.substring(localPointer, bounds[0]));
         diffParameterList(oldT.typeargs, newT.typeargs, localPointer);
         localPointer = diffTree(oldT.meth, newT.meth, new int[] { getOldPos(oldT.meth), endPos(oldT.meth) });
         localPointer = diffParameterList(oldT.args, newT.args, localPointer);
@@ -708,17 +715,29 @@ public class CasualDiff {
             append(Diff.name(oldT.pos, operatorName(oldT.tag), operatorName(newT.tag)));
     }
 
-    protected void diffUnary(JCUnary oldT, JCUnary newT) {
-        diffTree(oldT.arg, newT.arg);
+    protected int diffUnary(JCUnary oldT, JCUnary newT, int[] bounds) {
+        int localPointer = bounds[0];
+        int[] argBounds = new int[] { getOldPos(oldT.arg), endPos(oldT.arg) };
+        printer.print(origText.substring(localPointer, argBounds[0]));
+        localPointer = diffTree(oldT.arg, newT.arg, argBounds);
         if (oldT.tag != newT.tag)
             append(Diff.name(oldT.pos, operatorName(oldT.tag), operatorName(newT.tag)));
+        printer.print(origText.substring(localPointer, bounds[1]));
+        return bounds[1];
     }
 
-    protected void diffBinary(JCBinary oldT, JCBinary newT) {
-        diffTree(oldT.lhs, newT.lhs);
-        diffTree(oldT.rhs, newT.rhs);
+    protected int diffBinary(JCBinary oldT, JCBinary newT, int[] bounds) {
+        int localPointer = bounds[0];
+        localPointer = diffTree(oldT.lhs, newT.lhs, localPointer);
+        int rhs = getOldPos(oldT.rhs);
+        if (localPointer < rhs) {
+            printer.print(origText.substring(localPointer, rhs));
+        }
+        localPointer = diffTree(oldT.rhs, newT.rhs, rhs);
         if (oldT.tag != newT.tag)
             append(Diff.name(oldT.pos, operatorName(oldT.tag), operatorName(newT.tag)));
+        printer.print(origText.substring(localPointer, bounds[1]));
+        return bounds[1];
     }
     
     private String operatorName(int tag) {
@@ -1006,12 +1025,14 @@ public class CasualDiff {
 
     /**
      * Diff an unordered list, which may contain insertions and deletions.
+     * REMOVE IT WHEN CORRECT LIST MATCHING WILL BE IMPLEMENTED
      */
-    protected void diffList(List<? extends JCTree> oldList, 
+    protected int diffList(List<? extends JCTree> oldList, 
                             List<? extends JCTree> newList, 
                             LineInsertionType newLine, int insertHint) {
+        int lastPrinted = insertHint;
         if (oldList == newList)
-            return;
+            return insertHint;
         assert oldList != null && newList != null;
         int lastOldPos = insertHint;
         Iterator<? extends JCTree> oldIter = oldList.iterator();
@@ -1026,7 +1047,7 @@ public class CasualDiff {
                     lastOldPos = endPos;
             }
             if (treesMatch(oldT, newT, false)) {
-                diffTree(oldT, newT);
+                lastPrinted  = diffTree(oldT, newT, new int[] { getOldPos(oldT), endPos(oldT) });
                 oldT = safeNext(oldIter);
                 newT = safeNext(newIter);
             }
@@ -1058,6 +1079,7 @@ public class CasualDiff {
                 append(Diff.insert(newT, lastOldPos, newLine, null));
             newT = safeNext(newIter);
         }
+        return lastPrinted;
     }
     
     private JCTree safeNext(Iterator<? extends JCTree> iter) {
@@ -1645,7 +1667,7 @@ public class CasualDiff {
               diffWhileLoop((JCWhileLoop)oldT, (JCWhileLoop)newT);
               break;
           case JCTree.FORLOOP:
-              diffForLoop((JCForLoop)oldT, (JCForLoop)newT);
+              retVal = diffForLoop((JCForLoop)oldT, (JCForLoop)newT, elementBounds);
               break;
           case JCTree.FOREACHLOOP:
               diffForeachLoop((JCEnhancedForLoop)oldT, (JCEnhancedForLoop)newT);
@@ -1758,7 +1780,7 @@ public class CasualDiff {
           case JCTree.POSTINC:
           case JCTree.POSTDEC:
           case JCTree.NULLCHK:
-              diffUnary((JCUnary)oldT, (JCUnary)newT);
+              retVal = diffUnary((JCUnary)oldT, (JCUnary)newT, elementBounds);
               break;
           case JCTree.OR:
           case JCTree.AND:
@@ -1779,7 +1801,7 @@ public class CasualDiff {
           case JCTree.MUL:
           case JCTree.DIV:
           case JCTree.MOD:
-              diffBinary((JCBinary)oldT, (JCBinary)newT);
+              retVal = diffBinary((JCBinary)oldT, (JCBinary)newT, elementBounds);
               break;
           case JCTree.BITOR_ASG:
           case JCTree.BITXOR_ASG:
