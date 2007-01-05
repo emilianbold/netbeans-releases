@@ -142,7 +142,7 @@ public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor 
             set.add(new PropertyDescriptor(USE_EMPTYAPIS, true, DefaultPropertyParsers.BOOLEAN_PARSER, TRUE));
             set.add(new PropertyDescriptor(SRC_DIR, true, DefaultPropertyParsers.FILE_REFERENCE_PARSER, "src")); //NOI18N
             set.add(new PropertyDescriptor(BUILD_DIR, true, DefaultPropertyParsers.STRING_PARSER, "build/${config.active}")); //NOI18N
-            set.add(new PropertyDescriptor(BUILD_CLASSES_EXCLUDES, true, DefaultPropertyParsers.STRING_PARSER, "**/*.java,**/*.form,**/*.class,**/.nbintdb,**/*.mvd,**/*.wsclient")); //NOI18N
+            set.add(new PropertyDescriptor(BUILD_CLASSES_EXCLUDES, true, DefaultPropertyParsers.STRING_PARSER, "**/*.java,**/*.form,**/*.class,**/.nbintdb,**/*.mvd,**/*.wsclient,**/*.vmd")); //NOI18N
             set.add(new PropertyDescriptor(NO_DEPENDENCIES, true, DefaultPropertyParsers.INVERSE_BOOLEAN_PARSER, FALSE));
             set.add(new PropertyDescriptor(PLATFORM_TRIGGER, true, DefaultPropertyParsers.STRING_PARSER, "CLDC")); //NOI18N
             set.add(new PropertyDescriptor(PLATFORM_ACTIVE, true, DefaultPropertyParsers.PLATFORM_PARSER));
