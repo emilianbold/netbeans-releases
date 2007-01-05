@@ -49,8 +49,8 @@ public final class Mnemonics extends Object {
     private static void setLocalizedText2(Object item, String text) {
         // #17664. Handle null text also.
         // & in HTML should be ignored
-        if (text == null || text.startsWith("<html>")) { // NOI18N
-            setText(item, text);
+        if (text == null) { // NOI18N
+            setText(item, null);
 
             return;
         }
@@ -125,34 +125,51 @@ public final class Mnemonics extends Object {
      * <li>"&File", "Save &As..." - do have mnemonic ampersand.
      * <li>"Rock & Ro&ll", "Underline the '&' &character" - also do have
      *      mnemonic ampersand, but the second one.
-     * <li>"&lt;html&gt;Smith&Wesson" - doesn't have mnemonic ampersand.
-     *      Ampersands in HTML texts are not searched.
+     * <li>"&lt;html&gt;&lt;b&gt;R&amp;amp;D&lt;/b&gt; departmen&amp;t" - has mnemonic 
+     *      ampersand before "t".
+     *      Ampersands in HTML texts that are part of entity are ignored.
      * </ul>
      * @param text text to search
      * @return the position of mnemonic ampersand in text, or -1 if there is none
      */
     public static int findMnemonicAmpersand(String text) {
         int i = -1;
+        boolean isHTML = text.startsWith("<html>");
 
-        if (text != null && text.startsWith("<html>"))
-            return i;
-        
         do {
             // searching for the next ampersand
             i = text.indexOf('&', i + 1);
 
             if ((i >= 0) && ((i + 1) < text.length())) {
-                // before ' '
-                if (text.charAt(i + 1) == ' ') {
-                    continue;
-
-                    // before ', and after '
-                } else if ((text.charAt(i + 1) == '\'') && (i > 0) && (text.charAt(i - 1) == '\'')) {
-                    continue;
+                if (isHTML) {
+                    boolean startsEntity = false;
+                    for (int j = i + 1; j < text.length(); j++) {
+                        char c = text.charAt(j);
+                        if (c == ';') { 
+                            startsEntity = true;
+                            break;
+                        }
+                        if (!Character.isLetterOrDigit(c)) {
+                            break;
+                        }
+                    }
+                    if (!startsEntity) {
+                        return i;
+                    }
                 }
+                else {
+                    // before ' '
+                    if (text.charAt(i + 1) == ' ') {
+                        continue;
 
-                // ampersand is marking mnemonics
-                return i;
+                        // before ', and after '
+                    } else if ((text.charAt(i + 1) == '\'') && (i > 0) && (text.charAt(i - 1) == '\'')) {
+                        continue;
+                    }
+
+                    // ampersand is marking mnemonics
+                    return i;
+                }
             }
         } while (i >= 0);
 

@@ -53,10 +53,37 @@ public class MnemonicsTest extends NbTestCase {
     
     public void testMnemonicHTML() throws Exception {
         JButton b = new JButton();
-        Mnemonics.setLocalizedText(b, "<html>Smith&Wesson");
-        assertEquals("<html>Smith&Wesson", b.getText());
+        Mnemonics.setLocalizedText(b, "<html><b>R&amp;D</b> department");
+        assertEquals("<html><b>R&amp;D</b> department", b.getText());
         assertEquals(0, b.getMnemonic());
         assertEquals(-1, b.getDisplayedMnemonicIndex());
+        Mnemonics.setLocalizedText(b, "<html><b>R&amp;D</b> departmen&t");
+        assertEquals("<html><b>R&amp;D</b> department", b.getText());
+        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            assertEquals(0, b.getMnemonic());
+            assertEquals(-1, b.getDisplayedMnemonicIndex());
+        } else {
+            assertEquals(KeyEvent.VK_T, b.getMnemonic());
+        }
+        
+        Mnemonics.setLocalizedText(b, "<html>Smith &amp; &Wesson");
+        assertEquals("<html>Smith &amp; Wesson", b.getText());
+        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            assertEquals(0, b.getMnemonic());
+            assertEquals(-1, b.getDisplayedMnemonicIndex());
+        } else {
+            assertEquals(KeyEvent.VK_W, b.getMnemonic());
+        }
+        // <html>&Advanced Mode <em>(experimental)</em></html>
+        Mnemonics.setLocalizedText(b, "<html>&Advanced Mode <em>(experimental)</em></html>");
+        assertEquals("<html>Advanced Mode <em>(experimental)</em></html>", b.getText());
+        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            assertEquals(0, b.getMnemonic());
+            assertEquals(-1, b.getDisplayedMnemonicIndex());
+        } else {
+            assertEquals(KeyEvent.VK_A, b.getMnemonic());
+        }
+        
         assertEquals("Execute (Force Reload)", Actions.cutAmpersand("Execute (&Force Reload)"));
     }
     
