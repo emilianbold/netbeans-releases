@@ -19,18 +19,18 @@
 package org.netbeans.modules.vmd.io.javame;
 
 import org.netbeans.api.java.loaders.JavaDataSupport;
+import org.netbeans.modules.mobility.editor.pub.J2MEDataObject;
 import org.netbeans.modules.vmd.api.io.providers.DataObjectInterface;
-import org.openide.cookies.SaveCookie;
+import org.netbeans.modules.vmd.api.model.Debug;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.mobility.editor.pub.J2MEDataObject;
+import java.io.IOException;
 
 /**
  * @author David Kaspar
@@ -82,7 +82,11 @@ public final class MEDesignDataObject extends J2MEDataObject implements DataObje
     }
 
     public StyledDocument getEditorDocument () {
-        return editorSupport.getDocument ();
+        try {
+            return editorSupport.openDocument ();
+        } catch (IOException e) {
+            throw Debug.error (e);
+        }
     }
 
     public MEDesignEditorSupport getEditorSupport () {
