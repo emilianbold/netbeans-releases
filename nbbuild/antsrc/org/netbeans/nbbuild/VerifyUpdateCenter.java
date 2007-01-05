@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.jar.Manifest;
 import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
@@ -95,45 +96,47 @@ public final class VerifyUpdateCenter extends Task {
             throw new BuildException("you must specify updates");
         }
         ClassLoader loader = new AntClassLoader(getProject(), classpath);
-        try {
-            Set<Manifest> manifests = loadManifests(updates);
-            checkForProblems(findInconsistencies(manifests, loader), "Inconsistency(ies) in " + updates);
-            if (oldUpdates != null) {
-                Map<String,Manifest> updated = new HashMap<String,Manifest>();
-                for (Manifest m : loadManifests(oldUpdates)) {
-                    updated.put(findCNB(m), m);
-                }
-                if (!findInconsistencies(new HashSet<Manifest>(updated.values()), loader).isEmpty()) {
-                    log(oldUpdates + " is already inconsistent, skipping update check", Project.MSG_WARN);
-                    return;
-                }
-                for (Manifest m : manifests) {
-                    String cnb = findCNB(m);
-                    boolean doUpdate = true;
-                    Manifest old = updated.get(cnb);
-                    if (old != null) {
-                        String oldspec = old.getMainAttributes().getValue("OpenIDE-Module-Specification-Version");
-                        String newspec = m.getMainAttributes().getValue("OpenIDE-Module-Specification-Version");
-                        doUpdate = specGreaterThan(newspec, oldspec);
-                    }
-                    if (doUpdate) {
-                        updated.put(cnb, m);
-                    }
-                }
-                SortedMap<String,SortedSet<String>> updateProblems = findInconsistencies(new HashSet<Manifest>(updated.values()), loader);
-                checkForProblems(updateProblems, "Inconsistency(ies) in " + updates + " relative to " + oldUpdates);
+        Set<Manifest> manifests = loadManifests(updates);
+        checkForProblems(findInconsistencies(manifests, loader), "Inconsistency(ies) in " + updates);
+        log(updates + " is internally consistent", Project.MSG_INFO);
+        if (oldUpdates != null) {
+            Map<String,Manifest> updated = new HashMap<String,Manifest>();
+            for (Manifest m : loadManifests(oldUpdates)) {
+                updated.put(findCNB(m), m);
             }
-        } catch (BuildException x) {
-            throw x;
-        } catch (Exception x) {
-            throw new BuildException(x, getLocation());
+            if (!findInconsistencies(new HashSet<Manifest>(updated.values()), loader).isEmpty()) {
+                log(oldUpdates + " is already inconsistent, skipping update check", Project.MSG_WARN);
+                return;
+            }
+            SortedSet<String> updatedCNBs = new TreeSet<String>();
+            for (Manifest m : manifests) {
+                String cnb = findCNB(m);
+                boolean doUpdate = true;
+                Manifest old = updated.get(cnb);
+                if (old != null) {
+                    String oldspec = old.getMainAttributes().getValue("OpenIDE-Module-Specification-Version");
+                    String newspec = m.getMainAttributes().getValue("OpenIDE-Module-Specification-Version");
+                    doUpdate = specGreaterThan(newspec, oldspec);
+                }
+                if (doUpdate) {
+                    updated.put(cnb, m);
+                    updatedCNBs.add(cnb);
+                }
+            }
+            SortedMap<String,SortedSet<String>> updateProblems = findInconsistencies(new HashSet<Manifest>(updated.values()), loader);
+            checkForProblems(updateProblems, "Inconsistency(ies) in " + updates + " relative to " + oldUpdates);
+            log(oldUpdates + " after updating " + updatedCNBs + " from " + updates + " remains consistent");
         }
     }
 
     @SuppressWarnings("unchecked")
-    private static SortedMap<String,SortedSet<String>> findInconsistencies(Set<Manifest> manifests, ClassLoader loader) throws Exception {
-        return (SortedMap) loader.loadClass("org.netbeans.ConsistencyVerifier").
-                getMethod("findInconsistencies", Set.class).invoke(null, manifests);
+    private SortedMap<String,SortedSet<String>> findInconsistencies(Set<Manifest> manifests, ClassLoader loader) throws BuildException {
+        try {
+            return (SortedMap) loader.loadClass("org.netbeans.ConsistencyVerifier").
+                    getMethod("findInconsistencies", Set.class).invoke(null, manifests);
+        } catch (Exception x) {
+            throw new BuildException(x, getLocation());
+        }
     }
 
     private Set<Manifest> loadManifests(URI u) throws BuildException {
