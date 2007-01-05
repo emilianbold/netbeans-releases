@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.SwingUtilities;
+import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
@@ -63,6 +64,7 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
@@ -180,14 +182,14 @@ public class DataEditorSupportTest extends NbTestCase {
 
         CloneableEditor ed = (CloneableEditor)support().getRef ().getAnyComponent ();
         
-        javax.swing.JEditorPane[] panes = support().getOpenedPanes ();
+        JEditorPane[] panes = getPanes();
         assertNotNull (panes);
         assertEquals ("One is there", 1, panes.length);
         
         NbMarshalledObject obj = new NbMarshalledObject (ed);
         ed.close ();
         
-        panes = support().getOpenedPanes ();
+        panes = getPanes();
         assertNull ("No panes anymore", panes);
 
         DataObject oldObj = DataObject.find (fileObject);
@@ -203,9 +205,17 @@ public class DataEditorSupportTest extends NbTestCase {
             fail ("Object should not be the same, new one shall be created after marking the old invalid");
         }
         
-        panes = support().getOpenedPanes ();
+        panes = getPanes ();
         assertNotNull ("One again", panes);
         assertEquals ("One is there again", 1, panes.length);
+    }
+
+    private JEditorPane[] getPanes() throws Exception {
+        return Mutex.EVENT.readAccess(new Mutex.ExceptionAction<JEditorPane[]>() {
+            public JEditorPane[] run() throws Exception {
+                return support().getOpenedPanes ();
+            }
+        });
     }
     
     public void testEnvOutputStreamTakesLock() throws Exception {

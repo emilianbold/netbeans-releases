@@ -31,6 +31,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.util.lookup.*;
+import org.openide.util.Mutex;
 
 /** Modified editor shall not be closed when its file is externally removed.
  *
@@ -75,7 +76,7 @@ public class ExternalDeleteOfModifiedFileTest extends NbTestCase {
         edit.open();
         waitEQ();
 
-        JEditorPane[] arr = edit.getOpenedPanes();
+        JEditorPane[] arr = getPanes();
         assertNotNull("There is one opened pane", arr);
         
         java.awt.Component c = arr[0];
@@ -100,7 +101,7 @@ public class ExternalDeleteOfModifiedFileTest extends NbTestCase {
         String txt = doc.getText(0, doc.getLength());
         assertEquals("The right text is there", txt, "Ahoj");
         
-        arr = edit.getOpenedPanes();
+        arr = getPanes();
         assertNotNull("Panes are still open", arr);
         assertTrue("Document is remains modified", edit.isModified());
         
@@ -111,10 +112,17 @@ public class ExternalDeleteOfModifiedFileTest extends NbTestCase {
         ce.close();
         waitEQ();
         
-        arr = edit.getOpenedPanes();
+        arr = getPanes();
         assertNull("Now everything is closed", arr);
     }
 
+    private JEditorPane[] getPanes() {
+        return Mutex.EVENT.readAccess(new Mutex.Action<JEditorPane[]>() {
+            public JEditorPane[] run() {
+                return edit.getOpenedPanes();
+            }
+        });
+    }
     
     private void waitEQ() throws InterruptedException, java.lang.reflect.InvocationTargetException {
         javax.swing.SwingUtilities.invokeAndWait(new Runnable() { 
