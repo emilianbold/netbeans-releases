@@ -43,6 +43,8 @@ public class Language {
 
     
     public static final String ACTION = "ACTION";
+    public static final String ANALYZE = "ANALYZE";
+    public static final String BRACE = "BRACE";
     public static final String COLOR = "COLOR";
     public static final String COMPLETE = "COMPLETE";
     public static final String COMPLETION = "COMPLETION";
@@ -53,11 +55,11 @@ public class Language {
     public static final String MARK = "MARK";
     public static final String NAVIGATOR = "NAVIGATOR";
     public static final String PARSE = "PARSE";
-    public static final String TOKEN = "TOKEN";
     public static final String PROPERTIES = "PROPERTIES";
     public static final String REFORMAT = "REFORMAT";
     public static final String SKIP = "SKIP";
     public static final String STORE = "STORE";
+    public static final String TOKEN = "TOKEN";
     public static final String TOOLTIP = "TOOLTIP";
     
     
@@ -248,6 +250,8 @@ public class Language {
         importColorings (l);
         // import other features
         importFeature (ACTION, l);
+        importFeature (ANALYZE, l);
+        importFeature (BRACE, l);
         importFeature (COLOR, l);
         //importFeature (COMPLETE, l);
         importFeature (COMPLETION, l);

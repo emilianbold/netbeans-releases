@@ -77,6 +77,8 @@ public class NBSLanguage {
                     Parser.DEFAULT_STATE,
                     Pattern.create (
                         "'ACTION' |" +
+                        "'ANALYZE' |" +
+                        "'BRACE' |" +
                         "'COLOR' |" +
                         "'COMPLETE' |" +
                         "'COMPLETION' |" +

@@ -327,6 +327,45 @@ public class NBSLanguageReader {
                     name, performer, enabled
                 });
         } else
+        if (Language.ANALYZE.equals (featureName)) {
+            if (identifier == null)
+                throw new ParseException ("Syntax error.");
+            if (feature == null)
+                throw new ParseException ("Syntax error.");
+            if (!(feature instanceof Evaluator))
+                throw new ParseException ("Syntax error.");
+            language.addFeature (featureName, identifier, feature);
+        } else
+        if (Language.BRACE.equals (featureName)) {
+            if (identifier != null)
+                throw new ParseException ("Syntax error.");
+            if (feature instanceof Evaluator.Method) {
+                if (language.getProperty (language.getMimeType (), featureName) != null)
+                    throw new ParseException ("Syntax error.");
+                language.addProperty (featureName, feature);
+            } else
+            if (feature instanceof Evaluator.Expression) {
+                Object ov = language.getProperty (language.getMimeType (), featureName);
+                if (ov != null && !(ov instanceof Object[]))
+                    throw new ParseException ("Syntax error.");
+                Object[] ss = (Object[]) ov;
+                if (ss == null) {
+                    ss = new Object [] {new HashMap (), new HashMap ()};
+                    language.addProperty (featureName, ss);
+                }
+                String s = (String) ((Evaluator.Expression) feature).evaluate ();
+                int i = s.indexOf (':');
+                if (i < 1 || i == s.length() - 1) {
+                    throw new ParseException ("Syntax error.");
+                } else {
+                    String leftBrace = s.substring (0, i);
+                    String rightBrace = s.substring (i + 1);
+                    ((Map) ss [0]).put (leftBrace, rightBrace);
+                    ((Map) ss [1]).put (rightBrace, leftBrace);
+                }
+            } else
+                throw new ParseException ("Syntax error.");
+        } else
         if (Language.COLOR.equals (featureName)) {
             if (identifier == null)
                 throw new ParseException ("Syntax error.");
