@@ -25,6 +25,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.awt.HtmlBrowser;
@@ -40,6 +41,7 @@ import org.openide.util.Utilities;
 public class SystemDefaultBrowser extends ExtWebBrowser {
 
     private static final long serialVersionUID = -7317179197254112564L;
+    private static final Logger logger = Logger.getLogger(SystemDefaultBrowser.class.getName());
     
     private interface BrowseInvoker {
         void browse(URI uri) throws IOException;
@@ -49,20 +51,20 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
         try {
           if (Boolean.getBoolean("java.net.useSystemProxies") && Utilities.isUnix()) {
               // remove this check if JDK's bug 6496491 is fixed or if we can assume ORBit >= 2.14.2 and gnome-vfs >= 2.16.1
-              Logger.getLogger(SystemDefaultBrowser.class.getName()).log(Level.FINE, "Ignoring java.awt.Desktop.browse support to avoid hang from #89540");
+              logger.log(Level.FINE, "Ignoring java.awt.Desktop.browse support to avoid hang from #89540");
           }
           else {
             Class desktop = Class.forName("java.awt.Desktop"); // NOI18N
             Method isDesktopSupported = desktop.getMethod("isDesktopSupported", null); // NOI18N
             Boolean b = (Boolean) isDesktopSupported.invoke(null, null);
-            Logger.getLogger(SystemDefaultBrowser.class.getName()).log(Level.FINE, "java.awt.Desktop found, isDesktopSupported returned "+b);
+            logger.log(Level.FINE, "java.awt.Desktop found, isDesktopSupported returned "+b);
             if (b.booleanValue()) {
                 final Object desktopInstance = desktop.getMethod("getDesktop", null).invoke(null, null); // NOI18N
                 Class desktopAction = Class.forName("java.awt.Desktop$Action"); // NOI18N
                 Method isSupported = desktop.getMethod("isSupported", new Class[] {desktopAction}); // NOI18N
                 Object browseConst = desktopAction.getField("BROWSE").get(null); // NOI18N
                 b = (Boolean) isSupported.invoke(desktopInstance, new Object[] {browseConst});
-                Logger.getLogger(SystemDefaultBrowser.class.getName()).log(Level.FINE, "java.awt.Desktop found, isSupported(Action.BROWSE) returned "+b);
+                logger.log(Level.FINE, "java.awt.Desktop found, isSupported(Action.BROWSE) returned "+b);
                 if (b.booleanValue()) {
                     final Method browse = desktop.getMethod("browse", new Class[] {URI.class}); // NOI18N
                     JDK_6_DESKTOP_BROWSE = new BrowseInvoker() {
@@ -76,15 +78,15 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
                             }
                         }
                     };
-                    Logger.getLogger(SystemDefaultBrowser.class.getName()).log(Level.FINE, "java.awt.Desktop.browse support");
+                    logger.log(Level.FINE, "java.awt.Desktop.browse support");
                 }
             }
           }
         } catch (ClassNotFoundException e) {
             // JDK 5, ignore
-            Logger.getLogger(SystemDefaultBrowser.class.getName()).log(Level.FINE, "java.awt.Desktop class not found, disabling JDK 6 browse functionality");
+            logger.log(Level.FINE, "java.awt.Desktop class not found, disabling JDK 6 browse functionality");
         } catch (Exception e) {
-            Logger.getLogger(SystemDefaultBrowser.class.getName()).log(Level.WARNING, null, e);
+            logger.log(Level.WARNING, null, e);
         }
     }
     
@@ -170,19 +172,59 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
         public Jdk6BrowserImpl() {
             assert JDK_6_DESKTOP_BROWSE != null;
         }
-        
         public void setURL(URL url) {
             URL extURL = URLUtil.createExternalURL(url, /* to be safe */false);
             try {
+                extURL = getFullyRFC2396CompliantURL(extURL);
 		URI uri = extURL.toURI();
-                Logger.getLogger(SystemDefaultBrowser.class.getName()).fine("Calling java.awt.Desktop.browse("+uri+")");
+                logger.fine("Calling java.awt.Desktop.browse("+uri+")");
                 JDK_6_DESKTOP_BROWSE.browse(uri);
             } catch (URISyntaxException e) {
-                assert false : e;
+                logger.severe("The URL:\n" + extURL //NOI18N
+                                + "\nis not fully RFC 2396 compliant and cannot " //NOI18N
+                                + "be used with Desktop.browse()."); //NOI18N
             } catch (IOException e) {
                 // Report in GUI?
-                Logger.getLogger(SystemDefaultBrowser.class.getName()).log(Level.WARNING, null, e);
+                logger.log(Level.WARNING, null, e);
             }
+        }
+        
+        /**
+         * We used to allow URLs that do not fully conform the spec
+         * (specifically those containing reserved characters),
+         * the JVM 6's Desktop.browse() method wouldn't work with them.
+         * This method addresses numerous compatibility issues by
+         * attemting to convert those to "kosher" URLs
+         */
+        private URL getFullyRFC2396CompliantURL(URL url){
+            String urlStr = url.toString();
+            int ind = urlStr.indexOf('#');
+            
+            if (ind > -1){
+                String urlWithoutRef = urlStr.substring(0, ind);
+                String anchorOrg = url.getRef();
+                try {
+                    String anchorEscaped  = URLEncoder.encode(anchorOrg, "UTF8"); //NOI18N
+                    
+                    // browsers seems to like %20 more...
+                    anchorEscaped = anchorEscaped.replaceAll("\\+", "%20"); // NOI18N
+                    
+                    if (!anchorOrg.equals(anchorEscaped)){
+                        URL escapedURL = new URL(urlWithoutRef + '#' + anchorEscaped);
+                        
+                        logger.warning("The URL:\n" + urlStr //NOI18N
+                                + "\nis not fully RFC 2396 compliant and cannot " //NOI18N
+                                + "be used with Desktop.browse(). Instead using URL:" //NOI18N
+                                + escapedURL);
+                        
+                        return escapedURL;
+                    }
+                } catch (IOException e){
+                    logger.log(Level.SEVERE, e.getMessage(), e);
+                }
+            }
+            
+            return url;
         }
         
     }
