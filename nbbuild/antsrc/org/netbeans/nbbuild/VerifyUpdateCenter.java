@@ -72,10 +72,16 @@ public final class VerifyUpdateCenter extends Task {
 
     private URI oldUpdates;
     public void setOldUpdates(File f) {
-        oldUpdates = f.toURI();
+        if (f.isFile()) {
+            oldUpdates = f.toURI();
+        } else {
+            log("No such file: " + f, Project.MSG_WARN);
+        }
     }
     public void setOldUpdatesURL(URI u) {
-        oldUpdates = u;
+        if (u.toString().length() > 0) {
+            oldUpdates = u;
+        }
     }
 
     private Path classpath = new Path(getProject());
@@ -90,44 +96,31 @@ public final class VerifyUpdateCenter extends Task {
         }
         ClassLoader loader = new AntClassLoader(getProject(), classpath);
         try {
-            Set<Manifest> manifests;
-            try {
-                manifests = loadManifests(updates);
-            } catch (Exception x) {
-                throw new BuildException("Could not load " + updates, x, getLocation());
-            }
-            @SuppressWarnings("unchecked")
-            SortedMap<String,SortedSet<String>> problems = (SortedMap) loader.loadClass("org.netbeans.ConsistencyVerifier").
-                    getMethod("findInconsistencies", Set.class).invoke(null, manifests);
-            checkForProblems(problems, "Inconsistency(ies) in " + updates);
-            if (oldUpdates != null && oldUpdates.toString().length() > 0) {
-                Map<String,Manifest> updates = new HashMap<String,Manifest>();
-                Set<Manifest> oldManifests;
-                try {
-                    oldManifests = loadManifests(oldUpdates);
-                } catch (Exception x) {
-                    log("Could not load " + oldUpdates + ": " + x, Project.MSG_WARN);
-                    return;
+            Set<Manifest> manifests = loadManifests(updates);
+            checkForProblems(findInconsistencies(manifests, loader), "Inconsistency(ies) in " + updates);
+            if (oldUpdates != null) {
+                Map<String,Manifest> updated = new HashMap<String,Manifest>();
+                for (Manifest m : loadManifests(oldUpdates)) {
+                    updated.put(findCNB(m), m);
                 }
-                for (Manifest m : oldManifests) {
-                    updates.put(findCNB(m), m);
+                if (!findInconsistencies(new HashSet<Manifest>(updated.values()), loader).isEmpty()) {
+                    log(oldUpdates + " is already inconsistent, skipping update check", Project.MSG_WARN);
+                    return;
                 }
                 for (Manifest m : manifests) {
                     String cnb = findCNB(m);
                     boolean doUpdate = true;
-                    Manifest old = updates.get(cnb);
+                    Manifest old = updated.get(cnb);
                     if (old != null) {
                         String oldspec = old.getMainAttributes().getValue("OpenIDE-Module-Specification-Version");
                         String newspec = m.getMainAttributes().getValue("OpenIDE-Module-Specification-Version");
                         doUpdate = specGreaterThan(newspec, oldspec);
                     }
                     if (doUpdate) {
-                        updates.put(cnb, m);
+                        updated.put(cnb, m);
                     }
                 }
-                @SuppressWarnings("unchecked")
-                SortedMap<String,SortedSet<String>> updateProblems = (SortedMap) loader.loadClass("org.netbeans.ConsistencyVerifier").
-                        getMethod("findInconsistencies", Set.class).invoke(null, new HashSet<Manifest>(updates.values()));
+                SortedMap<String,SortedSet<String>> updateProblems = findInconsistencies(new HashSet<Manifest>(updated.values()), loader);
                 checkForProblems(updateProblems, "Inconsistency(ies) in " + updates + " relative to " + oldUpdates);
             }
         } catch (BuildException x) {
@@ -137,32 +130,42 @@ public final class VerifyUpdateCenter extends Task {
         }
     }
 
-    private Set<Manifest> loadManifests(URI u) throws Exception {
-        Document doc = XMLUtil.parse(new InputSource(u.toString()), false, false, null, new EntityResolver() {
-            public InputSource resolveEntity(String pub, String sys) throws SAXException, IOException {
-                if (pub.contains("DTD Autoupdate Catalog")) {
-                    return new InputSource(new StringReader(""));
-                } else {
-                    return null;
-                }
-            }
-        });
-        Set<Manifest> manifests = new HashSet<Manifest>();
-        NodeList nl = doc.getElementsByTagName("manifest");
-        for (int i = 0; i < nl.getLength(); i++) {
-            Element m = (Element) nl.item(i);
-            Manifest mani = new Manifest();
-            NamedNodeMap map = m.getAttributes();
-            for (int j = 0; j < map.getLength(); j++) {
-                Attr a = (Attr) map.item(j);
-                mani.getMainAttributes().putValue(a.getName(), a.getValue());
-            }
-            manifests.add(mani);
-        }
-        return manifests;
+    @SuppressWarnings("unchecked")
+    private static SortedMap<String,SortedSet<String>> findInconsistencies(Set<Manifest> manifests, ClassLoader loader) throws Exception {
+        return (SortedMap) loader.loadClass("org.netbeans.ConsistencyVerifier").
+                getMethod("findInconsistencies", Set.class).invoke(null, manifests);
     }
 
-    private String findCNB(Manifest m) {
+    private Set<Manifest> loadManifests(URI u) throws BuildException {
+        try {
+            Document doc = XMLUtil.parse(new InputSource(u.toString()), false, false, null, new EntityResolver() {
+                public InputSource resolveEntity(String pub, String sys) throws SAXException, IOException {
+                    if (pub.contains("DTD Autoupdate Catalog")) {
+                        return new InputSource(new StringReader(""));
+                    } else {
+                        return null;
+                    }
+                }
+            });
+            Set<Manifest> manifests = new HashSet<Manifest>();
+            NodeList nl = doc.getElementsByTagName("manifest");
+            for (int i = 0; i < nl.getLength(); i++) {
+                Element m = (Element) nl.item(i);
+                Manifest mani = new Manifest();
+                NamedNodeMap map = m.getAttributes();
+                for (int j = 0; j < map.getLength(); j++) {
+                    Attr a = (Attr) map.item(j);
+                    mani.getMainAttributes().putValue(a.getName(), a.getValue());
+                }
+                manifests.add(mani);
+            }
+            return manifests;
+        } catch (Exception x) {
+            throw new BuildException("Could not load " + u, x, getLocation());
+        }
+    }
+
+    private static String findCNB(Manifest m) {
         String name = m.getMainAttributes().getValue("OpenIDE-Module");
         if (name == null) {
             throw new IllegalArgumentException();
@@ -170,7 +173,7 @@ public final class VerifyUpdateCenter extends Task {
         return name.replaceFirst("/\\d+$", "");
     }
 
-    private boolean specGreaterThan(String newspec, String oldspec) {
+    private static boolean specGreaterThan(String newspec, String oldspec) {
         if (newspec == null) {
             return false;
         }
