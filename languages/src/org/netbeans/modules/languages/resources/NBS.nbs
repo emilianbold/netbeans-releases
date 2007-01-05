@@ -19,7 +19,6 @@
 
 TOKEN:keyword:( 
     "ACTION" |
-    "ANALYZE" |
     "BRACE" |
     "COLOR" | 
     "COMPLETE" |  

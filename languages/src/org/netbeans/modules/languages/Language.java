@@ -43,7 +43,6 @@ public class Language {
 
     
     public static final String ACTION = "ACTION";
-    public static final String ANALYZE = "ANALYZE";
     public static final String BRACE = "BRACE";
     public static final String COLOR = "COLOR";
     public static final String COMPLETE = "COMPLETE";
@@ -250,7 +249,6 @@ public class Language {
         importColorings (l);
         // import other features
         importFeature (ACTION, l);
-        importFeature (ANALYZE, l);
         importFeature (BRACE, l);
         importFeature (COLOR, l);
         //importFeature (COMPLETE, l);

@@ -327,15 +327,6 @@ public class NBSLanguageReader {
                     name, performer, enabled
                 });
         } else
-        if (Language.ANALYZE.equals (featureName)) {
-            if (identifier == null)
-                throw new ParseException ("Syntax error.");
-            if (feature == null)
-                throw new ParseException ("Syntax error.");
-            if (!(feature instanceof Evaluator))
-                throw new ParseException ("Syntax error.");
-            language.addFeature (featureName, identifier, feature);
-        } else
         if (Language.BRACE.equals (featureName)) {
             if (identifier != null)
                 throw new ParseException ("Syntax error.");
