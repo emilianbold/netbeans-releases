@@ -41,7 +41,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     <target name="amconfig-gen" depends="xjc-init">  
         <xjc schema="${amconfig_xsd_1_0}"
             package="org.netbeans.modules.identity.profile.api.configurator.impl.file.jaxb"
-            target="src">
+            destdir="src">
             <depends file="${amconfig_xsd_1_0}"/>
             <produces dir="${amconfig_src_1_0}" includes="*.java"/>
         </xjc>

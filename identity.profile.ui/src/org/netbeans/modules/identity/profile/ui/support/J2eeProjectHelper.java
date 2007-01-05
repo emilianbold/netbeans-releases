@@ -38,8 +38,6 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.Annotation;
-import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.identity.profile.api.bridgeapi.SunDDBridge;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
@@ -52,7 +50,6 @@ import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
 import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
@@ -151,9 +148,6 @@ public class J2eeProjectHelper {
             return false;
         
         if (isServer()) {
-            if (getJavaClass() == null)
-                return false;
-            
             if (getPortComponentName() != null &&
                     getServiceDescriptionName() != null)
                 return true;
@@ -165,8 +159,8 @@ public class J2eeProjectHelper {
     
     public boolean isServer() {
         // this is a server for 1.4 and 1.5 projects
-        if (getJavaClass() != null) return true;
-        
+        if (getJavaSource() != null) return true;
+     
         //For 1.5 project client this should be not null.
         if (getClient() != null) return false;
         
@@ -346,7 +340,7 @@ public class J2eeProjectHelper {
             Version version = getVersion();
             
             if (version == Version.VERSION_1_4) {
-                String javaClassName = getJavaClass().getName();
+                String javaClassName = getJavaSourceName();
                 
                 switch (getProjectType()) {
                     case WEB:
@@ -992,10 +986,9 @@ public class J2eeProjectHelper {
     }
     
     private FileObject getFileObject() {
-        JavaClass clazz = (JavaClass)node.getLookup().lookup(JavaClass.class);
-        
-        if (clazz != null)
-            return JavaModel.getFileObject(clazz.getResource());
+        FileObject source = getJavaSource();
+       
+        if (source != null) return source;
         
         FileObject fo = (FileObject)node.getLookup().lookup(FileObject.class);
         
@@ -1006,8 +999,18 @@ public class J2eeProjectHelper {
         return dobj.getPrimaryFile();
     }
     
-    private JavaClass getJavaClass() {
-        return (JavaClass) node.getLookup().lookup(JavaClass.class);
+     private FileObject getJavaSource() {
+        String implBean = getService().getImplementationClass();
+        System.out.println("javaSource = " + implBean);
+        if(implBean != null) {
+            FileObject srcRoot = (FileObject)node.getLookup().lookup(FileObject.class);
+            return srcRoot.getFileObject(implBean.replace('.','/')+".java");
+        }
+        return null;
+    }
+
+    private String getJavaSourceName() {
+        return getService().getImplementationClass();
     }
     
     private Client getClient() {
@@ -1056,30 +1059,6 @@ public class J2eeProjectHelper {
                 return (org.netbeans.modules.j2ee.dd.api.webservices.Webservices)
                 getProvider().getJ2eeModule().getDeploymentDescriptor(
                         J2eeModule.EJBSERVICES_XML);
-        }
-        return null;
-    }
-    
-    private String getServiceNameFromClass() {
-        JavaClass clazz = getJavaClass();
-        if (clazz == null)
-            return null;
-        Annotation annt = AnnotationUtil.getAnnotationByTypeName(clazz,
-                "javax.jws.WebService");        //NOI18N
-        if (annt != null) {
-            return AnnotationUtil.getStringMemberValue(annt, "serviceName");    //NOI18N
-        }
-        return null;
-    }
-    
-    private String getPortNameFromClass() {
-        JavaClass clazz = getJavaClass();
-        if (clazz == null)
-            return null;
-        Annotation annt = AnnotationUtil.getAnnotationByTypeName(clazz,
-                "javax.jws.WebService");        //NOI18N
-        if (annt != null) {
-            return AnnotationUtil.getStringMemberValue(annt, "portName"); //NOI18N
         }
         return null;
     }
