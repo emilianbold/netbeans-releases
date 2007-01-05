@@ -178,7 +178,7 @@ public class WtkPanel extends javax.swing.JPanel {
             name = item.getName();
         else if (app != null)
             name = new File(app).getName();
-        object.putProperty(ProjectPanel.PROJECT_NAME, "Imported Project" + (name != null ? " - " + name : "")); // NOI18N
+        object.putProperty(ProjectPanel.PROJECT_NAME, "Imported Project" + (name != null ? " - " + name+'1' : "1")); // NOI18N
         
         String detectedConfiguration = null;
         String detectedProfile = null;

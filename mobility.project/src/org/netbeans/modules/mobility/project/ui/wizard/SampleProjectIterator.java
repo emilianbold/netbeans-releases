@@ -102,7 +102,7 @@ public class SampleProjectIterator implements TemplateWizard.Iterator {
             if (fo != null) {
                 configuration = (String) fo.getAttribute("MicroEdition-Configuration"); // NOI18N
                 profile = (String) fo.getAttribute("MicroEdition-Profile"); // NOI18N
-                templateWizard.putProperty(ProjectPanel.PROJECT_NAME, fo.getName());
+                templateWizard.putProperty(ProjectPanel.PROJECT_NAME, fo.getName()+'1');
             }
         }
         templateWizard.putProperty(PlatformSelectionPanel.REQUIRED_CONFIGURATION, configuration);

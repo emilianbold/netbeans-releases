@@ -117,16 +117,11 @@ public class ProjectPanel extends javax.swing.JPanel {
         tHome.setText(home != null ? home.getAbsolutePath() : System.getProperty("user.home", "")); // NOI18N
         
         if (testIfProjectNameExists()) {
-            final String name = getProjectName();
-            boolean useUnderscore = name.length() <= 0;
-            if (! useUnderscore) {
-                final char ch = name.charAt(name.length() - 1);
-                if (ch >= '0'  &&  ch <= '9')
-                    useUnderscore = true;
-            }
-            int i = 1;
+            String name = getProjectName();
+            if (name.endsWith("1")) name = name.substring(0, name.length() - 1); //NOI18N
+            int i = 2;
             for (;;) {
-                tName.setText(name + (useUnderscore ? "_" : "") + i); // NOI18N
+                tName.setText(name + i); // NOI18N
                 if (! testIfProjectNameExists())
                     break;
                 i ++;

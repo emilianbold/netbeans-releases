@@ -95,14 +95,6 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/j2me-sources.html"/>
                 </file>
 
-                <file name="j2me-suite">
-                    <attr name="template" boolvalue="true"/>
-                    <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.imports.SuiteIterator"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.wizard.imports.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/mobile-project.png"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/j2me-suite.html"/>
-                </file>
-
                 <file name="j2me-wtk">
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.imports.WtkIterator"/>

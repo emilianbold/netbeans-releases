@@ -105,7 +105,7 @@ public class SourcesPanel extends javax.swing.JPanel implements DocumentListener
         object.putProperty(SOURCES_LOCATION, location);
         object.putProperty(JAD_LOCATION, tJad.getText());
         final String name = new File(location).getName();
-        object.putProperty(ProjectPanel.PROJECT_NAME, "Imported Project" + (name != null ? " - " + name : "")); // NOI18N
+        object.putProperty(ProjectPanel.PROJECT_NAME, "Imported Project" + (name != null ? " - " + name+'1' : "1")); // NOI18N
         
         String detectedConfiguration = null;
         String detectedProfile = null;
