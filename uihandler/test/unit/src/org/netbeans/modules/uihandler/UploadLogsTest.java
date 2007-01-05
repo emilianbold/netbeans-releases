@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.junit.NbTestCase;
@@ -43,85 +44,102 @@ import org.w3c.dom.Document;
  * @author Jaroslav Tulach
  */
 public class UploadLogsTest extends NbTestCase {
+    private Logger LOG;
+    
+
     public UploadLogsTest(String s) {
         super(s);
     }
     
     protected void setUp() throws Exception {
+        LOG = Logger.getLogger("test." + getName());
+        
         clearWorkDir();
     }
     
+    protected Level logLevel() {
+        return Level.INFO;
+    }
+    
     public void testSendsCorrectlyEncoded() throws Exception {
-        List<LogRecord> recs = new ArrayList<LogRecord>();
-        recs.add(new LogRecord(Level.WARNING, "MSG_MISTAKE"));
-        MemoryURL.registerURL("memory://upload", "Ok");
-        URL redir = Installer.uploadLogs(new URL("memory://upload"), "myId", Collections.<String,String>emptyMap(), recs);
         
-        final byte[] content = MemoryURL.getOutputForURL("memory://upload");
-        
-        int head = new String(content, "utf-8").indexOf("\n\n");
-        if (head == -1) {
-            fail("There should be an empty line:\n" + content);
-        }
+        for (int times = 0; times < 10; times++) {
+            LOG.log(Level.INFO, "Running for {0} times", times);
+            List<LogRecord> recs = new ArrayList<LogRecord>();
+            recs.add(new LogRecord(Level.WARNING, "MSG_MISTAKE"));
+            MemoryURL.registerURL("memory://upload", "Ok");
+            URL redir = Installer.uploadLogs(new URL("memory://upload"), "myId", Collections.<String,String>emptyMap(), recs);
 
-        class RFImpl implements MultiPartHandler.RequestFacade, MultiPartHandler.InputFacade {
-            private ByteArrayInputStream is = new ByteArrayInputStream(content);
-            
-            public int getContentLength() {
-                return content.length;
+            final byte[] content = MemoryURL.getOutputForURL("memory://upload");
+
+            int head = new String(content, "utf-8").indexOf("\n\n");
+            if (head == -1) {
+                fail("There should be an empty line:\n" + content);
             }
 
-            public String getContentType() {
-                return MemoryURL.getRequestParameter("memory://upload", "Content-Type");
-            }
+            class RFImpl implements MultiPartHandler.RequestFacade, MultiPartHandler.InputFacade {
+                private ByteArrayInputStream is = new ByteArrayInputStream(content);
 
-            public MultiPartHandler.InputFacade getInput() throws IOException {
-                return this;
-            }
-
-            public int readLine(byte[] arr, int off, int len) throws IOException {
-                int cnt = 0;
-                for (; cnt < len; ) {
-                    int ch = is.read();
-                    if (ch == -1) {
-                        return ch;
-                    }
-                    arr[off + cnt] = (byte)ch;
-                    cnt++;
-                    if (ch == '\n') {
-                        break;
-                    }
+                public int getContentLength() {
+                    return content.length;
                 }
-                return cnt;
+
+                public String getContentType() {
+                    return MemoryURL.getRequestParameter("memory://upload", "Content-Type");
+                }
+
+                public MultiPartHandler.InputFacade getInput() throws IOException {
+                    return this;
+                }
+
+                public int readLine(byte[] arr, int off, int len) throws IOException {
+                    int cnt = 0;
+                    for (; cnt < len; ) {
+                        int ch = is.read();
+                        if (ch == -1) {
+                            return ch;
+                        }
+                        arr[off + cnt] = (byte)ch;
+                        cnt++;
+                        if (ch == '\n') {
+                            break;
+                        }
+                    }
+                    return cnt;
+                }
+
+                public InputStream getInputStream() {
+                    return is;
+                }
+            }
+            RFImpl request = new RFImpl();
+
+            File dir = new File(getWorkDir(), "ui");
+            dir.mkdirs();
+
+            MultiPartHandler handler = new MultiPartHandler(request, dir.getPath());
+            handler.parseMultipartUpload();
+
+            File[] files = dir.listFiles();
+            assertEquals(times + "th file created", times + 1, files.length);
+            if (!files[times].getName().startsWith("myId")) {
+                fail("Expected was 'myId':" + files[times].getName());
             }
 
-            public InputStream getInputStream() {
-                return is;
-            }
+
+            assertEquals("Handler keeps name of the right file", files[times], handler.getFile("logs"));
+
+            DataInputStream is = new DataInputStream(new FileInputStream(files[0]));
+            LogRecord rec = LogRecords.read(is);
+
+            assertEquals("Same msg", recs.get(0).getMessage(), rec.getMessage());
+
+
+            DocumentBuilder b = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            Document dom = b.parse(files[0]);
+
+            assertNotNull("Parsed", dom);
         }
-        RFImpl request = new RFImpl();
-        
-        File dir = new File(getWorkDir(), "ui");
-        dir.mkdirs();
-        
-        MultiPartHandler handler = new MultiPartHandler(request, dir.getPath());
-        handler.parseMultipartUpload();
-        
-        File[] files = dir.listFiles();
-        assertEquals("One file created", 1, files.length);
-        assertEquals("Current name is myId", "myId", files[0].getName());
-        
-
-        DataInputStream is = new DataInputStream(new FileInputStream(files[0]));
-        LogRecord rec = LogRecords.read(is);
-        
-        assertEquals("Same msg", recs.get(0).getMessage(), rec.getMessage());
-        
-        
-        DocumentBuilder b = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        Document dom = b.parse(files[0]);
-        
-        assertNotNull("Parsed", dom);
     }
 
 }

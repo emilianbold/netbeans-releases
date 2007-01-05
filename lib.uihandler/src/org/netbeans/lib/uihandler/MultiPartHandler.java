@@ -485,7 +485,7 @@ public class MultiPartHandler {
           }
           file = new File(uploadDir, fileName + "." + i);
       }
-      //fileName = file.getName();
+      fileName = file.getName();
 
       fileOut = new BufferedOutputStream(new FileOutputStream(file));
       int numBytes;
