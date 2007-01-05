@@ -19,12 +19,12 @@
 
 package org.netbeans.modules.xml.multiview;
 
+import java.awt.Toolkit;
 import org.openide.text.CloneableEditor;
 import org.openide.text.NbDocument;
 import org.openide.actions.SaveAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.ProxyLookup;
-
 import javax.swing.*;
 import javax.swing.text.Document;
 import java.awt.event.KeyEvent;
@@ -95,7 +95,7 @@ public class XmlMultiViewElement extends AbstractMultiViewElement implements jav
             xmlEditor = dObj.getEditorSupport().createCloneableEditor();
             final ActionMap map = xmlEditor.getActionMap();
             SaveAction act = (SaveAction) SystemAction.get(SaveAction.class);
-            KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK);
+            KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
             xmlEditor.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(stroke, "save"); //NOI18N
             map.put("save", act); //NOI18N
         }
