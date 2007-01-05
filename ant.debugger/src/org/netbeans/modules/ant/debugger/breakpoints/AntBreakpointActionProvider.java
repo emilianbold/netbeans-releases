@@ -21,18 +21,22 @@ package org.netbeans.modules.ant.debugger.breakpoints;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.Set;
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Caret;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
+import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
@@ -65,9 +69,6 @@ public class AntBreakpointActionProvider extends ActionsProviderSupport
     public void doAction (Object action) {
         Line line = getCurrentLine ();
         if (line == null) return ;
-        if (!isAntFile((FileObject) line.getLookup ().lookup(FileObject.class))) {
-            return ;
-        }
         Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager ().
             getBreakpoints ();
         int i, k = breakpoints.length;
@@ -101,15 +102,28 @@ public class AntBreakpointActionProvider extends ActionsProviderSupport
         if (nodes == null) return null;
         if (nodes.length != 1) return null;
         Node n = nodes [0];
+        //System.out.println("getCurrentLine()...");
+        FileObject fo = (FileObject) n.getLookup ().lookup(FileObject.class);
+        if (fo == null) {
+            DataObject dobj = (DataObject) n.getLookup().lookup(DataObject.class);
+            if (dobj != null) {
+                fo = dobj.getPrimaryFile();
+            }
+        }
+        //System.out.println("n = "+n+", FO = "+fo+" => is ANT = "+isAntFile(fo));
+        if (!isAntFile(fo)) {
+            return null;
+        }
         LineCookie lineCookie = (LineCookie) n.getCookie (LineCookie.class);
+        //System.out.println("line cookie = "+lineCookie);
         if (lineCookie == null) return null;
         EditorCookie editorCookie = (EditorCookie) n.getCookie (EditorCookie.class);
         if (editorCookie == null) return null;
-        JEditorPane[] jEditorPane = editorCookie.getOpenedPanes ();
-        if ((jEditorPane == null) || (jEditorPane.length < 1)) return null;
+        JEditorPane jEditorPane = getEditorPane(editorCookie);
+        if (jEditorPane == null) return null;
         StyledDocument document = editorCookie.getDocument ();
         if (document == null) return null;
-        Caret caret = jEditorPane [0].getCaret ();
+        Caret caret = jEditorPane.getCaret ();
         if (caret == null) return null;
         int lineNumber = NbDocument.findLineNumber (
             document,
@@ -124,6 +138,34 @@ public class AntBreakpointActionProvider extends ActionsProviderSupport
         }
     }
     
+    private static JEditorPane getEditorPane_(EditorCookie editorCookie) {
+        JEditorPane[] op = editorCookie.getOpenedPanes ();
+        if ((op == null) || (op.length < 1)) return null;
+        return op [0];
+    }
+
+    private static JEditorPane getEditorPane(final EditorCookie editorCookie) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            return getEditorPane_(editorCookie);
+        } else {
+            final JEditorPane[] ce = new JEditorPane[1];
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        ce[0] = getEditorPane_(editorCookie);
+                    }
+                });
+            } catch (InvocationTargetException ex) {
+                ErrorManager.getDefault().notify(ex.getTargetException());
+            } catch (InterruptedException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+            return ce[0];
+        }
+    }
+    
+    
+    
     private static boolean isAntFile(FileObject fo) {
         if (fo == null) {
             return false;
@@ -134,13 +176,7 @@ public class AntBreakpointActionProvider extends ActionsProviderSupport
     
     public void propertyChange(PropertyChangeEvent evt) {
         // We need to push the state there :-(( instead of wait for someone to be interested in...
-        boolean enabled = true;
-        Line line = getCurrentLine ();
-        if (line == null) {
-            enabled = false;
-        } else {
-            enabled = isAntFile((FileObject) line.getLookup ().lookup(FileObject.class));
-        }
+        boolean enabled = getCurrentLine() != null;
         setEnabled (ActionsManager.ACTION_TOGGLE_BREAKPOINT, enabled);
     }
     

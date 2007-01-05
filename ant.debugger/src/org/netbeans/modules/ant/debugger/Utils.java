@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -39,6 +40,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.apache.tools.ant.module.api.support.TargetLister;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.TaskStructure;
+import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -360,7 +362,7 @@ public class Utils {
         final StyledDocument document
     ) throws IOException, BadLocationException {
         final StringWriter w = new StringWriter (document.getLength ());
-        final EditorKit kit = findKit (editor.getOpenedPanes ());
+        final EditorKit kit = findKit (editor);
         final IOException[] ioe = new IOException [1];
         final BadLocationException[] ble = new BadLocationException [1];
         document.render(new Runnable () {
@@ -395,7 +397,28 @@ public class Utils {
         return in;
     }
     
-    private static EditorKit findKit (JEditorPane[] panes) {
+    private static EditorKit findKit(final EditorCookie editor) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            return findKit_(editor);
+        } else {
+            final EditorKit[] ek = new EditorKit[1];
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        ek[0] = findKit_(editor);
+                    }
+                });
+            } catch (InvocationTargetException ex) {
+                ErrorManager.getDefault().notify(ex.getTargetException());
+            } catch (InterruptedException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+            return ek[0];
+        }
+    }
+    
+    private static EditorKit findKit_(EditorCookie editor) {
+        JEditorPane[] panes = editor.getOpenedPanes();
         EditorKit kit;
         if (panes != null) {
             kit = panes[0].getEditorKit ();
