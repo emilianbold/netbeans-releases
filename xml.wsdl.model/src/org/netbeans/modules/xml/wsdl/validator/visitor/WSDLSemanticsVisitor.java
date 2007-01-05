@@ -202,6 +202,13 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
     public static final String VAL_OPERATION_DOES_NOT_MATCH_OUTPUT_IN_PORT_TYPE = "VAL_OPERATION_DOES_NOT_MATCH_OUTPUT_IN_PORT_TYPE";
     public static final String FIX_OPERATION_DOES_NOT_MATCH_OUTPUT_IN_PORT_TYPE = "FIX_OPERATION_DOES_NOT_MATCH_OUTPUT_IN_PORT_TYPE";
     
+    public static final String VAL_OPERATION_DOES_NOT_MATCH_INPUT_NAME_IN_PORT_TYPE = "VAL_OPERATION_DOES_NOT_MATCH_INPUT_NAME_IN_PORT_TYPE";
+    public static final String FIX_OPERATION_DOES_NOT_MATCH_INPUT_NAME_IN_PORT_TYPE = "FIX_OPERATION_DOES_NOT_MATCH_INPUT_NAME_IN_PORT_TYPE";
+    
+    public static final String VAL_OPERATION_DOES_NOT_MATCH_OUTPUT_NAME_IN_PORT_TYPE = "VAL_OPERATION_DOES_NOT_MATCH_OUTPUT_NAME_IN_PORT_TYPE";
+    public static final String FIX_OPERATION_DOES_NOT_MATCH_OUTPUT_NAME_IN_PORT_TYPE = "FIX_OPERATION_DOES_NOT_MATCH_OUTPUT_NAME_IN_PORT_TYPE";
+    
+    
     public static final String VAL_OPERATION_DOES_NOT_MATCH_FAULTS_IN_PORT_TYPE = "VAL_OPERATION_DOES_NOT_MATCH_FAULTS_IN_PORT_TYPE";
     public static final String FIX_OPERATION_DOES_NOT_MATCH_FAULTS_IN_PORT_TYPE = "FIX_OPERATION_DOES_NOT_MATCH_FAULTS_IN_PORT_TYPE";
     
@@ -789,27 +796,54 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
                         mMsg.getString(FIX_OPERATION_DOES_NOT_EXIST_IN_PORT_TYPE, portType.getName()));
             } else{
                 //check if the signatures match
+                BindingInput bindingInput = bindingOp.getBindingInput();
+                boolean bindingOpHasInput = bindingInput != null;
+                Input portTypeInput = matchingOp.getInput();
+                boolean portTypeOpHasInput = portTypeInput != null;
+                BindingOutput bindingOutput = bindingOp.getBindingOutput();
+                boolean bindingOpHasOutput = bindingOutput != null;
+                Output portTypeOutput = matchingOp.getOutput();
+                boolean portTypeOpHasOutput = portTypeOutput != null;
                 Collection<BindingFault> bindingFaults =  bindingOp.getBindingFaults();
                 Collection<Fault> matchingFaults = matchingOp.getFaults();
                 
-                 if(!inputsMatch(bindingOp, matchingOp)){
+                if(bindingOpHasInput != portTypeOpHasInput){
                     //Input in portType operation does not match input in binding operation
                     getValidateSupport().fireToDo
-                            (Validator.ResultType.WARNING, bindingOp,
-                            mMsg.getString(VAL_OPERATION_DOES_NOT_MATCH_INPUT_IN_PORT_TYPE, operationName, binding.getName(), portTypeName),
+                            (Validator.ResultType.ERROR, bindingOp,
+                            mMsg.getString(VAL_OPERATION_DOES_NOT_MATCH_INPUT_IN_PORT_TYPE, operationName, bindingName, portTypeName),
                             mMsg.getString(FIX_OPERATION_DOES_NOT_MATCH_INPUT_IN_PORT_TYPE, operationName));
+                }else{
+                    if(bindingOpHasInput){
+                        if(!inputNamesMatch(bindingInput, portTypeInput)){
+                            getValidateSupport().fireToDo
+                                    (Validator.ResultType.WARNING, bindingInput,
+                                    mMsg.getString(VAL_OPERATION_DOES_NOT_MATCH_INPUT_NAME_IN_PORT_TYPE, operationName, bindingName, portTypeName),
+                                    mMsg.getString(FIX_OPERATION_DOES_NOT_MATCH_INPUT_NAME_IN_PORT_TYPE, operationName));
+                        }
+                    }
                 }
-                if(!outputsMatch(bindingOp, matchingOp)){
+                
+                if(bindingOpHasOutput != portTypeOpHasOutput){
                     //Output in portType operation does not match output in binding operation
                     getValidateSupport().fireToDo
-                            (Validator.ResultType.WARNING, bindingOp,
-                            mMsg.getString(VAL_OPERATION_DOES_NOT_MATCH_OUTPUT_IN_PORT_TYPE, operationName, binding.getName(), portTypeName),
+                            (Validator.ResultType.ERROR, bindingOp,
+                            mMsg.getString(VAL_OPERATION_DOES_NOT_MATCH_OUTPUT_IN_PORT_TYPE, operationName, bindingName, portTypeName),
                             mMsg.getString(FIX_OPERATION_DOES_NOT_MATCH_OUTPUT_IN_PORT_TYPE, operationName));
+                }else{
+                    if(bindingOpHasOutput){
+                        if(!outputNamesMatch(bindingOutput, portTypeOutput)){
+                            getValidateSupport().fireToDo
+                                    (Validator.ResultType.WARNING, bindingOutput,
+                                    mMsg.getString(VAL_OPERATION_DOES_NOT_MATCH_OUTPUT_NAME_IN_PORT_TYPE, operationName, bindingName, portTypeName),
+                                    mMsg.getString(FIX_OPERATION_DOES_NOT_MATCH_OUTPUT_NAME_IN_PORT_TYPE, operationName));
+                        }
+                    }
                 }
                 if(!faultsMatch(bindingFaults, matchingFaults)){
                     //Faults do not match
                     getValidateSupport().fireToDo
-                            (Validator.ResultType.WARNING, bindingOp,
+                            (Validator.ResultType.ERROR, bindingOp,
                             mMsg.getString(VAL_OPERATION_DOES_NOT_MATCH_FAULTS_IN_PORT_TYPE, operationName, binding.getName(), portTypeName),
                             mMsg.getString(FIX_OPERATION_DOES_NOT_MATCH_FAULTS_IN_PORT_TYPE, operationName));
                 }
@@ -823,36 +857,18 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
         // return true;
     }
     
-     private boolean inputsMatch(BindingOperation bindingOp, Operation portTypeOp){
-        BindingInput bindingInput = bindingOp.getBindingInput();
-        Input portTypeInput = portTypeOp.getInput();
-        boolean bindingOpHasInput = bindingInput != null;
-        boolean portTypeOpHasInput = portTypeInput != null;
-        if(bindingOpHasInput != portTypeOpHasInput){
-            return false;
-        }
-        if(bindingOpHasInput){
-            String bindingInputName = bindingInput.getName();
-            if(bindingInputName != null){
-                return bindingInputName.equals(portTypeInput.getName());
-            }
+    private boolean inputNamesMatch(BindingInput bindingInput, Input portTypeInput){
+        String bindingInputName = bindingInput.getName();
+        if(bindingInputName != null){
+            return bindingInputName.equals(portTypeInput.getName());
         }
         return true;
     }
     
-    private boolean outputsMatch(BindingOperation bindingOp, Operation portTypeOp){
-        BindingOutput bindingOutput = bindingOp.getBindingOutput();
-        Output portTypeOutput = portTypeOp.getOutput();
-        boolean bindingOpHasOutput = bindingOutput != null;
-        boolean portTypeOpHasOutput = portTypeOutput != null;
-        if(bindingOpHasOutput != portTypeOpHasOutput){
-            return false;
-        }
-        if(bindingOpHasOutput){
-            String bindingOutputName = bindingOutput.getName();
-            if(bindingOutputName != null){
-                return bindingOutputName.equals(portTypeOutput.getName());
-            }
+    private boolean outputNamesMatch(BindingOutput bindingOutput, Output portTypeOutput){
+        String bindingOutputName = bindingOutput.getName();
+        if(bindingOutputName != null){
+            return bindingOutputName.equals(portTypeOutput.getName());
         }
         return true;
     }
