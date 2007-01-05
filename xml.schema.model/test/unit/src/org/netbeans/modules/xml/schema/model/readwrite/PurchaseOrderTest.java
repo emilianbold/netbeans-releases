@@ -80,7 +80,7 @@ public class PurchaseOrderTest extends TestCase implements TestSchemaReadWrite {
                 factory.createGlobalReference(stringType, GlobalSimpleType.class,
                 el);
         el.setType(ref);
-        assertEquals("refString", "string", ref.getRefString());
+        assertEquals("refString", "xsd:string", ref.getRefString());
         sequence.addContent(el, 0);
         //create and add street element
         el = factory.createLocalElement();
@@ -176,7 +176,7 @@ public class PurchaseOrderTest extends TestCase implements TestSchemaReadWrite {
         assertEquals("schema's targetNamespace: ", "http://www.example.com/PO1", si.getTargetNamespace());
         
         //verify contents
-        //Util.dumpToFile(model.getBaseDocument(), new File("c:\\temp\\test2.xml"));
+        //Util.dumpToFile(((SchemaModelImpl)model).getBaseDocument(), new File("c:\\temp\\test2.xml"));
         
         si.accept(new SchemaTestVisitor());
         assertTrue(seenRef);

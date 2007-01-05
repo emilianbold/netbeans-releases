@@ -9,9 +9,11 @@
 
 package org.netbeans.modules.xml.schema.model.readwrite;
 
+import java.io.File;
 import junit.framework.TestCase;
 import org.netbeans.modules.xml.schema.model.*;
 import org.netbeans.modules.xml.schema.model.Util;
+import org.netbeans.modules.xml.schema.model.impl.SchemaModelImpl;
 import org.netbeans.modules.xml.schema.model.visitor.FindSchemaComponentFromDOM;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 
@@ -79,7 +81,7 @@ public class LoanApplicationTest extends TestCase implements TestSchemaReadWrite
         SimpleTypeRestriction restriction = Util.createSimpleRestriction(model, lst);
         restriction.setBase(factory.createGlobalReference(
                 Util.getPrimitiveType("decimal"), GlobalSimpleType.class, restriction));
-
+        assertEquals("xs:decimal", restriction.getBase().getRefString());
         
         GlobalSimpleType gst1 = Util.createGlobalSimpleType(model, "LoanType");
         loanType.setType(factory.createGlobalReference(gst1, GlobalSimpleType.class, le));
@@ -121,5 +123,22 @@ public class LoanApplicationTest extends TestCase implements TestSchemaReadWrite
         //Util.dumpToFile(model.getBaseDocument(), new File("C:\\temp\\test.xml"));
         model = Util.dumpAndReloadModel(model);
         checkRead(model.getSchema());
+    }
+    
+    public void testPrimitiveTypePrefix() throws Exception {
+        SchemaModelImpl model = (SchemaModelImpl) Util.loadSchemaModel("resources/Empty_loanApp.xsd");
+        Schema s = model.getSchema();
+        SchemaComponentFactory factory = model.getFactory();
+        
+        GlobalElement ge1 = model.getFactory().createGlobalElement();
+        ge1.setName("auto-loan-application");
+        ge1.setType(factory.createGlobalReference(
+                Util.getPrimitiveType("string"), GlobalSimpleType.class, ge1));
+        model.startTransaction();
+        model.getSchema().addElement(ge1);
+        model.endTransaction();
+        
+        //Util.dumpToFile(model.getBaseDocument(), new File("c:/temp/test.xsd"));
+        assertEquals("xs:string", ge1.getType().getRefString());
     }
 }

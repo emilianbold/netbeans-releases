@@ -16,13 +16,15 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.xml.xdm;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.BadLocationException;
@@ -30,6 +32,7 @@ import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
 import javax.xml.XMLConstants;
+import javax.xml.namespace.QName;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.ElementIdentity;
@@ -357,11 +360,11 @@ public class XDMModel {
                 newParent = (Node)oldParent.clone(true,true,true);
         }
         
-        if (oldNode != null && newNode == null) { // pure remove
+        if (oldNode != null && oldNode.getNodeType() != Node.TEXT_NODE && newNode == null) { // pure remove
             undoPrettyPrint(newParent, oldNode, oldParent);
         }
         updater.update(newParent, oldNode, newNode);
-        if (oldNode == null && newNode != null) { // pure add
+        if (oldNode == null && newNode != null && newNode.getNodeType() != Node.TEXT_NODE ) { // pure add
             doPrettyPrint(newParent, newNode, oldParent);
         }
         
@@ -402,7 +405,7 @@ public class XDMModel {
         }
     }
     
-    private static void consolidateAttributePrefix(List<Node> parentAndAncestors, Element newNode) {
+    private void consolidateAttributePrefix(List<Node> parentAndAncestors, Element newNode) {
         NamedNodeMap nnm = newNode.getAttributes();
         for (int i=0; i<nnm.getLength(); i++) {
             if (! (nnm.item(i) instanceof Attribute))  continue;
@@ -423,7 +426,7 @@ public class XDMModel {
      * Consolidate new node top-leveled namespaces with parent's.
      * Note: this assume #consolidateAttributePrefix has been called
      */
-    private static void consolidateNamespace(Element root, List<Node> parentAndAncestors,
+    private void consolidateNamespace(Element root, List<Node> parentAndAncestors,
             Element newNode, Attribute attr) {
         if (attr.isXmlnsAttribute()) {
             String prefix = attr.getLocalName();
@@ -437,19 +440,21 @@ public class XDMModel {
             String existingPrefix = NodeImpl.lookupPrefix(namespace, parentAndAncestors);
             
             // 1. prefix is free (existingNS == null) and namespace is never declared (existingPrefix == null)
-            // 2. prefix is free but namespace is declared by different prefix
-            // 3. prefix is used and for the same namespace
+            // 2. prefix is used and for the same namespace
+            // 3. namespace is declared by different prefix
             // 4. prefix is used and for different namespace
             
             if (existingNS == null && existingPrefix == null) { // case 1.
                 newNode.removeAttributeNode(attr);
                 root.appendAttribute(attr);
-            } else if (existingNS == null && existingPrefix != null) { // case 2.
-                new NamespaceRefactorVisitor().refactor(newNode, namespace, existingPrefix);
-            } else if (existingNS != null && existingNS.equals(namespace)) { // case 3
-                new NamespaceRefactorVisitor().refactor(newNode, namespace, existingPrefix);
-            } else {
-                // case 4 do nothing, i.e., leave prefix as overriding with different namespace
+            } else if (namespace.equals(existingNS) && prefix.equals(existingPrefix)) { // case 2
+                assert prefix.equals(existingPrefix) : "prefix='"+prefix+"' existingPrefix='"+existingPrefix+"'";
+                newNode.removeAttributeNode(attr);
+            } else if (existingPrefix != null) { // case 3.
+                new NamespaceRefactorVisitor(this).refactor(
+                        newNode, namespace, existingPrefix, parentAndAncestors);
+            } else { // existingNS != null && existingPrefix == null
+                // case 4 just leave prefix as overriding with different namespace
             }
         }
     }
@@ -648,6 +653,24 @@ public class XDMModel {
             }
         };
         return mutate(parent, child, null, remover);
+    }
+    
+    /**
+     * This api deletes given node from a given parent node.
+     * @param parent The parent node from which the node is to be deleted.
+     * @param toRemove collection of node to be deleted.
+     * @return The parent node resulted by deletion of this node.
+     */
+    public synchronized List<Node> removeChildNodes(final Node parent, final Collection<Node> toRemove) {
+        Updater remover = new Updater() {
+            public void update(Node newParent, Node oldNode, Node newNode) {
+                assert parent.isEquivalentNode(newParent);
+                for (Node n : toRemove) {
+                    newParent.removeChild(n);
+                }
+            }
+        };
+        return mutate(parent, null, null, remover, MutationType.CHILDREN);
     }
     
     public synchronized List<Node> replaceChild(final Node parent, Node child, Node newChild) {
@@ -1314,6 +1337,22 @@ public class XDMModel {
         
         return false;
     }
+
+    /**
+     * Set/get mapping of QName-valued attributes by element.
+     * Key of the mapping is QName of the element.
+     * Value of the mapping is list QName's of the attributes.
+     * If the mapping is set, it will be used to identify the 
+     * attribute values affected by namespace prefix refactoring 
+     * during namespace consolidation.  If not set, namespace consolidation
+     * would skip prefix rename refactoring case.
+     */
+    public void setQNameValuedAttributes(Map<QName,List<QName>> attrsByElement) {
+        qnameValuedAttributesByElementMap = attrsByElement;
+    }
+    public Map<QName,List<QName>> getQNameValuedAttributes() {
+        return qnameValuedAttributesByElementMap;
+    }
     
     /**
      * The xml syntax parser
@@ -1380,4 +1419,6 @@ public class XDMModel {
     private String currentIndent = "";
     
     private boolean indentInitialized = false;
+    
+    private Map<QName,List<QName>> qnameValuedAttributesByElementMap;
 }

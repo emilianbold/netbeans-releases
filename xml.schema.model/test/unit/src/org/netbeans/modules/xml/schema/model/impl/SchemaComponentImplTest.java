@@ -216,7 +216,8 @@ public class SchemaComponentImplTest extends TestCase {
         
         SchemaComponentFactory factory = model.getFactory();
         GlobalElement ge = factory.createGlobalElement();
-        assertEquals(XMLConstants.W3C_XML_SCHEMA_NS_URI, ge.getPeer().getAttribute(XMLConstants.XMLNS_ATTRIBUTE));
+        assertNotNull(ge.getPeer().lookupPrefix(XMLConstants.W3C_XML_SCHEMA_NS_URI));
+        assertEquals(XMLConstants.W3C_XML_SCHEMA_NS_URI, ge.getPeer().getNamespaceURI());
         Annotation ann = factory.createAnnotation();
         ge.setAnnotation(ann);
         assertNull(ann.getPeer().getAttribute(XMLConstants.XMLNS_ATTRIBUTE));

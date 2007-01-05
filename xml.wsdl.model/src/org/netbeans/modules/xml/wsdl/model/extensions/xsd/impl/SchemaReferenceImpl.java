@@ -19,17 +19,19 @@
 
 package org.netbeans.modules.xml.wsdl.model.extensions.xsd.impl;
 
-import java.util.List;
 import javax.xml.XMLConstants;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
-import org.netbeans.modules.xml.schema.model.visitor.FindGlobalReferenceVisitor;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.model.Import;
+import org.netbeans.modules.xml.wsdl.model.impl.ImportImpl;
+import org.netbeans.modules.xml.wsdl.model.spi.WSDLComponentBase;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.AbstractNamedComponentReference;
+import org.netbeans.modules.xml.xam.dom.DocumentModel;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 
 /**
  *
@@ -51,36 +53,61 @@ public class SchemaReferenceImpl<T extends ReferenceableSchemaComponent>
         super(type, parent, refString);
     }
 
-    protected List<Schema> findSchemas(String namespace) {
-        List<Schema> schemas = ((WSDLModel)getParent().getModel()).findSchemas(namespace);
-        if (schemas.isEmpty() && XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(namespace)) {
-            SchemaModel primitiveModel = SchemaModelFactory.getDefault().getPrimitiveTypesModel();
-            schemas.add(primitiveModel.getSchema());
-        }
-        return schemas;
-    }
-    
     public T get() {
-        if (super.getReferenced() == null) {
-            List<Schema> schemas = findSchemas(getEffectiveNamespace());
-            for (Schema schema : schemas) {
-                String localName = getLocalName();
-                T target = getType().cast(new FindGlobalReferenceVisitor<T>().find(getType(), localName, schema));
-                if (target != null) {
-                    setReferenced(target);
-                    break;
+        if (getReferenced() == null) {
+            String localName = getLocalName();
+            String namespace = getEffectiveNamespace();
+            T target = null;
+
+            if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(namespace)) {
+                SchemaModel primitiveModel = SchemaModelFactory.getDefault().getPrimitiveTypesModel();
+                target = primitiveModel.resolve(namespace, localName, getType());
+            } else {
+                for (Schema s : getParent().getModel().getDefinitions().getTypes().getSchemas()) {
+                    target = s.getModel().resolve(namespace, localName, getType());
+                    if (target != null) {
+                        break;
+                    }
                 }
+                if (target == null) {
+                    for (Import i : getParent().getModel().getDefinitions().getImports()) {
+                        DocumentModel m = null;
+                        try {
+                            m = ((ImportImpl)i).resolveImportedModel();
+                        } catch(CatalogModelException ex) {
+                            // checked for null so ignore
+                        }
+                        if (m instanceof SchemaModel) {
+                            target = ((SchemaModel)m).resolve(namespace, localName, getType());
+                        }
+                        if (target != null) {
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            if (target != null) {
+                setReferenced(target);
             }
         }
         return getReferenced();
     }
 
+    public WSDLComponentBase getParent() {
+        return (WSDLComponentBase) super.getParent();
+    }
+    
     public String getEffectiveNamespace() {
         if (refString == null) {
             assert getReferenced() != null;
             return getReferenced().getModel().getSchema().getTargetNamespace();
         } else {
-            return ((AbstractDocumentComponent)getParent()).lookupNamespaceURI(getPrefix());
+            if (getPrefix() == null) {
+                return null;
+            } else {
+                return getParent().lookupNamespaceURI(getPrefix());
+            }
         }
     }
 }

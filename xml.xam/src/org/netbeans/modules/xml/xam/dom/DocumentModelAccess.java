@@ -22,6 +22,7 @@ package org.netbeans.modules.xml.xam.dom;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.xml.namespace.QName;
@@ -62,6 +63,10 @@ public abstract class DocumentModelAccess extends ModelAccess {
     
     public abstract void removeChild(Node node, Node child, NodeUpdater updater);
     
+    public void removeChildren(Node node, Collection<Node> children, NodeUpdater updater) {
+        throw new UnsupportedOperationException();
+    }
+
     public abstract void replaceChild(Node node, Node child, Node newChild, NodeUpdater updater);
     
     public abstract void setText(Element element, String val, NodeUpdater updater);

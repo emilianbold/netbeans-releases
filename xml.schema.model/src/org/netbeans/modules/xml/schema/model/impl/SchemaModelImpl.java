@@ -19,8 +19,12 @@
 
 package org.netbeans.modules.xml.schema.model.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
@@ -34,9 +38,13 @@ import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaComponentFactory;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
+import org.netbeans.modules.xml.schema.model.SchemaModelReference;
 import org.netbeans.modules.xml.schema.model.impl.xdm.SyncUpdateVisitor;
+import org.netbeans.modules.xml.schema.model.visitor.FindGlobalReferenceVisitor;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.Model.State;
+import org.netbeans.modules.xml.xam.NamedReferenceable;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.dom.ChangeInfo;
 import org.netbeans.modules.xml.xam.dom.DocumentModelAccess;
@@ -94,43 +102,113 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         return schema;
     }
 
-    public Set<Schema> findSchemas(String namespace) {
-        Set<Schema> resultSchemas = new HashSet<Schema>();
-        return _findSchemas(namespace, resultSchemas);
+    public <T extends NamedReferenceable>
+            T resolve(String namespace, String localName, Class<T> type) 
+    {
+        if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(namespace)){
+            SchemaModel sm = SchemaModelFactory.getDefault().getPrimitiveTypesModel();
+            return sm.findByNameAndType(localName, type);
+        }
+        
+        return resolve(namespace, localName, type, null, new ArrayList<SchemaModel>());
     }
     
-    Set<Schema> _findSchemas(String namespace, Set<Schema> result) {
-        SchemaImpl schema = getSchema();
+    <T extends NamedReferenceable>
+            T resolve(String namespace, String localName, Class<T> type, SchemaModelReference refToMe, Collection<SchemaModel> checked) 
+    {
+        if (getState() != State.VALID) {
+            return null;
+        }
+        
+        T found = null;
+        String targetNamespace = getSchema().getTargetNamespace();
+        if (targetNamespace != null && targetNamespace.equals(namespace) ||
+            targetNamespace == null && namespace == null) {
+            found = findByNameAndType(localName, type);
+        }
+        
+        if (found == null && ! (refToMe instanceof Import)) {
+            checked.add(this);
+            
+            Collection<SchemaModelReference> modelRefs = getSchemaModelReferences();
+            for (SchemaModelReference r : modelRefs) {
+                // import should not have null namespace
+                if (r instanceof Import) {
+                    if (namespace == null || ! namespace.equals(((Import)r).getNamespace())) {
+                        continue;
+                    }
+                }
+                
+                SchemaModelImpl sm = resolve(r);
+                if (sm != null && ! checked.contains(sm)) {
+                    found = sm.resolve(namespace, localName, type, r, checked);
+                }
+                if (found != null) {
+                    break;
+                }
+            }
+        }
+        
+        return found;
+    }
+    
+    public SchemaModelImpl resolve(SchemaModelReference ref) {
+        try {
+            return (SchemaModelImpl) ref.resolveReferencedModel();
+        } catch (CatalogModelException ex) {
+            return null;
+        }
+    }
 
+    public Collection<SchemaModelReference> getSchemaModelReferences() {
+        Collection<SchemaModelReference> refs = new ArrayList<SchemaModelReference>();
+        refs.addAll(getSchema().getRedefines());
+        refs.addAll(getSchema().getIncludes());
+        refs.addAll(getSchema().getImports());
+        return refs;
+    }
+            
+    public <T extends NamedReferenceable> T findByNameAndType(String localName, Class<T> type) {
+        return new FindGlobalReferenceVisitor<T>().find(type, localName, getSchema());
+    }
+    
+    public Set<Schema> findSchemas(String namespace) {
+        Set<Schema> result = new HashSet<Schema>();
+        
+        // build-in XSD schema is always visible
+        if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(namespace)){
+            SchemaModel primitiveModel = SchemaModelFactory.getDefault().getPrimitiveTypesModel();
+            result.add(primitiveModel.getSchema());
+            return result;
+        } 
+        
+        return _findSchemas(namespace, result, null);
+    }
+    
+    protected enum ReferenceType { IMPORT, INCLUDE, REDEFINE }
+    
+    Set<Schema> _findSchemas(String namespace, Set<Schema> result, ReferenceType refType) {
+        SchemaImpl schema = getSchema();
         // schema could be null, if last sync throwed exception
         if (schema == null) {
             return result;
         }
-
-        // handle schema without target namespace and null lookup namespace
-        String targetNamespace = schema.getTargetNamespace();
         
-        if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(namespace)){
-            SchemaModel primitiveModel = SchemaModelFactory.getDefault().getPrimitiveTypesModel();
-            result.add(primitiveModel.getSchema());
-        } else if ( targetNamespace == null && namespace == null ||
-                    targetNamespace != null && namespace == null ||
-                    namespace.equals(schema.getTargetNamespace())) {
+        String targetNamespace = schema.getTargetNamespace();
+        if (targetNamespace != null && targetNamespace.equals(namespace) ||
+            targetNamespace == null && namespace == null) {
             result.add(schema);
+        }
+        
+        if (refType != ReferenceType.IMPORT) {
             checkIncludeSchemas(namespace, result);
             checkRedefineSchemas(namespace, result);
-        } else if ( targetNamespace == null && namespace != null) {
-            result.add(schema);
-            checkIncludeSchemas(namespace, result);
-            checkRedefineSchemas(namespace, result);
-            checkImportedSchemas(namespace, result);
-        } else { // namespace != null && ! targetNamespace.equals(namespace)
             checkImportedSchemas(namespace, result);
         }
-
-        return result;
+        
+        return result;    
     }
-
+    
     private void checkIncludeSchemas(String namespace, Set<Schema> result) {
         Collection<Include> includes = getSchema().getIncludes();
         for (Include include : includes) {
@@ -141,7 +219,7 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
                 }
                 
                 if (! result.contains(model.getSchema())) {
-                    result.addAll(((SchemaModelImpl)model)._findSchemas(namespace, result));
+                    result.addAll(((SchemaModelImpl)model)._findSchemas(namespace, result, ReferenceType.INCLUDE));
                 }
             } catch (CatalogModelException ex) {
                 // ignore this exception to proceed with search
@@ -158,7 +236,7 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
                 continue;
             
 		   if (! result.contains(model.getSchema())) {
-		       result.addAll(((SchemaModelImpl)model)._findSchemas(namespace, result));
+		       result.addAll(((SchemaModelImpl)model)._findSchemas(namespace, result, ReferenceType.REDEFINE));
 		   }
 	       } catch (CatalogModelException ex) {
 		   // ignore this exception to proceed with search
@@ -174,11 +252,9 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
             if (model.getState() == Model.State.NOT_WELL_FORMED)
                 continue;
             
-		    String targetNS = model.getSchema().getTargetNamespace();
-		    if (namespace == null && targetNS == null ||
-			namespace != null && namespace.equals(targetNS)) {
-			result.add(model.getSchema());
-		    }
+		   if (! result.contains(model.getSchema())) {
+		       result.addAll(((SchemaModelImpl)model)._findSchemas(namespace, result, ReferenceType.IMPORT));
+		   }
 		} catch (CatalogModelException ex) {
 		    // ignore this exception to proceed with search
 		}
@@ -261,5 +337,9 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
             super.getAccess().setAutoSync(true);  // default autosync true
         }
         return super.getAccess();
+    }
+    
+    public Map<QName,List<QName>> getQNameValuedAttributes() {
+        return SchemaAttributes.getQNameValuedAttributes();
     }
 }

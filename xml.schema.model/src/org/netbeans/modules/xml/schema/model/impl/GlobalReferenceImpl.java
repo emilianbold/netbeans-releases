@@ -19,12 +19,7 @@
 
 package org.netbeans.modules.xml.schema.model.impl;
 
-import java.util.Collection;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
-import org.netbeans.modules.xml.schema.model.Schema;
-import org.netbeans.modules.xml.schema.model.SchemaComponent;
-import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.modules.xml.schema.model.visitor.FindGlobalReferenceVisitor;
 import org.netbeans.modules.xml.xam.dom.AbstractNamedComponentReference;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
@@ -48,34 +43,23 @@ public class GlobalReferenceImpl<T extends ReferenceableSchemaComponent> extends
     public GlobalReferenceImpl(Class<T> classType, SchemaComponentImpl parent, String refString){
         super(classType, parent, refString);
     }
-    
-    private Collection<Schema> getSchemas() {
-        SchemaModel currentModel = (SchemaModel) getParent().getModel();
-        Collection<Schema> schemas = null;
-        String namespace = getQName().getNamespaceURI();
-        // TODO: this is needed for loanApplication.xsd to pass.  Need review to be stricter????
-        if (namespace == null || namespace.length() == 0) {
-            namespace = ((SchemaModel)getParent().getModel()).getSchema().getTargetNamespace();
-        }
-        schemas = currentModel.findSchemas(namespace);
-        return schemas;
-    }
-    
+
     public T get() {
-        if (super.getReferenced() == null) {
-            for (Schema schema : getSchemas()) {
-                String localName = getLocalName();
-                T target = getType().cast(new FindGlobalReferenceVisitor<T>().find(getType(), localName, schema));
-                if (target != null) {
-                    setReferenced(target);
-                    break;
-                }
-            }
+        if (getReferenced() == null) {
+            String namespace = getQName().getNamespaceURI();
+            namespace = namespace.length() == 0 ? null : namespace;
+            String localName = getLocalName();
+            T target = ((SchemaComponentImpl)getParent()).getModel().resolve(namespace, localName, getType());
+            setReferenced(target);
         }
         return getReferenced();
     }
     
+    public SchemaComponentImpl getParent() {
+        return (SchemaComponentImpl) super.getParent();
+    }
+    
     public String getEffectiveNamespace() {
-        return ((SchemaComponentImpl)getParent()).getModel().getEffectiveNamespace(get());
+        return getParent().getModel().getEffectiveNamespace(get());
     }
 }

@@ -20,11 +20,12 @@
 package org.netbeans.modules.xml.xdm.nodes;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.xml.spi.dom.ROException;
 import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 
 /**
  * Read-only implementation of NamedNodeMap delegating to a Java <code>Map</code>.
@@ -35,8 +36,7 @@ import org.w3c.dom.NamedNodeMap;
  */
 public final class NamedNodeMapImpl implements NamedNodeMap {
     
-    private final Map peer;
-    private final List<String> keys;
+    private List<Attribute> attributes;
     
     /** Read-only empty map. */
     public static final NamedNodeMap EMPTY = 
@@ -48,19 +48,11 @@ public final class NamedNodeMapImpl implements NamedNodeMap {
      */
     public NamedNodeMapImpl(List<Attribute> attributes) {
         if (attributes == null) throw new NullPointerException();
-        List<String> keys = new ArrayList<String>();
-        Map<String,Node> attributeMap = new LinkedHashMap<String,Node>();
-        for(Attribute attr: attributes) {
-            String key = attr.getName();
-            keys.add(key);
-            attributeMap.put(key,attr);
-        }
-        this.keys = keys;
-        this.peer = attributeMap;
+        this.attributes = new ArrayList(attributes);
     }
     
     public int getLength() {
-        return peer.size();
+        return attributes.size();
     }
     
     public org.w3c.dom.Node removeNamedItem(String str) 
@@ -79,26 +71,36 @@ public final class NamedNodeMapImpl implements NamedNodeMap {
     }
     
     public org.w3c.dom.Node getNamedItemNS(String uri, String local) {
-        return (Node) peer.get(createKey(uri, local));
+        String key = (String)createKey(uri, local);
+        if(key == null) return null;
+        return getNode(key);
     }
     
     public org.w3c.dom.Node item(int param) {
-        if(param < keys.size())
-            return (org.w3c.dom.Node) peer.get(keys.get(param));
+        if(param < attributes.size())
+            return (org.w3c.dom.Node) attributes.get(param);
         return null;
     }
     
     public org.w3c.dom.Node getNamedItem(String str) {
-        return (Node) peer.get(createKey(str));
+        String key = (String)createKey(str);
+        if(key == null) return null;
+        return getNode(key);
     }
     
     public org.w3c.dom.Node removeNamedItemNS(String str, String str1) 
     throws org.w3c.dom.DOMException {
         throw new ROException();
     }
-    
-    public String toString() {
-        return peer.toString();
+        
+    private Node getNode(String key) {
+        assert(key != null);        
+        for(Attribute attr: attributes) {            
+            if(key.equals(attr.getName())) {
+                return attr;
+            }
+        }
+        return null;
     }
     
     /**

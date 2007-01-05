@@ -20,7 +20,10 @@
 
 package org.netbeans.modules.xml.schema.model.impl;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;

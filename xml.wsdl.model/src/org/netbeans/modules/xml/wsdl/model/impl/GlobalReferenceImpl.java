@@ -20,12 +20,14 @@
 package org.netbeans.modules.xml.wsdl.model.impl;
 
 import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.Import;
 import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.spi.WSDLComponentBase;
 import org.netbeans.modules.xml.wsdl.model.visitor.FindReferencedVisitor;
 import org.netbeans.modules.xml.xam.dom.AbstractNamedComponentReference;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 
 /**
  *
@@ -61,16 +63,35 @@ public class GlobalReferenceImpl<T extends ReferenceableWSDLComponent>
         WSDLComponentBase wparent = WSDLComponentBase.class.cast(getParent());
         if (super.getReferenced() == null) {
             String localName = getLocalName();
+            String namespace = getEffectiveNamespace();
+            WSDLModel model = wparent.getWSDLModel();
             T target = null;
-            for (WSDLModel model : wparent.getWSDLModel().findWSDLModel(getEffectiveNamespace())) {
+            if (namespace != null && namespace.equals(model.getDefinitions().getTargetNamespace())) {
                 target = new FindReferencedVisitor<T>(model.getDefinitions()).find(localName, getType());
-                if (target != null) {
-                    break;
+            }
+            if (target == null) {
+                for (Import i : wparent.getWSDLModel().getDefinitions().getImports()) {
+                    if (! i.getNamespace().equals(namespace)) {
+                        continue;
+                    }
+                    try {
+                        model = i.getImportedWSDLModel();
+                    } catch(CatalogModelException ex) {
+                        continue;
+                    }
+                    target = new FindReferencedVisitor<T>(model.getDefinitions()).find(localName, getType());
+                    if (target != null) {
+                        break;
+                    }
                 }
             }
             setReferenced(target);
         }
         return getReferenced();
+    }
+    
+    public WSDLComponentBase getParent() {
+        return (WSDLComponentBase) super.getParent();
     }
     
     public String getEffectiveNamespace() {

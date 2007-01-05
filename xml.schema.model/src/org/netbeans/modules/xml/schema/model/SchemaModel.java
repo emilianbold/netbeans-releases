@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.xml.schema.model;
 import java.util.Collection;
+import org.netbeans.modules.xml.xam.NamedReferenceable;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.dom.DocumentModel;
 
@@ -67,4 +68,21 @@ public interface SchemaModel extends DocumentModel<SchemaComponent>, Referenceab
          * (3) Imported schemas are not visible to includer or redefiner.
          */
         Collection<Schema> findSchemas(String namespaceURI);
+
+        /**
+         * Finds the component in current schema by local name and type.
+         * @param localName the local name of the schema component.
+         * @param type the exact type of the schema component.
+         * @return first encountered of the schema component of specified name and type; 
+         * null if not found.
+         */
+        <T extends NamedReferenceable> T findByNameAndType(String localName, Class<T> type);
+        
+        /**
+         * Resolves the reference to component given namespace and local name.
+         * @param namespace the namespace of the referenced component
+         * @param localName local name of the refrenced component.
+         * @param type type of the component.
+         */
+        <T extends NamedReferenceable> T resolve(String namespace, String localName, Class<T> type); 
 }

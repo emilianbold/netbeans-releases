@@ -368,8 +368,8 @@ public class SOAPComponentValidator
             
             if (location.startsWith("http")) {
                 // look for ${HttpDefaultPort} token 
-                colonIndex = location.indexOf(':', 6);
-                contextStartIndex = location.indexOf('/', 7);
+                colonIndex = location.indexOf(":", 6);
+                contextStartIndex = location.indexOf("/", 7);
                 
                 if (HTTP_DEFAULT_PORT_TOKEN.equals(location.substring(colonIndex + 1, contextStartIndex))) {
                     return;
@@ -390,8 +390,8 @@ public class SOAPComponentValidator
             
             if (location.startsWith("https")) {
                 // look for ${HttpDefaultPort} token 
-                colonIndex = location.indexOf(':', 7);
-                contextStartIndex = location.indexOf('/', 8);
+                colonIndex = location.indexOf(":", 7);
+                contextStartIndex = location.indexOf("/", 8);
                 
                 if (HTTPS_DEFAULT_PORT_TOKEN.equals(location.substring(colonIndex + 1, contextStartIndex))) {
                     return;

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import javax.xml.XMLConstants;
 import org.netbeans.modules.xml.spi.dom.NodeListImpl;
+import org.netbeans.modules.xml.xdm.XDMModel;
 import org.netbeans.modules.xml.xdm.visitor.FlushVisitor;
 import org.netbeans.modules.xml.xdm.visitor.Utils;
 import org.netbeans.modules.xml.xdm.visitor.XMLNodeVisitor;
@@ -711,7 +712,9 @@ public class Element extends NodeImpl implements Node, org.w3c.dom.Element {
     }
     
     public Node appendChild(org.w3c.dom.Node node) {
-        return appendChild(node, true);
+        boolean consolidateNamespace = 
+                (getModel() == null || getModel().getStatus() != XDMModel.Status.PARSING);
+        return appendChild(node, consolidateNamespace);
     }
     
     public Node appendChild(org.w3c.dom.Node node, boolean consolidateNamespaces) {
@@ -745,7 +748,9 @@ public class Element extends NodeImpl implements Node, org.w3c.dom.Element {
     public Node insertBefore(org.w3c.dom.Node newChild, org.w3c.dom.Node refChild) throws DOMException {
         Node n = super.insertBefore(newChild, refChild);
         if (n instanceof Element) {
-            consolidateNamespaces((Element)n);
+            if (getModel() == null || getModel().getStatus() != XDMModel.Status.PARSING) {
+                consolidateNamespaces((Element)n);
+            }
         }
         return n;
     }    
@@ -799,26 +804,55 @@ public class Element extends NodeImpl implements Node, org.w3c.dom.Element {
             newChild.setPrefix(getPrefix());
         }
         
+        //consolidate attribute prefixes and qname values
         NamedNodeMap attributes = newChild.getAttributes();
+        ArrayList<String> sparedPrefixes = new ArrayList<String>();
         for (int i=0; i<attributes.getLength(); i++) {
             Attribute attr = (Attribute) attributes.item(i);
-            String prefix = attr.getPrefix();
-            if (prefix == null && attr.isXmlnsAttribute()) {
+            // skip namsspace declaration attributes 
+            if (attr.isXmlnsAttribute()) {
                 continue;
             }
-            String namespace = newChild.lookupNamespaceURI(prefix);
-            String newPrefix = lookupPrefix(namespace);
-            if (newPrefix != null) {
-                attr.setPrefix(newPrefix);
+            // check on attribute prefix
+            String prefix = attr.getPrefix();
+            if (prefix != null) {
+                String namespace = newChild.lookupNamespaceURI(prefix);
+                if (namespace == null) { // undeclared prefix
+                    continue;
+                }
+                String newPrefix = lookupPrefix(namespace);
+                if (newPrefix == null || newPrefix.equals(XMLConstants.DEFAULT_NS_PREFIX)) {
+                    sparedPrefixes.add(prefix);
+                } else if (! newPrefix.equals(prefix)) {
+                    // new prefix points to different namespace
+                    if (newChild.lookupNamespaceURI(newPrefix) != null) {
+                        sparedPrefixes.add(prefix);
+                    } else { 
+                        attr.setPrefix(newPrefix);
+                    }
+                }
+            }
+            
+            // check on attribute value
+            String value = attr.getValue().trim();
+            String[] parts = value.split(":"); //NOI18N
+            if (parts.length > 1) {
+                // conservatively add to list prefixes to be spared from consolidation
+                // will be take cared of by other consolidation when added to tree
+                sparedPrefixes.add(parts[0]);
             }
         }
 
-        //let child prefixes consolidate to parent prefixes
+        //let child prefixe declarations consolidate to parent prefixes
         for (int i=0; i<attributes.getLength(); i++) {
             Attribute attr = (Attribute) attributes.item(i);
             if (! attr.isXmlnsAttribute()) continue;
             
             String prefix = attr.getLocalName();
+            if (sparedPrefixes.contains(prefix)) {
+                continue;
+            }
+            
             if (XMLConstants.XMLNS_ATTRIBUTE.equals(prefix)) {
                 prefix = XMLConstants.DEFAULT_NS_PREFIX;
             }
@@ -828,25 +862,26 @@ public class Element extends NodeImpl implements Node, org.w3c.dom.Element {
             String existingNS = lookupNamespaceURI(prefix);
             String existingPrefix = lookupPrefix(namespace);
             
-            // 1. prefix is free (existingNS == null) and namespace is not declared (existingPrefix == null)
-            // 2. prefix is free but namespace is declared by different prefix
-            // 3. prefix is used and for the same namespace
+            // 1. prefix is free (existingNS == null) and namespace is never declared (existingPrefix == null)
+            // 2. prefix is used and for the same namespace
+            // 3. namespace is declared by different prefix
             // 4. prefix is used and for different namespace
             
             if (existingNS == null && existingPrefix == null) { // case 1.
                 newChild.removeAttributeNode(attr);
                 appendAttribute(attr);
-            } else if (existingNS == null && existingPrefix != null) { // case 2.
-                // this assume newly create node has namespaces only at top level
+            } else if (namespace.equals(existingNS) && prefix.equals(existingPrefix)) { // case 2
+                // this assume new node has namespaces only at top level
                 newChild.removeAttributeNode(attr);
-            } else if (existingNS != null && existingNS.equals(namespace)) { // case 3
-                newChild.removeAttributeNode(attr);
+            } else if (existingPrefix != null) { // case 3.
+                // this assume we took care of attribute refactoring before enter this loop
+                newChild.removeAttributeNode(attr); //
             } else {
                // case 4 do nothing, i.e., leave prefix as overriding with different namespace
             }
         }
     }
-
+    
     public Element cloneNode(boolean deep, boolean cloneNamespacePrefix) {
         Document root = isInTree() ? (Document) getOwnerDocument() : null;
         Map<Integer,String> allNamespaces = null;

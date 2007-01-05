@@ -18,7 +18,13 @@
  */
 
 package org.netbeans.modules.xml.schema.model.impl;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import javax.swing.text.Element;
+import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.schema.model.Any.ProcessContents;
 import org.netbeans.modules.xml.schema.model.Derivation;
 import org.netbeans.modules.xml.schema.model.Form;
@@ -90,7 +96,37 @@ public enum SchemaAttributes implements Attribute {
         return memberType;
     }
     
+    public static Map<QName,List<QName>> getQNameValuedAttributes() {
+        return qnameValuedAttributes;
+    }
+    
+    private QName qname() {
+        return new QName(docName);
+    }
+    
     private final String docName;
     private final Class type;
     private final Class memberType;
+
+    
+    private static Map<QName,List<QName>> qnameValuedAttributes = new HashMap<QName,List<QName>>();
+    static {
+        qnameValuedAttributes.put(
+                SchemaElements.UNION.getQName(), Arrays.asList(new QName[] { MEMBER_TYPES.qname()}));
+        qnameValuedAttributes.put(
+                SchemaElements.RESTRICTION.getQName(), Arrays.asList(new QName[] { BASE.qname()}));
+        qnameValuedAttributes.put(
+                SchemaElements.EXTENSION.getQName(), Arrays.asList(new QName[] { BASE.qname()}));
+        qnameValuedAttributes.put(
+                SchemaElements.LIST.getQName(), Arrays.asList(new QName[] { ITEM_TYPE.qname()}));
+        qnameValuedAttributes.put(
+                SchemaElements.ATTRIBUTE.getQName(), Arrays.asList(new QName[] { REF.qname(), TYPE.qname()}));
+        qnameValuedAttributes.put(
+                SchemaElements.ELEMENT.getQName(), Arrays.asList(new QName[] { REF.qname(), SUBSTITUTION_GROUP.qname(), TYPE.qname() }));
+        qnameValuedAttributes.put(
+                SchemaElements.GROUP.getQName(), Arrays.asList(new QName[] { REF.qname()}));
+        qnameValuedAttributes.put(
+                SchemaElements.ATTRIBUTE_GROUP.getQName(), Arrays.asList(new QName[] { REF.qname()}));
+    }
+
 } 

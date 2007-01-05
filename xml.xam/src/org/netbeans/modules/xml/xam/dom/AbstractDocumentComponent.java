@@ -22,6 +22,7 @@ package org.netbeans.modules.xml.xam.dom;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -483,9 +484,8 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
      * Declare prefix for given namespace (without any refactoring action).
      */
     public void addPrefix(String prefix, String namespace) {
-        assert prefix != null;
-        String event = (prefix.length() == 0) ? XMLConstants.XMLNS_ATTRIBUTE : "xmlns:"+prefix; //NOI18N
-        setAttribute(event, createPrefixAttribute(prefix), namespace);
+        Attribute a = createPrefixAttribute(prefix);
+        setAttribute(a.getName(), a, namespace);
     }
     
     /**
@@ -815,7 +815,7 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
         Element childElement = getChildElement(qname);
         String oldVal = childElement == null ? null : getText(childElement);
         if (childElement == null) {
-            childElement = getPeer().getOwnerDocument().createElementNS(qname.getNamespaceURI(), qname.getLocalPart());
+            childElement = getModel().getDocument().createElementNS(qname.getNamespaceURI(), qname.getLocalPart());
             getModel().getAccess().appendChild(getPeer(), childElement, this);
         }
         getModel().getAccess().setText(childElement, text, this);
@@ -825,86 +825,131 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
 
     /**
      * Returns leading text for the child component of the given index.
-     * @param index 0-based position of the child
+     * @param child the child to get associated text from
      * @return value of the leading text node, or null the indexed component peer does not have leading text nodes.
      */
-    protected String getLeadingText(int index) {
-        return getText(index, true);
+    protected String getLeadingText(C child) {
+        return getText(child, true, true);
     }
     
     /**
      * Set leading text for the child component which position is the given index.
-     * @param index 0-based position of the child
+     * @param child the child to set associated text
      * @param text value of the leading text node, or null to remove the leading text node.
      */
-    protected void setLeadingText(String propName, String text, int index) {
-        setText(propName, text, index, true);
+    protected void setLeadingText(String propName, String text, C child) {
+        setText(propName, text, child, true, true);
     }
     
     /**
      * Returns trailing text for the child component of the given index.
-     * @param index 0-based position of the child
+     * @param child the child to get associated text from
      * @return value of the leading text node, or null the indexed component peer does not have trailing text nodes.
      */
-    protected String getTrailingText(int index, boolean leading) {
-        return getText(index, false);
+    protected String getTrailingText(C child) {
+        return getText(child, false, true);
     }
     
     /**
      * Set trailing text for the child component which position is the given index.
-     * @param index 0-based position of the child
+     * @param child the child to get associated text from
      * @param text value of the trailing text node, or null to remove the trailing text node.
      */
-    protected void setTrailingText(String propName, String text, int index) {
-        setText(propName, text, index, false);
+    protected void setTrailingText(String propName, String text, C child) {
+        setText(propName, text, child, false, true);
     }
     
-    private String getText(int index, boolean leading) {
-        C child = getChildren().get(index);
-        int domIndex = getAccess().getElementIndexOf(getPeer(), child.getPeer());
-        domIndex = leading ? domIndex-1 : domIndex+1;
-        NodeList nl = getPeer().getChildNodes();
-        if (domIndex > -1 && domIndex < nl.getLength()) {
-            Node n = nl.item(domIndex);
-            if (n instanceof Text) {
-                return ((Text)n).getNodeValue();
-            }
-        }
-        return null;
-    }
-    
-    private void setText(String propertyName, String text, int index, boolean leading) {
-        verifyWrite();
-
-        C child = getChildren().get(index);
-        int domIndex = getAccess().getElementIndexOf(getPeer(), child.getPeer());
-        domIndex = leading ? domIndex-1 : domIndex+1;
-        NodeList nl = getPeer().getChildNodes();
-        String oldValue = null;
-        Text oldNode = null;
-        Node refChild = getPeer();
-        if (domIndex > -1 && domIndex < nl.getLength()) {
-            Node n = nl.item(domIndex);
-            if (n instanceof Text) {
-                oldValue = ((Text)n).getNodeValue();
-                oldNode = (Text) n;
-            } else if (! leading) {
-                refChild = nl.item(domIndex);
-            }
-        }
-
-        Text newNode = text == null ? null : getModel().getDocument().createTextNode(text);
-        if (newNode == null && oldValue == null) return;
-        if (newNode == null) {
-            getModel().getAccess().removeChild(getPeer(), oldNode, this);
-        } else if (oldValue == null) {
-            getModel().getAccess().insertBefore(getPeer(), newNode, refChild, this);
-        } else {
-            getModel().getAccess().replaceChild(getPeer(), oldNode, newNode, this);
+    protected String getText(C child, boolean leading, boolean includeComments) {
+        int domIndex = getNodeIndexOf(getPeer(), child.getPeer());
+        if (domIndex < 0) {
+            throw new IllegalArgumentException("Child peer node is not part of children nodes");
         }
         
-        firePropertyChange(propertyName, oldValue, text);
+        StringBuilder value = null;
+        NodeList nl = getPeer().getChildNodes();
+        
+        for (int i = (leading ? domIndex-1 : domIndex+1); 
+             i > -1 && i < nl.getLength(); i = leading ? --i : ++i)
+        {
+            Node n = nl.item(i);
+            if (n instanceof Element) {
+                break;
+            }
+
+            if (n instanceof Text && (includeComments || n.getNodeType() != Node.COMMENT_NODE)) {
+                if (value == null) value = new StringBuilder();
+                if (leading) {
+                    value.insert(0, n.getNodeValue());
+                } else {
+                    value.append(n.getNodeValue());
+                }
+            }
+        }
+        return value == null ? null : value.toString();
+    }
+    
+    protected void setText(String propName, String value, C child, final boolean leading, boolean includeComments) {
+        verifyWrite();
+        StringBuilder oldValue = null;
+        ArrayList<Node> toRemove = new ArrayList<Node>();
+        NodeList nl = getPeer().getChildNodes();
+        int domIndex = getNodeIndexOf(getPeer(), child.getPeer());
+        if (domIndex < 0) {
+            throw new IllegalArgumentException("Child peer node is not part of children nodes");
+        }
+
+        Element ref = leading ? child.getPeer() : null;
+        for (int i = leading ? domIndex-1 : domIndex+1;
+             i > -1 && i < nl.getLength(); i = leading ? --i : ++i) 
+        {
+            Node n = nl.item(i);
+            if (n != null && n.getNodeType() == Node.ELEMENT_NODE) {
+                if (leading) {
+                    ref = child.getPeer();
+                } else {
+                    ref = (Element) n;
+                }
+                break;
+            }
+            if (n instanceof Text && (includeComments || n.getNodeType() != Node.COMMENT_NODE)) {
+                toRemove.add(n);
+                if (oldValue == null) oldValue = new StringBuilder();
+                if (leading) {
+                    oldValue.insert(0, n.getNodeValue());
+                } else {
+                    oldValue.append(n.getNodeValue());
+                }
+            }
+        }
+        
+        getModel().getAccess().removeChildren(getPeer(), toRemove, this);
+        if (value != null) {
+             Text newNode = getModel().getDocument().createTextNode(value);
+             if (ref != null) {
+                getModel().getAccess().insertBefore(getPeer(), newNode, ref, this);
+             } else {
+                getModel().getAccess().appendChild(getPeer(), newNode, this); 
+             }
+        }
+        
+        firePropertyChange(propName, oldValue == null ? null : oldValue.toString(), value);
         fireValueChanged();
     }
+    
+    protected int getNodeIndexOf(Node parent, Node child) {
+        if (child == null) {
+            return -1;
+        }
+        int nodeIndex = -1;
+        for (int i = 0; i < parent.getChildNodes().getLength(); i++) {
+            Node n = parent.getChildNodes().item(i);
+            nodeIndex++;
+            if (getAccess().areSameNodes(n, child)) {
+                return nodeIndex;
+            }
+        }
+        return -1;
+    }
+
 }
 

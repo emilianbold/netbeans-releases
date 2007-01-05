@@ -23,8 +23,10 @@ import java.beans.PropertyChangeEvent;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -517,6 +519,17 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
             createRootComponent(lastStable.getDocumentElement());
             setState(State.VALID);
         }
+    }
+    
+    /**
+     * Returns QName of all attributes with QName value, sorted by containing 
+     * element QName.  
+     * Note: if domain model implementation return null, namespace
+     * consolidation will not attempt namespace prefix refactoring on each 
+     * mutation of the underlying XDM DOM tree.
+     */
+    public Map<QName,List<QName>> getQNameValuedAttributes() {
+        return new HashMap<QName,List<QName>>();
     }
 }
 

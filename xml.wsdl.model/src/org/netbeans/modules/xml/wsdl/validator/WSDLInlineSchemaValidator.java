@@ -165,7 +165,7 @@ public class WSDLInlineSchemaValidator extends XsdBasedValidator {
             SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
             LSResourceResolver delegate = CatalogModelFactory.getDefault().getLSResourceResolver();
             if (delegate != null) {
-                sf.setResourceResolver(new Resolver(delegate));
+                sf.setResourceResolver(delegate);
             }
             sf.setErrorHandler(handler);
             if (saxSource == null) {
@@ -214,30 +214,7 @@ public class WSDLInlineSchemaValidator extends XsdBasedValidator {
         return -1;
         
     }
-    private class Resolver implements LSResourceResolver {
-        private LSResourceResolver delegate;
-        
-        public Resolver(LSResourceResolver delegate) {
-            this.delegate = delegate;
-        }
-        
-        public LSInput resolveResource(String type, String namespaceURI,
-                String publicId, String systemId, String baseURI) {
-            
-            if(systemId != null) {
-                URI uri = null;
-                try {
-                    uri = new URI(systemId);
-                } catch (URISyntaxException ex) {
-                    return null;
-                }
-                if (uri.isAbsolute() && uri.getScheme().equalsIgnoreCase("http")){ //NOI18N
-                    return delegate.resolveResource(type, namespaceURI, publicId, systemId, baseURI);
-                }
-            }
-            return null;
-        }
-    }
+
     
     class InlineSchemaValidatorHandler extends XsdBasedValidator.Handler {
         int startingLineNumber;

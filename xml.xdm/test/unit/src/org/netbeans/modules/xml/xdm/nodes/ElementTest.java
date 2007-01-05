@@ -8,7 +8,10 @@
 package org.netbeans.modules.xml.xdm.nodes;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.List;
 import javax.xml.XMLConstants;
+import javax.xml.namespace.QName;
 import junit.framework.*;
 import org.netbeans.modules.xml.xam.TestComponent;
 import org.netbeans.modules.xml.xdm.Util;
@@ -271,7 +274,7 @@ public class ElementTest extends TestCase {
         middle = (Element) dest.append(middle, clone).get(0);
 
         //dest.flush();
-        //Util.dumpToFile(doc, new File("c:\\temp\\test1.xml"));
+        //Util.ToFile(doc, new File("c:\\temp\\test1.xml"));
         
         receiverRoot = (Element) dest.getDocument().getDocumentElement();
         assertTrue(middle == Util.getChildElementByTag(receiverRoot, "m:middle"));
@@ -292,6 +295,7 @@ public class ElementTest extends TestCase {
         
         javax.swing.text.Document doc = Util.getResourceAsDocument("nodes/clone-receiver3.xml");
         XDMModel dest = Util.loadXDMModel(doc);
+        dest.setQNameValuedAttributes(new HashMap<QName,List<QName>>());
         Element receiverRoot = (Element) dest.getDocument().getDocumentElement();
         Element middle = Util.getChildElementByTag(receiverRoot, "m:middle");
         middle = (Element) dest.add(middle, clone, 0).get(0);
@@ -321,6 +325,7 @@ public class ElementTest extends TestCase {
         
         javax.swing.text.Document doc = Util.getResourceAsDocument("nodes/clone-receiver2.xml");
         XDMModel dest = Util.loadXDMModel(doc);
+        dest.setQNameValuedAttributes(new HashMap<QName,List<QName>>());
         Element receiverRoot = (Element) dest.getDocument().getDocumentElement();
         Element middle = Util.getChildElementByTag(receiverRoot, "m:middle");
         middle = (Element) dest.add(middle, clone, 0).get(0);
@@ -338,7 +343,6 @@ public class ElementTest extends TestCase {
         assertNull(pasted.getAttribute("xmlns"));
         Element pastedChild = Util.getChildElementByTag(pasted, "B");
         assertEquals("value1", pastedChild.getAttributeNS("namespaceB","attrB"));
-        assertNull(pasted.getAttribute("xmlns:b1"));
         assertEquals("namespaceB", pastedChild.getAttribute("xmlns:b1"));
     }
 
@@ -370,6 +374,7 @@ public class ElementTest extends TestCase {
     public void testConsolidateNamespace() throws Exception {
         javax.swing.text.Document doc = Util.getResourceAsDocument("nodes/test2.xml");
         XDMModel model = Util.loadXDMModel(doc);
+        model.setQNameValuedAttributes(new HashMap<QName,List<QName>>());
         Element root = (Element) model.getDocument().getDocumentElement();
         Element a1 = (Element) model.getDocument().createElementNS(TestComponent.NS_URI, "a1");
         assertEquals(TestComponent.NS_URI, a1.getAttribute(XMLConstants.XMLNS_ATTRIBUTE));
@@ -382,6 +387,38 @@ public class ElementTest extends TestCase {
         assertNull(a1.getAttribute(XMLConstants.XMLNS_ATTRIBUTE));
     }
     
+    public void testConsolidateDefaultToDeclaredPrefix() throws Exception {
+        xmlModel = Util.loadXDMModel("nodes/cloned-node4.xml");
+        Element root = (Element) xmlModel.getDocument().getDocumentElement();
+        Element cloned = Util.getChildElementByTag(root, "A");
+        Element clone = (Element)cloned.cloneNode(true);
+        
+        assertFalse(clone.isInTree());
+        assertTrue(clone.getModel() == null);
+        assertEquals("namespaceA", clone.getNamespaceURI());
+        assertEquals("namespaceA", clone.getAttribute("xmlns"));
+        assertEquals("namespaceA", clone.lookupNamespaceURI(""));
+        Element cloneChildB = Util.getChildElementByTag(clone, "B");
+        assertEquals("namespaceB", cloneChildB.lookupNamespaceURI("b1"));
+        
+        javax.swing.text.Document doc = Util.getResourceAsDocument("nodes/clone-receiver4.xml");
+        XDMModel dest = Util.loadXDMModel(doc);
+        dest.setQNameValuedAttributes(new HashMap<QName,List<QName>>());
+        Element receiverRoot = (Element) dest.getDocument().getDocumentElement();
+        Element middle = Util.getChildElementByTag(receiverRoot, "m:middle");
+        middle = (Element) dest.append(middle, clone).get(0);
+
+        dest.flush();
+        //Util.dumpToFile(doc, new File("c:/temp/test2.xml"));
+        
+        receiverRoot = (Element) dest.getDocument().getDocumentElement();
+        assertTrue(middle == Util.getChildElementByTag(receiverRoot, "m:middle"));
+        Element pasted = Util.getChildElementByTag(middle, "a1:A");
+        assertEquals("namespaceA", receiverRoot.lookupNamespaceURI("a1"));
+        assertNull(pasted.getAttribute("xmlns:a1"));
+        assertNull(pasted.getAttribute("xmlns"));
+    }
+
     private XDMModel xmlModel;
     private Element elem;
 }

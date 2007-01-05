@@ -1,7 +1,5 @@
 package org.netbeans.modules.xml.xam;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -10,7 +8,9 @@ import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.AbstractNamedComponentReference;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /**
  *
@@ -211,6 +211,22 @@ public class TestComponent extends AbstractDocumentComponent<TestComponent> impl
                 }
             }
             return getReferenced();
+        }
+    }
+
+    public String getLeadingText(TestComponent child) {
+        return super.getLeadingText(child);
+    }
+    
+    public String getTrailingText(TestComponent child) {
+        return super.getTrailingText(child);
+    }
+    
+    public void setText(String propName, String value, TestComponent child, final boolean leading) {
+        if (leading) {
+            setLeadingText(propName, value, child);
+        } else {
+            setTrailingText(propName, value, child);
         }
     }
     

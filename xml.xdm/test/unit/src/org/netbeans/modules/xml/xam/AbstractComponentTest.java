@@ -20,6 +20,7 @@ import org.netbeans.modules.xml.xdm.nodes.Element;
 import org.netbeans.modules.xml.xdm.nodes.Token;
 import org.netbeans.modules.xml.xdm.nodes.TokenType;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /**
  *
@@ -749,7 +750,68 @@ public class AbstractComponentTest extends TestCase {
         TestModel model2 = Util.loadModel(f);
         assertEquals(3, model2.getRootComponent().getPeer().getChildNodes().getLength());
     }
+    
+    public void testSetText() throws Exception {
+        model = Util.loadModel("resources/test_removeChildren.xml");
+        p = model.getRootComponent();
+        a1 = p.getChild(A.class);
+        String a1Leading = "\n function match(a,b) if (a > 0 && b < 7) <a>     \n    ";
+        assertEquals(a1Leading, p.getLeadingText(a1));
 
+        model.startTransaction();
+        p.setText("test", "---a1---", a1, true);
+        model.endTransaction();
+        assertFalse(p.getPeer().getChildNodes().item(1) instanceof Text);
+
+        model.startTransaction();
+        p.setText("test", "---b1---", a1, false);
+        model.endTransaction();
+        
+        assertEquals("a", p.getPeer().getChildNodes().item(1).getLocalName());
+        assertEquals("---b1---", ((Text)p.getPeer().getChildNodes().item(2)).getNodeValue());
+        assertEquals("b", p.getPeer().getChildNodes().item(3).getLocalName());
+
+        b1 = p.getChild(B.class);
+        c1 = p.getChild(C.class);
+
+        model.startTransaction();
+        p.setText("test", "---c1---", c1, true);
+        model.endTransaction();
+        
+        assertEquals("b", p.getPeer().getChildNodes().item(3).getLocalName());
+        assertEquals("---c1---", ((Text)p.getPeer().getChildNodes().item(4)).getNodeValue());
+        assertEquals("c", p.getPeer().getChildNodes().item(5).getLocalName());
+
+        model.startTransaction();
+        p.setText("test", "---(c1)---", b1, false);
+        model.endTransaction();
+        
+        assertEquals("b", p.getPeer().getChildNodes().item(3).getLocalName());
+        assertEquals("---(c1)---", p.getLeadingText(c1));
+        assertEquals("c", p.getPeer().getChildNodes().item(5).getLocalName());
+
+        model.startTransaction();
+        p.setText("test", "---d1---", c1, false);
+        model.endTransaction();
+        //Util.dumpToFile(model.getBaseDocument(), new File("c:/temp/test1.xml"));
+        
+        assertEquals("c", p.getPeer().getChildNodes().item(5).getLocalName());
+        assertEquals("---d1---", p.getTrailingText(c1));
+        assertEquals(7, p.getPeer().getChildNodes().getLength());
+
+        model.startTransaction();
+        p.setText("test", null, a1, true);
+        p.setText("test", null, b1, false);
+        p.setText("test", null, c1, true);
+        p.setText("test", null, c1, false);
+        model.endTransaction();
+
+        assertNull(p.getLeadingText(a1));
+        assertNull(p.getTrailingText(b1));
+        assertNull(p.getLeadingText(c1));
+        assertNull(p.getTrailingText(c1));
+    }
+          
     // TODO support PI inside normal element
     public void FIXME_testProcessingInstruction() throws Exception {
         model = Util.loadModel("resources/PI_after_prolog.xml");

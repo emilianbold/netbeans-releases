@@ -501,7 +501,7 @@ public abstract class NodeImpl implements Node, Cloneable {
      */
     public NamedNodeMap getAttributes() {
         if(getAttributesForRead().isEmpty()) return NamedNodeMapImpl.EMPTY;
-        return new NamedNodeMapImpl(getAttributesForRead());
+        return new NamedNodeMapImpl(attributes);
     }
     
     /**

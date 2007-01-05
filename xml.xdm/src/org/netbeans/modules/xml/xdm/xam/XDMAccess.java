@@ -23,15 +23,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.EventListener;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.UndoableEditListener;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
@@ -51,9 +48,6 @@ import org.netbeans.modules.xml.xdm.visitor.NodeByPositionVisitor;
 import org.netbeans.modules.xml.xdm.visitor.PathFromRootVisitor;
 import org.netbeans.modules.xml.xdm.visitor.PositionFinderVisitor;
 import org.netbeans.modules.xml.xdm.visitor.XPathFinder;
-import org.openide.cookies.EditorCookie;
-import org.openide.loaders.DataObject;
-import org.openide.util.WeakListeners;
 import org.w3c.dom.NamedNodeMap;
 
 /**
@@ -70,6 +64,7 @@ public class XDMAccess extends DocumentModelAccess {
         xdmModel.setPretty(true);
         this.model = model;
         xdmListener = new XDMListener(this.model);
+        xdmModel.setQNameValuedAttributes(model.getQNameValuedAttributes());
     }
     
     public org.w3c.dom.Document getDocumentRoot() {
@@ -264,6 +259,30 @@ public class XDMAccess extends DocumentModelAccess {
                 updater.updateReference(xdmModel.remove(xdmNode,(Node)child));
             } else {
                 xdmNode.removeChild(child);
+            }
+        } else {
+            throw new IllegalArgumentException();
+        }
+    }
+    
+    public void removeChildren(org.w3c.dom.Node node, Collection<org.w3c.dom.Node> children, NodeUpdater updater) {
+        if (model.inSync()) return;
+        if(node instanceof Node) {
+            ArrayList<Node> nodes = new ArrayList<Node>();
+            for (org.w3c.dom.Node n : children) {
+                if (n instanceof Node) {
+                    nodes.add((Node)n);
+                } else {
+                    throw new IllegalArgumentException();
+                }
+            }
+            Node xdmNode = (Node)node;
+            if(xdmNode.isInTree()) {
+                updater.updateReference(xdmModel.removeChildNodes(xdmNode, nodes));
+            } else {
+                for (Node child : nodes) {
+                    xdmNode.removeChild(child);
+                }
             }
         } else {
             throw new IllegalArgumentException();

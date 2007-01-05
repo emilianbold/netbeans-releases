@@ -196,21 +196,25 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
     
     private static final String FIX_SCHEMA_TARGETNAMESPACE_DOES_NOT_EXIST = "FIX_SCHEMA_TARGETNAMESPACE_DOES_NOT_EXIST";
     
+    private static final String VAL_IMPORT_SCHEMA_TARGETNAMESPACE_DOES_NOT_EXIST = "VAL_IMPORT_SCHEMA_TARGETNAMESPACE_DOES_NOT_EXIST";
+    
+    private static final String FIX_IMPORT_SCHEMA_TARGETNAMESPACE_DOES_NOT_EXIST = "FIX_IMPORT_SCHEMA_TARGETNAMESPACE_DOES_NOT_EXIST";
+    
     public static final String VAL_OPERATION_DOES_NOT_MATCH_INPUT_IN_PORT_TYPE = "VAL_OPERATION_DOES_NOT_MATCH_INPUT_IN_PORT_TYPE";
     public static final String FIX_OPERATION_DOES_NOT_MATCH_INPUT_IN_PORT_TYPE = "FIX_OPERATION_DOES_NOT_MATCH_INPUT_IN_PORT_TYPE";
     
     public static final String VAL_OPERATION_DOES_NOT_MATCH_OUTPUT_IN_PORT_TYPE = "VAL_OPERATION_DOES_NOT_MATCH_OUTPUT_IN_PORT_TYPE";
     public static final String FIX_OPERATION_DOES_NOT_MATCH_OUTPUT_IN_PORT_TYPE = "FIX_OPERATION_DOES_NOT_MATCH_OUTPUT_IN_PORT_TYPE";
     
-    public static final String VAL_OPERATION_DOES_NOT_MATCH_INPUT_NAME_IN_PORT_TYPE = "VAL_OPERATION_DOES_NOT_MATCH_INPUT_NAME_IN_PORT_TYPE";
+     public static final String VAL_OPERATION_DOES_NOT_MATCH_INPUT_NAME_IN_PORT_TYPE = "VAL_OPERATION_DOES_NOT_MATCH_INPUT_NAME_IN_PORT_TYPE";
     public static final String FIX_OPERATION_DOES_NOT_MATCH_INPUT_NAME_IN_PORT_TYPE = "FIX_OPERATION_DOES_NOT_MATCH_INPUT_NAME_IN_PORT_TYPE";
     
     public static final String VAL_OPERATION_DOES_NOT_MATCH_OUTPUT_NAME_IN_PORT_TYPE = "VAL_OPERATION_DOES_NOT_MATCH_OUTPUT_NAME_IN_PORT_TYPE";
     public static final String FIX_OPERATION_DOES_NOT_MATCH_OUTPUT_NAME_IN_PORT_TYPE = "FIX_OPERATION_DOES_NOT_MATCH_OUTPUT_NAME_IN_PORT_TYPE";
     
-    
     public static final String VAL_OPERATION_DOES_NOT_MATCH_FAULTS_IN_PORT_TYPE = "VAL_OPERATION_DOES_NOT_MATCH_FAULTS_IN_PORT_TYPE";
     public static final String FIX_OPERATION_DOES_NOT_MATCH_FAULTS_IN_PORT_TYPE = "FIX_OPERATION_DOES_NOT_MATCH_FAULTS_IN_PORT_TYPE";
+    
     
     public List<ResultItem> mResultItems;
     private Validation mValidation;
@@ -844,7 +848,7 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
                     //Faults do not match
                     getValidateSupport().fireToDo
                             (Validator.ResultType.ERROR, bindingOp,
-                            mMsg.getString(VAL_OPERATION_DOES_NOT_MATCH_FAULTS_IN_PORT_TYPE, operationName, binding.getName(), portTypeName),
+                            mMsg.getString(VAL_OPERATION_DOES_NOT_MATCH_FAULTS_IN_PORT_TYPE, operationName, bindingName, portTypeName),
                             mMsg.getString(FIX_OPERATION_DOES_NOT_MATCH_FAULTS_IN_PORT_TYPE, operationName));
                 }
             }

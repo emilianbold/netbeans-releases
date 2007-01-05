@@ -23,7 +23,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.xml.XMLConstants;
+import javax.xml.namespace.QName;
+import org.netbeans.modules.xml.xdm.XDMModel;
 import org.netbeans.modules.xml.xdm.nodes.Attribute;
 import org.netbeans.modules.xml.xdm.nodes.Element;
 import org.netbeans.modules.xml.xdm.nodes.Node;
@@ -37,13 +41,33 @@ import org.w3c.dom.NamedNodeMap;
 public class NamespaceRefactorVisitor extends ChildVisitor {
     private String namespace;
     private String prefix;
-    private List<Node> path = new ArrayList<Node>();
-    private Set<String> prefixesUsedByAttributes = new HashSet<String>();
+    private List<Node> path;
     
-    public void refactor(NodeImpl tree, String namespace, String newPrefix) {
+    // keep track of prefixes used by attributes so we avoid removing 
+    // their declaration when the new prefix is default prefix.
+    private Set<String> prefixesUsedByAttributesForDefaultNS = new HashSet<String>();
+    
+    private XDMModel model;
+    
+    /**
+     * @deprecated use constructor with QName-valued attributes map.  Prefix refactoring 
+     * should not without complete map.
+     */
+    public NamespaceRefactorVisitor() {
+        this(null);
+    }
+    
+    public NamespaceRefactorVisitor(XDMModel xdmModel) {
+        model = xdmModel;
+    }
+    
+    public void refactor(NodeImpl tree, String namespace, String newPrefix, List<Node> ancestors) {
+        if (model.getQNameValuedAttributes() == null) return;
+        
         assert namespace != null : "Cannot refactor null namespace";
         this.namespace = namespace;
         prefix = newPrefix;
+        path = ancestors;
         tree.accept(this);
     }
     
@@ -59,10 +83,7 @@ public class NamespaceRefactorVisitor extends ChildVisitor {
 
             for (Attribute sameNamespace : redec.getNamespaceRedeclaration()) {
                 String prefixToRemove = sameNamespace.getLocalName();
-                if (prefixesUsedByAttributes.contains(prefixToRemove)) {
-                    // spared the declaration, so no needs to be remembered.
-                    prefixesUsedByAttributes.remove(prefixToRemove);
-                } else {
+                if (! prefixesUsedByAttributesForDefaultNS.remove(prefixToRemove)) {
                     e.removeAttributeNode(sameNamespace);
                 }
             }
@@ -77,17 +98,20 @@ public class NamespaceRefactorVisitor extends ChildVisitor {
     public void visit(Attribute attr) {
         if (attr.isXmlnsAttribute()) return;
         String attrPrefix = attr.getPrefix();
-        if (attrPrefix == null || attrPrefix.length() == 0) {
-            // default namespace is not applicable for attribute, just have no namespaces.
-            return; 
-        }
-        
-        if (namespace.equals(NodeImpl.lookupNamespace(attrPrefix, path))) {
-            if (prefix == null || prefix.length() == 0) {
-                prefixesUsedByAttributes.add(attrPrefix);
-            } else {
-                attr.setPrefix(prefix);
+
+        // default namespace is not applicable for attribute, just have no namespaces.
+        if (! isDefaultPrefix(attrPrefix)) {
+            if (namespace.equals(NodeImpl.lookupNamespace(attrPrefix, path))) {
+                if (isDefaultPrefix(prefix)) {
+                    prefixesUsedByAttributesForDefaultNS.add(attrPrefix);
+                } else {
+                    attr.setPrefix(prefix);
+                }
             }
+        }        
+        if (isQNameValued(attr)) {
+            prefixesUsedByAttributesForDefaultNS.addAll(
+                    refactorAttributeValue(attr, namespace, prefix, path, model));
         }
     }
     
@@ -135,5 +159,68 @@ public class NamespaceRefactorVisitor extends ChildVisitor {
                 }
             }
         }
+    }
+    
+    private QName getQName(Element node) {
+        String ns = NodeImpl.lookupNamespace(node.getPrefix(), path);
+        return new QName(ns, node.getLocalName());
+    }
+    
+    private QName getQName(Attribute node) {
+        String p = node.getPrefix();
+        String ns = (p == null || p.length() == 0) ? null : NodeImpl.lookupNamespace(p, path);
+        return new QName(ns, node.getLocalName());
+    }
+
+    private boolean isQNameValued(Attribute attr) {
+        assert path != null && path.size() > 0;
+        Element e = (Element) path.get(0);
+        QName elementQName = getQName(e);
+        QName attrQName = getQName(attr);
+        List<QName> attrQNames = model.getQNameValuedAttributes().get(elementQName);
+        if (attrQNames != null) {
+            return attrQNames.contains(attrQName);
+        }
+        return false;
+    }
+    
+    public static boolean isDefaultPrefix(String prefix) {
+        return prefix == null || prefix.equals(XMLConstants.DEFAULT_NS_PREFIX);
+    }
+
+    private static final Pattern p = Pattern.compile("\\s*(\\S+)\\s*");
+
+    public static List<String> refactorAttributeValue(Attribute attr, 
+            String namespace, String prefix, List<Node> context, XDMModel model) 
+    {
+        ArrayList<String> prefixesUsedForDefaultNS = new ArrayList<String>();
+        String value = attr.getValue();
+        StringBuilder newValue = null;
+        Matcher m = p.matcher(value);
+        while (m.find()) {
+            String qname = m.group(1);
+            String[] parts = qname.split(":");
+            if (parts.length > 1) {
+                String valuePrefix = parts[0];
+                String valueNamespace = context.size() == 1 ?
+                    context.get(0).lookupNamespaceURI(valuePrefix) :
+                    NodeImpl.lookupNamespace(valuePrefix, context);
+                if (namespace.equals(valueNamespace)) {
+                    if (isDefaultPrefix(prefix)) {
+                        prefixesUsedForDefaultNS.add(valuePrefix);
+                    } else {
+                        if (newValue == null) newValue = new StringBuilder();
+                        newValue.append(prefix);
+                        newValue.append(":");
+                        newValue.append(parts[1]);
+                        newValue.append(" ");
+                    }
+                }
+            }
+        }
+        if (newValue != null) {
+            attr.setValue(newValue.toString().trim());
+        }
+        return prefixesUsedForDefaultNS;
     }
 }
