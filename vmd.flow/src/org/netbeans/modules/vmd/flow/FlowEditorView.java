@@ -31,10 +31,10 @@ import java.io.IOException;
  */
 public class FlowEditorView implements DataEditorView {
 
-    private static final long serialVersionUID = 3317521238376151579L;
+    private static final long serialVersionUID = -1;
 
     private DataObjectContext context;
-    private FlowViewController controller;
+    private transient FlowViewController controller;
 
     public FlowEditorView (DataObjectContext context) {
         this.context = context;

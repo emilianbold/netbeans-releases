@@ -20,6 +20,7 @@ package org.netbeans.modules.vmd.io.javame;
 
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
+import org.netbeans.modules.mobility.editor.pub.J2MEDataObject.J2MEEditorSupport;
 import org.netbeans.modules.vmd.api.io.IOUtils;
 import org.netbeans.modules.vmd.api.io.providers.DocumentSerializer;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
@@ -35,15 +36,15 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import java.io.*;
-import org.netbeans.modules.mobility.editor.pub.J2MEDataObject.J2MEEditorSupport;
 
 /**
  * @author David Kaspar
  */
+// TODO - save cookie is not added/removed to/from MEDesignEditorSupport based on the saveDocument, notifyModified, notifyUnmodified, notifyClosed
 public class MEDesignEditorSupport extends J2MEEditorSupport implements EditorCookie.Observable, OpenCookie, EditCookie, PrintCookie {
     
     private MEDesignDataObject dataObject;
-    private Save saveCookie = new Save();
+//    private Save saveCookie = new Save();
     private CloseOperationHandler closeHandler;
     private TopComponent mvtc;
     private IOSupport.ShowingType showingType;
@@ -166,13 +167,14 @@ public class MEDesignEditorSupport extends J2MEEditorSupport implements EditorCo
         }
     }
 
-    private class Save implements SaveCookie {
-        
-        public void save() throws IOException {
-            saveDocument();
-            getDataObject().setModified(false);
-        }
-    }
+//    private class Save implements SaveCookie {
+//
+//        public void save() throws IOException {
+//            saveDocument();
+//            getDataObject().setModified(false);
+//        }
+//
+//    }
     
     private static class CloseHandler implements CloseOperationHandler, Serializable {
 

@@ -32,23 +32,34 @@ import org.openide.windows.TopComponent;
 
 import javax.swing.*;
 import java.util.ArrayList;
+import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * @author David Kaspar
  */
-public class EditorViewElement implements MultiViewElement {
+public class EditorViewElement implements MultiViewElement, Serializable {
+
+    private static final long serialVersionUID = -1;
 
     private static final String CLOSING_ID = "ID_JAVA_CLOSING";
 
     private DataObjectContext context;
     private DataEditorView view;
-    private DataEditorView.Kind kind;
-    private Lookup lookup;
-    private TopComponent topComponent;
+    private transient DataEditorView.Kind kind;
+    private transient Lookup lookup;
+    private transient TopComponent topComponent;
+
+    public EditorViewElement () {
+    }
 
     public EditorViewElement (DataObjectContext context, DataEditorView view) {
         this.context = context;
         this.view = view;
+        init ();
+    }
+
+    private void init () {
         kind = view.getKind ();
         ArrayList<Object> lookupObjects = DataEditorViewLookupFactoryRegistry.getLookupObjects (context, view.preferredID (), kind);
         lookupObjects.add (view);
@@ -70,7 +81,8 @@ public class EditorViewElement implements MultiViewElement {
     }
 
     public Action[] getActions () {
-        return new Action[0]; // TODO
+        getVisualRepresentation ();
+        return topComponent.getActions ();
     }
 
     public Lookup getLookup () {
@@ -117,6 +129,23 @@ public class EditorViewElement implements MultiViewElement {
 
     public CloseOperationState canCloseElement () {
         return MultiViewFactory.createUnsafeCloseState (CLOSING_ID, null, null);
+    }
+
+    private void writeObject (java.io.ObjectOutputStream out) throws IOException {
+        out.writeObject (context);
+        out.writeObject (view);
+    }
+
+    private void readObject (java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        Object object = in.readObject ();
+        if (! (object instanceof DataObjectContext))
+            throw new ClassNotFoundException ("DataObjectContext expected but not found");
+        context = (DataObjectContext) object;
+        object = in.readObject ();
+        if (! (object instanceof DataEditorView))
+            throw new ClassNotFoundException ("DataEditorView expected but not found");
+        view = (DataEditorView) object;
+        init ();
     }
 
 }
