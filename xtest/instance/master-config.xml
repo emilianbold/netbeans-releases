@@ -150,8 +150,9 @@ Microsystems, Inc. All Rights Reserved.
         <module name="refactoring" testtypes="qa-functional" attributes="validation"/>-->
  <!--       <module name="web" testtypes="qa-functional" attributes="validation"/>
         <module name="web/jspsyntax" testtypes="qa-functional" attributes="validation"/>
- -->
+ --><!-- Will be included again after installing j2ee server on perf/t4u machines
         <module name="web/jspdebug" testtypes="qa-functional" attributes="validation"/>
+        -->
         <!-- Has to be fixed.
         <module name="form" testtypes="qa-functional" attributes="validation"/> -->
         <!-- Has to be fixed.
