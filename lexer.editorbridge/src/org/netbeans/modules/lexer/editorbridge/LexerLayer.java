@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.lexer.editorbridge;
 
-import java.awt.Color;
-import java.awt.Font;
 import java.util.List;
 import java.util.Stack;
 import javax.swing.text.AttributeSet;
@@ -37,12 +35,9 @@ import javax.swing.text.JTextComponent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.Enumeration;
-import java.util.WeakHashMap;
 import javax.swing.text.EditorKit;
-import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
@@ -60,8 +55,6 @@ final class LexerLayer extends DrawLayer.AbstractLayer {
     
     private final JTextComponent component;
 
-    private final WeakHashMap<AttributeSet, Coloring> colorings = new WeakHashMap<AttributeSet, Coloring>();
-    
     private Listener listener;
 
     private TokenHierarchy listenerHierarchy;
@@ -226,7 +219,7 @@ final class LexerLayer extends DrawLayer.AbstractLayer {
      
 //        dumpAttribs(attribs, tokenId.name(), languagePath.mimePath());
         
-        return attribs == null ? NULL_COLORING : toColoring(attribs);
+        return attribs == null ? NULL_COLORING : Coloring.fromAttributeSet(attribs);
     }
 
     private void dumpAttribs(AttributeSet attribs, String token, String lang) {
@@ -340,79 +333,6 @@ final class LexerLayer extends DrawLayer.AbstractLayer {
         }
 
         return attribs;
-    }
-
-    private Coloring toColoring(AttributeSet as) {
-        synchronized (colorings) {
-            Coloring coloring = colorings.get(as);
-
-            if (coloring == null) {
-                Object [] fontObj = toFont(as);
-
-                coloring = new Coloring(
-                    (Font) fontObj[0],
-                    ((Integer) fontObj[1]).intValue(),
-                    (Color) as.getAttribute(StyleConstants.Foreground),
-                    (Color) as.getAttribute(StyleConstants.Background),
-                    (Color) as.getAttribute(StyleConstants.Underline),
-                    (Color) as.getAttribute(StyleConstants.StrikeThrough),
-                    (Color) as.getAttribute(EditorStyleConstants.WaveUnderlineColor)
-                );
-
-                colorings.put(as, coloring);
-            }
-
-            return coloring;
-        }
-    }
-
-    private Object [] toFont(AttributeSet as) {
-        int applyMode = 0;
-
-        // Determine font family
-        String fontFamily = null;
-        {
-            Object fontFamilyObj = as.getAttribute(StyleConstants.FontFamily);
-            if (fontFamilyObj instanceof String) {
-                fontFamily = (String) fontFamilyObj;
-                applyMode += Coloring.FONT_MODE_APPLY_NAME;
-            }
-        }
-
-        // Determine font size
-        int fontSize = 0;
-        {
-            Object fontSizeObj = as.getAttribute(StyleConstants.FontSize);
-            if (fontSizeObj instanceof Integer) {
-                fontSize = ((Integer) fontSizeObj).intValue();
-                applyMode += Coloring.FONT_MODE_APPLY_SIZE;
-            }
-        }
-
-        // Determine font style
-        int style = 0;
-        {
-            Object boldStyleObj = as.getAttribute(StyleConstants.Bold);
-            Object italicStyleObj = as.getAttribute(StyleConstants.Italic);
-
-            if (boldStyleObj != null || italicStyleObj != null) {
-                if (Boolean.TRUE.equals(boldStyleObj)){
-                    style += Font.BOLD;
-                }
-
-                if (Boolean.TRUE.equals(italicStyleObj)){
-                    style += Font.ITALIC;
-                }
-
-                applyMode += Coloring.FONT_MODE_APPLY_STYLE;
-            }
-        }
-
-        // TODO: cache the Font objects somehow
-        return new Object [] {
-            new Font(fontFamily, style, fontSize),
-            new Integer(applyMode)
-        };
     }
     
     private final class Listener implements TokenHierarchyListener {

@@ -195,22 +195,8 @@ public class NbEditorUI extends ExtEditorUI {
             }
             cm = new HashMap();
             cm.putAll(super.createColoringMap());
-            Collection col = cm.keySet();
-            Iterator it = col.iterator();
-            AttributeSet defAS = fcs.getTokenFontColors("default"); //NOI18N
-            Integer defSize = null;
-            if (defAS != null){
-                Object fsObj = defAS.getAttribute(StyleConstants.FontSize);
-                if (fsObj instanceof Integer){
-                    defSize = (Integer) fsObj;
-                }
-            }
-            
-            if (defSize == null){
-                defSize = new Integer(SettingsDefaults.defaultFont.getSize());
-            }
-            
-            while (it.hasNext()){
+
+            for(Iterator it = cm.keySet().iterator(); it.hasNext(); ) {
 
                 Object nameObj = it.next();
                 if (!(nameObj instanceof String)) {
@@ -227,65 +213,13 @@ public class NbEditorUI extends ExtEditorUI {
                     }
                 }
 
-                Font font = as.getAttribute (StyleConstants.FontFamily) != null ?
-                    toFont (as, defSize) : null;
-
-                if (name.equals ("default")) { //NOI18N
-                    if (font == null) {
-                        continue;		
-                    }
-                    if (as.getAttribute (StyleConstants.Foreground) == null) {
-                        continue;		
-                    }
-                    if (as.getAttribute (StyleConstants.Background) == null) {
-                        continue;		
-                    }
-                }
-                
-                Coloring coloring = new Coloring (
-                    font,
-                    Coloring.FONT_MODE_DEFAULT,
-                    (Color) as.getAttribute (StyleConstants.Foreground),
-                    (Color) as.getAttribute (StyleConstants.Background),
-                    (Color) as.getAttribute (StyleConstants.Underline),
-                    (Color) as.getAttribute (StyleConstants.StrikeThrough),
-                    (Color) as.getAttribute (EditorStyleConstants.WaveUnderlineColor)
-                );
-                
-                cm.put(name, coloring);
+                cm.put(name, Coloring.fromAttributeSet(as));
             }
+            
             mime2Coloring.put(mimeType, cm);
             return cm;
         }
     }
-    
-    static Font toFont (AttributeSet s, Integer defSize) {
-        Object fontFamily = s.getAttribute (StyleConstants.FontFamily);
-        Object fontSize = s.getAttribute (StyleConstants.FontSize);
-        if (fontFamily == null){ 
-            return null;
-        }
-        
-        if (fontSize == null){
-            fontSize = defSize;
-        }
-        
-	int style = 0;
-        if (Boolean.TRUE.equals(s.getAttribute (StyleConstants.Bold))){
-	    style += Font.BOLD;
-        }
-        
-	if (Boolean.TRUE.equals(s.getAttribute (StyleConstants.Italic))){
-	    style += Font.ITALIC;
-        }
-        
-	return new Font (
-	    (String) fontFamily, 
-	    style,
-	    ((Integer) fontSize).intValue ()
-	);
-    }
-    
     
     protected void installUI(JTextComponent c) {
         super.installUI(c);

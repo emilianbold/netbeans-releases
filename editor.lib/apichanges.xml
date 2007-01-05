@@ -82,6 +82,23 @@ is the proper place.
 
     <changes>
 
+        <change id="Coloring.fromAttributeSet">
+            <summary>Adding Coloring.fromAttributeSet method</summary>
+            <version major="1" minor="11"/>
+            <date day="5" month="1" year="2007"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    Adding <code>Coloring.fromAttributeSet</code> static
+                    method to provide a simple and correct way of converting colorings
+                    from the format used by the new settings infrastructure to
+                    the format used by <code>DrawEngine</code> and various
+                    <code>DrawLayer</code>s.
+                </p>
+            </description>
+        </change>
+
         <change id="created">
             <summary>editor/lib now has its own arch and apichanges documents.</summary>
             <version major="1" minor="9"/>

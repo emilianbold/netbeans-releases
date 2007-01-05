@@ -925,57 +925,21 @@ public class BaseOptions extends OptionSupport {
         if (fcs == null){
             return;
         }
-        Iterator it = m.keySet ().iterator ();
         
-        AttributeSet defAS = fcs.getTokenFontColors("default"); //NOI18N        
-        Integer defSize = null;
-        if (defAS != null){
-            Object fsObj = defAS.getAttribute(StyleConstants.FontSize);
-            if (fsObj instanceof Integer){
-                defSize = (Integer) fsObj;
-            }
-        }
-
-        if (defSize == null){
-            defSize = new Integer(SettingsDefaults.defaultFont.getSize());
-        }
-        
-        while (it.hasNext ()) {
+        for(Iterator it = m.keySet().iterator(); it.hasNext(); ) {
             String category = (String) it.next ();
 	    if (category == null) continue;
+            
             AttributeSet as = fcs.getTokenFontColors (category);
-	    if (as == null) 
-		as = fcs.getFontColors (category);
 	    if (as == null) {
-		System.out.println("ColorBridge.unknown category " + category);
+		as = fcs.getFontColors (category);
+            }
+	    if (as == null) {
+		System.out.println("ColorBridge.unknown category " + category); //NOI18N
                 continue;
 	    }
-	    Font font = as.getAttribute (StyleConstants.FontFamily) != null ?
-                toFont (as, defSize) : null;
-	    if (category.equals ("default")) { //NOI18N
-		if (font == null) {
-		    System.out.println("ColorBridge null font!!! ");
-		    continue;		
-		}
-		if (as.getAttribute (StyleConstants.Foreground) == null) {
-		    System.out.println("ColorBridge null Foreground!!! ");
-		    continue;		
-		}
-		if (as.getAttribute (StyleConstants.Background) == null) {
-		    System.out.println("ColorBridge null Background!!! ");
-		    continue;		
-		}
-	    }
-            Coloring c = new Coloring (
-                font,
-                Coloring.FONT_MODE_DEFAULT,
-                (Color) as.getAttribute (StyleConstants.Foreground),
-                (Color) as.getAttribute (StyleConstants.Background),
-                (Color) as.getAttribute (StyleConstants.Underline),
-                (Color) as.getAttribute (StyleConstants.StrikeThrough),
-                (Color) as.getAttribute (EditorStyleConstants.WaveUnderlineColor)
-            );
-            m.put (category, c);
+            
+            m.put(category, Coloring.fromAttributeSet(as));
         }
         m.put(null, getKitClass().getName() ); // add kit class                               
         setColoringMap (m);
