@@ -468,7 +468,7 @@ public class BodyStatementTest extends GeneratorTest {
             "   public Object method() {\n" +
             "        try {\n" +
             "            new Runnable() {\n" +
-            "            };\n" +
+            "            }\n" +
             "            return null;\n" +
             "        } finally {\n" +
             "            System.err.println(\"Got a problem.\");\n" +
@@ -488,7 +488,7 @@ public class BodyStatementTest extends GeneratorTest {
             "            new Runnable() {\n" +
             "                public void run() {\n" +
             "                }\n\n" +
-            "            };\n" +
+            "            }\n" +
             "            return null;\n" +
             "        } finally {\n" +
             "            System.err.println(\"Got a problem.\");\n" +
