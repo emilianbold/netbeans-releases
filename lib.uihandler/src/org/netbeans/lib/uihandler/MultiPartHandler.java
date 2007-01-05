@@ -186,7 +186,7 @@ public class MultiPartHandler {
             if (fileName != null) {
                 // a filename was actually specified
                 String content = (String)partHeaders.get("content-type");
-                saveUploadFile(fileName, content);
+                fileName = saveUploadFile(fileName, content);
 
                 uploadFiles.put(fieldName, 
                     new MultipartHandler( 
@@ -470,7 +470,7 @@ public class MultiPartHandler {
   /**
    * Write this file part to the specified directory. 
    */
-  private long saveUploadFile(String fileName, String content)
+  private String saveUploadFile(String fileName, String content)
                 throws IOException {
 
     long written = 0;
@@ -485,6 +485,7 @@ public class MultiPartHandler {
           }
           file = new File(uploadDir, fileName + "." + i);
       }
+      //fileName = file.getName();
 
       fileOut = new BufferedOutputStream(new FileOutputStream(file));
       int numBytes;
@@ -508,7 +509,7 @@ public class MultiPartHandler {
       if (fileOut != null) fileOut.close();
     }
 
-    return written;
+    return fileName;
   }
 
 

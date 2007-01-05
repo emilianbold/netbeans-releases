@@ -56,23 +56,19 @@ public class UploadLogsTest extends NbTestCase {
         recs.add(new LogRecord(Level.WARNING, "MSG_MISTAKE"));
         MemoryURL.registerURL("memory://upload", "Ok");
         URL redir = Installer.uploadLogs(new URL("memory://upload"), "myId", Collections.<String,String>emptyMap(), recs);
-        String s = MemoryURL.getOutputForURL("memory://upload");
-        fail(s);
         
-        String content = MemoryURL.getOutputForURL("memory://upload");
+        final byte[] content = MemoryURL.getOutputForURL("memory://upload");
         
-        int head = content.indexOf("\n\n");
+        int head = new String(content, "utf-8").indexOf("\n\n");
         if (head == -1) {
             fail("There should be an empty line:\n" + content);
         }
 
-        final String buf = content;
         class RFImpl implements MultiPartHandler.RequestFacade, MultiPartHandler.InputFacade {
-            private ByteArrayInputStream is = new ByteArrayInputStream(buf.getBytes());
-            
+            private ByteArrayInputStream is = new ByteArrayInputStream(content);
             
             public int getContentLength() {
-                return buf.length();
+                return content.length;
             }
 
             public String getContentType() {
@@ -127,9 +123,6 @@ public class UploadLogsTest extends NbTestCase {
         
         assertNotNull("Parsed", dom);
     }
-
-
-
 
 }
 

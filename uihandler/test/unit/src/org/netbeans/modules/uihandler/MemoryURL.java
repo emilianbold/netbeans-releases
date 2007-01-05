@@ -60,10 +60,10 @@ public class MemoryURL extends URLStreamHandler {
         contents.put(u, content);
     }
     
-    public static String getOutputForURL(String u) {
+    public static byte[] getOutputForURL(String u) {
         MC out = outputs.get(u);
         Assert.assertNotNull("No output for " + u, out);
-        return out.out.toString();
+        return out.out.toByteArray();
     }
     
     public static String getRequestParameter(String u, String param) {
