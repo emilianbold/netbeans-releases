@@ -49,6 +49,7 @@ public class EditorViewElement implements MultiViewElement, Serializable {
     private transient DataEditorView.Kind kind;
     private transient Lookup lookup;
     private transient TopComponent topComponent;
+    private transient MultiViewElementCallback callback;
 
     public EditorViewElement () {
     }
@@ -81,8 +82,7 @@ public class EditorViewElement implements MultiViewElement, Serializable {
     }
 
     public Action[] getActions () {
-        getVisualRepresentation ();
-        return topComponent.getActions ();
+        return callback != null ? callback.createDefaultActions () : new Action[0];
     }
 
     public Lookup getLookup () {
@@ -124,6 +124,7 @@ public class EditorViewElement implements MultiViewElement, Serializable {
     }
 
     public void setMultiViewCallback (MultiViewElementCallback callback) {
+        this.callback = callback;
         IOSupport.getDataObjectInteface (context.getDataObject ()).setMVTC (callback.getTopComponent ());
     }
 
