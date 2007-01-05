@@ -192,9 +192,20 @@ public class Main extends java.lang.Object {
         //backup completion autopopup option state
         backupAndSettings();
         frame= new TestEditorFrame();
-        frame.getEditor().setEditorKit(1);
+        
+        //Editor kit heve to be set in AWT thread
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                public void run() {
+                    frame.getEditor().setEditorKit(1);
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+        }        
         if (args.length > 0) {
             frame.show();
+            System.err.println("to perform");
             performTest(args);
             Main.log("Performing finished!");
             //            System.err.println(frame.getEditor().getText());

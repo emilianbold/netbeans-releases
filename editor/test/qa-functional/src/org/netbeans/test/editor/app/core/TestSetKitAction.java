@@ -132,7 +132,15 @@ public class TestSetKitAction extends TestSetAction {
     
     public void perform() {
         super.perform();
-        Main.frame.getEditor().setEditorKit(getKitI());
+        try {
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+                Main.frame.getEditor().setEditorKit(getKitI());
+            }
+        });
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+        }        
     }
     
     public void stop() {
