@@ -30,13 +30,13 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Registry;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.modules.editor.completion.CompletionImpl;
 import org.netbeans.modules.editor.completion.CompletionJList;
-import org.openide.text.DocumentLine;
 
 
 /**
@@ -86,7 +86,7 @@ public class CompletionJListOperator extends JListOperator {
         // Path to the completion model:
         // CompletionImpl.get().layout.completionPopup.getCompletionScrollPane()
         // .view.getModel()
-        CompletionImpl comp = CompletionImpl.get();
+        final CompletionImpl comp = CompletionImpl.get();
         try {
             //CompletionLayout.class
             Field layoutField = CompletionImpl.class.getDeclaredField("layout");
@@ -97,22 +97,46 @@ public class CompletionJListOperator extends JListOperator {
             popupField.setAccessible(true);
             final Object popup = popupField.get(layout);
             //CompletionScrollPane.class
-            final Field csPanefield = popup.getClass().getDeclaredField(
+            final Field csPaneField = popup.getClass().getDeclaredField(
                     "completionScrollPane");
-            csPanefield.setAccessible(true);
+            csPaneField.setAccessible(true);
+            final String PLEASE_WAIT = Bundle.getStringTrimmed(
+                    "org.netbeans.modules.editor.completion.Bundle",
+                    "completion-please-wait");
             Object compSPane = waitFor(new Waitable() {                
                 public Object actionProduced(Object obj) {
-                    Object o = null;
+                    Object compSPane = null;
                     if (DocumentWatcher.isActive() && DocumentWatcher.isModified()) {
                         return INSTANT_SUBSTITUTION;
                     }
                     try {
-                        o = csPanefield.get(popup);
+                        compSPane = csPaneField.get(popup);
+                        if (compSPane != null) {
+                            // check if all result providers finished
+                            Field crField = comp.getClass().getDeclaredField("completionResult");
+                            crField.setAccessible(true);
+                            Object completionResult = crField.get(comp);
+                            if (completionResult == null) {
+                                //System.out.println(":: completionResult == null");
+                                return compSPane;
+                            }
+                            Method grsMethod = completionResult.getClass().getDeclaredMethod("getResultSets");
+                            grsMethod.setAccessible(true);
+                            Object resultSets = grsMethod.invoke(completionResult, new Object[0]);
+                            Method iarfMethod = comp.getClass().getDeclaredMethod("isAllResultsFinished",
+                                    List.class);
+                            iarfMethod.setAccessible(true);
+                            Boolean allResultsFinished = (Boolean) iarfMethod.invoke(comp, resultSets);
+                            if (!allResultsFinished) {
+                                System.out.println(System.currentTimeMillis()+": all CC Results not finished yet.");
+                                compSPane = null;
+                            }
+                        }
                     } catch (Exception ex) {
                         throw new JemmyException("Invovation of " +
                                 "getCompletionScrollPane() failed", ex);
                     }
-                    return o;
+                    return compSPane;
                 }
                 
                 public String getDescription() {
@@ -138,8 +162,8 @@ public class CompletionJListOperator extends JListOperator {
                     } catch (java.lang.Exception ex) {
                         throw new JemmyException(getDescription()+" failed", ex);
                     }
-                    // chech if it is no a 'Please Wait' item
-                    if (list.size() > 0 && !(list.get(0) instanceof String)) {
+                    // check if it is no a 'Please Wait' item
+                    if (list.size() > 0 && !(list.contains(PLEASE_WAIT))) {
                         return list;
                     } else {
                         return null;
