@@ -127,8 +127,9 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.bpel.core</friend>
-                <friend>org.netbeans.modules.bpel.xpath</friend>
                 <friend>org.netbeans.modules.bpel.editors</friend>
+                <friend>org.netbeans.modules.bpel.search</friend>
+                <friend>org.netbeans.modules.bpel.xpath</friend>
                 <friend>org.netbeans.modules.xml.schema.abe</friend>
                 <friend>org.netbeans.modules.xml.schema.core</friend>
                 <friend>org.netbeans.modules.xml.schema.refactoring</friend>
