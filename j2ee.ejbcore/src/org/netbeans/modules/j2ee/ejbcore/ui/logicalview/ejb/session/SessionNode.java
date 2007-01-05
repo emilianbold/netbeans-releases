@@ -81,7 +81,10 @@ public final class SessionNode extends AbstractNode implements OpenCookie {
         if (ejbViewController.getBeanDo() != null) {
             instanceContent.add(ejbViewController.getBeanDo());
         }
-        instanceContent.add(ejbViewController.createEjbReference());
+        EjbReference ejbReference = ejbViewController.createEjbReference();
+        if (ejbReference != null) {
+            instanceContent.add(ejbReference);
+        }
     }
     
     private void setDisplayName() {
