@@ -129,38 +129,40 @@ public final class ElementUtilities {
     
     public Iterable<? extends Element> getMembers(TypeMirror type, ElementAcceptor acceptor) {
         ArrayList<Element> members = new ArrayList<Element>();
-        Elements elements = info.getElements();
-        switch (type.getKind()) {
-            case DECLARED:
-                for (Element member : elements.getAllMembers((TypeElement)((DeclaredType)type).asElement())) {
-                    if (acceptor == null || acceptor.accept(member, type))
-                        members.add(member);
-                }
-            case BOOLEAN:
-            case BYTE:
-            case CHAR:
-            case DOUBLE:
-            case FLOAT:
-            case INT:
-            case LONG:
-            case SHORT:
-            case VOID:
-                Context ctx = info.getJavacTask().getContext();
-                Type t = Symtab.instance(ctx).classType;
-                com.sun.tools.javac.util.List<Type> typeargs = Source.instance(ctx).allowGenerics() ?
-                    com.sun.tools.javac.util.List.of((Type)type) :
-                    com.sun.tools.javac.util.List.<Type>nil();
-                t = new ClassType(t.getEnclosingType(), typeargs, t.tsym);
-                Element classPseudoMember = new VarSymbol(Flags.STATIC | Flags.PUBLIC | Flags.FINAL, Name.Table.instance(ctx)._class, t, ((Type)type).tsym);
-                if (acceptor == null || acceptor.accept(classPseudoMember, type))
-                    members.add(classPseudoMember);
-                break;
-            case ARRAY:
-                for (Element member : elements.getAllMembers((TypeElement)((Type)type).tsym)) {
-                    if (acceptor == null || acceptor.accept(member, type))
-                        members.add(member);
-                }
-                break;
+        if (type != null) {
+            Elements elements = info.getElements();
+            switch (type.getKind()) {
+                case DECLARED:
+                    for (Element member : elements.getAllMembers((TypeElement)((DeclaredType)type).asElement())) {
+                        if (acceptor == null || acceptor.accept(member, type))
+                            members.add(member);
+                    }
+                case BOOLEAN:
+                case BYTE:
+                case CHAR:
+                case DOUBLE:
+                case FLOAT:
+                case INT:
+                case LONG:
+                case SHORT:
+                case VOID:
+                    Context ctx = info.getJavacTask().getContext();
+                    Type t = Symtab.instance(ctx).classType;
+                    com.sun.tools.javac.util.List<Type> typeargs = Source.instance(ctx).allowGenerics() ?
+                        com.sun.tools.javac.util.List.of((Type)type) :
+                        com.sun.tools.javac.util.List.<Type>nil();
+                    t = new ClassType(t.getEnclosingType(), typeargs, t.tsym);
+                    Element classPseudoMember = new VarSymbol(Flags.STATIC | Flags.PUBLIC | Flags.FINAL, Name.Table.instance(ctx)._class, t, ((Type)type).tsym);
+                    if (acceptor == null || acceptor.accept(classPseudoMember, type))
+                        members.add(classPseudoMember);
+                    break;
+                case ARRAY:
+                    for (Element member : elements.getAllMembers((TypeElement)((Type)type).tsym)) {
+                        if (acceptor == null || acceptor.accept(member, type))
+                            members.add(member);
+                    }
+                    break;
+            }            
         }
         return members;
     }
