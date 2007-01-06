@@ -565,7 +565,10 @@ public class AbstractComponentTest extends TestCase {
         assertEquals(value, a1.getAnyAttribute(noPrefixAttr));
         assertEquals(prefix, a1.getPeer().lookupPrefix(ns));
         
-        Util.dumpAndReloadModel(model);
+        model = Util.dumpAndReloadModel(model);
+        model.addPropertyChangeListener(listener);
+        model.addComponentListener(clistener);
+        a1 = model.getRootComponent().getChild(A.class);
         assertEquals(value, a1.getAnyAttribute(noPrefixAttr));
         assertEquals(prefix, a1.getPeer().lookupPrefix(ns));
         

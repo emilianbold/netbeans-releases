@@ -164,4 +164,11 @@ public class AbstractModelTest extends TestCase {
         model.endTransaction();
         list.assertFlushEvent(since);
     }
+    
+    public void testModelFactoryListener() throws Exception {
+        TestModel2.factory().addPropertyChangeListener(plistener);
+        TestModel2 m = TestModel2.factory().getModel(Util.createModelSource(
+                "resources/test1.xml"));
+        plistener.assertEvent(TestModel2.factory().MODEL_LOADED_PROPERTY, null, m);
+    }
 }

@@ -1,5 +1,6 @@
 package org.netbeans.modules.xml.xam;
 
+import java.io.File;
 import javax.swing.text.Document;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.dom.DocumentModel;
@@ -18,7 +19,7 @@ public class TestModel2 extends AbstractDocumentModel<TestComponent2> implements
     
     /** Creates a new instance of TestModel */
     public TestModel2(Document doc) {
-        super(createModelSource(doc));
+        super(Util.createModelSource(doc));
         try {
             super.sync();
         } catch(Exception e) {
@@ -26,9 +27,30 @@ public class TestModel2 extends AbstractDocumentModel<TestComponent2> implements
         }
     }
     
-    public static ModelSource createModelSource(Document doc) {
-        Lookup lookup = Lookups.fixed(new Object[] { doc } );
-        return new ModelSource(lookup, true);
+    public TestModel2(ModelSource source) {
+        super(source);
+    }
+    
+    private static Factory factory = null;
+    public static Factory factory() {
+        if (factory == null) {
+            factory = new Factory();
+        }
+        return factory;
+    }
+    
+    public static class Factory extends AbstractModelFactory<TestModel2> {
+        private Factory() {
+            super();
+        }
+        
+        protected TestModel2 createModel(ModelSource source) {
+            return new TestModel2(source);
+        }
+        
+        public TestModel2 getModel(ModelSource source) {
+            return super.getModel(source);
+        }
     }
     
     public TestComponent2 getRootComponent() {

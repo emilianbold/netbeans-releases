@@ -2,6 +2,7 @@ package org.netbeans.modules.xml.xam;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
 import javax.swing.text.Document;
 import junit.framework.*;
@@ -15,6 +16,7 @@ import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.TestComponent.A;
 import org.netbeans.modules.xml.xam.TestComponent.B;
 import org.netbeans.modules.xml.xam.TestComponent.C;
+import org.netbeans.modules.xml.xam.TestComponent.D;
 import org.netbeans.modules.xml.xam.TestComponent.E;
 import org.netbeans.modules.xml.xdm.Util;
 import org.netbeans.modules.xml.xdm.diff.Change;
@@ -807,4 +809,30 @@ public class AbstractModelTest extends TestCase {
         assertEquals("b1 should be replaced by b2", 2, model.getRootComponent().getChild(B.class).getIndex());
         assertNull("c1 should be deleted", model.getRootComponent().getChild(C.class));
     }    
+
+
+    
+    private static class Handler implements ComponentListener {
+        public void valueChanged(ComponentEvent evt) {
+        }
+        public void childrenDeleted(ComponentEvent evt) {
+        }
+        public void childrenAdded(ComponentEvent evt) {
+            if (evt.getSource().getClass().isAssignableFrom(TestComponent.class)) {
+                D myD = ((TestComponent)evt.getSource()).getChild(D.class);
+                myD.appendChild("test", new B(myD.getModel(), 2));
+            }
+        }
+    }
+    
+    public void testMutationInComponentEventHandler() throws Exception {
+        defaultSetup();
+        model.addComponentListener(new Handler());
+        model.startTransaction();
+        model.getRootComponent().appendChild("test", new D(model, 2));
+        model.endTransaction();
+        model = Util.dumpAndReloadModel(model);
+        D d = model.getRootComponent().getChild(D.class);
+        assertNotNull(d.getChild(B.class));
+    }
 }

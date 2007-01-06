@@ -361,22 +361,26 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
         private final List<ComponentEvent> componentListenerEvents;
         private final Thread transactionThread;
         private boolean eventAdded;
+        private boolean hasEvents;
         
         public Transaction() {
             propertyChangeEvents = new ArrayList<PropertyChangeEvent>();
             componentListenerEvents = new ArrayList<ComponentEvent>();
             transactionThread = Thread.currentThread();
             eventAdded = false;
+            hasEvents = false;
         }
         
         public void addPropertyChangeEvent(PropertyChangeEvent pce) {
             propertyChangeEvents.add(pce);
             eventAdded = true;
+            hasEvents = true;
         }
         
         public void addComponentEvent(ComponentEvent cle) {
             componentListenerEvents.add(cle);
             eventAdded = true;
+            hasEvents = true;
         }
         
         public boolean currentThreadIsTransactionThread() {
@@ -396,13 +400,17 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
          */
         private void fireCompleteEventSet() {
             final List<PropertyChangeEvent> clonedEvents = 
-                    new ArrayList<PropertyChangeEvent>(propertyChangeEvents);
+                    new ArrayList<PropertyChangeEvent>(propertyChangeEvents); 
+            //should clear event list
+            propertyChangeEvents.clear();
             for (PropertyChangeEvent pce:clonedEvents) {
                 pcs.firePropertyChange(pce);
             }
             
             final List<ComponentEvent> cEvents = 
-                new ArrayList<ComponentEvent>(componentListenerEvents);
+                new ArrayList<ComponentEvent>(componentListenerEvents); 
+            //should clear event list
+            componentListenerEvents.clear();
             Map<Object, Set<ComponentEvent.EventType>> fired = new HashMap<Object, Set<ComponentEvent.EventType>>();
             
             for (ComponentEvent cle:cEvents) {
@@ -430,7 +438,7 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
         }
         
         public boolean hasEvents() {
-            return propertyChangeEvents.size() > 0 || componentListenerEvents.size() > 0;
+            return hasEvents;
         }
     }
     

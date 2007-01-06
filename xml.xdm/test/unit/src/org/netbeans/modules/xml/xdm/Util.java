@@ -26,6 +26,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.TestModel;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.dom.DocumentModel;
 import org.netbeans.modules.xml.xam.dom.ElementIdentity;
 import org.netbeans.modules.xml.xdm.diff.DefaultElementIdentity;
@@ -183,10 +184,10 @@ public class Util {
         return new TestModel(loadDocument(f));
     }
     
-    public static void dumpAndReloadModel(DocumentModel sm) throws Exception {
-        Document doc = (Document) sm.getModelSource().getLookup().lookup(Document.class);
+    public static TestModel dumpAndReloadModel(DocumentModel sm) throws Exception {
+        Document doc = (Document) ((AbstractDocumentModel)sm).getBaseDocument();
         File f = dumpToTempFile(doc);
-        setDocumentContentTo(doc, new BufferedInputStream(new FileInputStream(f)));
+        return loadModel(f);
     }
     
 }

@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.xml.xam;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -39,13 +41,17 @@ import org.openide.util.RequestProcessor;
 public abstract class AbstractModelFactory<M extends Model> {
     public AbstractModelFactory() {
         factories.add(new WeakReference<AbstractModelFactory>(this));
+        propSupport = new PropertyChangeSupport(this);
     }
     
     public static final int DELAY_SYNCER = 2000;  // milisecs.
     public static final int DELAY_DIRTY = 1000;  // milisecs.
+    
+    public static final String MODEL_LOADED_PROPERTY = "modelLoaded";
 
     private WeakHashMap<Object, WeakReference<M>> cachedModels = 
 	new WeakHashMap<Object,WeakReference<M>>();
+    private PropertyChangeSupport propSupport;
     
     protected abstract M createModel(ModelSource source);
     
@@ -108,6 +114,7 @@ public abstract class AbstractModelFactory<M extends Model> {
                     Logger.getLogger(this.getClass().getName()).log(Level.FINE, "Sync has errors", ioe);
                 }
                 cachedModels.put(key, new WeakReference<M>(model));
+                propSupport.firePropertyChange(MODEL_LOADED_PROPERTY, null, model);
             }
         }
         return model;
@@ -173,6 +180,14 @@ public abstract class AbstractModelFactory<M extends Model> {
             }
         }
         return ret;
+    }
+    
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        propSupport.addPropertyChangeListener(l);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        propSupport.removePropertyChangeListener(l);
     }
 }
 

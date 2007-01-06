@@ -19,9 +19,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.URI;
 import javax.swing.text.Document;
 import org.netbeans.modules.xml.xam.dom.DocumentModel;
 import org.netbeans.modules.xml.xam.dom.ReadOnlyAccess;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -42,7 +45,6 @@ public class Util {
     
     public static TestModel2 loadModel(String path) throws Exception {
         TestModel2 model = new TestModel2(getResourceAsDocument(path));
-        //model.sync();
         return model;
     }
     
@@ -93,9 +95,30 @@ public class Util {
         return setDocumentContentTo(doc, Util.class.getResourceAsStream(resourcePath));
     }
 
-    public static void dumpAndReloadModel(DocumentModel sm) throws Exception {
+    public static TestModel2 dumpAndReloadModel(DocumentModel sm) throws Exception {
         Document doc = (Document) sm.getModelSource().getLookup().lookup(Document.class);
         File f = dumpToTempFile(doc);
-        setDocumentContentTo(doc, new BufferedInputStream(new FileInputStream(f)));
+        return new TestModel2(loadDocument(f));
     }
+
+    public static URI getResourceURI(String path) throws Exception {
+        return Util.class.getResource(path).toURI();
+    }
+    
+    public static File getResourceFile(String path) throws Exception {
+        return new File(getResourceURI(path));
+    } 
+
+    public static ModelSource createModelSource(Document doc) {
+        Lookup lookup = Lookups.fixed(new Object[] { doc } );
+        return new ModelSource(lookup, true);
+    }
+    
+    public static ModelSource createModelSource(String path) throws Exception {
+        Document doc = Util.getResourceAsDocument(path);
+        File file = Util.getResourceFile(path);
+        Lookup lookup = Lookups.fixed(new Object[] { doc, file } );
+        return new ModelSource(lookup, true);
+    }
+    
 }
