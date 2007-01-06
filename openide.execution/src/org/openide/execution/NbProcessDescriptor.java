@@ -159,19 +159,11 @@ public final class NbProcessDescriptor extends Object implements Serializable {
 
         logArgs(call);
         
-        if (envp != null && appendEnv) {
-            // Take system properties Env-* and use them as defaults.
-            // XXX #4738465 requests a better way - supposedly fixed in Tiger...
-            Map e = new HashMap (100); // Map<String,String>
-            Iterator it = System.getProperties ().entrySet ().iterator ();
-            while (it.hasNext ()) {
-                Map.Entry entry = (Map.Entry) it.next ();
-                String prop = (String) entry.getKey ();
-                if (prop.startsWith ("Env-")) { // NOI18N
-                    String evar = prop.substring (4); // length of "Env-"
-                    e.put (evar, entry.getValue ());
-                }
-            }
+        ProcessBuilder pb = new ProcessBuilder(call);
+        
+        if (envp != null) {
+            Map<String,String> e = pb.environment();
+            if (!appendEnv) e.clear();
             for (int i = 0; i < envp.length; i++) {
                 String nameval = envp[i];
                 int idx = nameval.indexOf ('='); // NOI18N
@@ -179,50 +171,10 @@ public final class NbProcessDescriptor extends Object implements Serializable {
                 if (idx == -1) throw new IOException ("No equal sign in name=value: " + nameval); // NOI18N
                 e.put (nameval.substring (0, idx), nameval.substring (idx + 1));
             }
-            envp = new String[e.size ()];
-            int i = 0;
-            it = e.entrySet ().iterator ();
-            while (it.hasNext ()) {
-                Map.Entry entry = (Map.Entry) it.next ();
-                envp[i++] = ((String) entry.getKey ()) + '=' + ((String) entry.getValue ()); // NOI18N
-            }
         }
 
-        // XXX(ttran, psuchomel) for Windows 98 it is nessesary to change
-        // calling thread's priority to NORM_PRIORITY when starting external
-        // process and then switch it back to the original value.  See JDK bug
-        // #4086045
-
-        int os = Utilities.getOperatingSystem();
-
-        // XXX(ttran) must set these variables to some values to silence
-        // javac's error "variable xyz might not have been initialized"
-        
-        Thread currentThread = null;
-        int currentPriority = 0;
-
-        try {
-            if (os == Utilities.OS_WIN98) {
-                currentThread  = Thread.currentThread();
-                currentPriority = currentThread.getPriority();
-                currentThread.setPriority(Thread.NORM_PRIORITY);
-            }
-
-            if (cwd == null) {
-                if (envp == null) {
-                    return Runtime.getRuntime ().exec (call);
-                } else {
-                    return Runtime.getRuntime ().exec (call, envp);
-                }
-            } else {
-                return Runtime.getRuntime().exec(call, envp, cwd);
-            }
-        }
-        finally {
-            if (os == Utilities.OS_WIN98) {
-                currentThread.setPriority(currentPriority);
-            }
-        }
+        if (cwd != null) pb.directory(cwd);
+        return pb.start();
     }
     
     private static void logArgs(String[] args) {
