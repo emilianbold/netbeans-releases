@@ -465,6 +465,134 @@ public class GoToSupportTest extends NbTestCase {
         assertTrue(wasCalled[0]);
     }
     
+    public void testNewClass91637() throws Exception {
+        final boolean[] wasCalled = new boolean[1];
+        
+        performTest("package test; public class Test {public Test(int x){} public void test() {int ii = 0; new Test(ii);}}", 96, new UiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                assertTrue(source == fo);
+                assertEquals(74, pos);
+                wasCalled[0] = true;
+            }
+            public void beep() {
+                fail("Should not be called.");
+            }
+            public void open(ClasspathInfo info, Element el) {
+                fail("Should not be called.");
+            }
+        }, false);
+        
+        assertTrue(wasCalled[0]);
+        
+        wasCalled[0] = false;
+        
+        performTest("package test; public class Test<T> {public Test(int x){} public void test() {int ii = 0; new Test<Object>(ii);}}", 107, new UiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                assertTrue(source == fo);
+                assertEquals(77, pos);
+                wasCalled[0] = true;
+            }
+            public void beep() {
+                fail("Should not be called.");
+            }
+            public void open(ClasspathInfo info, Element el) {
+                fail("Should not be called.");
+            }
+        }, false);
+        
+        assertTrue(wasCalled[0]);
+        
+        wasCalled[0] = false;
+        
+        performTest("package test; public class Test<T> {public Test(int x){} public void test() {int ii = 0; new Test<Object>(ii);}}", 100, new UiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                fail("Should not be called.");
+            }
+            public void beep() {
+                fail("Should not be called.");
+            }
+            public void open(ClasspathInfo info, Element el) {
+                assertEquals(ElementKind.CLASS, el.getKind());
+                assertEquals("java.lang.Object", ((TypeElement) el).getQualifiedName().toString());
+                wasCalled[0] = true;
+            }
+        }, false);
+        
+        assertTrue(wasCalled[0]);
+    }
+    
+    public void testNewClass91769() throws Exception {
+        final boolean[] wasCalled = new boolean[1];
+        
+        performTest("package test; public class Test {public void test() {new AB(name);} private static class AB {public AB(String n){}}}", 58, new UiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                assertTrue(source == fo);
+                assertEquals(68, pos);
+                wasCalled[0] = true;
+            }
+            public void beep() {
+                fail("Should not be called.");
+            }
+            public void open(ClasspathInfo info, Element el) {
+                fail("Should not be called.");
+            }
+        }, false);
+        
+        assertTrue(wasCalled[0]);
+        
+        wasCalled[0] = false;
+        
+        performTest("package test; public class Test {public void test() {new AB<Object>(name);} private static class AB<T> {public AB(String n){}}}", 58, new UiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                assertTrue(source == fo);
+                assertEquals(76, pos);
+                wasCalled[0] = true;
+            }
+            public void beep() {
+                fail("Should not be called.");
+            }
+            public void open(ClasspathInfo info, Element el) {
+                fail("Should not be called.");
+            }
+        }, false);
+        
+        assertTrue(wasCalled[0]);
+        
+        wasCalled[0] = false;
+        
+        performTest("package test; public class Test {public void test() {new AB(name);} private static class AB {public AB(String n){}}}", 62, new UiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                fail("Should not be called.");
+            }
+            public void beep() {
+                wasCalled[0] = true;
+            }
+            public void open(ClasspathInfo info, Element el) {
+                fail("Should not be called.");
+            }
+        }, false);
+        
+        assertTrue(wasCalled[0]);
+        
+        wasCalled[0] = false;
+        
+        performTest("package test; public class Test {public void test() {new AB<Object>(name);} private static class AB<T> {public AB(String n){}}}", 63, new UiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                fail("Should not be called.");
+            }
+            public void beep() {
+                fail("Should not be called.");
+            }
+            public void open(ClasspathInfo info, Element el) {
+                assertEquals(ElementKind.CLASS, el.getKind());
+                assertEquals("java.lang.Object", ((TypeElement) el).getQualifiedName().toString());
+                wasCalled[0] = true;
+            }
+        }, false);
+        
+        assertTrue(wasCalled[0]);
+    }
+    
     private void writeIntoFile(FileObject file, String what) throws Exception {
         FileLock lock = file.lock();
         OutputStream out = file.getOutputStream(lock);

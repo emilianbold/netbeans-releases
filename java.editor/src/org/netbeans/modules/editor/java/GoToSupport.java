@@ -23,6 +23,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
@@ -82,6 +83,10 @@ public class GoToSupport {
         return performGoTo(doc, offset, goToSource, true);
     }
     
+    private static boolean isError(Element el) {
+        return el == null || el.asType() == null || el.asType().getKind() == TypeKind.ERROR;
+    }
+    
     private static String performGoTo(final Document doc, final int offset, final boolean goToSource, final boolean tooltip) {
         try {
             final FileObject fo = getFileObject(doc);
@@ -113,17 +118,23 @@ public class GoToSupport {
                     TreePath parent = path.getParentPath();
                     Tree parentLeaf = parent.getLeaf();
                     
-                    if (parentLeaf.getKind() == Kind.NEW_CLASS) {
-                        path = path.getParentPath();
+                    if (parentLeaf.getKind() == Kind.NEW_CLASS && ((NewClassTree) parentLeaf).getIdentifier() == path.getLeaf()) {
+                        if (!isError(controller.getTrees().getElement(path.getParentPath()))) {
+                            path = path.getParentPath();
+                        }
                     } else {
-                        if (parentLeaf.getKind() == Kind.PARAMETERIZED_TYPE && parent.getParentPath().getLeaf().getKind() == Kind.NEW_CLASS) {
-                            path = parent.getParentPath();
+                        if (   parentLeaf.getKind() == Kind.PARAMETERIZED_TYPE
+                            && parent.getParentPath().getLeaf().getKind() == Kind.NEW_CLASS
+                            && ((ParameterizedTypeTree) parentLeaf).getType() == path.getLeaf()) {
+                            if (!isError(controller.getTrees().getElement(parent.getParentPath()))) {
+                                path = parent.getParentPath();
+                            }
                         }
                     }
                     
                     Element el = controller.getTrees().getElement(path);
                     
-                    if (el == null) {
+                    if (isError(el)) {
                         if (!tooltip)
                             CALLER.beep();
                         else
@@ -142,7 +153,7 @@ public class GoToSupport {
                         }
                     }
                     
-                    if (el == null || el.asType().getKind() == TypeKind.ERROR) {
+                    if (isError(el)) {
                         if (!tooltip)
                             CALLER.beep();
                         else
@@ -155,7 +166,7 @@ public class GoToSupport {
                         el = handlePossibleAnnonymousInnerClass(controller, el);
                     }
                     
-                    if (el == null || el.asType().getKind() == TypeKind.ERROR) {
+                    if (isError(el)) {
                         if (!tooltip)
                             CALLER.beep();
                         else
@@ -266,7 +277,7 @@ public class GoToSupport {
             && doubleEncl.getKind() != ElementKind.PACKAGE
             && encl.getKind() == ElementKind.CLASS) {
             TreePath enclTreePath = info.getTrees().getPath(encl);
-            Tree enclTree = enclTreePath.getLeaf();
+            Tree enclTree = enclTreePath != null ? enclTreePath.getLeaf() : null;
             
             if (enclTree != null && enclTree.getKind() == Tree.Kind.CLASS && enclTreePath.getParentPath().getLeaf().getKind() == Tree.Kind.NEW_CLASS) {
                 NewClassTree nct = (NewClassTree) enclTreePath.getParentPath().getLeaf();
