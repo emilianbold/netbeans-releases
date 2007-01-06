@@ -39,12 +39,15 @@ public class ObjectScene extends Scene {
 
     private static final ObjectSceneListener[] EMPTY_LISTENERS = new ObjectSceneListener[0];
     private static final Set<Object> EMPTY_SET = Collections.unmodifiableSet (Collections.emptySet ());
+    private static final Widget[] EMPTY_WIDGETS_ARRAY = new Widget[0];
+    private static final List<Widget> EMPTY_WIDGETS_LIST = Collections.emptyList ();
 
     private HashMap<Object, Object> objects = new HashMap<Object, Object> ();
     private Set<Object> objectsUm = Collections.unmodifiableSet (objects.keySet ());
 
-    private HashMap<Object, Widget> object2widgets = new HashMap<Object, Widget> ();
-    private HashMap<Widget, Object> widget2objects = new HashMap<Widget, Object> ();
+    private HashMap<Object, Widget> object2widget = new HashMap<Object, Widget> ();
+    private HashMap<Object, List<Widget>> object2widgets = new HashMap<Object, List<Widget>> ();
+    private HashMap<Widget, Object> widget2object = new HashMap<Widget, Object> ();
 
     private HashMap<Object, ObjectState> objectStates = new HashMap<Object, ObjectState> ();
 
@@ -64,27 +67,39 @@ public class ObjectScene extends Scene {
     private ObjectSceneEvent event = new ObjectSceneEvent (this);
 
     /**
-     * Adds a mapping between an object and a widget. Note that it does not add the widget into the scene automatically.
+     * Adds a mapping between an object and a widget.
+     * Note that it does not add the widget into the scene automatically - it has to be done manually before this method is called.
      * @param object the model object; the object must not be a Widget
-     * @param widget the scene widget; if null then the object is non-visual and does not have any widget assigned
+     * @param widgets the scene widgets; if it is empty or it is a single null value then the object is non-visual and does not have any widget assigned;
+     *     otherwise the widgets cannot contain null values
      */
-    public final void addObject (Object object, Widget widget) {
+    public final void addObject (Object object, Widget... widgets) {
         assert object != null  &&  ! (object instanceof Widget)  &&  ! objects.containsKey (object);
-        if (widget != null)
-            assert ! widget2objects.containsKey (widget)  &&  widget.getScene () == this;
+        Widget mainWidget = widgets.length > 0 ? widgets[0] : null;
+        if (mainWidget == null)
+            widgets = EMPTY_WIDGETS_ARRAY;
+        for (Widget widget : widgets) {
+            assert widget != null;
+            assert ! widget2object.containsKey (widget) && widget.getScene () == this;
+        }
+
         objects.put (object, object);
-        object2widgets.put (object, widget);
+        object2widget.put (object, mainWidget);
+        object2widgets.put (object, mainWidget != null ? Arrays.asList (widgets) : EMPTY_WIDGETS_LIST);
         objectStates.put (object, ObjectState.createNormal ());
-        if (widget != null) {
-            widget2objects.put (widget, object);
+
+        for (Widget widget : widgets) {
+            widget2object.put (widget, object);
             widget.setState (ObjectState.createNormal ());
         }
+
         for (ObjectSceneListener listener : getListeners (ObjectSceneEventType.OBJECT_ADDED))
             listener.objectAdded (event, object);
     }
 
     /**
-     * Removes a mapping for an object. Note that it does not remove the widget from the scene automatically.
+     * Removes a mapping for an object.
+     * Note that it does not remove the widget from the scene automatically - it has to be done manually after this method is called.
      * @param object the object for which the mapping is removed
      */
     public final void removeObject (Object object) {
@@ -96,10 +111,11 @@ public class ObjectScene extends Scene {
         if (object.equals (focusedObject))
             focusedObject = null;
         objectStates.remove (object);
-        Widget widget = object2widgets.remove (object);
-        if (widget != null) {
+        object2widget.remove (object);
+        List<Widget> widgets = object2widgets.remove (object);
+        for (Widget widget : widgets) {
             widget.setState (ObjectState.createNormal ());
-            widget2objects.remove (widget);
+            widget2object.remove (widget);
         }
         objects.remove (object);
         for (ObjectSceneListener listener : getListeners (ObjectSceneEventType.OBJECT_REMOVED))
@@ -147,8 +163,7 @@ public class ObjectScene extends Scene {
                 ObjectState previousState = objectStates.get (object);
                 ObjectState newState = previousState.deriveSelected (false);
                 objectStates.put (object, newState);
-                Widget widget = object2widgets.get (object);
-                if (widget != null)
+                for (Widget widget : object2widgets.get (object))
                     widget.setState (widget.getState ().deriveSelected (false));
                 for (ObjectSceneListener listener : listeners)
                     listener.objectStateChanged (event, object, previousState, newState);
@@ -161,8 +176,7 @@ public class ObjectScene extends Scene {
                 ObjectState previousState = objectStates.get (object);
                 ObjectState newState = previousState.deriveSelected (true);
                 objectStates.put (object, newState);
-                Widget widget = object2widgets.get (object);
-                if (widget != null)
+                for (Widget widget : object2widgets.get (object))
                     widget.setState (widget.getState ().deriveSelected (true));
                 for (ObjectSceneListener listener : listeners)
                     listener.objectStateChanged (event, object, previousState, newState);
@@ -197,8 +211,7 @@ public class ObjectScene extends Scene {
                 ObjectState previousState = objectStates.get (object);
                 ObjectState newState = previousState.deriveHighlighted (false);
                 objectStates.put (object, newState);
-                Widget widget = object2widgets.get (object);
-                if (widget != null)
+                for (Widget widget : object2widgets.get (object))
                     widget.setState (widget.getState ().deriveHighlighted (false));
                 for (ObjectSceneListener listener : listeners)
                     listener.objectStateChanged (event, object, previousState, newState);
@@ -211,8 +224,7 @@ public class ObjectScene extends Scene {
                 ObjectState previousState = objectStates.get (object);
                 ObjectState newState = previousState.deriveHighlighted (true);
                 objectStates.put (object, newState);
-                Widget widget = object2widgets.get (object);
-                if (widget != null)
+                for (Widget widget : object2widgets.get (object))
                     widget.setState (widget.getState ().deriveHighlighted (true));
                 for (ObjectSceneListener listener : listeners)
                     listener.objectStateChanged (event, object, previousState, newState);
@@ -252,8 +264,7 @@ public class ObjectScene extends Scene {
             ObjectState previousState = objectStates.get (this.hoveredObject);
             ObjectState newState = previousState.deriveObjectHovered (false);
             objectStates.put (this.hoveredObject, newState);
-            Widget widget = object2widgets.get (this.hoveredObject);
-            if (widget != null)
+            for (Widget widget : object2widgets.get (this.hoveredObject))
                 widget.setState (widget.getState ().deriveObjectHovered (false));
             for (ObjectSceneListener listener : listeners)
                 listener.objectStateChanged (event, this.hoveredObject, previousState, newState);
@@ -265,8 +276,7 @@ public class ObjectScene extends Scene {
             ObjectState previousState = objectStates.get (this.hoveredObject);
             ObjectState newState = previousState.deriveObjectHovered (true);
             objectStates.put (this.hoveredObject, newState);
-            Widget widget = object2widgets.get (this.hoveredObject);
-            if (widget != null)
+            for (Widget widget : object2widgets.get (this.hoveredObject))
                 widget.setState (widget.getState ().deriveObjectHovered (true));
             for (ObjectSceneListener listener : listeners)
                 listener.objectStateChanged (event, this.hoveredObject, previousState, newState);
@@ -305,8 +315,7 @@ public class ObjectScene extends Scene {
             ObjectState previousState = objectStates.get (this.focusedObject);
             ObjectState newState = previousState.deriveObjectFocused (false);
             objectStates.put (this.focusedObject, newState);
-            Widget widget = object2widgets.get (this.focusedObject);
-            if (widget != null)
+            for (Widget widget : object2widgets.get (this.focusedObject))
                 widget.setState (widget.getState ().deriveObjectFocused (false));
             for (ObjectSceneListener listener : listeners)
                 listener.objectStateChanged (event, this.focusedObject, previousState, newState);
@@ -318,12 +327,11 @@ public class ObjectScene extends Scene {
             ObjectState previousState = objectStates.get (this.focusedObject);
             ObjectState newState = previousState.deriveObjectFocused (true);
             objectStates.put (this.focusedObject, newState);
-            Widget widget = object2widgets.get (this.focusedObject);
-            if (widget != null)
+            for (Widget widget : object2widgets.get (this.focusedObject))
                 widget.setState (widget.getState ().deriveObjectFocused (true));
             for (ObjectSceneListener listener : listeners)
                 listener.objectStateChanged (event, this.focusedObject, previousState, newState);
-            setFocusedWidget (widget);
+            setFocusedWidget (object2widget.get (this.focusedObject));
         } else
             setFocusedWidget (null);
 
@@ -355,9 +363,19 @@ public class ObjectScene extends Scene {
     /**
      * Returns the widget that is mapped to a specified object.
      * @param object the object; must not be a Widget
-     * @return the widget from the registered mapping; null if object is non-visual or no mapping is registered
+     * @return the widget from the registered mapping; null if the object is non-visual or no mapping is registered
      */
     public final Widget findWidget (Object object) {
+        assert ! (object instanceof Widget) : "Use findObject method for getting an object assigned to a specific Widget"; // NOI18N
+        return object2widget.get (object);
+    }
+
+    /**
+     * Returns a list of all widgets that are mapped to a specified object.
+     * @param object the object; must not be a Widget
+     * @return the list of all widgets from the registered mapping; empty list if the object is non-visual; null if no mapping is registered
+     */
+    public final List<Widget> findWidgets (Object object) {
         assert ! (object instanceof Widget) : "Use findObject method for getting an object assigned to a specific Widget"; // NOI18N
         return object2widgets.get (object);
     }
@@ -370,7 +388,7 @@ public class ObjectScene extends Scene {
      */
     public final Object findObject (Widget widget) {
         while (widget != null) {
-            Object o = widget2objects.get (widget);
+            Object o = widget2object.get (widget);
             if (o != null)
                 return o;
             widget = widget.getParentWidget ();
