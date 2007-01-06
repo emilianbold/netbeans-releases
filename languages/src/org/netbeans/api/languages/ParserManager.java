@@ -19,10 +19,12 @@
 
 package org.netbeans.api.languages;
 
+import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.ParserManagerImpl;
+import org.netbeans.modules.languages.Utils;
 
 /**
  *
@@ -38,10 +40,12 @@ public abstract class ParserManager {
     private static Map managers = new WeakHashMap ();
     
     public static synchronized ParserManager get (NbEditorDocument doc) {
-        ParserManager pm = (ParserManager) managers.get (doc);
+        WeakReference wr = (WeakReference) managers.get (doc);
+        ParserManager pm = wr != null ? (ParserManager) wr.get () : null;
         if (pm == null) {
             pm = new ParserManagerImpl (doc);
-            managers.put (doc, pm);
+            managers.put (doc, new WeakReference (pm));
+            //Utils.startTest ("ParserManager.managers", managers);
         }
         return pm;
     }

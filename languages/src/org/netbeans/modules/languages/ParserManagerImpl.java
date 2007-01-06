@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.languages;
 
+import java.lang.ref.WeakReference;
 import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManagerListener;
@@ -63,10 +64,8 @@ public class ParserManagerImpl extends ParserManager {
     
     public ParserManagerImpl (NbEditorDocument doc) {
         this.doc = doc;
-        DocListener l = new DocListener ();
-        doc.addDocumentListener (l);
+        new DocListener (this, doc);
         String mimeType = (String) doc.getProperty ("mimeType");
-        ((LanguagesManagerImpl) LanguagesManager.getDefault ()).addLanguagesManagerListener (l);
     }
     
     public int getState () {
@@ -218,28 +217,52 @@ public class ParserManagerImpl extends ParserManager {
     
     // innerclasses ............................................................
     
-    private class DocListener implements DocumentListener, 
+    private static class DocListener implements DocumentListener, 
     LanguagesManagerListener {
         
+        private WeakReference       pmwr;
+        
+        DocListener (ParserManagerImpl pm, NbEditorDocument doc) {
+            pmwr = new WeakReference (pm);
+            doc.addDocumentListener (this);
+            ((LanguagesManagerImpl) LanguagesManager.getDefault ()).addLanguagesManagerListener (this);
+        }
+        
+        private ParserManagerImpl getPM () {
+            ParserManagerImpl pm = (ParserManagerImpl) pmwr.get ();
+            if (pm != null) return pm;
+            ((LanguagesManagerImpl) LanguagesManager.getDefault ()).removeLanguagesManagerListener (this);
+            return null;
+        }
+        
         public void insertUpdate (DocumentEvent e) {
-            startParsing ();
+            ParserManagerImpl pm = getPM ();
+            if (pm == null) return;
+            pm.startParsing ();
         }
 
         public void removeUpdate (DocumentEvent e) {
-            startParsing ();
+            ParserManagerImpl pm = getPM ();
+            if (pm == null) return;
+            pm.startParsing ();
         }
 
         public void changedUpdate (DocumentEvent e) {
+            getPM ();
         }
 
         public void languageChanged (String mimeType) {
-            startParsing ();
+            ParserManagerImpl pm = getPM ();
+            if (pm == null) return;
+            pm.startParsing ();
         }
 
         public void languageAdded(String mimeType) {
+            getPM ();
         }
 
         public void languageRemoved(String mimeType) {
+            getPM ();
         }
     }
 }

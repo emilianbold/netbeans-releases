@@ -19,12 +19,15 @@
 
 package org.netbeans.api.languages;
 
+import java.lang.ref.WeakReference;
+import java.util.WeakHashMap;
 import org.netbeans.api.languages.ASTNode;
 
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
+import org.netbeans.modules.languages.Utils;
 
 
 /**
@@ -34,14 +37,20 @@ import javax.swing.text.Document;
 public class Highlighting {
     
     
-    private static Map highlightings = new HashMap ();
+    private static Map highlightings = new WeakHashMap ();
+    
+    {
+        //Utils.startTest("Highlighting.highlightings", highlightings);
+    }
     
     public static Highlighting getHighlighting (Document doc) {
-        if (!highlightings.containsKey (doc)) {
-            Highlighting h = new Highlighting ();
-            highlightings.put (doc, h);
+        WeakReference wr = (WeakReference) highlightings.get (doc);
+        Highlighting highlighting = wr == null ? null : (Highlighting) wr.get ();
+        if (highlighting == null) {
+            highlighting = new Highlighting ();
+            highlightings.put (doc, new WeakReference (highlighting));
         }
-        return (Highlighting) highlightings.get (doc);
+        return highlighting;
     }
     
     
