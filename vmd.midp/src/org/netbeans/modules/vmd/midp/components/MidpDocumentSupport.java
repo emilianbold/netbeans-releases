@@ -18,22 +18,7 @@
  */
 package org.netbeans.modules.vmd.midp.components;
 
-
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.vmd.api.model.ComponentProducer;
-import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.PropertyValueSupport;
-import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.midp.components.categories.CommandsCategoryCD;
@@ -51,6 +36,8 @@ import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
 import org.netbeans.modules.vmd.midp.components.sources.ItemCommandEventSourceCD;
 import org.netbeans.modules.vmd.midp.general.AbstractEventHandlerCreatorPresenter;
+
+import java.util.*;
 
 /**
  * @author David Kaspar
@@ -186,28 +173,30 @@ public final class MidpDocumentSupport {
     public static Collection<DesignComponent> getAvailableCommandsForComponent(DesignComponent component) {
         Collection<DesignComponent> componentsUnderCommandCategory = getCategoryComponent(component.getDocument(), CommandsCategoryCD.TYPEID).getComponents();
         DescriptorRegistry registry = component.getDocument().getDescriptorRegistry();
-        List<DesignComponent> unsedCommands = null;
+        List<DesignComponent> unusedCommands = null;
         Set<DesignComponent> usedCommands = null;
         
         for (PropertyValue propertyValue : component.readProperty(DisplayableCD.PROP_COMMANDS).getArray()) {
             DesignComponent currentComponent = propertyValue.getComponent();
             if (currentComponent == null)
                 continue;
-            usedCommands = usedCommands == null ? usedCommands =  new HashSet<DesignComponent>() : usedCommands;
+            if (usedCommands == null)
+                usedCommands = new HashSet<DesignComponent>();
             usedCommands.add(currentComponent.readProperty(CommandEventSourceCD.PROP_COMMAND).getComponent());
         }
         for (DesignComponent componentChild : componentsUnderCommandCategory) {
             if (usedCommands != null && usedCommands.contains(componentChild))
                 continue;
-            else if (registry.isInHierarchy(CommandCD.TYPEID, componentChild.getType()) && (Boolean) componentChild.readProperty(CommandCD.PROP_ORDINARY).getValue()) {
-                unsedCommands = unsedCommands == null ? unsedCommands =  new ArrayList<DesignComponent>() : unsedCommands;
-                unsedCommands.add(componentChild);
+            if (registry.isInHierarchy(CommandCD.TYPEID, componentChild.getType()) && (Boolean) componentChild.readProperty(CommandCD.PROP_ORDINARY).getValue()) {
+                if (unusedCommands == null)
+                    unusedCommands = new ArrayList<DesignComponent>();
+                unusedCommands.add(componentChild);
             }
         }
-        if (unsedCommands != null)
-            Collections.sort(unsedCommands, COMPONENT_DISPLAY_NAME_COMPARATOR);
+        if (unusedCommands != null)
+            Collections.sort(unusedCommands, COMPONENT_DISPLAY_NAME_COMPARATOR);
         
-        return unsedCommands;
+        return unusedCommands;
     }
     
     public static DesignComponent getCommandListener(DesignDocument document) {
