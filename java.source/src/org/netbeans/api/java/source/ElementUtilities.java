@@ -19,13 +19,9 @@
 package org.netbeans.api.java.source;
 
 import com.sun.javadoc.Doc;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Scope;
-import com.sun.source.util.JavacTask;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
-import com.sun.tools.javac.api.JavacTaskImpl;
-import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.code.Symbol;
@@ -36,8 +32,6 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ClassType;
-import com.sun.tools.javac.model.JavacElements;
-import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javadoc.DocEnv;
@@ -48,18 +42,15 @@ import java.util.HashSet;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-import org.netbeans.modules.java.source.builder.ASTService;
 
 import org.netbeans.modules.java.source.builder.ElementsService;
 import org.netbeans.modules.java.source.JavadocEnv;
-import org.netbeans.modules.java.source.engine.RootTree;
 
 /**
  *
@@ -67,40 +58,13 @@ import org.netbeans.modules.java.source.engine.RootTree;
  */
 public final class ElementUtilities {
     
-    private Context ctx;
-    private ElementsService delegate;
+    private CompilationInfo info;
+    private org.netbeans.jackpot.model.ElementUtilities delegate;
     
     /** Creates a new instance of ElementUtilities */
     ElementUtilities(CompilationInfo info) {
-        this(info.getJavacTask());
-    }
-    
-    public ElementUtilities(JavacTask task) {
-        this.ctx = ((JavacTaskImpl)task).getContext();
-        this.delegate = ElementsService.instance(ctx);
-    }
-    
-    /**
-     * Returns the TypeElement which encloses the specified element.
-     */
-    public TypeElement enclosingTypeElement(Element element) {
-        return delegate.enclosingTypeElement(element);
-    }
-
-    /**
-     * 
-     * The outermost TypeElement which indirectly encloses this element.
-     */
-    public TypeElement outermostTypeElement(Element element) {
-        return delegate.outermostTypeElement(element);
-    }
-
-    /**
-     * 
-     * The package element which indirectly encloses this element..
-     */
-    public PackageElement packageElement(Element element) {
-        return delegate.packageElement(element);
+        this.info = info;
+        this.delegate = ElementsService.instance(info.getJavacTask().getContext());
     }
     
     /**
@@ -120,22 +84,6 @@ public final class ElementUtilities {
     }
     
     /**
-     * Returns true if this executable element is overridden by a
-     * subclass element.
-     */
-    public boolean isOverridden(Element s) {
-	return delegate.isOverridden(s);
-    }
-    
-    /**
-     * Returns true if this element represents a method which overrides a
-     * method in one of its superclasses.
-     */
-    public boolean overridesMethod(ExecutableElement element) {
-        return delegate.overridesMethod(element);
-    }
-
-    /**
      * Returns a binary name of a type.
      * @param element for which the binary name should be returned
      * @return the binary name, see Java Language Specification 13.1
@@ -152,7 +100,7 @@ public final class ElementUtilities {
     
     public Doc javaDocFor(Element element) {
         if (element != null) {
-            DocEnv env = DocEnv.instance(ctx);
+            DocEnv env = DocEnv.instance(info.getJavacTask().getContext());
             switch (element.getKind()) {
                 case ANNOTATION_TYPE:
                 case CLASS:
@@ -182,7 +130,7 @@ public final class ElementUtilities {
     public Iterable<? extends Element> getMembers(TypeMirror type, ElementAcceptor acceptor) {
         ArrayList<Element> members = new ArrayList<Element>();
         if (type != null) {
-            Elements elements = JavacElements.instance(ctx);
+            Elements elements = info.getElements();
             switch (type.getKind()) {
                 case DECLARED:
                     for (Element member : elements.getAllMembers((TypeElement)((DeclaredType)type).asElement())) {
@@ -198,6 +146,7 @@ public final class ElementUtilities {
                 case LONG:
                 case SHORT:
                 case VOID:
+                    Context ctx = info.getJavacTask().getContext();
                     Type t = Symtab.instance(ctx).classType;
                     com.sun.tools.javac.util.List<Type> typeargs = Source.instance(ctx).allowGenerics() ?
                         com.sun.tools.javac.util.List.of((Type)type) :
@@ -213,7 +162,7 @@ public final class ElementUtilities {
                             members.add(member);
                     }
                     break;
-            }
+            }            
         }
         return members;
     }
@@ -221,8 +170,8 @@ public final class ElementUtilities {
     public Iterable<? extends Element> getLocalMembersAndVars(Scope scope, ElementAcceptor acceptor) {
         ArrayList<Element> members = new ArrayList<Element>();
         HashMap<String, ArrayList<Element>> hiders = new HashMap<String, ArrayList<Element>>();
-        Elements elements = JavacElements.instance(ctx);
-        Types types = JavacTypes.instance(ctx);
+        Elements elements = info.getElements();
+        Types types = info.getTypes();
         TypeElement cls;
         while(scope != null && (cls = scope.getEnclosingClass()) != null) {
             for (Element local : scope.getLocalElements())
@@ -279,8 +228,8 @@ public final class ElementUtilities {
     public Iterable<? extends Element> getLocalVars(Scope scope, ElementAcceptor acceptor) {
         ArrayList<Element> members = new ArrayList<Element>();
         HashMap<String, ArrayList<Element>> hiders = new HashMap<String, ArrayList<Element>>();
-        Elements elements = JavacElements.instance(ctx);
-        Types types = JavacTypes.instance(ctx);
+        Elements elements = info.getElements();
+        Types types = info.getTypes();
         while(scope != null && scope.getEnclosingClass() != null) {
             for (Element local : scope.getLocalElements())
                 if (acceptor == null || acceptor.accept(local, null)) {
@@ -302,25 +251,22 @@ public final class ElementUtilities {
     
     public Iterable<? extends TypeElement> getGlobalTypes(ElementAcceptor acceptor) {
         HashSet<TypeElement> members = new HashSet<TypeElement>();
-        Trees trees = JavacTrees.instance(ctx);
-        RootTree root = (RootTree)ASTService.instance(ctx).getRoot();
-        for (CompilationUnitTree unit : root.getCompilationUnits()) {
-            TreePath path = new TreePath(unit);
-            Element element = trees.getElement(path);
-            if (element != null && element.getKind() == ElementKind.PACKAGE) {
-                for (Element member : element.getEnclosedElements()) {
-                    if (acceptor == null || acceptor.accept(member, null))
-                        members.add((TypeElement)member);
-                }
+        TreePath path = new TreePath(info.getCompilationUnit());
+        Trees trees = info.getTrees();
+        Element element = trees.getElement(path);
+        if (element != null && element.getKind() == ElementKind.PACKAGE) {
+            for (Element member : element.getEnclosedElements()) {
+                if (acceptor == null || acceptor.accept(member, null))
+                    members.add((TypeElement)member);
             }
-            Scope scope = trees.getScope(path);
-            while (scope != null) {
-                for (Element local : scope.getLocalElements())
-                    if ((local.getKind().isClass() || local.getKind().isInterface()) &&
-                        (acceptor == null || acceptor.accept(local, null)))
-                        members.add((TypeElement)local);
-                scope = scope.getEnclosingScope();
-            }
+        }
+        Scope scope = trees.getScope(path);
+        while (scope != null) {
+            for (Element local : scope.getLocalElements())
+                if ((local.getKind().isClass() || local.getKind().isInterface()) &&
+                    (acceptor == null || acceptor.accept(local, null)))
+                    members.add((TypeElement)local);
+            scope = scope.getEnclosingScope();
         }
         return members;
     }
@@ -340,80 +286,5 @@ public final class ElementUtilities {
             }
         }
         return false;
-    }
-    
-    /**
-     * Returns true if the specified element is referenced by a specified tree.
-     */
-    public boolean referenced(Element e, Element parent) {
-        return delegate.referenced(e, parent);
-    }
-    
-    /**
-     * Returns true if the element is assigned by a specified tree.
-     */
-    public boolean assigned(Element e, Element parent) {
-        return delegate.assigned(e, parent);
-    }
-    
-    /**
-     * Returns true if the element is a parameter for a specified method.
-     */
-    public boolean parameter(Element e, Element parent) {
-        return delegate.parameter(e, parent);
-    }
-    
-    /**
-     * Returns true if the element is declared (directly or indirectly) local
-     * to a method or variable initializer.  Also true for fields of inner 
-     * classes which are in turn local to a method or variable initializer.
-     */
-    public boolean isLocal(Element element) {
-        return delegate.isLocal(element);
-    }
-    
-    /**
-     * Returns true if a method specified by name and type is defined in a
-     * class type.
-     */
-    public boolean alreadyDefinedIn(CharSequence name, ExecutableType method, TypeElement enclClass) {
-        return delegate.alreadyDefinedIn(name, method, enclClass);
-    }
-    
-    /**
-     * Returns true if a type element has the specified element as a member.
-     */
-    public boolean isMemberOf(Element e, TypeElement type) {
-        return delegate.isMemberOf(e, type);
-    }
-    
-    /**
-     * Returns true if the element is deprecated.
-     */
-    public boolean isDeprecated(Element element) {
-        return delegate.isDeprecated(element);
-    }
-    
-    /**
-     * Returns the fully qualified name of this element, which is its
-     * simple name with its owner(s) prepended.
-     */
-    public CharSequence getFullName(Element element) {
-        return delegate.getFullName(element);
-    }    
-
-    /**
-     * Returns the parent method which the specified method overrides, or null
-     * if the method does not override a parent class method.
-     */
-    public ExecutableElement getOverriddenMethod(ExecutableElement method) {
-        return delegate.getOverriddenMethod(method);
-    }
-    /**
-     * Returns true if this element represents a method which 
-     * implements a method in an interface the parent class implements.
-     */
-    public boolean implementsMethod(ExecutableElement element) {
-        return delegate.implementsMethod(element);
     }
 }

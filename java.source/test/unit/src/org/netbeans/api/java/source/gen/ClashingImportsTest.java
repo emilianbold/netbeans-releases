@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.transform.Transformer;
+import org.netbeans.jackpot.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -59,7 +59,7 @@ public class ClashingImportsTest extends GeneratorTest {
                         List<StatementTree> stats = new ArrayList<StatementTree>();
                         for(StatementTree st : body.getStatements())
                             stats.add(st);
-                        TypeElement e = env.getElements().getTypeElement("java.awt.List");
+                        TypeElement e = elements.getTypeElement("java.awt.List");
                         ExpressionTree type = make.QualIdent(e);
                         stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "awtList", type, null));
                         changes.rewrite(body, make.Block(stats, false));
@@ -81,7 +81,7 @@ public class ClashingImportsTest extends GeneratorTest {
                         List<StatementTree> stats = new ArrayList<StatementTree>();
                         for(StatementTree st : body.getStatements())
                             stats.add(st);
-                        TypeElement e = env.getElements().getTypeElement("java.util.List");
+                        TypeElement e = elements.getTypeElement("java.util.List");
                         ExpressionTree type = make.QualIdent(e);
                         stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "list", type, null));
                         changes.rewrite(body, make.Block(stats, false));
@@ -103,7 +103,7 @@ public class ClashingImportsTest extends GeneratorTest {
                         List<StatementTree> stats = new ArrayList<StatementTree>();
                         for(StatementTree st : body.getStatements())
                             stats.add(st);
-                        TypeElement e = env.getElements().getTypeElement("java.awt.List");
+                        TypeElement e = elements.getTypeElement("java.awt.List");
                         ExpressionTree type = make.QualIdent(e);
                         stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "awtList", type, null));
                         changes.rewrite(body, make.Block(stats, false));

@@ -24,7 +24,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import java.io.File;
 import org.netbeans.api.java.source.TestUtilities;
-import org.netbeans.api.java.source.transform.Transformer;
+import org.netbeans.jackpot.transform.Transformer;
 
 /**
  * Test name change.

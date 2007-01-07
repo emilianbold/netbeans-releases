@@ -310,8 +310,8 @@ public class CompromiseSATest extends NbTestCase {
 //        JavacTaskImpl jt = (JavacTaskImpl) prepareJavac (Collections.singletonList(FileObjects.memoryFileObject("public class Test { public TTT foo () {}}","Test")));
 //        jt.parse();
 //        Iterable<? extends TypeElement> elements = jt.enter();
-//        assertTrue (env.getElements().iterator().hasNext());
-//        TypeElement e = env.getElements().iterator().next();        
+//        assertTrue (elements.iterator().hasNext());
+//        TypeElement e = elements.iterator().next();        
 //        List<? extends Element> members = e.getEnclosedElements();
 //        ExecutableElement emember = null;
 //        for (Element member : members) {

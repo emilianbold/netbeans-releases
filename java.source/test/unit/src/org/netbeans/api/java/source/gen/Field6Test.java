@@ -28,7 +28,7 @@ import java.util.Collections;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.TestUtilities;
-import org.netbeans.api.java.source.transform.Transformer;
+import org.netbeans.jackpot.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
 
 /**

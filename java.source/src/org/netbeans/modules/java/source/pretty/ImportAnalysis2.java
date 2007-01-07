@@ -20,16 +20,21 @@
 package org.netbeans.modules.java.source.pretty;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
+import java.lang.Integer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -44,15 +49,15 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.java.source.query.QueryEnvironment;
-import org.netbeans.modules.java.source.engine.ASTModel;
-import org.netbeans.modules.java.source.engine.EngineEnvironment;
-import org.netbeans.api.java.source.transform.ChangeSet;
-import org.netbeans.modules.java.source.engine.TreeMakerInt;
+import org.netbeans.jackpot.engine.CommandEnvironment;
+import org.netbeans.jackpot.model.ASTModel;
+import org.netbeans.jackpot.model.ChangeSet;
+import org.netbeans.jackpot.model.TreeMakerInt;
 
 /**
  *
@@ -74,10 +79,10 @@ public class ImportAnalysis2 {
     private ChangeSet changes;
     private WorkingCopy copy;
     
-    public ImportAnalysis2(QueryEnvironment env) {
+    public ImportAnalysis2(CommandEnvironment env) {
         elements = env.getElements();
         types = env.getTypes();
-        model = ((EngineEnvironment)env).getModel();
+        model = env.getModel();
         make = env.getTreeMaker();
         trees = env.getTrees();
     }

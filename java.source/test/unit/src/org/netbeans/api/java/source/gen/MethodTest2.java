@@ -37,7 +37,7 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtilsTestUtil2;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.java.source.transform.Transformer;
+import org.netbeans.jackpot.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.api.java.source.CancellableTask;

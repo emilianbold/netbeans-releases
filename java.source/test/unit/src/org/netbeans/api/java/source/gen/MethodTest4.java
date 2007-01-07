@@ -24,7 +24,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import java.io.IOException;
 import java.util.Collections;
-import org.netbeans.api.java.source.transform.Transformer;
+import org.netbeans.jackpot.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
 
 /**

@@ -28,7 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.type.TypeKind;
 import junit.textui.TestRunner;
-import org.netbeans.api.java.source.transform.Transformer;
+import org.netbeans.jackpot.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
 
 /**
