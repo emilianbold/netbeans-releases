@@ -84,6 +84,21 @@ public class DbSchemaEjbGenerator {
             }
         }
         
+        // issue 90962: a table whose foreign keys are unique is not a join table
+        Set<ColumnElement> foreignKeyColumns = new HashSet<ColumnElement>();
+        for (int i = 0; i < 2; i++) {
+            for (ColumnElement column : foreignKeys[i].getColumns()) {
+                foreignKeyColumns.add(column);
+            }
+        }
+        for (UniqueKeyElement uniqueKey : e.getUniqueKeys()) {
+            for (ColumnElement column : uniqueKey.getColumns()) {
+                if (foreignKeyColumns.contains(column)) {
+                    return false;
+                }
+            }
+        }
+        
         return true;
     }
     
