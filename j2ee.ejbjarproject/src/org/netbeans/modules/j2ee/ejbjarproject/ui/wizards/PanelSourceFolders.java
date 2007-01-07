@@ -54,17 +54,17 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     private WizardDescriptor wizardDescriptor;
     private File oldProjectLocation;
     
-    private final DocumentListener configFilesDocumentListener = new DocumentListener() {
+    private final DocumentListener configAndLibrariesListener = new DocumentListener() {
         public void changedUpdate(DocumentEvent e) {
-            configFilesChanged();
+            dataChanged();
         }
         
         public void insertUpdate(DocumentEvent e) {
-            configFilesChanged();
+            dataChanged();
         }
         
         public void removeUpdate(DocumentEvent e) {
-            configFilesChanged();
+            dataChanged();
         }
     };
 
@@ -80,7 +80,8 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         this.testsPanel.addPropertyChangeListener(this);
         ((FolderList)this.sourcePanel).setRelatedFolderList((FolderList)this.testsPanel);
         ((FolderList)this.testsPanel).setRelatedFolderList((FolderList)this.sourcePanel);        
-        this.jTextFieldConfigFiles.getDocument().addDocumentListener(configFilesDocumentListener);
+        this.jTextFieldConfigFiles.getDocument().addDocumentListener(configAndLibrariesListener);
+        this.jTextFieldLibraries.getDocument().addDocumentListener(configAndLibrariesListener);
     }
 
     public void initValues(FileObject fo) {
@@ -148,29 +149,21 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         File[] testRoots = ((FolderList)this.testsPanel).getFiles();
         settings.putProperty (WizardProperties.JAVA_ROOT,sourceRoots);    //NOI18N
         settings.putProperty(WizardProperties.TEST_ROOT,testRoots);      //NOI18N
-        String configFiles = jTextFieldConfigFiles.getText().trim();
-        if (configFiles.length() > 0) {
-            settings.putProperty(WizardProperties.CONFIG_FILES_FOLDER, new File(configFiles));
-        } else {
-            settings.putProperty(WizardProperties.CONFIG_FILES_FOLDER, null);
-        }
-        String libPath = jTextFieldLibraries.getText().trim();
-        if (libPath != null && !libPath.equals("")) {
-            settings.putProperty(WizardProperties.LIB_FOLDER, new File(libPath));
-        }
+        settings.putProperty(WizardProperties.CONFIG_FILES_FOLDER, getConfigFiles());
+        settings.putProperty(WizardProperties.LIB_FOLDER, getLibraries());
     }
     
     boolean valid (WizardDescriptor settings) {
         File projectLocation = (File) settings.getProperty (WizardProperties.PROJECT_DIR);  //NOI18N
-        String confFolder = jTextFieldConfigFiles.getText().trim();
-        if (confFolder.length() == 0) {
+        File confFolder = getConfigFiles();
+        if (confFolder == null) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
                     NbBundle.getMessage(PanelSourceFolders.class, "MSG_BlankConfigurationFilesFolder"));
             return false;
         }
         File[] sourceRoots = ((FolderList)this.sourcePanel).getFiles();
         File[] testRoots = ((FolderList)this.testsPanel).getFiles();
-        String result = checkValidity (projectLocation, getConfigFiles(), sourceRoots, testRoots);
+        String result = checkValidity (projectLocation, confFolder, getLibraries(), sourceRoots, testRoots);
         if (result == null) {
             wizardDescriptor.putProperty( "WizardPanel_errorMessage"," ");   //NOI18N
             return true;
@@ -181,12 +174,18 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         }
     }
 
-    static String checkValidity (final File projectLocation, final File configFilesLocation, final File[] sources, final File[] tests ) {
+    static String checkValidity (final File projectLocation, final File configFilesLocation, final File librariesLocation, final File[] sources, final File[] tests ) {
         String ploc = projectLocation.getAbsolutePath ();
         if (configFilesLocation != null) {
             FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(configFilesLocation));
             if (fo == null || !fo.isFolder()) {
                 return NbBundle.getMessage(PanelSourceFolders.class, "MSG_IllegalConfigurationFilesFolder");
+            }
+        }
+        if (librariesLocation != null) {
+            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(librariesLocation));
+            if (fo == null || !fo.isFolder()) {
+                return NbBundle.getMessage(PanelSourceFolders.class, "MSG_IllegalLibrariesFolder");
             }
         }
         if (sources.length ==0) {
@@ -511,7 +510,10 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     }
 
     private File getAsFile(String filename) {
-        return FileUtil.normalizeFile(new File(filename));
+        if (filename != null && filename.trim().length() > 0) {
+            return FileUtil.normalizeFile(new File(filename));
+        }
+        return null;
     }
 
     public File getConfigFiles() {
@@ -520,9 +522,5 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
 
     public File getLibraries() {
         return getAsFile(jTextFieldLibraries.getText());
-    }
-    
-    private void configFilesChanged() {
-        dataChanged();
     }
 }
