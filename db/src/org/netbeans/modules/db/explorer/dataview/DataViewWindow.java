@@ -679,7 +679,7 @@ public class DataViewWindow extends TopComponent {
                 con = node_info.getConnection();
                 stat = con.createStatement();
             } catch ( Exception exc ) {
-                String message = MessageFormat.format(bundle.getString("EXC_ConnectionIsBroken"), new String[] {exc.getMessage()}); // NOI18N
+                String message = MessageFormat.format(bundle.getString("EXC_ConnectionError"), new String[] {exc.getMessage()}); // NOI18N
                 throw new DatabaseException(message);
             }
 

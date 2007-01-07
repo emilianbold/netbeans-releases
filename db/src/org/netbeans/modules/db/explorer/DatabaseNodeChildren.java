@@ -243,7 +243,7 @@ public class DatabaseNodeChildren extends Children.Array {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
-                String format = bundle.getString("EXC_ConnectionIsBroken"); //NOI18N
+                String format = bundle.getString("EXC_ConnectionError"); //NOI18N
                 String message = bundle.getString("ReadStructureErrorPrefix") + " " + MessageFormat.format(format, new String[] {e.getMessage()}); //NOI18N
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
             }
