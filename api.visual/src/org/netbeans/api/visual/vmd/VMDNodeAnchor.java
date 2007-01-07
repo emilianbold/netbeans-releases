@@ -41,14 +41,25 @@ public class VMDNodeAnchor extends Anchor {
     private boolean requiresRecalculation = true;
 
     private HashMap<Entry, Result> results = new HashMap<Entry, Result> ();
+    private final boolean vertical;
+
+    /**
+     * Creates a node anchor with vertical direction.
+     * @param widget the node widget where the anchor is attached to
+     */
+    public VMDNodeAnchor (Widget widget) {
+        this (widget, true);
+    }
 
     /**
      * Creates a node anchor.
      * @param widget the node widget where the anchor is attached to
+     * @param vertical if true, then anchors are placed vertically; if false, then anchors are placed horizontally
      */
-    public VMDNodeAnchor (Widget widget) {
+    public VMDNodeAnchor (Widget widget, boolean vertical) {
         super (widget);
         assert widget != null;
+        this.vertical = vertical;
     }
 
     /**
@@ -90,33 +101,50 @@ public class VMDNodeAnchor extends Anchor {
             int dy = oppositeLocation.y - relatedLocation.y;
             int dx = oppositeLocation.x - relatedLocation.x;
 
-            if (dy > 0)
-                bottommap.put (entry, (float) dx / (float) dy);
-            else if (dy < 0)
-                topmap.put (entry, (float) - dx / (float) dy);
-            else
-                topmap.put (entry, dx < 0 ? Float.MAX_VALUE : Float.MIN_VALUE);
+            if (vertical) {
+                if (dy > 0)
+                    bottommap.put (entry, (float) dx / (float) dy);
+                else if (dy < 0)
+                    topmap.put (entry, (float) - dx / (float) dy);
+                else
+                    topmap.put (entry, dx < 0 ? Float.MAX_VALUE : Float.MIN_VALUE);
+            } else {
+                if (dx > 0)
+                    bottommap.put (entry, (float) dy / (float) dx);
+                else if (dy < 0)
+                    topmap.put (entry, (float) - dy / (float) dx);
+                else
+                    topmap.put (entry, dy < 0 ? Float.MAX_VALUE : Float.MIN_VALUE);
+            }
         }
 
         Entry[] topList = toArray (topmap);
         Entry[] bottomList = toArray (bottommap);
 
-        int y = bounds.y;
+        int y = bounds.y - PIN_GAP;
+        int x = bounds.x - PIN_GAP;
         int len = topList.length;
 
         for (int a = 0; a < len; a ++) {
             Entry entry = topList[a];
-            int x = bounds.x + (a + 1)  * bounds.width / (len + 1);
-            results.put (entry, new Result (new Point (x, y - PIN_GAP), Direction.TOP));
+            if (vertical)
+                x = bounds.x + (a + 1) * bounds.width / (len + 1);
+            else
+                y = bounds.y + (a + 1) * bounds.height / (len + 1);
+            results.put (entry, new Result (new Point (x, y), vertical ? Direction.TOP : Direction.LEFT));
         }
 
-        y = bounds.y + bounds.height;
+        y = bounds.y + bounds.height + PIN_GAP;
+        x = bounds.x + bounds.width + PIN_GAP;
         len = bottomList.length;
 
         for (int a = 0; a < len; a ++) {
             Entry entry = bottomList[a];
-            int x = bounds.x + (a + 1) * bounds.width / (len + 1);
-            results.put (entry, new Result (new Point (x, y + PIN_GAP), Direction.BOTTOM));
+            if (vertical)
+                x = bounds.x + (a + 1) * bounds.width / (len + 1);
+            else
+                y = bounds.y + (a + 1) * bounds.height / (len + 1);
+            results.put (entry, new Result (new Point (x, y), vertical ? Direction.BOTTOM : Direction.RIGHT));
         }
     }
 

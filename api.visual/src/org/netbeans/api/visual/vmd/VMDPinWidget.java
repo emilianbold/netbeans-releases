@@ -18,6 +18,7 @@
  */
 package org.netbeans.api.visual.vmd;
 
+import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.LabelWidget;
@@ -36,6 +37,7 @@ public class VMDPinWidget extends Widget {
 
     private LabelWidget nameWidget;
     private VMDGlyphSetWidget glyphsWidget;
+    private VMDNodeAnchor anchor;
 
     /**
      * Creates a pin widget.
@@ -107,6 +109,16 @@ public class VMDPinWidget extends Widget {
     public void setProperties (String name, List<Image> glyphs) {
         setPinName (name);
         glyphsWidget.setGlyphs (glyphs);
+    }
+
+    /**
+     * Creates a horizontally oriented anchor similar to VMDNodeWidget.createAnchorPin
+     * @return the anchor
+     */
+    public Anchor createAnchor () {
+        if (anchor == null)
+            anchor = new VMDNodeAnchor (this, false);
+        return anchor;
     }
 
 }
