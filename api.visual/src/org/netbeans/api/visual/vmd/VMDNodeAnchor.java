@@ -75,11 +75,18 @@ public class VMDNodeAnchor extends Anchor {
         Widget widget = getRelatedWidget ();
         Point relatedLocation = getRelatedSceneLocation ();
 
+        Rectangle bounds = widget.convertLocalToScene (widget.getBounds ());
+
         HashMap<Entry, Float> topmap = new HashMap<Entry, Float> ();
         HashMap<Entry, Float> bottommap = new HashMap<Entry, Float> ();
 
         for (Entry entry : getEntries ()) {
             Point oppositeLocation = getOppositeSceneLocation (entry);
+            if (oppositeLocation == null  ||  relatedLocation == null) {
+                results.put (entry, new Result (new Point (bounds.x, bounds.y), DIRECTION_ANY));
+                continue;
+            }
+
             int dy = oppositeLocation.y - relatedLocation.y;
             int dx = oppositeLocation.x - relatedLocation.x;
 
@@ -93,8 +100,6 @@ public class VMDNodeAnchor extends Anchor {
 
         Entry[] topList = toArray (topmap);
         Entry[] bottomList = toArray (bottommap);
-
-        Rectangle bounds = widget.convertLocalToScene (widget.getBounds ());
 
         int y = bounds.y;
         int len = topList.length;
