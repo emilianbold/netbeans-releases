@@ -19,6 +19,7 @@
 package org.netbeans.modules.vmd.api.flow;
 
 import org.netbeans.modules.vmd.api.flow.visual.*;
+import org.netbeans.modules.vmd.api.model.Debug;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -129,10 +130,16 @@ public abstract class FlowEdgePresenter extends FlowPresenter implements FlowPre
                     scene.addPin (node, pin);
                     scene.updateBadges (pin);
                 } else {
+                    FlowPinDescriptor original = pin;
                     pin = (FlowPinDescriptor) scene.findStoredObject (pin);
+                    if (pin == null)
+                        Debug.warning ("Source pin not found", edge, original);
                 }
             } else {
+                FlowPinDescriptor original = pin;
                 pin = (FlowPinDescriptor) scene.findStoredObject (pin);
+                if (pin == null)
+                    Debug.warning ("Source pin not found", edge, original);
             }
         }
         scene.setEdgeSource (edge, pin);
@@ -149,10 +156,16 @@ public abstract class FlowEdgePresenter extends FlowPresenter implements FlowPre
                     scene.registerUI (pin, resolver);
                     scene.addPin (node, pin);
                 } else {
+                    FlowPinDescriptor original = pin;
                     pin = (FlowPinDescriptor) scene.findStoredObject (pin);
+                    if (pin == null)
+                        Debug.warning ("Target pin not found", edge, original);
                 }
             } else {
+                FlowPinDescriptor original = pin;
                 pin = (FlowPinDescriptor) scene.findStoredObject (pin);
+                if (pin == null)
+                    Debug.warning ("Target pin not found", edge, original);
             }
         }
         scene.setEdgeTarget (edge, pin);
