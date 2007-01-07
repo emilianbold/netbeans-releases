@@ -35,8 +35,8 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.jackpot.model.CommentHandler;
-import org.netbeans.jackpot.model.CommentSet;
+import org.netbeans.api.java.source.CommentHandler;
+import org.netbeans.api.java.source.CommentSet;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 
 /**

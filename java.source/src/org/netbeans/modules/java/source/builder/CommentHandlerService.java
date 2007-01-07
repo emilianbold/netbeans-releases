@@ -21,10 +21,9 @@ package org.netbeans.modules.java.source.builder;
 
 import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.api.java.source.Comment;
-import org.netbeans.jackpot.model.CommentHandler;
-import org.netbeans.jackpot.model.CommentSet;
-import org.netbeans.jackpot.model.*;
-import org.netbeans.modules.java.source.save.SourceBuffer;
+import org.netbeans.api.java.source.CommentHandler;
+import org.netbeans.api.java.source.CommentSet;
+import org.netbeans.modules.java.source.engine.ASTModel;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;

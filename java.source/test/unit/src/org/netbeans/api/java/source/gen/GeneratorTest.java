@@ -34,7 +34,7 @@ import junit.framework.Assert;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.jackpot.transform.Transformer;
+import org.netbeans.api.java.source.transform.Transformer;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.usages.IndexUtil;

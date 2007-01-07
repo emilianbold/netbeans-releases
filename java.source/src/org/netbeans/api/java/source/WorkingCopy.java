@@ -43,15 +43,19 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.jackpot.model.ChangeSet;
-import org.netbeans.jackpot.engine.*;
-import org.netbeans.jackpot.query.QueryException;
-import org.netbeans.jackpot.transform.Transformer;
-import org.netbeans.jackpot.tree.RootTree;
+import org.netbeans.api.java.source.transform.ChangeSet;
+import org.netbeans.api.java.source.query.QueryException;
+import org.netbeans.api.java.source.transform.Transformer;
+import org.netbeans.modules.java.source.engine.RootTree;
 import org.netbeans.modules.java.source.builder.UndoListService;
 import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.builder.DefaultEnvironment;
 import org.netbeans.modules.java.source.builder.TreeFactory;
+import org.netbeans.modules.java.source.engine.DefaultApplicationContext;
+import org.netbeans.modules.java.source.engine.EngineEnvironment;
+import org.netbeans.modules.java.source.engine.ReattributionException;
+import org.netbeans.modules.java.source.engine.SourceReader;
+import org.netbeans.modules.java.source.engine.SourceRewriter;
 import org.netbeans.modules.java.source.save.Commit;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -66,7 +70,7 @@ import org.openide.text.CloneableEditorSupport;
 public class WorkingCopy extends CompilationController {
     
     private CompilationInfo delegate;
-    private CommandEnvironment ce;
+    private EngineEnvironment ce;
     private ChangeSet changes;
     private boolean afterCommit = false;
     private WorkingCopyContext wcc;
@@ -84,16 +88,18 @@ public class WorkingCopy extends CompilationController {
         if (tree != null) {
             Context context = getContext();
             ASTService model = ASTService.instance(context);
-            model.setRoot(TreeFactory.instance(context).Root(new ArrayList<CompilationUnitTree>()));
+            List<CompilationUnitTree> units = new ArrayList<CompilationUnitTree>();
+            units.add(tree);
+            model.setRoot(TreeFactory.instance(context).Root(units));
             UndoListService.instance(context).reset();
-            model.addSourceTree(tree);
         }
         
         JavacTaskImpl task = this.delegate.getJavacTask();
         ce = new DefaultEnvironment(
                 task, getCompilationUnit(), Source.instance(task.getContext()).name, wcc);
-        this.treeMaker = new TreeMaker(this, ce.getTreeMaker());
-        this.changes = new ChangeSet(ce, "<no-description>");
+        treeMaker = new TreeMaker(this, ce.getTreeMaker());
+        changes = new ChangeSet("<no-description>");
+        changes.attach(ce);
     }
     
     private Context getContext() {
@@ -102,7 +108,7 @@ public class WorkingCopy extends CompilationController {
     
     // API of the class --------------------------------------------------------
 
-    CommandEnvironment getCommandEnvironment() {
+    EngineEnvironment getCommandEnvironment() {
         return ce;
     }
 
@@ -142,15 +148,21 @@ public class WorkingCopy extends CompilationController {
     void run(Transformer t) {
         if (afterCommit)
             throw new IllegalStateException ("The run method can't be called on a WorkingCopy instance after the commit");   //NOI18N
-        t.attachTo(ce);
+        t.init();
+        t.attach(ce);
         t.apply();
+        t.release();
+        t.destroy();;
     }
     
     void run(Transformer t, Tree tree) {
         if (afterCommit)
             throw new IllegalStateException ("The run method can't be called on a WorkingCopy instance after the commit");   //NOI18N
-        t.attachTo(ce);
+        t.init();
+        t.attach(ce);
         t.apply(tree);
+        t.release();
+        t.destroy();;
     }
     
     ChangeSet getChangeSet() {
@@ -281,15 +293,18 @@ public class WorkingCopy extends CompilationController {
             throw new IllegalStateException("The commit method can be called only once on a WorkingCopy instance");   //NOI18N
         afterCommit = true;
         try {
-            RootTree newRoot = changes.commit(ce.getRootNode());
+            RootTree newRoot = changes.commit((RootTree)ce.getRootNode());
             
             if (changes.hasChanges()) {
                 getCommandEnvironment().getModel().setRoot(newRoot);
             }
             
             Commit save = new Commit(this);
-            save.attachTo(ce);
+            save.init();
+            save.attach(ce);
             save.commit();
+            save.release();
+            save.destroy();
             return wcc.diffs;
         } catch (QueryException qe) {
             Logger.getLogger("global").log(Level.WARNING, qe.getMessage(), qe);

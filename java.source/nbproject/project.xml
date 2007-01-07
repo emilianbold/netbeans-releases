@@ -255,7 +255,9 @@ Microsystems, Inc. All Rights Reserved.
             <public-packages>
                 <package>org.netbeans.api.java.loaders</package>
                 <package>org.netbeans.api.java.source</package>
+                <package>org.netbeans.api.java.source.query</package>
                 <package>org.netbeans.api.java.source.support</package>
+                <package>org.netbeans.api.java.source.transform</package>
                 <package>org.netbeans.spi.java.loaders</package>
             </public-packages>
             <class-path-extension>

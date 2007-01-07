@@ -21,7 +21,7 @@ package org.netbeans.api.java.source.gen;
 import com.sun.source.tree.VariableTree;
 import java.io.IOException;
 import junit.textui.TestRunner;
-import org.netbeans.jackpot.transform.Transformer;
+import org.netbeans.api.java.source.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
 
 /**

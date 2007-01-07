@@ -55,7 +55,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.SourceUtilsTestUtil2;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.jackpot.transform.Transformer;
+import org.netbeans.api.java.source.transform.Transformer;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.openide.cookies.EditorCookie;

@@ -37,7 +37,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.jackpot.transform.Transformer;
+import org.netbeans.api.java.source.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileStateInvalidException;
 
@@ -71,7 +71,7 @@ public class ImportAnalysisTest extends GeneratorTest {
                         List<StatementTree> stats = new ArrayList<StatementTree>();
                         for(StatementTree st : body.getStatements())
                             stats.add(st);
-                        TypeElement e = elements.getTypeElement("java.util.List");
+                        TypeElement e = env.getElements().getTypeElement("java.util.List");
                         ExpressionTree type = make.QualIdent(e);
                         stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "utilList", type, null));
                         changes.rewrite(body, make.Block(stats, false));
@@ -92,7 +92,7 @@ public class ImportAnalysisTest extends GeneratorTest {
                         List<StatementTree> stats = new ArrayList<StatementTree>();
                         for(StatementTree st : body.getStatements())
                             stats.add(st);
-                        TypeElement list = elements.getTypeElement("java.util.List");
+                        TypeElement list = env.getElements().getTypeElement("java.util.List");
                         stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "utilList", make.Type(types.erasure(list.asType())), null));
                         changes.rewrite(body, make.Block(stats, false));
                     }
@@ -112,8 +112,8 @@ public class ImportAnalysisTest extends GeneratorTest {
                         List<StatementTree> stats = new ArrayList<StatementTree>();
                         for(StatementTree st : body.getStatements())
                             stats.add(st);
-                        TypeElement list = elements.getTypeElement("java.util.List");
-                        TypeElement collection = elements.getTypeElement("java.util.Collection");
+                        TypeElement list = env.getElements().getTypeElement("java.util.List");
+                        TypeElement collection = env.getElements().getTypeElement("java.util.Collection");
                         TypeMirror tm = types.getDeclaredType(list, types.erasure(collection.asType()));
                         stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "utilList", make.Type(tm), null));
                         changes.rewrite(body, make.Block(stats, false));
@@ -134,8 +134,8 @@ public class ImportAnalysisTest extends GeneratorTest {
                         List<StatementTree> stats = new ArrayList<StatementTree>();
                         for(StatementTree st : body.getStatements())
                             stats.add(st);
-                        TypeElement list = elements.getTypeElement("java.util.List");
-                        TypeElement collection = elements.getTypeElement("java.util.Collection");
+                        TypeElement list = env.getElements().getTypeElement("java.util.List");
+                        TypeElement collection = env.getElements().getTypeElement("java.util.Collection");
                         TypeMirror tm = types.getDeclaredType(list, types.getWildcardType(types.erasure(collection.asType()), null));
                         stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "utilList", make.Type(tm), null));
                         changes.rewrite(body, make.Block(stats, false));
@@ -156,8 +156,8 @@ public class ImportAnalysisTest extends GeneratorTest {
                         List<StatementTree> stats = new ArrayList<StatementTree>();
                         for(StatementTree st : body.getStatements())
                             stats.add(st);
-                        TypeElement list = elements.getTypeElement("java.util.List");
-                        TypeElement collection = elements.getTypeElement("java.util.Collection");
+                        TypeElement list = env.getElements().getTypeElement("java.util.List");
+                        TypeElement collection = env.getElements().getTypeElement("java.util.Collection");
                         TypeMirror tm = types.getDeclaredType(list, types.getWildcardType(null, types.erasure(collection.asType())));
                         stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "utilList", make.Type(tm), null));
                         changes.rewrite(body, make.Block(stats, false));
@@ -178,7 +178,7 @@ public class ImportAnalysisTest extends GeneratorTest {
                         List<StatementTree> stats = new ArrayList<StatementTree>();
                         for(StatementTree st : body.getStatements())
                             stats.add(st);
-                        TypeElement list = elements.getTypeElement("java.util.Map.Entry");
+                        TypeElement list = env.getElements().getTypeElement("java.util.Map.Entry");
                         stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "entry", make.Type(types.erasure(list.asType())), null));
                         changes.rewrite(body, make.Block(stats, false));
                     }
@@ -198,7 +198,7 @@ public class ImportAnalysisTest extends GeneratorTest {
                         List<StatementTree> stats = new ArrayList<StatementTree>();
                         for(StatementTree st : body.getStatements())
                             stats.add(st);
-                        TypeElement list = elements.getTypeElement("java.util.Map.Entry");
+                        TypeElement list = env.getElements().getTypeElement("java.util.Map.Entry");
                         stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "entry", make.QualIdent(list), null));
                         changes.rewrite(body, make.Block(stats, false));
                     }
@@ -218,7 +218,7 @@ public class ImportAnalysisTest extends GeneratorTest {
                         List<StatementTree> stats = new ArrayList<StatementTree>();
                         for(StatementTree st : body.getStatements())
                             stats.add(st);
-                        TypeElement list = elements.getTypeElement("java.util.Map.Entry");
+                        TypeElement list = env.getElements().getTypeElement("java.util.Map.Entry");
                         TypeMirror tm = types.getArrayType(types.erasure(list.asType()));
                         stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "entry", make.Type(tm), null));
                         changes.rewrite(body, make.Block(stats, false));
@@ -239,7 +239,7 @@ public class ImportAnalysisTest extends GeneratorTest {
                         List<StatementTree> stats = new ArrayList<StatementTree>();
                         for(StatementTree st : body.getStatements())
                             stats.add(st);
-                        TypeElement list = elements.getTypeElement("java.util.List");
+                        TypeElement list = env.getElements().getTypeElement("java.util.List");
                         stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "list1", make.QualIdent(list), null));
                         stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "list2", make.QualIdent(list), null));
                         changes.rewrite(body, make.Block(stats, false));
@@ -260,8 +260,8 @@ public class ImportAnalysisTest extends GeneratorTest {
                         List<StatementTree> stats = new ArrayList<StatementTree>();
                         for(StatementTree st : body.getStatements())
                             stats.add(st);
-                        TypeElement list = elements.getTypeElement("java.util.List");
-                        TypeElement awtList = elements.getTypeElement("java.awt.List");
+                        TypeElement list = env.getElements().getTypeElement("java.util.List");
+                        TypeElement awtList = env.getElements().getTypeElement("java.awt.List");
                         stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "list1", make.QualIdent(list), null));
                         stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "list2", make.QualIdent(awtList), null));
                         changes.rewrite(body, make.Block(stats, false));
@@ -283,7 +283,7 @@ public class ImportAnalysisTest extends GeneratorTest {
                         List<StatementTree> stats = new ArrayList<StatementTree>();
                         for(StatementTree st : body.getStatements())
                             stats.add(st);
-                        TypeElement list = elements.getTypeElement("java.util.Map.Entry");
+                        TypeElement list = env.getElements().getTypeElement("java.util.Map.Entry");
                         TypeMirror tm = types.getArrayType(types.erasure(list.asType()));
                         stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "entry", make.Type(tm), null));
                         changes.rewrite(body, make.Block(stats, false));
@@ -299,7 +299,7 @@ public class ImportAnalysisTest extends GeneratorTest {
         process(
             new Transformer<Void, Object>() {
                 public Void visitClass(ClassTree node, Object p) {
-                    TypeElement map = elements.getTypeElement("java.util.Map");
+                    TypeElement map = env.getElements().getTypeElement("java.util.Map");
                     ClassTree nue = make.addClassImplementsClause(node, make.QualIdent(map));
                     
                     changes.rewrite(node, nue);
@@ -311,7 +311,7 @@ public class ImportAnalysisTest extends GeneratorTest {
                         List<StatementTree> stats = new ArrayList<StatementTree>();
                         for(StatementTree st : body.getStatements())
                             stats.add(st);
-                        TypeElement list = elements.getTypeElement("java.util.Map.Entry");
+                        TypeElement list = env.getElements().getTypeElement("java.util.Map.Entry");
                         TypeMirror tm = types.getArrayType(types.erasure(list.asType()));
                         stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "entry", make.Type(tm), null));
                         changes.rewrite(body, make.Block(stats, false));
@@ -333,7 +333,7 @@ public class ImportAnalysisTest extends GeneratorTest {
                         List<StatementTree> stats = new ArrayList<StatementTree>();
                         for(StatementTree st : body.getStatements())
                             stats.add(st);
-                        TypeElement list = elements.getTypeElement("java.util.Map.Entry");
+                        TypeElement list = env.getElements().getTypeElement("java.util.Map.Entry");
                         TypeMirror tm = types.getArrayType(types.erasure(list.asType()));
                         stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "entry", make.Type(tm), null));
                         changes.rewrite(body, make.Block(stats, false));
@@ -355,7 +355,7 @@ public class ImportAnalysisTest extends GeneratorTest {
                         List<StatementTree> stats = new ArrayList<StatementTree>();
                         for(StatementTree st : body.getStatements())
                             stats.add(st);
-                        TypeElement list = elements.getTypeElement("java.util.Map.Entry");
+                        TypeElement list = env.getElements().getTypeElement("java.util.Map.Entry");
                         TypeMirror tm = types.getArrayType(types.erasure(list.asType()));
                         stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "entry", make.Type(tm), null));
                         changes.rewrite(body, make.Block(stats, false));
@@ -377,7 +377,7 @@ public class ImportAnalysisTest extends GeneratorTest {
                         List<StatementTree> stats = new ArrayList<StatementTree>();
                         for(StatementTree st : body.getStatements())
                             stats.add(st);
-                        TypeElement list = elements.getTypeElement("java.lang.Math");
+                        TypeElement list = env.getElements().getTypeElement("java.lang.Math");
                         ExecutableElement maxMethod = null;
                         VariableElement pi = null;
                         for (Element ee : list.getEnclosedElements()) {
@@ -413,7 +413,7 @@ public class ImportAnalysisTest extends GeneratorTest {
                         List<StatementTree> stats = new ArrayList<StatementTree>();
                         for(StatementTree st : body.getStatements())
                             stats.add(st);
-                        TypeElement list = elements.getTypeElement("java.lang.Math");
+                        TypeElement list = env.getElements().getTypeElement("java.lang.Math");
                         ExecutableElement maxMethod = null;
                         ExecutableElement minMethod = null;
                         VariableElement pi = null;
@@ -455,7 +455,7 @@ public class ImportAnalysisTest extends GeneratorTest {
                         List<StatementTree> stats = new ArrayList<StatementTree>();
                         for(StatementTree st : body.getStatements())
                             stats.add(st);
-                        TypeElement list = elements.getTypeElement("java.lang.String");
+                        TypeElement list = env.getElements().getTypeElement("java.lang.String");
                         TypeMirror tm = types.getArrayType(types.erasure(list.asType()));
                         stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "s", make.Type(tm), null));
                         changes.rewrite(body, make.Block(stats, false));
@@ -473,7 +473,7 @@ public class ImportAnalysisTest extends GeneratorTest {
             new Transformer<Void, Object>() {
                 public Void visitCompilationUnit(CompilationUnitTree node, Object p) {
                     ExpressionTree pack = node.getPackageName();
-                    PackageElement pe = elements.getPackageElement("org.netbeans.test");
+                    PackageElement pe = env.getElements().getPackageElement("org.netbeans.test");
                     ExpressionTree nuePack = make.QualIdent(pe);
                     
                     changes.rewrite(pack, nuePack);
@@ -494,7 +494,7 @@ public class ImportAnalysisTest extends GeneratorTest {
                         List<StatementTree> stats = new ArrayList<StatementTree>();
                         for(StatementTree st : body.getStatements())
                             stats.add(st);
-                        TypeElement list = elements.getTypeElement("java.util.LinkedList");
+                        TypeElement list = env.getElements().getTypeElement("java.util.LinkedList");
                         TypeMirror tm = types.getArrayType(types.erasure(list.asType()));
                         stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "s", make.Type(tm), null));
                         changes.rewrite(body, make.Block(stats, false));
@@ -516,7 +516,7 @@ public class ImportAnalysisTest extends GeneratorTest {
                         List<StatementTree> stats = new ArrayList<StatementTree>();
                         for(StatementTree st : body.getStatements())
                             stats.add(st);
-                        TypeElement list = elements.getTypeElement("org.netbeans.test.codegen.ImportsTest6");
+                        TypeElement list = env.getElements().getTypeElement("org.netbeans.test.codegen.ImportsTest6");
                         TypeMirror tm = types.getArrayType(types.erasure(list.asType()));
                         stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "s", make.Type(tm), null));
                         changes.rewrite(body, make.Block(stats, false));
@@ -536,7 +536,7 @@ public class ImportAnalysisTest extends GeneratorTest {
                 new Transformer<Void, Object>() {
             public Void visitMethod(MethodTree node, Object p) {
                 if ("<init>".contentEquals(node.getName())) {
-                    TypeElement exc = elements.getTypeElement("javax.swing.text.BadLocationException");
+                    TypeElement exc = env.getElements().getTypeElement("javax.swing.text.BadLocationException");
                     MethodTree nueMethod = make.addMethodThrows(node, (ExpressionTree) make.Type(exc.asType()));
                     
                     changes.rewrite(node, nueMethod);

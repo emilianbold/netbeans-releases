@@ -84,7 +84,7 @@ import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.editor.Registry;
-import org.netbeans.jackpot.engine.CommandEnvironment;
+import org.netbeans.api.java.source.query.QueryEnvironment;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.builder.Scanner;
@@ -1430,7 +1430,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         }
         
         @Override
-        public CommandEnvironment getCommandEnvironment(WorkingCopy copy) {
+        public QueryEnvironment getCommandEnvironment(WorkingCopy copy) {
             assert copy != null;
             return copy.getCommandEnvironment();
         }

@@ -18,26 +18,24 @@
  */
 package org.netbeans.modules.java.source.builder;
 
+import org.netbeans.modules.java.source.engine.ASTModel;
+import org.netbeans.modules.java.source.engine.TreeFinder;
+import org.netbeans.modules.java.source.engine.RootTree;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
-import java.util.StringTokenizer;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.*;
-import org.netbeans.jackpot.engine.ReattributionException;
-import org.netbeans.jackpot.engine.UndoEntry;
-import org.netbeans.jackpot.engine.UndoList;
-import org.netbeans.jackpot.model.*;
-import org.netbeans.jackpot.tree.RootTree;
-import org.netbeans.jackpot.tree.TreeFinder;
+import org.netbeans.modules.java.source.engine.RootTree;
+import org.netbeans.modules.java.source.engine.TreeFinder;
+import org.netbeans.modules.java.source.engine.ReattributionException;
 
 import com.sun.source.tree.*;
-import org.netbeans.jackpot.tree.TreeScanner;
+import com.sun.source.util.TreeScanner;
 
 import com.sun.tools.javac.code.*;
 import com.sun.tools.javac.code.Symbol.*;
@@ -45,16 +43,18 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.*;
 import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.util.*;
+import java.util.Collections;
+import org.netbeans.api.java.source.transform.UndoEntry;
+import org.netbeans.api.java.source.transform.UndoList;
 
 import static com.sun.tools.javac.tree.JCTree.*;
-import org.netbeans.jackpot.tree.TreeUtilities;
 
 /**
  * A javac abstract syntax tree which maps all nodes to a single root.
  */
 public final class ASTService implements ASTModel {
     
-    private RootDef root;
+    private RootTree root;
     private UndoList undoList;
     private TreeFactory treeFactory;
     private Name.Table names;
@@ -86,7 +86,6 @@ public final class ASTService implements ASTModel {
         symtab = Symtab.instance(context);
         elements = ElementsService.instance(context);
         source = Source.instance(context);
-        this.root = (RootDef)TreeFactory.instance(context).Root(new ArrayList<CompilationUnitTree>());
         endPosTables = new HashMap<JavaFileObject, Map<JCTree, Integer>>();
     }
     
@@ -129,12 +128,12 @@ public final class ASTService implements ASTModel {
          */
         
         undoList.addAndApply(new UndoEntry() {
-            private final RootDef old = root;
+            private final RootTree old = root;
             public void undo() {
                 root = old;
             }
             public void redo() {
-                root = (RootDef)tree;
+                root = tree;
             }
             public Object getOld(Object o) {
                 return (o == tree) ? old : null;
@@ -222,16 +221,8 @@ public final class ASTService implements ASTModel {
         for (int i = 0; i < path.length; i++)
             if (path[i] instanceof CompilationUnitTree)
                 return (CompilationUnitTree)path[i];
-        assert tree instanceof RootDef;
+        assert tree instanceof RootTree;
         return null;
-    }
-    
-    /**
-     * Adds a new class definition.  This routine is normally only
-     * called during initial compilation.
-     */
-    public void addSourceTree(CompilationUnitTree unit) {
-        root.addUnit(unit);
     }
     
     /**
@@ -242,21 +233,21 @@ public final class ASTService implements ASTModel {
     public Element getElement(Tree tree) {
         if (tree == null)
             return null;
-        switch (((JCTree)tree).tag) {
-            case TOPLEVEL:   return ((JCCompilationUnit)tree).packge;
-            case CLASSDEF:   return ((JCClassDecl)tree).sym;
-            case METHODDEF:  return ((JCMethodDecl)tree).sym;
-            case VARDEF:     return ((JCVariableDecl)tree).sym;
-            case SELECT:     return ((JCFieldAccess)tree).sym;
-            case IDENT:      return ((JCIdent)tree).sym;
-            case NEWCLASS:   return ((JCNewClass)tree).constructor;
+        switch (tree.getKind()) {
+            case COMPILATION_UNIT: return ((JCCompilationUnit)tree).packge;
+            case CLASS:            return ((JCClassDecl)tree).sym;
+            case METHOD:           return ((JCMethodDecl)tree).sym;
+            case VARIABLE:         return ((JCVariableDecl)tree).sym;
+            case MEMBER_SELECT:    return ((JCFieldAccess)tree).sym;
+            case IDENTIFIER:       return ((JCIdent)tree).sym;
+            case NEW_CLASS:        return ((JCNewClass)tree).constructor;
             default:
                 return null;
         }
     }
     
     public TypeMirror getType(Tree tree) {
-        if (tree == null)
+        if (tree == null || tree instanceof RootTree)
             return null;
         TypeMirror type = ((JCTree)tree).type;
         if (type == null) {
@@ -314,59 +305,6 @@ public final class ASTService implements ASTModel {
     public void setType(Tree tree, TypeMirror type) {
         ((JCTree)tree).type = (Type)type;
     }
-
-    /**
-     * Returns true if the tree has variable declarations.  This can only be
-     * true for VariableTree trees and blocks that contain them.
-     */
-    public boolean hasVariableDeclarations(Tree t) {
-        if (t instanceof VariableTree)
-            return true;
-        if (t instanceof BlockTree)
-	    for(List<JCStatement> l = ((JCBlock)t).stats; l.nonEmpty(); l = l.tail)
-		if(l.head!=null && l.head.tag==VARDEF) return true;
-	return false;
-    }
-    
-    /**
-     * Returns true if the tree is an empty block or statement.
-     */
-    public boolean isEmpty(Tree t) {
-        if(t==null) return true;
-        switch(((JCTree)t).tag) {
-            default:
-                return false;
-            case BLOCK:
-                for(List<JCStatement> stats = ((JCBlock)t).stats; stats.nonEmpty(); stats = stats.tail)
-                    if(!isEmpty(stats.head)) return false;
-                return true;
-            case SKIP:
-                return true;
-        }
-    }
-    
-    /**
-     * Returns true if the tree represents a TypeElement, such as
-     * "Object" or "java.util.String".  This method is not used for
-     * actual ClassTree instances (where instanceof can be used).
-     */
-    public boolean isClassIdentifier(Tree t) {
-        if(t==null) return false;
-        Symbol sym;
-        switch(((JCTree)t).tag) {
-            case IDENT:
-                sym = ((JCIdent)t).sym;
-                break;
-            case SELECT:
-                JCFieldAccess s = (JCFieldAccess) t;
-                if(!TreeUtilities.sideEffectFree(s.selected)) return false;
-                sym = s.sym;
-                return false;
-            default:
-                return false;
-        }
-        return sym instanceof ClassSymbol;
-    }
     
     /**
      * Returns true if this is an identifier for "this".
@@ -422,11 +360,11 @@ public final class ASTService implements ASTModel {
         final Stack<Tree> stack = new Stack<Tree>();
         root.accept(new TreeFinder(target) {
             @Override
-            public Void scan(Tree tree, Object o) {
+            public Boolean scan(Tree tree, Object o) {
                 super.scan(tree, o);
                 if (found)
                     stack.push(tree);
-                return null;
+                return found;
             }
         }, null);
         Tree[] path = new Tree[stack.size()];
@@ -605,7 +543,7 @@ public final class ASTService implements ASTModel {
     // Private methods
     
     private Tree findChild(Tree tree, Symbol s) {
-        for (Tree child : TreeUtilities.getChildren(tree)) {
+        for (Tree child : getChildren(tree)) {
             if (getElement(child) == s)
                 return child;
         }
@@ -678,5 +616,15 @@ public final class ASTService implements ASTModel {
     
     public void setEndPosTable(JavaFileObject name, Map<JCTree, Integer> table) {
         endPosTables.put(name, table);
+    }
+
+    public java.util.List<? extends Tree> getChildren(Tree tree) {
+        if (tree instanceof RootTree)
+            return ((RootTree)tree).getCompilationUnits();
+        if (tree instanceof CompilationUnitTree)
+            return ((CompilationUnitTree)tree).getTypeDecls();
+        if (tree instanceof ClassTree)
+            return ((ClassTree)tree).getMembers();
+        return Collections.emptyList();
     }
 }

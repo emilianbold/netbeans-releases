@@ -24,9 +24,9 @@ import com.sun.source.tree.VariableTree;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.api.java.source.Comment;
-import org.netbeans.jackpot.model.CommentHandler;
-import org.netbeans.jackpot.model.CommentSet;
-import org.netbeans.jackpot.query.Query;
+import org.netbeans.api.java.source.CommentHandler;
+import org.netbeans.api.java.source.CommentSet;
+import org.netbeans.api.java.source.query.Query;
 
 import com.sun.tools.javac.util.*;
 import com.sun.tools.javac.code.*;
@@ -40,7 +40,7 @@ import java.util.Set;
 
 import static com.sun.tools.javac.code.Flags.*;
 import static com.sun.tools.javac.code.TypeTags.*;
-import org.netbeans.jackpot.engine.JavaFormatOptions;
+import org.netbeans.modules.java.source.engine.JavaFormatOptions;
 
 /** Prints out a tree as an indented Java source program.
  */

@@ -22,8 +22,8 @@ package org.netbeans.modules.java.source.builder;
 import com.sun.tools.javac.model.JavacElements;
 import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.*;
-import org.netbeans.jackpot.model.TreeMakerInt;
-import org.netbeans.jackpot.query.Query;
+import org.netbeans.modules.java.source.engine.TreeMakerInt;
+import org.netbeans.api.java.source.query.Query;
 import org.netbeans.jackpot.tree.*;
 
 import com.sun.source.tree.*;
@@ -57,6 +57,7 @@ import javax.lang.model.util.Types;
 import static com.sun.tools.javac.code.Flags.*;
 import static com.sun.tools.javac.code.Kinds.*;
 import static com.sun.tools.javac.code.TypeTags.*;
+import org.netbeans.modules.java.source.engine.RootTree;
 
 /**
  * Factory for creating new com.sun.source.tree instances.
@@ -469,7 +470,7 @@ public class TreeFactory implements TreeMakerInt {
     }
     
     public RootTree Root(List<CompilationUnitTree> units) {
-        return new RootDef(units);
+        return new RootTree(units);
     }
     
     public ParameterizedTypeTree ParameterizedType(Tree type,
