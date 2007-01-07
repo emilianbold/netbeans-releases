@@ -21,7 +21,12 @@
 package org.netbeans.modules.vmd.midp.flow;
 
 import org.netbeans.api.visual.anchor.Anchor;
+import org.netbeans.api.visual.vmd.VMDNodeAnchor;
+import org.netbeans.api.visual.vmd.VMDNodeWidget;
+import org.netbeans.api.visual.vmd.VMDPinWidget;
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.vmd.api.flow.visual.FlowDescriptor;
+import org.netbeans.modules.vmd.api.flow.visual.FlowNodeDescriptor;
 import org.netbeans.modules.vmd.api.flow.visual.FlowPinDescriptor;
 import org.netbeans.modules.vmd.api.flow.visual.FlowScene;
 import org.netbeans.modules.vmd.api.model.Debug;
@@ -70,7 +75,10 @@ public final class FlowSwitchDisplayableEventHandlerPinPresenter extends FlowEve
     protected class EventHandlerPinDecoratorBehaviour extends EventSourcePinDecoratorBehaviour {
 
         public Anchor createAnchor (FlowPinDescriptor descriptor, FlowScene scene) {
-            return super.createAnchor (descriptor, scene); // TODO
+            VMDPinWidget pinWidget = ((VMDPinWidget) scene.findWidget (descriptor));
+            FlowNodeDescriptor node = scene.getPinNode (descriptor);
+            VMDNodeWidget nodeWidget = (VMDNodeWidget) scene.findWidget (node);
+            return nodeWidget.createAnchorPin (pinWidget.createAnchor ());
         }
 
         public boolean isAcceptable (FlowDescriptor descriptor, Transferable transferable) {
