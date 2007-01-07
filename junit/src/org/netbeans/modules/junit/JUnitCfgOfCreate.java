@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -60,8 +60,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
 import org.openide.awt.Mnemonics;
-//XXX: retouche
-//import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -96,7 +94,7 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
     /** test class name specified in the form (or <code>null</code>) */
     private String testClassName;
     /** registered change listeners */
-    private List changeListeners;
+    private List<ChangeListener> changeListeners;
     /** */
     private String initialMessage;
     
@@ -258,8 +256,14 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
                             != null;
             return true;
         }
-//XXX: retouche
-//        singleClass = (nodeLookup.lookup(SourceCookie.class) != null);
+        
+        singleClass = false;
+        DataObject dataObj = nodeLookup.lookup(DataObject.class);
+        if (dataObj == null) {
+            return true;
+        }
+        
+        singleClass = dataObj.getPrimaryFile().isData();
         return !singleClass;
     }
     
@@ -951,7 +955,7 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
      */
     private void addChangeListener(ChangeListener l) {
         if (changeListeners == null) {
-            changeListeners = new ArrayList(3);
+            changeListeners = new ArrayList<ChangeListener>(3);
         }
         changeListeners.add(l);
     }
@@ -991,11 +995,11 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
      * except the OK, Cancel and Help buttons.
      */
     private void disableComponents() {
-        final Stack stack = new Stack();
+        final Stack<Container> stack = new Stack<Container>();
         stack.push(this);
         
         while (!stack.empty()) {
-            Container container = (Container) stack.pop();
+            Container container = stack.pop();
             Component comps[] = container.getComponents();
             for (int i = 0; i < comps.length; i++) {
                 final java.awt.Component comp = comps[i];
@@ -1004,9 +1008,10 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
                     continue;
                 }
                 if (comp instanceof JPanel) {
-                    stack.push(comp);
+                    JPanel panel = (JPanel) comp;
+                    stack.push(panel);
 
-                    final Border border = ((JPanel) comp).getBorder();
+                    final Border border = panel.getBorder();
                     if (border != null) {
                         disableBorderTitles(border);
                     }
@@ -1014,8 +1019,9 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
                 }
                 comp.setEnabled(false);
                 if (comp instanceof java.awt.Container) {
-                    if (((Container) comp).getComponentCount() != 0) {
-                        stack.push(comp);
+                    Container nestedCont = (Container) comp;
+                    if (nestedCont.getComponentCount() != 0) {
+                        stack.push(nestedCont);
                     }
                 }
             }
@@ -1035,22 +1041,22 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
             return;
         }
         
-        Stack stack = new Stack();
-        stack.push(border);
+        Stack<CompoundBorder> stack = new Stack<CompoundBorder>();
+        stack.push((CompoundBorder) border);
         while (!stack.empty()) {
-            CompoundBorder cb = (CompoundBorder) stack.pop();
+            CompoundBorder cb = stack.pop();
             
             Border b;
             b = cb.getOutsideBorder();
             if (b instanceof CompoundBorder) {
-                stack.push(b);
+                stack.push((CompoundBorder) b);
             } else if (b instanceof TitledBorder) {
                 disableBorderTitle((TitledBorder) b);
             }
             
             b = cb.getInsideBorder();
             if (b instanceof CompoundBorder) {
-                stack.push(b);
+                stack.push((CompoundBorder) b);
             } else if (b instanceof TitledBorder) {
                 disableBorderTitle((TitledBorder) b);
             }

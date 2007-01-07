@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -106,7 +106,7 @@ public final class GuiUtils {
          * collect a list of templates and identify the default template
          * among them:
          */
-        List itemList = new ArrayList(templates.length);
+        List<NamedObject> itemList = new ArrayList<NamedObject>(templates.length);
         int defaultItemIndex = -1;
         int itemIndex = 0;
         

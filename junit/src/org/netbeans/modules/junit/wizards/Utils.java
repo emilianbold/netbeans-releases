@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -56,9 +56,9 @@ public final class Utils {
     /** <!-- PENDING --> */
     private SourceGroup[] javaSourceGroups;
     /** <!-- PENDING --> */
-    private Map sourcesToTestsMap;
+    private Map<SourceGroup,Object[]> sourcesToTestsMap;
     /** <!-- PENDING --> */
-    private Map foldersToSourceGroupsMap;
+    private Map<FileObject,Object> foldersToSourceGroupsMap;
     
     /**
      * <!-- PENDING -->
@@ -157,7 +157,7 @@ public final class Utils {
      * @see  #getTestTargets(Project, boolean)
      * @author  Marian Petras
      */
-    private Collection getTestTargets(final boolean sourceGroupsOnly) {
+    private Collection<Object> getTestTargets(final boolean sourceGroupsOnly) {
 
         /*
          * Idea:
@@ -172,7 +172,7 @@ public final class Utils {
         /* .) get all SourceGroups: */
         final SourceGroup[] sourceGroups = getJavaSourceGroups();
         if (sourceGroups.length == 0) {
-            return Collections.EMPTY_LIST;
+            return Collections.<Object>emptyList();
         }
 
         /* .) */
@@ -186,7 +186,7 @@ public final class Utils {
         }
 
         if (size != testTargetsUnion.length) {
-            testTargetsUnion = TestUtil.skipNulls(testTargetsUnion, new Object [0]);
+            testTargetsUnion = TestUtil.skipNulls(testTargetsUnion, new Object[0]);
         }
 
         return Collections.unmodifiableCollection(
@@ -196,7 +196,7 @@ public final class Utils {
     /**
      * <!-- PENDING -->
      */
-    Map getSourcesToTestsMap() {
+    Map<SourceGroup,Object[]> getSourcesToTestsMap() {
         if (sourcesToTestsMap == null) {
             sourcesToTestsMap = createSourcesToTestsMap(sourceGroupsOnly);
         }
@@ -206,7 +206,7 @@ public final class Utils {
     /**
      * <!-- PENDING -->
      */
-    Map getSourcesToTestsMap(final boolean sourceGroupsOnly) {
+    Map<SourceGroup,Object[]> getSourcesToTestsMap(final boolean sourceGroupsOnly) {
         if (sourceGroupsOnly != this.sourceGroupsOnly) {
             sourcesToTestsMap = null;
             this.sourceGroupsOnly = sourceGroupsOnly;
@@ -231,7 +231,7 @@ public final class Utils {
      * @return  created map - may be empty, may be unmodifiable,
      *                        cannot be <code>null</code>
      */
-    private Map createSourcesToTestsMap(final boolean sourceGroupsOnly) {
+    private Map<SourceGroup,Object[]> createSourcesToTestsMap(final boolean sourceGroupsOnly) {
         
         /*
          * Idea:
@@ -243,13 +243,16 @@ public final class Utils {
         /* .) get all SourceGroups: */
         final SourceGroup[] sourceGroups = getJavaSourceGroups();
         if (sourceGroups.length == 0) {
-            return Collections.EMPTY_MAP;
+            return Collections.<SourceGroup,Object[]>emptyMap();
         }
 
         /* .) get test SourceGroups for each SourceGroup: */
         createFoldersToSourceGroupsMap(sourceGroups);
         Object testTargetsUnion[] = new Object[sourceGroups.length];
-        Map map = new HashMap((int) (sourceGroups.length * 1.33f + 0.5f), .75f);
+        Map<SourceGroup,Object[]> map;
+        map = new HashMap<SourceGroup,Object[]>(
+                            (int) ((float) sourceGroups.length * 1.33f + 0.5f),
+                            .75f);
         for (int i = 0; i < sourceGroups.length; i++) {
             Object[] testTargets = getTestTargets(sourceGroups[i],
                                                   sourceGroupsOnly);
@@ -258,10 +261,11 @@ public final class Utils {
             }
         }
         if (map.isEmpty()) {
-            return Collections.EMPTY_MAP;
+            return Collections.<SourceGroup,Object[]>emptyMap();
         }
         if (map.size() == 1) {
-            Map.Entry entry = (Map.Entry) map.entrySet().iterator().next();
+            Map.Entry<SourceGroup,Object[]> entry
+                    = map.entrySet().iterator().next();
             return Collections.singletonMap(entry.getKey(), entry.getValue());
         }
 
@@ -270,8 +274,10 @@ public final class Utils {
             return map;
         }
         
-        final Map targetMap;
-        targetMap = new HashMap((int) (finalMapSize * 1.25f + .5f), .8f);
+        final Map<SourceGroup,Object[]> targetMap;
+        targetMap = new HashMap<SourceGroup,Object[]>(
+                                    (int) ((float) finalMapSize * 1.25f + .5f),
+                                    .8f);
         targetMap.putAll(map);
         return targetMap;
     }
@@ -411,7 +417,6 @@ public final class Utils {
         
         /* .) find SourceGroups corresponding to the FileObjects: */
         final Object[] targets = new Object[testFolders.length];
-        int targetIndex = 0;
         for (int i = 0; i < targets.length; i++) {
             final FileObject testFolder = testFolders[i];
             if (testFolder == null) {
@@ -554,14 +559,14 @@ public final class Utils {
      */
     private void createFoldersToSourceGroupsMap(
             final SourceGroup[] sourceGroups) {
-        Map result;
+        Map<FileObject,Object> result;
 
         if (sourceGroups.length == 0) {
-            result = Collections.EMPTY_MAP;
+            result = Collections.<FileObject,Object>emptyMap();
         } else {
-            result = new HashMap(2 * sourceGroups.length, .5f);
-            for (int i = 0; i < sourceGroups.length; i++) {
-                SourceGroup sourceGroup = sourceGroups[i];
+            result = new HashMap<FileObject,Object>(2 * sourceGroups.length,
+                                                    .5f);
+            for (SourceGroup sourceGroup : sourceGroups) {
                 result.put(sourceGroup.getRootFolder(), sourceGroup);
             }
         }

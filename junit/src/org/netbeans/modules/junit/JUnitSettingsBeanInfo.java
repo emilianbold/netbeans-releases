@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,6 +21,7 @@ package org.netbeans.modules.junit;
 
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.TreeSet;
 import java.awt.Image;
 import java.beans.*;
@@ -156,41 +157,42 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
     }
 
     public static class SortedListPropEd extends PropertyEditorSupport {
-        private LinkedList  displays = new LinkedList();
-        private LinkedList  values = new LinkedList();
+        private List<String>  displays = new LinkedList<String>();
+        private List<String>  values = new LinkedList<String>();
         private String      defaultDisplay = NbBundle.getMessage(JUnitSettingsBeanInfo.class, "LBL_value_not_found");
 
         public String[] getTags () {
-            TreeSet t = new TreeSet(displays);
+            TreeSet<String> t = new TreeSet<String>(displays);
             if (displays.size() > 0) {
-                return (String []) t.toArray(new String[displays.size() - 1]);
+                return t.toArray(new String[displays.size() - 1]);
             } else {
                 return new String[0];
             }
         }
 
-        public String getAsText () {
+        public String getAsText() {
             String      value = null;
             String      display = null;
-            Iterator    iD = displays.iterator();
-            Iterator    iV = values.iterator();
+            Iterator<String> iD = displays.iterator();
+            Iterator<String> iV = values.iterator();
             while (iV.hasNext()) {
-                value = (String) iV.next();
-                display = (String) iD.next();
-                if (value.equals(getValue()))
+                value = iV.next();
+                display = iD.next();
+                if (value.equals(getValue())) {
                     return display;
+                }
             }
             return defaultDisplay;
         }
         
-        public void setAsText (String text) throws IllegalArgumentException {
+        public void setAsText(String text) throws IllegalArgumentException {
             String      value = null;
             String      display = null;
-            Iterator    iD = displays.iterator();
-            Iterator    iV = values.iterator();
+            Iterator<String> iD = displays.iterator();
+            Iterator<String> iV = values.iterator();
             while (iD.hasNext()) {
-                value = (String) iV.next();
-                display = (String) iD.next();
+                value = iV.next();
+                display = iD.next();
                 if (display.equals(text)) {
                     setValue(value);
                     return;

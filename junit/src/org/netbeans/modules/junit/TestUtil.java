@@ -13,16 +13,21 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.junit;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
 import java.net.URL;
 import java.util.Collections;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
@@ -39,21 +44,15 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
-//XXX: retouche
-//import org.netbeans.modules.javacore.api.JavaModel;
-//import org.netbeans.jmi.javamodel.*;
-//import org.openide.src.ClassElement;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import javax.lang.model.element.TypeElement;
 import org.openide.util.Utilities;
 
 
@@ -91,18 +90,10 @@ public class TestUtil {
     // test class names    
     //
     public static String getTestClassFullName(String sourceClassName, String packageName) {
-        StringBuffer name = new StringBuffer();
-
-        if (packageName != null) {
-            name.append(packageName.replace('.','/'));
-            if (name.length() > 0) {
-                name.append('/');
-            }
-        }
-        name.append(getTestClassName(sourceClassName));
-        return name.toString();
-
-
+        String shortTestClassName = getTestClassName(sourceClassName);
+        return ((packageName == null) || (packageName.length() == 0))
+               ? shortTestClassName
+               : packageName.replace('.','/') + '/' + shortTestClassName;
     }
     
     public static String getTestClassName(String sourceClassName) {
@@ -163,8 +154,8 @@ public class TestUtil {
     /**
      * Show message box of the specified severity. 
      */
-    public static void notifyUser(String msg, int errorLevel) {
-        NotifyDescriptor descr = new NotifyDescriptor.Message(msg, errorLevel);
+    public static void notifyUser(String msg, int messageType) {
+        NotifyDescriptor descr = new NotifyDescriptor.Message(msg, messageType);
         DialogDisplayer.getDefault().notify(descr);
     }
 
@@ -176,11 +167,11 @@ public class TestUtil {
         DataObject      dO;
         DataFolder      df;
         
-        dO = (DataObject) node.getCookie(DataObject.class);
+        dO = node.getCookie(DataObject.class);
         if (null != dO)
             return dO.getPrimaryFile();
 
-        df = (DataFolder) node.getCookie(DataFolder.class);
+        df = node.getCookie(DataFolder.class);
         if (null != df)
             return df.getPrimaryFile();
         
@@ -196,89 +187,87 @@ public class TestUtil {
         return null;
     }
 
-
+    /**
+     */
+    static boolean isJavaFile(FileObject fileObj) {
+        return "java".equals(fileObj.getExt())                          //NOI18N
+               || "text/x-java".equals(FileUtil.getMIMEType(fileObj));  //NOI18N
+    }
     
 
         
-//XXX: retouche
-//    static boolean isClassTest(JavaClass jc) {
-//        return isClassImplementingTestInterface(jc);
-//    }
+    static boolean isClassTest(CompilationInfo compilationInfo,
+                               TypeElement classElem) {
+        return isClassImplementingTestInterface(compilationInfo, classElem);
+    }
     
-//XXX: retouche
-//    // is JavaClass a Test class ?
-//    static boolean isClassImplementingTestInterface(JavaClass cls) {        
-//        
-//        JavaModelPackage pkg = (JavaModelPackage)cls.refImmediatePackage();  
-//        JavaClass testInterface = (JavaClass)pkg.getJavaClass().resolve("junit.framework.Test");
-//        
-//        return cls.isSubTypeOf(testInterface);
-//    }    
+    // is JavaClass a Test class?
+    static boolean isClassImplementingTestInterface(
+                                            CompilationInfo compilationInfo,
+                                            TypeElement classElem) {        
+        String testIfaceFullName = "junit.framework.Test";              //NOI18N
+        TypeElement testIface = compilationInfo.getElements()
+                               .getTypeElement(testIfaceFullName);
+        
+        if (testIface == null) {
+            String msg = "junit: TestUtil.isClassImplementingTestInterface(...) " //NOI18N
+                         + "could not find TypeElement for "            //NOI18N
+                         + testIfaceFullName;
+            Logger.getLogger("global").log(Level.WARNING, msg);         //NOI18N
+            return false;
+        }
+        
+        return compilationInfo.getTypes().isSubtype(classElem.asType(),
+                                                    testIface.asType());
+    }    
     
         
     
     // is class an exception
 
 
-//XXX: retouche
-//    static boolean isClassException(JavaClass cls) {
-//        JavaModelPackage pkg = (JavaModelPackage)cls.refImmediatePackage();
-//        ClassDefinition throwable = (ClassDefinition)pkg.getType().resolve("java.lang.Throwable");
-//        return cls.isSubTypeOf(throwable);
-//    }
+    static boolean isClassException(CompilationInfo compilationInfo,
+                                    TypeElement classElem) {
+        String throwableFullName = "java.lang.Throwable";               //NOI18N
+        TypeElement throwable = compilationInfo.getElements()
+                                .getTypeElement(throwableFullName);
+        
+        if (throwable == null) {
+            String msg = "junit: TestUtil.isClassException(...) "       //NOI18N
+                         + "could not find TypeElement for "            //NOI18N
+                         + throwableFullName;
+            Logger.getLogger("global").log(Level.SEVERE, msg);          //NOI18N
+            return false;
+        }
+        
+        return compilationInfo.getTypes().isSubtype(classElem.asType(),
+                                                    throwable.asType());
+    }
 
 
     /**
-     * Gets all top-level classes from file.
-     * @param fo the <code>FileObject</code> to examine
-     * @return Collection<JavaClass>, not null
-     */ 
-    static Collection getAllClassesFromFile(FileObject fo) {
-//XXX: retouche
-//        if (fo == null) {
-            return Collections.EMPTY_LIST;
-//XXX: retouche
-//        }
-//
-//        Iterator it = JavaModel.getResource(fo).getChildren().iterator();
-//        LinkedList ret = new LinkedList();
-//
-//        while (it.hasNext()) {
-//            Element e = (Element)it.next();
-//            if (e instanceof JavaClass) {
-//                ret.add((JavaClass)e);
-//            }
-//        }
-//
-//        return ret;
-    }
-
-//XXX: retouche
-//    /**
-//     * Returns an object describing the main class of the specified
-//     * file object containing java source.
-//     *
-//     * @param  res <code>Resource</code> examine
-//     * @return  <code>JavaClass</code> with the data object's
-//     *          main class; or <code>null</code> if the class was not
-//     *          found (e.g. because of a broken source file)
-//     */
-//    static public JavaClass getMainJavaClass(Resource res) {
-//        // search for the main class  
-//        Iterator it = res.getChildren().iterator();
-//        String resName = fileToClassName(res.getName());
-//        if (resName != null) {
-//            while (it.hasNext()) {
-//                Element e = (Element)it.next();
-//                if (e instanceof JavaClass) {
-//                    if (((JavaClass)e).getName().equals(resName)) 
-//                        return (JavaClass)e;
-//                }
-//            }
-//        }
-//
-//        return null;
-//    }    
+     * Finds a main class.
+     *
+     * @param  compInfo  defines scope in which the class is to be found
+     * @param  className  name of the class to be found
+     * @return  the found class; or <code>null</code> if the class was not
+     *          found (e.g. because of a broken source file)
+     */
+    public static ClassTree findMainClass(final CompilationInfo compInfo) {
+        final String className = compInfo.getFileObject().getName();
+        
+        CompilationUnitTree compUnitTree = compInfo.getCompilationUnit();
+        String shortClassName = getSimpleName(className);
+        for (Tree typeDecl : compUnitTree.getTypeDecls()) {
+            if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                ClassTree clazz = (ClassTree) typeDecl;
+                if (clazz.getSimpleName().toString().equals(shortClassName)) {
+                    return clazz;
+                }
+            }
+        }
+        return null;
+    }    
     
     /**
      * Converts filename to the fully qualified name of the main class
@@ -305,15 +294,14 @@ public class TestUtil {
      * @return  list of full names of all primary Java classes
      *          within the specified package
      */
-    public static List getJavaFileNames(FileObject packageFolder, ClassPath classPath) {
+    public static List<String> getJavaFileNames(FileObject packageFolder, ClassPath classPath) {
         FileObject[] children = packageFolder.getChildren();
         if (children.length == 0) {
-            return Collections.EMPTY_LIST;
+            return Collections.<String>emptyList();
         }
         
-        List result = new ArrayList(children.length);
-        for (int i = 0; i < children.length; i++) {
-            FileObject child = children[i];
+        List<String> result = new ArrayList<String>(children.length);
+        for (FileObject child : children) {
             if (child.isFolder() || child.isVirtual()
                     || !child.getMIMEType().equals(JAVA_MIME_TYPE)) {
                 continue;
@@ -330,7 +318,7 @@ public class TestUtil {
 //            Resource rc = JavaModel.getResource(dataObject.getPrimaryFile());
 //            result.add(getMainJavaClass(rc).getName());
         }
-        return result.isEmpty() ? Collections.EMPTY_LIST : result;
+        return result.isEmpty() ? Collections.<String>emptyList() : result;
     }
 
 //XXX: retouche
@@ -563,18 +551,18 @@ public class TestUtil {
         }
         
         if (someSkipped) {
-            Object roots[] = skipNulls(sourceRoots, new FileObject[0]);
+            FileObject roots[] = skipNulls(sourceRoots, new FileObject[0]);
             if (roots.length == 0) {
                 return new Object[0];
             }
-            sourceRoots = (FileObject[]) roots;
+            sourceRoots = roots;
         }
         
         /* .) find SourceGroups corresponding to the FileObjects: */
         final Object[] targets = new Object[sourceRoots.length];
-        Map map = getFileObject2SourceGroupMap(project);
+        Map<FileObject,SourceGroup> map = getFileObject2SourceGroupMap(project);
         for (int i = 0; i < sourceRoots.length; i++) {
-            Object srcGroup = map.get(sourceRoots[i]);
+            SourceGroup srcGroup = map.get(sourceRoots[i]);
             targets[i] = srcGroup != null ? srcGroup : sourceRoots[i];
         }
         return targets;
@@ -633,19 +621,19 @@ public class TestUtil {
      *          (may be empty but not <code>null</code>)
      * @author  Marian Petras
      */
-    public static Collection findSourceGroupOwners(
+    public static Collection<SourceGroup> findSourceGroupOwners(
             final Project project,
             final String className) {
         final SourceGroup[] sourceGroups
                 = new Utils(project).getJavaSourceGroups();
         if (sourceGroups.length == 0) {
-            return Collections.EMPTY_LIST;
+            return Collections.<SourceGroup>emptyList();
         }
         
         final String relativePath = className.replace('.', '/')
                                     + ".java";                          //NOI18N
         
-        ArrayList result = new ArrayList(4);
+        ArrayList<SourceGroup> result = new ArrayList<SourceGroup>(4);
         for (int i = 0; i < sourceGroups.length; i++) {
             SourceGroup srcGroup = sourceGroups[i];
             FileObject root = srcGroup.getRootFolder();
@@ -656,7 +644,7 @@ public class TestUtil {
             }
         }
         if (result.isEmpty()) {
-            return Collections.EMPTY_LIST;
+            return Collections.<SourceGroup>emptyList();
         }
         result.trimToSize();
         return Collections.unmodifiableList(result);
@@ -678,8 +666,8 @@ public class TestUtil {
      *          same order, just with <code>null</code> elements missing
      * @author  Marian Petras
      */
-    public static Object[] skipNulls(final Object[] objs, final Object [] type) {
-        List resultList = new ArrayList(objs.length);
+    public static <T> T[] skipNulls(final T[] objs, final T[] type) {
+        List<T> resultList = new ArrayList<T>(objs.length);
         
         for (int i = 0; i < objs.length; i++) {
             if (objs[i] != null) {
@@ -702,18 +690,21 @@ public class TestUtil {
      *          project, having their root folders as keys
      * @author  Marian Petras
      */
-    public static Map getFileObject2SourceGroupMap(Project project) {
+    public static Map<FileObject,SourceGroup> getFileObject2SourceGroupMap(
+                                                              Project project) {
         final SourceGroup[] sourceGroups
                 = new Utils(project).getJavaSourceGroups();
         
         if (sourceGroups.length == 0) {
-            return Collections.EMPTY_MAP;
+            return Collections.<FileObject,SourceGroup>emptyMap();
         } else if (sourceGroups.length == 1) {
             return Collections.singletonMap(sourceGroups[0].getRootFolder(),
                                             sourceGroups[0]);
         } else {
-            Map map = new HashMap(Math.round(sourceGroups.length * 1.4f + .5f),
-                                  .75f);
+            Map<FileObject,SourceGroup> map;
+            map = new HashMap<FileObject,SourceGroup>(
+                    Math.round(sourceGroups.length * 1.4f + .5f),
+                               .75f);
             for (int i = 0; i < sourceGroups.length; i++) {
                 map.put(sourceGroups[i].getRootFolder(),
                         sourceGroups[i]);
@@ -796,6 +787,24 @@ public class TestUtil {
                    Boolean.valueOf(settings.isGenerateTearDown()));
         
         return params;
+    }
+    
+    /**
+     *
+     */
+    static String getPackageName(String fullName) {
+        int i = fullName.lastIndexOf('.');
+        return (i != -1) ? fullName.substring(0, i)
+                         : "";                                          //NOI18N
+    }
+
+    /**
+     * Gets the last part of a fully qualified Java name.
+     */
+    static String getSimpleName(String fullName) {
+        int lastDotIndex = fullName.lastIndexOf('.');
+        return (lastDotIndex == -1) ? fullName
+                                    : fullName.substring(lastDotIndex + 1);
     }
     
 }

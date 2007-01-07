@@ -13,18 +13,19 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2006-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.junit.plugin;
 
+//import java.util.Collections;
+//import java.util.EnumSet;
 import java.util.Map;
-//XXX: retouche
-//import org.netbeans.jmi.javamodel.Feature;
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.jmi.javamodel.Method;
-//import org.netbeans.modules.javacore.api.JavaModel;
+//import java.util.Set;
+//import javax.lang.model.element.Element;
+//import javax.lang.model.element.ElementKind;
+//import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.junit.JUnitPluginTrampoline;
 import org.openide.filesystems.FileObject;
 
@@ -163,54 +164,53 @@ public abstract class JUnitPlugin {
      * a Java file.
      */
     public static final class Location {
+        //** */
+        //public static final Set<ElementKind> CLASS_LIKE_ELEM_TYPES;
+        //** */
+        //public static final Set<ElementKind> SUPPORTED_ELEM_TYPES;
         /**
          * holds specification of a Java file
          */
         private final FileObject fileObject;
-//XXX: retouche
 //        /**
-//         * holds specification of a Java element within the Java file;
-//         * may be {@code null}
 //         */
-//        private final Feature javaElement;
+//        private final ElementHandle<Element> elementHandle;
+//        
+//        static {
+//            CLASS_LIKE_ELEM_TYPES = EnumSet.of(ElementKind.CLASS,
+//                                               ElementKind.INTERFACE,
+//                                               ElementKind.ENUM);
+//            EnumSet<ElementKind> elemTypes;
+//            elemTypes = EnumSet.copyOf(CLASS_LIKE_ELEM_TYPES);
+//            elemTypes.addAll(EnumSet.of(ElementKind.METHOD,
+//                                        ElementKind.CONSTRUCTOR,
+//                                        ElementKind.STATIC_INIT));
+//            SUPPORTED_ELEM_TYPES = Collections.unmodifiableSet(elemTypes);
+//        }
+        
         /**
          * Creates a new instance.
          *
          * @param  fileObject  the {@code FileObject}
-         * @param  javaElement  instance of {@code JavaMethod}
-         *                      or {@code JavaClass}, or {@code null};
-         *                      if non-{@code null}, it must be contained
-         *                      in the given {@code FileObject}
-         * @exception  java.lang.IllegalArgumentException
-         *             if the passed {@code FileObject} is {@code null};
-         *             or if the Java element is specified but it is neither
-         *             {@code JavaClass} nor {@code Method};
-         *             or if the Java element is specified but it is not
-         *             contained in the given {@code FileObject}
-         * @see  Method
-         * @see  JavaClass
+         * 
+         * 
+         * 
          */
-//XXX: retouche
-        public Location(FileObject fileObject/*XXX: retouche, Feature javaElement*/) {
+        public Location(FileObject fileObject/*,
+                        Element element*/) {
             if (fileObject == null) {
                throw new IllegalArgumentException("fileObject is null");//NOI18N
             }
-//XXX: retouche
-//            if (javaElement != null) {
-//                if (!(javaElement instanceof JavaClass)
-//                        && !(javaElement instanceof Method)) {
-//                    throw new IllegalArgumentException(
-//               "The Java element is neither JavaClass nor JavaElement");//NOI18N
-//                }
-//                if (JavaModel.getFileObject(javaElement.getResource())
-//                        != fileObject) {
-//                    throw new IllegalArgumentException(
-//          "The Java element is not contained in the given FileObject.");//NOI18N
-//                }
+            
+//            while ((element != null)
+//                    && !SUPPORTED_ELEM_TYPES.contains(element.getKind())) {
+//                element = element.getEnclosingElement();
 //            }
+            
             this.fileObject = fileObject;
-//XXX: retouche
-//            this.javaElement = javaElement;
+            //this.elementHandle = (element != null)
+            //                     ? ElementHandle.create(element)
+            //                     : null;
         }
         
         /**
@@ -222,16 +222,12 @@ public abstract class JUnitPlugin {
             return fileObject;
         }
         
-//XXX: retouche
 //        /**
-//         * Returns the Java element.
-//         *
-//         * @return  {@link Method} or {@link JavaClass} held in this instance,
-//         *          or {@code null} if no Java element is specified
 //         */
-//        public Feature getJavaElement() {
-//            return javaElement;
+//        public ElementHandle<Element> getElementHandle() {
+//            return elementHandle;
 //        }
+        
     }
     
     /**
@@ -254,8 +250,22 @@ public abstract class JUnitPlugin {
      */
     protected abstract Location getTestedLocation(Location testLocation);
     
+//    /**
+//     * Informs whether the plugin is capable of creating tests at the moment.
+//     * The default implementation returns {@code true}.
+//     *
+//     * @return  {@code true} if the plugin is able of creating tests,
+//     *          {@code false} otherwise
+//     * @see  #createTests
+//     */
+//    protected boolean canCreateTests() {
+//        return true;
+//    }
+    
     /**
      * Creates test classes for given source classes.
+     * If the plugin does not support creating tests, implementation of this
+     * method should return {@code null}.
      *
      * @param  filesToTest  source files for which test classes should be
      *                      created
@@ -268,6 +278,7 @@ public abstract class JUnitPlugin {
      *                 or a {@code Boolean} (for other keys)
      * @return  created test files, or {@code null} if no test classes were
      *          created and/or updated
+     * @see  #canCreateTests
      */
     protected abstract FileObject[] createTests(
             FileObject[] filesToTest,

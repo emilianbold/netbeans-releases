@@ -15,7 +15,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
  The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  Microsystems, Inc. All Rights Reserved.
 -->
 <filesystem>
@@ -39,7 +39,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             <attr name="SimpleJUnitTest.java/TestSuite.java" boolvalue="true"/>
             <attr name="SimpleJUnitTest.java/Package.shadow" boolvalue="true"/>
             
-            <file name="EmptyJUnitTest.java" url="templates/SimpleJUnitTest.java.template">
+            <file name="EmptyJUnitTest.java" url="templates/EmptyJUnitTest.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/EmptyJUnitTest.html"/>
@@ -57,7 +57,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                 <attr name="templateCategory" stringvalue="junit"/>
             </file>
             
-            <file name="TestSuite.java" url="templates/SimpleJUnitTest.java.template">
+            <file name="TestSuite.java" url="templates/TestSuite.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/TestSuite.html"/>

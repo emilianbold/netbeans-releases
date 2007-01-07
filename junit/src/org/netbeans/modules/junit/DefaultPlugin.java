@@ -13,46 +13,35 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.junit;
 
 import java.io.IOException;
-import java.lang.reflect.Modifier;
-import java.text.MessageFormat;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-//XXX: retouche
-//import org.netbeans.jmi.javamodel.AnnotationType;
-//import org.netbeans.jmi.javamodel.ClassDefinition;
-//import org.netbeans.jmi.javamodel.Element;
-//import org.netbeans.jmi.javamodel.Feature;
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.jmi.javamodel.Method;
-//import org.netbeans.jmi.javamodel.Resource;
-//import org.netbeans.modules.javacore.api.JavaModel;
-//import org.netbeans.modules.junit.DefaultPlugin.CreationResults.SkippedClass;
-import org.netbeans.modules.junit.TestCreator.TesteableResult;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.junit.TestabilityResult.SkippedClass;
 import org.netbeans.modules.junit.plugin.JUnitPlugin;
 import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
 import org.netbeans.modules.junit.plugin.JUnitPlugin.Location;
-import org.netbeans.modules.junit.wizards.Utils;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -62,6 +51,12 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import static javax.lang.model.util.ElementFilter.methodsIn;
+import static javax.lang.model.util.ElementFilter.typesIn;
+import static org.netbeans.api.java.classpath.ClassPath.SOURCE;
+import static org.netbeans.api.java.classpath.ClassPath.COMPILE;
+import static org.netbeans.api.java.classpath.ClassPath.BOOT;
+//import static org.netbeans.modules.junit.plugin.JUnitPlugin.Location.CLASS_LIKE_ELEM_TYPES;
 
 /**
  * Default JUnit plugin.
@@ -74,80 +69,47 @@ public final class DefaultPlugin extends JUnitPlugin {
      *
      */
     protected Location getTestLocation(Location sourceLocation) {
-        final FileObject foRoot;
-        final Project project;
-        final ClassPath srcCP, tstCP;
-        final Utils utils;
-        FileObject[] testRootsRaw, testRoots;
+        FileObject fileObj = sourceLocation.getFileObject();
+        ClassPath srcCp;
         
-        final FileObject fo = sourceLocation.getFileObject();
-        
-        if (((project = FileOwnerQuery.getOwner(fo)) == null)
-             || ((srcCP = ClassPath.getClassPath(fo, ClassPath.SOURCE)) == null)
-             || ((foRoot = srcCP.findOwnerRoot(fo)) == null)
-             || ((utils = new Utils(project)) == null)//side effect - assignment
-             || ((testRootsRaw = utils.getTestFoldersRaw(foRoot)).length == 0)
-             || ((testRoots = Utils.skipNulls(testRootsRaw)).length == 0)) {
+        if ((srcCp = ClassPath.getClassPath(fileObj, SOURCE)) == null) {
             return null;
         }
         
-        String baseResName = srcCP.getResourceName(fo, '/', false);
-        String testResName = !fo.isFolder()
-                             ? getTestResName(baseResName, fo.getExt())
+        String baseResName = srcCp.getResourceName(fileObj, '/', false);
+        String testResName = !fileObj.isFolder()
+                             ? getTestResName(baseResName, fileObj.getExt())
                              : getSuiteResName(baseResName);
         assert testResName != null;
         
-        List/*<FileObject>*/ testFiles = ClassPathSupport
-                                         .createClassPath(testRoots)
-                                         .findAllResources(testResName);
-        if (testFiles.isEmpty()) {
-            return null;            //PENDING - offer creation of new test class
-        } else {
-            return getOppositeLocation(sourceLocation,
-                                       (List<FileObject>) testFiles,
-                                       true);
-        }
+        return getOppositeLocation(sourceLocation,
+                                   srcCp,
+                                   testResName,
+                                   true);
     }
     
     /**
      *
      */
     protected Location getTestedLocation(Location testLocation) {
-        final FileObject foRoot;
-        final Project project;
-        final ClassPath srcCP, tstCP;
-        final Utils utils;
-        FileObject[] sourceRootsRaw, sourceRoots;
+        FileObject fileObj = testLocation.getFileObject();
+        ClassPath srcCp;
         
-        final FileObject fo = testLocation.getFileObject();
-        
-        if (fo.isFolder()
-             || ((project = FileOwnerQuery.getOwner(fo)) == null)
-             || ((srcCP = ClassPath.getClassPath(fo, ClassPath.SOURCE)) == null)
-             || ((foRoot = srcCP.findOwnerRoot(fo)) == null)
-             || ((utils = new Utils(project)) == null)//side effect - assignment
-             || ((sourceRootsRaw = utils.getSourceFoldersRaw(foRoot))
-                 .length == 0)
-             || ((sourceRoots = Utils.skipNulls(sourceRootsRaw)).length == 0)) {
+        if (fileObj.isFolder()
+               || ((srcCp = ClassPath.getClassPath(fileObj, SOURCE)) == null)) {
             return null;
         }
         
-        String baseResName = srcCP.getResourceName(fo, '/', false);
-        String srcResName = getSrcResName(baseResName, fo.getExt());
+        String baseResName = srcCp.getResourceName(fileObj, '/', false);
+        String srcResName = getSrcResName(baseResName, fileObj.getExt());
         if (srcResName == null) {
             return null;     //if the selectedFO is not a test class (by name)
         }
 
-        List/*<FileObject>*/ srcFiles = ClassPathSupport
-                                           .createClassPath(sourceRoots)
-                                           .findAllResources(srcResName);
-        if (srcFiles.isEmpty()) {
-            return null;
-        } else {
-            return getOppositeLocation(testLocation,
-                                       (List<FileObject>) srcFiles,
-                                       false);
-        }
+        return getOppositeLocation(testLocation,
+                                   srcCp,
+                                   srcResName,
+                                   false);
     }
     
     /**
@@ -155,90 +117,404 @@ public final class DefaultPlugin extends JUnitPlugin {
      */
     private static Location getOppositeLocation(
                                     final Location sourceLocation,
-                                    final List<FileObject> candidateFiles,
+                                    final ClassPath fileObjCp,
+                                    final String oppoResourceName,
                                     final boolean sourceToTest) {
-//XXX: retouche
-//        Feature element = sourceLocation.getJavaElement();
-//        if (element == null) {
-            return new Location(candidateFiles.get(0)/*XXX: retouche , null*/);
-//XXX: retouche
+        FileObject fileObj = sourceLocation.getFileObject();
+        FileObject fileObjRoot;
+        
+        if ((fileObjRoot = fileObjCp.findOwnerRoot(fileObj)) == null) {
+            return null;
+        }
+        
+        URL[] oppoRootsURLs = sourceToTest
+                              ? UnitTestForSourceQuery.findUnitTests(fileObjRoot)
+                              : UnitTestForSourceQuery.findSources(fileObjRoot);
+        //if (sourceToTest && (oppoRootsURLs.length == 0)) {
+        //    PENDING - offer creation of new unit tests root
+        //}
+        if ((oppoRootsURLs == null) || (oppoRootsURLs.length == 0)) {
+            return null;
+        }
+        
+        ClassPath oppoRootsClassPath = ClassPathSupport
+                                           .createClassPath(oppoRootsURLs);
+        final List<FileObject> oppoFiles = oppoRootsClassPath
+                                           .findAllResources(oppoResourceName);
+        if (oppoFiles.isEmpty()) {
+            //if (sourceToTest) {
+            //    PENDING - offer creation of new test class
+            //}
+            return null;
+        }
+        
+//        final ElementHandle elementHandle = sourceLocation.getElementHandle();
+//        if (elementHandle == null) {
+            return new Location(oppoFiles.get(0)/*, null*/);
 //        }
-//
-//        assert (element instanceof Method)
-//               || (element instanceof JavaClass);
-//            
-//        JavaClass clazz;
-//        String oppoMethodName = null;
-//        String baseClassName, oppoClassName;
-//        String pkgName;
-//
-//        if (element instanceof Method) {
-//            Method method = (Method) element;
-//            ClassDefinition classDef = method.getDeclaringClass();
-//            if (classDef instanceof JavaClass) {
-//                clazz = (JavaClass) classDef;
-//                String baseMethodName = method.getName();
-//                oppoMethodName = sourceToTest
-//                                 ? getTestMethodName(baseMethodName)
-//                                 : getSourceMethodName(baseMethodName);
-//            } else {
-//                clazz = null;
-//            }
+        
+//        /* Build SOURCE classpath: */
+//        ClassPath[] srcCpDelegates = new ClassPath[2];
+//        if (sourceToTest) {
+//            srcCpDelegates[0] = fileObjCp;
+//            srcCpDelegates[1] = oppoRootsClassPath;
 //        } else {
-//            clazz = (JavaClass) element;
+//            srcCpDelegates[0] = oppoRootsClassPath;
+//            srcCpDelegates[1] = fileObjCp;
+//        }
+//        ClassPath srcClassPath
+//                = ClassPathSupport.createProxyClassPath(srcCpDelegates);
+//        
+//        /* Build COMPILE classpath: */
+//        FileObject[] oppoRoots = oppoRootsClassPath.getRoots();
+//        ClassPath[] compCpDelegates = new ClassPath[oppoRoots.length + 1];
+//        int delegateIndex = 0;
+//        if (sourceToTest) {
+//            compCpDelegates[delegateIndex++]
+//                    = ClassPath.getClassPath(fileObjRoot, COMPILE);
+//        }
+//        for (FileObject oppoRoot : oppoRoots) {
+//            compCpDelegates[delegateIndex++]
+//                    = ClassPath.getClassPath(oppoRoot, COMPILE);
+//        }
+//        if (!sourceToTest) {
+//            compCpDelegates[delegateIndex++]
+//                    = ClassPath.getClassPath(fileObjRoot, COMPILE);
+//        }
+//        ClassPath compClassPath
+//                = ClassPathSupport.createProxyClassPath(compCpDelegates);
+//        
+//        /* Obtain the BOOT classpath: */
+//        ClassPath bootClassPath = ClassPath.getClassPath(fileObj, BOOT);
+//        
+//        ClasspathInfo cpInfo = ClasspathInfo.create(bootClassPath,
+//                                                    compClassPath,
+//                                                    srcClassPath);
+//        List<FileObject> files = new ArrayList<FileObject>(oppoFiles.size() + 1);
+//        files.add(fileObj);
+//        files.addAll(oppoFiles);
+//        JavaSource javaSource = JavaSource.create(cpInfo, files);
+//        
+//        try {
+//            MatchFinder matchFinder = new MatchFinder(sourceLocation,
+//                                                      oppoFiles,
+//                                                      sourceToTest);
+//            javaSource.runUserActionTask(matchFinder, true);
+//            return matchFinder.getResult();
+//        } catch (IOException ex) {
+//            Logger.getLogger("global").log(Level.SEVERE, null, ex);     //NOI18N
+//            return null;
+//        }
+    }
+    
+//    /**
+//     *
+//     */
+//    private static final class MatchFinder
+//                            implements CancellableTask<CompilationController> {
+//        private final FileObject currFile;
+//        private final ElementHandle currElemHandle;
+//        private final List<FileObject> oppoFiles;
+//        private final boolean sourceToTest;
+//        
+//        private String currFilePkgPrefix;
+//        private Element currElement;
+//        
+//        private volatile boolean cancelled;
+//        
+//        private String[] oppoClassNames;
+//        private String oppoMethodName;
+//        private int bestCandidateClassNamesCount;
+//        private FileObject bestCandidateFile;
+//        private Element bestCandidateElement;
+//        
+//        /** */
+//        private FileObject oppoFile = null;
+//        /** storage for the result */
+//        private Element oppoElement = null;
+//        
+//        /**
+//         *
+//         */
+//        private MatchFinder(Location currLocation,
+//                            List<FileObject> oppoFiles,
+//                            boolean sourceToTest) {
+//            this.currFile = currLocation.getFileObject();
+//            this.currElemHandle = currLocation.getElementHandle();
+//            this.oppoFiles = oppoFiles;
+//            this.sourceToTest = sourceToTest;
 //        }
 //        
-//        if (clazz == null) {
-//            return new Location(candidateFiles.get(0), null);
-//        }
-//        
-//        baseClassName = clazz.getName();            //PENDING - inner classes!!!
-//        oppoClassName = sourceToTest
-//                        ? getTestClassName(baseClassName)
-//                        : getSourceClassName(baseClassName);
-//        
-//        if (oppoClassName == null) {
-//            return new Location((FileObject) candidateFiles.get(0), null);
-//        }
-//        
-//        FileObject foWithClass = null;
-//        FileObject foWithMethod = null;
-//        JavaClass theJavaClass = null;
-//        Method theMethod = null;
+//        /**
+//         * This method is run once for the file referred by
+//         * {@link #currLocation} and then once for each file contained
+//         * in {@link #oppoFiles}.
+//         *
+//         * @param  controller  controller for the current run of this method
+//         */
+//        public void run(CompilationController controller) throws IOException {
+//            if (oppoFile != null) {
+//                /* We already have the result. */
+//                
+//                /*
+//                 * This should be only possible if there are multiple oppoFiles.
+//                 */
+//                assert oppoFiles.size() > 1;
+//                return;
+//            }
+//            
+//            final FileObject runFile = controller.getFileObject();
+//            if (runFile == currFile) {
+//                resolveCurrentElement(controller);   //--> currElement
+//                return;
+//            }
+//            
+//            if (currElement == null) {
+//                /*
+//                 * The element for 'currLocation' was not resolved during
+//                 * the first run of this method on this instance.
+//                 */
+//                return;
+//            }
+//            if ((oppoClassNames == null) || (oppoClassNames.length == 0)) {
+//                return;
+//            }
 //
-//        for (FileObject fileObj : candidateFiles) {
-//            Resource resource = JavaModel.getResource(fileObj);
-//            assert resource != null;
-//
-//            JavaClass javaClass = findJavaClass(resource, oppoClassName);
-//            if (javaClass != null) {
-//                if (foWithClass == null) {
-//                    foWithClass = fileObj;
-//                    theJavaClass = javaClass;
+//            controller.toPhase(Phase.PARSED);
+//            
+//            final Elements elements = controller.getElements();
+//            TypeElement topClass = elements.getTypeElement(getCanonicalClassName(oppoClassNames[0]));
+//            if ((topClass != null)
+//                    && !CLASS_LIKE_ELEM_TYPES.contains(topClass.getKind())) {
+//                topClass = null;
+//            }
+//            if (cancelled || (topClass == null)) {
+//                return;
+//            }
+//            
+//            int classNamesCount = 0;
+//            TypeElement bestClass = null;
+//            TypeElement theSubClass = topClass;
+//            while ((theSubClass != null) && (++classNamesCount < oppoClassNames.length)) {
+//                bestClass = theSubClass;
+//                
+//                String oppoClassName = oppoClassNames[classNamesCount];
+//                if (oppoClassName == null) {
+//                    break;
 //                }
-//                if (oppoMethodName != null) {
-//                    Method method = sourceToTest
-//                                    ? findTestMethod(javaClass,
-//                                                     oppoMethodName)
-//                                    : findSourceMethod(javaClass,
-//                                                       oppoMethodName);
-//                    if (method != null) {
-//                        theMethod = method;
-//                        foWithMethod = fileObj;
+//                
+//                theSubClass = null;
+//                for (TypeElement subClass : typesIn(bestClass.getEnclosedElements())) {
+//                    if (cancelled) {
+//                        return;
+//                    }
+//                    
+//                    if (CLASS_LIKE_ELEM_TYPES.contains(subClass.getKind())
+//                            && subClass.getSimpleName().toString().equals(oppoClassName)) {
+//                        theSubClass = subClass;
 //                        break;
 //                    }
 //                }
 //            }
+//            if (cancelled) {
+//                return;
+//            }
+//            if (classNamesCount == oppoClassNames.length) {
+//                bestClass = theSubClass;  //this does not get called in the above while (...) cycle
+//                
+//                if (oppoMethodName == null) {
+//                    oppoFile = runFile;
+//                    oppoElement = bestClass;
+//                } else {
+//                    ExecutableElement testMethod = findOppoMethod(bestClass);
+//                    if (testMethod != null) {
+//                        /* We found the test method! */
+//                        oppoFile = runFile;
+//                        oppoElement = testMethod;
+//                    }
+//                }
+//                if (oppoFile != null) {
+//                    return;
+//                }
+//            }
+//            
+//            if (classNamesCount > bestCandidateClassNamesCount) {
+//                bestCandidateFile = runFile;
+//                bestCandidateElement = bestClass;
+//                bestCandidateClassNamesCount = classNamesCount;
+//            }
 //        }
 //        
-//        if (foWithMethod != null) {
-//            return new Location(foWithMethod, theMethod);
-//        } else if (foWithClass != null) {
-//            return new Location(foWithClass, theJavaClass);
-//        } else {
-//            return new Location(candidateFiles.get(0), null);
+//        /**
+//         */
+//        private ExecutableElement findOppoMethod(TypeElement classElem) {
+//            for (ExecutableElement elem : methodsIn(classElem.getEnclosedElements())) {
+//                if (elem.getSimpleName().toString().equals(oppoMethodName)) {
+//                    if (!sourceToTest) {
+//                        return elem;
+//                    }
+//                    if (elem.getParameters().isEmpty()) {
+//                        Set<Modifier> modifiers = elem.getModifiers();
+//                        if (modifiers.contains(Modifier.PUBLIC)
+//                                && !modifiers.contains(Modifier.STATIC)) {
+//                            return elem;
+//                        }
+//                    }
+//                    break;
+//                }
+//            }
+//            return null;
 //        }
-    }
+//
+//        public void cancel() {
+//            cancelled = true;
+//        }
+//        
+//        /**
+//         */
+//        private Location getResult() {
+//            assert (oppoFile == null) == (oppoElement == null);
+//            
+//            return (oppoFile != null)
+//                   ? new Location(oppoFile, oppoElement)
+//                   : new Location(bestCandidateFile, bestCandidateElement);
+//        }
+//        
+//        /**
+//         * Resolves 'currElementHandle' and stores the result to 'currElement'.
+//         */
+//        private void resolveCurrentElement(CompilationController controller)
+//                                                            throws IOException {
+//            String canonicalFileName
+//                   = controller.getClasspathInfo().getClassPath(PathKind.SOURCE)
+//                     .getResourceName(currFile, '.', false);
+//            int lastDotIndex = canonicalFileName.lastIndexOf('.');
+//            currFilePkgPrefix = (lastDotIndex != -1)
+//                                ? canonicalFileName.substring(0, lastDotIndex + 1)
+//                                : null;
+//            
+//            controller.toPhase(Phase.PARSED);
+//            if (cancelled) {
+//                return;
+//            }
+//            currElement = currElemHandle.resolve(controller);
+//            if (currElement == null) {
+//                Logger.getLogger(getClass().getName()).log(
+//                        Level.INFO,
+//                        "Could not resolve element " + currElemHandle); //NOI18N
+//                return;
+//            }
+//            
+//            if (cancelled) {
+//                return;
+//            }
+//            
+//            Element clsElement;
+//            ElementKind currElemKind = currElement.getKind();
+//            if (CLASS_LIKE_ELEM_TYPES.contains(currElement.getKind())) {
+//                clsElement = currElement;
+//                oppoMethodName = null;
+//            } else {
+//                clsElement = currElement.getEnclosingElement();
+//                oppoMethodName = (currElemKind == ElementKind.METHOD)
+//                     ? getOppoMethodName(currElement.getSimpleName().toString())
+//                     : null;    //no rule for finding tests for initializers
+//            }
+//            assert CLASS_LIKE_ELEM_TYPES.contains(clsElement.getKind());
+//            
+//            if (cancelled) {
+//                return;
+//            }
+//            
+//            oppoClassNames = buildOppoClassNames(clsElement);
+//            if (oppoClassNames == null) {
+//                oppoMethodName = null;
+//            } else {
+//                for (int i = 0; i < oppoClassNames.length; i++) {
+//                    if (oppoClassNames[i] == null) {
+//                        if (i == 0) {
+//                            oppoClassNames = null;
+//                        } else {
+//                            String[] newArray = new String[i];
+//                            System.arraycopy(oppoClassNames, 0, newArray, 0, i);
+//                            oppoClassNames = newArray;
+//                        }
+//                        oppoMethodName = null;
+//                        break;
+//                    }
+//                }
+//
+//            }
+//        }
+//        
+//        /**
+//         * 
+//         * @return  may return {@code null} if this task has been cancelled
+//         */
+//        private String[] buildOppoClassNames(Element clsElement) {
+//            String[] oppoClsNames;
+//            String oppoClsName;
+//            
+//            Element clsParent = clsElement.getEnclosingElement();
+//            if ((clsParent == null)
+//                    || !CLASS_LIKE_ELEM_TYPES.contains(clsParent.getKind())) {
+//                oppoClsName = getOppoClassName(clsElement.getSimpleName().toString());
+//                oppoClsNames = (oppoClsName != null)
+//                               ? new String[] {oppoClsName}
+//                               : null;
+//            } else {
+//                List<String> clsNames = new ArrayList<String>();
+//                clsNames.add(clsElement.getSimpleName().toString());
+//                do {
+//                    if (cancelled) {
+//                        return null;
+//                    }
+//                    
+//                    clsNames.add(clsParent.getSimpleName().toString());
+//                    clsParent = clsParent.getEnclosingElement();
+//                } while ((clsParent != null)
+//                        && CLASS_LIKE_ELEM_TYPES.contains(clsParent.getKind()));
+//                
+//                if (cancelled) {
+//                    return null;
+//                }
+//                
+//                final int size = clsNames.size();
+//                oppoClsNames = new String[size];
+//                for (int i = 0; i < size; i++) {
+//                    oppoClsName = getOppoClassName(clsNames.get(size - i - 1));
+//                    if (oppoClsName == null) {
+//                        break;
+//                    }
+//                    oppoClsNames[i] = oppoClsName;
+//                }
+//            }
+//            return oppoClsNames;
+//        }
+//        
+//        /**
+//         */
+//        private String getCanonicalClassName(String shortClassName) {
+//            return (currFilePkgPrefix != null)
+//                   ? currFilePkgPrefix + shortClassName
+//                   : shortClassName;
+//        }
+//        
+//        /**
+//         */
+//        private String getOppoClassName(String name) {
+//            return sourceToTest ? getTestClassName(name)
+//                                : getSourceClassName(name);
+//        }
+//        
+//        /**
+//         */
+//        private String getOppoMethodName(String name) {
+//            return sourceToTest ? getTestMethodName(name)
+//                                : getSourceMethodName(name);
+//        }
+//        
+//    }
     
     /**
      */
@@ -313,29 +589,6 @@ public final class DefaultPlugin extends JUnitPlugin {
     
     /**
      */
-    private static String getSuiteName(String packageName) {
-        if (packageName.length() == 0) {
-            return JUnitSettings.getDefault().getRootSuiteClassName();
-        }
-
-        final String suiteSuffix = "Suite";                             //NOI18N
-
-        String lastNamePart
-                = packageName.substring(packageName.lastIndexOf('.') + 1);
-        StringBuffer buf = new StringBuffer(packageName.length()
-                                            + lastNamePart.length()
-                                            + suiteSuffix.length()
-                                            + 1);
-        buf.append(packageName).append('.');
-        buf.append(Character.toUpperCase(lastNamePart.charAt(0)))
-           .append(lastNamePart.substring(1));
-        buf.append(suiteSuffix);
-        
-        return buf.toString();
-    }
-    
-    /**
-     */
     private static String getTestMethodName(String baseMethodName) {
         final String prefix = "test";                                   //NOI18N
         final int prefixLen = prefix.length();
@@ -356,81 +609,12 @@ public final class DefaultPlugin extends JUnitPlugin {
         
         return ((testMethodName.length() > prefixLen)
                     && testMethodName.startsWith(prefix))
-               ? new StringBuffer(testMethodName.length() - prefixLen)
-                 .append(Character.toLowerCase(testMethodName.charAt(prefixLen)))
-                 .append(testMethodName.substring(prefixLen + 1))
-                 .toString()
+               ? new StringBuilder(testMethodName.length() - prefixLen)
+                        .append(Character.toLowerCase(testMethodName.charAt(prefixLen)))
+                        .append(testMethodName.substring(prefixLen + 1))
+                        .toString()
                : null;
     }
-    
-//XXX: retouche
-//    /**
-//     * Finds class of the given name in the given resource.
-//     *
-//     * @return  the found class, or <code>null</code> if the class was not found
-//     */
-//    private static JavaClass findJavaClass(Resource resource,
-//                                           String className) {
-//        for (Iterator/*<Element>*/ i = resource.getChildren().iterator();
-//                i.hasNext();
-//                ) {
-//            Element e = (Element) i.next();
-//            if ((e instanceof JavaClass)
-//                    && ((JavaClass) e).getName().equals(className)) {
-//                return (JavaClass) e;
-//            }
-//        }
-//        return null;
-//    }
-    
-//XXX: retouche
-//    /**
-//     * Finds a no-arg method with void return type of the given name.
-//     *
-//     * @param  classDef  class to find the method in
-//     * @param  methodName  requested name of the method
-//     * @return  found method, or <code>null</code> if not found
-//     */
-//    private static Method findTestMethod(ClassDefinition classDef,
-//                                         String methodName) {
-//        
-//        Method method = classDef.getMethod(methodName,
-//                                           Collections.EMPTY_LIST,
-//                                           false);
-//        return (method != null)
-//               && Modifier.isPublic(method.getModifiers())
-//               && method.getTypeName().getName().equals("void")         //NOI18N
-//                      ? method
-//                      : null;
-//    }
-    
-//XXX: retouche
-//    /**
-//     * Finds a method with of the given name.
-//     *
-//     * @param  classDef  class to find the method in
-//     * @param  methodName  requested name of the method
-//     * @return  found method, or <code>null</code> if not found
-//     */
-//    private static Method findSourceMethod(ClassDefinition classDef,
-//                                           String methodName) {
-//        List/*<Element>*/ classChildren = classDef.getChildren();
-//        
-//        if ((classChildren == null) || (classChildren.isEmpty())) {
-//            return null;
-//        }
-//        
-//        for (Iterator/*<Element>*/ i = classChildren.iterator(); i.hasNext();) {
-//            Object o = i.next();
-//            if (o instanceof Method) {
-//                Method method = (Method) o;
-//                if (method.getName().equals(methodName)) {
-//                    return method;
-//                }
-//            }
-//        }
-//        return null;
-//    }
     
     /**
      * Creates test classes for given source classes.
@@ -441,39 +625,14 @@ public final class DefaultPlugin extends JUnitPlugin {
      * @param params  parameters of creating test class
      * @return created test files
      */
+    @Override
     protected FileObject[] createTests(
                                 final FileObject[] filesToTest,
                                 final FileObject targetRoot,
                                 final Map<CreateTestParam, Object> params) {
-        final boolean emptyTest =
-                (filesToTest == null) || (filesToTest.length == 0);
-        //XXX: Not documented, that filesToTest may be <null>
-        final boolean singleClass = !emptyTest
-                                    && (filesToTest.length == 1)
-                                    && filesToTest[0].isData();
-        String testClassName =
-                emptyTest || singleClass
-                ? (String) params.get(CreateTestParam.CLASS_NAME)
-                : null;
-        final ClassPath testClassPath = ClassPathSupport.createClassPath(
-                                           new FileObject[] {targetRoot});
-
-        final DataObject doTestTempl
-                = loadTestTemplate("PROP_testClassTemplate");           //NOI18N
-        if (doTestTempl == null) {
-            return null;
-        }
-
-        final DataObject doSuiteTempl;
-        if (!emptyTest && !singleClass) {
-            doSuiteTempl = loadTestTemplate("PROP_testSuiteTemplate");  //NOI18N
-            if (doSuiteTempl == null) {
-                return null;
-            }
-        } else {
-            doSuiteTempl = null;
-        }
-
+        //XXX: not documented that in case that if filesToTest is <null>,
+        //the target root param works as a target folder
+        
         ProgressIndicator progress = new ProgressIndicator();
         progress.show();
 
@@ -482,68 +641,84 @@ public final class DefaultPlugin extends JUnitPlugin {
                     "MSG_StatusBar_CreateTest_Begin");                  //NOI18N
         progress.displayStatusText(msg);
 
-        // results will be accumulated here
-        CreationResults results;
         final TestCreator testCreator = new TestCreator(params);
+        
+        CreationResults results;
         try {
-            if (emptyTest) {
-                assert testClassName != null;
+            if ((filesToTest == null) || (filesToTest.length == 0)) {
+                //XXX: Not documented that filesToTest may be <null>
                 
+                DataObject doTestTempl = loadTestTemplate(
+                                         "PROP_emptyTestClassTemplate");//NOI18N
+                if (doTestTempl == null) {
+                    return null;
+                }
+                
+                String testClassName = (String) params.get(CreateTestParam.CLASS_NAME);
+                assert testClassName != null;
                 results = new CreationResults(1);
-                try {
-                    DataFolder targetFolderDataObj
-                            = DataFolder.findFolder(targetRoot);    //XXX: not documented that in case that if filesToTest is <null>, the target root param works as a target folder
-                    DataObject testDataObj = doTestTempl.createFromTemplate(
-                                            targetFolderDataObj, testClassName);
-
-//XXX: retouche
-//                    /* fill in setup etc. according to dialog settings */
-//                    FileObject foSource = testDataObj.getPrimaryFile();
-//                    Resource srcRc = JavaModel.getResource(foSource);
-//                    JavaClass cls = TestUtil.getMainJavaClass(srcRc);
-//                    new TestCreator(params).createEmptyTest(srcRc, cls);
-                    
+                DataObject testDataObj = createEmptyTest(targetRoot,
+                                                         testClassName,
+                                                         testCreator,
+                                                         doTestTempl);
+                if (testDataObj != null) {
                     results.addCreated(testDataObj);
-                } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ex);
                 }
-            } else if (singleClass) {
-                if (testClassName == null) {
-                    ClassPath cp = ClassPath.getClassPath(filesToTest[0],
-                                                          ClassPath.SOURCE);
-                    String srcClassName = cp.getResourceName(filesToTest[0],
-                                                             '.', false);
-                    testClassName = getTestClassName(srcClassName);
-                }
-                try {
-                    results = createSingleTest(
-                            testCreator,
-                            testClassPath,
-                            filesToTest[0],
-                            testClassName,
-                            doTestTempl,
-                            null,              //parent suite
-                            progress,
-                            false);            //do not skip any classes
-                } catch (CreationError ex) {
-                    ErrorManager.getDefault().notify(ex);
-                    results = new CreationResults(1);
-                }
+                
             } else {
-                results = new CreationResults();
-
-                // go through all nodes
-                for (FileObject fileToTest : filesToTest) {
+                DataObject doTestTempl = loadTestTemplate(
+                                         "PROP_testClassTemplate");     //NOI18N
+                if (doTestTempl == null) {
+                    return null;
+                }
+                
+                ClassPath testClassPath = ClassPathSupport.createClassPath(
+                                                new FileObject[] {targetRoot});
+                
+                if ((filesToTest.length == 1) && filesToTest[0].isData()) {
+                    String testClassName = (String) params.get(CreateTestParam.CLASS_NAME);
+                    if (testClassName == null) {
+                        String srcClassName
+                                = ClassPath.getClassPath(filesToTest[0], SOURCE)
+                                  .getResourceName(filesToTest[0], '.', false);
+                        testClassName = getTestClassName(srcClassName);
+                    }
                     try {
-                        results.combine(createTests(testCreator,
-                                                    fileToTest,
-                                                    testClassPath,
-                                                    doTestTempl,
-                                                    doSuiteTempl,
-                                                    null,
-                                                    progress));
-                    } catch (CreationError e) {
-                        ErrorManager.getDefault().notify(e);
+                        results = createSingleTest(
+                                filesToTest[0],
+                                testClassName,
+                                testCreator,
+                                doTestTempl,
+                                testClassPath,
+                                false,             //do not skip any classes
+                                null,              //parent suite
+                                progress);
+                    } catch (CreationError ex) {
+                        ErrorManager.getDefault().notify(ex);
+                        results = new CreationResults(1);
+                    }
+                } else {
+                    DataObject doSuiteTempl = loadTestTemplate(
+                                              "PROP_testSuiteTemplate");//NOI18N
+                    if (doSuiteTempl == null) {
+                        return null;
+                    }
+                    
+                    results = new CreationResults();
+
+                    // go through all nodes
+                    for (FileObject fileToTest : filesToTest) {
+                        try {
+                            results.combine(createTests(fileToTest,
+                                                        testCreator,
+                                                        doTestTempl,
+                                                        doSuiteTempl,
+                                                        testClassPath,
+                                                        null,
+                                                        progress));
+                        } catch (CreationError e) {
+                            ErrorManager.getDefault().notify(e);
+                        }
                     }
                 }
             }
@@ -551,38 +726,37 @@ public final class DefaultPlugin extends JUnitPlugin {
             progress.hide();
         }
 
-//XXX: retouche
-//        final Set<SkippedClass> skipped = results.getSkipped();
+        final Set<SkippedClass> skipped = results.getSkipped();
         final Set<DataObject> created = results.getCreated();
-//XXX: retouche
-//        if (!skipped.isEmpty()) {
-//            // something was skipped
-//            String message;
-//            if (skipped.size() == 1) {
-//                // one class? report it
-//                SkippedClass skippedClass = skipped.iterator().next();
-//
-//                message = NbBundle.getMessage(
-//                        DefaultPlugin.class,
-//                        "MSG_skipped_class",                            //NOI18N
-//                        skippedClass.cls.getName(),
-//                        strReason(skippedClass.reason, "COMMA", "AND"));//NOI18N
-//            } else {
-//                // more classes, report a general error
-//                // combine the results
-//                TesteableResult reason = TesteableResult.OK;
-//                for (SkippedClass sc : skipped) {
-//                    reason = TesteableResult.combine(reason, sc.reason);
-//                }
-//
-//                message = NbBundle.getMessage(
-//                        DefaultPlugin.class,
-//                        "MSG_skipped_classes",                          //NOI18N
-//                        strReason(reason, "COMMA", "OR"));              //NOI18N
-//            }
-//            TestUtil.notifyUser(message, NotifyDescriptor.INFORMATION_MESSAGE);
-//
-//        }
+        if (!skipped.isEmpty()) {
+            // something was skipped
+            String message;
+            if (skipped.size() == 1) {
+                // one class? report it
+                SkippedClass skippedClass = skipped.iterator().next();
+
+                message = NbBundle.getMessage(
+                        DefaultPlugin.class,
+                        "MSG_skipped_class",                            //NOI18N
+                        skippedClass.clsName,
+                        strReason(skippedClass.reason, "COMMA", "AND"));//NOI18N
+            } else {
+                // more classes, report a general error
+                // combine the results
+                TestabilityResult reason = TestabilityResult.OK;
+                for (SkippedClass sc : skipped) {
+                    reason = TestabilityResult.combine(reason, sc.reason);
+                }
+
+                message = NbBundle.getMessage(
+                        DefaultPlugin.class,
+                        "MSG_skipped_classes",                          //NOI18N
+                        strReason(reason, "COMMA", "OR"));              //NOI18N
+            }
+            TestUtil.notifyUser(message, NotifyDescriptor.INFORMATION_MESSAGE);
+
+        }
+        
         if (created.isEmpty()) {
             Mutex.EVENT.writeAccess(new Runnable() {
                 public void run() {
@@ -609,139 +783,164 @@ public final class DefaultPlugin extends JUnitPlugin {
     }
     
     /**
-     *
+     * Creates a new test class.
+     * 
+     * @param  targetRoot     <!-- //PENDING -->
+     * @param  testClassName  <!-- //PENDING -->
+     * @param  testCreator  {@code TestCreator} to be used for filling
+     *                      the test class template
+     * @param  templateDataObj  {@code DataObject} representing
+     *                          the test file template
+     * @return  the created test, or {@code null} if no test was created
      */
-    public DataObject createSuiteTest(
-                                final FileObject targetRootFolder,
-                                final FileObject targetFolder,
-                                final String suiteName,
-                                final Map<CreateTestParam, Object> params) {
-        TestCreator testCreator = new TestCreator(params);
-        ClassPath testClassPath = ClassPathSupport.createClassPath(
-                new FileObject[] {targetRootFolder});
-        List testClassNames = TestUtil.getJavaFileNames(targetFolder,
-                                                        testClassPath);
-        
-        final DataObject doSuiteTempl
-                = loadTestTemplate("PROP_testSuiteTemplate");           //NOI18N
-        if (doSuiteTempl == null) {
-            return null;
+    private DataObject createEmptyTest(FileObject targetRoot,
+                                       String testClassName,
+                                       TestCreator testCreator,
+                                       DataObject templateDataObj) {
+        if (testClassName == null) {
+            throw new IllegalArgumentException("testClassName = null"); //NOI18N
         }
         
-        DataObject suiteDataObj;
+        DataObject testDataObj = null;
         try {
-            return createSuiteTest(testCreator,
-                                   testClassPath,
-                                   targetFolder,
-                                   suiteName,
-                                   new LinkedList(testClassNames),
-                                   doSuiteTempl,
-                                   null,            //parent suite
-                                   null);           //progress indicator
-        } catch (CreationError ex) {
-            return null;
+            DataFolder targetFolderDataObj = DataFolder.findFolder(targetRoot);
+            testDataObj = templateDataObj.createFromTemplate(
+                                            targetFolderDataObj, testClassName);
+
+            /* fill in setup etc. according to dialog settings */
+            FileObject testFileObj = testDataObj.getPrimaryFile();
+            JavaSource testSrc = JavaSource.forFileObject(testFileObj);
+            testCreator.createEmptyTest(testSrc);
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
         }
+        return testDataObj;
     }
     
     /**
      *
      */
-    private static DataObject createSuiteTest(
-            final TestCreator testCreator,
-            ClassPath testClassPath,
-            FileObject folder,
-            String suiteName,
-            LinkedList suite,
-            DataObject doSuiteT,
-            LinkedList parentSuite,
-            ProgressIndicator progress) throws CreationError {
+    private static CreationResults createSingleTest(
+                FileObject sourceFile,
+                String testClassName,
+                final TestCreator testCreator,
+                DataObject templateDataObj,
+                ClassPath testClassPath,
+                boolean skipNonTestable,
+                List<String> parentSuite,
+                ProgressIndicator progress) throws CreationError {
+        
+        List<SkippedClass> nonTestable;
+        List<ElementHandle<TypeElement>> testable;
+        try {
+            JavaSource javaSource = JavaSource.forFileObject(sourceFile);
+            if (skipNonTestable) {
+                nonTestable = new ArrayList<SkippedClass>();
+                testable = TopClassFinder.findTestableTopClasses(javaSource,
+                                                                 testCreator,
+                                                                 nonTestable);
+            } else {
+                nonTestable = Collections.<SkippedClass>emptyList();
+                testable = TopClassFinder.findTopClasses(javaSource);
+            }
+        } catch (IOException ex) {
+            throw new CreationError(ex);
+        }
+        
+        CreationResults result = new CreationResults(4);
+        if (!nonTestable.isEmpty()) {
+            result.addSkipped(nonTestable);
+        }
+        if (!testable.isEmpty()) {
+            String packageName = TestUtil.getPackageName(ClassPath.getClassPath(sourceFile, ClassPath.SOURCE).getResourceName(sourceFile, '.', false));
 
-//XXX: retouche
-        return null;
-//        // find correct package name
-//        FileObject fo = folder;
-//        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-//        assert cp != null : "SOURCE classpath was not found for " + fo; //NOI18N
-//        if (cp == null) {
-//            return null;
-//        }
-//        String pkg = cp.getResourceName(fo, '/', false);
-//        String dotPkg = pkg.replace('/', '.');
-//        String fullSuiteName = (suiteName != null)
-//                               ? pkg + '/' + suiteName
-//                               : TestUtil.convertPackage2SuiteName(pkg);
-//
-//        try {
-//            // find the suite class,
-//            // if it exists or create one from active template
-//            DataObject doTarget = getTestClass(testClassPath,
-//                                               fullSuiteName,
-//                                               doSuiteT);
-//
-//            // generate the test suite for all listed test classes
-//            Collection targetClasses = TestUtil.getAllClassesFromFile(
-//                                               doTarget.getPrimaryFile());
-//
-//            Iterator tcit = targetClasses.iterator();
-//            while (tcit.hasNext()) {
-//                JavaClass targetClass = (JavaClass)tcit.next();
-//
-//                if (progress != null) {
-//                    progress.setMessage(
-//                           getCreatingMsg(targetClass.getName()), false);
-//                }
-//
-//                try {
-//                    testCreator.createTestSuite(suite, dotPkg, targetClass);
-//                    save(doTarget);
-//                } catch (Exception e) {
-//                    ErrorManager.getDefault().log(ErrorManager.ERROR,
-//                                                  e.toString());
-//                    return null;
-//                }
-//
-//                // add the suite class to the list of members of the parent
-//                if (null != parentSuite) {
-//                    parentSuite.add(targetClass.getName());
-//                }
-//            }
-//            return doTarget;
-//        } catch (IOException ioe) {
-//            throw new CreationError(ioe);
-//        }
+            /* used only if (testClassName != null): */
+            boolean defClassProcessed = false;
+
+            try {
+                for (ElementHandle<TypeElement> clsToTest : testable) {
+                    String testResourceName;
+                    String srcClassNameShort
+                            = TestUtil.getSimpleName(clsToTest.getQualifiedName());
+                    if (testClassName == null) {
+                        testResourceName = TestUtil.getTestClassFullName(
+                                                srcClassNameShort, packageName);
+                        testClassName = testResourceName.replace('/', '.');
+                    } else if (!defClassProcessed
+                               && srcClassNameShort.equals(sourceFile.getName())) {
+                        testResourceName = testClassName.replace('.', '/');
+                        defClassProcessed = true;
+                    } else {
+                        if (packageName == null) {
+                            packageName = TestUtil.getPackageName(testClassName);
+                        }
+                        testResourceName = TestUtil.getTestClassFullName(
+                                                srcClassNameShort, packageName);
+                    }
+
+                    /* find or create the test class DataObject: */
+                    DataObject testDataObj = null;
+                    FileObject testFile = testClassPath.findResource(
+                                            testResourceName + ".java");//NOI18N
+                    boolean isNew = (testFile == null);
+                    if (testFile == null) {
+                        testDataObj = createTestClass(testClassPath,
+                                                      testResourceName,
+                                                      templateDataObj);
+                        testFile = testDataObj.getPrimaryFile();
+                    }
+                    
+                    JavaSource testSrc = JavaSource.forFileObject(testFile);
+                    testCreator.createSimpleTest(clsToTest, testSrc, isNew);
+                    if (testDataObj == null) {
+                        testDataObj = DataObject.find(testFile);
+                    }
+                    save(testDataObj);
+                    
+                    result.addCreated(testDataObj);
+                    // add the test class to the parent's suite
+                    if (parentSuite != null) {
+                        parentSuite.add(testClassName);
+                    }
+                }
+            } catch (IOException ex) {       //incl. DataObjectNotFoundException
+                throw new CreationError(ex);
+            }
+        }
+        
+        return result;
     }
-
+    
     /**
      *
      */
     private static CreationResults createTests(
+                final FileObject srcFileObj,
                 final TestCreator testCreator,
-                final FileObject fileObj,
-                final ClassPath testClassPath,
                 DataObject doTestT,
                 DataObject doSuiteT,
-                LinkedList parentSuite,
+                final ClassPath testClassPath,
+                List<String> parentSuite,
                 ProgressIndicator progress) throws CreationError {
 
-        if (fileObj.isFolder()) {
-            // create test for all direct subnodes of the folder
-            CreationResults results = new CreationResults();
+        CreationResults results;
+        if (srcFileObj.isFolder()) {
+            results = new CreationResults();
 
-            LinkedList  mySuite = new LinkedList(); // List<String>
-            progress.setMessage(getScanningMsg(fileObj.getName()), false);
+            List<String> mySuite = new LinkedList<String>();
+            
+            progress.setMessage(getScanningMsg(srcFileObj.getName()), false);
 
-            for (FileObject childFileObj : fileObj.getChildren()) {
-
+            for (FileObject childFileObj : srcFileObj.getChildren()) {
                 if (progress.isCanceled()) {
                     results.setAbborted();
                     break;
                 }
-
-                results.combine(createTests(testCreator,
-                                            childFileObj,
-                                            testClassPath,
+                results.combine(createTests(childFileObj,
+                                            testCreator,
                                             doTestT,
                                             doSuiteT,
+                                            testClassPath,
                                             mySuite,
                                             progress));
                 if (results.isAbborted()) {
@@ -752,189 +951,169 @@ public final class DefaultPlugin extends JUnitPlugin {
             // if everything went ok, and the option is enabled,
             // create a suite for the folder .
             if (!results.isAbborted()
-                    && ((0 < mySuite.size())
-                        & (JUnitSettings.getDefault()
-                           .isGenerateSuiteClasses()))) {
-                createSuiteTest(testCreator,
-                                testClassPath,
-                                fileObj,
+                    && !mySuite.isEmpty()
+                    && JUnitSettings.getDefault().isGenerateSuiteClasses()) {
+                createSuiteTest(srcFileObj,
                                 (String) null,
-                                mySuite,
+                                testCreator,
                                 doSuiteT,
+                                testClassPath,
+                                mySuite,
                                 parentSuite,
                                 progress);
             }
-
-            return results;
+        } else if (srcFileObj.isData() && TestUtil.isJavaFile(srcFileObj)) {
+            results = createSingleTest(srcFileObj,
+                                       (String) null, //use the default clsName
+                                       testCreator,
+                                       doTestT,
+                                       testClassPath,
+                                       true,
+                                       parentSuite,
+                                       progress);
         } else {
-            // is not folder, create test for the fileObject of the node
-            if (fileObj.isData()
-                    && !("java".equals(fileObj.getExt()))) {       //NOI18N
-                return CreationResults.EMPTY;
-            } else {
-                return createSingleTest(testCreator,
-                                        testClassPath,
-                                        fileObj,
-                                        null,      //use the default clsname
-                                        doTestT,
-                                        parentSuite,
-                                        progress,
-                                        true);
+            results = CreationResults.EMPTY;
+        }
+        return results;
+    }
+
+    /**
+     *
+     */
+    private static DataObject createSuiteTest(
+            FileObject folder,
+            String suiteName,
+            final TestCreator testCreator,
+            DataObject templateDataObj,
+            ClassPath testClassPath,
+            List<String> classesToInclude,
+            List<String> parentSuite,
+            ProgressIndicator progress) throws CreationError {
+
+        // find correct package name
+        ClassPath cp = ClassPath.getClassPath(folder, SOURCE);
+        assert cp != null : "SOURCE classpath was not found for " + folder; //NOI18N
+        if (cp == null) {
+            return null;
+        }
+        
+        String pkg = cp.getResourceName(folder, '/', false);
+        String dotPkg = pkg.replace('/', '.');
+        String fullSuiteName = (suiteName != null)
+                               ? pkg + '/' + suiteName
+                               : TestUtil.convertPackage2SuiteName(pkg);
+
+        try {
+            /* find or create the test class DataObject: */
+            DataObject testDataObj = null;
+            FileObject testFile = testClassPath.findResource(
+                                        fullSuiteName + ".java");       //NOI18N
+            boolean isNew = (testFile == null);
+            if (testFile == null) {
+                testDataObj = createTestClass(testClassPath,
+                                              fullSuiteName,
+                                              templateDataObj);
+                testFile = testDataObj.getPrimaryFile();
             }
+            
+            List<String> processedClasses;
+            JavaSource testSrc = JavaSource.forFileObject(testFile);
+            try {
+                processedClasses = testCreator.createTestSuite(classesToInclude,
+                                                               testSrc,
+                                                               isNew);
+                if (testDataObj == null) {
+                    testDataObj = DataObject.find(testFile);
+                }
+                save(testDataObj);
+            } catch (Exception ex) {
+                ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+                return null;
+            }
+
+            // add the suite class to the list of members of the parent
+            if ((parentSuite != null) && !processedClasses.isEmpty()) {
+                for (String simpleClassName : processedClasses) {
+                    parentSuite.add(dotPkg.length() != 0
+                                    ? dotPkg + '.' + simpleClassName
+                                    : simpleClassName);
+                }
+            }
+            return testDataObj;
+        } catch (IOException ioe) {
+            throw new CreationError(ioe);
         }
     }
 
     /**
      *
      */
-    private static CreationResults createSingleTest(
-            final TestCreator testCreator,
-            ClassPath testClassPath,
-            FileObject foSource,
-            String testClassName,
-            DataObject doTestT,
-            LinkedList parentSuite,
-            ProgressIndicator progress,
-            boolean skipNonTestable) throws CreationError {
-//XXX: retouche
-        return new CreationResults(0);
-//        // create tests for all classes in the source
-//        Resource srcRc = JavaModel.getResource(foSource);
-//        String packageName = (testClassName == null)
-//                             ? srcRc.getPackageName()
-//                             : null;            //will be built if necessary
-//        List srcChildren = srcRc.getChildren();
-//        CreationResults result = new CreationResults(srcChildren.size());
-//
-//        /* used only if (testClassName != null): */
-//        boolean defClassProcessed = false;
-//
-//        Iterator scit = srcChildren.iterator();
-//        while (scit.hasNext()) {
-//            Element el = (Element) scit.next();
-//            if (!(el instanceof JavaClass) || (el instanceof AnnotationType)) {
-//                continue;
-//            }
-//
-//            JavaClass theClass = (JavaClass) el;
-//
-//            TestCreator.TesteableResult testeable;
-//            if (skipNonTestable && (testeable = testCreator.isClassTestable(theClass)).isFailed()) {
-//                if (progress != null) {
-//                    // ignoring because untestable
-//                    progress.setMessage(
-//                           getIgnoringMsg(theClass.getName(), testeable.toString()), false);
-//                    result.addSkipped(theClass, testeable);
-//                }
-//                continue;
-//            }
-//
-//            // find the test class, if it exists or create one
-//            // from active template
-//            try {
-//                String testResourceName;
-//                String srcClassNameShort = theClass.getSimpleName();
-//                if (testClassName == null) {
-//                    testResourceName = TestUtil.getTestClassFullName(
-//                            srcClassNameShort,
-//                            packageName);
-//                } else if (!defClassProcessed
-//                          && srcClassNameShort.equals(foSource.getName())) {
-//                    /* main Java class: */
-//                    testResourceName = testClassName.replace('.', '/');
-//                    defClassProcessed = true;
-//                } else {
-//                    if (packageName == null) {
-//                        packageName = packageName(testClassName);
-//                    }
-//                    testResourceName = TestUtil.getTestClassFullName(
-//                            srcClassNameShort,
-//                            packageName);
-//                }
-//
-//                /* find or create the test class DataObject: */
-//                DataObject doTarget = getTestClass(testClassPath,
-//                                                   testResourceName,
-//                                                   doTestT);
-//
-//                // generate the test of current node
-//                Resource tgtRc = JavaModel.getResource(
-//                        doTarget.getPrimaryFile());
-//                JavaClass targetClass = TestUtil.getMainJavaClass(tgtRc);
-//
-//                if (targetClass != null) {
-//                    if (progress != null) {
-//                        progress.setMessage(
-//                             getCreatingMsg(targetClass.getName()), false);
-//                    }
-//
-//                    testCreator.createTestClass(srcRc,
-//                                                theClass,
-//                                                tgtRc,
-//                                                targetClass);
-//                    save(doTarget);
-//                    result.addCreated(doTarget);
-//                    // add the test class to the parent's suite
-//                    if (null != parentSuite) {
-//                        parentSuite.add(targetClass.getName());
-//                    }
-//                }
-//            } catch (IOException ioe) {
-//                throw new CreationError(ioe);
-//            }
-//        }
-//
-//        return result;
-
+    public DataObject createSuiteTest(
+                                final FileObject targetRootFolder,
+                                final FileObject targetFolder,
+                                final String suiteName,
+                                final Map<CreateTestParam, Object> params) {
+        TestCreator testCreator = new TestCreator(params);
+        ClassPath testClassPath = ClassPathSupport.createClassPath(
+                new FileObject[] {targetRootFolder});
+        List<String> testClassNames = TestUtil.getJavaFileNames(targetFolder,
+                                                                testClassPath);
+        
+        final DataObject doSuiteTempl
+                = loadTestTemplate("PROP_testSuiteTemplate");           //NOI18N
+        if (doSuiteTempl == null) {
+            return null;
+        }
+        
+        DataObject suiteDataObj;
+        try {
+            return createSuiteTest(targetFolder,
+                                   suiteName,
+                                   testCreator,
+                                   doSuiteTempl,
+                                   testClassPath,
+                                   new LinkedList<String>(testClassNames),
+                                   null,            //parent suite
+                                   null);           //progress indicator
+        } catch (CreationError ex) {
+            return null;
+        }
     }
-
+    
     /**
-     *
      */
-    private static String packageName(String fullName) {
-        int i = fullName.lastIndexOf('.');
-        return fullName.substring(0, i > 0 ? i : 0);
-    }
-
-    /**
-     *
-     */
-    private static DataObject getTestClass(
+    private static DataObject createTestClass(
             ClassPath cp,
             String testClassName,
-            DataObject doTemplate) throws DataObjectNotFoundException,
-                                          IOException {
-        FileObject fo = cp.findResource(testClassName + ".java");       //NOI18N
-        if (fo != null) {
-            return DataObject.find(fo);
-        } else {
-            // test file does not exist yet so create it:
-            assert cp.getRoots().length == 1;
-            FileObject root = cp.getRoots()[0];
-            int index = testClassName.lastIndexOf('/');
-            String pkg = index > -1 ? testClassName.substring(0, index)
-                                    : "";                           //NOI18N
-            String clazz = index > -1 ? testClassName.substring(index+1)
-                                      : testClassName;
+            DataObject templateDataObj) throws DataObjectNotFoundException,
+                                               IOException {
+        
+        assert cp.getRoots().length == 1;
+        FileObject root = cp.getRoots()[0];
+        int index = testClassName.lastIndexOf('/');
+        String pkg = index > -1 ? testClassName.substring(0, index)
+                                : "";                                   //NOI18N
+        String clazz = index > -1 ? testClassName.substring(index+1)
+                                  : testClassName;
 
-            // create package if it does not exist
-            if (pkg.length() > 0) {
-                root = FileUtil.createFolder(root, pkg);
-            }
-            // instantiate template into the package
-            return doTemplate.createFromTemplate(
+        // create package if it does not exist
+        if (pkg.length() > 0) {
+            root = FileUtil.createFolder(root, pkg);        //IOException
+        }
+        // instantiate template into the package
+        return templateDataObj.createFromTemplate(          //IOException
                     DataFolder.findFolder(root),
                     clazz);
-        }
     }
 
     /**
      *
      */
-    private static void save(DataObject dO) throws IOException {
-        SaveCookie sc = (SaveCookie) dO.getCookie(SaveCookie.class);
-        if (null != sc)
+    private static void save(DataObject dataObj) throws IOException {
+        SaveCookie sc = dataObj.getCookie(SaveCookie.class);
+        if (null != sc) {
             sc.save();
+        }
     }
         
     /**
@@ -982,20 +1161,20 @@ public final class DefaultPlugin extends JUnitPlugin {
      * A helper method to create the reason string from a result
      * and two message bundle keys that indicate the separators to be used instead
      * of "," and " and " in a connected reason like: 
-     * "abstract, package-private and without testeable methods".
+     * "abstract, package-private and without testable methods".
      * <p>
      * The values of the keys are expected to be framed by two extra characters
      * (e.g. as in " and "), which are stripped off. These characters serve to 
      * preserve the spaces in the properties file.
      *
-     * @param reason the TestCreator.TesteableResult to represent
+     * @param reason the TestabilityResult to represent
      * @param commaKey bundle key for the connective to be used instead of ", "
      * @param andKey   bundle key for the connective to be used instead of "and"
      * @return String composed of the reasons contained in
      *         <code>reason</code> separated by the values of commaKey and
      *         andKey.
      */
-    private static String strReason(TestCreator.TesteableResult reason, String commaKey, String andKey) {
+    private static String strReason(TestabilityResult reason, String commaKey, String andKey) {
         String strComma = NbBundle.getMessage(CreateTestAction.class,commaKey);
         String strAnd = NbBundle.getMessage(CreateTestAction.class,andKey);
         String strReason = reason.getReason( // string representation of the reasons
@@ -1045,8 +1224,7 @@ public final class DefaultPlugin extends JUnitPlugin {
         CreationError(Throwable cause) {
             super(cause);
         }
-    };
-
+    }
     
     /**
      * Utility class representing the results of a test creation
@@ -1056,32 +1234,15 @@ public final class DefaultPlugin extends JUnitPlugin {
     static final class CreationResults {
         static final CreationResults EMPTY = new CreationResults();
 
-//XXX: retouche
-//        /**
-//         * Class for holding skipped java class together with the reason
-//         * why it was skipped.
-//         */
-//        static final class SkippedClass {
-//            final JavaClass cls;
-//            final TestCreator.TesteableResult reason;
-//            SkippedClass(JavaClass cls,
-//                                TestCreator.TesteableResult reason) {
-//                this.cls = cls;
-//                this.reason = reason;
-//            }
-//        }
-
         Set<DataObject> created; // Set< createdTest : DataObject >
-//XXX: retouche
-//        Set<SkippedClass> skipped;
+        Set<SkippedClass> skipped;
         boolean abborted = false;
 
         CreationResults() { this(20);}
 
         CreationResults(int expectedSize) {
             created = new HashSet<DataObject>(expectedSize * 2, 0.5f);
-//XXX: retouche
-//            skipped = new HashSet<SkippedClass>(expectedSize * 2, 0.5f);
+            skipped = new HashSet<SkippedClass>(expectedSize * 2, 0.5f);
         }
 
         void setAbborted() {
@@ -1096,7 +1257,6 @@ public final class DefaultPlugin extends JUnitPlugin {
             return abborted;
         }
 
-
         /**
          * Adds a new entry to the set of created tests.
          * @return true if it was added, false if it was present before
@@ -1105,23 +1265,27 @@ public final class DefaultPlugin extends JUnitPlugin {
             return created.add(test);
         }
 
-//XXX: retouche
-//        /**
-//         * Adds a new <code>JavaClass</code> to the collection of
-//         * skipped classes.
-//         * @return true if it was added, false if it was present before
-//         */
-//        boolean addSkipped(JavaClass c, TestCreator.TesteableResult reason) {
-//            return skipped.add(new SkippedClass(c, reason));
-//        }
-//
-//        /**
-//         * Returns a set of classes that were skipped in the process.
-//         * @return Set<SkippedClass>
-//         */
-//        Set<SkippedClass> getSkipped() {
-//            return skipped;
-//        }
+        /**
+         */
+        boolean addSkipped(SkippedClass skippedClass) {
+            return skipped.add(skippedClass);
+        }
+        
+        /**
+         */
+        void addSkipped(Collection<SkippedClass> skippedClasses) {
+            if (!skippedClasses.isEmpty()) {
+                skipped.addAll(skippedClasses);
+            }
+        }
+
+        /**
+         * Returns a set of classes that were skipped in the process.
+         * @return Set<SkippedClass>
+         */
+        Set<SkippedClass> getSkipped() {
+            return skipped;
+        }
 
         /**
          * Returns a set of test data objects created.
@@ -1143,10 +1307,9 @@ public final class DefaultPlugin extends JUnitPlugin {
             }
 
             this.created.addAll(rhs.created);
-//XXX: retouche
-//            this.skipped.addAll(rhs.skipped);
+            this.skipped.addAll(rhs.skipped);
         }
 
     }
-
+    
 }

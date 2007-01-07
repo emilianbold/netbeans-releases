@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,9 +29,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.junit.CreateTestAction;
 import org.netbeans.modules.junit.GuiUtils;
 import org.netbeans.modules.junit.JUnitPluginTrampoline;
 import org.netbeans.modules.junit.JUnitSettings;
@@ -39,13 +37,9 @@ import org.netbeans.modules.junit.TestCreator;
 import org.netbeans.modules.junit.TestUtil;
 import org.netbeans.modules.junit.plugin.JUnitPlugin;
 import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
@@ -72,7 +66,7 @@ public class SimpleTestCaseWizardIterator
     /** index of the current panel */
     private int current;
     /** registered change listeners */
-    private List changeListeners;
+    private List<ChangeListener> changeListeners;
     /** */
     private Project lastSelectedProject = null;
     /** panel for choosing name and target location of the test class */
@@ -82,7 +76,7 @@ public class SimpleTestCaseWizardIterator
      */
     public void addChangeListener(ChangeListener l) {
         if (changeListeners == null) {
-            changeListeners = new ArrayList(2);
+            changeListeners = new ArrayList<ChangeListener>(2);
         }
         changeListeners.add(l);
     }
@@ -270,7 +264,7 @@ public class SimpleTestCaseWizardIterator
         this.wizard = null;
     }
 
-    public Set instantiate(TemplateWizard wiz) throws IOException {
+    public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
         saveSettings(wiz);
         
         /* collect and build necessary data: */

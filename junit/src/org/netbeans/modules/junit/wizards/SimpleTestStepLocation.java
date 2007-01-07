@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -135,7 +135,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel {
                                   "PROP_test_classname_suffix");        //NOI18N
     
     private Component visualComp;
-    private List changeListeners;
+    private List<ChangeListener> changeListeners;
     private JTextField tfClassToTest;
     private JButton btnBrowse;
     private JTextField tfTestClass;
@@ -283,7 +283,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel {
      *
      * @see  #setUp
      */
-    private Map sourcesToTestsMap;
+    private Map<SourceGroup,Object[]> sourcesToTestsMap;
     
 
     // entered and computed data
@@ -1057,14 +1057,14 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel {
     private SourceGroup[] findParentGroupCandidates() {
         assert sourceGroupParentIndex >= 0;
         
-        List cands = null;
+        List<SourceGroup> cands = null;
         final int count = testableSourceGroups.length;
         for (int i = sourceGroupParentIndex + 1; i < count; i++) {
             final FileObject groupRoot = testableSourceGroupsRoots[i];
             FileObject srcFile = groupRoot.getFileObject(srcRelFileNameSys);
             if (srcFile != null && testableSourceGroups[i].contains(srcFile)) {
                 if (cands == null) {
-                    cands = new ArrayList(testableSourceGroups.length - i + 1);
+                    cands = new ArrayList<SourceGroup>(testableSourceGroups.length - i + 1);
                     cands.add(testableSourceGroups[sourceGroupParentIndex]);
                 }
                 cands.add(testableSourceGroups[i]);
@@ -1072,7 +1072,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel {
         }
         return cands == null
               ? new SourceGroup[] {testableSourceGroups[sourceGroupParentIndex]}
-              : (SourceGroup[]) cands.toArray(new SourceGroup[cands.size()]);
+              : cands.toArray(new SourceGroup[cands.size()]);
     }
     
     /**
@@ -1435,7 +1435,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel {
     
     public void addChangeListener(ChangeListener l) {
         if (changeListeners == null) {
-            changeListeners = new ArrayList(4);
+            changeListeners = new ArrayList<ChangeListener>(4);
         }
         changeListeners.add(l);
     }
@@ -1451,8 +1451,8 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel {
     private void fireChange() {
         if (changeListeners != null) {
             ChangeEvent e = new ChangeEvent(this);
-            for (Iterator i = changeListeners.iterator(); i.hasNext(); ) {
-                ((ChangeListener) i.next()).stateChanged(e);
+            for (ChangeListener l : changeListeners) {
+                l.stateChanged(e);
             }
         }
     }
@@ -1470,22 +1470,22 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel {
         this.sourcesToTestsMap = utils.getSourcesToTestsMap(true);
         
         int sourceGroupsCnt = sourcesToTestsMap.size();
-        Set mapEntries = sourcesToTestsMap.entrySet();
-        List testGroups = new ArrayList(sourceGroupsCnt + 4);
+        Set<Map.Entry<SourceGroup,Object[]>> mapEntries = sourcesToTestsMap.entrySet();
+        List<SourceGroup> testGroups = new ArrayList<SourceGroup>(sourceGroupsCnt + 4);
         
         testableSourceGroups = new SourceGroup[sourceGroupsCnt];
         testableSourceGroupsRoots = new FileObject[sourceGroupsCnt];
         multipleSourceRoots = (sourceGroupsCnt > 1);
         
-        Iterator iterator = mapEntries.iterator();
+        Iterator<Map.Entry<SourceGroup,Object[]>> iterator = mapEntries.iterator();
         for (int i = 0; i < sourceGroupsCnt; i++) {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            SourceGroup srcGroup = (SourceGroup) entry.getKey();
+            Map.Entry<SourceGroup,Object[]> entry = iterator.next();
+            SourceGroup srcGroup = entry.getKey();
             
             testableSourceGroups[i] = srcGroup;
             testableSourceGroupsRoots[i] = srcGroup.getRootFolder();
             
-            Object[] testGroupsSubset = (Object[]) entry.getValue();
+            Object[] testGroupsSubset = entry.getValue();
             for (int j = 0; j < testGroupsSubset.length; j++) {
                 SourceGroup testGroup = (SourceGroup) testGroupsSubset[j];
                 if (!testGroups.contains(testGroup)) {
@@ -1493,7 +1493,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel {
                 }
             }
         }
-        allTestSourceGroups = (SourceGroup[]) testGroups.toArray(
+        allTestSourceGroups = testGroups.toArray(
                                             new SourceGroup[testGroups.size()]);
         
         tfProjectName.setText(
@@ -1695,18 +1695,18 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel {
     private void findComponentsToBlock() {
         assert rootPane != null;
         
-        final Collection/*<Component>*/ mouseBlocked
-                = new ArrayList/*<Component>*/(20);
-        final Collection/*<JComponent>*/ mnemBlocked
-                = new ArrayList/*<JComponent>*/(20);
+        final Collection<Component> mouseBlocked
+                = new ArrayList<Component>(20);
+        final Collection<JComponent> mnemBlocked
+                = new ArrayList<JComponent>(20);
 
-        final List stack = new ArrayList/*<Component>*/(16);
+        final List<Component> stack = new ArrayList<Component>(16);
         stack.add(rootPane.getContentPane());
         int lastIndex = 0;
         
         while (lastIndex != -1) {
             
-            Component c = (Component) stack.remove(lastIndex--);
+            Component c = stack.remove(lastIndex--);
             
             if (!c.isVisible()) {
                 continue;

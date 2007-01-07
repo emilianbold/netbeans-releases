@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -76,7 +76,7 @@ public class TestSuiteWizardIterator
     /** index of the current panel */
     private int current;
     /** registered change listeners */
-    private List changeListeners;
+    private List<ChangeListener> changeListeners;
     /** panel for choosing name and target location of the test class */
     private WizardDescriptor.Panel targetPanel;
     private Project lastSelectedProject = null;
@@ -90,7 +90,7 @@ public class TestSuiteWizardIterator
      */
     public void addChangeListener(ChangeListener l) {
         if (changeListeners == null) {
-            changeListeners = new ArrayList(2);
+            changeListeners = new ArrayList<ChangeListener>(2);
         }
         changeListeners.add(l);
     }
@@ -115,9 +115,8 @@ public class TestSuiteWizardIterator
     private void fireChange() {
         if (changeListeners != null) {
             ChangeEvent e = new ChangeEvent(this);
-            Iterator i = changeListeners.iterator();
-            while (i.hasNext()) {
-                ((ChangeListener) i.next()).stateChanged(e);
+            for (ChangeListener l : changeListeners) {
+                l.stateChanged(e);
             }
         }
     }
@@ -180,7 +179,7 @@ public class TestSuiteWizardIterator
                         NbBundle.getMessage(TestSuiteWizardIterator.class,
                                             "MSG_UnsupportedPlugin"));  //NOI18N
             } else {
-                Collection sourceGroups = Utils.getTestTargets(project, true);
+                Collection<SourceGroup> sourceGroups = Utils.getTestTargets(project, true);
                 if (sourceGroups.isEmpty()) {
                     targetPanel = new StepProblemMessage(
                             project,
@@ -266,7 +265,7 @@ public class TestSuiteWizardIterator
         changeListeners = null;
     }
 
-    public Set instantiate(TemplateWizard wiz) throws IOException {
+    public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
         saveSettings(wiz);
         
         /* collect and build necessary data: */

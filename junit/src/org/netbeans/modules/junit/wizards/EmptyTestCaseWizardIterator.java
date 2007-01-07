@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -78,7 +78,7 @@ public class EmptyTestCaseWizardIterator
     /** index of the current panel */
     private int current;
     /** registered change listeners */
-    private List changeListeners;   //PENDING - what is this useful for?
+    private List<ChangeListener> changeListeners;   //PENDING - what is this useful for?
     /** panel for choosing name and target location of the test class */
     private WizardDescriptor.Panel targetPanel;
     private Project lastSelectedProject = null;
@@ -89,7 +89,7 @@ public class EmptyTestCaseWizardIterator
      */
     public void addChangeListener(ChangeListener l) {
         if (changeListeners == null) {
-            changeListeners = new ArrayList(2);
+            changeListeners = new ArrayList<ChangeListener>(2);
         }
         changeListeners.add(l);
     }
@@ -114,9 +114,8 @@ public class EmptyTestCaseWizardIterator
     private void fireChange() {
         if (changeListeners != null) {
             ChangeEvent e = new ChangeEvent(this);
-            Iterator i = changeListeners.iterator();
-            while (i.hasNext()) {
-                ((ChangeListener) i.next()).stateChanged(e);
+            for (ChangeListener l : changeListeners) {
+                l.stateChanged(e);
             }
         }
     }
@@ -165,7 +164,7 @@ public class EmptyTestCaseWizardIterator
     private WizardDescriptor.Panel getTargetPanel() {
         final Project project = Templates.getProject(wizard);
         if (targetPanel == null || project != lastSelectedProject) {
-            Collection sourceGroups = Utils.getTestTargets(project, true);
+            Collection<SourceGroup> sourceGroups = Utils.getTestTargets(project, true);
             if (sourceGroups.isEmpty()) {
                 targetPanel = new StepProblemMessage(
                         project,
@@ -253,7 +252,7 @@ public class EmptyTestCaseWizardIterator
         changeListeners = null;
     }
 
-    public Set instantiate(TemplateWizard wizard) throws IOException {
+    public Set<DataObject> instantiate(TemplateWizard wizard) throws IOException {
         saveSettings(wizard);
         
         /* collect and build necessary data: */

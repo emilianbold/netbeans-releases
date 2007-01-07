@@ -13,40 +13,47 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.junit;
 
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.awt.EventQueue;
-//XXX: retouche
-//import javax.jmi.reflect.RefFeatured;
-//import javax.jmi.reflect.RefObject;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.lang.model.element.Element;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+//import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-//XXX: retouche
-//import org.netbeans.jmi.javamodel.Element;
-//import org.netbeans.jmi.javamodel.Feature;
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.jmi.javamodel.Method;
-//import org.netbeans.jmi.javamodel.Resource;
-//import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.junit.plugin.JUnitPlugin;
 import org.netbeans.modules.junit.plugin.JUnitPlugin.Location;
-import org.netbeans.modules.junit.wizards.Utils;
-import org.openide.ErrorManager;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-import org.openide.text.CloneableEditor;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
+import org.openide.util.RequestProcessor;
+import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.TopComponent;
 
 /**
@@ -59,7 +66,8 @@ import org.openide.windows.TopComponent;
  * @see  OpenTestAction
  * @author  Marian Petras
  */
-public final class GoToOppositeAction extends NodeAction {
+@SuppressWarnings("serial")
+public final class GoToOppositeAction extends CallableSystemAction {
     
     /**
      *
@@ -67,156 +75,284 @@ public final class GoToOppositeAction extends NodeAction {
     public GoToOppositeAction() {
         super();
         putValue("noIconInMenu", Boolean.TRUE); //NOI18N
-        String trimmedName = NbBundle.getMessage(getClass(), "LBL_Action_GoToTest_trimmed"); // NOI18N
-        putValue("PopupMenuText", trimmedName);
-        putValue("trimmed-text", trimmedName);
+        String trimmedName = NbBundle.getMessage(
+                                        getClass(),
+                                        "LBL_Action_GoToTest_trimmed"); //NOI18N
+        putValue("PopupMenuText", trimmedName);                         //NOI18N
+        putValue("trimmed-text", trimmedName);                          //NOI18N
     }
     
     /**
      */
-    protected void performAction(Node[] nodes) {
-//XXX: retouche
-//        assert EventQueue.isDispatchThread();
-//        
-//        FileObject selectedFO;
-//        FileObject selectedFORoot;
-//        Project project;
-//        ClassPath srcCP, tstCP;
-//        Utils utils;
-//        FileObject[] oppositeRootsRaw;
-//        FileObject[] oppositeRoots;
-//        boolean sourceToTest = true;   //false .. navigation from test to source
-//
-//        if ((nodes == null)
-//          || (nodes.length != 1)
-//          || ((selectedFO = TestUtil.getFileObjectFromNode(nodes[0])) == null)
-//          || ((project = FileOwnerQuery.getOwner(selectedFO)) == null)
-//          || ((srcCP = ClassPath.getClassPath(selectedFO, ClassPath.SOURCE))
-//                                      == null)
-//          || ((selectedFORoot = srcCP.findOwnerRoot(selectedFO)) == null)
-//          || ((utils = new Utils(project)) == null)   //side effect - assignment
-//          || (((oppositeRootsRaw = utils.getTestFoldersRaw(selectedFORoot))
-//                 .length == 0)
-//                        || ((oppositeRoots = Utils.skipNulls(oppositeRootsRaw))
-//                            .length == 0))
-//             && (selectedFO.isFolder()
-//                        ||
-//                 ((oppositeRootsRaw = utils.getSourceFoldersRaw(selectedFORoot))
-//                 .length == 0)
-//                        || ((oppositeRoots = Utils.skipNulls(oppositeRootsRaw))
-//                            .length == 0)
-//                        || (sourceToTest = false))) { //side effect - assignment
-//          return;
-//        }
-//        
-//        JUnitPlugin plugin = TestUtil.getPluginForProject(project);
-//        assert plugin != null;
-//        
-//        Location baseLocation = new Location(selectedFO,
-//                                             getNavigationElement());
-//        Location oppoLocation = sourceToTest
-//                                ? JUnitPluginTrampoline.DEFAULT
-//                                  .getTestLocation(plugin, baseLocation)
-//                                : JUnitPluginTrampoline.DEFAULT
-//                                  .getTestedLocation(plugin, baseLocation);
-//        
-//        if (oppoLocation == null) {
-//            if (sourceToTest) {
-//                String sourceClsName;
-//                sourceClsName = srcCP.getResourceName(selectedFO, '/', false)
-//                                     .replace('/', '.');
-//                String msgKey = 
-//                        !selectedFO.isFolder()
-//                        ? "MSG_test_class_not_found"                    //NOI18N
-//                        : (sourceClsName.length() != 0)
-//                              ? "MSG_testsuite_class_not_found"         //NOI18N
-//                              : "MSG_testsuite_class_not_found_def_pkg";//NOI18N
-//                TestUtil.notifyUser(
-//                        NbBundle.getMessage(getClass(), msgKey, sourceClsName),
-//                        ErrorManager.INFORMATIONAL);
-//            }
-//            return;
-//        }
-//        
-//        assert oppoLocation.getFileObject() != null;
-//        
-//        FileObject oppoFile = oppoLocation.getFileObject();
-//        Feature oppoElement = oppoLocation.getJavaElement();
-//        if (oppoElement == null) {
-//            OpenTestAction.openFile(oppoFile);
-//        } else {
-//            OpenTestAction.openFileAtElement(oppoFile, oppoElement);
-//        }
-    }
-
-    /**
-     */
-    protected boolean enable(Node[] nodes) {
+    @Override
+    public void performAction() {
         assert EventQueue.isDispatchThread();
         
-        FileObject selectedFO;
-        FileObject selectedFORoot;
-        Project project;
+        TopComponent comp;
+        JEditorPane editorPane;
+        FileObject fileObj;
         ClassPath srcCP;
-        Utils utils;
-        FileObject[] oppositeRootsRaw;
+        FileObject fileObjRoot;
+        Project project;
         
-        return
-          (nodes != null)
-          && (nodes.length == 1)
-          && ((selectedFO = TestUtil.getFileObjectFromNode(nodes[0])) != null)
-          && ((project = FileOwnerQuery.getOwner(selectedFO)) != null)
-          && ((srcCP = ClassPath.getClassPath(selectedFO, ClassPath.SOURCE))
-                                        != null)
-          && ((selectedFORoot = srcCP.findOwnerRoot(selectedFO)) != null)
-          && ((utils = new Utils(project)) != null)   //side effect - assignment
-          && ((  (oppositeRootsRaw = utils.getTestFoldersRaw(selectedFORoot))
-                 .length != 0)
-                        && (Utils.skipNulls(oppositeRootsRaw).length != 0)
-              || !selectedFO.isFolder()
-                        &&
-                 ((oppositeRootsRaw = utils.getSourceFoldersRaw(selectedFORoot))
-                 .length != 0)
-                        && (Utils.skipNulls(oppositeRootsRaw).length != 0));
+        boolean sourceToTest = true;
+        if (!((comp = TopComponent.getRegistry().getActivated())
+                                        instanceof CloneableEditorSupport.Pane)
+          || ((editorPane = ((CloneableEditorSupport.Pane)comp).getEditorPane())
+                                        == null)      //side effect - assignment
+          || ((fileObj = getFileObject(editorPane.getDocument())) == null)
+          || ((srcCP = ClassPath.getClassPath(fileObj, ClassPath.SOURCE)) == null)
+          || ((fileObjRoot = srcCP.findOwnerRoot(fileObj)) == null)
+          || ((project = FileOwnerQuery.getOwner(fileObjRoot)) == null)
+          || (UnitTestForSourceQuery.findUnitTests(fileObjRoot).length == 0)
+              && !(sourceToTest = false)         //side effect - assignment
+              && (UnitTestForSourceQuery.findSources(fileObjRoot).length == 0)) {
+            return;
+        }
+        
+        JUnitPlugin plugin = TestUtil.getPluginForProject(project);
+        assert plugin != null;
+        
+        SourceGroup[] srcGroups;
+        FileObject[] srcRoots;
+        srcGroups = ProjectUtils.getSources(project)
+                    .getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        srcRoots = new FileObject[srcGroups.length];
+        for (int i = 0; i < srcGroups.length; i++) {
+            srcRoots[i] = srcGroups[i].getRootFolder();
+        }
+        ClassPath srcClassPath = ClassPathSupport.createClassPath(srcRoots);
+
+        ClasspathInfo cpInfo = ClasspathInfo.create(
+                        ClassPath.getClassPath(fileObj, ClassPath.BOOT),
+                        ClassPath.getClassPath(fileObj, ClassPath.COMPILE),
+                        srcClassPath);
+        int caretPos = editorPane.getCaretPosition();
+        boolean fromSourceToTest = sourceToTest;
+        
+        JavaSource javaSource = JavaSource.create(
+                cpInfo,
+                Collections.<FileObject>singleton(fileObj));
+        
+        ElementFinder elementFinder = new ElementFinder(caretPos);
+        try {
+            javaSource.runUserActionTask(elementFinder, true);
+        } catch (IOException ex) {
+            Logger.getLogger("global").log(Level.SEVERE, null, ex);     //NOI18N
+        }
+        Element element = elementFinder.getElement();
+        RequestProcessor.getDefault().post(
+                new ActionImpl(plugin,
+                               new Location(fileObj/*, element*/),
+                               fromSourceToTest,
+                               srcClassPath));
+    }
+    
+    /**
+     * Determines an element at the current cursor position.
+     */
+    private class ElementFinder implements CancellableTask<CompilationController> {
+        
+        /** */
+        private final int caretPosition;
+        /** */
+        private volatile boolean cancelled;
+        /** */
+        private Element element = null;
+        
+        /**
+         */
+        private ElementFinder(int caretPosition) {
+            this.caretPosition = caretPosition;
+        }
+    
+        /**
+         */
+        public void run(CompilationController controller) throws IOException {
+            controller.toPhase(Phase.RESOLVED);     //cursor position needed
+            if (cancelled) {
+                return;
+            }
+
+            TreePath treePath = controller.getTreeUtilities()
+                                          .pathFor(caretPosition);
+            if (treePath != null) {
+                if (cancelled) {
+                    return;
+                }
+                
+                TreePath parent = treePath.getParentPath();
+                while (parent != null) {
+                    Tree.Kind parentKind = parent.getLeaf().getKind();
+                    if ((parentKind == Tree.Kind.CLASS)
+                            || (parentKind == Tree.Kind.COMPILATION_UNIT)) {
+                        break;
+                    }
+                    treePath = parent;
+                    parent = treePath.getParentPath();
+                }
+
+            }
+
+            if (treePath != null) {
+                if (cancelled) {
+                    return;
+                }
+
+                try {
+                    element = controller.getTrees().getElement(treePath);
+                } catch (IllegalArgumentException ex) {
+                    Logger.getLogger("global").log(Level.WARNING, null, ex);
+                }
+            }
+        }
+        
+        /**
+         */
+        public void cancel() {
+            cancelled = true;
+        }
+        
+        /**
+         */
+        Element getElement() {
+            return element;
+        }
+
+    }
+    
+    /**
+     * 
+     */
+    private class ActionImpl implements Runnable {
+        
+        private final JUnitPlugin plugin;
+        private final Location currLocation;
+        private final boolean sourceToTest;
+        private final ClassPath srcClassPath;
+        
+        private Location oppoLocation;
+        
+        ActionImpl(JUnitPlugin plugin,
+                   Location currLocation,
+                   boolean sourceToTest,
+                   ClassPath srcClassPath) {
+            this.plugin = plugin;
+            this.currLocation = currLocation;
+            this.sourceToTest = sourceToTest;
+            this.srcClassPath = srcClassPath;
+        }
+        
+        public void run() {
+            if (!EventQueue.isDispatchThread()) {
+                findOppositeLocation();
+                if ((oppoLocation != null) || sourceToTest) {
+                    EventQueue.invokeLater(this);
+                }
+            } else {
+                if (oppoLocation != null) {
+                    goToOppositeLocation();
+                } else if (sourceToTest) {
+                    displayNoOppositeLocationFound();
+                }
+            }
+        }
+        
+        /**
+         */
+        private void findOppositeLocation() {
+            oppoLocation = sourceToTest
+                  ? JUnitPluginTrampoline.DEFAULT.getTestLocation(plugin,
+                                                                  currLocation)
+                  : JUnitPluginTrampoline.DEFAULT.getTestedLocation(plugin,
+                                                                  currLocation);
+        }
+        
+        /**
+         */
+        private void goToOppositeLocation() {
+            assert oppoLocation != null;
+            assert oppoLocation.getFileObject() != null;
+
+            final FileObject oppoFile = oppoLocation.getFileObject();
+//            final ElementHandle<Element> elementHandle
+//                                         = oppoLocation.getElementHandle();
+//            if (elementHandle != null) {
+//                OpenTestAction.openFileAtElement(oppoFile, elementHandle);
+//            } else {
+                OpenTestAction.openFile(oppoFile);
+//            }
+        }
+        
+        /**
+         */
+        private void displayNoOppositeLocationFound() {
+            String sourceClsName;
+            FileObject fileObj = currLocation.getFileObject();
+            sourceClsName = srcClassPath.getResourceName(fileObj, '.', false);
+            String msgKey = !fileObj.isFolder()
+                            ? "MSG_test_class_not_found"                //NOI18N
+                            : (sourceClsName.length() != 0)
+                              ? "MSG_testsuite_class_not_found"         //NOI18N
+                              : "MSG_testsuite_class_not_found_def_pkg";//NOI18N
+            TestUtil.notifyUser(
+                    NbBundle.getMessage(getClass(), msgKey, sourceClsName),
+                    NotifyDescriptor.INFORMATION_MESSAGE);
+        }
+
+    }
+    
+    /**
+     */
+    @Override
+    public boolean isEnabled() {
+        assert EventQueue.isDispatchThread();
+        
+        return checkDirection() != null;
     }
     
     /**
      */
     public String getName() {
+        return NbBundle.getMessage(getClass(),
+                                   checkDirection() == Boolean.FALSE
+                                        ? "LBL_Action_GoToSource"       //NOI18N
+                                        : "LBL_Action_GoToTest");       //NOI18N
+    }
+    
+    /**
+     * Checks whether this action should be enabled for &quot;Go To Test&quot;
+     * or for &quot;Go To Tested Class&quot or whether it should be disabled.
+     * 
+     * @return  {@code Boolean.TRUE} if this action should be enabled for
+     *          &quot;Go To Test&quot;,<br />
+     *          {@code Boolean.FALSE} if this action should be enabled for
+     *          &quot;Go To Tested Class&quot;,<br />
+     *          {@code null} if this action should be disabled
+     */
+    private Boolean checkDirection() {
+        TopComponent comp;
+        JEditorPane editorPane;
+        FileObject fileObj;
+        ClassPath srcCP;
+        FileObject fileObjRoot;
         
-        Node[] nodes;
-        FileObject selectedFO;
-        FileObject selectedFORoot;
-        Project project;
-        ClassPath srcCP, tstCP;
-        Utils utils;
-        FileObject[] oppositeRootsRaw;
+        boolean sourceToTest = true;
+        boolean enabled = 
+          ((comp = TopComponent.getRegistry().getActivated())
+                                        instanceof CloneableEditorSupport.Pane)
+          && ((editorPane = ((CloneableEditorSupport.Pane)comp).getEditorPane())
+                                        != null)      //side effect - assignment
+          && ((fileObj = getFileObject(editorPane.getDocument())) != null)
+          && TestUtil.isJavaFile(fileObj)
+          && ((srcCP = ClassPath.getClassPath(fileObj, ClassPath.SOURCE)) != null)
+          && ((fileObjRoot = srcCP.findOwnerRoot(fileObj)) != null)
+          && ((UnitTestForSourceQuery.findUnitTests(fileObjRoot).length != 0)
+              || (sourceToTest = false)         //side effect - assignment
+              || (UnitTestForSourceQuery.findSources(fileObjRoot).length != 0));
         
-        boolean sourceToTest = true;   //false .. navigation from test to source
-
-        boolean disabled = 
-          ((nodes = TopComponent.getRegistry().getCurrentNodes()) == null)
-          || (nodes.length != 1)
-          || ((selectedFO = TestUtil.getFileObjectFromNode(nodes[0])) == null)
-          || ((project = FileOwnerQuery.getOwner(selectedFO)) == null)
-          || ((srcCP = ClassPath.getClassPath(selectedFO, ClassPath.SOURCE))
-                                      == null)
-          || ((selectedFORoot = srcCP.findOwnerRoot(selectedFO)) == null)
-          || ((utils = new Utils(project)) == null)   //side effect - assignment
-          || (((oppositeRootsRaw = utils.getTestFoldersRaw(selectedFORoot))
-                 .length == 0)
-                        || (Utils.skipNulls(oppositeRootsRaw).length == 0))
-             && (selectedFO.isFolder()
-                        ||
-                 ((oppositeRootsRaw = utils.getSourceFoldersRaw(selectedFORoot))
-                 .length == 0)
-                        || (Utils.skipNulls(oppositeRootsRaw).length == 0)
-                        || (sourceToTest = false));
-
-        return NbBundle.getMessage(
-                        getClass(), disabled || sourceToTest
-                                    ? "LBL_Action_GoToTest"             //NOI18N
-                                    : "LBL_Action_GoToSource");         //NOI18N
+        return enabled ? Boolean.valueOf(sourceToTest)
+                       : null;
     }
     
     /**
@@ -236,63 +372,11 @@ public final class GoToOppositeAction extends NodeAction {
 
     /**
      */
+    @Override
     protected boolean asynchronous() {
         return false;
     }
     
-//XXX: retouche
-//    /**
-//     * Finds method or class element at the current editor cursor position.
-//     *
-//     * @return  the element, or <code>null</code> if the editor was not the
-//     *          active component or if no such element was found
-//     */
-//    private Feature getNavigationElement() {
-//        RefFeatured javaElement = getJavaElement();
-//        
-//        while ((javaElement instanceof RefObject)
-//                && (!(javaElement instanceof Method))
-//                && (!(javaElement instanceof JavaClass))) {
-//            javaElement = ((RefObject) javaElement).refImmediateComposite();
-//        }
-//        
-//        return ((javaElement instanceof Method)
-//                    || (javaElement instanceof JavaClass))
-//               ? (Feature) javaElement
-//               : null;
-//    }
-    
-//XXX: retouche
-//    /**
-//     * Finds Java element at the current editor cursor position.
-//     *
-//     * @return  the element, or <code>null</code> if the editor was not the
-//     *          active component or if no such element was found
-//     */
-//    private Element getJavaElement() {
-//        TopComponent comp = TopComponent.getRegistry().getActivated();
-//        if (!(comp instanceof CloneableEditor)) {
-//            return null;
-//        }
-//        
-//        final JEditorPane editorPane = ((CloneableEditor) comp).getEditorPane();
-//        final int caretPos = editorPane.getCaretPosition();
-//        
-//        final FileObject fileObj = getFileObject(editorPane.getDocument());
-//        if (fileObj == null) {
-//            return null;
-//        }
-//        
-//        final Resource resource = JavaModel.getResource(fileObj);
-//        if (resource == null) {
-//            return null;
-//        }
-//        
-//        return (caretPos < resource.getEndOffset())
-//               ? resource.getElementByOffset(caretPos)
-//               : null;
-//    }
-
     /**
      */
     private static FileObject getFileObject(Document document) {

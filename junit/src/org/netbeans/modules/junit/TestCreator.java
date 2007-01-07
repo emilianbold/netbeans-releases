@@ -13,26 +13,71 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.junit;
 
-import java.lang.reflect.Modifier;
-import java.util.*;
-import java.util.regex.Pattern;
-//XXX: retouche
-//import org.netbeans.modules.javacore.jmiimpl.javamodel.DiffElement;
-//import org.netbeans.modules.javacore.jmiimpl.javamodel.ResourceImpl;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.NestingKind;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.Comment;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
 import org.openide.ErrorManager;
-
 import org.openide.util.NbBundle;
-//XXX: retouche
-//import org.netbeans.jmi.javamodel.*;
-//import org.netbeans.modules.javacore.api.JavaModel;
-
+import static javax.lang.model.element.Modifier.ABSTRACT;
+import static javax.lang.model.element.Modifier.PRIVATE;
+import static javax.lang.model.element.Modifier.PROTECTED;
+import static javax.lang.model.element.Modifier.PUBLIC;
+import static javax.lang.model.element.Modifier.STATIC;
+import static org.openide.NotifyDescriptor.WARNING_MESSAGE;
 
 /**
  *
@@ -40,15 +85,13 @@ import org.openide.util.NbBundle;
  * @author  Marian Petras
  * @version 1.0
  */
-public final class TestCreator {
+public final class TestCreator implements TestabilityJudge {
     /* the class is final only for performance reasons */
     
     /* attributes - private */
     static private final String JUNIT_SUPER_CLASS_NAME                = "TestCase";
     static private final String JUNIT_FRAMEWORK_PACKAGE_NAME    = "junit.framework";
     
-//    static private final String GENERATED_SUITE_BLOCK_START                = "--JUNIT:";
-//    static private final String GENERATED_SUITE_BLOCK_END                  = ":JUNIT--";
     static private final String METHOD_NAME_SETUP = "setUp";            //NOI18N
     static private final String METHOD_NAME_TEARDOWN = "tearDown";      //NOI18N
     static private final String CLASS_COMMENT_LINE1 = "TestCreator.javaClass.addTestsHereComment.l1";
@@ -85,9 +128,14 @@ public final class TestCreator {
      *
      * @see  java.lang.reflect.Modifier
      */
-    private static final int ACCESS_MODIFIERS = Modifier.PUBLIC
-                                                | Modifier.PROTECTED
-                                                | Modifier.PRIVATE;
+    private static final EnumSet<Modifier> ACCESS_MODIFIERS
+            = EnumSet.of(Modifier.PUBLIC,
+                         Modifier.PROTECTED,
+                         Modifier.PRIVATE);
+    
+    /** */
+    private static final EnumSet<Modifier> NO_MODIFIERS
+            = EnumSet.noneOf(Modifier.class);
     
     /** should test classes be skipped during generation of tests? */
     private boolean skipTestClasses = true;
@@ -107,7 +155,9 @@ public final class TestCreator {
      *
      * @see  #testPackagePrivateMethods
      */
-    private int methodAccessModifiers = Modifier.PUBLIC | Modifier.PROTECTED;
+    private Set<Modifier> methodAccessModifiers
+            = createModifierSet(Modifier.PUBLIC,
+                                Modifier.PROTECTED);
     /**
      * should package-private methods be tested? 
      *
@@ -162,13 +212,6 @@ public final class TestCreator {
      */
     private String initialMainMethodBody;
     
-    /** pattern of a multipart Java ID */
-    private final Pattern javaIdFullPattern;
-    
-    {
-        javaIdFullPattern = Pattern.compile(RegexpPatterns.JAVA_ID_REGEX_FULL);
-    }
-    
     /* public methods */
     
     /**
@@ -201,12 +244,12 @@ public final class TestCreator {
         generateSuiteClasses = Boolean.TRUE.equals(params.get(
                                         CreateTestParam.INC_GENERATE_SUITE));
         
-        methodAccessModifiers = 0;
+        methodAccessModifiers.clear();
         if (Boolean.TRUE.equals(params.get(CreateTestParam.INC_PUBLIC))) {
-            methodAccessModifiers |= Modifier.PUBLIC;
+            methodAccessModifiers.add(Modifier.PUBLIC);
         }
         if (Boolean.TRUE.equals(params.get(CreateTestParam.INC_PROTECTED))) {
-            methodAccessModifiers |= Modifier.PROTECTED;
+            methodAccessModifiers.add(Modifier.PROTECTED);
         }
         testPkgPrivateMethods = Boolean.TRUE.equals(params.get(
                                         CreateTestParam.INC_PKG_PRIVATE));
@@ -237,12 +280,12 @@ public final class TestCreator {
         skipExceptionClasses = !settings.isGenerateExceptionClasses();
         generateSuiteClasses = settings.isGenerateSuiteClasses();
         
-        methodAccessModifiers = 0;
+        methodAccessModifiers.clear();
         if (settings.isMembersPublic()) {
-            methodAccessModifiers |= Modifier.PUBLIC;
+            methodAccessModifiers.add(Modifier.PUBLIC);
         }
         if (settings.isMembersProtected()) {
-            methodAccessModifiers |= Modifier.PROTECTED;
+            methodAccessModifiers.add(Modifier.PROTECTED);
         }
         testPkgPrivateMethods = settings.isMembersPackage();
         
@@ -322,9 +365,9 @@ public final class TestCreator {
      */
     public void setTestPublicMethods(boolean test) {
         if (test) {
-            methodAccessModifiers |= Modifier.PUBLIC;
+            methodAccessModifiers.add(Modifier.PUBLIC);
         } else {
-            methodAccessModifiers &= ~Modifier.PUBLIC;
+            methodAccessModifiers.remove(Modifier.PUBLIC);
         }
     }
     
@@ -337,9 +380,9 @@ public final class TestCreator {
      */
     public void setTestProtectedMethods(boolean test) {
         if (test) {
-            methodAccessModifiers |= Modifier.PROTECTED;
+            methodAccessModifiers.add(Modifier.PROTECTED);
         } else {
-            methodAccessModifiers &= ~Modifier.PROTECTED;
+            methodAccessModifiers.remove(Modifier.PROTECTED);
         }
     }
     
@@ -433,163 +476,827 @@ public final class TestCreator {
     public void setGenerateMainMethod(boolean generate) {
         this.generateMainMethod = generate;
     }
+
     
-//XXX: retouche
-//    /**
-//     * Implements equality by attributes of a wrapped Import.
-//     */
-//    static private class ImpEq {
-//        org.netbeans.jmi.javamodel.Import imp;
-//        
-//        ImpEq(org.netbeans.jmi.javamodel.Import imp) {
-//            this.imp = imp;
-//        }
-//        
-//        public boolean equals(Object rhs) {
-//            if (rhs instanceof ImpEq) {
-//                org.netbeans.jmi.javamodel.Import i = ((ImpEq)rhs).imp;
-//                return
-//                    (i.isStatic() == imp.isStatic()) &&
-//                    (i.isOnDemand() == imp.isOnDemand()) &&
-//                    (i.getName().equals(imp.getName()));
-//            }  else return false;
-//        }
-//        
-//        public int hashCode() {
-//            return imp.getName().hashCode();
-//        }
-//        
-//        
-//    }
+    /**
+     */
+    public void createEmptyTest(final JavaSource tstSource) throws IOException {
+        SingleResourceTestCreator testCreator
+                = new SingleResourceTestCreator();
+        ModificationResult result = tstSource.runModificationTask(testCreator);
+        result.commit();
+    }
     
+    /**
+     * 
+     * @return  list of names of created classes
+     */
+    public void createSimpleTest(ElementHandle<TypeElement> topClassToTest,
+                                 JavaSource tstSource,
+                                 boolean isNewTestClass) throws IOException {
+        SingleResourceTestCreator testCreator
+                = new SingleResourceTestCreator(Collections.singletonList(topClassToTest),
+                                                null,
+                                                isNewTestClass);
+        ModificationResult result = tstSource.runModificationTask(testCreator);
+        result.commit();
+    }
     
-//XXX: retouche
-//    /**
-//     *
-//     */
-//    final class SingleResourceTestCreator {
-//     
-//        private final Resource srcRc, tstRc;
-//        private final JavaModelPackage tgtPkg;
-//        private final String tstPkgNameDot;
-//        private final List/*<Import>*/ tstImports;
-//        /** */
-//        private Map/*<String, String>*/ clsNames;
-//
-//        
+    /**
+     */
+    public List<String> createTestSuite(List<String> suiteMembers,
+                                        JavaSource tstSource,
+                                        boolean isNewTestClass) throws IOException {
+        SingleResourceTestCreator testCreator
+                = new SingleResourceTestCreator(null, suiteMembers, isNewTestClass);
+        ModificationResult result = tstSource.runModificationTask(testCreator);
+        result.commit();
+        
+        return testCreator.getProcessedClassNames();
+    }
+    
+    /**
+     *
+     */
+    private final class SingleResourceTestCreator implements CancellableTask<WorkingCopy> {
+
+        private final List<ElementHandle<TypeElement>> srcTopClassElemHandles;
+        
+        private final List<String> suiteMembers;
+        
+        private final boolean isNewTestClass;
+        
+        private List<String>processedClassNames;
+        
+        private volatile boolean cancelled = false;
+        
+        
+        /** element representing type {@code junit.framework.Test} */
+        private TypeElement testTypeElem;
+        /** */
+        private TypeElement testCaseTypeElem;
+        /** element representing type {@code junit.framework.TestSuite} */
+        private TypeElement testSuiteTypeElem;
+        
+        
+        /**
+         * Used when creating a new empty test class.
+         */
+        private SingleResourceTestCreator() {
+            this.srcTopClassElemHandles = null;
+            this.suiteMembers = null;
+            this.isNewTestClass = true;   //value not used
+        }
+        
+        /**
+         * Used when creating a test class for a given source class
+         * or when creating a test suite.
+         */
+        private SingleResourceTestCreator(
+                        List<ElementHandle<TypeElement>> srcTopClassHandles,
+                        List<String>suiteMembers,
+                        boolean isNewTestClass) {
+            this.srcTopClassElemHandles = srcTopClassHandles;
+            this.suiteMembers = suiteMembers;
+            this.isNewTestClass = isNewTestClass;
+        }
+        
+        /*i*
+         */
+        public void run(WorkingCopy workingCopy) throws IOException {
+            final String className = workingCopy.getClasspathInfo()
+                                     .getClassPath(ClasspathInfo.PathKind.SOURCE)
+                                     .getResourceName(workingCopy.getFileObject(), '.', false);
+            
+            workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
+            
+            CompilationUnitTree compUnit = workingCopy.getCompilationUnit();
+            List<ClassTree> tstTopClasses = TopClassFinder.findTopClasses(
+                                                compUnit,
+                                                workingCopy.getTreeUtilities());
+
+            List<TypeElement> srcTopClassElems
+                    = resolveHandles(workingCopy, srcTopClassElemHandles);
+            
+            TreePath compUnitPath = new TreePath(compUnit);
+            
+            if ((srcTopClassElems != null) && !srcTopClassElems.isEmpty()) {
+                
+                /* Create/update a test class for each testable source class: */
+                for (TypeElement srcTopClass : srcTopClassElems) {
+                    String srcClassName = srcTopClass.getSimpleName().toString();
+                    String tstClassName = TestUtil.getTestClassName(srcClassName);
+                    
+                    List<ExecutableElement> srcMethods
+                                            = findTestableMethods(srcTopClass);
+                    boolean srcHasTestableMethods = !srcMethods.isEmpty();
+                        
+                    ClassTree tstTopClass = null;
+                    for (ClassTree tstClass : tstTopClasses) {
+                        if (tstClass.getSimpleName().contentEquals(tstClassName)) {
+                            tstTopClass = tstClass;
+                            break;
+                        }
+                    }
+                    if (tstTopClass != null) {
+                        TreePath tstTopClassTreePath = new TreePath(compUnitPath,
+                                                                    tstTopClass);
+                        
+                        ClassTree origTstTopClass = tstTopClass;
+                        if (srcHasTestableMethods) {
+                            tstTopClass = generateMissingTestMethods(
+                                                   workingCopy,
+                                                   tstTopClass,
+                                                   tstTopClassTreePath,
+                                                   srcTopClass,
+                                                   srcMethods,
+                                                   isNewTestClass);
+                        } else if (isNewTestClass) {
+                            tstTopClass = generateMissingInitMembers(
+                                                    tstTopClass,
+                                                    tstTopClassTreePath,
+                                                    workingCopy);
+                        }
+                        if (tstTopClass != origTstTopClass) {
+                            workingCopy.rewrite(origTstTopClass,
+                                                tstTopClass);
+                        }
+                    } else {
+                        if (srcHasTestableMethods
+                                || tstClassName.equals(TestUtil.getSimpleName(className))) {
+                            tstTopClass = generateNewTestClass(workingCopy,
+                                                               tstClassName,
+                                                               srcTopClass,
+                                                               srcMethods);
+                            //PENDING - add the top class to the CompilationUnit
+                            
+                            //PENDING - generate suite method
+                        }
+                    }
+                }
+            } else if (suiteMembers != null) {          //test suite
+                for (ClassTree tstClass : tstTopClasses) {
+                    ClassTree origTstTopClass = tstClass;
+                    ClassTree tstTopClass = generateMissingSuiteClassMembers(
+                                                    tstClass,
+                                                    suiteMembers,
+                                                    isNewTestClass,
+                                                    workingCopy);
+                    if (tstTopClass != origTstTopClass) {
+                        workingCopy.rewrite(origTstTopClass,
+                                            tstTopClass);
+                    }
+                    classProcessed(tstClass);
+                }
+            } else if (srcTopClassElems == null) {      //new empty test class
+                for (ClassTree tstClass : tstTopClasses) {
+                    ClassTree origTstTopClass = tstClass;
+                    ClassTree tstTopClass = generateMissingInitMembers(
+                                                    tstClass,
+                                                    new TreePath(compUnitPath,
+                                                                 tstClass),
+                                                    workingCopy);
+                    if (tstTopClass != origTstTopClass) {
+                        workingCopy.rewrite(origTstTopClass,
+                                            tstTopClass);
+                    }
+                }
+            }
+        }
+        
+        /**
+         */
+        private ClassTree generateNewTestClass(WorkingCopy workingCopy,
+                                               String name,
+                                               TypeElement srcClass,
+                                               List<ExecutableElement> srcMethods) {
+            final TreeMaker maker = workingCopy.getTreeMaker();
+            final Elements elements = workingCopy.getElements();
+            
+            ModifiersTree modifiers = maker.Modifiers(
+                                    Collections.<Modifier>singleton(PUBLIC));
+            
+            TypeElement testCaseType = getTestCaseTypeElem(elements);
+            Tree extendsClause = (testCaseType != null)
+                                 ? maker.QualIdent(testCaseType)
+                                 : maker.Identifier("junit.framework.TestCase");//NOI18N
+            
+            List<? extends Tree> initMembers = generateInitMembers(maker);
+            List<MethodTree> testMethods = generateTestMethods(workingCopy,
+                                                               srcClass,
+                                                               srcMethods);
+            List<? extends Tree> members;
+            if (initMembers.isEmpty() && testMethods.isEmpty()) {
+                members = Collections.<Tree>emptyList();
+            } else if (initMembers.isEmpty()) {
+                members = testMethods;
+            } else if (testMethods.isEmpty()) {
+                members = initMembers;
+            } else {
+                List<Tree> allMembers = new ArrayList<Tree>(
+                                    initMembers.size() + testMethods.size());
+                allMembers.addAll(initMembers);
+                allMembers.addAll(testMethods);
+                
+                members = allMembers;
+            }
+            
+            return maker.Class(
+                        modifiers,                                 //modifiers
+                        name,                                      //name
+                        Collections.<TypeParameterTree>emptyList(),//type params
+                        extendsClause,                             //extends
+                        Collections.<ExpressionTree>emptyList(),   //implements
+                        members);                                  //members
+        }
+        
+        /**
+         */
+        private ClassTree generateMissingInitMembers(ClassTree tstClass,
+                                                     TreePath tstClassTreePath,
+                                                     WorkingCopy workingCopy) {
+            if (!generateSetUp && !generateTearDown && !generateSuiteClasses) {
+                return tstClass;
+            }
+            
+            ClassMap classMap = ClassMap.forClass(tstClass);
+            
+            if ((!generateSetUp || classMap.containsSetUp())
+                    && (!generateTearDown || classMap.containsTearDown())
+                    && (!generateSuiteClasses || classMap.containsNoArgMethod(
+                                                            "suite"))) {//NOI18N
+                return tstClass;
+            }
+            
+            final TreeMaker maker = workingCopy.getTreeMaker();
+            
+            List<? extends Tree> tstMembersOrig = tstClass.getMembers();
+            List<Tree> tstMembers = new ArrayList<Tree>(tstMembersOrig.size() + 2);
+            tstMembers.addAll(tstMembersOrig);
+            
+            generateMissingInitMembers(tstMembers, ClassMap.forClass(tstClass),
+                                       maker);
+            generateTestClassSuiteMethod(tstClassTreePath, tstMembers, classMap,
+                                         workingCopy);
+            
+            ClassTree newClass = maker.Class(
+                    tstClass.getModifiers(),
+                    tstClass.getSimpleName(),
+                    tstClass.getTypeParameters(),
+                    tstClass.getExtendsClause(),
+                    (List<? extends ExpressionTree>) tstClass.getImplementsClause(),
+                    tstMembers);
+            return newClass;
+        }
+        
+        /**
+         */
+        private List<? extends Tree> generateInitMembers(TreeMaker maker) {
+            if (!generateSetUp && !generateTearDown) {
+                return Collections.<Tree>emptyList();
+            }
+            
+            List<MethodTree> result = new ArrayList<MethodTree>(2);
+            if (generateSetUp) {
+                result.add(generateInitMethod(maker, "setUp"));         //NOI18N
+            }
+            if (generateTearDown) {
+                result.add(generateInitMethod(maker, "tearDown"));      //NOI18N
+            }
+            return result;
+        }
+        
+        /**
+         * Generates a set-up or a tear-down method.
+         * The generated method will have no arguments, void return type
+         * and a declaration that it may throw {@code java.lang.Exception}.
+         * The method will have a declared protected member access.
+         * The method contains call of the corresponding super method, i.e.
+         * {@code super.setUp()} or {@code super.tearDown()}.
+         *
+         * @param  methodName  name of the method to be created
+         * @return  created method
+         * @see  http://junit.sourceforge.net/javadoc/junit/framework/TestCase.html
+         *       methods {@code setUp()} and {@code tearDown()}
+         */
+        private MethodTree generateInitMethod(TreeMaker maker,
+                                              String methodName) {
+            ModifiersTree modifiers = maker.Modifiers(
+                    Collections.<Modifier>singleton(PROTECTED));
+            ExpressionTree superMethodCall = maker.MethodInvocation(
+                    Collections.<ExpressionTree>emptyList(),    // type params.
+                    maker.MemberSelect(
+                            maker.Identifier("super"), methodName),     //NOI18N
+                    Collections.<ExpressionTree>emptyList());
+            BlockTree methodBody = maker.Block(
+                    Collections.<StatementTree>singletonList(
+                            maker.ExpressionStatement(superMethodCall)),
+                    false);
+            MethodTree method = maker.Method(
+                    modifiers,              // modifiers
+                    methodName,             // name
+                    maker.PrimitiveType(TypeKind.VOID),         // return type
+                    Collections.<TypeParameterTree>emptyList(), // type params
+                    Collections.<VariableTree>emptyList(),      // parameters
+                    Collections.<ExpressionTree>singletonList(
+                            maker.Identifier("Exception")),// throws... //NOI18N
+                    methodBody,
+                    null);                                      // default value
+            return method;
+        }
+
+        /**
+         * 
+         * @param  srcMethods  methods to create/update tests for
+         * 
+         */
+        private ClassTree generateMissingTestMethods(
+                                        WorkingCopy workingCopy,
+                                        ClassTree tstClass,
+                                        TreePath tstClassTreePath,
+                                        TypeElement srcClass,
+                                        List<ExecutableElement> srcMethods,
+                                        boolean generateMissingInitMembers) {
+            if (srcMethods.isEmpty()) {
+                return tstClass;
+            }
+            
+            ClassMap clsMap = ClassMap.forClass(tstClass);
+            
+            List<? extends Tree> tstMembersOrig = tstClass.getMembers();
+            List<Tree> tstMembers = new ArrayList<Tree>(tstMembersOrig.size() + 4);
+            tstMembers.addAll(tstMembersOrig);
+            
+            if (generateMissingInitMembers) {
+                generateMissingInitMembers(tstMembers, clsMap,
+                                           workingCopy.getTreeMaker());
+            }
+            if (generateSuiteClasses) {
+                generateTestClassSuiteMethod(tstClassTreePath,
+                                             tstMembers, clsMap,
+                                             workingCopy);
+            }
+            
+            Boolean useNoArgConstrutor = null;
+            for (ExecutableElement srcMethod : srcMethods) {
+                String testMethodName = createTestMethodName(
+                                        srcMethod.getSimpleName().toString());
+                int testMethodIndex = clsMap.findNoArgMethod(testMethodName);
+                if (testMethodIndex != -1) {
+                    continue;       //corresponding test method already exists
+                }
+                
+                if (useNoArgConstrutor == null) {
+                    useNoArgConstrutor = Boolean.valueOf(
+                                  hasAccessibleNoArgConstructor(srcClass));
+                }
+                MethodTree newTestMethod = generateTestMethod(
+                                workingCopy,
+                                srcClass,
+                                srcMethod,
+                                useNoArgConstrutor.booleanValue());
+                
+                tstMembers.add(newTestMethod);
+                clsMap.addNoArgMethod(newTestMethod.getName().toString());
+            }
+            
+            if (tstMembers.size() == tstMembersOrig.size()) {  //no test method added
+                return tstClass;
+            }
+            
+            ClassTree newClass = workingCopy.getTreeMaker().Class(
+                    tstClass.getModifiers(),
+                    tstClass.getSimpleName(),
+                    tstClass.getTypeParameters(),
+                    tstClass.getExtendsClause(),
+                    (List<? extends ExpressionTree>) tstClass.getImplementsClause(),
+                    tstMembers);
+            return newClass;
+        }
+        
+        /**
+         */
+        private boolean generateTestClassSuiteMethod(TreePath tstClassTreePath,
+                                                     List<Tree> tstMembers,
+                                                     ClassMap clsMap,
+                                                     WorkingCopy workingCopy) {
+            if (!generateSuiteClasses
+                            || clsMap.containsNoArgMethod("suite")) {   //NOI18N
+                return false;
+            }
+            
+            final TreeMaker maker = workingCopy.getTreeMaker();
+            final Elements elements = workingCopy.getElements();
+            final Trees trees = workingCopy.getTrees();
+            
+            Element tstClassElem = trees.getElement(tstClassTreePath);
+            assert tstClassElem != null;
+            
+            List<StatementTree> bodyContent = new ArrayList<StatementTree>(4);
+            
+            
+            /* TestSuite suite = new TestSuite(MyTestClass.class); */
+            
+            VariableTree suiteVar = maker.Variable(
+                    maker.Modifiers(NO_MODIFIERS),
+                    "suite",                                            //NOI18N
+                    maker.QualIdent(getTestSuiteTypeElem(elements)),
+                    maker.NewClass(
+                            null,           //enclosing instance
+                            Collections.<ExpressionTree>emptyList(),
+                            maker.QualIdent(getTestSuiteTypeElem(elements)),
+                            Collections.singletonList(
+                                    maker.MemberSelect(maker.QualIdent(tstClassElem),
+                                                       "class")),       //NOI18N
+                            null));         //class definition
+                    
+            bodyContent.add(suiteVar);
+            
+            /* suite.addTest(NestedClass.suite());        */
+            /* suite.addTest(AnotherNestedClass.suite()); */
+            /*    ...                                     */
+            
+            List<TypeElement> nestedClassElems
+                    = ElementFilter.typesIn(tstClassElem.getEnclosedElements());
+            if (!nestedClassElems.isEmpty()) {
+                for (TypeElement nestedClassElem : nestedClassElems) {
+                    if (TestUtil.isClassTest(workingCopy, nestedClassElem)) {
+                        
+                        /* suite.addTest(NestedClass.suite()); */
+                        
+                        /* NestedClass.suite() */
+                        MethodInvocationTree arg = maker.MethodInvocation(
+                                Collections.<ExpressionTree>emptyList(),
+                                maker.MemberSelect(
+                                        maker.QualIdent(nestedClassElem),
+                                        "suite"),                       //NOI18N
+                                Collections.<ExpressionTree>emptyList());
+                        
+                        /* suite.addTest(...) */
+                        MethodInvocationTree methodCall = maker.MethodInvocation(
+                                Collections.<ExpressionTree>emptyList(),
+                                maker.MemberSelect(
+                                        maker.Identifier("suite"),
+                                        "addTest"),
+                                Collections.singletonList(arg));
+                        
+                        bodyContent.add(maker.ExpressionStatement(methodCall));
+                    }
+                }
+            }
+            
+            /* return suite; */
+            
+            ReturnTree returnStmt
+                    = maker.Return(maker.Identifier("suite"));          //NOI18N
+            bodyContent.add(returnStmt);
+            
+            MethodTree suiteMethod = maker.Method(
+                    maker.Modifiers(createModifierSet(PUBLIC, STATIC)),
+                    "suite",                                            //NOI18N
+                    maker.QualIdent(getTestTypeElem(elements)), //ret. type
+                    Collections.<TypeParameterTree>emptyList(), //type params
+                    Collections.<VariableTree>emptyList(),      //parameters
+                    Collections.<ExpressionTree>emptyList(),    //throws ...
+                    maker.Block(bodyContent, false),            //body
+                    null,                                       //default value
+                    (TypeElement) tstClassElem);
+            
+            int targetIndex;
+            if (clsMap.containsMethods()) {
+                targetIndex = clsMap.getFirstMethodIndex();     //before methods
+            } else if (clsMap.containsNestedClasses()) {
+                targetIndex = clsMap.getFirstNestedClassIndex(); //before nested
+            } else {
+                targetIndex = clsMap.size();                  //end of the class
+            }
+            
+            if (targetIndex == clsMap.size()) {
+                tstMembers.add(suiteMethod);
+            } else {
+                tstMembers.add(targetIndex, suiteMethod);
+            }
+            clsMap.addNoArgMethod(targetIndex, "suite");                //NOI18N
+            
+            return true;
+        }
+        
+        /**
+         */
+        private boolean generateMissingInitMembers(List<Tree> tstMembers,
+                                                   ClassMap clsMap,
+                                                   TreeMaker treeMaker) {
+            boolean modified = false;
+            if (generateSetUp && !clsMap.containsSetUp()) {
+                MethodTree setUpMethod = generateInitMethod(
+                                                treeMaker, "setUp");    //NOI18N
+
+                int targetIndex;
+                if (clsMap.containsTearDown()) {
+                    targetIndex = clsMap.getTearDownIndex();
+                } else if (clsMap.containsMethods()) {
+                    targetIndex = clsMap.getFirstMethodIndex();
+                } else if (clsMap.containsInitializers()) {
+                    targetIndex = clsMap.getLastInitializerIndex() + 1;
+                } else if (clsMap.containsNestedClasses()) {
+                    targetIndex = clsMap.getFirstNestedClassIndex();
+                } else {
+                    targetIndex = clsMap.size();        //end of the class
+                }
+
+                if (targetIndex == clsMap.size()) {
+                    tstMembers.add(setUpMethod);
+                } else {
+                    tstMembers.add(targetIndex, setUpMethod);
+                }
+                clsMap.addNoArgMethod(targetIndex, "setUp");        //NOI18N
+                
+                modified = true;
+            }
+            if (generateTearDown && !clsMap.containsTearDown()) {
+                MethodTree tearDownMethod = generateInitMethod(
+                                                treeMaker, "tearDown"); //NOI18N
+
+                int targetIndex;
+                if (clsMap.containsSetUp()) {
+                    targetIndex = clsMap.getSetUpIndex() + 1;
+                } else if (clsMap.containsMethods()) {
+                    targetIndex = clsMap.getFirstMethodIndex();
+                } else if (clsMap.containsInitializers()) {
+                    targetIndex = clsMap.getLastInitializerIndex();
+                } else if (clsMap.containsNestedClasses()) {
+                    targetIndex = clsMap.getFirstNestedClassIndex();
+                } else {
+                    targetIndex = clsMap.size();        //end of the class
+                }
+
+                if (targetIndex == clsMap.size()) {
+                    tstMembers.add(tearDownMethod);
+                } else {
+                    tstMembers.add(targetIndex, tearDownMethod);
+                }
+                clsMap.addNoArgMethod(targetIndex, "tearDown");     //NOI18N
+                
+                modified = true;
+            }
+            return modified;
+        }
+        
+        /**
+         */
+        private List<MethodTree> generateTestMethods(
+                                           WorkingCopy workingCopy,
+                                           TypeElement srcClass,
+                                           List<ExecutableElement> srcMethods) {
+            if (srcMethods.isEmpty()) {
+                return Collections.<MethodTree>emptyList();
+            }
+            
+            boolean useNoArgConstrutor = hasAccessibleNoArgConstructor(srcClass);
+            List<MethodTree> testMethods = new ArrayList<MethodTree>(srcMethods.size());
+            for (ExecutableElement srcMethod : srcMethods) {
+                testMethods.add(
+                        generateTestMethod(workingCopy,
+                                           srcClass,
+                                           srcMethod,
+                                           useNoArgConstrutor));
+            }
+            return testMethods;
+        }
+        
+        /**
+         */
+        private MethodTree generateTestMethod(WorkingCopy workingCopy,
+                                              TypeElement srcClass,
+                                              ExecutableElement srcMethod,
+                                              boolean useNoArgConstructor) {
+            final TreeMaker maker = workingCopy.getTreeMaker();
+            
+            String testMethodName = createTestMethodName(
+                                        srcMethod.getSimpleName().toString());
+            ModifiersTree modifiers = maker.Modifiers(createModifierSet(PUBLIC));
+            List<ExpressionTree> throwsList;
+            if (throwsNonRuntimeExceptions(workingCopy, srcMethod)) {
+                throwsList = Collections.<ExpressionTree>singletonList(
+                                        maker.Identifier("Exception")); //NOI18N
+            } else {
+                throwsList = Collections.<ExpressionTree>emptyList();
+            }
+            
+            MethodTree method = maker.Method(
+                    modifiers,
+                    testMethodName,
+                    maker.PrimitiveType(TypeKind.VOID),
+                    Collections.<TypeParameterTree>emptyList(),
+                    Collections.<VariableTree>emptyList(),
+                    throwsList,
+                    generateTestMethodBody(workingCopy, srcClass, srcMethod,
+                                           useNoArgConstructor),
+                    null);          //default value - used by annotations
+            
+            if (generateMethodJavadoc) {
+                Comment javadoc = Comment.create(
+                    NbBundle.getMessage(
+                        TestCreator.class,
+                        "TestCreator.variantMethods.JavaDoc.comment",   //NOI18N
+                        srcMethod.getSimpleName().toString(),
+                        srcClass.getSimpleName().toString()));
+                maker.addComment(method, javadoc, false);
+            }
+            
+            return method;
+        }
+        
+        /**
+         */
+        private ClassTree generateMissingSuiteClassMembers(
+                                                ClassTree tstClass,
+                                                List<String> suiteMembers,
+                                                boolean isNewTestClass,
+                                                WorkingCopy workingCopy) {
+            final TreeMaker maker = workingCopy.getTreeMaker();
+            
+            List<? extends Tree> tstMembersOrig = tstClass.getMembers();
+            List<Tree> tstMembers = new ArrayList<Tree>(tstMembersOrig.size() + 2);
+            tstMembers.addAll(tstMembersOrig);
+            boolean membersChanged = false;
+            
+            ClassMap classMap = ClassMap.forClass(tstClass);
+            
+            if (isNewTestClass) {
+                membersChanged |= generateMissingInitMembers(tstMembers,
+                                                             classMap,
+                                                             maker);
+            }
+            
+            MethodTree suiteMethod = generateSuiteMethod(
+                                            tstClass.getSimpleName().toString(),
+                                            suiteMembers,
+                                            workingCopy);
+            if (suiteMethod != null) {
+                int suiteMethodIndex = classMap.findNoArgMethod("suite");   //NOI18N
+                if (suiteMethodIndex != -1) {
+                    tstMembers.set(suiteMethodIndex, suiteMethod);  //replace method
+                } else {
+                    int targetIndex;
+                    if (classMap.containsInitializers()) {
+                        targetIndex = classMap.getLastInitializerIndex() + 1;
+                    } else if (classMap.containsMethods()) {
+                        targetIndex = classMap.getFirstMethodIndex();
+                    } else if (classMap.containsNestedClasses()) {
+                        targetIndex = classMap.getFirstNestedClassIndex();
+                    } else {
+                        targetIndex = classMap.size();
+                    }
+                    if (targetIndex == classMap.size()) {
+                        tstMembers.add(suiteMethod);
+                    } else {
+                        tstMembers.add(targetIndex, suiteMethod);
+                    }
+                    classMap.addNoArgMethod(targetIndex, "suite");      //NOI18N
+                }
+                membersChanged = true;
+            }
+            
+            //PENDING - generating main(String[]) method:
+            //if (generateMainMethod && !TestUtil.hasMainMethod(tstClass)) {
+            //    addMainMethod(tstClass);
+            //}
+            
+            if (!membersChanged) {
+                return tstClass;
+            }
+            
+            return maker.Class(
+                    tstClass.getModifiers(),
+                    tstClass.getSimpleName(),
+                    tstClass.getTypeParameters(),
+                    tstClass.getExtendsClause(),
+                    (List<? extends ExpressionTree>) tstClass.getImplementsClause(),
+                    tstMembers);
+        }
+        
+        /**
+         * 
+         * @return  object representing body of the suite() method,
+         *          or {@code null} if an error occured while creating the body
+         */
+        private MethodTree generateSuiteMethod(String suiteName,
+                                              List<String> members,
+                                              WorkingCopy workingCopy) {
+            final Types types = workingCopy.getTypes();
+            final Elements elements = workingCopy.getElements();
+            final TreeMaker maker = workingCopy.getTreeMaker();
+            
+            TypeElement testSuiteElem = getTestSuiteTypeElem(elements);
+            if (testSuiteElem == null) {
+                return null;
+            }
+            
+            TypeElement testTypeElem = getTestTypeElem(elements);
+            if (testTypeElem == null) {
+                return null;
+            }
+            TypeMirror testType = testTypeElem.asType();
+            
+            List<StatementTree> bodyContent
+                    = new ArrayList<StatementTree>(members.size() + 2);
+            
+            /* TestSuite suite = new TestSuite("ClassName") */
+            
+            VariableTree suiteObjInit = maker.Variable(
+                    maker.Modifiers(NO_MODIFIERS),
+                    "suite",
+                    maker.QualIdent(testSuiteElem),
+                    maker.NewClass(
+                            null,                           //enclosing instance
+                            Collections.<ExpressionTree>emptyList(), //type args
+                            maker.QualIdent(testSuiteElem), //class name
+                            Collections.singletonList(      //params
+                                    maker.Literal(TestUtil.getSimpleName(suiteName))),
+                            null));                         //class body
+            
+            bodyContent.add(suiteObjInit);
+            
+            for (String className : members) {
+                TypeElement classElem = elements.getTypeElement(className);
+                if ((classElem != null) && containsSuiteMethod(
+                                                    classElem,
+                                                    elements, types,
+                                                    testType)) {
+                    
+                    /* suite.addTest(ClassName.suite()) */
+                    
+                    MethodInvocationTree suiteMethodCall, methodCall;
+                    suiteMethodCall = maker.MethodInvocation(
+                            Collections.<ExpressionTree>emptyList(),
+                            maker.MemberSelect(maker.QualIdent(classElem),
+                                               "suite"),                //NOI18N
+                            Collections.<ExpressionTree>emptyList());
+                    methodCall = maker.MethodInvocation(
+                            Collections.<ExpressionTree>emptyList(),
+                            maker.MemberSelect(
+                                    maker.Identifier("suite"),          //NOI18N
+                                    "addTest"),                         //NOI18N
+                            Collections.singletonList(suiteMethodCall));
+                    
+                    bodyContent.add(maker.ExpressionStatement(methodCall));
+                }
+            }
+            
+            /* return suite; */
+            
+            bodyContent.add(maker.Return(maker.Identifier("suite")));   //NOI18N
+            
+            
+            return maker.Method(
+                        maker.Modifiers(createModifierSet(PUBLIC, STATIC)),
+                        "suite",
+                        maker.QualIdent(testTypeElem),             //return type
+                        Collections.<TypeParameterTree>emptyList(),//type params
+                        Collections.<VariableTree>emptyList(),     //params
+                        Collections.<ExpressionTree>emptyList(),   //throws-list
+                        maker.Block(bodyContent, false),           //body
+                        null);  //def. value - only for annotations
+        }
+        
+        /**
+         * Finds whether the given {@code TypeElement} or any of its type
+         * ancestor contains an accessible static no-arg method
+         * of the given name.
+         * 
+         * @param  typeElement  {@code TypeElement} to search
+         * @param  methodName  name of the method to be found
+         * @param  elements  support instance to be used for the search
+         * @return  {@code true} if the given {@code TypeElement} contains,
+         *          whether inherited or declared directly,
+         *          a static no-argument method of the given name,
+         *          {@code false} otherwise
+         */
+        private boolean containsSuiteMethod(TypeElement typeElement,
+                                            Elements elements,
+                                            Types types,
+                                            TypeMirror testType) {
+            List<ExecutableElement> allMethods
+                    = ElementFilter.methodsIn(elements.getAllMembers(typeElement));
+            for (ExecutableElement method : allMethods) {
+                if (method.getSimpleName().contentEquals("suite")       //NOI18N
+                        && method.getParameters().isEmpty()) {
+                    return method.getModifiers().contains(Modifier.STATIC)
+                           && types.isSameType(method.getReturnType(),
+                                               testType);
+                }
+            }
+            return false;
+        }
+
+        // <editor-fold defaultstate="collapsed" desc=" disabled code ">
 //        /**
 //         */
-//        SingleResourceTestCreator(Resource srcRc, Resource tstRc) {
-//            this.srcRc = srcRc;
-//            this.tstRc = tstRc;
-//            
-//            tgtPkg = (JavaModelPackage) tstRc.refImmediatePackage();
-//            tstPkgNameDot = tstRc.getPackageName() + '.';
-//            tstImports = tstRc.getImports();
-//            clsNames = new HashMap/*<String>*/(20);
-//        }
-//        
-//        /**
-//         */
-//        void createTest(JavaClass srcClass, JavaClass tstClass) {
-//            tstRc.setPackageName(srcRc.getPackageName());
-//            addFrameworkImport();
-//            copySourceImports();
-//            fillTestClass(srcClass, tstClass);
-//
-//            if (generateMainMethod && !TestUtil.hasMainMethod(tstClass)) {
-//                addMainMethod(tstClass);
-//            }
-//        }
-//        
-//        /**
-//         */
-//        void createEmptyTest(JavaClass tstClass) {
-//            addFrameworkImport();
-//            fillGeneral(tstClass);
-//        }
-//
-//        /**
-//         */
-//        void createTestSuite(List listMembers,
-//                             String packageName,
-//                             JavaClass tstClass) {
-//            tstRc.setPackageName(packageName);
-//            addFrameworkImport();      
-//            fillSuiteClass(listMembers, packageName, tstClass);
-//            
-//            if (generateMainMethod && !TestUtil.hasMainMethod(tstClass)) {
-//                addMainMethod(tstClass);
-//            }
-//        }
-//        
-//        /**
-//         * Adds the JUnit framework import
-//         * (<code>import junit.framework.*</code>) to the test file,
-//         * if not already there.
-//         */
-//        private void addFrameworkImport() {
-//
-//            /* Try to find the import: */
-//            for (Iterator/*<Import>*/ i = tstRc.getImports().iterator();
-//                    i.hasNext(); ) {
-//                Import imp = (Import) i.next();
-//                if (imp.getName().equals(JUNIT_FRAMEWORK_PACKAGE_NAME)
-//                        && imp.isOnDemand()
-//                        && !imp.isStatic()) {
-//                    return;     //import already there - quit!
-//                }
-//            }
-//            
-//            /* If the import is not there (not found), add it: */
-//            tstRc.getImports().add(
-//                    tgtPkg.getImport().createImport(
-//                            JUNIT_FRAMEWORK_PACKAGE_NAME,
-//                            null, 
-//                            false,      //not static
-//                            true));     //on demand (wildcard)
-//        }
-//
-//        /**
-//         * Adds imports from the source but only those that are not
-//         * already present.
-//         */
-//        private void copySourceImports() {
-//            List/*<Import>*/ srcImportsList = srcRc.getImports();
-//            List/*<Import>*/ tstImportsList = tstRc.getImports();
-//            
-//            /* Create a Set of existing imports in the test class: */
-//            Set tImpSet = new HashSet((int) (tstImportsList.size() * 1.4f));
-//            for (Iterator/*<Import>*/ i = tstImportsList.iterator();
-//                    i.hasNext(); ) {
-//                tImpSet.add(new ImpEq((Import) i.next()));
-//            }
-//            
-//            final ImportClass tstImportFactory = tgtPkg.getImport();
-//            
-//            /*
-//             * Iterate through the imports in the source class and check whether
-//             * they are present in the test class - add those that aren't:
-//             */
-//            for (Iterator/*<Import>*/ i = srcImportsList.iterator();
-//                    i.hasNext(); ) {
-//                Import imp = (Import) i.next();
-//                if (!tImpSet.contains(new ImpEq(imp))) {
-//                    tstImportsList.add(tstImportFactory.createImport(
-//                                                imp.getName(),
-//                                                null,
-//                                                imp.isStatic(),
-//                                                imp.isOnDemand()));
-//                }
-//            }
-//        }
-//        
-//        /**
-//         */
-//        private void addMainMethod(JavaClass tstClass) {
-//            Method mainMethod = createMainMethod();
+//        private void addMainMethod(final ClassTree classTree) {
+//            MethodTree mainMethod = createMainMethod(maker);
 //            if (mainMethod != null) {
-//                tstClass.getFeatures().add(mainMethod);
+//                maker.addClassMember(classTree, mainMethod);
 //            }
 //        }
 //
@@ -606,7 +1313,7 @@ public final class TestCreator {
 //            for (Iterator i = innerClasses.iterator(); i.hasNext(); ) {
 //                JavaClass innerCls = (JavaClass) i.next();
 //
-//                if (!isClassTestable(innerCls).isTesteable()) {
+//                if (!isClassTestable(innerCls).isTestable()) {
 //                    continue;
 //                }
 //                    
@@ -659,59 +1366,9 @@ public final class TestCreator {
 //                createAbstractImpl(srcClass, tstClass);
 //            }
 //        }
-//        
-//        /**
-//         */
-//        private void fillSuiteClass(List listMembers,
-//                                    String packageName,
-//                                    JavaClass tstClass) {      
-//            fillGeneral(tstClass);
-//
-//            /* Find and remove the current suite() method (if any): */
-//            Method suiteMethod = tstClass.getMethod("suite",            //NOI18N
-//                                                    Collections.EMPTY_LIST,
-//                                                    false);
-//            tstClass.getFeatures().remove(suiteMethod);
-//
-//            /* Create a new suite() method: */
-//            suiteMethod = createSuiteMethod(tstClass, listMembers);
-//            tstClass.getFeatures().add(suiteMethod);
-//        }
-//        
-//        /**
-//         */
-//        private void fillGeneral(JavaClass tstClass) {
-//            tstClass.setSuperClassName(
-//                    tgtPkg.getMultipartId().createMultipartId(
-//                            JUNIT_SUPER_CLASS_NAME,     //name
-//                            null,                       //parent
-//                            Collections.EMPTY_LIST));   //type arguments
-//            tstClass.setModifiers(Modifier.PUBLIC);
-//            
-//            // remove default ctor, if exists (shouldn't throw exception)
-//            List/*<Type>*/ stringTypeList
-//                = Collections.singletonList(
-//                        tgtPkg.getType().resolve("java.lang.String"));  //NOI18N
-//            if (tstClass.getConstructor(stringTypeList, false) == null) {
-//                tstClass.getFeatures().add(
-//                       createTestConstructor(tstClass.getSimpleName()));
-//            }
-//            
-//            /* Add method setUp() (optionally): */
-//            if (generateSetUp
-//                    && !hasInitMethod(tstClass, METHOD_NAME_SETUP)) {
-//                tstClass.getFeatures().add(
-//                        createInitMethod(METHOD_NAME_SETUP));
-//            }
-//            
-//            /* Add method tearDown() (optionally): */
-//            if (generateTearDown
-//                    && !hasInitMethod(tstClass, METHOD_NAME_TEARDOWN)) {
-//                tstClass.getFeatures().add(
-//                        createInitMethod(METHOD_NAME_TEARDOWN));
-//            }
-//        }
-//
+        // </editor-fold>
+        
+        // <editor-fold defaultstate="collapsed" desc=" disabled code ">
 //        /**
 //         */
 //        private Constructor createTestConstructor(String className) {
@@ -742,204 +1399,43 @@ public final class TestCreator {
 //                                false);                 // is not var.arg.
 //            return Collections.singletonList(param);
 //        }
-//
-//        /**
-//         * Creates function <b>static public Test suite()</b> and fills its body,
-//         * appends all test functions in the class and creates sub-suites for
-//         * all test inner classes.
-//         */
-//        private Method createTestClassSuiteMethod(JavaClass tstClass) {
-//            StringBuffer body = new StringBuffer(1024);
-//            body.append("TestSuite suite = new TestSuite(");            //NOI18N
-//            body.append(tstClass.getSimpleName());
-//            body.append(".class);\n");                                  //NOI18N
-//
-//            Collection innerClasses = TestUtil.filterFeatures(tstClass,
-//                                                              JavaClass.class);
-//            for (Iterator i = innerClasses.iterator(); i.hasNext(); ) {
-//                JavaClass jc = (JavaClass) i.next();
-//                if (TestUtil.isClassTest(jc)) {           //PENDING - look at it
-//                    body.append("suite.addTest(");                      //NOI18N
-//                    body.append(jc.getSimpleName());                    //NOI18N
-//                    body.append(".suite());\n");                        //NOI18N
-//                }
-//            }
-//            body.append("\nreturn suite;\n");                           //NOI18N
-//
-//            // create header of function
-//            Method method = createPublicNoargMethod(
-//                                    null,               // no javadoc
-//                                    true,               // static
-//                                    "Test",             // ret. type
-//                                    "suite",            // method name  //NOI18N
-//                                    body.toString());   // method body
-//            return method;
-//        }
-//
-//        /**
-//         */
-//        private Method createTestMethod(JavaClass srcClass, Method srcMethod) {
-//            String methodName = createTestMethodName(srcMethod.getName());
-//            String javadocText = generateMethodJavadoc
-//                                 ? generateJavadoc(srcClass, srcMethod)
-//                                 : null;
-//            String methodBody = generateMethodBody(srcClass, srcMethod);
-//            
-//            boolean throwsExceptions = false;
-//            List/*<JavaClass>*/ exceptions = srcMethod.getExceptions();
-//            if (!exceptions.isEmpty()) {
-//                Iterator/*<JavaClass>*/ i = exceptions.iterator();
-//                while (i.hasNext()) {
-//                    JavaClass exception = (JavaClass) i.next();
-//                    if (!exception.isSubTypeOf(getRuntimeException())) {
-//                        throwsExceptions = true;
-//                        break;
-//                    }
-//                }
-//            }
-//
-//            List/*<MultipartId>*/ exceptNames = throwsExceptions
-//                               ? Collections.singletonList(
-//                                      tgtPkg.getMultipartId().createMultipartId(
-//                                              "Exception",              //NOI18N
-//                                              null,
-//                                              Collections.EMPTY_LIST))
-//                               : Collections.EMPTY_LIST;
-//            Method method = tgtPkg.getMethod().createMethod(
-//                            methodName,                 // name         //NOI18N
-//                            Collections.EMPTY_LIST,     // annotations
-//                            Modifier.PUBLIC,            // modifiers
-//                            javadocText,                // javadoc - text
-//                            null,                       // javadoc - object
-//                            null,                       // body - object
-//                            methodBody,                 // body - text
-//                            Collections.EMPTY_LIST,     // TypeParameters
-//                            Collections.EMPTY_LIST,     // Parameters
-//                            exceptNames,                // exception names
-//                            TestUtil.getTypeReference(  // return type
-//                                    tgtPkg, "void"),                    //NOI18N
-//                            0);                         // dimensions count
-//            return method;
-//        }
-//        
-//        /**
-//         */
-//        private Method createSuiteMethod(JavaClass tstClass,
-//                                         List/*<String>*/ members) {
-//            String methodName = "suite";                                //NOI18N
-//            String javadocText = generateSourceCodeHints
-//                                 ? NbBundle.getMessage(
-//                            TestCreator.class,
-//                            "TestCreator.suiteMethod.JavaDoc.comment")  //NOI18N
-//                                 : null;
-//            String methodBody = generateSuiteBody(tstClass, members);
-//
-//            Method method = createPublicNoargMethod(javadocText,
-//                                                    true,           // static
-//                                                    "Test",         // ret. type
-//                                                    methodName,
-//                                                    methodBody);
-//            return method;
-//        }
-//        
-//        /**
-//         * Generates a set-up or a tear-down method.
-//         * The generated method will have no arguments, void return type
-//         * and a declaration that it may throw <code>java.lang.Exception</code>.
-//         * The method will have a declared protected member access.
-//         *
-//         * @param  methodName  name of the method to be created
-//         * @return  created method
-//         * @see  http://junit.sourceforge.net/javadoc/junit/framework/TestCase.html
-//         *       methods <code>setUp()</code> and <code>tearDown()</code>
-//         */
-//        private Method createInitMethod(String methodName) {
-//            Method method = tgtPkg.getMethod().createMethod(
-//                                methodName,             // name
-//                                Collections.EMPTY_LIST, // annotations
-//                                Modifier.PROTECTED,     // modifiers
-//                                null,                   // Javadoc text
-//                                null,                   // Javadoc object
-//                                null,                   // body object
-//                                "\n",                   // body text    //NOI18N
-//                                Collections.EMPTY_LIST, // type parameters
-//                                Collections.EMPTY_LIST, // parameters
-//                                Collections.singletonList( // exception names
-//                                        TestUtil.getTypeReference(
-//                                                tgtPkg, "Exception")),  //NOI18N
-//                                TestUtil.getTypeReference( // ret. type
-//                                                tgtPkg, "void"),        //NOI18N
-//                                0);                     // dimCount
-//            return method;
-//        }
-//
-//        /**
-//         * Creates a public static <code>main(String[])</code> method
-//         * with the body taken from settings.
-//         *
-//         * @return  created <code>main(...)</code> method,
-//         *          or <code>null</code> if the method body would be empty
-//         */
-//        private Method createMainMethod() {
-//            String initialMainMethodBody = getInitialMainMethodBody();
-//            
-//            if (initialMainMethodBody.length() == 0) {
-//                return null;
-//            }
-//            
-//            String methodBody = '\n' + initialMainMethodBody + '\n';
-//
-//            Type paramType = tgtPkg.getArray().resolveArray(
-//                                    TestUtil.getStringType(tgtPkg));
-//            Parameter param = tgtPkg.getParameter().createParameter(
-//                                    "argList",          // param. name  //NOI18N
-//                                    Collections.EMPTY_LIST, // annotations
-//                                    false,              // not final
-//                                    null,               // type name
-//                                    0,                  // dimCount
-//                                    false);             // not var. arg.
-//            param.setType(paramType);
-//
-//            Method method = tgtPkg.getMethod().createMethod(
-//                                    "main",             // method name  //NOI18N
-//                                    Collections.EMPTY_LIST, // annotations
-//                                    Modifier.STATIC | Modifier.PUBLIC,
-//                                    null,               // javadoc text
-//                                    null,               // javadoc - object
-//                                    null,               // body - object
-//                                    methodBody,         // body - text
-//                                    Collections.EMPTY_LIST, // type params
-//                                    Collections.singletonList(param), // params
-//                                    Collections.EMPTY_LIST, // exceptions
-//                                    TestUtil.getTypeReference(tgtPkg,
-//                                                              "void"),  //NOI18N
-//                                    0);                 // dimension count
-//            return method;
-//        }
-//        
-//        /**
-//         */
-//        private Method createPublicNoargMethod(String javadocText,
-//                                               boolean isStatic,
-//                                               String retType,
-//                                               String methodName,
-//                                               String methodBody) {
-//            return tgtPkg.getMethod().createMethod(
-//                            methodName,                 // name         //NOI18N
-//                            Collections.EMPTY_LIST,     // annotations
-//                            isStatic ? Modifier.PUBLIC | Modifier.STATIC
-//                                     : Modifier.PUBLIC,
-//                            javadocText,                // javadoc - text
-//                            null,                       // javadoc - object
-//                            null,                       // body - object
-//                            methodBody,                 // body - text
-//                            Collections.EMPTY_LIST,     // TypeParameters
-//                            Collections.EMPTY_LIST,     // Parameters
-//                            Collections.EMPTY_LIST,     // exception names
-//                            TestUtil.getTypeReference(tgtPkg, retType),
-//                            0);                         // dimensions count
-//        }
-//
+        // </editor-fold>
+        
+        /**
+         * Creates a public static {@code main(String[])} method
+         * with the body taken from settings.
+         *
+         * @param  maker  {@code TreeMaker} to use for creating the method
+         * @return  created {@code main(...)} method,
+         *          or {@code null} if the method body would be empty
+         */
+        private MethodTree createMainMethod(TreeMaker maker) {
+            String initialMainMethodBody = getInitialMainMethodBody();
+            if (initialMainMethodBody.length() == 0) {
+                return null;
+            }
+            
+            ModifiersTree modifiers = maker.Modifiers(
+                    createModifierSet(Modifier.PUBLIC, Modifier.STATIC));
+            VariableTree param = maker.Variable(
+                            maker.Modifiers(Collections.<Modifier>emptySet()),
+                            "argList",                                  //NOI18N
+                            maker.Identifier("String[]"),               //NOI18N
+                            null);            //initializer - not used in params
+            MethodTree mainMethod = maker.Method(
+                  modifiers,                            //public static
+                  "main",                               //method name "main"
+                  maker.PrimitiveType(TypeKind.VOID),   //return type "void"
+                  Collections.<TypeParameterTree>emptyList(),     //type params
+                  Collections.<VariableTree>singletonList(param), //method param
+                  Collections.<ExpressionTree>emptyList(),        //throws-list
+                  '{' + initialMainMethodBody + '}',    //body text
+                  null);                                //only for annotations
+            
+            return mainMethod;
+        }
+        
+        // <editor-fold defaultstate="collapsed" desc=" disabled code ">
 //        /**
 //         */
 //        private void createAbstractImpl(JavaClass srcClass,
@@ -1089,115 +1585,90 @@ public final class TestCreator {
 //                        srcMethod.getName(),
 //                        srcClass.getName());
 //        }
-//        
-//        /**
-//         */
-//        private String generateMethodBody(JavaClass srcClass, Method srcMethod){
-//            final boolean isStatic
-//                    = (srcMethod.getModifiers() & Modifier.STATIC) != 0;
-//            final String shortClsName = getTypeNameString(srcClass);
-//            
-//            StringBuffer newBody = new StringBuffer(512);
-//            
-//            boolean needsEmptyLine = false;
-//
-//            if (generateDefMethodBody) {
-//                // generate default bodies, printing the name of method
-//                newBody.append("System.out.println(\"")                 //NOI18N
-//                       .append(srcMethod.getName())
-//                       .append("\");\n\n");                             //NOI18N
-//
-//                final List/*<Parameter>*/ params = srcMethod.getParameters();
-//                final String[] varNames = getTestSkeletonVarNames(params);
-//
-//                Iterator i = params.iterator();
-//                for (int j = 0; j < varNames.length; j++) {
-//                    Parameter param = ((Parameter) i.next());
-//                    Type paramType = param.getType();
-//                    String paramTypeName = getTypeNameString(paramType);
-//                    newBody.append(paramTypeName).append(' ')
-//                           .append(varNames[j]).append(" = ")           //NOI18N
-//                           .append(getDefaultValue(paramType))
-//                           .append(";\n");                              //NOI18N
-//                }
-//                assert !i.hasNext();
-//                needsEmptyLine |= (varNames.length != 0);
-//
-//                if (!isStatic) {
-//                    boolean hasDefConstr = false;
-//
-//                    Constructor constructor = srcClass.getConstructor(
-//                            Collections.EMPTY_LIST, false);
-//                    if (constructor == null) {
-//                        /*
-//                         * No no-arguments constructor found. But if there is no
-//                         * constructor defined in the class, we can count with the
-//                         * automatically generated public no-argument constructor.
-//                         */
-//                        boolean constrFound = false;
-//                        Iterator/*<ClassMember>*/ j = srcClass.getContents()
-//                                                      .iterator();
-//                        while (j.hasNext()) {
-//                            if (j.next() instanceof Constructor) {
-//                                constrFound = true;
-//                                break;
-//                            }
-//                        }
-//                        hasDefConstr = !constrFound;
-//                    } else {
-//                        hasDefConstr
-//                         = (constructor.getModifiers() & Modifier.PRIVATE) == 0;
-//                    }
-//
-//                    newBody.append(shortClsName).append(' ')
-//                           .append(INSTANCE_VAR_NAME).append(" = ");    //NOI18N
-//                    if (hasDefConstr) {
-//                       newBody.append("new ")                           //NOI18N
-//                              .append(shortClsName).append("()");       //NOI18N
-//                    } else {
-//                       newBody.append("null");                          //NOI18N
-//                    }
-//                    newBody.append(";\n");                              //NOI18N
-//                    needsEmptyLine |= true;
-//                }   //if (isStatic)
-//
-//                if (needsEmptyLine) {
-//                    newBody.append('\n');
-//                    needsEmptyLine = false;
-//                }
-//
-//                final Type returnType = srcMethod.getType();
-//                String returnTypeName = getTypeNameString(returnType);
-//                final String defaultRetValue = getDefaultValue(returnType);
-//                final boolean isVoid = (defaultRetValue == null);
-//
-//                if (!isVoid) {
-//                    newBody.append(returnTypeName).append(' ')
-//                           .append(EXP_RESULT_VAR_NAME).append(" = ")   //NOI18N
-//                           .append(defaultRetValue)
-//                           .append(";\n");                              //NOI18N
-//                    newBody.append(returnTypeName).append(' ')
-//                           .append(RESULT_VAR_NAME).append(" = ");      //NOI18N
-//                }
-//                newBody.append(isStatic ? shortClsName : INSTANCE_VAR_NAME)
-//                       .append('.').append(srcMethod.getName()).append('(');
-//                if (varNames.length != 0) {
-//                    newBody.append(varNames[0]);
-//                    for (int j = 1; j < varNames.length; j++) {
-//                        newBody.append(", ").append(varNames[j]);       //NOI18N
-//                    }
-//                }
-//                newBody.append(");\n");                                 //NOI18N
-//                if (!isVoid) {
-//                    newBody.append("assertEquals(")                     //NOI18N
-//                           .append(EXP_RESULT_VAR_NAME)
-//                           .append(", ")                                //NOI18N
-//                           .append(RESULT_VAR_NAME)
-//                           .append(");\n");                             //NOI18N
-//                }
-//                needsEmptyLine = true;
-//            }
-//
+        // </editor-fold>
+        
+        /**
+         */
+        private BlockTree generateTestMethodBody(WorkingCopy workingCopy,
+                                                 TypeElement srcClass,
+                                                 ExecutableElement srcMethod,
+                                                 boolean useNoArgConstructor) {
+            TreeMaker maker = workingCopy.getTreeMaker();
+            
+            boolean isStatic = srcMethod.getModifiers().contains(Modifier.STATIC);
+            List<StatementTree> statements = new ArrayList<StatementTree>(8);
+            
+            if (generateDefMethodBody) {
+                StatementTree sout = generateSystemOutPrintln(
+                                        maker,
+                                        srcMethod.getSimpleName().toString());
+                List<VariableTree> paramVariables = generateParamVariables(
+                                        maker,
+                                        srcMethod);
+                statements.add(sout);
+                statements.addAll(paramVariables);
+                
+                if (!isStatic) {
+                    VariableTree instanceVarInit = maker.Variable(
+                            maker.Modifiers(Collections.<Modifier>emptySet()),
+                            INSTANCE_VAR_NAME,
+                            maker.QualIdent(srcClass),
+                            useNoArgConstructor
+                                 ? generateNoArgConstructorCall(maker, srcClass)
+                                 : maker.Literal(null));
+                    statements.add(instanceVarInit);
+                }
+                
+                MethodInvocationTree methodCall = maker.MethodInvocation(
+                        Collections.<ExpressionTree>emptyList(),    //type args.
+                        maker.MemberSelect(
+                                isStatic ? maker.QualIdent(srcClass)
+                                         : maker.Identifier(INSTANCE_VAR_NAME),
+                                srcMethod.getSimpleName()),
+                        createIdentifiers(maker, paramVariables));
+                
+                TypeMirror retType = srcMethod.getReturnType();
+                TypeKind retTypeKind = retType.getKind();
+                
+                if (retTypeKind == TypeKind.VOID) {
+                    StatementTree methodCallStmt = maker.ExpressionStatement(methodCall);
+                    
+                    statements.add(methodCallStmt);
+                } else {
+                    ExpressionTree retTypeTree = retTypeKind.isPrimitive()
+                            ? maker.Identifier(retType.toString())
+                            : maker.QualIdent(
+                                    workingCopy.getTypes().asElement(retType));
+                    
+                    VariableTree expectedValue = maker.Variable(
+                            maker.Modifiers(NO_MODIFIERS),
+                            EXP_RESULT_VAR_NAME,
+                            retTypeTree,
+                            getDefaultValue(maker, retType));
+                    VariableTree actualValue = maker.Variable(
+                            maker.Modifiers(NO_MODIFIERS),
+                            RESULT_VAR_NAME,
+                            retTypeTree,
+                            methodCall);
+                    
+                    List<ExpressionTree> comparisonArgs = new ArrayList<ExpressionTree>(2);
+                    comparisonArgs.add(maker.Identifier(expectedValue.getName().toString()));
+                    comparisonArgs.add(maker.Identifier(actualValue.getName().toString()));
+                    
+                    MethodInvocationTree comparison = maker.MethodInvocation(
+                            Collections.<ExpressionTree>emptyList(),//type args.
+                            maker.Identifier("assertEquals"),           //NOI18N
+                            comparisonArgs);
+                    StatementTree comparisonStmt = maker.ExpressionStatement(
+                            comparison);
+                    
+                    statements.add(expectedValue);
+                    statements.add(actualValue);
+                    statements.add(comparisonStmt);
+                }
+            }
+            
+            //PENDING - source code hints
 //            if (generateSourceCodeHints) {
 //                // generate comments to bodies
 //                if (needsEmptyLine) {
@@ -1211,598 +1682,517 @@ public final class TestCreator {
 //                           : "TestCreator.variantMethods.onlyComment")) //NOI18N
 //                       .append('\n');
 //            }
-//            
-//            if (generateDefMethodBody) {
-//                
-//                /* Generate a test failuare (in response to request 022): */
-//                if (needsEmptyLine) {
-//                    newBody.append('\n');
-//                    needsEmptyLine = false;
-//                }
-//                newBody.append(NbBundle.getMessage(
-//                           TestCreator.class,
-//                           "TestCreator.variantMethods.defaultBody"))   //NOI18N
-//                       .append('\n');
-//            }
-//            
-//            return newBody.toString();
-//        }
-//        
-//        /**
-//         */
-//        private String generateSuiteBody(JavaClass tstClass,
-//                                         List/*<String>*/ members) {
-//            StringBuffer body = new StringBuffer(512);
-//            
-//            //body.append("//" + GENERATED_SUITE_BLOCK_START + "\n");
-//            //body.append(NbBundle.getMessage(TestCreator.class,"TestCreator.suiteMethod.suiteBlock.comment")+"\n");
-//            body.append("TestSuite suite = new TestSuite(\"")           //NOI18N
-//                .append(tstClass.getSimpleName()).append("\");\n");     //NOI18N
-//
-//            final TypeClass typeClass = tgtPkg.getType();
-//            for (Iterator/*<String>*/ i = members.iterator(); i.hasNext(); ) {
-//                String name = (String) i.next();
-//
-//                Type type = (Type) typeClass.resolve(name);
-//                if (type instanceof ClassDefinition) {
-//                    Method suiteMethod = ((ClassDefinition) type).getMethod(
-//                                                    "suite",            //NOI18N
-//                                                    Collections.EMPTY_LIST,
-//                                                    true);
-//                    if ((suiteMethod != null)
-//                            && Modifier.isStatic(suiteMethod.getModifiers())) {
-//                        body.append("suite.addTest(")                   //NOI18N
-//                            .append(name).append(".suite());\n");       //NOI18N
-//                    }
-//                }
-//            }
-//
-//            body.append("return suite;\n");                             //NOI18N
-//            //body.append("//" + GENERATED_SUITE_BLOCK_END + "\n");
-//            
-//            return body.toString();
-//        }
-//
-//        /**
-//         * Returns the shortest usable name of the given type.
-//         * Name of the type is shortened if at least one of the following
-//         * conditions is met:
-//         * <ul>
-//         *     <li>the type's full name starts with <code>java.lang.</code>
-//         *     <li>the type is from the same package as the generated
-//         *         test class</li>
-//         *     <li>the type is imported in the source code of the test
-//         *         class</li>
-//         *     <li>the type represents an inner class and name of one of its
-//         *         containing classes may be shortened</li>
-//         * </ul>
-//         * <p>
-//         * <em>Examples:</em>
-//         * </p><p>
-//         * If the type is <code>foo.bar.Baz</code> and the source code contains
-//         * import statement <code>import foo.bar.*</code>, the returned name
-//         * will be <code>Baz</code>.
-//         * </p><p>
-//         * If the type is <code>foo.bar.Baz.Boo</code> and the source code
-//         * contains import statement <code>import foo.bar.Baz</code>, the
-//         * returned name will be <code>Baz.Boo</code>.
-//         *
-//         * @param  type  type whose name needs to be returned
-//         * @return  shortened name of the given type, or a full name
-//         *          if the full name is necessary
-//         */
-//        private String getTypeNameString(Type type) {
-//            if (!(type instanceof ClassDefinition)) {     //e.g. primitive types
-//                return type.getName();
-//            }
-//            if (type instanceof Array) {
-//                return getTypeNameString(((Array) type).getType())
-//                       + "[]";                                          //NOI18N
-//            }
-//            if (type instanceof ParameterizedType) {
-//                ParameterizedType paramzedType = (ParameterizedType) type;
-//                String defTypeName
-//                        = getTypeNameString(paramzedType.getDefinition());
-//                
-//                List/*<Type>*/ typeParams = paramzedType.getParameters();
-//                if (typeParams.isEmpty()) {
-//                    return defTypeName;
-//                }
-//
-//                StringBuffer buf = new StringBuffer(60);
-//                buf.append(defTypeName).append('<');
-//
-//                buf.append(getTypeNameString((Type) typeParams.get(0)));
-//                if (typeParams.size() > 1) {
-//                    Iterator/*<Type>*/ i = typeParams.iterator();
-//                    i.next();                           //skip the first element
-//                    do {
-//                        buf.append(", ");                               //NOI18N
-//                        buf.append(getTypeNameString((Type) i.next()));
-//                    } while (i.hasNext());
-//                }
-//
-//                buf.append('>');
-//                return buf.toString();
-//            }
-//            if (type instanceof AnnotationType) {
-//                //PENDING:
-//                return type.getName();
-//            }
-//            if (!(type instanceof JavaClass)) {
-//                return type.getName();       //handle unknown Type subinterfaces
-//            }
-//
-//            String fullClsName = type.getName();
-//            
-//            if (!javaIdFullPattern.matcher(fullClsName).matches()) {
-//                return type.getName();       //handle unknown Type subinterfaces
-//            }
-//
-//            return getJavaClassTypeNameString(
-//                        (JavaClass) type,
-//                        fullClsName,
-//                        fullClsName.startsWith("java.lang."),           //NOI18N
-//                        fullClsName.startsWith(tstPkgNameDot));
-//        }
-//
-//        /**
-//         */
-//        private String getJavaClassTypeNameString(JavaClass clsType,
-//                                                  String fullClsName,
-//                                                  boolean maybeFromJavaLang,
-//                                                  boolean maybeFromThisPkg) {
-//            if (fullClsName == null) {
-//                fullClsName = clsType.getName();
-//            }
-//
-//            String result;
-//
-//            result = (String) clsNames.get(fullClsName);
-//            if (result != null) {
-//                return result;
-//            }
-//
-//            String simpleName = clsType.getSimpleName();
-//            if ((maybeFromThisPkg
-//                            && checkIsFromThisPkg(simpleName, fullClsName))
-//                    || (maybeFromJavaLang
-//                            && checkIsFromJavaLang(simpleName, fullClsName))
-//                    || checkIsImported(clsType)) {
-//                result = simpleName;
-//            } else if (clsType.isInner()) {
-//                ClassDefinition declaringCls = clsType.getDeclaringClass();
-//                if (declaringCls instanceof JavaClass) {
-//                    result = getJavaClassTypeNameString(
-//                                         (JavaClass) declaringCls,
-//                                         (String) null,         //full cls. name
-//                                         maybeFromJavaLang,
-//                                         maybeFromThisPkg)
-//                             + '.' + simpleName;
-//                } else {
-//                    result = fullClsName;
-//                }
-//            } else {
-//                result = fullClsName;
-//            }
-//
-//            clsNames.put(fullClsName, result);
-//            return result;
-//        }
-//        
-//        /**
-//         */
-//        private boolean checkIsFromThisPkg(String shortName, String fullName) {
-//            return fullName.length()
-//                                == tstPkgNameDot.length() + shortName.length();
-//        }
-//        
-//        /**
-//         */
-//        private boolean checkIsFromJavaLang(String shortName, String fullName) {
-//            return fullName.length() == 10 + shortName.length();
-//        }
-//        
-//        /**
-//         */
-//        private boolean checkIsImported(JavaClass clsType) {
-//            if (simpleImports == null) {
-//                prepareImports();
-//            }
-//            return simpleImports.contains(clsType)
-//                   || importedClsTypes.contains(clsType);
-//        }
-//        
-//        private Collection/*<NamedElement>*/ simpleImports;
-//        private Collection/*<JavaClass>*/ importedClsTypes;
-//        
-//        /**
-//         */
-//        private void prepareImports() {
-//            simpleImports = new ArrayList/*<Import>*/(tstImports.size());
-//            importedClsTypes = new ArrayList/*<JavaClass>*/(20);
-//            for (Iterator/*<Import>*/ i = tstImports.iterator(); i.hasNext();) {
-//                Import imp = (Import) i.next();
-//                if (imp.isStatic()) {
-//                    continue;
-//                }
-//                if (!imp.isOnDemand()) {
-//                    simpleImports.add(imp.getImportedNamespace());
-//                } else {
-//                    Collection/*<NamedElement>*/ importedElems
-//                            = imp.getImportedElements();
-//                    Iterator/*<NamedElement>*/ j = importedElems.iterator();
-//                    while (j.hasNext()) {
-//                        Object o = j.next();
-//                        if (o instanceof JavaClass) {
-//                            importedClsTypes.add(/*(JavaClass)*/o);
-//                        }
-//                    }
-//                }
-//            }
-//            
-//            assert simpleImports instanceof ArrayList;
-//            if (simpleImports.isEmpty()) {
-//                simpleImports = Collections.EMPTY_LIST;
-//            } else {
-//                ((ArrayList) simpleImports).trimToSize();
-//            }
-//            
-//            assert importedClsTypes instanceof ArrayList;
-//            if (importedClsTypes.isEmpty()) {
-//                importedClsTypes = Collections.EMPTY_LIST;
-//            } else {
-//                ((ArrayList) importedClsTypes).trimToSize();
-//            }
-//        }
-//        
-//        
-//        /** */
-//        private ClassDefinition runtimeException;
-//        
-//        /**
-//         */
-//        private ClassDefinition getRuntimeException() {
-//            if (runtimeException == null) {
-//                Type runtimeExcType = tgtPkg.getType().resolve(
-//                                          "java.lang.RuntimeException");//NOI18N
-//                runtimeException = (ClassDefinition) runtimeExcType;
-//            }
-//            assert runtimeException != null;
-//            return runtimeException;
-//        }
-//
-//    }
+            
+            if (generateDefMethodBody) {
+                String failMsg = NbBundle.getMessage(
+                        TestCreator.class,
+                        "TestCreator.variantMethods.defaultFailMsg");   //NOI18N
+                MethodInvocationTree failMethodCall = maker.MethodInvocation(
+                        Collections.<ExpressionTree>emptyList(),    //type args.
+                        maker.Identifier("fail"),                       //NOI18N
+                        Collections.<ExpressionTree>singletonList(
+                                maker.Literal(failMsg)));
+                statements.add(maker.ExpressionStatement(failMethodCall));
+            }
+            
+            return maker.Block(statements, false);
+        }
+
+        /**
+         */
+        private StatementTree generateSystemOutPrintln(TreeMaker maker,
+                                                       String arg) {
+            MethodInvocationTree methodInvocation = maker.MethodInvocation(
+                    Collections.<ExpressionTree>emptyList(),        //type args
+                    maker.MemberSelect(
+                            maker.MemberSelect(
+                                    maker.Identifier("System"), "out"), "println"),//NOI18N
+                    Collections.<LiteralTree>singletonList(
+                            maker.Literal(arg)));                   //args.
+            return maker.ExpressionStatement(methodInvocation);
+        }
         
-//XXX: retouche
-//    /**
-//     */
-//    public void createTestClass(Resource srcRc, JavaClass srcClass,
-//                                Resource tgtRc, JavaClass tgtClass) {
-//        // public entry points are wrapped in MDR transactions
-//        JavaModel.getJavaRepository().beginTrans(true);
-//        try {
-//            new SingleResourceTestCreator(srcRc, tgtRc)
-//                    .createTest(srcClass, tgtClass);
-//        } finally {
-//            JavaModel.getJavaRepository().endTrans();
-//        }
-//    }
+        /**
+         */
+        private List<VariableTree> generateParamVariables(
+                                                TreeMaker maker,
+                                                ExecutableElement srcMethod) {
+            List<? extends VariableElement> params = srcMethod.getParameters();
+            if ((params == null) || params.isEmpty()) {
+                return Collections.<VariableTree>emptyList();
+            }
+            
+            Set<Modifier> noModifiers = Collections.<Modifier>emptySet();
+            List<VariableTree> paramVariables = new ArrayList<VariableTree>(params.size());
+            String[] varNames = getTestSkeletonVarNames(params);
+            int index = 0;
+            for (VariableElement param : params) {
+                TypeMirror paramType = param.asType();
+                paramVariables.add(
+                        maker.Variable(maker.Modifiers(noModifiers),
+                                       varNames[index++],
+                                       maker.Type(paramType),
+                                       getDefaultValue(maker, paramType)));
+            }
+            return paramVariables;
+        }
+        
+        /**
+         */
+        private List<IdentifierTree> createIdentifiers(
+                                                TreeMaker maker,
+                                                List<VariableTree> variables) {
+            List<IdentifierTree> identifiers;
+            if (variables.isEmpty()) {
+                identifiers = Collections.<IdentifierTree>emptyList();
+            } else {
+                identifiers = new ArrayList<IdentifierTree>(variables.size());
+                for (VariableTree var : variables) {
+                    identifiers.add(maker.Identifier(var.getName().toString()));
+                }
+            }
+            return identifiers;
+        }
+        
+        /**
+         * Builds list of variable names for use in a test method skeleton.
+         * By default, names of variables are same as names of tested method's
+         * declared parameters. There are three variable names reserved
+         * for variables holding the instance the tested method will be called on,
+         * the expected result and the actual result returned
+         * by the tested method. This method resolves a potential conflict
+         * if some of the tested method's parameter's name is one of these
+         * reserved names - in this case, the variable name used is a slight
+         * modification of the declared parameter's name. The method also resolves
+         * cases that some or all parameters are without name - in this case,
+         * an arbitrary name is assigned to each of these unnamed parameters.
+         * The goal is to ensure that all of the used variable names are unique.
+         *
+         * @param  sourceMethodParams 
+         *                  list of tested method's parameters (items are of type
+         *                  <code>org.netbeans.jmi.javamodel.TypeParameter</code>)
+         * @return  variable names used for default values of the tested method's
+         *          parameters (the reserved variable names are not included)
+         */
+        private String[] getTestSkeletonVarNames(
+                final List<? extends VariableElement> sourceMethodParams) {
+
+            /* Handle the trivial case: */
+            if (sourceMethodParams.isEmpty()) {
+                return new String[0];
+            }
+
+            final int count = sourceMethodParams.size();
+            String[] varNames = new String[count];
+            boolean[] conflicts = new boolean[count];
+            boolean issueFound = false;
+
+            Set<String> varNamesSet = new HashSet<String>((int) ((count + 2) * 1.4));
+            varNamesSet.add(INSTANCE_VAR_NAME);
+            varNamesSet.add(RESULT_VAR_NAME);
+            varNamesSet.add(EXP_RESULT_VAR_NAME);
+
+            Iterator<? extends VariableElement> it = sourceMethodParams.iterator();
+            for (int i = 0; i < count; i++) {
+                String paramName = it.next().getSimpleName().toString();
+                varNames[i] = paramName;
+
+                if (paramName == null) {
+                    issueFound = true;
+                } else if (!varNamesSet.add(paramName)) {
+                    conflicts[i] = true;
+                    issueFound = true;
+                } else {
+                    conflicts[i] = false;
+                }
+            }
+
+            if (issueFound) {
+                for (int i = 0; i < count; i++) {
+                    String paramName;
+                    if (varNames[i] == null) {
+                        paramName = ARTIFICAL_VAR_NAME_BASE + i;
+                        if (varNamesSet.add(paramName)) {
+                            varNames[i] = paramName;
+                            continue;
+                        } else {
+                            conflicts[i] = true;
+                        }
+                    }
+                    if (conflicts[i]) {
+                        String paramNamePrefix = varNames[i] + '_';
+
+                        int index = 2;
+                        while (!varNamesSet.add(
+                                        paramName = (paramNamePrefix + (index++))));
+                        varNames[i] = paramName;
+                    }
+                }
+            }
+
+            return varNames;
+        }
+        
+        /**
+         */
+        private ExpressionTree getDefaultValue(TreeMaker maker,
+                                               TypeMirror type) {
+            ExpressionTree defValue;
+            TypeKind typeKind = type.getKind();
+            if (typeKind.isPrimitive()) {
+                switch (typeKind) {
+                    case BOOLEAN:
+                        defValue = maker.Literal(Boolean.FALSE);
+                        break;
+                    case CHAR:
+                        defValue = maker.Literal(new Character(' '));
+                        break;
+                    case BYTE:
+                        defValue = maker.Literal(new Byte((byte) 0));
+                        break;
+                    case SHORT:
+                        defValue = maker.Literal(new Short((short) 0));
+                        break;
+                    case INT:
+                        defValue = maker.Literal(new Integer(0));
+                        break;
+                    case FLOAT:
+                        defValue = maker.Literal(new Float(0.0F));
+                        break;
+                    case LONG:
+                        defValue = maker.Literal(new Long(0L));
+                        break;
+                    case DOUBLE:
+                        defValue = maker.Literal(new Double(0.0));
+                        break;
+                    default:
+                        assert false : "unknown primitive type";        //NOI18N
+                        defValue = maker.Literal(new Integer(0));
+                        break;
+                }
+            } else if ((typeKind == TypeKind.DECLARED)
+                       && type.toString().equals("java.lang.String")) { //NOI18N
+                defValue = maker.Literal("");                           //NOI18N
+            } else {
+                defValue = maker.Literal(null);
+            }
+            return defValue;
+        }
+        
+        /**
+         */
+        private ExpressionTree generateNoArgConstructorCall(TreeMaker maker,
+                                                            TypeElement cls) {
+            return maker.NewClass(
+                    null,                                   //enclosing instance
+                    Collections.<ExpressionTree>emptyList(),//type arguments
+                    maker.QualIdent(cls),                   //class identifier
+                    Collections.<ExpressionTree>emptyList(),//arguments list
+                    null);                                  //class body
+        }
+
+        /**
+         */
+        private List<ExecutableElement> findTestableMethods(TypeElement classElem) {
+            List<ExecutableElement> methods
+                    = ElementFilter.methodsIn(classElem.getEnclosedElements());
+            
+            if (methods.isEmpty()) {
+                return Collections.<ExecutableElement>emptyList();
+            }
+            
+            List<ExecutableElement> testableMethods = null;
+            
+            int skippedCount = 0;
+            for (ExecutableElement method : methods) {
+                if (isTestableMethod(method)) {
+                    if (testableMethods == null) {
+                        testableMethods = new ArrayList<ExecutableElement>(
+                                                 methods.size() - skippedCount);
+                    }
+                    testableMethods.add(method);
+                } else {
+                    skippedCount++;
+                }
+            }
+            
+            return (testableMethods != null)
+                   ? testableMethods
+                   : Collections.<ExecutableElement>emptyList();
+        }
+        
+        /**
+         */
+        private boolean isTestableMethod(ExecutableElement method) {
+            if (method.getKind() != ElementKind.METHOD) {
+                throw new IllegalArgumentException();
+            }
+            
+            return isMethodAcceptable(method);
+        }
+        
+        /**
+         */
+        private boolean hasAccessibleNoArgConstructor(TypeElement srcClass) {
+            boolean answer;
+            
+            List<ExecutableElement> constructors
+                 = ElementFilter.constructorsIn(srcClass.getEnclosedElements());
+            
+            if (constructors.isEmpty()) {
+                answer = true;  //no explicit constructor -> synthetic no-arg. constructor
+            } else {
+                answer = false;
+                for (ExecutableElement constructor : constructors) {
+                    if (constructor.getParameters().isEmpty()) {
+                        answer = !constructor.getModifiers().contains(Modifier.PRIVATE);
+                        break;
+                    }
+                }
+            }
+            return answer;
+        }
+        
+        /**
+         */
+        private boolean throwsNonRuntimeExceptions(CompilationInfo compInfo,
+                                                   ExecutableElement method) {
+            List<? extends TypeMirror> thrownTypes = method.getThrownTypes();
+            if (thrownTypes.isEmpty()) {
+                return false;
+            }
+            
+            String runtimeExcName = "java.lang.RuntimeException";       //NOI18N
+            TypeElement runtimeExcElement = compInfo.getElements()
+                                            .getTypeElement(runtimeExcName);
+            if (runtimeExcElement == null) {
+                Logger.getLogger("junit").log(                          //NOI18N
+                        Level.WARNING,
+                        "Could not find TypeElement for "               //NOI18N
+                                + runtimeExcName);
+                return true;
+            }
+
+            Types types = compInfo.getTypes();
+            TypeMirror runtimeExcType = runtimeExcElement.asType();
+            for (TypeMirror exceptionType : thrownTypes) {
+                if (!types.isSubtype(exceptionType, runtimeExcType)) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        /**
+         */
+        private <T extends Element> List<T> resolveHandles(
+                                                CompilationInfo compInfo,
+                                                List<ElementHandle<T>> handles) {
+            if (handles == null) {
+                return null;
+            }
+            if (handles.isEmpty()) {
+                return Collections.<T>emptyList();
+            }
+            
+            List<T> elements = new ArrayList<T>(handles.size());
+            for (ElementHandle<T> handle : handles) {
+                elements.add(handle.resolve(compInfo));
+            }
+            return elements;
+        }
+        
+        /**
+         */
+        private TypeElement getTestTypeElem(Elements elements) {
+            if (testTypeElem == null) {
+                testTypeElem = getElemForClassName(
+                                            "junit.framework.Test",     //NOI18N
+                                            elements);
+            }
+            return testTypeElem;
+        }
+        
+        /**
+         */
+        private TypeElement getTestCaseTypeElem(Elements elements) {
+            if (testCaseTypeElem == null) {
+                testCaseTypeElem = getElemForClassName(
+                                            "junit.framework.TestCase", //NOI18N
+                                            elements);
+            }
+            return testCaseTypeElem;
+        }
+        
+        /**
+         */
+        private TypeElement getTestSuiteTypeElem(Elements elements) {
+            if (testSuiteTypeElem == null) {
+                testSuiteTypeElem = getElemForClassName(
+                                            "junit.framework.TestSuite",//NOI18N
+                                            elements);
+            }
+            return testSuiteTypeElem;
+        }
+        
+        /**
+         */
+        private TypeElement getElemForClassName(String className,
+                                                Elements elements) {
+            TypeElement elem = elements.getTypeElement(className);
+            if (elem == null) {
+                ErrorManager.getDefault().log(
+                        ErrorManager.ERROR,
+                        "Could not find TypeElement for " + className); //NOI18N
+            }
+            return elem;
+        }
+        
+        /**
+         * Stops this creator - cancels creation of a test class.
+         */
+        public void cancel() {
+            cancelled = true;
+        }
+        
+        /**
+         */
+        private void classProcessed(ClassTree cls) {
+            if (processedClassNames == null) {
+                processedClassNames = new ArrayList<String>(4);
+            }
+            processedClassNames.add(cls.getSimpleName().toString());
+        }
+        
+        /**
+         */
+        List<String> getProcessedClassNames() {
+            return processedClassNames != null
+                   ? processedClassNames
+                   : Collections.<String>emptyList();
+        }
+        
+    }
     
-//XXX: retouche
-//    /**
-//     */
-//    public void createTestSuite(List listMembers,
-//                                String packageName,
-//                                JavaClass tgtClass) {
-//        // public entry points are wrapped in MDR transactions
-//        JavaModel.getJavaRepository().beginTrans(true);
-//        try {
-//            new SingleResourceTestCreator(null, tgtClass.getResource())
-//                    .createTestSuite(listMembers, packageName, tgtClass);
-//        } finally {
-//            JavaModel.getJavaRepository().endTrans();
-//        }
-//    }
-    
-//XXX: retouche
-//    /**
-//     */
-//    public void createEmptyTest(Resource tstRc, JavaClass tstClass) {
-//        // public entry points are wrapped in MDR transactions
-//        JavaModel.getJavaRepository().beginTrans(true);
-//        try {   
-//            new SingleResourceTestCreator(null, tstRc)
-//                    .createEmptyTest(tstClass);
-//        } finally {
-//            JavaModel.getJavaRepository().endTrans();
-//        }
-//        
-//        if (generateSourceCodeHints) {
-//            /*
-//             * The comment must be added after the end of the previous
-//             * JMI transaction in order to be able to correctly acquire
-//             * source code offsets. The comment is generated
-//             * at the end of the class passed in in the parameter.
-//             */
-//            JavaModel.getJavaRepository().beginTrans(true);
-//            try {   
-//                addClassBodyComment(tstClass);
-//            } finally {
-//                JavaModel.getJavaRepository().endTrans();
-//            }
-//        }
-//    }
-    
-//XXX: retouche
-//    /**
-//     * Checks whether the given class or at least one of its nested classes
-//     * is testable.
-//     *
-//     * @param  jc  class to be checked
-//     * @return  TesteableResult that isOk, if the class is testeable or carries
-//     *          the information why the class is not testeable
-//     */
-//    TesteableResult isClassTestable(JavaClass jc) {
-//        assert jc != null;
-//        
-//        JavaModel.getJavaRepository().beginTrans(true);
-//        try {
-//            TesteableResult result = isClassTestableSingle(jc);
-//            
-//            if (result.isTesteable()) {
-//                return TesteableResult.OK;
-//            }
-//            
-//            List containedClasses
-//                    = TestUtil.collectFeatures(jc, JavaClass.class, 0, true);
-//            if (containedClasses.isEmpty()) {
-//                
-//                /* Not testable, no contained classes - no more chance: */
-//                return result;
-//            }
-//            
-//            /* Not testeable but maybe one of its nested classes is testable: */
-//            List stack = new ArrayList(Math.max(10, containedClasses.size()));
-//            stack.addAll(containedClasses);
-//            int stackSize = stack.size();
-//
-//            Set nonTestable = new HashSet(64);
-//            nonTestable.add(jc);
-//            
-//            do {
-//                JavaClass classToCheck = (JavaClass) stack.remove(--stackSize);
-//                
-//                if (!nonTestable.add(classToCheck)) {
-//                    continue; //we already know this single class is nontestable
-//                }
-//                
-//                TesteableResult resultSingle
-//                                        = isClassTestableSingle(classToCheck);
-//                if (resultSingle.isTesteable()) {
-//                    return TesteableResult.OK;
-//                } else {
-//                    result = TesteableResult.combine(result, resultSingle);
-//                }
-//                
-//                containedClasses = TestUtil.collectFeatures(classToCheck,
-//                                                            JavaClass.class,
-//                                                            0,
-//                                                            true);
-//                if (!containedClasses.isEmpty()) {
-//                    stack.addAll(containedClasses);
-//                    stackSize = stack.size();
-//                }
-//            } while (stackSize != 0);
-//            
-//            /* So not a single contained class is testable - no more chance: */
-//            return result;
-//        } finally {
-//            JavaModel.getJavaRepository().endTrans();
-//        }
-//    }
+    /**
+     * Checks whether the given class or at least one of its nested classes
+     * is testable.
+     *
+     * @param  compInfo  used for {@link CompilationInfo#getElements()}
+     *                   and {@link CompilationInfo#getTypes()}
+     * @param  classElem  class to be checked
+     * @return  TestabilityResult that isOk, if the class is testable or carries
+     *          the information why the class is not testable
+     */
+    public TestabilityResult isClassTestable(CompilationInfo compInfo,
+                                             TypeElement classElem) {
+        assert classElem != null;
+        
+        TestabilityResult result = isClassTestableSingle(compInfo, classElem);
+
+        if (result.isTestable()) {
+            return TestabilityResult.OK;
+        }
+
+        List<? extends Element> enclosedElems = classElem.getEnclosedElements();
+        if (enclosedElems.isEmpty()) {
+            /* Not testable, no contained types - no more chance: */
+            return result;
+        }
+        
+        List<TypeElement> enclosedTypes = ElementFilter.typesIn(enclosedElems);
+        if (enclosedTypes.isEmpty()) {
+            /* Not testable, no contained types - no more chance: */
+            return result;
+        }
+        
+        /* Not testable but maybe one of its nested classes is testable: */
+        List<TypeElement> stack
+               = new ArrayList<TypeElement>(Math.max(10, enclosedTypes.size()));
+        stack.addAll(enclosedTypes);
+        int stackSize = stack.size();
+
+        Set<TypeElement> nonTestable = new HashSet<TypeElement>(64);
+        nonTestable.add(classElem);
+
+        do {
+            TypeElement classToCheck = stack.remove(--stackSize);
+            
+            if (!TopClassFinder.isTestable(classElem)) {   //it is an annotation
+                continue;
+            }
+
+            if (!nonTestable.add(classToCheck)) {
+                continue; //we already know this single class is nontestable
+            }
+
+            TestabilityResult resultSingle
+                                = isClassTestableSingle(compInfo, classToCheck);
+            if (resultSingle.isTestable()) {
+                return TestabilityResult.OK;
+            } else {
+                result = TestabilityResult.combine(result, resultSingle);
+            }
+
+            enclosedTypes = ElementFilter.typesIn(classToCheck.getEnclosedElements());
+            if (!enclosedTypes.isEmpty()) {
+                stack.addAll(enclosedTypes);
+                stackSize = stack.size();
+            }
+        } while (stackSize != 0);
+
+        /* So not a single contained class is testable - no more chance: */
+        return result;
+    }
     
     
     /* private methods */
     
-//XXX: retouche
-//    /**
-//     * Checks whether the given class is testable.
-//     *
-//     * @param  jc  class to be checked
-//     * @return  TesteableResult that isOk, if the class is testeable or carries
-//     *          the information why the class is not testeable
-//     */
-//    private TesteableResult isClassTestableSingle(JavaClass jc) {
-//        assert jc != null;
-//        
-//        TesteableResult result = TesteableResult.OK;
-//
-//        /*
-//         * If the class is a test class and test classes should be skipped,
-//         * do not check nested classes (skip all):
-//         */
-//        /* Check if the class itself (w/o nested classes) is testable: */
-//        final int modifiers = jc.getModifiers();
-//
-//        if (Modifier.isPrivate(modifiers))
-//            result = TesteableResult.combine(result, TesteableResult.PRIVATE_CLASS);
-//        if (skipTestClasses && TestUtil.isClassImplementingTestInterface(jc)) 
-//            result = TesteableResult.combine(result, TesteableResult.TEST_CLASS);
-//        if (skipPkgPrivateClasses && !Modifier.isPublic(modifiers) && !Modifier.isPrivate(modifiers))
-//            result = TesteableResult.combine(result, TesteableResult.PACKAGE_PRIVATE_CLASS);
-//        if (skipAbstractClasses && Modifier.isAbstract(modifiers))
-//            result = TesteableResult.combine(result, TesteableResult.ABSTRACT_CLASS);
-//        if (!Modifier.isStatic(modifiers) && jc.isInner())
-//            result = TesteableResult.combine(result, TesteableResult.NONSTATIC_INNER_CLASS);
-//        if (!hasTestableMethods(jc))
-//            result = TesteableResult.combine(result, TesteableResult.NO_TESTEABLE_METHODS);
-//        if (skipExceptionClasses && TestUtil.isClassException(jc)) 
-//            result = TesteableResult.combine(result, TesteableResult.EXCEPTION_CLASS);
-//
-//        return result;
-//    }
-    
-//XXX: retouche
-//    /**
-//     * Returns true if tgtClass contains suite() method
-//     */
-//    private static boolean hasSuiteMethod(JavaClass tgtClass) {
-//        return tgtClass.getMethod("suite", Collections.EMPTY_LIST, false)!= null;
-//    }
+    /**
+     * Checks whether the given class is testable.
+     *
+     * @param  jc  class to be checked
+     * @return  TestabilityResult that isOk, if the class is testable or carries
+     *          the information why the class is not testable
+     */
+    private TestabilityResult isClassTestableSingle(CompilationInfo compInfo,
+                                                    TypeElement classElem) {
+        assert classElem != null;
+        
+        TestabilityResult result = TestabilityResult.OK;
+
+        /*
+         * If the class is a test class and test classes should be skipped,
+         * do not check nested classes (skip all):
+         */
+        /* Check if the class itself (w/o nested classes) is testable: */
+        Set<Modifier> modifiers = classElem.getModifiers();
+
+        if (modifiers.contains(PRIVATE))
+            result = TestabilityResult.combine(result, TestabilityResult.PRIVATE_CLASS);
+        if (skipTestClasses && TestUtil.isClassImplementingTestInterface(compInfo, classElem)) 
+            result = TestabilityResult.combine(result, TestabilityResult.TEST_CLASS);
+        if (skipPkgPrivateClasses && !EnumSet.copyOf(modifiers).removeAll(ACCESS_MODIFIERS))
+            result = TestabilityResult.combine(result, TestabilityResult.PACKAGE_PRIVATE_CLASS);
+        if (skipAbstractClasses && modifiers.contains(ABSTRACT))
+            result = TestabilityResult.combine(result, TestabilityResult.ABSTRACT_CLASS);
+        if (!modifiers.contains(STATIC) && (classElem.getNestingKind() != NestingKind.TOP_LEVEL))
+            result = TestabilityResult.combine(result, TestabilityResult.NONSTATIC_INNER_CLASS);
+        if (!hasTestableMethods(classElem))
+            result = TestabilityResult.combine(result, TestabilityResult.NO_TESTEABLE_METHODS);
+        if (skipExceptionClasses && TestUtil.isClassException(compInfo, classElem)) 
+            result = TestabilityResult.combine(result, TestabilityResult.EXCEPTION_CLASS);
+
+        return result;
+    }
     
     /**
      */
     private static String createTestMethodName(String smName) {
-        return "test" + smName.substring(0,1).toUpperCase() + smName.substring(1);
+        return "test"                                                   //NOI18N
+               + smName.substring(0,1).toUpperCase() + smName.substring(1);
     }
-    
-//XXX: retouche
-//    /**
-//     */
-//    private static String getDefaultValue(final Type varType) {
-//        final String varTypeName = varType.getName();
-//        
-//        if (varTypeName.equals("void")) {                               //NOI18N
-//            return null;
-//        } else if (varTypeName.equals("int")) {                         //NOI18N
-//            return "0";                                                 //NOI18N
-//        } else if (varTypeName.equals("float")) {                       //NOI18N
-//            return "0.0F";                                              //NOI18N
-//        } else if (varTypeName.equals("long")) {                        //NOI18N
-//            return "0L";                                                //NOI18N
-//        } else if (varTypeName.equals("double")) {                      //NOI18N
-//            return "0.0";                                               //NOI18N
-//        } else if (varTypeName.equals("boolean")) {                     //NOI18N
-//            return "true";                                              //NOI18N
-//        } else if (varTypeName.equals("java.lang.String")) {            //NOI18N
-//            return "\"\"";                                              //NOI18N
-//        } else if (varTypeName.equals("short")) {                       //NOI18N
-//            return "0";                                                 //NOI18N
-//        } else if (varTypeName.equals("byte")) {                        //NOI18N
-//            return "0";                                                 //NOI18N
-//        } else if (varTypeName.equals("char")) {                        //NOI18N
-//            return "' '";                                               //NOI18N
-//        } else {
-//            assert !(varType instanceof PrimitiveType);
-//            return "null";                                              //NOI18N
-//        }
-//    }
-    
-//XXX: retouche
-//    /**
-//     * Builds list of variable names for use in a test method skeleton.
-//     * By default, names of variables are same as names of tested method's
-//     * declared parameters. There are three variable names reserved
-//     * for variables holding the instance the tested method will be called on,
-//     * the expected result and the actual result returned
-//     * by the tested method. This method resolves a potential conflict
-//     * if some of the tested method's parameter's name is one of these
-//     * reserved names - in this case, the variable name used is a slight
-//     * modification of the declared parameter's name. The method also resolves
-//     * cases that some or all parameters are without name - in this case,
-//     * an arbitrary name is assigned to each of these unnamed parameters.
-//     * The goal is to ensure that all of the used variable names are unique.
-//     *
-//     * @param  sourceMethodParams 
-//     *                  list of tested method's parameters (items are of type
-//     *                  <code>org.netbeans.jmi.javamodel.TypeParameter</code>)
-//     * @return  variable names used for default values of the tested method's
-//     *          parameters (the reserved variable names are not included)
-//     */
-//    private static String[] getTestSkeletonVarNames(
-//            final List/*<TypeParameter>*/ sourceMethodParams) {
-//        
-//        /* Handle the trivial case: */
-//        if (sourceMethodParams.isEmpty()) {
-//            return new String[0];
-//        }
-//        
-//        final int count = sourceMethodParams.size();
-//        String[] varNames = new String[count];
-//        boolean[] conflicts = new boolean[count];
-//        boolean issueFound = false;
-//        
-//        HashSet varNamesSet = new HashSet((int) ((count + 2) * 1.4));
-//        varNamesSet.add(INSTANCE_VAR_NAME);
-//        varNamesSet.add(RESULT_VAR_NAME);
-//        varNamesSet.add(EXP_RESULT_VAR_NAME);
-//        
-//        Iterator it = sourceMethodParams.iterator();
-//        for (int i = 0; i < count; i++) {
-//            String paramName = ((Parameter) it.next()).getName();
-//            varNames[i] = paramName;
-//            
-//            if (paramName == null) {
-//                issueFound = true;
-//            } else if (!varNamesSet.add(paramName)) {
-//                conflicts[i] = true;
-//                issueFound = true;
-//            } else {
-//                conflicts[i] = false;
-//            }
-//        }
-//        
-//        if (issueFound) {
-//            for (int i = 0; i < count; i++) {
-//                String paramName;
-//                if (varNames[i] == null) {
-//                    paramName = ARTIFICAL_VAR_NAME_BASE + i;
-//                    if (varNamesSet.add(paramName)) {
-//                        varNames[i] = paramName;
-//                        continue;
-//                    } else {
-//                        conflicts[i] = true;
-//                    }
-//                }
-//                if (conflicts[i]) {
-//                    String paramNamePrefix = varNames[i] + '_';
-//
-//                    int index = 2;
-//                    while (!varNamesSet.add(
-//                                    paramName = (paramNamePrefix + (index++))));
-//                    varNames[i] = paramName;
-//                }
-//            }
-//        }
-//        
-//        return varNames;
-//    }
-    
-//XXX: retouche
-//    /**
-//     * Detects whether a given class contains a no-argument method of a given
-//     * name, having protected or public member access.
-//     *
-//     * @param  cls  class the method is to be found in
-//     * @param  methodName  name of the method to be found
-//     * @return  <code>true</code> if the class contains such a method,
-//     *          <code>false</code> otherwise
-//     */
-//    private static boolean hasInitMethod(JavaClass cls,
-//                                         String methodName) {
-//        return cls.getMethod(methodName,
-//                             Collections.EMPTY_LIST,
-//                             false) != null;
-//    }
-    
-//XXX: retouche
-//    /**
-//     */
-//    private static String getParameterString(List params) {
-//        StringBuffer paramString = new StringBuffer();
-//        
-//        Iterator it = params.iterator();
-//        while (it.hasNext()) {
-//            Parameter param= (Parameter)it.next();
-//            if (paramString.length() > 0) {
-//                paramString.append(", ");
-//            }
-//            paramString.append(param.getName());
-//        }
-//        
-//        return paramString.toString();
-//    }
     
 //XXX: retouche
 //    /**
@@ -1823,57 +2213,45 @@ public final class TestCreator {
 //                + indent + theComment2 + '\n' + '\n');
 //        ((ResourceImpl) cls.getResource()).addExtDiff(diff);
 //    }
-
-//XXX: retouche
-//    /**
-//     */
-//    private static String getIndentString() {
-//        int spt = org.netbeans.modules.javacore.jmiimpl.javamodel.MetadataElement.getIndentSpace(); // spaces per tab
-//        if (spt < 0) {
-//            spt = 0;
-//        }
-//        String tabString;
-//        if (org.netbeans.modules.javacore.jmiimpl.javamodel.MetadataElement.isExpandTab()) {
-//            char [] arr = new char[spt];
-//            Arrays.fill(arr, ' ');
-//            tabString = new String(arr);
-//        } else
-//            tabString = "\t";
-//        
-//        return tabString;
-//    }
-
     
-//XXX: retouche
-//    /**
-//     */
-//    private boolean hasTestableMethods(JavaClass cls) {
-//        
-//        Iterator methods = TestUtil.collectFeatures(cls, Method.class, 0, true).iterator();
-//        while (methods.hasNext()) {
-//            if (isMethodAcceptable((Method)methods.next()))
-//                return true;
-//        }
-//        
-//        return false;
-//    }
+    /**
+     */
+    private boolean hasTestableMethods(TypeElement classElem) {
+        List<? extends Element> enclosedElems = classElem.getEnclosedElements();
+        if (enclosedElems.isEmpty()) {
+            return false;
+        }
+        
+        List<ExecutableElement> methods = ElementFilter.methodsIn(enclosedElems);
+        if (methods.isEmpty()) {
+            return false;
+        }
+        
+        for (ExecutableElement method : methods) {
+            if (isMethodAcceptable(method)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
     
-//XXX: retouche
-//    /**
-//     * Checks whether a test for the given method should be created.
-//     * Access modifiers of the given method are compared to this creator's
-//     * settings.
-//     *
-//     * @param  m  method to be checked
-//     * @return  <code>true</code> if this creator is configured to create tests
-//     *          for methods having the given method's access modifiers;
-//     *          <code>false</code> otherwise
-//     */
-//    private boolean isMethodAcceptable(Method m) {
-//        final int modifiers = m.getModifiers();
-//        return ((modifiers & methodAccessModifiers) != 0)
-//            || (testPkgPrivateMethods && ((modifiers & ACCESS_MODIFIERS) == 0));
-//    }
+    /**
+     * Checks whether a test for the given method should be created.
+     * Access modifiers of the given method are compared to this creator's
+     * settings.
+     *
+     * @param  m  method to be checked
+     * @return  <code>true</code> if this creator is configured to create tests
+     *          for methods having the given method's access modifiers;
+     *          <code>false</code> otherwise
+     */
+    private boolean isMethodAcceptable(ExecutableElement method) {
+        Set<Modifier> modifiers = method.getModifiers();
+        
+        return (testPkgPrivateMethods && !EnumSet.copyOf(modifiers).removeAll(ACCESS_MODIFIERS))
+               || EnumSet.copyOf(modifiers).removeAll(methodAccessModifiers);
+    }
     
     /**
      */
@@ -1893,122 +2271,18 @@ public final class TestCreator {
     }
     
     /**
-     * Helper class representing reasons for skipping a class in the test 
-     * generation process. The class enumerates known reasons, why a class may 
-     * not be considered testeable, allows to combine the reasons and provide 
-     * human-readable representation  of them.
-     **/
-    public static final class TesteableResult {
-        // bitfield of reasons for skipping a class
-        private long reason;
-        
-        // reason constants
-        public static final TesteableResult OK = new TesteableResult(0);
-        public static final TesteableResult PACKAGE_PRIVATE_CLASS = new TesteableResult(1);
-        public static final TesteableResult NO_TESTEABLE_METHODS = new TesteableResult(2);
-        public static final TesteableResult TEST_CLASS = new TesteableResult(4);
-        public static final TesteableResult ABSTRACT_CLASS = new TesteableResult(8);
-        public static final TesteableResult NONSTATIC_INNER_CLASS = new TesteableResult(16);
-        public static final TesteableResult EXCEPTION_CLASS = new TesteableResult(32);
-        public static final TesteableResult PRIVATE_CLASS = new TesteableResult(64);
-
-
-        // bundle keys for reason descriptions
-        private static final String [] reasonBundleKeys = {
-            "TesteableResult_PkgPrivate", 
-            "TesteableResult_NoTesteableMethods",
-            "TesteableResult_TestClass",
-            "TesteableResult_AbstractClass",
-            "TesteableResult_NonstaticInnerClass",
-            "TesteableResult_ExceptionClass",
-            "TesteableResult_Private"};
-        
-        private TesteableResult(long reason) {
-            this.reason = reason;
+     * Creates a {@code Set} of {@code Modifier}s from the given list
+     * of modifiers.
+     * 
+     * @param  modifiers  modifiers that should be contained in the set
+     * @return  set containing exactly the given modifiers
+     */
+    private static Set<Modifier> createModifierSet(Modifier... modifiers) {
+        EnumSet<Modifier> modifierSet = EnumSet.noneOf(Modifier.class);
+        for (Modifier m : modifiers) {
+            modifierSet.add(m);
         }
-        
-        /**
-         * Combine two result reasons into a new one.
-         *
-         * The combination is the union
-         * of the failure reasons represented by the two results. Thus,
-         * if both are success (no failure), the combination is a success. If 
-         * some of them is failed, the result is failed.
-         *
-         * @param lhs the first TesteableResult
-         * @param rhs the second TesteableResult
-         * @return a new TesteableResult representing the combination of the two 
-         *         results
-         **/
-        public static TesteableResult combine(TesteableResult lhs, TesteableResult rhs) {
-            return new TesteableResult(lhs.reason | rhs.reason);
-        }
-
-        /**
-         * Returns true if the result is for a testable class.
-         * @return true or false
-         */
-        public boolean isTesteable() { return reason == 0;}
-        
-        /**
-         * Returns true if the result is for a non-testeable class.
-         * @return true if the result is for a non-testeable class.
-         */
-        public boolean isFailed() { return reason != 0;}
-        
-        /**
-         * Returns a human-readable representation of the reason. If the reason 
-         * is a combination of multiple reasons, they are separated with ",".
-         * @return String
-         */
-        public String getReason() { return getReason(", ", ", ");}
-
-        /**
-         * Returns {@link #getReason()}.
-         * @return String
-         */
-        public String toString() { 
-            return getReason(", ", ", ");
-        }
-        
-        /** 
-         * Returns a human-readable representation of the reason. If the reason 
-         * is a combination of multiple reasons, they are separated with 
-         * <code>separ</code> except for the last reason, which is separated 
-         * with <code>terminalSepar</code>
-         * <p>
-         * For example: getReason(", ", " or ") might return 
-         * "abstract, package private or without testeable methods".
-         *
-         * @return String
-         */
-        
-        public String getReason(String separ, String terminalSepar) {
-            try {
-                ResourceBundle bundle = NbBundle.getBundle(TestCreator.class);
-                if (reason == 0) { return bundle.getString("TesteableResult_OK"); }
-                
-                else {
-                    String str = "";
-                    boolean lastPrep = true;
-                    for (long i = 0, r = reason; r>0;r >>= 1, i++) {
-                        if ((r & 1) != 0) {
-                            if (str.length()>0) 
-                                if (lastPrep) {
-                                    str = terminalSepar + str;
-                                    lastPrep = false;
-                                } else 
-                                    str = separ + str;
-                            str = bundle.getString(reasonBundleKeys[(int)i]) + str;
-                        }
-                    } 
-                    return str;
-                }
-            } catch (MissingResourceException ex) {
-                ErrorManager.getDefault().notify(ex);
-                return "";
-            }
-        }
+        return modifierSet;
     }
     
 }
