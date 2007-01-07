@@ -64,10 +64,6 @@ public abstract class FlowEventSourcePinPresenter extends FlowPinPresenter {
     protected void setRenameName (String name) {
     }
 
-    protected DesignComponent getRepresentedComponent () {
-        return getComponent ();
-    }
-
     protected String getPinID () {
         return FlowIDSupport.createEventSourcePinID (getComponent ());
     }
@@ -116,7 +112,7 @@ public abstract class FlowEventSourcePinPresenter extends FlowPinPresenter {
         return presenter != null ? presenter.pinDescriptor : null;
     }
 
-    private class EventSourcePinDecoratorBehaviour implements FlowPinDescriptor.PinDecorator, FlowPinDescriptor.PinBehaviour, FlowDescriptor.BadgeDecorator, FlowDescriptor.AcceptActionBehavior, FlowDescriptor.RenameActionBehaviour {
+    protected class EventSourcePinDecoratorBehaviour implements FlowPinDescriptor.PinDecorator, FlowPinDescriptor.PinBehaviour, FlowDescriptor.BadgeDecorator, FlowDescriptor.AcceptActionBehavior, FlowDescriptor.RenameActionBehaviour {
 
         public Widget createWidget (FlowPinDescriptor descriptor, FlowScene scene) {
             VMDPinWidget vmdPinWidget = new VMDPinWidget (scene);

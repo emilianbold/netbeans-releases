@@ -28,10 +28,11 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.displayables.AlertCD;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
-import org.netbeans.modules.vmd.midp.flow.FlowEventHandlerEdgePresenter;
-import org.netbeans.modules.vmd.midp.flow.FlowEventHandlerPinBadgePresenter;
+import org.netbeans.modules.vmd.midp.flow.FlowSwitchDisplayableEventHandlerEdgePresenter;
+import org.netbeans.modules.vmd.midp.flow.FlowSwitchDisplayableEventHandlerForwardEdgePresenter;
+import org.netbeans.modules.vmd.midp.flow.FlowSwitchDisplayableEventHandlerPinPresenter;
 import org.netbeans.modules.vmd.midp.general.AbstractEventHandlerCreatorPresenter;
-import org.openide.util.Utilities;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -66,16 +67,9 @@ public final class SwitchDisplayableEventHandlerCD extends ComponentDescriptor {
             // info
             InfoPresenter.create (EventHandlerSupport.getSwitchDisplayableEventHandlerInfoResolver ()),
             // flow
-            new FlowEventHandlerEdgePresenter () {
-                protected DesignComponent getTargetComponent () {
-                    return getComponent ().readProperty (PROP_DISPLAYABLE).getComponent ();
-                }
-            },
-            new FlowEventHandlerPinBadgePresenter (Utilities.loadImage (AlertCD.ICON_PATH), 0) {
-                protected boolean isBadgeAvailable () {
-                    return getComponent ().readProperty (PROP_ALERT).getKind () != PropertyValue.Kind.NULL;
-                }
-            },
+            new FlowSwitchDisplayableEventHandlerPinPresenter (),
+            new FlowSwitchDisplayableEventHandlerEdgePresenter (),
+            new FlowSwitchDisplayableEventHandlerForwardEdgePresenter (),
             // code
             new CodeMultiGuardedLevelPresenter() {
                 protected void generateMultiGuardedSectionCode (MultiGuardedSection section) {
@@ -95,7 +89,31 @@ public final class SwitchDisplayableEventHandlerCD extends ComponentDescriptor {
             public DesignComponent createReuseEventHandler (DesignComponent eventSource, DesignComponent currentEventHandler, DesignComponent targetComponent) {
                 if (currentEventHandler == null || ! getComponent ().getDocument ().getDescriptorRegistry ().isInHierarchy (SwitchDisplayableEventHandlerCD.TYPEID, currentEventHandler.getType ()))
                     currentEventHandler = getComponent ().getDocument ().createComponent (SwitchDisplayableEventHandlerCD.TYPEID);
-                currentEventHandler.writeProperty (SwitchDisplayableEventHandlerCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference (targetComponent));
+                currentEventHandler.writeProperty (PROP_ALERT, PropertyValue.createNull ());
+                currentEventHandler.writeProperty (PROP_DISPLAYABLE, PropertyValue.createComponentReference (targetComponent));
+                return currentEventHandler;
+            }
+        };
+    }
+
+    public static AbstractEventHandlerCreatorPresenter createSwitchAlertEventHandlerCreatorPresenter () {
+        return new AbstractEventHandlerCreatorPresenter() {
+            public DesignComponent createReuseEventHandler (DesignComponent eventSource, DesignComponent currentEventHandler, DesignComponent targetComponent) {
+                DesignDocument document = getComponent ().getDocument ();
+                DescriptorRegistry descriptorRegistry = document.getDescriptorRegistry ();
+                if (currentEventHandler == null || ! descriptorRegistry.isInHierarchy (SwitchDisplayableEventHandlerCD.TYPEID, currentEventHandler.getType ()))
+                    currentEventHandler = document.createComponent (SwitchDisplayableEventHandlerCD.TYPEID);
+
+                DesignComponent possibleSourceDisplayable = eventSource.getParentComponent ();
+                if (possibleSourceDisplayable != null  &&  descriptorRegistry.isInHierarchy (DisplayableCD.TYPEID, possibleSourceDisplayable.getType ())) {
+                    currentEventHandler.writeProperty (PROP_ALERT, PropertyValue.createComponentReference (targetComponent));
+                    if (currentEventHandler.readProperty (PROP_DISPLAYABLE).getComponent () == null)
+                        currentEventHandler.writeProperty (PROP_DISPLAYABLE, PropertyValue.createComponentReference (possibleSourceDisplayable));
+                } else {
+                    currentEventHandler.writeProperty (PROP_ALERT, PropertyValue.createNull ());
+                    currentEventHandler.writeProperty (PROP_DISPLAYABLE, PropertyValue.createComponentReference (targetComponent));
+                }
+
                 return currentEventHandler;
             }
         };

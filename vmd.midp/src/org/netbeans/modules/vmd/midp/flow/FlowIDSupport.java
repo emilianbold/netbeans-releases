@@ -39,8 +39,8 @@ public final class FlowIDSupport {
         return "eventHandlerEdge" + eventHandlerComponent.getComponentID (); // NOI18N
     }
 
-    public static String createEventHandlerTargetPinID (DesignComponent eventHandlerComponent) {
-        return "eventHandlerTargetPin" + eventHandlerComponent.getComponentID (); // NOI18N
+    public static String createEventHandlerTargetPinID (DesignComponent eventHandlerComponent, DesignComponent targetComponent) {
+        return "eventHandlerTargetPin" + eventHandlerComponent.getComponentID () + "at" + targetComponent.getComponentID (); // NOI18N
     }
 
     public static String createEventHandlerPinBadgeID (DesignComponent eventHandlerComponent) {
@@ -51,4 +51,11 @@ public final class FlowIDSupport {
         return "eventSourcePinBadge" + eventSourceComponent.getComponentID () + pinBadgeID; // NOI18N
     }
 
+    public static String createSwitchDisplayableEventHandlerEdgeID (DesignComponent eventHandlerComponent) {
+        return "eventHandlerEdge" + eventHandlerComponent.getComponentID (); // NOI18N
+    }
+
+    public static String createSwitchDisplayableEventHandlerForwardEdgeID (DesignComponent eventHandlerComponent) {
+        return "eventHandlerForwardEdge" + eventHandlerComponent.getComponentID (); // NOI18N
+    }
 }

@@ -49,16 +49,32 @@ public abstract class FlowEventHandlerEdgePresenter extends FlowEdgePresenter {
         return FlowIDSupport.createEventHandlerEdgeID (getComponent ());
     }
 
-    protected String getPinID () {
-        return FlowIDSupport.createEventHandlerEdgeID (getComponent ());
+    protected String getTargetPinID (DesignComponent target) {
+        return FlowIDSupport.createEventHandlerTargetPinID (getComponent (), target);
+    }
+
+    protected boolean isDynamicTargetPin () {
+        return true;
     }
 
     protected boolean isVisible () {
-        return super.isVisible ()  &&  getEventSourceComponent () != null;
+        return super.isVisible ()  &&  getSourceComponent () != null;
     }
 
-    protected DesignComponent getEventSourceComponent () {
+    protected DesignComponent getSourceComponent () {
         return getComponent ().readProperty (EventHandlerCD.PROP_EVENT_SOURCE).getComponent ();
+    }
+
+    protected String getSourcePinID (DesignComponent source) {
+        return FlowIDSupport.createEventSourcePinID (source);
+    }
+
+    protected DesignComponent getRepresentedSourceComponent (DesignComponent source) {
+        return source;
+    }
+
+    protected DesignComponent getRepresentedTargetComponent (DesignComponent target) {
+        return target;
     }
 
     protected DesignComponent getRepresentedComponent () {
@@ -73,9 +89,8 @@ public abstract class FlowEventHandlerEdgePresenter extends FlowEdgePresenter {
         edgeDescriptor = null;
         if (! isVisible ())
             return;
-        DesignComponent component = getComponent ();
-        DesignComponent eventSource = getEventSourceComponent ();
-        if (eventSource == null)
+        DesignComponent source = getSourceComponent ();
+        if (source == null)
             return;
         DesignComponent target = getTargetComponent ();
         if (target == null)
@@ -83,14 +98,14 @@ public abstract class FlowEventHandlerEdgePresenter extends FlowEdgePresenter {
 
         edgeDescriptor = new FlowEdgeDescriptor (
                 getRepresentedComponent (),
-                FlowIDSupport.createEventHandlerEdgeID (component),
-                new FlowPinDescriptor (eventSource, FlowIDSupport.createEventSourcePinID (eventSource)), false,
-                new FlowPinDescriptor (target, FlowIDSupport.createEventHandlerTargetPinID (component)), true
+                getEdgeID (),
+                new FlowPinDescriptor (getRepresentedSourceComponent (source), getSourcePinID (source)), false,
+                new FlowPinDescriptor (getRepresentedTargetComponent (target), getTargetPinID (target)), isDynamicTargetPin ()
         );
     }
 
     protected final FlowNodeDescriptor getSourceNodeDescriptor (FlowPinDescriptor sourcePinDescriptor) {
-        return FlowEventSourcePinPresenter.getNodeDescriptor (getEventSourceComponent ());
+        return FlowEventSourcePinPresenter.getNodeDescriptor (getSourceComponent ());
     }
 
     protected final FlowNodeDescriptor getTargetNodeDescriptor (FlowPinDescriptor targetPinDescriptor) {
@@ -192,7 +207,7 @@ public abstract class FlowEventHandlerEdgePresenter extends FlowEdgePresenter {
         public void setReplacement (FlowEdgeDescriptor descriptor, FlowDescriptor replacementDescriptor, boolean reconnectingSource) {
             // TODO - reconnecting source pin
             if (! reconnectingSource) {
-                DesignComponent eventSource = getEventSourceComponent ();
+                DesignComponent eventSource = getSourceComponent ();
                 if (eventSource != null)
                     MidpDocumentSupport.updateEventHandlerFromTarget (eventSource, replacementDescriptor != null ? replacementDescriptor.getRepresentedComponent () : null);
             }
