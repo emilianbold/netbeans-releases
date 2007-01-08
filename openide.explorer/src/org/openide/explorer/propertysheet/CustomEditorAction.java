@@ -236,12 +236,8 @@ class CustomEditorAction extends AbstractAction {
         WindowListener wl = new WindowAdapter() {
                 public void windowClosed(WindowEvent e) {
                     if (pdm.getComponent() instanceof EnhancedCustomPropertyEditor) {
-                        if (!pdm.wasCancelled() && !closedOption && !pdm.wasOK() && !pdm.wasReset()) {
+                        if (!pdm.wasCancelled() && !closedOption && pdm.wasOK() && !pdm.wasReset()) {
                             try {
-                                //Enhanced custom property editors don't trigger property changes, so try to force it
-                                pdm.getEditor().setValue(
-                                    ((EnhancedCustomPropertyEditor) pdm.getComponent()).getPropertyValue()
-                                );
                                 invoker.valueChanged(pdm.getEditor());
                             } catch (Exception ex) {
                                 //do nothing
