@@ -19,12 +19,4 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="netbeans" name="mobility/end2end/jsr172">
     <import file="../../../nbbuild/templates/projectized.xml"/>
-
-    <target name="init" depends="basic-init,files-init,build-init,pre-compile"/>
-
-    <target name="pre-compile" depends="build-init">
-        <copy todir="${cluster}/modules/ext">
-            <fileset includes="**.jar" dir="lib" />
-        </copy>
-    </target>
 </project>
