@@ -20,7 +20,10 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.*;
+import java.util.List;
 import javax.lang.model.element.*;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.WorkingCopy;
 
 /**
@@ -41,16 +44,28 @@ public class FindSubtypesVisitor extends SearchVisitor {
             return super.visitClass(node, elementToFind);
         }
         if (recursive) {
-            if (workingCopy.getTypes().isSubtype(workingCopy.getTrees().getTypeMirror(getCurrentPath()), elementToFind.asType())) {
+            if (isSubtype(getCurrentPath(), elementToFind)) {
                 addUsage(getCurrentPath());
             }
         } else {
             TypeElement el = (TypeElement) workingCopy.getTrees().getElement(getCurrentPath());
-            if (el.getSuperclass().equals(elementToFind.asType()) || el.getInterfaces().contains(elementToFind.asType())) {
+            Types types = workingCopy.getTypes();
+            if (types.isSameType(types.erasure(el.getSuperclass()), types.erasure(elementToFind.asType())) || containsType(el.getInterfaces(), elementToFind.asType())) {
                 addUsage(getCurrentPath());
             } 
         }
         return super.visitClass(node, elementToFind);
+    }
+    
+    private boolean containsType(List<? extends TypeMirror> list, TypeMirror t) {
+        Types types = workingCopy.getTypes();
+        t = types.erasure(t);
+        for (TypeMirror m:list) {
+            if (types.isSameType(t, types.erasure(m))) {
+                return true;
+            };
+        }
+        return false;
     }
 
 }
