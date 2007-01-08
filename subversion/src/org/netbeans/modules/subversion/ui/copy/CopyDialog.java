@@ -43,7 +43,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public abstract class CopyDialog implements PropertyChangeListener {
+public abstract class CopyDialog {
 
     private DialogDescriptor dialogDescriptor;
     private JButton okButton, cancelButton;
@@ -116,13 +116,6 @@ public abstract class CopyDialog implements PropertyChangeListener {
             }            
         }                
     }       
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if( evt.getPropertyName().equals(RepositoryPaths.PROP_VALID) ) {
-            boolean valid = ((Boolean)evt.getNewValue()).booleanValue();
-            getOKButton().setEnabled(valid);
-        }        
-    }
     
     protected JButton getOKButton() {
         return okButton;

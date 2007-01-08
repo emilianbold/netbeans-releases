@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -72,6 +73,8 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
     private boolean valid = false;
     public static final String PROP_VALID = "valid"; // NOI18N
     private List<PropertyChangeListener> listeners;
+    
+    private PropertyChangeSupport propertyChangeSupport;
     
     public RepositoryPaths(RepositoryFile repositoryFile, 
                            JTextComponent repositoryPathTextField,  
@@ -302,42 +305,37 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             searchRevisionButton.setEnabled(valid);
         }
         
-        if(!acceptEmptyUrl() && repositoryPathTextField != null && getRepositoryString().equals("")) { // NOI18N
+        if(valid && !acceptEmptyUrl() && repositoryPathTextField != null && getRepositoryString().equals("")) { // NOI18N
             valid = false;
         }
 
-        if(!acceptEmptyRevision() && revisionTextField != null && getRevisionString().equals("")) { // NOI18N
+        if(valid && !acceptEmptyRevision() && revisionTextField != null && getRevisionString().equals("")) { // NOI18N
             valid = false;
-        }
+        }        
         
-        if(oldValue != valid) {
-            this.valid = valid;
-            fireValidPropertyChanged(oldValue, valid);
-        };
+        this.valid = valid;
+        fireValidPropertyChanged(oldValue, valid);
+
     }
 
     private void fireValidPropertyChanged(boolean oldValue, boolean valid) {
-        if(listeners==null) {
-            return;
-        }
-        for (Iterator<PropertyChangeListener> it = listeners.iterator();  it.hasNext();) {
-            PropertyChangeListener l = it.next();
-            l.propertyChange(new PropertyChangeEvent(this, PROP_VALID, new Boolean(oldValue), new Boolean(valid)));
-        }
+        getChangeSupport().firePropertyChange(new PropertyChangeEvent(this, PROP_VALID, new Boolean(oldValue), new Boolean(valid)));        
     }
 
     public void addPropertyChangeListener(PropertyChangeListener l) {
-        if(listeners==null) {
-            listeners = new ArrayList<PropertyChangeListener>();
-        }
-        listeners.add(l);
+        getChangeSupport().addPropertyChangeListener(l);        
+        validateUserInput();
     }
 
     public void removePropertyChangeListener(PropertyChangeListener l) {
-        if(listeners==null) {
-            return;
+        getChangeSupport().removePropertyChangeListener(l);
+    }
+    
+    private PropertyChangeSupport getChangeSupport() {
+        if(propertyChangeSupport == null) {
+            propertyChangeSupport = new PropertyChangeSupport(this);
         }
-        listeners.remove(l);
+        return propertyChangeSupport;
     }
 
     protected boolean acceptEmptyUrl() {

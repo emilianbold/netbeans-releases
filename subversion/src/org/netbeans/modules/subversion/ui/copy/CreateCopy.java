@@ -23,6 +23,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import javax.swing.event.DocumentEvent;
@@ -40,7 +41,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public class CreateCopy extends CopyDialog implements DocumentListener, FocusListener, ActionListener {
+public class CreateCopy extends CopyDialog implements DocumentListener, FocusListener, ActionListener, PropertyChangeListener {
 
     private final RepositoryPaths copyToRepositoryPaths;
     private final RepositoryPaths copyFromRepositoryPaths;

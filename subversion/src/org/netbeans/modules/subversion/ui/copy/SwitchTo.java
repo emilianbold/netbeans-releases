@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.subversion.ui.copy;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import javax.swing.JButton;
@@ -36,7 +38,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author Tomas Stupka
  */
-public class SwitchTo extends CopyDialog {
+public class SwitchTo extends CopyDialog implements PropertyChangeListener {
 
     private RepositoryPaths repositoryPaths;
     private final File root;
@@ -51,8 +53,10 @@ public class SwitchTo extends CopyDialog {
         SwitchToPanel panel = getSwitchToPanel();
         panel.warningLabel.setVisible(localChanges);
 
+        setupUrlComboBox(panel.urlComboBox, SwitchTo.class.getName());    
+        
         repositoryPaths = 
-            new SwitchToRepositoryPaths(
+            new RepositoryPaths(
                 repositoryRoot, 
                 (JTextField) panel.urlComboBox.getEditor().getEditorComponent(),
                 panel.browseRepositoryButton,
@@ -72,8 +76,7 @@ public class SwitchTo extends CopyDialog {
             browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageSwitchFolder");
             browserMode = Browser.BROWSER_SINGLE_SELECTION_ONLY;                                    
         }
-        repositoryPaths.setupBrowserBehavior(browserPurposeMessage, browserMode, null);    
-        setupUrlComboBox(panel.urlComboBox, SwitchTo.class.getName());                
+        repositoryPaths.setupBrowserBehavior(browserPurposeMessage, browserMode, null);                
     }            
     
     RepositoryFile getRepositoryFile() {        
@@ -101,20 +104,11 @@ public class SwitchTo extends CopyDialog {
     private SwitchToPanel getSwitchToPanel() {
         return (SwitchToPanel) getPanel();
     }    
-    
-    private class SwitchToRepositoryPaths extends RepositoryPaths {
         
-        public SwitchToRepositoryPaths (RepositoryFile repositoryFile, 
-                           JTextComponent repositoryPathTextField,  
-                           JButton browseButton, 
-                           JTextField revisionTextField, 
-                           JButton searchRevisionButton) 
-        {
-            super(repositoryFile, repositoryPathTextField, browseButton, revisionTextField, searchRevisionButton);
-        }                    
-        
-        protected boolean acceptEmptyUrl() {
-            return true;
-        }
-    }
+    public void propertyChange(PropertyChangeEvent evt) {
+        if( evt.getPropertyName().equals(RepositoryPaths.PROP_VALID) ) {            
+            boolean valid = ((Boolean)evt.getNewValue()).booleanValue();
+            getOKButton().setEnabled(valid);
+        }        
+    }    
 }

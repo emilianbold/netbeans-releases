@@ -22,6 +22,8 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import javax.swing.DefaultComboBoxModel;
@@ -46,10 +48,13 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author Tomas Stupka
  */
-public class Merge extends CopyDialog implements ItemListener {
+public class Merge extends CopyDialog implements ItemListener, PropertyChangeListener {
         
     private String MERGE_START_URL_HISTORY_KEY = Merge.class.getName() + "_merge_from"; // NOI18N
     private String MERGE_END_URL_HISTORY_KEY = Merge.class.getName() + "_merge_after"; // NOI18N
+
+    private boolean startPathValid = false;
+    private boolean endPathValid = false;
     
     public Merge(RepositoryFile repositoryRoot, File root) {
         super(new MergePanel(), NbBundle.getMessage(Merge.class, "CTL_Merge_Prompt", root.getName()), NbBundle.getMessage(Merge.class, "CTL_Merge_Title")); // NOI18N
@@ -122,7 +127,7 @@ public class Merge extends CopyDialog implements ItemListener {
         mergeTypeSelected(type);
     }
 
-    private void mergeTypeSelected(MergeType type) {
+    private void mergeTypeSelected(MergeType type) {                        
         MergePanel panel = getMergePanel();
         panel.typeDescriptionLabel.setText(type.getDescription());
 
@@ -134,22 +139,36 @@ public class Merge extends CopyDialog implements ItemListener {
         panel.mergeFieldsPanel.setLayout(new BorderLayout());
         panel.mergeFieldsPanel.add(type.getFieldsPanel(), BorderLayout.CENTER);
 
+        getOKButton().setEnabled(false);
         type.setPreviewLabels();
-        
         panel.repaint();
         
-        RepositoryPaths path = type.getMergeStartRepositoryPath();
-        if(path!=null) {
-            path.addPropertyChangeListener(this);
-        }
-        path = type.getMergeEndRepositoryPath();
-        if(path!=null) {
-            path.addPropertyChangeListener(this);
-        }
-
         resetUrlComboBoxes();
         setupUrlComboBox(type.getStartUrlComboBox(), MERGE_START_URL_HISTORY_KEY);
         setupUrlComboBox(type.getEndUrlComboBox(), MERGE_END_URL_HISTORY_KEY);
+        
+        RepositoryPaths path = type.getMergeStartRepositoryPath();
+        if(path != null) {            
+            path.addPropertyChangeListener(this);
+        }
+        path = type.getMergeEndRepositoryPath();
+        if(path != null) {
+            path.addPropertyChangeListener(this);
+        }   
+
+    }
+    
+    public void propertyChange(PropertyChangeEvent evt) {
+        if( evt.getPropertyName().equals(RepositoryPaths.PROP_VALID) ) {                        
+            MergeType type = getSelectedType();
+            boolean valid = ((Boolean) evt.getNewValue()).booleanValue();
+            if(evt.getSource() == type.getMergeStartRepositoryPath()) {
+                startPathValid = valid;
+            } else if(evt.getSource() == type.getMergeEndRepositoryPath()) {
+                endPathValid = valid;
+            }                                    
+            getOKButton().setEnabled(startPathValid && endPathValid);
+        }        
     }
 
     private static abstract class MergeType implements DocumentListener {
@@ -502,5 +521,6 @@ public class Merge extends CopyDialog implements ItemListener {
             previewPanel.repositoryFolderTextField.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeEndUrlComboBox.getEditor().getItem().toString()); // NOI18N
         }
 
-    }    
+    }            
+    
 }
