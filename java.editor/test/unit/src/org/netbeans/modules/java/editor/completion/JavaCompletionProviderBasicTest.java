@@ -506,11 +506,11 @@ public class JavaCompletionProviderBasicTest extends CompletionTestBase {
     }
     
     public void testEmptyFileTypingClassBody() throws Exception {
-        performTest("Empty", 0, "package test;\npublic class Test {", "memberModifiersAndTypes.pass");
+        performTest("Empty", 0, "package test;\npublic class Test {", "memberModifiersTypesAndGenElements.pass");
     }
     
     public void testInClassBody() throws Exception {
-        performTest("Simple", 80, null, "memberModifiersAndTypes.pass");
+        performTest("Simple", 80, null, "memberModifiersTypesAndGenElements2.pass");
     }
 
     public void testEmptyFileAfterTypingClassBody() throws Exception {
@@ -892,11 +892,11 @@ public class JavaCompletionProviderBasicTest extends CompletionTestBase {
     }
     
     public void testEmptyFileAfterTypingMethodBody() throws Exception {
-        performTest("MethodStart", 40, "public void op() {\n}", "memberModifiersAndTypes.pass");
+        performTest("MethodStart", 40, "public void op() {\n}", "memberModifiersTypesAndGenElements.pass");
     }
     
     public void testAfterMethodBody() throws Exception {
-        performTest("Method", 131, null, "memberModifiersAndTypes.pass");
+        performTest("Method", 131, null, "memberModifiersTypesAndGenElements.pass");
     }
     
     public void testEmptyFileAfterTypingIncompleteMethodBodyAndPublicKeyword() throws Exception {
@@ -1018,11 +1018,11 @@ public class JavaCompletionProviderBasicTest extends CompletionTestBase {
     }
     
     public void testEmptyFileAfterTypingFieldDeclaration() throws Exception {
-        performTest("MethodStart", 40, "public int field = hashCode() / 10;", "memberModifiersAndTypes.pass");
+        performTest("MethodStart", 40, "public int field = hashCode() / 10;", "memberModifiersTypesAndGenElements.pass");
     }
     
     public void testAfterFieldDeclaration() throws Exception {
-        performTest("Field", 75, null, "memberModifiersAndTypes.pass");
+        performTest("Field", 75, null, "memberModifiersTypesAndGenElements.pass");
     }
     
     public void testTypingStaticFieldAfterErrorInPreviousFieldDeclaration() throws Exception {

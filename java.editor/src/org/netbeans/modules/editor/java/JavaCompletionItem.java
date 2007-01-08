@@ -166,7 +166,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
     }
 
-    public static final JavaCompletionItem createInitializeAllConstructorItem(List<VariableElement> fields, TypeElement parent, int substitutionOffset) {
+    public static final JavaCompletionItem createInitializeAllConstructorItem(Iterable<VariableElement> fields, TypeElement parent, int substitutionOffset) {
         return new InitializeAllConstructorItem(fields, parent, substitutionOffset);
     }
 
@@ -1987,10 +1987,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String PARAMETER_NAME_COLOR = "<font color=#b200b2>"; //NOI18N
         private static ImageIcon icon[] = new ImageIcon[4];
 
-        private List<VariableElement> fields;
+        private Iterable<VariableElement> fields;
         private TypeElement parent;
         
-        private InitializeAllConstructorItem(List<VariableElement> fields, TypeElement parent, int substitutionOffset) {
+        private InitializeAllConstructorItem(Iterable<VariableElement> fields, TypeElement parent, int substitutionOffset) {
             super(substitutionOffset);
             this.fields = fields;
             this.parent = parent;
@@ -2034,6 +2034,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
             }
             lText.append(')'); //NOI18N
+            lText.append(" - generate"); //NOI18N
             return lText.toString();
         }
         
@@ -2075,10 +2076,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         protected void substituteText(final JTextComponent c, final int offset, final int len, String toAdd) {
-            List<? extends VariableElement> params = fields;
-//            List<? extends TypeMirror> paramTypes = parent.getParameterTypes();
             BaseDocument doc = (BaseDocument)c.getDocument();
-
             if (len > 0) {
                 doc.atomicLock();
                 try {
@@ -2118,7 +2116,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         private static class CreateConstructor {
             
-            public static void createConstructor(WorkingCopy wc, List<VariableElement> fields, TypeElement parent, TreePath path, Tree putBefore, ClassTree node) {
+            public static void createConstructor(WorkingCopy wc, Iterable<VariableElement> fields, TypeElement parent, TreePath path, Tree putBefore, ClassTree node) {
                 assert path.getLeaf() == node;
                 TreeMaker make = wc.getTreeMaker();
                 TypeElement te = (TypeElement)wc.getTrees().getElement(path);
@@ -2144,8 +2142,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     ClassTree decl = make.insertClassMember(node, pos, make.Method(make.Modifiers(mods), "<init>", null, Collections.<TypeParameterTree> emptyList(), arguments, Collections.<ExpressionTree>emptyList(), body, null));
                     wc.rewrite(node, decl);
                 }
-            }
-            
+            }            
         }
         
         public String toString() {
@@ -2167,6 +2164,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
             }
             sb.append(')'); //NOI18N
+            sb.append(" - generate"); //NOI18N
             return sb.toString();
         }
         

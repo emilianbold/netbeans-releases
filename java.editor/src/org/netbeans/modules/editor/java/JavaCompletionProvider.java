@@ -27,7 +27,6 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import javax.lang.model.element.*;
-import org.openide.filesystems.FileObject;
 import static javax.lang.model.element.ElementKind.*;
 import static javax.lang.model.element.Modifier.*;
 import javax.lang.model.type.*;
@@ -46,10 +45,12 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.Registry;
+import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -643,6 +644,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (idx >= 0) {
                 addKeywordsForClassBody(env);
                 addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, TYPE_PARAMETER), null, null);
+                addElementCreators(env);
                 return;
             }
             TreeUtilities tu = controller.getTreeUtilities();
@@ -758,6 +760,9 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (offset <= typePos) {
                 addMemberModifiers(env, var.getModifiers().getFlags(), isLocal);
                 addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, TYPE_PARAMETER), null, null);
+                ModifiersTree mods = var.getModifiers();
+                if (mods.getFlags().isEmpty() && mods.getAnnotations().isEmpty())
+                    addElementCreators(env);
                 return;
             }
             Tree init = unwrapErrTree(var.getInitializer());
@@ -2862,6 +2867,120 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
         }
         
+        private void addElementCreators(Env env) throws IOException {
+            CompilationController controller = env.getController();
+            controller.toPhase(Phase.ELEMENTS_RESOLVED);
+            TreePath clsPath = Utilities.getPathElementOfKind(Tree.Kind.CLASS, env.getPath());
+            if (clsPath == null)
+                return;
+            ClassTree cls = (ClassTree)clsPath.getLeaf();
+            CompilationUnitTree root = env.getRoot();
+            SourcePositions sourcePositions = env.getSourcePositions();
+            Tree currentMember = null;
+            int nextMemberPos = (int)Diagnostic.NOPOS;            
+            for (Tree member : cls.getMembers()) {
+                int pos = (int)sourcePositions.getStartPosition(root, member);
+                if (pos > caretOffset) {
+                    nextMemberPos = pos;
+                    break;
+                }
+                pos = (int)sourcePositions.getEndPosition(root, member);
+                if (caretOffset < pos) {
+                    currentMember = member;
+                    nextMemberPos = pos;
+                    break;
+                }
+            }
+            if (nextMemberPos > caretOffset) {
+                String text = controller.getText().substring(caretOffset, nextMemberPos);
+                int idx = text.indexOf('\n'); // NOI18N
+                if (idx >= 0)
+                    text = text.substring(0, idx);
+                if (text.trim().length() > 0)
+                    return;
+            }
+            final Trees trees = controller.getTrees();
+            TypeElement te = (TypeElement)trees.getElement(clsPath);            
+            if (te == null)
+                return;
+            int offset = env.getOffset();
+            String prefix = env.getPrefix();
+            Types types = controller.getTypes();
+            DeclaredType clsType = (DeclaredType)te.asType();            
+            for (ExecutableElement ee : GeneratorUtils.findUndefs(controller, te)) {
+                if (Utilities.startsWith(ee.getSimpleName().toString(), prefix)) {
+                    ExecutableType type = (ExecutableType)types.asMemberOf(clsType, ee);                    
+                    results.add(JavaCompletionItem.createOverrideMethodItem(ee, type, offset, true));
+                }
+            }            
+            for (ExecutableElement ee : GeneratorUtils.findOverridable(controller, te)) {
+                if (Utilities.startsWith(ee.getSimpleName().toString(), prefix)) {
+                    ExecutableType type = (ExecutableType)types.asMemberOf(clsType, ee);                    
+                    results.add(JavaCompletionItem.createOverrideMethodItem(ee, type, offset, false));
+                }
+            }
+            if (Utilities.startsWith(te.getSimpleName().toString(), prefix)) {
+                final Set<VariableElement> initializedFields = new LinkedHashSet<VariableElement>();
+                final Set<VariableElement> uninitializedFields = new LinkedHashSet<VariableElement>();
+                final List<ExecutableElement> constructors = new ArrayList<ExecutableElement>();
+                if (currentMember != null) {
+                    Element e = trees.getElement(new TreePath(clsPath, currentMember));
+                    if (e.getKind().isField())
+                        initializedFields.add((VariableElement)e);
+                }
+                new TreePathScanner<Void, Boolean>() {
+                    @Override
+                    public Void visitVariable(VariableTree node, Boolean p) {
+                        Element el = trees.getElement(getCurrentPath());
+                        if (el != null && el.getKind() == ElementKind.FIELD && node.getInitializer() == null && !initializedFields.remove(el))
+                            uninitializedFields.add((VariableElement)el);
+                        return null;
+                    }
+                    @Override
+                    public Void visitAssignment(AssignmentTree node, Boolean p) {
+                        Element el = trees.getElement(new TreePath(getCurrentPath(), node.getVariable()));
+                        if (el != null && el.getKind() == ElementKind.FIELD && !uninitializedFields.remove(el))
+                            initializedFields.add((VariableElement)el);
+                        return null;
+                    }
+                    @Override
+                    public Void visitClass(ClassTree node, Boolean p) {
+                        //do not analyse the inner classes:
+                        return p ? super.visitClass(node, false) : null;
+                    }
+                    @Override
+                    public Void visitMethod(MethodTree node, Boolean p) {
+                        Element el = trees.getElement(getCurrentPath());
+                        if (el != null && el.getKind() == ElementKind.CONSTRUCTOR)
+                            constructors.add((ExecutableElement)el);
+                        return null;
+                    }
+                }.scan(clsPath, Boolean.TRUE);
+                
+                boolean hasDefaultConstructor = false;
+                boolean hasConstrutorForAllUnintialized = false;
+                for (ExecutableElement ee : constructors) {
+                    List<? extends VariableElement> parameters = ee.getParameters();
+                    if (parameters.isEmpty() && !controller.getElementUtilities().isSynthetic(ee))
+                        hasDefaultConstructor = true;
+                    if (parameters.size() == uninitializedFields.size() && !uninitializedFields.isEmpty()) {
+                        Iterator<? extends VariableElement> proposed = uninitializedFields.iterator();
+                        Iterator<? extends VariableElement> original = parameters.iterator();                        
+                        boolean same = true;
+                        while (same && proposed.hasNext() && original.hasNext())
+                            same &= controller.getTypes().isSameType(proposed.next().asType(), original.next().asType());
+                        if (same)
+                            hasConstrutorForAllUnintialized = true;
+                    }
+                }
+                if (!uninitializedFields.isEmpty() && !hasConstrutorForAllUnintialized)
+                    results.add(JavaCompletionItem.createInitializeAllConstructorItem(uninitializedFields, te, offset));
+                if (!hasDefaultConstructor)
+                    results.add(JavaCompletionItem.createInitializeAllConstructorItem(Collections.<VariableElement>emptySet(), te, offset));
+                
+            }
+        }
+        
         private TypeElement getTypeElement(Env env, final String simpleName) throws IOException {
             if (simpleName == null || simpleName.length() == 0)
                 return null;
@@ -2948,17 +3067,11 @@ public class JavaCompletionProvider implements CompletionProvider {
             return false;
         }
         private String getJavaIdentifierPart(String text) {
-            int idx = -1;
             for (int i = 0; i < text.length(); i++) {
-                if (idx < 0) {
-                    if (Character.isWhitespace(text.charAt(i)))
-                        continue;
-                    idx = i;
-                }
                 if (!(Character.isJavaIdentifierPart(text.charAt(i))))
                     return null;
             }
-            return idx < 0 ? EMPTY : text.substring(idx);
+            return text;
         }
 
         private Collection getFilteredData(Collection<JavaCompletionItem> data, String prefix) {
