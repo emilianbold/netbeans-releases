@@ -25,8 +25,8 @@
  */
 package org.netbeans.spi.mobility.end2end;
 
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.Method;
 
 /**
  *
@@ -34,42 +34,42 @@ import org.netbeans.jmi.javamodel.Method;
  */
 public class ServiceGeneratorResult {
     
-    final private JavaClass jc;
-    final private Method[] methods;
-    final private String deploymentUrl;
+//    final private JavaClass jc;
+//    final private Method[] methods;
+//    final private String deploymentUrl;
     
     /** Creates a new instance of ServiceGeneratorResult
      * @param jc proxy class
      * @param methods callable methods within proxy class
      * @param deployment URL or null if this URL can not be determined or in case it is not possible to change it for user
      */
-    public ServiceGeneratorResult(JavaClass jc, Method[] methods, String deploymentUrl) {
-        this.jc = jc;
-        this.methods = methods;
-        this.deploymentUrl = deploymentUrl;
-    }
-    
-    /**
-     * Getter for proxy class
-     * @return proxy class
-     */
-    public JavaClass getStubClass(){
-        return jc;
-    }
-    
-    /**
-     * Getter for callable methods within proxy class
-     * @return array of callable methods
-     */
-    public Method[] getAccessMethods(){
-        return methods;
-    }
-    
-    /**
-     * Getter for deployment URL
-     * @return deployment URL or null if this URL can not be determined or in case it is not possible to change it for user
-     */
-    public String getDeploymentUrl(){
-        return deploymentUrl;
-    }
+//    public ServiceGeneratorResult( JavaClass jc, Method[] methods, String deploymentUrl) {
+//        this.jc = jc;
+//        this.methods = methods;
+//        this.deploymentUrl = deploymentUrl;
+//    }
+//    
+//    /**
+//     * Getter for proxy class
+//     * @return proxy class
+//     */
+//    public JavaClass getStubClass(){
+//        return jc;
+//    }
+//    
+//    /**
+//     * Getter for callable methods within proxy class
+//     * @return array of callable methods
+//     */
+//    public Method[] getAccessMethods(){
+//        return methods;
+//    }
+//    
+//    /**
+//     * Getter for deployment URL
+//     * @return deployment URL or null if this URL can not be determined or in case it is not possible to change it for user
+//     */
+//    public String getDeploymentUrl(){
+//        return deploymentUrl;
+//    }
 }

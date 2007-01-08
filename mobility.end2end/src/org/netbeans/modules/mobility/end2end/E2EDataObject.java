@@ -26,62 +26,32 @@
 package org.netbeans.modules.mobility.end2end;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.mobility.end2end.core.model.JavonMapping;
-import org.netbeans.mobility.end2end.core.model.MutableJavonMapping;
-import org.netbeans.mobility.end2end.core.model.classdata.ClassDataRegistry;
 import org.netbeans.mobility.end2end.core.model.classdata.ClassDataRegistryFactory;
-import org.netbeans.modules.mobility.end2end.classdata.AbstractService;
-import org.netbeans.modules.mobility.end2end.classdata.ClassData;
-import org.netbeans.modules.mobility.end2end.classdata.MethodData;
-import org.netbeans.modules.mobility.end2end.classdata.OperationData;
-import org.netbeans.modules.mobility.end2end.client.config.ClientConfiguration;
 import org.netbeans.modules.mobility.end2end.client.config.Configuration;
 import org.netbeans.modules.mobility.end2end.client.config.ConfigurationReader;
 import org.netbeans.modules.mobility.end2end.client.config.ConfigurationWriter;
-import org.netbeans.modules.mobility.end2end.client.config.ServerConfiguration;
 import org.netbeans.modules.mobility.end2end.util.Util;
-import org.netbeans.modules.mobility.end2end.wcw.classdata.NetbeansClassDataRegistryFactory;
-import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
-import org.netbeans.modules.mobility.project.J2MEProject;
-import org.netbeans.modules.mobility.project.J2MEProjectGenerator;
 import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 import org.netbeans.modules.xml.multiview.XmlMultiViewEditorSupport;
 import org.netbeans.spi.mobility.end2end.E2EServiceProvider;
 import org.netbeans.spi.mobility.end2end.ServiceGeneratorResult;
-import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -463,8 +433,8 @@ public class E2EDataObject extends XmlMultiViewDataObject {
         
         public ValidatedXmlMultiViewEditorSupport(XmlMultiViewDataObject dObj) {
             super(dObj);
+//            setSuppressXmlView(true);
             this.dataObject = (E2EDataObject)dObj;
-            //setSuppressXmlView(true);
         }
         
         public void open() {

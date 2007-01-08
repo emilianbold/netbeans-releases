@@ -33,8 +33,8 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Resource;
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.mobility.end2end.client.config.Configuration;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
@@ -42,7 +42,7 @@ import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.javacore.api.JavaModel;
+//import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -215,15 +215,15 @@ public final class Util {
         }
     }
     
-    public static JavaClass resolveWebServiceClass(final FileObject projectFolder, final String fqn){
-        assert projectFolder != null;
-        assert fqn != null;
-        final FileObject resObj = projectFolder.getFileObject("build/generated/wsclient/" + fqn.replace('.','/') + ".java"); //NOI18N
-        if (resObj == null) return null;
-        resObj.refresh(false);
-        final Resource res = JavaModel.getResource(resObj);
-        return (JavaClass)res.getClassifiers().get(0);
-    }
+//    public static JavaClass resolveWebServiceClass(final FileObject projectFolder, final String fqn){
+//        assert projectFolder != null;
+//        assert fqn != null;
+//        final FileObject resObj = projectFolder.getFileObject("build/generated/wsclient/" + fqn.replace('.','/') + ".java"); //NOI18N
+//        if (resObj == null) return null;
+//        resObj.refresh(false);
+//        final Resource res = JavaModel.getResource(resObj);
+//        return (JavaClass)res.getClassifiers().get(0);
+//    }
     
     public static String getServerURL(final Project p, final Configuration configuration){
         String port = "8080"; //NOI18N

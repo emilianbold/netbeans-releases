@@ -28,7 +28,7 @@ package org.netbeans.modules.mobility.end2end.util;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientView;
-import org.netbeans.modules.websvc.core.ServiceInformation;
+//import org.netbeans.modules.websvc.core.ServiceInformation;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
@@ -68,13 +68,13 @@ public final class WebServiceNodeManager {
          * @return zero or more nodes representing the original child node
          */
         protected Node[] createNodes(final Node n) {
-            final ServiceInformation si = (ServiceInformation)n.getCookie(ServiceInformation.class);
-            if (si != null){
-                if (name.equals(((DataObject)n.getCookie(DataObject.class)).getPrimaryFile().getNameExt())){
-                    // is run under read access lock so nobody can change children
-                    return new Node[] { copyNode(n) };
-                }
-            }
+//            final ServiceInformation si = (ServiceInformation)n.getCookie(ServiceInformation.class);
+//            if (si != null){
+//                if (name.equals(((DataObject)n.getCookie(DataObject.class)).getPrimaryFile().getNameExt())){
+//                    // is run under read access lock so nobody can change children
+//                    return new Node[] { copyNode(n) };
+//                }
+//            }
             return new Node[0];
         }
         

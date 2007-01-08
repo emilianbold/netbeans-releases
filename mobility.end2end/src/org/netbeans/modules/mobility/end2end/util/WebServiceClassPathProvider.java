@@ -33,7 +33,7 @@ import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javacore.api.JavaModel;
+//import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -85,16 +85,16 @@ public class WebServiceClassPathProvider implements ClassPathProvider {
                             urls.add(fo.getURL());
                         } catch (FileStateInvalidException ex) {
                         }
-                        JavaModel.getJavaRepository().beginTrans(false);
-                        try {
-                            for (final Enumeration<? extends FileObject> enu = fo.getChildren(true); enu.hasMoreElements();) {
-                                final FileObject elem = enu.nextElement();
-                                JavaModel.getResource(elem);
-                            }
-                        } catch (Exception e){
-                        } finally {
-                            JavaModel.getJavaRepository().endTrans();
-                        }
+//                        JavaModel.getJavaRepository().beginTrans(false);
+//                        try {
+//                            for (final Enumeration<? extends FileObject> enu = fo.getChildren(true); enu.hasMoreElements();) {
+//                                final FileObject elem = enu.nextElement();
+//                                JavaModel.getResource(elem);
+//                            }
+//                        } catch (Exception e){
+//                        } finally {
+//                            JavaModel.getJavaRepository().endTrans();
+//                        }
                     }
                     fo = webProject.getProjectDirectory().getFileObject("build/generated/wsbinary/"); //NOI18N
                     if (fo != null){

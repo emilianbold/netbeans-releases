@@ -34,23 +34,23 @@ import java.util.List;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.mdr.MDRepository;
+//import org.netbeans.api.mdr.MDRepository;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.jmi.javamodel.ClassMember;
-import org.netbeans.jmi.javamodel.Feature;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.JavaModelPackage;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Parameter;
-import org.netbeans.jmi.javamodel.PrimitiveType;
-import org.netbeans.jmi.javamodel.PrimitiveTypeKindEnum;
-import org.netbeans.jmi.javamodel.Type;
-import org.netbeans.jmi.javamodel.UnresolvedClass;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
-import org.netbeans.modules.javacore.internalapi.JavaModelUtil;
+//import org.netbeans.jmi.javamodel.ClassMember;
+//import org.netbeans.jmi.javamodel.Feature;
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.JavaModelPackage;
+//import org.netbeans.jmi.javamodel.Method;
+//import org.netbeans.jmi.javamodel.Parameter;
+//import org.netbeans.jmi.javamodel.PrimitiveType;
+//import org.netbeans.jmi.javamodel.PrimitiveTypeKindEnum;
+//import org.netbeans.jmi.javamodel.Type;
+//import org.netbeans.jmi.javamodel.UnresolvedClass;
+//import org.netbeans.modules.javacore.api.JavaModel;
+//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+//import org.netbeans.modules.javacore.internalapi.JavaModelUtil;
 import org.netbeans.modules.mobility.end2end.E2EDataObject;
 import org.netbeans.modules.mobility.end2end.classdata.OperationData;
 import org.netbeans.modules.mobility.end2end.classdata.PortData;
@@ -88,114 +88,114 @@ public class ProxyGenerator {
     public String generate(){
         final ServerConfiguration sc = dataObject.getConfiguration().getServerConfigutation();
         final Sources s = ProjectUtils.getSources(dataObject.getServerProject());
-        final SourceGroup sourceGroup = Util.getPreselectedGroup(
-                s.getSourceGroups( JavaProjectConstants.SOURCES_TYPE_JAVA ),
-                sc.getClassDescriptor().getLocation());
-        final FileObject srcDirectory = sourceGroup.getRootFolder();
-        try {
-            final ClassPath cp = ClassPath.getClassPath(srcDirectory,ClassPath.SOURCE);
-            final FileObject fo = cp.getRoots()[0]; //TODO fix me - find src or test folder @see sc.getProjectPath();
-            //there is only 1/1 service/class here
-            final WSDLService wsdlService = (WSDLService)dataObject.getConfiguration().getServices().get(0);
-            final PortData pd = (PortData)wsdlService.getData().get( 0 );
-            
-            final String targetFolderName = (sc.getClassDescriptor().getType().toLowerCase() + "support").replace('.','/'); // NOI18N
-            FileObject targetFolder = fo.getFileObject(targetFolderName);
-            if (targetFolder == null){
-                targetFolder = FileUtil.createFolder(fo, targetFolderName);
-            }
-            
-            String proxyClassName = pd.getClassName();
-            proxyClassName = proxyClassName.substring(proxyClassName.lastIndexOf('.') + 1); // NOI18N
-            proxyClassName = proxyClassName + /*sc.getClassDescriptor().getLeafClassName() + */"Proxy"; // NOI18N
-            final JavaClass jc = generateProxyClassStub(targetFolder, proxyClassName);
-            if (copyInterfaces(jc, pd)){
-                return jc.getName();
-            }
-            return null;
-        } catch (Exception ex){
-            
-        }
+//        final SourceGroup sourceGroup = Util.getPreselectedGroup(
+//                s.getSourceGroups( JavaProjectConstants.SOURCES_TYPE_JAVA ),
+//                sc.getClassDescriptor().getLocation());
+//        final FileObject srcDirectory = sourceGroup.getRootFolder();
+//        try {
+//            final ClassPath cp = ClassPath.getClassPath(srcDirectory,ClassPath.SOURCE);
+//            final FileObject fo = cp.getRoots()[0]; //TODO fix me - find src or test folder @see sc.getProjectPath();
+//            //there is only 1/1 service/class here
+//            final WSDLService wsdlService = (WSDLService)dataObject.getConfiguration().getServices().get(0);
+//            final PortData pd = (PortData)wsdlService.getData().get( 0 );
+//            
+//            final String targetFolderName = (sc.getClassDescriptor().getType().toLowerCase() + "support").replace('.','/'); // NOI18N
+//            FileObject targetFolder = fo.getFileObject(targetFolderName);
+//            if (targetFolder == null){
+//                targetFolder = FileUtil.createFolder(fo, targetFolderName);
+//            }
+//            
+//            String proxyClassName = pd.getClassName();
+//            proxyClassName = proxyClassName.substring(proxyClassName.lastIndexOf('.') + 1); // NOI18N
+//            proxyClassName = proxyClassName + /*sc.getClassDescriptor().getLeafClassName() + */"Proxy"; // NOI18N
+//            final JavaClass jc = generateProxyClassStub(targetFolder, proxyClassName);
+//            if (copyInterfaces(jc, pd)){
+//                return jc.getName();
+//            }
+//            return null;
+//        } catch (Exception ex){
+//            
+//        }
         return null;
     }
     
-    private JavaClass generateProxyClassStub(final FileObject targetFolder, final String name) {
-        
-        try {
-            final FileObject tempFO = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Classes/Class.java"); // NOI18N
-            
-            final DataFolder folder = (DataFolder) DataObject.find(targetFolder);
-            final FileObject forDelete = folder.getPrimaryFile().getFileObject(name, "java"); // NOI18N
-            if (forDelete != null){
-                forDelete.delete();
-            }
-            final DataObject template = DataObject.find(tempFO);
-            createdProxy = template.createFromTemplate(folder, name);
-            final FileObject newIfcFO = createdProxy.getPrimaryFile();
-            return (JavaClass) JavaMetamodel.getManager().getResource(newIfcFO).getClassifiers().iterator().next();
-        } catch (DataObjectNotFoundException e) {
-            ErrorManager.getDefault().notify(e);
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
-        }
-        return null;
-    }
+//    private JavaClass generateProxyClassStub(final FileObject targetFolder, final String name) {
+//        
+//        try {
+//            final FileObject tempFO = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Classes/Class.java"); // NOI18N
+//            
+//            final DataFolder folder = (DataFolder) DataObject.find(targetFolder);
+//            final FileObject forDelete = folder.getPrimaryFile().getFileObject(name, "java"); // NOI18N
+//            if (forDelete != null){
+//                forDelete.delete();
+//            }
+//            final DataObject template = DataObject.find(tempFO);
+//            createdProxy = template.createFromTemplate(folder, name);
+//            final FileObject newIfcFO = createdProxy.getPrimaryFile();
+//            return (JavaClass) JavaMetamodel.getManager().getResource(newIfcFO).getClassifiers().iterator().next();
+//        } catch (DataObjectNotFoundException e) {
+//            ErrorManager.getDefault().notify(e);
+//        } catch (IOException e) {
+//            ErrorManager.getDefault().notify(e);
+//        }
+//        return null;
+//    }
     
-    private boolean copyInterfaces(final JavaClass target, final PortData portData){
-        final String className = portData.getType();
-        final Sources s = ProjectUtils.getSources(dataObject.getServerProject());
-        final SourceGroup[] sourceGroups = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        final NotifyDescriptor.Message message=new NotifyDescriptor.Message(NbBundle.getMessage(ProxyGenerator.class, "MSG_WebProjectNotBuilt"));
-        for (int id = 0; id < sourceGroups.length; id++){
-            
-            JavaModel.getJavaRepository().beginTrans(false);
-            try {
-                final JavaClass jc = Util.resolveWebServiceClass(dataObject.getServerProject().getProjectDirectory(), className );
-                if (jc == null || jc instanceof UnresolvedClass){
-                    DialogDisplayer.getDefault().notify(message);
-                    return false;
-                }
-                final Method[] methods = getMethods(jc);
-                if (methods.length != 0) {
-                    JavaModel.setClassPath(target.getResource());
-                    final List<ClassMember> contents = target.getContents();
-                    final List<OperationData> md = portData.getOperations();
-                    for (int i = 0; i < methods.length; i++ ){
-                        for ( final OperationData m : md ) {
-                            if (!m.getName().equals(methods[i].getName()))
-                                continue;
-                            final Method method = (Method)JavaModelUtil.duplicateInScope(target, methods[i]);
-                            method.setJavadoc(null);
-                            method.setModifiers(method.getModifiers()&~Modifier.ABSTRACT);
-                            contents.add(method);
-                            method.setBodyText(createInvocationBody(createdProxy, method));
-                            final JavaModelPackage modelPkg = (JavaModelPackage) method.refImmediatePackage();
-                            
-                            final WSDLService service = (WSDLService)dataObject.getConfiguration().getServices().get(0);
-                            String file = service.getFile();
-                            file = file.substring(0, file.lastIndexOf('.')); // NOI18N
-                            final ClientStubDescriptor stubType = getStub(createdProxy.getPrimaryFile(), file);
-                            if (stubType != null && !ClientStubDescriptor.JSR109_CLIENT_STUB.equals(stubType.getName())){
-                                final JavaClass ex = (JavaClass) modelPkg.getJavaClass().resolve("javax.xml.rpc.ServiceException"); //NOI18N
-                                method.getExceptionNames().add(JavaModelUtil.resolveImportsForClass(method, ex));
-                            }
-                            
-                            final JavaClass ex = (JavaClass) modelPkg.getJavaClass().resolve("java.lang.Exception"); //NOI18N
-                            method.getExceptionNames().add(JavaModelUtil.resolveImportsForClass(method, ex));
-                        }
-                    }
-                    insertMethodCall(createdProxy, target);
-                    return true;
-                }
-            } catch (Exception e){
-                ErrorManager.getDefault().notify(e);
-                return false;
-            } finally {
-                JavaModel.getJavaRepository().endTrans();
-            }
-        }
-        return true;
-    }
+//    private boolean copyInterfaces(final JavaClass target, final PortData portData){
+//        final String className = portData.getType();
+//        final Sources s = ProjectUtils.getSources(dataObject.getServerProject());
+//        final SourceGroup[] sourceGroups = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+//        final NotifyDescriptor.Message message=new NotifyDescriptor.Message(NbBundle.getMessage(ProxyGenerator.class, "MSG_WebProjectNotBuilt"));
+//        for (int id = 0; id < sourceGroups.length; id++){
+//            
+//            JavaModel.getJavaRepository().beginTrans(false);
+//            try {
+//                final JavaClass jc = Util.resolveWebServiceClass(dataObject.getServerProject().getProjectDirectory(), className );
+//                if (jc == null || jc instanceof UnresolvedClass){
+//                    DialogDisplayer.getDefault().notify(message);
+//                    return false;
+//                }
+//                final Method[] methods = getMethods(jc);
+//                if (methods.length != 0) {
+//                    JavaModel.setClassPath(target.getResource());
+//                    final List<ClassMember> contents = target.getContents();
+//                    final List<OperationData> md = portData.getOperations();
+//                    for (int i = 0; i < methods.length; i++ ){
+//                        for ( final OperationData m : md ) {
+//                            if (!m.getName().equals(methods[i].getName()))
+//                                continue;
+//                            final Method method = (Method)JavaModelUtil.duplicateInScope(target, methods[i]);
+//                            method.setJavadoc(null);
+//                            method.setModifiers(method.getModifiers()&~Modifier.ABSTRACT);
+//                            contents.add(method);
+//                            method.setBodyText(createInvocationBody(createdProxy, method));
+//                            final JavaModelPackage modelPkg = (JavaModelPackage) method.refImmediatePackage();
+//                            
+//                            final WSDLService service = (WSDLService)dataObject.getConfiguration().getServices().get(0);
+//                            String file = service.getFile();
+//                            file = file.substring(0, file.lastIndexOf('.')); // NOI18N
+//                            final ClientStubDescriptor stubType = getStub(createdProxy.getPrimaryFile(), file);
+//                            if (stubType != null && !ClientStubDescriptor.JSR109_CLIENT_STUB.equals(stubType.getName())){
+//                                final JavaClass ex = (JavaClass) modelPkg.getJavaClass().resolve("javax.xml.rpc.ServiceException"); //NOI18N
+//                                method.getExceptionNames().add(JavaModelUtil.resolveImportsForClass(method, ex));
+//                            }
+//                            
+//                            final JavaClass ex = (JavaClass) modelPkg.getJavaClass().resolve("java.lang.Exception"); //NOI18N
+//                            method.getExceptionNames().add(JavaModelUtil.resolveImportsForClass(method, ex));
+//                        }
+//                    }
+//                    insertMethodCall(createdProxy, target);
+//                    return true;
+//                }
+//            } catch (Exception e){
+//                ErrorManager.getDefault().notify(e);
+//                return false;
+//            } finally {
+//                JavaModel.getJavaRepository().endTrans();
+//            }
+//        }
+//        return true;
+//    }
     
 //#------------------------ WS InvokeOperationAction
     
@@ -313,152 +313,152 @@ public class ProxyGenerator {
         return result;
     }
         
-    public void insertMethodCall(final DataObject dataObj, final JavaClass jc){
-        //TODO BLBE
-        final WSDLService service = (WSDLService)dataObject.getConfiguration().getServices().get(0);
-        final PortData portData = (PortData)service.getData().get( 0 );
-        
-        final String fqServiceClassName = service.getType();
-        final String fqPortTypeName = portData.getType();
-        final String serviceName = service.getName();
-        final String serviceClassName = classFromName(serviceName); //here is the class name //??
-        final String serviceVarName = varFromName(serviceName);
-        final String servicePortJaxRpcName = classFromName(portData.getName());
-        final String servicePortVarName = varFromName(portData.getName());
-        final String serviceDelegateName = "get" + serviceClassName; //NOI18N
-        final String portDelegateName = "get" + servicePortJaxRpcName; //NOI18N
-        
-        String file = service.getFile();
-        file = file.substring(0, file.lastIndexOf('.')); // NOI18N
-        final ClientStubDescriptor stubType = getStub(dataObj.getPrimaryFile(), file);
-        
-        final MDRepository repository = JavaModel.getJavaRepository();
-        
-        // including code to java class
-        boolean rollbackFlag = true; // rollback the transaction by default
-        repository.beginTrans(true); // create transaction for adding delegate methods
-        
-        try {
-            if (stubType != null) 
-                if (ClientStubDescriptor.JSR109_CLIENT_STUB.equals(stubType.getName())) {        // add service and port delegate methods
-                try {
-                    if (jc.isValid()) {
-                        final JavaModelPackage modelPkg = JavaMetamodel.getManager().getJavaExtent(jc);
-                        
-                        final Type serviceType = modelPkg.getType().resolve(fqServiceClassName);
-                        final Type portType = modelPkg.getType().resolve(fqPortTypeName);
-                        
-                        // Add service delegate
-                        final Method serviceDelegate = modelPkg.getMethod().createMethod();
-                        if (serviceDelegate != null) {
-                            serviceDelegate.setName(serviceDelegateName);
-                            serviceDelegate.setType(serviceType);
-                            serviceDelegate.setModifiers(Modifier.PRIVATE);
-                            serviceDelegate.getExceptionNames().add(
-                                    modelPkg.getMultipartId().createMultipartId("java.lang.RuntimeException", null, null)); //NOI18N
-                            
-                            final Object [] args = new Object [] { serviceName, serviceVarName, fqServiceClassName };
-                            final String delegateBody = MessageFormat.format(SERVICE_DELEGATE_BODY, args);
-                            serviceDelegate.setBodyText(delegateBody);
-                            jc.getContents().add(serviceDelegate);
-                        }
-                        
-                        // Add port delegate
-                        final Method portDelegate = modelPkg.getMethod().createMethod();
-                        if (portDelegate != null) {
-                            portDelegate.setName(portDelegateName);
-                            portDelegate.setType(portType);
-                            portDelegate.setModifiers(Modifier.PRIVATE);
-                            portDelegate.getExceptionNames().add(
-                                    modelPkg.getMultipartId().createMultipartId("java.lang.RuntimeException", null, null)); //NOI18N
-                            
-                            final Object [] args = new Object [] { servicePortVarName, servicePortJaxRpcName, serviceDelegateName, fqPortTypeName };
-                            final String delegateBody = MessageFormat.format(PORT_DELEGATE_BODY, args);
-                            portDelegate.setBodyText(delegateBody);
-                            jc.getContents().add(portDelegate);
-                        }
-                        rollbackFlag = false;   // no errors! - do not rollback
-                    }
-                } catch (NullPointerException npe) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, npe);
-                }
-            } else {
-                rollbackFlag = false;
-            }
-        } finally {
-            repository.endTrans(rollbackFlag);
-        }
-    }
+//    public void insertMethodCall(final DataObject dataObj, final JavaClass jc){
+//        //TODO BLBE
+//        final WSDLService service = (WSDLService)dataObject.getConfiguration().getServices().get(0);
+//        final PortData portData = (PortData)service.getData().get( 0 );
+//        
+//        final String fqServiceClassName = service.getType();
+//        final String fqPortTypeName = portData.getType();
+//        final String serviceName = service.getName();
+//        final String serviceClassName = classFromName(serviceName); //here is the class name //??
+//        final String serviceVarName = varFromName(serviceName);
+//        final String servicePortJaxRpcName = classFromName(portData.getName());
+//        final String servicePortVarName = varFromName(portData.getName());
+//        final String serviceDelegateName = "get" + serviceClassName; //NOI18N
+//        final String portDelegateName = "get" + servicePortJaxRpcName; //NOI18N
+//        
+//        String file = service.getFile();
+//        file = file.substring(0, file.lastIndexOf('.')); // NOI18N
+//        final ClientStubDescriptor stubType = getStub(dataObj.getPrimaryFile(), file);
+//        
+//        final MDRepository repository = JavaModel.getJavaRepository();
+//        
+//        // including code to java class
+//        boolean rollbackFlag = true; // rollback the transaction by default
+//        repository.beginTrans(true); // create transaction for adding delegate methods
+//        
+//        try {
+//            if (stubType != null) 
+//                if (ClientStubDescriptor.JSR109_CLIENT_STUB.equals(stubType.getName())) {        // add service and port delegate methods
+//                try {
+//                    if (jc.isValid()) {
+//                        final JavaModelPackage modelPkg = JavaMetamodel.getManager().getJavaExtent(jc);
+//                        
+//                        final Type serviceType = modelPkg.getType().resolve(fqServiceClassName);
+//                        final Type portType = modelPkg.getType().resolve(fqPortTypeName);
+//                        
+//                        // Add service delegate
+//                        final Method serviceDelegate = modelPkg.getMethod().createMethod();
+//                        if (serviceDelegate != null) {
+//                            serviceDelegate.setName(serviceDelegateName);
+//                            serviceDelegate.setType(serviceType);
+//                            serviceDelegate.setModifiers(Modifier.PRIVATE);
+//                            serviceDelegate.getExceptionNames().add(
+//                                    modelPkg.getMultipartId().createMultipartId("java.lang.RuntimeException", null, null)); //NOI18N
+//                            
+//                            final Object [] args = new Object [] { serviceName, serviceVarName, fqServiceClassName };
+//                            final String delegateBody = MessageFormat.format(SERVICE_DELEGATE_BODY, args);
+//                            serviceDelegate.setBodyText(delegateBody);
+//                            jc.getContents().add(serviceDelegate);
+//                        }
+//                        
+//                        // Add port delegate
+//                        final Method portDelegate = modelPkg.getMethod().createMethod();
+//                        if (portDelegate != null) {
+//                            portDelegate.setName(portDelegateName);
+//                            portDelegate.setType(portType);
+//                            portDelegate.setModifiers(Modifier.PRIVATE);
+//                            portDelegate.getExceptionNames().add(
+//                                    modelPkg.getMultipartId().createMultipartId("java.lang.RuntimeException", null, null)); //NOI18N
+//                            
+//                            final Object [] args = new Object [] { servicePortVarName, servicePortJaxRpcName, serviceDelegateName, fqPortTypeName };
+//                            final String delegateBody = MessageFormat.format(PORT_DELEGATE_BODY, args);
+//                            portDelegate.setBodyText(delegateBody);
+//                            jc.getContents().add(portDelegate);
+//                        }
+//                        rollbackFlag = false;   // no errors! - do not rollback
+//                    }
+//                } catch (NullPointerException npe) {
+//                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, npe);
+//                }
+//            } else {
+//                rollbackFlag = false;
+//            }
+//        } finally {
+//            repository.endTrans(rollbackFlag);
+//        }
+//    }
     
-    private String createInvocationBody(final DataObject dataObj, final Method cm) {
-        final StringBuffer params = new StringBuffer();
+//    private String createInvocationBody(final DataObject dataObj, final Method cm) {
+//        final StringBuffer params = new StringBuffer();
+//        
+//        final List<Parameter> parameters = cm.getParameters();
+//        final Iterator<Parameter> it = parameters.iterator();
+//        while(it.hasNext()){
+//            params.append(it.next().getName());
+//            if (it.hasNext()){
+//                params.append(','); // NOI18N
+//            } else {
+//                break;
+//            }
+//        }
+//        
+//        boolean isVoid = false;
+//        //test na void
+//        if ( cm.getType() instanceof PrimitiveType &&
+//                ((PrimitiveType)cm.getType()).getKind().equals(PrimitiveTypeKindEnum.VOID)){
+//            isVoid = true;
+//        }
+//        final String returnValue = !isVoid ? "return":""; //NOI18N
+//        
+//        final WSDLService service = (WSDLService)dataObject.getConfiguration().getServices().get(0);
+//        final PortData portData = (PortData)service.getData().get( 0 );
+//        
+//        final String fqServiceClassName = service.getType();
+//        final String fqPortTypeName = portData.getType();
+//        final String serviceName = service.getName();
+//        final String serviceVarName = varFromName(serviceName);
+//        final String servicePortJaxRpcName = classFromName(portData.getName());
+//        final String servicePortVarName = varFromName(portData.getName());
+//        final String serviceOperationName = cm.getName();//cds.getPortName();
+//        
+//        final String portDelegateName = "get" + servicePortJaxRpcName; //NOI18N
+//        String invocationBody = "";
+//        
+//        String file = service.getFile();
+//        file = file.substring(0, file.lastIndexOf('.')); // NOI18N
+//        final ClientStubDescriptor stubType = getStub(dataObj.getPrimaryFile(), file);
+//        
+//        if (ClientStubDescriptor.JSR109_CLIENT_STUB.equals(stubType.getName())) {
+//            // create the inserted text
+//            final Object [] args = new Object [] { serviceOperationName, portDelegateName, params.toString(), returnValue };
+//            invocationBody = MessageFormat.format(OPERATION_INVOCATION_BODY, args);
+//            
+//        } else if (ClientStubDescriptor.JAXRPC_CLIENT_STUB.equals(stubType.getName())) { // JAXRPC static stub
+//            // create the inserted text
+//            final Object [] args = new Object [] { //serviceOperationName, portDelegateName.getName() };
+//                serviceName, serviceVarName, fqServiceClassName,
+//                fqServiceClassName + "_Impl", // NOI18N // !PW Note this classname is JAXRPC implementation dependent.
+//                servicePortVarName, servicePortJaxRpcName, fqPortTypeName,
+//                serviceOperationName, params.toString(), returnValue
+//            };
+//            invocationBody = MessageFormat.format(OPERATION_INVOCATION_JAXRPC_BODY, args);
+//        }
+//        return invocationBody;
+//    }
         
-        final List<Parameter> parameters = cm.getParameters();
-        final Iterator<Parameter> it = parameters.iterator();
-        while(it.hasNext()){
-            params.append(it.next().getName());
-            if (it.hasNext()){
-                params.append(','); // NOI18N
-            } else {
-                break;
-            }
-        }
-        
-        boolean isVoid = false;
-        //test na void
-        if ( cm.getType() instanceof PrimitiveType &&
-                ((PrimitiveType)cm.getType()).getKind().equals(PrimitiveTypeKindEnum.VOID)){
-            isVoid = true;
-        }
-        final String returnValue = !isVoid ? "return":""; //NOI18N
-        
-        final WSDLService service = (WSDLService)dataObject.getConfiguration().getServices().get(0);
-        final PortData portData = (PortData)service.getData().get( 0 );
-        
-        final String fqServiceClassName = service.getType();
-        final String fqPortTypeName = portData.getType();
-        final String serviceName = service.getName();
-        final String serviceVarName = varFromName(serviceName);
-        final String servicePortJaxRpcName = classFromName(portData.getName());
-        final String servicePortVarName = varFromName(portData.getName());
-        final String serviceOperationName = cm.getName();//cds.getPortName();
-        
-        final String portDelegateName = "get" + servicePortJaxRpcName; //NOI18N
-        String invocationBody = "";
-        
-        String file = service.getFile();
-        file = file.substring(0, file.lastIndexOf('.')); // NOI18N
-        final ClientStubDescriptor stubType = getStub(dataObj.getPrimaryFile(), file);
-        
-        if (ClientStubDescriptor.JSR109_CLIENT_STUB.equals(stubType.getName())) {
-            // create the inserted text
-            final Object [] args = new Object [] { serviceOperationName, portDelegateName, params.toString(), returnValue };
-            invocationBody = MessageFormat.format(OPERATION_INVOCATION_BODY, args);
-            
-        } else if (ClientStubDescriptor.JAXRPC_CLIENT_STUB.equals(stubType.getName())) { // JAXRPC static stub
-            // create the inserted text
-            final Object [] args = new Object [] { //serviceOperationName, portDelegateName.getName() };
-                serviceName, serviceVarName, fqServiceClassName,
-                fqServiceClassName + "_Impl", // NOI18N // !PW Note this classname is JAXRPC implementation dependent.
-                servicePortVarName, servicePortJaxRpcName, fqPortTypeName,
-                serviceOperationName, params.toString(), returnValue
-            };
-            invocationBody = MessageFormat.format(OPERATION_INVOCATION_JAXRPC_BODY, args);
-        }
-        return invocationBody;
-    }
-        
-    public static Method[] getMethods(final JavaClass jc) {
-        final List<Method> result = new LinkedList<Method>();
-        if (jc != null) {
-            final List<Feature> features = jc.getFeatures();
-            for ( final Object o : features ) {
-                if (o instanceof Method) {
-                    result.add((Method)o);
-                }
-            }
-        }
-        return result.toArray(new Method[result.size()]);
-    }
+//    public static Method[] getMethods(final JavaClass jc) {
+//        final List<Method> result = new LinkedList<Method>();
+//        if (jc != null) {
+//            final List<Feature> features = jc.getFeatures();
+//            for ( final Object o : features ) {
+//                if (o instanceof Method) {
+//                    result.add((Method)o);
+//                }
+//            }
+//        }
+//        return result.toArray(new Method[result.size()]);
+//    }
 }
 

@@ -36,12 +36,12 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.Element;
-import org.netbeans.jmi.javamodel.Feature;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Parameter;
-import org.netbeans.jmi.javamodel.UnresolvedClass;
+//import org.netbeans.jmi.javamodel.Element;
+//import org.netbeans.jmi.javamodel.Feature;
+//import org.netbeans.jmi.javamodel.JavaClass;
+//import org.netbeans.jmi.javamodel.Method;
+//import org.netbeans.jmi.javamodel.Parameter;
+//import org.netbeans.jmi.javamodel.UnresolvedClass;
 import org.netbeans.modules.mobility.end2end.E2EDataObject;
 import org.netbeans.modules.mobility.end2end.classdata.AbstractService;
 import org.netbeans.modules.mobility.end2end.classdata.ClassData;
@@ -55,12 +55,12 @@ import org.netbeans.modules.mobility.end2end.ui.treeview.MethodCheckedTreeBeanVi
 import org.netbeans.modules.mobility.end2end.util.ServiceNodeManager;
 import org.netbeans.modules.mobility.end2end.util.Util;
 import org.netbeans.modules.mobility.end2end.util.WebServiceNodeManager;
-import org.netbeans.modules.java.ui.nodes.SourceNodes;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+//import org.netbeans.modules.java.ui.nodes.SourceNodes;
+//import org.netbeans.modules.javacore.api.JavaModel;
+//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.modules.websvc.api.registry.WebServicesRegistryView;
-import org.netbeans.modules.websvc.core.PortInformation;
-import org.netbeans.modules.websvc.core.ServiceInformation;
+//import org.netbeans.modules.websvc.core.PortInformation;
+//import org.netbeans.modules.websvc.core.ServiceInformation;
 import org.netbeans.modules.xml.multiview.Error;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
@@ -146,54 +146,54 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
     }
     
     private void initAccessibility() {
-        getAccessibleContext().setAccessibleDescription( NbBundle.getMessage( ServicesPanel.class, "ACSD_ServicesPanel" ));
-        
-        if( checkedTreeView != null ) {
-            checkedTreeView.getAccessibleContext().setAccessibleDescription( NbBundle.getMessage( ServicesPanel.class, "ACSD_Services" ));
-        } else if( treeView != null ) {
-            treeView.getAccessibleContext().setAccessibleDescription( NbBundle.getMessage( ServicesPanel.class, "ACSD_Services" ));
-        }
+//        getAccessibleContext().setAccessibleDescription( NbBundle.getMessage( ServicesPanel.class, "ACSD_ServicesPanel" ));
+//        
+//        if( checkedTreeView != null ) {
+//            checkedTreeView.getAccessibleContext().setAccessibleDescription( NbBundle.getMessage( ServicesPanel.class, "ACSD_Services" ));
+//        } else if( treeView != null ) {
+//            treeView.getAccessibleContext().setAccessibleDescription( NbBundle.getMessage( ServicesPanel.class, "ACSD_Services" ));
+//        }
     }
     
     private void create() {
-        wsdl = Configuration.WSDLCLASS_TYPE.equals( configuration.getServiceType());
-        Mnemonics.setLocalizedText(servicesLabel,
-                !wsdl ? NbBundle.getMessage( ServicesPanel.class, "LBL_Methods" ) :
-                    NbBundle.getMessage( ServicesPanel.class, "LBL_Operations" ));
-        
-        
-        if (checkedTreeView != null){
-            remove(checkedTreeView);
-            checkedTreeView = null;
-        }
-        final GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridheight = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        if (dataObject != null) { //different borders for wizard and panel
-            gridBagConstraints.insets = new java.awt.Insets(5, 12, 5, 12);
-        }
-        
-        treeView = new BeanTreeView();
-        treeView.setBorder( new LineBorder( Color.BLACK, 1, true ));
-        add( treeView, gridBagConstraints);
-        
-        servicesLabel.setLabelFor( treeView );
-        
-        waitNode = SourceNodes.getExplorerFactory().createWaitNode();
-        waitNode.setDisplayName( !wsdl ?
-            NbBundle.getMessage( ServicesPanel.class, "MSG_WaitComputingMethods" ) :
-            NbBundle.getMessage( ServicesPanel.class, "MSG_WaitComputingWebServices" ));
-        getExplorerManager().setRootContext(waitNode);
-        
-        updater = new TreeUpdater();
-        repaintingTask = RequestProcessor.getDefault().create( updater );
-        
-        initAccessibility();
+//        wsdl = Configuration.WSDLCLASS_TYPE.equals( configuration.getServiceType());
+//        Mnemonics.setLocalizedText(servicesLabel,
+//                !wsdl ? NbBundle.getMessage( ServicesPanel.class, "LBL_Methods" ) :
+//                    NbBundle.getMessage( ServicesPanel.class, "LBL_Operations" ));
+//        
+//        
+//        if (checkedTreeView != null){
+//            remove(checkedTreeView);
+//            checkedTreeView = null;
+//        }
+//        final GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+//        gridBagConstraints.gridx = 0;
+//        gridBagConstraints.gridy = 1;
+//        gridBagConstraints.gridheight = 1;
+//        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+//        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+//        gridBagConstraints.weightx = 1.0;
+//        gridBagConstraints.weighty = 1.0;
+//        if (dataObject != null) { //different borders for wizard and panel
+//            gridBagConstraints.insets = new java.awt.Insets(5, 12, 5, 12);
+//        }
+//        
+//        treeView = new BeanTreeView();
+//        treeView.setBorder( new LineBorder( Color.BLACK, 1, true ));
+//        add( treeView, gridBagConstraints);
+//        
+//        servicesLabel.setLabelFor( treeView );
+//        
+//        waitNode = SourceNodes.getExplorerFactory().createWaitNode();
+//        waitNode.setDisplayName( !wsdl ?
+//            NbBundle.getMessage( ServicesPanel.class, "MSG_WaitComputingMethods" ) :
+//            NbBundle.getMessage( ServicesPanel.class, "MSG_WaitComputingWebServices" ));
+//        getExplorerManager().setRootContext(waitNode);
+//        
+//        updater = new TreeUpdater();
+//        repaintingTask = RequestProcessor.getDefault().create( updater );
+//        
+//        initAccessibility();
     }
     
     public void setConfiguration( final Configuration configuration ){
@@ -237,359 +237,360 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
     }
     
     protected void updateTree() {
-        if( JavaMetamodel.getManager().isScanInProgress()) {
-            final Runnable update = new Runnable() {
-                public void run() {
-                    JavaMetamodel.getManager().waitScanFinished();
-                    initTreeView();
-                }
-            };
-            update.run();
-        } else {
-            initTreeView();
-        }
+//        if( JavaMetamodel.getManager().isScanInProgress()) {
+//            final Runnable update = new Runnable() {
+//                public void run() {
+//                    JavaMetamodel.getManager().waitScanFinished();
+//                    initTreeView();
+//                }
+//            };
+//            update.run();
+//        } else {
+//            initTreeView();
+//        }
     }
     
     protected void initTreeView() {
-        final Project serverProject = Util.getServerProject(configuration);
-        if (!wsdl) {
-            rootNode = ServiceNodeManager.getRootNode( serverProject );
-        } else {
-            final List<AbstractService> services = configuration.getServices();
-            //assert services.length != 1; //there is problem
-            final WSDLService service = (WSDLService)services.get(0);
-            final WebServicesRegistryView wsrv = Lookup.getDefault().lookup(WebServicesRegistryView.class);
-            if (servicePcl != null){
-                wsrv.removePropertyChangeListener(servicePcl);
-            }
-            if (dataObject != null && wsrv != null && !wsrv.isServiceRegistered(service.getName())){
-                if (servicePcl == null){
-                    servicePcl = new ServicePCL();
-                }
-                wsrv.addPropertyChangeListener(servicePcl);
-                rootNode = WebServiceNodeManager.getAvailableWSRootNode( serverProject, service.getFile() );
-                waitNode.setDisplayName(NbBundle.getMessage( ServicesPanel.class, "MSG_WaitComputingWebServices"));
-                return;
-            }
-            rootNode = WebServiceNodeManager.getAvailableWSRootNode( serverProject, service.getFile() );
-            
-            if (rootNode.getChildren().getNodesCount() == 0){
-                repaintingTask = RequestProcessor.getDefault().create( updater  );
-                repaintingTask.schedule( 500 );
-                return;
-            }
-        }
-        
-        //remove listeners while selecting
-        getExplorerManager().removePropertyChangeListener(this);
-        
-        if (treeView != null && rootNode.getChildren().getNodesCount() != 0){
-            setVisible(false);
-            remove(treeView);
-        }
-        
-        if (!wsdl && rootNode.getChildren().getNodesCount() == 0){
-            waitNode.setDisplayName(NbBundle.getMessage(ServicesPanel.class, "MSG_NoMethodAvailable"));
-            return;
-        }
-        
-        final GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridheight = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        if (dataObject != null) //different borders for wizard and panel
-            gridBagConstraints.insets = new java.awt.Insets(5, 10, 5, 0);
-        
-        checkedTreeView = new MethodCheckedTreeBeanView();
-        checkedTreeView.setPopupAllowed( false );
-        checkedTreeView.setDefaultActionAllowed( false );
-        checkedTreeView.setBorder( new LineBorder( Color.BLACK, 1, true ));
-        checkedTreeView.setRootVisible( false );
-        checkedTreeView.setRoot( rootNode );
-        getExplorerManager().setRootContext( rootNode );
-        checkedTreeView.initTreeWithAllUnselected();
-        add( checkedTreeView, gridBagConstraints);
-        setVisible(true);
-        if( configuration != null && configuration.getServices() != null ) {
-            setSelectedMethods();
-        }
-        
-        servicesLabel.setLabelFor( checkedTreeView );
-        
-        //add back after selection
-        getExplorerManager().addPropertyChangeListener(this);
-        
-        checkedTreeView.addChangeListener( new ChangeListener() {
-            public void stateChanged( @SuppressWarnings("unused") ChangeEvent e ) {
-                if( dataObject != null ) {
-                    ServicesPanel.this.dataObject.setModified( true );
-                }
-            }
-        });
-        
-        checkedTreeView.setEnabled( true );
-        if (dataObject != null && !dataObject.isGenerating()){
-            generateButton.setEnabled( true );
-        }
-        treeView = null;
-        
-        initAccessibility();
+//        final Project serverProject = Util.getServerProject(configuration);
+//        if (!wsdl) {
+//            rootNode = ServiceNodeManager.getRootNode( serverProject );
+//        } else {
+//            final List<AbstractService> services = configuration.getServices();
+//            //assert services.length != 1; //there is problem
+//            final WSDLService service = (WSDLService)services.get(0);
+//            final WebServicesRegistryView wsrv = Lookup.getDefault().lookup(WebServicesRegistryView.class);
+//            if (servicePcl != null){
+//                wsrv.removePropertyChangeListener(servicePcl);
+//            }
+//            if (dataObject != null && wsrv != null && !wsrv.isServiceRegistered(service.getName())){
+//                if (servicePcl == null){
+//                    servicePcl = new ServicePCL();
+//                }
+//                wsrv.addPropertyChangeListener(servicePcl);
+//                rootNode = WebServiceNodeManager.getAvailableWSRootNode( serverProject, service.getFile() );
+//                waitNode.setDisplayName(NbBundle.getMessage( ServicesPanel.class, "MSG_WaitComputingWebServices"));
+//                return;
+//            }
+//            rootNode = WebServiceNodeManager.getAvailableWSRootNode( serverProject, service.getFile() );
+//            
+//            if (rootNode.getChildren().getNodesCount() == 0){
+//                repaintingTask = RequestProcessor.getDefault().create( updater  );
+//                repaintingTask.schedule( 500 );
+//                return;
+//            }
+//        }
+//        
+//        //remove listeners while selecting
+//        getExplorerManager().removePropertyChangeListener(this);
+//        
+//        if (treeView != null && rootNode.getChildren().getNodesCount() != 0){
+//            setVisible(false);
+//            remove(treeView);
+//        }
+//        
+//        if (!wsdl && rootNode.getChildren().getNodesCount() == 0){
+//            waitNode.setDisplayName(NbBundle.getMessage(ServicesPanel.class, "MSG_NoMethodAvailable"));
+//            return;
+//        }
+//        
+//        final GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+//        gridBagConstraints.gridx = 0;
+//        gridBagConstraints.gridy = 1;
+//        gridBagConstraints.gridheight = 1;
+//        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+//        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+//        gridBagConstraints.weightx = 1.0;
+//        gridBagConstraints.weighty = 1.0;
+//        if (dataObject != null) //different borders for wizard and panel
+//            gridBagConstraints.insets = new java.awt.Insets(5, 10, 5, 0);
+//        
+//        checkedTreeView = new MethodCheckedTreeBeanView();
+//        checkedTreeView.setPopupAllowed( false );
+//        checkedTreeView.setDefaultActionAllowed( false );
+//        checkedTreeView.setBorder( new LineBorder( Color.BLACK, 1, true ));
+//        checkedTreeView.setRootVisible( false );
+//        checkedTreeView.setRoot( rootNode );
+//        getExplorerManager().setRootContext( rootNode );
+//        checkedTreeView.initTreeWithAllUnselected();
+//        add( checkedTreeView, gridBagConstraints);
+//        setVisible(true);
+//        if( configuration != null && configuration.getServices() != null ) {
+//            setSelectedMethods();
+//        }
+//        
+//        servicesLabel.setLabelFor( checkedTreeView );
+//        
+//        //add back after selection
+//        getExplorerManager().addPropertyChangeListener(this);
+//        
+//        checkedTreeView.addChangeListener( new ChangeListener() {
+//            public void stateChanged( @SuppressWarnings("unused") ChangeEvent e ) {
+//                if( dataObject != null ) {
+//                    ServicesPanel.this.dataObject.setModified( true );
+//                }
+//            }
+//        });
+//        
+//        checkedTreeView.setEnabled( true );
+//        if (dataObject != null && !dataObject.isGenerating()){
+//            generateButton.setEnabled( true );
+//        }
+//        treeView = null;
+//        
+//        initAccessibility();
     }
     
     private void setSelectedMethods() {
-        
-        //todo should distinguish between WS and classes
-        if (!wsdl) {
-            final AbstractService classService = configuration.getServices().get(0);
-            final List<ClassData> classes = classService.getData();
-            if (classes == null) return;
-            final Error error = new Error( Error.TYPE_WARNING, Error.MISSING_VALUE_MESSAGE,
-                                    NbBundle.getMessage( ServicesPanel.class, "ERR_ServiceMethodNotFound" ), this );
-            for ( final ClassData classData : classes ) {
-                final String className = classData.getClassName();
-                final String pkgName = classData.getPackageName();
-                final List<OperationData> methods = classData.getOperations();
-                for ( final OperationData methodData : methods ) {
-                    final String methodName = methodData.getName();
-                    try {
-                        checkedTreeView.setState(
-                                NodeOp.findPath(rootNode, new String[]{pkgName, className, methodName}), true );
-                        checkedTreeView.expandNode(
-                                NodeOp.findPath(rootNode, new String[]{pkgName, className }));
-                    } catch (NodeNotFoundException ex) {
-                        //System.err.println(" SETTING ERROR OUTPUT");
-                        final SectionView sectionView = getSectionView();
-                        if (sectionView != null){
-                            sectionView.getErrorPanel().setError( error );
-                        }
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                    }
-                }
-            }
-        } else {
-            
-            //assert dataObject.getConfiguration().getServices().length == 1;
-            final WSDLService wsdlService = (WSDLService)configuration.getServices().get(0); //TODO we are assuming only one service
-            //assert services != null; //fail situation TODO how to solve?
-            final String serviceName = wsdlService.getName();
-            final List<ClassData> ports = wsdlService.getData();
-            final Error error = new Error( Error.TYPE_WARNING, Error.MISSING_VALUE_MESSAGE,
-                                    NbBundle.getMessage( ServicesPanel.class, "ERR_ServiceMethodNotFound" ), this );
-            //search for selections
-            for (int i = 0; ports != null && i < ports.size(); i++ ){
-                final PortData portData = (PortData)ports.get( i );
-                final String port = portData.getName();
-                final List<OperationData> operations = portData.getOperations();
-                for ( final OperationData operationData : operations ) {
-                    final String operation = operationData.getMethodName();
-                    try {
-                        final Node pkgNode = NodeOp.findPath( rootNode, new String[]{serviceName, port, operation});
-                        checkedTreeView.setState( pkgNode, true );
-                    } catch (Exception e){
-                        final SectionView sectionView = getSectionView();
-                        if (sectionView != null){
-                            sectionView.getErrorPanel().setError( error );
-                        }
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                    }
-                }
-            }
-            checkedTreeView.expandAll();
-        }
+//        
+//        //todo should distinguish between WS and classes
+//        if (!wsdl) {
+//            final AbstractService classService = configuration.getServices().get(0);
+//            final List<ClassData> classes = classService.getData();
+//            if (classes == null) return;
+//            final Error error = new Error( Error.TYPE_WARNING, Error.MISSING_VALUE_MESSAGE,
+//                                    NbBundle.getMessage( ServicesPanel.class, "ERR_ServiceMethodNotFound" ), this );
+//            for ( final ClassData classData : classes ) {
+//                final String className = classData.getClassName();
+//                final String pkgName = classData.getPackageName();
+//                final List<OperationData> methods = classData.getOperations();
+//                for ( final OperationData methodData : methods ) {
+//                    final String methodName = methodData.getName();
+//                    try {
+//                        checkedTreeView.setState(
+//                                NodeOp.findPath(rootNode, new String[]{pkgName, className, methodName}), true );
+//                        checkedTreeView.expandNode(
+//                                NodeOp.findPath(rootNode, new String[]{pkgName, className }));
+//                    } catch (NodeNotFoundException ex) {
+//                        //System.err.println(" SETTING ERROR OUTPUT");
+//                        final SectionView sectionView = getSectionView();
+//                        if (sectionView != null){
+//                            sectionView.getErrorPanel().setError( error );
+//                        }
+//                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//                    }
+//                }
+//            }
+//        } else {
+//            
+//            //assert dataObject.getConfiguration().getServices().length == 1;
+//            final WSDLService wsdlService = (WSDLService)configuration.getServices().get(0); //TODO we are assuming only one service
+//            //assert services != null; //fail situation TODO how to solve?
+//            final String serviceName = wsdlService.getName();
+//            final List<ClassData> ports = wsdlService.getData();
+//            final Error error = new Error( Error.TYPE_WARNING, Error.MISSING_VALUE_MESSAGE,
+//                                    NbBundle.getMessage( ServicesPanel.class, "ERR_ServiceMethodNotFound" ), this );
+//            //search for selections
+//            for (int i = 0; ports != null && i < ports.size(); i++ ){
+//                final PortData portData = (PortData)ports.get( i );
+//                final String port = portData.getName();
+//                final List<OperationData> operations = portData.getOperations();
+//                for ( final OperationData operationData : operations ) {
+//                    final String operation = operationData.getMethodName();
+//                    try {
+//                        final Node pkgNode = NodeOp.findPath( rootNode, new String[]{serviceName, port, operation});
+//                        checkedTreeView.setState( pkgNode, true );
+//                    } catch (Exception e){
+//                        final SectionView sectionView = getSectionView();
+//                        if (sectionView != null){
+//                            sectionView.getErrorPanel().setError( error );
+//                        }
+//                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+//                    }
+//                }
+//            }
+//            checkedTreeView.expandAll();
+//        }
     }
     
     public void getSelectedMethods() {
-        //todo should distinguish between WS and classes
-        if (!wsdl){
-            final List<ClassData> classData = new ArrayList<ClassData>();
-            final Node packageNodes[] = rootNode.getChildren().getNodes();
-            
-            JavaModel.getJavaRepository().beginTrans(false);
-            try{
-                for ( Node pkNode : packageNodes ) {    
-                    final Node classNodes[] = pkNode.getChildren().getNodes();
-                    for ( Node clNode : classNodes ) {    
-                        final Node methodNodes[] = clNode.getChildren().getNodes();
-                        final List<OperationData> methodData = new ArrayList<OperationData>();
-                        for ( Node node : methodNodes ) {
-                            if( checkedTreeView.getState( node ).equals( MethodCheckedTreeBeanView.SELECTED )) {
-                                final Method methodElement = (Method)node.getLookup().lookup(Element.class);
-                                final List<Parameter> params = methodElement.getParameters();
-                                final List<TypeData> newParams = new ArrayList<TypeData>(params.size());
-                                for ( final Parameter param : params ) {
-                                    //have a list of parameters for each method
-                                    final TypeData td = new TypeData(  param.getName(), param.getType().getName());
-                                    newParams.add( td );
-                                }
-                                final OperationData md = new OperationData( methodElement.getName());
-                                md.setReturnType( methodElement.getType().getName());
-                                md.setParameterTypes( newParams );
-                                methodData.add( md );
-                            }
-                        }
-                        if (methodData.size() != 0){
-                            final String classFQN = ((JavaClass)clNode.getLookup().lookup(Element.class)).getName();
-                            //System.err.println(" - FQN: " + classFQN );
-                            final ClassData cd = new ClassData( classFQN );
-                            cd.setOperations( methodData );
-                            classData.add( cd );
-                        }
-                    }
-                }
-                final ClassService classService = (ClassService)configuration.getServices().get(0);
-                classService.setData( classData );
-                final List<AbstractService> services = new ArrayList<AbstractService>();
-                services.add(classService);
-                configuration.setServices( services );
-            } catch( Exception ex){
-                ErrorManager.getDefault().notify(ex);
-            } finally {
-                JavaModel.getJavaRepository().endTrans();
-            }
-        } else { //we are wsdl
-            final List<AbstractService> servicesData = new ArrayList<AbstractService>();
-            final Node serviceNodes[] = rootNode.getChildren().getNodes();
-            WSI serviceClassInfo = null;
-            
-            for( int i = 0; i < serviceNodes.length; i++ ) { //there is only one service node now!
-                final Node portNodes[] = serviceNodes[i].getChildren().getNodes();
-                final List<ClassData> classData = new ArrayList<ClassData>();
-                
-                for( int j = 0; j < portNodes.length; j++ ) {
-                    final Node operationNodes[] = portNodes[j].getChildren().getNodes();
-                    final List<OperationData> methodData = new ArrayList<OperationData>();
-                    
-                    for( int k = 0; k < operationNodes.length; k++ ) {
-                        final String operationName = operationNodes[k].getName(); //name of the operation (selection)
-                        
-                        if( checkedTreeView.getState( operationNodes[k] ).equals( MethodCheckedTreeBeanView.SELECTED )) {
-                            serviceClassInfo = computeMethodCall(operationNodes[k]);
-                            if (serviceClassInfo == null) {
-                                continue;
-                            }
-                            
-                            final OperationData md = getMethodData(serviceClassInfo.getFqPortTypeName(), operationName);
-                            if (md != null){
-                                methodData.add(md);
-                            }
-                        }
-                    }
-                    if (serviceClassInfo != null && methodData.size() != 0){ //class was found
-                        final PortData pd = new PortData( serviceClassInfo.getFqPortTypeName());
-                        pd.setName( portNodes[j].getName());
-                        pd.setOperations( methodData );
-                        classData.add( pd );
-                    }
-                }
-                final DataObject wsdlObj = serviceNodes[i].getLookup().lookup(DataObject.class);
-                String fileURL = "";
-                try {
-                    //TODO store/read it in project relative style
-                    fileURL = FileUtil.toFile(wsdlObj.getPrimaryFile()).toURL().toString();
-                } catch (MalformedURLException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                }
-                final WSDLService wsdlService = (WSDLService)configuration.getServices().get(0);
-                if (serviceClassInfo != null)
-                    wsdlService.setType(serviceClassInfo.getFqServiceClassName());
-                wsdlService.setData( classData );
-                wsdlService.setUrl( fileURL );
-                wsdlService.setFile( wsdlObj.getPrimaryFile().getNameExt());
-                final ServiceInformation si = (ServiceInformation) wsdlObj.getCookie(ServiceInformation.class);
-                wsdlService.setName( normalizeAgainstWsdl(serviceNodes[i].getName(), si.getServiceNames()));
-                servicesData.add( wsdlService );
-            }
-            configuration.setServices( servicesData );
-        }
+//        //todo should distinguish between WS and classes
+//        if (!wsdl){
+//            final List<ClassData> classData = new ArrayList<ClassData>();
+//            final Node packageNodes[] = rootNode.getChildren().getNodes();
+//            
+//            JavaModel.getJavaRepository().beginTrans(false);
+//            try{
+//                for ( Node pkNode : packageNodes ) {    
+//                    final Node classNodes[] = pkNode.getChildren().getNodes();
+//                    for ( Node clNode : classNodes ) {    
+//                        final Node methodNodes[] = clNode.getChildren().getNodes();
+//                        final List<OperationData> methodData = new ArrayList<OperationData>();
+//                        for ( Node node : methodNodes ) {
+//                            if( checkedTreeView.getState( node ).equals( MethodCheckedTreeBeanView.SELECTED )) {
+//                                final Method methodElement = (Method)node.getLookup().lookup(Element.class);
+//                                final List<Parameter> params = methodElement.getParameters();
+//                                final List<TypeData> newParams = new ArrayList<TypeData>(params.size());
+//                                for ( final Parameter param : params ) {
+//                                    //have a list of parameters for each method
+//                                    final TypeData td = new TypeData(  param.getName(), param.getType().getName());
+//                                    newParams.add( td );
+//                                }
+//                                final OperationData md = new OperationData( methodElement.getName());
+//                                md.setReturnType( methodElement.getType().getName());
+//                                md.setParameterTypes( newParams );
+//                                methodData.add( md );
+//                            }
+//                        }
+//                        if (methodData.size() != 0){
+//                            final String classFQN = ((JavaClass)clNode.getLookup().lookup(Element.class)).getName();
+//                            //System.err.println(" - FQN: " + classFQN );
+//                            final ClassData cd = new ClassData( classFQN );
+//                            cd.setOperations( methodData );
+//                            classData.add( cd );
+//                        }
+//                    }
+//                }
+//                final ClassService classService = (ClassService)configuration.getServices().get(0);
+//                classService.setData( classData );
+//                final List<AbstractService> services = new ArrayList<AbstractService>();
+//                services.add(classService);
+//                configuration.setServices( services );
+//            } catch( Exception ex){
+//                ErrorManager.getDefault().notify(ex);
+//            } finally {
+//                JavaModel.getJavaRepository().endTrans();
+//            }
+//        } else { //we are wsdl
+//            final List<AbstractService> servicesData = new ArrayList<AbstractService>();
+//            final Node serviceNodes[] = rootNode.getChildren().getNodes();
+//            WSI serviceClassInfo = null;
+//            
+//            for( int i = 0; i < serviceNodes.length; i++ ) { //there is only one service node now!
+//                final Node portNodes[] = serviceNodes[i].getChildren().getNodes();
+//                final List<ClassData> classData = new ArrayList<ClassData>();
+//                
+//                for( int j = 0; j < portNodes.length; j++ ) {
+//                    final Node operationNodes[] = portNodes[j].getChildren().getNodes();
+//                    final List<OperationData> methodData = new ArrayList<OperationData>();
+//                    
+//                    for( int k = 0; k < operationNodes.length; k++ ) {
+//                        final String operationName = operationNodes[k].getName(); //name of the operation (selection)
+//                        
+//                        if( checkedTreeView.getState( operationNodes[k] ).equals( MethodCheckedTreeBeanView.SELECTED )) {
+//                            serviceClassInfo = computeMethodCall(operationNodes[k]);
+//                            if (serviceClassInfo == null) {
+//                                continue;
+//                            }
+//                            
+//                            final OperationData md = getMethodData(serviceClassInfo.getFqPortTypeName(), operationName);
+//                            if (md != null){
+//                                methodData.add(md);
+//                            }
+//                        }
+//                    }
+//                    if (serviceClassInfo != null && methodData.size() != 0){ //class was found
+//                        final PortData pd = new PortData( serviceClassInfo.getFqPortTypeName());
+//                        pd.setName( portNodes[j].getName());
+//                        pd.setOperations( methodData );
+//                        classData.add( pd );
+//                    }
+//                }
+//                final DataObject wsdlObj = serviceNodes[i].getLookup().lookup(DataObject.class);
+//                String fileURL = "";
+//                try {
+//                    //TODO store/read it in project relative style
+//                    fileURL = FileUtil.toFile(wsdlObj.getPrimaryFile()).toURL().toString();
+//                } catch (MalformedURLException ex) {
+//                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//                }
+//                final WSDLService wsdlService = (WSDLService)configuration.getServices().get(0);
+//                if (serviceClassInfo != null)
+//                    wsdlService.setType(serviceClassInfo.getFqServiceClassName());
+//                wsdlService.setData( classData );
+//                wsdlService.setUrl( fileURL );
+//                wsdlService.setFile( wsdlObj.getPrimaryFile().getNameExt());
+//                final ServiceInformation si = (ServiceInformation) wsdlObj.getCookie(ServiceInformation.class);
+//                wsdlService.setName( normalizeAgainstWsdl(serviceNodes[i].getName(), si.getServiceNames()));
+//                servicesData.add( wsdlService );
+//            }
+//            configuration.setServices( servicesData );
+//        }
     }
     
 //TODO clarify where to put this code - this depends on possible changes in WS API's and should be shared with wizards
     private OperationData getMethodData(final String serviceClassFQN, final String operationName) {
-        JavaModel.getJavaRepository().beginTrans(false);
-        try {
-            final JavaClass jc = Util.resolveWebServiceClass(
-                    dataObject != null  ? dataObject.getServerProject().getProjectDirectory() :
-                        serverProjectFolder, serviceClassFQN);
-            if (jc == null || jc instanceof UnresolvedClass){
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(ServicesPanel.class, "MSG_WebProjectNotBuilt")));
-                return null;
-            }
-            final List<Feature> features = jc.getFeatures();
-            for ( final Feature feature : features ) {
-                if (feature instanceof Method) {
-                    if (!operationName.equals(feature.getName())){
-                        continue;
-                    }
-                    final Method method = (Method) feature;
-                    final int modifiers = method.getModifiers();
-                    if (Modifier.isPublic(modifiers)) {
-                        final List<Parameter> params = method.getParameters();
-                        final List<TypeData> newParams = new ArrayList<TypeData>(params.size());
-                        for ( final Parameter param : params ) {
-                            //have a list of parameters for each method
-                            final TypeData td = new TypeData( param.getName(), param.getType().getName());
-                            newParams.add( td );
-                        }
-                        final OperationData od = new OperationData( feature.getName());
-                        od.setMethodName( operationName );
-                        od.setReturnType( method.getType().getName());
-                        od.setParameterTypes( newParams );
-                        return od;
-                    }
-                }
-            }
-        } catch (Exception e){
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-        } finally {
-            JavaModel.getJavaRepository().endTrans();
-        }
+//        JavaModel.getJavaRepository().beginTrans(false);
+//        try {
+//            final JavaClass jc = Util.resolveWebServiceClass(
+//                    dataObject != null  ? dataObject.getServerProject().getProjectDirectory() :
+//                        serverProjectFolder, serviceClassFQN);
+//            if (jc == null || jc instanceof UnresolvedClass){
+//                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(ServicesPanel.class, "MSG_WebProjectNotBuilt")));
+//                return null;
+//            }
+//            final List<Feature> features = jc.getFeatures();
+//            for ( final Feature feature : features ) {
+//                if (feature instanceof Method) {
+//                    if (!operationName.equals(feature.getName())){
+//                        continue;
+//                    }
+//                    final Method method = (Method) feature;
+//                    final int modifiers = method.getModifiers();
+//                    if (Modifier.isPublic(modifiers)) {
+//                        final List<Parameter> params = method.getParameters();
+//                        final List<TypeData> newParams = new ArrayList<TypeData>(params.size());
+//                        for ( final Parameter param : params ) {
+//                            //have a list of parameters for each method
+//                            final TypeData td = new TypeData( param.getName(), param.getType().getName());
+//                            newParams.add( td );
+//                        }
+//                        final OperationData od = new OperationData( feature.getName());
+//                        od.setMethodName( operationName );
+//                        od.setReturnType( method.getType().getName());
+//                        od.setParameterTypes( newParams );
+//                        return od;
+//                    }
+//                }
+//            }
+//        } catch (Exception e){
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+//        } finally {
+//            JavaModel.getJavaRepository().endTrans();
+//        }
         return null;
     }
     
     private static WSI computeMethodCall(final Node serviceOperationNode) {
         
-        try {
-            final Node servicePortNode = serviceOperationNode.getParentNode();
-            final Node serviceNode = servicePortNode.getParentNode();
-            
-            final DataObject wsdlObj = serviceNode.getLookup().lookup(DataObject.class);
-            
-            final String servicePortName = servicePortNode.getName();
-            
-            final ServiceInformation si = (ServiceInformation) wsdlObj.getCookie(ServiceInformation.class);
-            final String serviceName = normalizeAgainstWsdl(serviceNode.getName(), si.getServiceNames()); //MUST BE STORED FOR LATTER USAGE
-            final String serviceClassName = classFromName(serviceName); //here is the class name //??
-            
-            String servicePackageName = null;
-            String servicePortTypeName = null;
-            
-            final ServiceInformation serviceInfo = (ServiceInformation) serviceNode.getCookie(ServiceInformation.class);
-            if (serviceInfo != null) {
-                servicePackageName = serviceInfo.getServicePackageName();
-                final List<PortInformation.PortInfo> portInfoList = serviceInfo.getServicePorts(serviceName);
-                for ( final PortInformation.PortInfo portInfo : portInfoList ) {
-                    if(servicePortName.equals(portInfo.getPort())) {
-                        servicePortTypeName = classFromName(portInfo.getPortType());
-                        break;
-                    }
-                }
-            }
-            
-            if (servicePackageName == null){
-                return null;
-            }
-            final String fqServiceClassName = servicePackageName + "." + serviceClassName; //NOI18N //MUST BE STORED FOR LATTER USAGE
-            final String fqPortTypeName = servicePackageName + "." + servicePortTypeName; //NOI18N //MUST BE STORED FOR LATTER USAGE
-            
-            return new WSI(serviceName, fqServiceClassName, fqPortTypeName);
-        } catch (NullPointerException npe) {
-            ErrorManager.getDefault().notify(npe);
-            return null;
-        }
+//        try {
+//            final Node servicePortNode = serviceOperationNode.getParentNode();
+//            final Node serviceNode = servicePortNode.getParentNode();
+//            
+//            final DataObject wsdlObj = serviceNode.getLookup().lookup(DataObject.class);
+//            
+//            final String servicePortName = servicePortNode.getName();
+//            
+//            final ServiceInformation si = (ServiceInformation) wsdlObj.getCookie(ServiceInformation.class);
+//            final String serviceName = normalizeAgainstWsdl(serviceNode.getName(), si.getServiceNames()); //MUST BE STORED FOR LATTER USAGE
+//            final String serviceClassName = classFromName(serviceName); //here is the class name //??
+//            
+//            String servicePackageName = null;
+//            String servicePortTypeName = null;
+//            
+//            final ServiceInformation serviceInfo = (ServiceInformation) serviceNode.getCookie(ServiceInformation.class);
+//            if (serviceInfo != null) {
+//                servicePackageName = serviceInfo.getServicePackageName();
+//                final List<PortInformation.PortInfo> portInfoList = serviceInfo.getServicePorts(serviceName);
+//                for ( final PortInformation.PortInfo portInfo : portInfoList ) {
+//                    if(servicePortName.equals(portInfo.getPort())) {
+//                        servicePortTypeName = classFromName(portInfo.getPortType());
+//                        break;
+//                    }
+//                }
+//            }
+//            
+//            if (servicePackageName == null){
+//                return null;
+//            }
+//            final String fqServiceClassName = servicePackageName + "." + serviceClassName; //NOI18N //MUST BE STORED FOR LATTER USAGE
+//            final String fqPortTypeName = servicePackageName + "." + servicePortTypeName; //NOI18N //MUST BE STORED FOR LATTER USAGE
+//            
+//            return new WSI(serviceName, fqServiceClassName, fqPortTypeName);
+//        } catch (NullPointerException npe) {
+//            ErrorManager.getDefault().notify(npe);
+//            return null;
+//        }
+        return null;
     }
     
     private static String classFromName(final String name) {
@@ -675,28 +676,28 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
     // End of variables declaration//GEN-END:variables
     
     public void propertyChange(java.beans.PropertyChangeEvent evt) {
-        if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())){
-            getSelectedMethods();
-            //System.err.println(" - selection changed");
-            final AbstractService service = configuration.getServices().get(0);
-            final SectionView sectionView = getSectionView();
-            if (sectionView != null){
-                if( service == null || ( service != null && service.getData().size() == 0 )) {
-                    sectionView.getErrorPanel().setError(
-                            new Error( Error.TYPE_FATAL, Error.MISSING_VALUE_MESSAGE,
-                            NbBundle.getMessage( ServicesPanel.class, "ERR_MissingServiceSelection" ), checkedTreeView ));
-                    //dataObject.setSaveEnable( false );
-                    generateButton.setEnabled( false );
-                } else {
-                    sectionView.getErrorPanel().clearError();
-                    //dataObject.setSaveEnable( true );
-                    generateButton.setEnabled( true );
-                }
-            }
-            fireChange();
-        } else if (E2EDataObject.PROP_GENERATING.equals(evt.getPropertyName())){
-            generateButton.setEnabled(!Boolean.TRUE.equals(evt.getNewValue()));
-        }
+//        if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())){
+//            getSelectedMethods();
+//            //System.err.println(" - selection changed");
+//            final AbstractService service = configuration.getServices().get(0);
+//            final SectionView sectionView = getSectionView();
+//            if (sectionView != null){
+//                if( service == null || ( service != null && service.getData().size() == 0 )) {
+//                    sectionView.getErrorPanel().setError(
+//                            new Error( Error.TYPE_FATAL, Error.MISSING_VALUE_MESSAGE,
+//                            NbBundle.getMessage( ServicesPanel.class, "ERR_MissingServiceSelection" ), checkedTreeView ));
+//                    //dataObject.setSaveEnable( false );
+//                    generateButton.setEnabled( false );
+//                } else {
+//                    sectionView.getErrorPanel().clearError();
+//                    //dataObject.setSaveEnable( true );
+//                    generateButton.setEnabled( true );
+//                }
+//            }
+//            fireChange();
+//        } else if (E2EDataObject.PROP_GENERATING.equals(evt.getPropertyName())){
+//            generateButton.setEnabled(!Boolean.TRUE.equals(evt.getNewValue()));
+//        }
     }
     
     public void addChangeListener(final ChangeListener l) {
