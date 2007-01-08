@@ -36,4 +36,9 @@ public interface ProcessInstanceListener extends EventListener {
    * This event is fired when the load generator ceases generating load
    */
   public void generatorStopped(final ProcessInstance provider);
+  
+  /**
+   *  This event is fired when the instance is invalidate eg. by editing it externally or renaming it
+   */
+  public void instanceInvalidated(final ProcessInstance instance);
 }

@@ -26,15 +26,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
-import javax.swing.Action;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.loadgenerator.actions.LoadAction;
-import org.netbeans.modules.loadgenerator.actions.StartAction;
-import org.netbeans.modules.loadgenerator.actions.StopAction;
 import org.netbeans.modules.loadgenerator.api.EngineManager;
 import org.netbeans.modules.loadgenerator.spi.Engine;
 import org.netbeans.modules.loadgenerator.spi.ProcessInstance;
@@ -51,8 +46,8 @@ import org.openide.util.Lookup;
 public class EngineManagerImpl implements EngineManager, ProcessInstanceListener {
   private static EngineManager instance = null;
   
-  private Map<ProcessInstance, ProgressHandle> prgrsHandles = Collections.synchronizedMap(new HashMap<ProcessInstance, ProgressHandle>());
-  private Map<ProcessInstance, ManagerOutputWindow> windows = new WeakHashMap<ProcessInstance, ManagerOutputWindow>();
+  final private Map<ProcessInstance, ProgressHandle> prgrsHandles = Collections.synchronizedMap(new HashMap<ProcessInstance, ProgressHandle>());
+  final private ManagerOutputWindowRegistry registry = ManagerOutputWindowRegistry.getDefault();
   
   private Collection<ProcessInstance> runningInstances;
   private static String lastUsedScript = null;
@@ -97,9 +92,19 @@ public class EngineManagerImpl implements EngineManager, ProcessInstanceListener
     ((ProcessInstance)provider).removeListener(this);
     runningInstances.remove(provider);
     
-    ManagerOutputWindow lgmgrWin = windows.get(provider);
+    ManagerOutputWindow lgmgrWin = registry.find(provider);
     if (lgmgrWin != null) {
       lgmgrWin.detach(provider);
+    }
+  }
+  
+  
+  public void instanceInvalidated(ProcessInstance instance) {
+    if (lastUsedScript != null) {
+      lastUsedScript = instance.getCurrentScript();
+    }
+    if (!instance.isRunning()) {
+      registry.close(instance);
     }
   }
   
@@ -123,7 +128,7 @@ public class EngineManagerImpl implements EngineManager, ProcessInstanceListener
   public Collection<Engine> findEngines(final String extension) {
     Collection<Engine> providers = new ArrayList<Engine>();
     Collection<? extends Engine> result = Lookup.getDefault().lookupAll(Engine.class);
-
+    
     for(Engine provider : result) {
       if (provider.getSupportedExtensions().contains(extension)) {
         providers.add(provider);
@@ -156,17 +161,7 @@ public class EngineManagerImpl implements EngineManager, ProcessInstanceListener
     ((ProcessInstance)instance).addListener(this);
     
     // open the main management window
-    ManagerOutputWindow mngrWin = windows.get(instance);
-    if (mngrWin == null) {
-      mngrWin = new ManagerOutputWindow(new Action[]{
-        new LoadAction((Engine)instance.getFactory()),
-        new StartAction((ProcessInstance)instance),
-        new StopAction((ProcessInstance)instance)});
-      windows.put(instance, mngrWin);
-    }
-    // ***
-    
-    mngrWin.attach(instance);
+    ManagerOutputWindow mngrWin = registry.open(instance);
     
     instance.start();
     lastUsedScript = instance.getCurrentScript();

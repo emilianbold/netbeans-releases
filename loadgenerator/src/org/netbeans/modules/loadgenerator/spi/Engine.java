@@ -20,15 +20,12 @@
 package org.netbeans.modules.loadgenerator.spi;
 
 import java.awt.Image;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import org.openide.util.WeakListeners;
-
 /**
  *
  * @author Jaroslav Bachorik
@@ -39,17 +36,27 @@ public abstract class Engine {
   
   private boolean lastReadyState = true;
   
-  private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-  
-  private PropertyChangeListener listener = new PropertyChangeListener() {
-    public void propertyChange(PropertyChangeEvent evt) {
-      boolean newReadyState = isReady();
-      fireReadyStateChanged(lastReadyState, newReadyState);
-      lastReadyState = newReadyState;
+  final private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    
+  final private ProcessInstanceListener pil = new ProcessInstanceListener() {
+    public void generatorStarted(ProcessInstance provider) {
+      setLastReadyState(false);
+    }
+    
+    public void generatorStarted(ProcessInstance provider, String logPath) {
+      setLastReadyState(false);
+    }
+    
+    public void generatorStopped(ProcessInstance provider) {
+      setLastReadyState(true);
+    }
+    
+    public void instanceInvalidated(ProcessInstance instance) {
+      processes.remove(instance);
     }
   };
   
-  private List<ProcessInstance> processes;
+  final private List<ProcessInstance> processes;
   
   public Engine() {
     processes = new ArrayList<ProcessInstance>();
@@ -58,8 +65,8 @@ public abstract class Engine {
   /**
    * Must return a valid process (@see org.netbeans.modules.loadgenerator.spi.ProcessInstance)
    * The implementation may use the script name to return a previously created and cached process
-   * 
-   * 
+   *
+   *
    * @param scriptName A textual identification of the process to be returned (e.g. a path to the underlying script)
    * @return Returns a valid process
    */
@@ -69,7 +76,7 @@ public abstract class Engine {
     if (process == null) {
       process = prepareInstance(scriptName);
       process.setCurrentScript(scriptName);
-      process.addPropertyChangeListener(WeakListeners.propertyChange(listener, process));
+      process.addListener(pil);
       if (process.isNew()) {
         registerProcess(process);
       }
@@ -182,7 +189,7 @@ public abstract class Engine {
    * This method is to be called when a new ProcessInstance object was created
    */
   private void registerProcess(final ProcessInstance instance) {
-//    System.out.println("AbstractLoadGenerator: processing new instance event");
+    //    System.out.println("AbstractLoadGenerator: processing new instance event");
     processes.add(instance);
     pcs.firePropertyChange(INSTANCE, false, true);
   }
@@ -192,5 +199,10 @@ public abstract class Engine {
    */
   private void fireReadyStateChanged(final boolean oldValue, final boolean newValue) {
     pcs.firePropertyChange(STATE, oldValue, newValue);
+  }
+  
+  private void setLastReadyState(final boolean value) {
+    fireReadyStateChanged(lastReadyState, value);
+    lastReadyState = value;
   }
 }

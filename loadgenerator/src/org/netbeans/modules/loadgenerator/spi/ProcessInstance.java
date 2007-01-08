@@ -3,12 +3,20 @@ package org.netbeans.modules.loadgenerator.spi;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.loadgenerator.api.impl.ManagerOutputWindowRegistry;
 import org.netbeans.modules.loadgenerator.utils.NullOutputWriter;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
 import org.openide.windows.OutputWriter;
 
@@ -23,9 +31,6 @@ public abstract class ProcessInstance {
   public final static String STATE = ProcessInstance.class.getName() + "#STATE";
   
   private static final OutputWriter NULLWRITER = new NullOutputWriter();
-  
-  private Engine factory;
-  private boolean isNewFlag = true;
   
   
   public ProcessInstance(final Engine factory) {
@@ -42,8 +47,10 @@ public abstract class ProcessInstance {
   
   public synchronized void touch() {
     isNewFlag = false;
-  }
-   
+    isModifiedFlag = false;
+    isDeletedFlag = false;
+}
+  
   void attachFactory(final Engine factory) {
     setFactory(factory);
   }
@@ -99,7 +106,7 @@ public abstract class ProcessInstance {
   }
   
   public void start(final String scriptFileName) {
-    currentScript = scriptFileName;
+    setCurrentScript(scriptFileName);
     performStart(scriptFileName);
   }
   
@@ -123,6 +130,14 @@ public abstract class ProcessInstance {
   }
   
   public void setCurrentScript(final String value) {
+    if (currentScriptFile != null) {
+      currentScriptFile.removeFileChangeListener(fcl);
+      currentScriptFile = null;
+    }
+    if (value != null) {
+      currentScriptFile = FileUtil.toFileObject(new File(value));
+      currentScriptFile.addFileChangeListener(fcl);
+    }
     currentScript = value;
   }
   
@@ -138,6 +153,14 @@ public abstract class ProcessInstance {
    */
   public void detachWriter() {
     this.writer = null;
+  }
+  
+  public boolean isModified() {
+    return isModifiedFlag;
+  }
+  
+  public boolean isDeleted() {
+    return isDeletedFlag;
   }
   
   public abstract void performStart(final String scriptFileName);
@@ -165,7 +188,50 @@ public abstract class ProcessInstance {
   private Map<ProcessInstanceListener, ProcessInstanceListener> listenerMap;
   private PropertyChangeSupport pcs;
   private String currentScript;
+  private FileObject currentScriptFile;
   private OutputWriter writer;
+  private Engine factory;
+  private boolean isNewFlag = true, isModifiedFlag = false, isDeletedFlag = false;
+  
+  final private FileChangeListener fcl = new FileChangeListener() {
+    public void fileFolderCreated(FileEvent fe) {
+      // IGNORE
+    }
+    
+    public void fileDataCreated(FileEvent fe) {
+      // IGNORE
+    }
+    
+    public void fileChanged(FileEvent fe) {
+      setModified();
+    }
+    
+    public void fileDeleted(FileEvent fe) {
+      fe.getFile().removeFileChangeListener(this);
+      currentScriptFile = null;
+      currentScript = null;
+      if (!isRunning()) {
+        ManagerOutputWindowRegistry.getDefault().close(ProcessInstance.this);
+      } else {
+        setDeleted();
+      }
+    }
+    
+    public void fileRenamed(FileRenameEvent fe) {
+      currentScript = fe.getFile().getPath();
+      if (!isRunning()) {
+        ManagerOutputWindowRegistry.getDefault().close(ProcessInstance.this);
+        ManagerOutputWindowRegistry.getDefault().open(ProcessInstance.this);
+      } else {
+        setModified();
+      }
+    }
+    
+    public void fileAttributeChanged(FileAttributeEvent fe) {
+      // IGNORE
+    }
+  };
+  
   
   protected synchronized void publishStart() {
     for(ProcessInstanceListener listener : listeners) {
@@ -189,6 +255,13 @@ public abstract class ProcessInstance {
     pcs.firePropertyChange(STATE, true, false);
   }
   
+  protected synchronized void publishInvalidated() {
+    Collection<ProcessInstanceListener> immutableListeners = new ArrayList<ProcessInstanceListener>(listeners);
+    for(ProcessInstanceListener listener : immutableListeners) {
+      listener.instanceInvalidated(this);
+    }
+  }
+  
   protected OutputWriter getWriter() {
     return writer != null ? writer : NULLWRITER;
   }
@@ -196,5 +269,16 @@ public abstract class ProcessInstance {
   private void setFactory(final Engine factory) {
     pcs.firePropertyChange(FACTORY, this.factory, factory);
     this.factory = factory;
+  }
+  
+  private void setModified() {
+    isModifiedFlag = true;
+    publishInvalidated();
+  }
+  
+  private void setDeleted() {
+    isDeletedFlag = true;
+    isModifiedFlag = false;
+    publishInvalidated();
   }
 }

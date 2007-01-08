@@ -67,8 +67,16 @@ public class ManagerOutputWindow {
     provider.attachWriter(io.getOut());
     io.select();
   }
-  
+
   public void detach(final ProcessInstance provider) {
+    if (provider.isDeleted()) {
+      close(provider);
+    }
     provider.detachWriter();
+  }
+  
+  public void close(final ProcessInstance instance) {
+    InputOutput oldIo = iomap.get(instance);
+    oldIo.closeInputOutput();
   }
 }
