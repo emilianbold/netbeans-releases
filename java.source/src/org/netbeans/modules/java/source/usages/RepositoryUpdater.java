@@ -968,9 +968,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 assert uqImpl != null;
                 SourceAnalyser sa = uqImpl.getSourceAnalyser();
                 assert sa != null;
+                boolean invalidIndex = isInitialCompilation && !sa.isValid();
                 Set<File> rs = new HashSet<File> ();
                 for (File child : children) {       
-                    if (clean || dirtyCrossFiles.remove(child.toURI())) {
+                    if (invalidIndex || clean || dirtyCrossFiles.remove(child.toURI())) {
                         toCompile.add (FileObjects.fileFileObject(child, rootFile, filter));
                     }
                     else {

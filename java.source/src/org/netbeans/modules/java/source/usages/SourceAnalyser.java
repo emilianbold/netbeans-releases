@@ -97,6 +97,10 @@ public class SourceAnalyser {
             this.toDelete.clear();
         }
     }
+    
+    public boolean isValid () throws IOException {
+        return this.index.isValid(true);
+    }
 
     public void analyse (final Iterable<? extends CompilationUnitTree> data, JavacTaskImpl jt, JavaFileManager manager, javax.tools.JavaFileObject sibling) throws IOException {
         final Map<String,Map<String,Set<ClassIndexImpl.UsageType>>> usages = new HashMap<String,Map<String,Set<ClassIndexImpl.UsageType>>> ();
@@ -158,7 +162,7 @@ public class SourceAnalyser {
     }
     
     public void delete (final String className) throws IOException {
-        if (!this.index.isValid()) {
+        if (!this.index.isValid(false)) {
             return;
         }
         this.toDelete.add(className);

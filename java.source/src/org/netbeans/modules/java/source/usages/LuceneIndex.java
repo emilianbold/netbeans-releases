@@ -93,7 +93,7 @@ class LuceneIndex extends Index {
 
     @SuppressWarnings("unchecked") // NOI18N, unchecked - lucene has source 1.4
     public List<String> getUsagesData(final String resourceName, Set<ClassIndexImpl.UsageType> mask, BooleanOperator operator) throws IOException {        
-        if (!isValid()) {
+        if (!isValid(false)) {
             return null;
         }
         final Searcher searcher = new IndexSearcher (this.getReader());
@@ -140,7 +140,7 @@ class LuceneIndex extends Index {
 
     @SuppressWarnings ("unchecked")     // NOI18N, unchecked - lucene has source 1.4
     public List<String> getUsagesFQN(final String resourceName, final Set<ClassIndexImpl.UsageType>mask, final BooleanOperator operator) throws IOException {
-        if (!isValid()) {
+        if (!isValid(false)) {
             return null;
         }
         assert resourceName != null;
@@ -179,7 +179,7 @@ class LuceneIndex extends Index {
     }
 
     public List<String> getReferencesData(final String resourceName) throws IOException {
-        if (!isValid()) {
+        if (!isValid(false)) {
             return null;
         }    
         Searcher searcher = new IndexSearcher (this.getReader());
@@ -201,7 +201,7 @@ class LuceneIndex extends Index {
         
     @SuppressWarnings ("unchecked") // NOI18N, unchecked - lucene has source 1.4
     public <T> void getDeclaredTypes (final String name, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<? super T> result) throws IOException {
-        if (!isValid()) {
+        if (!isValid(false)) {
             LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));
             return;
         }
@@ -381,7 +381,7 @@ class LuceneIndex extends Index {
     
     
     public void getPackageNames (final String prefix, final boolean directOnly, final Set<String> result) throws IOException {
-        if (!isValid()) {
+        if (!isValid(false)) {
             return;
         }        
         final IndexReader in = getReader();
@@ -442,50 +442,55 @@ class LuceneIndex extends Index {
     }
 
     public boolean isUpToDate(String resourceName, long timeStamp) throws IOException {        
-        if (!isValid()) {
+        if (!isValid(false)) {
             return false;
-        }        
-        Searcher searcher = new IndexSearcher (this.getReader());
+        }
         try {
-            Hits hits;
-            if (resourceName == null) {
-                synchronized (this) {
-                    if (this.rootTimeStamp != null) {
-                        return rootTimeStamp.longValue() >= timeStamp;
-                    }
-                }
-                hits = searcher.search(new TermQuery(DocumentUtil.rootDocumentTerm()));
-            }
-            else {
-                hits = searcher.search(DocumentUtil.binaryNameQuery(resourceName));
-            }
-
-            assert hits.length() <= 1;
-            if (hits.length() == 0) {
-                return false;
-            }
-            else {                    
-                try { 
-                    Hit hit = (Hit) hits.iterator().next();
-                    long cacheTime = DocumentUtil.getTimeStamp(hit.getDocument());
-                    if (resourceName == null) {
-                        synchronized (this) {
-                            this.rootTimeStamp = new Long (cacheTime);
+            Searcher searcher = new IndexSearcher (this.getReader());
+            try {
+                Hits hits;
+                if (resourceName == null) {
+                    synchronized (this) {
+                        if (this.rootTimeStamp != null) {
+                            return rootTimeStamp.longValue() >= timeStamp;
                         }
                     }
-                    return cacheTime >= timeStamp;
-                } catch (ParseException pe) {
-                    throw new IOException ();
+                    hits = searcher.search(new TermQuery(DocumentUtil.rootDocumentTerm()));
                 }
+                else {
+                    hits = searcher.search(DocumentUtil.binaryNameQuery(resourceName));
+                }
+
+                assert hits.length() <= 1;
+                if (hits.length() == 0) {
+                    return false;
+                }
+                else {                    
+                    try { 
+                        Hit hit = (Hit) hits.iterator().next();
+                        long cacheTime = DocumentUtil.getTimeStamp(hit.getDocument());
+                        if (resourceName == null) {
+                            synchronized (this) {
+                                this.rootTimeStamp = new Long (cacheTime);
+                            }
+                        }
+                        return cacheTime >= timeStamp;
+                    } catch (ParseException pe) {
+                        throw new IOException ();
+                    }
+                }
+            } finally {
+                searcher.close();
             }
-        } finally {
-            searcher.close();
+        } catch (java.io.FileNotFoundException fnf) {
+            this.clear();
+            return false;
         }
     }
     
     public void store (final Map<String, List<String>> refs, final List<String> topLevels) throws IOException {
         this.rootPkgCache = null;
-        boolean create = !isValid ();
+        boolean create = !isValid (false);
         long timeStamp = System.currentTimeMillis();
         if (!create) {
             IndexReader in = getReader();
@@ -507,7 +512,7 @@ class LuceneIndex extends Index {
 
     public void store(final Map<String, List<String>> refs, final Set<String> toDelete) throws IOException {
         this.rootPkgCache = null;
-        boolean create = !isValid ();        
+        boolean create = !isValid (false);        
         long timeStamp = System.currentTimeMillis();
         if (!create) {
             IndexReader in = getReader();
@@ -585,8 +590,17 @@ class LuceneIndex extends Index {
         }
     }
 
-    public boolean isValid () throws IOException {  
-        return IndexReader.indexExists(this.directory);
+    public boolean isValid (boolean tryOpen) throws IOException {  
+        boolean res = IndexReader.indexExists(this.directory);
+        if (res && tryOpen) {
+            try {
+                getReader();
+            } catch (java.io.FileNotFoundException e) {
+                res = false;
+                clear();
+            }
+        }
+        return res;
     }    
     
     public synchronized void clear () throws IOException {

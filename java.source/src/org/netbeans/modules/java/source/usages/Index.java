@@ -61,7 +61,7 @@ public abstract class Index {
     private static File segmentsFile;
     private static int index = 0;
     
-    public abstract boolean isValid () throws IOException;
+    public abstract boolean isValid (boolean tryOpen) throws IOException;
     public abstract List<String> getUsagesData (String resourceName, Set<ClassIndexImpl.UsageType> mask, BooleanOperator operator) throws IOException;
     public abstract List<String> getUsagesFQN (String resourceName, Set<ClassIndexImpl.UsageType> mask, BooleanOperator operator) throws IOException;
     public abstract List<String> getReferencesData (String resourceName) throws IOException;

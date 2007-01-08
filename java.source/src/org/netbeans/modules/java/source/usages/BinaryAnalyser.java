@@ -191,7 +191,7 @@ public class BinaryAnalyser implements LowMemoryListener {
     //Cleans up usages of deleted class
     private final void delete (final String className) throws IOException {
         assert className != null;
-        if (!this.index.isValid()) {
+        if (!this.index.isValid(false)) {
             return;
         }
         this.toDelete.add(className);
