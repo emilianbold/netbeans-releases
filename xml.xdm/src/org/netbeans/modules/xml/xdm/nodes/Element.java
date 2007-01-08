@@ -177,8 +177,11 @@ public class Element extends NodeImpl implements Node, org.w3c.dom.Element {
      *   attribute.
      */
     public Attribute getAttributeNode(String name) {
-	NamedNodeMap attrMap = getAttributes();
-	return (Attribute) attrMap.getNamedItem(name);
+        for(Attribute attr:getAttributesForRead()) {
+            if(name.equals(attr.getName()))
+                return attr;
+        }
+        return null;
     }
     
     /**
@@ -805,10 +808,10 @@ public class Element extends NodeImpl implements Node, org.w3c.dom.Element {
         }
         
         //consolidate attribute prefixes and qname values
-        NamedNodeMap attributes = newChild.getAttributes();
+        List attributes = newChild.getAttributesForRead();
         ArrayList<String> sparedPrefixes = new ArrayList<String>();
-        for (int i=0; i<attributes.getLength(); i++) {
-            Attribute attr = (Attribute) attributes.item(i);
+        for (int i=0; i<attributes.size(); i++) {
+            Attribute attr = (Attribute) attributes.get(i);
             // skip namsspace declaration attributes 
             if (attr.isXmlnsAttribute()) {
                 continue;
@@ -844,8 +847,8 @@ public class Element extends NodeImpl implements Node, org.w3c.dom.Element {
         }
 
         //let child prefixe declarations consolidate to parent prefixes
-        for (int i=0; i<attributes.getLength(); i++) {
-            Attribute attr = (Attribute) attributes.item(i);
+        for (int i=0; i<attributes.size(); i++) {
+            Attribute attr = (Attribute) attributes.get(i);
             if (! attr.isXmlnsAttribute()) continue;
             
             String prefix = attr.getLocalName();

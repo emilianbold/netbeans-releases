@@ -78,7 +78,7 @@ public class DiffFinder {
         
         //remove any (sequential) position change events
         if( deList.size() > 0 ) {
-            deList = DiffFinder.findOptimized(deList);
+            deList = findOptimized(deList);
         }
         
         return deList;
@@ -138,7 +138,8 @@ public class DiffFinder {
                         originalSiblingBefore, copy(ancestors2), deList );
             }
             
-            sortPairs(pairList, parent1.getChildNodes().getLength());
+            //sort pairs
+            Collections.sort(pairList, new PairComparator());
             
             for ( int i=0; i < pairList.size(); i++ ) {
                 int[] pair = pairList.get(i);
@@ -183,24 +184,18 @@ public class DiffFinder {
         return new ArrayList<Node>(l);
     }
     
-    private void sortPairs(final List<int[]> pairList, final int p1Size) {
-        //sort match nodes by position (toPos)
-        //All deletes are removed and later inserted appropriately
-        for ( int i=0; i < pairList.size(); i++ ) {
-            int minPos = p1Size;
-            int index = -1;
-            for ( int j=i; j < pairList.size(); j++ ) {
-                int[] pair = pairList.get(j);
-                int px2 = pair[1];
-                if ( px2 < minPos ) {
-                    minPos = px2;
-                    index = j;
-                }
-            }
-            if ( index != -1 && index > i ) {
-                int[] pl = pairList.remove( index );
-                pairList.add( i, pl );
-            }
+    public class PairComparator implements java.util.Comparator {
+        public int compare(Object o1, Object o2) {
+            int[] pair1 = (int[]) o1;
+            int[] pair2 = (int[]) o2;
+            int px2_1 = pair1[1];
+            int px2_2 = pair2[1];
+            if(px2_1 < px2_2)
+                return -1;
+            else if(px2_1 > px2_2)
+                return +1;
+            else
+                return 0;
         }
     }
     
@@ -368,7 +363,7 @@ public class DiffFinder {
         return pathToRoot;
     }
     
-    public static List<Difference> findOptimized(List<Difference> deList) {
+    public List<Difference> findOptimized(List<Difference> deList) {
         if(deList == null || deList.isEmpty()) return Collections.emptyList();
         List<Difference> optimizedList = new ArrayList<Difference>();
         HashMap<Node, List<Difference>> deMap = new HashMap<Node, List<Difference>>();
@@ -386,7 +381,7 @@ public class DiffFinder {
         
         for (Node parent:parentList) {
             List<Difference> childDeList = deMap.get(parent);
-            sortByPosition( parent, childDeList );
+            Collections.sort(childDeList, new PairComparator2());
             HashMap<Difference, Integer> oldPosMap = new HashMap<Difference, Integer>();
             for ( int i=0; i < childDeList.size(); i++ ) {
                 Difference de = childDeList.get(i);
@@ -412,25 +407,19 @@ public class DiffFinder {
         }
         return optimizedList;
     }
-    private static void sortByPosition(Node parent1, List<Difference> deList) {
-        if (parent1 == null) return;
-        int p1Size = parent1.getChildNodes().getLength();
-        int size = deList.size();
-        for ( int i=0; i < size; i++ ) {
-            int minPos = p1Size;
-            int index = -1;
-            for ( int j=i; j < size; j++ ) {
-                Difference de = deList.get(j);
-                int px2 = de.getNewNodeInfo().getPosition();
-                if ( px2 < minPos ) {
-                    minPos = px2;
-                    index = j;
-                }
-            }
-            if ( index != -1 && index > i ) {
-                Difference de = deList.remove( index );
-                deList.add( i, de );
-            }
+    
+    public class PairComparator2 implements java.util.Comparator {
+        public int compare(Object o1, Object o2) {
+            Difference de1 = (Difference) o1;
+            Difference de2 = (Difference) o2;
+            int px2_1 = de1.getNewNodeInfo().getPosition();
+            int px2_2 = de2.getNewNodeInfo().getPosition();
+            if(px2_1 < px2_2)
+                return -1;
+            else if(px2_1 > px2_2)
+                return +1;
+            else
+                return 0;
         }
     }
     
