@@ -103,7 +103,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
             
             Service service = definition.getService( serviceName );
             if( configuration.getPackageName() != null && !"".equals( configuration.getPackageName().trim())) {
-                off.write( "package " + configuration.getPackageName() + ";" );
+                off.write( "package " + configuration.getPackageName() + ";\t\t" );
             }
             off.write( "\n\n" );
             off.write( "public interface " + serviceName + " extends java.rmi.Remote {\n" );
@@ -309,7 +309,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
             OutputFileFormatter off = new OutputFileFormatter( outputFile );
             
             if( configuration.getPackageName() != null && !"".equals( configuration.getPackageName().trim())) {
-                off.write( "package " + configuration.getPackageName() + ";");
+                off.write( "package " + configuration.getPackageName() + ";\t\t");
             }
             off.write( "\n" );
             off.write( "public class " + typeName.getLocalPart() + " {\n" );
