@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
@@ -87,7 +88,8 @@ public class AutoImport extends SimpleTypeVisitor6<Void, Void> {
     public Void visitDeclared(DeclaredType type, Void p) {
         TypeElement element = (TypeElement)type.asElement();
         String name = element.getQualifiedName().toString();
-        if (element.getEnclosingElement().getKind().isClass() || element.getEnclosingElement().getKind().isClass()) {
+        ElementKind kind = element.getEnclosingElement().getKind();
+        if (kind.isClass() || kind.isInterface() || kind == ElementKind.PACKAGE) {
             try {
                 name = SourceUtils.resolveImport(info, path, name);
             } catch (Exception e) {
