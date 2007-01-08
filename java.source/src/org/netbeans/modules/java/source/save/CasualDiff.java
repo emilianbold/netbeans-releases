@@ -623,8 +623,14 @@ public class CasualDiff {
             int[] condPos = new int[] { getOldPos(oldT.cond), endPos(oldT.cond) };
             printer.print(origText.substring(localPointer, condPos[0]));
             localPointer = diffTree(oldT.cond, newT.cond, condPos);
-            diffTree(oldT.thenpart, newT.thenpart);
-            diffTree(oldT.elsepart, newT.elsepart);
+            int[] part = new int[] { getOldPos(oldT.thenpart), endPos(oldT.thenpart) };
+            printer.print(origText.substring(localPointer, part[0]));
+            localPointer = diffTree(oldT.thenpart, newT.thenpart, part);
+            if (oldT.elsepart != null) {
+                part = new int[] { getOldPos(oldT.elsepart), endPos(oldT.elsepart) };
+                printer.print(origText.substring(localPointer, part[0]));
+                localPointer = diffTree(oldT.elsepart, newT.elsepart, part);
+            }
         }
         printer.print(origText.substring(localPointer, bounds[1]));
         return bounds[1];
