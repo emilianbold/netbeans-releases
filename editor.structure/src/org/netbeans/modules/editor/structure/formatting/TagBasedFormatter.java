@@ -334,15 +334,18 @@ public abstract class TagBasedFormatter extends ExtFormatter  {
                 TokenItem tknPrecedingToken = getTagTokenEndingAtPosition(doc, dotPos - 1);
                 
                 if (isClosingTag(tknPrecedingToken)){
-                    // user entered a closing tag
-                    // - reformat code backwards to matching opening tag
+                    // the user has just entered a closing tag
+                    // - reformat it unless matching opening tag is on the same line 
                     
                     TokenItem tknOpeningTag = getMatchingOpeningTag(tknPrecedingToken);
                     
                     if (tknOpeningTag != null){
-                        int start = tknOpeningTag.getOffset();
+                        int openingTagLine = Utilities.getLineOffset(doc, tknOpeningTag.getOffset());
+                        int closingTagSymbolLine = Utilities.getLineOffset(doc, dotPos);
                         
-                        return new int[]{start, dotPos};
+                        if(openingTagLine != closingTagSymbolLine){
+                            return new int[]{tknPrecedingToken.getOffset(), dotPos};
+                        }
                     }
                 }
             }

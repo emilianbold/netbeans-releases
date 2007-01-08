@@ -338,13 +338,19 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter  {
                 int precedingTokenOffset = getTagEndingAtPosition(tokenHierarchy, dotPos - 1);
                 
                 if (isClosingTag(tokenHierarchy, precedingTokenOffset)){
-                    // user entered a closing tag
-                    // - reformat code backwards to matching opening tag
+                    // the user has just entered a closing tag
+                    // - reformat it unless matching opening tag is on the same line 
                     
                     int openingTagOffset = getMatchingOpeningTagStart(tokenHierarchy, precedingTokenOffset);
                     
                     if (openingTagOffset != -1){
-                        return new int[]{openingTagOffset, dotPos};
+                        BaseDocument doc = Utilities.getDocument(target);
+                        int openingTagLine = Utilities.getLineOffset(doc, openingTagOffset);
+                        int closingTagSymbolLine = Utilities.getLineOffset(doc, dotPos);
+                        
+                        if(openingTagLine != closingTagSymbolLine){
+                            return new int[]{precedingTokenOffset, dotPos};
+                        }
                     }
                 }
             }
