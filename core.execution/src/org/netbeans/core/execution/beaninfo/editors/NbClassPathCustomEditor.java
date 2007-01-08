@@ -59,6 +59,7 @@ class NbClassPathCustomEditor extends javax.swing.JPanel {
         pathScrollPane.setViewportView(pathList);
         
         setMinimumSize (new java.awt.Dimension(400, 200));
+        setPreferredSize(new java.awt.Dimension(400, 200));
 
         pathList.getAccessibleContext().setAccessibleDescription(getString("ACSD_PathList"));
         addDirButton.getAccessibleContext().setAccessibleDescription(getString("ACSD_AddDirectory"));
