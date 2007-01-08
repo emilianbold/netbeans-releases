@@ -114,14 +114,19 @@ public class SwitchToDisplayableElement extends JPanel implements PropertyEditor
                     throwAlertCheckBox.setSelected(true);
                     alertsModel.setSelectedItem(alert);
                 } else {
-                    throwAlertCheckBox.setSelected(false);
-                    alertsComboBox.setEnabled(false);
+                    clearAlertCheckBox();
                 }
             } else {
-                throwAlertCheckBox.setSelected(false);
-                alertsComboBox.setEnabled(false);
+                clearAlertCheckBox();
             }
+        } else {
+            clearAlertCheckBox();
         }
+    }
+    
+    private void clearAlertCheckBox() {
+        throwAlertCheckBox.setSelected(false);
+        alertsComboBox.setEnabled(false);
     }
     
     public void setEnabled(boolean enabled) {
