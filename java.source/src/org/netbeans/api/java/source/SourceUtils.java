@@ -631,7 +631,7 @@ out:                for (URL e : roots) {
                         new TreePathScanner<Void,Void> () {
                            public Void visitMethod(MethodTree node, Void p) {
                                ExecutableElement method = (ExecutableElement) control.getTrees().getElement(getCurrentPath());
-                               if (SourceUtils.isMainMethod(method) && isAccessible(method.getEnclosingElement())) {
+                               if (method != null && SourceUtils.isMainMethod(method) && isAccessible(method.getEnclosingElement())) {
                                    result.add (ElementHandle.create((TypeElement)method.getEnclosingElement()));
                                }
                                return null;
