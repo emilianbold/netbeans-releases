@@ -102,9 +102,10 @@ public interface InplaceEditorProvider<C extends JComponent> {
      * @param controller the editor controller
      * @param widget the widget where the editor is opened
      * @param editor the editor component
-     * @param discarded true, if the current value is discarded by an user; false if the current value is approved and should be used
+     * @param commit true, if the current value is approved by user and
+     *     should be used; false if the current value is discarded by an user
      */
-    void notifyClosing (EditorController controller, Widget widget, C editor, boolean discarded);
+    void notifyClosing (EditorController controller, Widget widget, C editor, boolean commit);
 
     /**
      * Creates an in-place editor component for a specified widget. Called to acquire the component which should be added into the scene.
