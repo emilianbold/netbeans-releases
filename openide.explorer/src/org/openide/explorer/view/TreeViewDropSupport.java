@@ -661,17 +661,15 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
         // finally perform the drop
         dtde.acceptDrop(dropAction);
 
-        if( null != dragNodes ) {
-            if (!canDrop(dropNode, dropAction, dtde.getTransferable())) {
-                if (canReorderWhenMoving(dropNode, dragNodes)) {
-                    performReorder(dropNode, dragNodes, lowerNodeIdx, upperNodeIdx);
-                    dtde.dropComplete(true);
-                } else {
-                    dtde.dropComplete(false);
-                }
-
-                return;
+        if (!canDrop(dropNode, dropAction, dtde.getTransferable())) {
+            if( null != dragNodes && canReorderWhenMoving(dropNode, dragNodes)) {
+                performReorder(dropNode, dragNodes, lowerNodeIdx, upperNodeIdx);
+                dtde.dropComplete(true);
+            } else {
+                dtde.dropComplete(false);
             }
+
+            return;
         }
 
         if (DnDConstants.ACTION_LINK == dropAction && null != dragNodes) {
