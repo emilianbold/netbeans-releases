@@ -606,14 +606,16 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         private List<URL> state;
         private Set<URL> oldRoots;
         private Set<URL> oldBinaries;
-        private Set<URL> newBinaries;
+        private Set<URL> newBinaries;        
         private ProgressHandle handle;
+        private final Set<URI> dirtyCrossFiles;
         private final AtomicBoolean canceled;
         
         public CompileWorker (Work work ) {
             assert work != null;
             this.work = work;
             this.canceled = new AtomicBoolean (false);
+            this.dirtyCrossFiles = new HashSet<URI>();
         }
         
         public void cancel () {            
@@ -968,7 +970,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 assert sa != null;
                 Set<File> rs = new HashSet<File> ();
                 for (File child : children) {       
-                    if (clean) {
+                    if (clean || dirtyCrossFiles.remove(child.toURI())) {
                         toCompile.add (FileObjects.fileFileObject(child, rootFile, filter));
                     }
                     else {
@@ -1018,7 +1020,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         final String message = String.format (NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompile"),rootFile.getAbsolutePath());
                         handle.setDisplayName(message);
                     }
-                    batchCompile(toCompile, rootFo, cpInfo, sa);
+                    batchCompile(toCompile, rootFo, cpInfo, sa, dirtyCrossFiles);
                 }
                 sa.store();
             } finally {
@@ -1074,7 +1076,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active});
                 jt.enter();            
                 jt.analyze ();
-                dumpClasses(listener.getEnteredTypes(), fm, com.sun.tools.javac.code.Types.instance(jt.getContext()),
+                dumpClasses(listener.getEnteredTypes(), fm, root.toExternalForm(), null,
+                    com.sun.tools.javac.code.Types.instance(jt.getContext()),
                     com.sun.tools.javac.util.Name.Table.instance(jt.getContext()));
                 sa.analyse (trees, jt, fm, active);
                 listener.cleanDiagnostics();
@@ -1345,9 +1348,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         public void lowMemory (final LowMemoryEvent event) {
             this.lowMemory.set(true);
         }
-    }
+    }    
     
-    public static void batchCompile (final List<JavaFileObject> toCompile, final FileObject rootFo, final ClasspathInfo cpInfo, final SourceAnalyser sa) throws IOException {
+    public static void batchCompile (final List<JavaFileObject> toCompile, final FileObject rootFo, final ClasspathInfo cpInfo, final SourceAnalyser sa, final Set<URI> dirtyFiles) throws IOException {
         assert toCompile != null;
         assert rootFo != null;
         assert cpInfo != null;
@@ -1386,12 +1389,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 active = bigFiles.remove(0);
                                 isBigFile = true;
                             }
-                        } 
+                        }
                         if (jt == null) {
                             jt = JavaSourceAccessor.INSTANCE.createJavacTask(cpInfo, listener, sourceLevel);
                             jt.setTaskListener(listener);
                             LOGGER.fine("Created new JavacTask for: " + FileUtil.getFileDisplayName(rootFo));    //NOI18N
-                                    }
+                        }
                         Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active});
                         if (listener.lowMemory.getAndSet(false)) {
                             jt.finish();
@@ -1413,7 +1416,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             continue;
                         }
                         Iterable<? extends TypeElement> types = jt.enterTrees(trees);
-                        dumpClasses (listener.getEnteredTypes(),fileManager, 
+                        dumpClasses (listener.getEnteredTypes(),fileManager,
+                                rootFo.getURL().toExternalForm(), dirtyFiles,
                                 com.sun.tools.javac.code.Types.instance(jt.getContext()),
                                 com.sun.tools.javac.util.Name.Table.instance(jt.getContext()));
                         if (listener.lowMemory.getAndSet(false)) {
@@ -1451,6 +1455,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         };
                         f.run(jc.todo, types);
                         dumpClasses (listener.getEnteredTypes(), fileManager,
+                                rootFo.getURL().toExternalForm(), dirtyFiles,
                                 com.sun.tools.javac.code.Types.instance(jt.getContext()),
                                 com.sun.tools.javac.util.Name.Table.instance(jt.getContext()));
                         if (listener.lowMemory.getAndSet(false)) {
@@ -1534,18 +1539,25 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     }
     
     
-    private static void dumpClasses (final List<? extends ClassSymbol> entered, final JavaFileManager fileManager, final com.sun.tools.javac.code.Types javacTypes,
+    private static void dumpClasses (final List<? extends ClassSymbol> entered, final JavaFileManager fileManager,
+        final String currentRoot, final Set<URI> dirtyFiles, final com.sun.tools.javac.code.Types javacTypes,
         final com.sun.tools.javac.util.Name.Table nameTable) throws IOException {
         for (ClassSymbol classSym : entered) {
             JavaFileObject source = classSym.sourcefile;            
-            dumpTopLevel(classSym, fileManager, source, javacTypes, nameTable);
+            dumpTopLevel(classSym, fileManager, source, currentRoot, dirtyFiles, javacTypes, nameTable);
         }
     }
     
-    private static void dumpTopLevel (final ClassSymbol classSym, final JavaFileManager fileManager, final JavaFileObject source, final com.sun.tools.javac.code.Types types,
-        com.sun.tools.javac.util.Name.Table nameTable) throws IOException {
+    private static void dumpTopLevel (final ClassSymbol classSym, final JavaFileManager fileManager, 
+        final JavaFileObject source, final String currentRootURL, final Set<URI> dirtyFiles,
+        final com.sun.tools.javac.code.Types types,
+        final com.sun.tools.javac.util.Name.Table nameTable) throws IOException {
         assert source != null;
         if (classSym.getSimpleName() != nameTable.error) {
+            URI uri = source.toUri();
+            if (dirtyFiles != null && !uri.toURL().toExternalForm().startsWith(currentRootURL)) {
+                dirtyFiles.add (uri);
+            }
             final String sourceName = fileManager.inferBinaryName(StandardLocation.SOURCE_PATH, source);
             final StringBuilder classNameBuilder = new StringBuilder ();
             ClassFileUtil.encodeClassName(classSym, classNameBuilder, '.');  //NOI18N
