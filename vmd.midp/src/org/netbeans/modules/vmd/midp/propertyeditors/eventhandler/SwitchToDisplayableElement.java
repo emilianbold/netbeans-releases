@@ -113,14 +113,20 @@ public class SwitchToDisplayableElement extends JPanel implements PropertyEditor
                 if (alert != null) {
                     throwAlertCheckBox.setSelected(true);
                     alertsModel.setSelectedItem(alert);
+                } else {
+                    throwAlertCheckBox.setSelected(false);
+                    alertsComboBox.setEnabled(false);
                 }
+            } else {
+                throwAlertCheckBox.setSelected(false);
+                alertsComboBox.setEnabled(false);
             }
         }
     }
     
     public void setEnabled(boolean enabled) {
     }
-
+    
     public static class SwitchToDisplayableElementFactory implements PropertyEditorElementFactory {
         public PropertyEditorEventHandlerElement createElement() {
             return new SwitchToDisplayableElement();
@@ -193,7 +199,7 @@ public class SwitchToDisplayableElement extends JPanel implements PropertyEditor
     private void alertsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_alertsComboBoxActionPerformed
         radioButton.setSelected(true);
     }//GEN-LAST:event_alertsComboBoxActionPerformed
-
+    
     private void displayablesComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_displayablesComboBoxActionPerformed
         radioButton.setSelected(true);
     }//GEN-LAST:event_displayablesComboBoxActionPerformed
