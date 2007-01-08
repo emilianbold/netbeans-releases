@@ -111,6 +111,7 @@ public class ToolbarDnDListener extends Object implements Toolbar.DnDListener {
             }
         }
         configuration.checkToolbarRows();
+        configuration.updateBounds( configuration.getRow(0) );
     }
 
     /** Try move toolbar down.
