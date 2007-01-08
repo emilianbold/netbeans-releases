@@ -81,7 +81,9 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
             return;
         }
         PaletteKit kit = kitReference.get();
-        assert kit != null;
+        if (kit == null) {
+            return;
+        }
         kit.setActiveDocument(activatedDocument);
         kit.update();
         kit.refreshPalette();
@@ -197,7 +199,9 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
                 while (requiresUpdate.getAndSet(false)) {
                     for (WeakReference<PaletteKit> kitReference : kitMap.values()) {
                         PaletteKit kit = kitReference.get();
-                        assert kit != null;
+                        if (kit == null) {
+                            continue;
+                        }
                         kit.clearNodesStateCache();
                         // HINT refresh only visible palette
                         kit.refreshPalette();
