@@ -1341,13 +1341,27 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             }
         }
         
-        private void handleInvalidDataObject(DataObject invalidDO) {
+        private void handleInvalidDataObject(final DataObject invalidDO) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    handleInvalidDataObjectImpl(invalidDO);
+                }
+            });
+        }
+        
+        private void handleInvalidDataObjectImpl(DataObject invalidDO) {
             invalidDO.removePropertyChangeListener(wlistener);
             if (fobj.isValid()) {
                 // file object still exists try to find new data object
                 try {
-                    dobj = DataObject.find(fobj);
-                    dobj.addPropertyChangeListener(wlistener);
+                    DataObject dobjNew = DataObject.find(fobj);
+                    synchronized (DataObjectListener.this) {
+                        if (dobjNew == dobj) {
+                            return;
+                        }
+                        dobj = dobjNew;
+                        dobj.addPropertyChangeListener(wlistener);
+                    }
                     assignDocumentListener(fobj);
                     resetState(true, true);
                 } catch (IOException ex) {
