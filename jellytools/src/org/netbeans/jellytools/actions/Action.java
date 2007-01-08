@@ -488,7 +488,8 @@ public class Action {
                     } else {
                         // action implements javax.swing.Action
                         try {
-                            ((javax.swing.Action)systemActionClass.newInstance()).actionPerformed(null);
+                            ((javax.swing.Action)systemActionClass.newInstance()).actionPerformed(
+                                                new ActionEvent(new Container(), 0, null));
                         } catch (Exception e) {
                             throw new JemmyException("Exception when trying to create instance of action \""+systemActionClass.getName()+"\".", e);
                         }
