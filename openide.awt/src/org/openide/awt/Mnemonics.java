@@ -68,7 +68,11 @@ public final class Mnemonics extends Object {
                 setMnemonic(item, 0);
             } else {
                 char ch = text.charAt(i + 1);
-                
+                if (text.startsWith("<html>")) { // NOI18N
+                    // Workaround for JDK bug #6510775
+                    setText(item, text.substring(0, i) + "<u>" + ch + "</u>" + text.substring(i + 2)); // NOI18N
+                    i += 3; // just in case it gets fixed
+                }
                 if (((ch >= 'A') && (ch <= 'Z')) || ((ch >= 'a') && (ch <= 'z')) || ((ch >= '0') && (ch <= '9'))) {
                     // it's latin character or arabic digit,
                     // setting it as mnemonics
