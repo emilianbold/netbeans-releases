@@ -578,7 +578,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                             make.Modifiers(EnumSet.of(Modifier.PUBLIC), fieldAccess ? Collections.<AnnotationTree>emptyList() : annotations),
                             name,
                             typeTree);
-                    setter = genUtils.createPropertySetterMethod(genUtils.createModifiers(Modifier.PUBLIC),
+                    setter = genUtils.createPropertySetterMethod(
+                            genUtils.createModifiers(Modifier.PUBLIC),
                             name,
                             typeTree);
                 }
