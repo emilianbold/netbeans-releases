@@ -82,7 +82,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
     public List<ValidationResult> validate() {
         // TODO: Hack
         definition = wsdlParser.parse( configuration.getWSDLFileName());
-        return new WSDLValidator( definition ).validate();
+        return new WSDLValidator( wsdlParser.getValidationResults(), definition ).validate();
     }
 
     

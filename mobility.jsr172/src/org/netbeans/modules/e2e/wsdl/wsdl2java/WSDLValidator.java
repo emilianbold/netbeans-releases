@@ -25,6 +25,7 @@ import org.netbeans.modules.e2e.api.wsdl.extensions.soap.SOAPAddress;
 import org.netbeans.modules.e2e.api.wsdl.extensions.soap.SOAPBinding;
 import org.netbeans.modules.e2e.api.wsdl.extensions.soap.SOAPBody;
 import org.netbeans.modules.e2e.api.wsdl.extensions.soap.SOAPOperation;
+import org.netbeans.modules.e2e.api.wsdl.wsdl2java.WSDL2Java;
 import org.netbeans.modules.e2e.api.wsdl.wsdl2java.WSDL2Java.ValidationResult;
 import org.netbeans.modules.e2e.api.wsdl.wsdl2java.WSDL2Java.ValidationResult.ErrorLevel;
 import org.netbeans.modules.e2e.wsdl.extensions.soap.SOAPConstants;
@@ -42,11 +43,16 @@ class WSDLValidator {
 
     private Service service;
     
+    // validation flags
+    private boolean flagNoSoapBinding;
+    
+    
     /** Creates a new instance of WSDLValidator */
-    public WSDLValidator( Definition definition ) {
+    public WSDLValidator( List<ValidationResult> result, Definition definition ) {
         this.definition = definition;
         
-        result = new ArrayList();
+        this.result = new ArrayList();
+        this.result.addAll( result );
     }
                 
     public List<ValidationResult> validate() {
@@ -61,6 +67,7 @@ class WSDLValidator {
     
     private void checkDefinition( Definition definition ) {
         for( Service service : definition.getServices().values()) {
+            
             checkService( service );
         }        
     }

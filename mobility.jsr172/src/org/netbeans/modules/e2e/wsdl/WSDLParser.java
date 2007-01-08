@@ -10,7 +10,10 @@
 package org.netbeans.modules.e2e.wsdl;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import javax.xml.namespace.QName;
@@ -40,6 +43,7 @@ import org.netbeans.modules.e2e.api.wsdl.extensions.soap.SOAPFault;
 import org.netbeans.modules.e2e.api.wsdl.extensions.soap.SOAPHeader;
 import org.netbeans.modules.e2e.api.wsdl.extensions.soap.SOAPHeaderFault;
 import org.netbeans.modules.e2e.api.wsdl.extensions.soap.SOAPOperation;
+import org.netbeans.modules.e2e.api.wsdl.wsdl2java.WSDL2Java;
 import org.netbeans.modules.e2e.schema.SchemaParser;
 import org.netbeans.modules.e2e.wsdl.extensions.soap.SOAPAddressImpl;
 import org.netbeans.modules.e2e.wsdl.extensions.soap.SOAPBindingImpl;
@@ -79,7 +83,13 @@ public class WSDLParser {
     private static final String OUTPUT              = "output";
     private static final String FAULT               = "fault";
     
-    public static Definition parse( String uri ) {
+    private List<WSDL2Java.ValidationResult> validationResults;    
+    
+    public WSDLParser() {
+        validationResults = new ArrayList();
+    }
+    
+    public Definition parse( String uri ) {
         Definition definition = new DefinitionImpl();
         
         DefaultHandler handler = new DefaultHandlerImpl( definition );
@@ -105,9 +115,14 @@ public class WSDLParser {
             e.printStackTrace();
         }        
         definition.setSchemaHolder( schemaParser.getSchemaHolder());
+        validationResults.addAll( schemaParser.getValidationResults());
         
         return definition;
     }
+    
+    public List<WSDL2Java.ValidationResult> getValidationResults() {
+        return Collections.unmodifiableList( validationResults );
+    }    
     
     private static class DefaultHandlerImpl extends DefaultHandler {
         

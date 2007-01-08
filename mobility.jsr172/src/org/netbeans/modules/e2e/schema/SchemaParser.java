@@ -64,12 +64,10 @@ public class SchemaParser extends DefaultHandler {
     private boolean parseWSDLTags = true;
     
     private List<WSDL2Java.ValidationResult> validationResults;
-    private int invalidDepth;
     
     public SchemaParser() {
         schemaHolder = new SchemaHolderImpl();
         validationResults = new ArrayList();
-        invalidDepth = 0;
         
         addPrimitiveTypes();
     }
@@ -134,9 +132,6 @@ public class SchemaParser extends DefaultHandler {
             
             SAXParser parser = spf.newSAXParser();
             
-            System.err.println("Namespace Aware: " + parser.isNamespaceAware());
-            System.err.println("Validating:" + parser.isValidating());
-            
             parser.parse( is, this );
         } catch( SAXException e ) {
             if( e.getException() instanceof SchemaException ) {
@@ -157,9 +152,6 @@ public class SchemaParser extends DefaultHandler {
             
             SAXParser parser = spf.newSAXParser();
             
-            System.err.println("Namespace Aware: " + parser.isNamespaceAware());
-            System.err.println("Validating:" + parser.isValidating());
-            
             parser.parse( uri, this );
         } catch( SAXException e ) {
             if( e.getException() instanceof SchemaException ) {
@@ -177,7 +169,6 @@ public class SchemaParser extends DefaultHandler {
     }
     
     public void startPrefixMapping( String prefix, String uri ) throws SAXException {
-        System.err.println(" - mapping : " + prefix + " ~ " + uri );
         prefixMapping.put( prefix, uri );
     }        
 
@@ -209,6 +200,7 @@ public class SchemaParser extends DefaultHandler {
                     ex.printStackTrace();
                 }
                 schemaHolder.importSchema( sp.getSchemaHolder());
+                validationResults.addAll( sp.getValidationResults());
             }
             
             // schema
@@ -302,7 +294,7 @@ public class SchemaParser extends DefaultHandler {
                 return;
             }
             // Simple Type
-//            if( localName.equals( SchemaConstants.SIMPLE_TYPE.getLocalPart())) {
+            if( localName.equals( SchemaConstants.SIMPLE_TYPE.getLocalPart())) {
 //                state.push( SIMPLE_TYPE );
 //                String name = attributes.getValue( "name" );
 //                QName qn = null;
@@ -312,7 +304,10 @@ public class SchemaParser extends DefaultHandler {
 //                // add as type
 //                type = new Type( qn );
 //                schemaHolder.addSchemaType( type );
-//            }
+                validationResults.add( new WSDL2Java.ValidationResult(
+                        WSDL2Java.ValidationResult.ErrorLevel.FATAL, "Simple type is not supported by JSR-172" ));
+                throw new SAXException( "", new SchemaException( "Invalid type 'simple type'" )); 
+            }
 //            // Restriction
 //            if( localName.equals( SchemaConstants.RESTRICTION.getLocalPart())) {
 //                state.push( RESTRICTION );
