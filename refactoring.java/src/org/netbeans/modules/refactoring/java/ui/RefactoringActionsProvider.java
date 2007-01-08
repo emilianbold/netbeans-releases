@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.swing.JOptionPane;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CancellableTask;
@@ -55,6 +56,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.windows.TopComponent;
 
@@ -76,6 +78,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 @Override
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
+                    if (selected==null)
+                        return null;
                     if (selected.getKind() == ElementKind.CONSTRUCTOR) {
                         selected = selected.getEnclosingElement();
                     }
@@ -460,7 +464,12 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 return ;
             }
             TopComponent activetc = TopComponent.getRegistry().getActivated();
-            UI.openRefactoringUI(ui, activetc);
+            
+            if (ui!=null) {
+                UI.openRefactoringUI(ui, activetc);
+            } else {
+                JOptionPane.showMessageDialog(null,NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotRenameKeyword"));
+            }
         }
         
         protected abstract RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info);
