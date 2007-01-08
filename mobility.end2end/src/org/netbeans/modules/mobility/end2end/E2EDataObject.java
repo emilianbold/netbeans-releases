@@ -35,9 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-
 import javax.swing.SwingUtilities;
-
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -47,14 +45,10 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.mobility.end2end.core.model.JavonMapping;
 import org.netbeans.mobility.end2end.core.model.MutableJavonMapping;
 import org.netbeans.mobility.end2end.core.model.classdata.ClassDataRegistry;
 import org.netbeans.mobility.end2end.core.model.classdata.ClassDataRegistryFactory;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.modules.mobility.end2end.classdata.AbstractService;
 import org.netbeans.modules.mobility.end2end.classdata.ClassData;
 import org.netbeans.modules.mobility.end2end.classdata.MethodData;
@@ -64,7 +58,6 @@ import org.netbeans.modules.mobility.end2end.client.config.Configuration;
 import org.netbeans.modules.mobility.end2end.client.config.ConfigurationReader;
 import org.netbeans.modules.mobility.end2end.client.config.ConfigurationWriter;
 import org.netbeans.modules.mobility.end2end.client.config.ServerConfiguration;
-import org.netbeans.modules.mobility.end2end.designgenerator.VisualDesignGenerator;
 import org.netbeans.modules.mobility.end2end.util.Util;
 import org.netbeans.modules.mobility.end2end.wcw.classdata.NetbeansClassDataRegistryFactory;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
@@ -88,6 +81,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -101,7 +95,7 @@ import org.openide.util.lookup.Lookups;
  * @author Michal Skvor
  */
 public class E2EDataObject extends XmlMultiViewDataObject {
-    
+
     public static RequestProcessor rp; //generator
       
     // Configuration
@@ -127,7 +121,7 @@ public class E2EDataObject extends XmlMultiViewDataObject {
     throws DataObjectExistsException {
         super( file, ldr );
         
-        synchronizer = new ModelSynchronizer(this);
+        synchronizer = new ModelSynchronizer( this );
         clientProject = FileOwnerQuery.getOwner( file );
         
         saveCallbacks = new HashSet<SaveCallback>();
@@ -213,115 +207,115 @@ public class E2EDataObject extends XmlMultiViewDataObject {
     }
     
     // FIXME: this method should be rather in GenerateAction
-    public JavonMapping getMapping() throws Exception {
-        //System.err.println(" - GET MAPPING START - ");
-        // run always
-        JavonMapping mapping = null;
-        final Configuration config = getConfiguration();
-        final List<String> classPath = new ArrayList<String>();
-        
-        final ServerConfiguration sc = config.getServerConfigutation();
-        final Properties sprops = sc.getProperties();
-        final Sources ssources = getServerProject().getLookup().lookup( Sources.class );
-        final SourceGroup[] ssg = ssources.getSourceGroups( JavaProjectConstants.SOURCES_TYPE_JAVA );
-        for (int i = 0; i < ssg.length; i++) {
-            final ClassPath cp = ClassPath.getClassPath(ssg[i].getRootFolder() ,ClassPath.SOURCE);
-            final FileObject[] roots = cp.getRoots();
-            for (int j = 0; j < roots.length; j++) {
-                File f;
-                if ((f = FileUtil.toFile(roots[j])) != null)
-                    classPath.add(f.getAbsolutePath());
-            }
-        }
-        
-        for (int i = 0; i < ssg.length; i++) {
-            final ClassPath cp = ClassPath.getClassPath(ssg[i].getRootFolder() ,ClassPath.EXECUTE);
-            final FileObject[] roots = cp.getRoots(); //only returns folders. How to handle jars?
-            for (int j = 0; j < roots.length; j++) {
-                File f;
-                if ((f = FileUtil.toFile(roots[j])) != null)
-                    classPath.add(f.getAbsolutePath());
-            }
-        }
-        
-        final ClassDataRegistry registry =
-                getClassDataRegistryFactory().create( classPath );
-        mapping = new MutableJavonMapping( registry );
-        
-        // FIXME: devel hack
-        final MutableJavonMapping m = new MutableJavonMapping( mapping );
-        
-        /* Client part of the mapping */
-        final ClientConfiguration cc = config.getClientConfiguration();
-        final Properties cprops = cc.getProperties();
-        m.setClientClassName( cc.getClassDescriptor().getLeafClassName());
-        m.setClientPackageName( cc.getClassDescriptor().getPackageName());
-        final Sources csources = getClientProject().getLookup().lookup( Sources.class );
-        final SourceGroup csg = Util.getPreselectedGroup(
-                csources.getSourceGroups( JavaProjectConstants.SOURCES_TYPE_JAVA ),
-                cc.getClassDescriptor().getLocation());
-        //System.err.println(" - client path: " + FileUtil.getFileDisplayName( csg.getRootFolder()));
-        m.setClientRootDirectory( FileUtil.toFile( csg.getRootFolder()).getPath());
-        if( TRUE.equals(cprops.getProperty( "trace" ))) {   // NOI18N
-            m.setClientTraceLevel( 1 );
-        } else {
-            m.setClientTraceLevel( 0 );
-        }
-        m.setDynamicInvocationSupported( false );
-        m.setGroupingSupported( cprops.getProperty( "multipleCall" ).equals( TRUE )); // NOI18N
-        m.setStubGeneration( cprops.getProperty( "createStubs" ).equals( TRUE ));     // NOI18N
-        m.setSynchronousSupported( true );
-        m.setFloatingPointSupported( true );
-        
-        /* Server part of the mapping */
-        final ProjectInformation pi = getServerProject().getLookup().lookup( ProjectInformation.class );
-        m.setServerProjectName( pi.getName());
-        m.setServerClassName( sc.getClassDescriptor().getLeafClassName());
-        m.setServerPackageName( sc.getClassDescriptor().getPackageName());
-        //System.err.println(" - server path: " + FileUtil.getFileDisplayName( ssg.getRootFolder()));
-        m.setServerRootDirectory(
-                FileUtil.toFile( Util.getPreselectedGroup(ssg, sc.getClassDescriptor().getLocation()).getRootFolder()).getPath());
-        if( TRUE.equals(sprops.getProperty( "trace" ))) {   // NOI18N
-            m.setClientTraceLevel( 1 );
-        } else {
-            m.setClientTraceLevel( 0 );
-        }
-        
-        m.setServletURL(Util.getServerURL(getServerProject(), getConfiguration()));
-        
-        int methodID = 1;
-        final List<AbstractService> services = config.getServices();
-        // there must be one and just one service
-        //System.err.println(" - services count - " + services.size());
-        final List<ClassData> classes = services.get(0).getData();
-        for ( final ClassData ccd : classes ) {
-            String className = ccd.getProxyClassType();
-            if (className == null){
-                className = ccd.getType();
-            }
-            final org.netbeans.mobility.end2end.core.model.classdata.ClassData classData = registry.getClassData( className );
-            if( classData == null ) continue;
-            //System.err.println(" - class: " + className );
-            
-            final List<OperationData>
-                    methods = ccd.getOperations();
-            final org.netbeans.mobility.end2end.core.model.classdata.MethodData methodData[] = classData.getMethods();
-            //for( int j = 0; j < methods.size(); j++ ) {
-            for ( final MethodData mmd : methods ) { 
-                //System.err.println(" - method: " + mmd.getName());
-                final int methodIndex = findMethod( methodData, mmd.getName());
-                if( methodIndex >= 0 ) {
-                    methodData[methodIndex].setRequestID( methodID++ );
-                    m.addMethod( methodData[methodIndex] );
-                    //System.err.println(" - adding method: " + methodData[methodIndex] );
-                }
-            }
-        }
-        m.resolveNamingConflicts();
-        mapping = m;
-        
-        return mapping;
-    }
+//    public JavonMapping getMapping() throws Exception {
+//        //System.err.println(" - GET MAPPING START - ");
+//        // run always
+//        JavonMapping mapping = null;
+//        final Configuration config = getConfiguration();
+//        final List<String> classPath = new ArrayList<String>();
+//        
+//        final ServerConfiguration sc = config.getServerConfigutation();
+//        final Properties sprops = sc.getProperties();
+//        final Sources ssources = getServerProject().getLookup().lookup( Sources.class );
+//        final SourceGroup[] ssg = ssources.getSourceGroups( JavaProjectConstants.SOURCES_TYPE_JAVA );
+//        for (int i = 0; i < ssg.length; i++) {
+//            final ClassPath cp = ClassPath.getClassPath(ssg[i].getRootFolder() ,ClassPath.SOURCE);
+//            final FileObject[] roots = cp.getRoots();
+//            for (int j = 0; j < roots.length; j++) {
+//                File f;
+//                if ((f = FileUtil.toFile(roots[j])) != null)
+//                    classPath.add(f.getAbsolutePath());
+//            }
+//        }
+//        
+//        for (int i = 0; i < ssg.length; i++) {
+//            final ClassPath cp = ClassPath.getClassPath(ssg[i].getRootFolder() ,ClassPath.EXECUTE);
+//            final FileObject[] roots = cp.getRoots(); //only returns folders. How to handle jars?
+//            for (int j = 0; j < roots.length; j++) {
+//                File f;
+//                if ((f = FileUtil.toFile(roots[j])) != null)
+//                    classPath.add(f.getAbsolutePath());
+//            }
+//        }
+//        
+//        final ClassDataRegistry registry =
+//                getClassDataRegistryFactory().create( classPath );
+//        mapping = new MutableJavonMapping( registry );
+//        
+//        // FIXME: devel hack
+//        final MutableJavonMapping m = new MutableJavonMapping( mapping );
+//        
+//        /* Client part of the mapping */
+//        final ClientConfiguration cc = config.getClientConfiguration();
+//        final Properties cprops = cc.getProperties();
+//        m.setClientClassName( cc.getClassDescriptor().getLeafClassName());
+//        m.setClientPackageName( cc.getClassDescriptor().getPackageName());
+//        final Sources csources = getClientProject().getLookup().lookup( Sources.class );
+//        final SourceGroup csg = Util.getPreselectedGroup(
+//                csources.getSourceGroups( JavaProjectConstants.SOURCES_TYPE_JAVA ),
+//                cc.getClassDescriptor().getLocation());
+//        //System.err.println(" - client path: " + FileUtil.getFileDisplayName( csg.getRootFolder()));
+//        m.setClientRootDirectory( FileUtil.toFile( csg.getRootFolder()).getPath());
+//        if( TRUE.equals(cprops.getProperty( "trace" ))) {   // NOI18N
+//            m.setClientTraceLevel( 1 );
+//        } else {
+//            m.setClientTraceLevel( 0 );
+//        }
+//        m.setDynamicInvocationSupported( false );
+//        m.setGroupingSupported( cprops.getProperty( "multipleCall" ).equals( TRUE )); // NOI18N
+//        m.setStubGeneration( cprops.getProperty( "createStubs" ).equals( TRUE ));     // NOI18N
+//        m.setSynchronousSupported( true );
+//        m.setFloatingPointSupported( true );
+//        
+//        /* Server part of the mapping */
+//        final ProjectInformation pi = getServerProject().getLookup().lookup( ProjectInformation.class );
+//        m.setServerProjectName( pi.getName());
+//        m.setServerClassName( sc.getClassDescriptor().getLeafClassName());
+//        m.setServerPackageName( sc.getClassDescriptor().getPackageName());
+//        //System.err.println(" - server path: " + FileUtil.getFileDisplayName( ssg.getRootFolder()));
+//        m.setServerRootDirectory(
+//                FileUtil.toFile( Util.getPreselectedGroup(ssg, sc.getClassDescriptor().getLocation()).getRootFolder()).getPath());
+//        if( TRUE.equals(sprops.getProperty( "trace" ))) {   // NOI18N
+//            m.setClientTraceLevel( 1 );
+//        } else {
+//            m.setClientTraceLevel( 0 );
+//        }
+//        
+//        m.setServletURL(Util.getServerURL(getServerProject(), getConfiguration()));
+//        
+//        int methodID = 1;
+//        final List<AbstractService> services = config.getServices();
+//        // there must be one and just one service
+//        //System.err.println(" - services count - " + services.size());
+//        final List<ClassData> classes = services.get(0).getData();
+//        for ( final ClassData ccd : classes ) {
+//            String className = ccd.getProxyClassType();
+//            if (className == null){
+//                className = ccd.getType();
+//            }
+//            final org.netbeans.mobility.end2end.core.model.classdata.ClassData classData = registry.getClassData( className );
+//            if( classData == null ) continue;
+//            //System.err.println(" - class: " + className );
+//            
+//            final List<OperationData>
+//                    methods = ccd.getOperations();
+//            final org.netbeans.mobility.end2end.core.model.classdata.MethodData methodData[] = classData.getMethods();
+//            //for( int j = 0; j < methods.size(); j++ ) {
+//            for ( final MethodData mmd : methods ) { 
+//                //System.err.println(" - method: " + mmd.getName());
+//                final int methodIndex = findMethod( methodData, mmd.getName());
+//                if( methodIndex >= 0 ) {
+//                    methodData[methodIndex].setRequestID( methodID++ );
+//                    m.addMethod( methodData[methodIndex] );
+//                    //System.err.println(" - adding method: " + methodData[methodIndex] );
+//                }
+//            }
+//        }
+//        m.resolveNamingConflicts();
+//        mapping = m;
+//        
+//        return mapping;
+//    }
     
     private int findMethod( final org.netbeans.mobility.end2end.core.model.classdata.MethodData[] methods, final String methodName ) {
         final int result = -1;
@@ -336,9 +330,9 @@ public class E2EDataObject extends XmlMultiViewDataObject {
     }
     
     public ClassDataRegistryFactory getClassDataRegistryFactory() {
-        if( factory == null ) {
-            factory = new NetbeansClassDataRegistryFactory( clientProject );
-        }
+//        if( factory == null ) {
+//            factory = new NetbeansClassDataRegistryFactory( clientProject );
+//        }
         return factory;
     }
     
@@ -368,71 +362,71 @@ public class E2EDataObject extends XmlMultiViewDataObject {
         SwingUtilities.invokeLater(new Runnable() {
             @SuppressWarnings("synthetic-access")
 			public void run() {
-                if (JavaMetamodel.getManager().invokeAfterScanFinished(new Runnable() {
-                    public void run() {
-                        if (rp == null) {
-                            rp = new RequestProcessor("End2EndGenerator", 5); //NOI18N
-                        }
-                        rp.post(new Runnable() {
-                            @SuppressWarnings("synthetic-access")
-							public void run() {
+//                if (JavaMetamodel.getManager().invokeAfterScanFinished(new Runnable() {
+//                    public void run() {
+//                        if (rp == null) {
+//                            rp = new RequestProcessor("End2EndGenerator", 5); //NOI18N
+//                        }
+//                        rp.post(new Runnable() {
+//                            @SuppressWarnings("synthetic-access")
+//							public void run() {
                                 final Lookup.Result<E2EServiceProvider> result = Lookup.getDefault().lookup(new Lookup.Template<E2EServiceProvider>(E2EServiceProvider.class));
                                 for ( final E2EServiceProvider elem : result.allInstances() ) {
                                     if (E2EDataObject.this.getConfiguration().getServiceType().equals(elem.getServiceType())){
-                                        final ServiceGeneratorResult service = elem.generateStubs(Lookups.singleton(E2EDataObject.this));
-                                        if (generateMidlet && service != null && service.getAccessMethods().length != 0 && Util.isSuitableProjectConfiguration( getClientProject())){
-                                            final VisualDesignGenerator designGenerator = new VisualDesignGenerator(service);
-                                            DataObject generated;
-                                            if ((generated = designGenerator.generateDesign(getFolder())) == null){
-                                                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage( E2EDataObject.class, "MSG_SampleNotGenerated" )); // NOI18N
-                                            } else {
-                                                final Project p = getClientProject();
-                                                final AntProjectHelper h = p.getLookup().lookup(AntProjectHelper.class);
-                                                if (p instanceof J2MEProject  &&  h != null) {
-                                                    // set the server url as a custom prperty in jad
-                                                    setServerUrlInJad((J2MEProject) p, service.getDeploymentUrl());
-                                                    JavaModel.getJavaRepository().beginTrans(false);
-                                                    try {
-                                                        final Resource resource = JavaModel.getResource(generated.getPrimaryFile());
-                                                        final JavaClass jc = (JavaClass) resource.getClassifiers().get(0);
-                                                        
-                                                        J2MEProjectGenerator.addMIDletProperty(p, h,
-                                                                generated.getName(),
-                                                                jc.getName(),
-                                                                ""
-                                                                );
-                                                        ProjectManager.getDefault().saveProject(p);
-                                                    } catch (IOException e) {
-                                                        ErrorManager.getDefault().notify(e);
-                                                    } finally {
-                                                        JavaModel.getJavaRepository().endTrans();
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        generating = false;
-                                        E2EDataObject.this.firePropertyChange(PROP_GENERATING, Boolean.TRUE, Boolean.FALSE);
-                                        return;
+                                        final ServiceGeneratorResult service = elem.generateStubs( Lookups.singleton( E2EDataObject.this ));
+//                                        if (generateMidlet && service != null && service.getAccessMethods().length != 0 && Util.isSuitableProjectConfiguration( getClientProject())){
+//                                            final VisualDesignGenerator designGenerator = new VisualDesignGenerator(service);
+//                                            DataObject generated;
+//                                            if ((generated = designGenerator.generateDesign(getFolder())) == null){
+//                                                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage( E2EDataObject.class, "MSG_SampleNotGenerated" )); // NOI18N
+//                                            } else {
+//                                                final Project p = getClientProject();
+//                                                final AntProjectHelper h = p.getLookup().lookup(AntProjectHelper.class);
+//                                                if (p instanceof J2MEProject  &&  h != null) {
+//                                                    // set the server url as a custom prperty in jad
+//                                                    setServerUrlInJad((J2MEProject) p, service.getDeploymentUrl());
+//                                                    JavaModel.getJavaRepository().beginTrans(false);
+//                                                    try {
+//                                                        final Resource resource = JavaModel.getResource(generated.getPrimaryFile());
+//                                                        final JavaClass jc = (JavaClass) resource.getClassifiers().get(0);
+//                                                        
+//                                                        J2MEProjectGenerator.addMIDletProperty(p, h,
+//                                                                generated.getName(),
+//                                                                jc.getName(),
+//                                                                ""
+//                                                                );
+//                                                        ProjectManager.getDefault().saveProject(p);
+//                                                    } catch (IOException e) {
+//                                                        ErrorManager.getDefault().notify(e);
+//                                                    } finally {
+//                                                        JavaModel.getJavaRepository().endTrans();
+//                                                    }
+//                                                }
+//                                            }
+//                                        }
+//                                        generating = false;
+//                                        E2EDataObject.this.firePropertyChange(PROP_GENERATING, Boolean.TRUE, Boolean.FALSE);
+//                                        return;
                                     }
                                 }
                                 generating = false;
                                 E2EDataObject.this.firePropertyChange(PROP_GENERATING, Boolean.TRUE, Boolean.FALSE);
-                            }
-                            
-                            private void setServerUrlInJad( J2MEProject project, String url ) {
-                                final AntProjectHelper helper = project.getLookup().lookup( AntProjectHelper.class );
-                                final EditableProperties props = helper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );
-                                final HashMap<String,String> jad = (HashMap<String,String>)DefaultPropertyParsers.MANIFEST_PROPERTY_PARSER.decode(props.getProperty(DefaultPropertiesDescriptor.MANIFEST_JAD), null, null);
-                                jad.put( "serverURL", url );
-                                props.setProperty( DefaultPropertiesDescriptor.MANIFEST_JAD, DefaultPropertyParsers.MANIFEST_PROPERTY_PARSER.encode(jad, null, null));
-                                helper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, props );
-                            }
-                        });
-                    }
-                }, NbBundle.getMessage(E2EDataObject.class, "MSG_GeneratingStubs"))){ //NOI18N
-                    generating = false;
-                    E2EDataObject.this.firePropertyChange(PROP_GENERATING, Boolean.TRUE, Boolean.FALSE);
-                }
+//                            }
+//                            
+//                            private void setServerUrlInJad( J2MEProject project, String url ) {
+//                                final AntProjectHelper helper = project.getLookup().lookup( AntProjectHelper.class );
+//                                final EditableProperties props = helper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );
+//                                final HashMap<String,String> jad = (HashMap<String,String>)DefaultPropertyParsers.MANIFEST_PROPERTY_PARSER.decode(props.getProperty(DefaultPropertiesDescriptor.MANIFEST_JAD), null, null);
+//                                jad.put( "serverURL", url );
+//                                props.setProperty( DefaultPropertiesDescriptor.MANIFEST_JAD, DefaultPropertyParsers.MANIFEST_PROPERTY_PARSER.encode(jad, null, null));
+//                                helper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, props );
+//                            }
+//                        });
+//                    }
+//                }, NbBundle.getMessage(E2EDataObject.class, "MSG_GeneratingStubs"))){ //NOI18N
+//                    generating = false;
+//                    E2EDataObject.this.firePropertyChange(PROP_GENERATING, Boolean.TRUE, Boolean.FALSE);
+//                }
             }
         });
     }
@@ -476,8 +470,8 @@ public class E2EDataObject extends XmlMultiViewDataObject {
         public void open() {
             SwingUtilities.invokeLater( new Runnable() {
                 public void run() {
-                    JavaMetamodel.getManager().invokeAfterScanFinished( new Runnable() {
-                        public void run() {
+//                    JavaMetamodel.getManager().invokeAfterScanFinished( new Runnable() {
+//                        public void run() {
                             final Configuration configuration = dataObject.getConfiguration();
                             if( configuration == null ) {
                                 final NotifyDescriptor.Message dd  = new NotifyDescriptor.Message(
@@ -498,8 +492,8 @@ public class E2EDataObject extends XmlMultiViewDataObject {
                                 return;
                             }
                             openme();
-                        }
-                    }, NbBundle.getMessage(E2EDataObject.class, "MSG_OpeningConfigFile" ));
+//                        }
+//                    }, NbBundle.getMessage(E2EDataObject.class, "MSG_OpeningConfigFile" ));
                 }});
         }
         

@@ -19,6 +19,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <filesystem>
+    <!--
     <folder name="Templates">
         <folder name="MIDP">
             <attr name="HelloMidlet.java/E2EWebApplication.wsclient" boolvalue="true"/>
@@ -33,5 +34,6 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
     </folder>
+    -->
 </filesystem>
 
