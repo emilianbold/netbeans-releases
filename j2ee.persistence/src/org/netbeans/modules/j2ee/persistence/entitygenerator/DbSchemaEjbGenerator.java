@@ -85,18 +85,8 @@ public class DbSchemaEjbGenerator {
         }
         
         // issue 90962: a table whose foreign keys are unique is not a join table
-        Set<ColumnElement> foreignKeyColumns = new HashSet<ColumnElement>();
-        for (int i = 0; i < 2; i++) {
-            for (ColumnElement column : foreignKeys[i].getColumns()) {
-                foreignKeyColumns.add(column);
-            }
-        }
-        for (UniqueKeyElement uniqueKey : e.getUniqueKeys()) {
-            for (ColumnElement column : uniqueKey.getColumns()) {
-                if (foreignKeyColumns.contains(column)) {
-                    return false;
-                }
-            }
+        if (isFkUnique(foreignKeys[0]) || isFkUnique(foreignKeys[1])) {
+            return false;
         }
         
         return true;
@@ -259,7 +249,7 @@ public class DbSchemaEjbGenerator {
         return names;
     }
     
-    private boolean containsAllColumns(ColumnElement[] fkColumns,
+    private static boolean containsSameColumns(ColumnElement[] fkColumns,
             UniqueKeyElement uk) {
         if (fkColumns.length == uk.getColumns().length) {
             for (int i = 0; i < fkColumns.length; i++) {
@@ -286,7 +276,7 @@ public class DbSchemaEjbGenerator {
         return false;
     }
     
-    private boolean isFkUnique(ForeignKeyElement key) {
+    private static boolean isFkUnique(ForeignKeyElement key) {
         UniqueKeyElement[] uk = key.getDeclaringTable().getUniqueKeys();
         if (uk == null) {
             return false;
@@ -294,7 +284,7 @@ public class DbSchemaEjbGenerator {
         
         ColumnElement[] columns = key.getColumns();
         for (int uin=0; uin < uk.length; uin++) {
-            if (containsAllColumns(columns, uk[uin])) {
+            if (containsSameColumns(columns, uk[uin])) {
                 return true;
             }
         }
