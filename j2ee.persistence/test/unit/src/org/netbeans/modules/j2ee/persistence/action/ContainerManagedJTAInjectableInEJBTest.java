@@ -56,12 +56,12 @@ public class ContainerManagedJTAInjectableInEJBTest extends EntityManagerGenerat
         options.setReturnType("Object");
         
         FileObject result = generate(FileUtil.toFileObject(testFile), options);
-        print(result);
+
         assertFile(result);
     }
     
     protected EntityManagerGenerationStrategy getStrategy(WorkingCopy workingCopy, TreeMaker make, ClassTree clazz, GenerationOptions options){
-        return new ContainerManagedJTAInjectableInEJB(workingCopy, make, clazz, null, options);
+        return new ContainerManagedJTAInjectableInEJB(workingCopy, make, clazz, getPersistenceUnit(), options);
     }
 }
 

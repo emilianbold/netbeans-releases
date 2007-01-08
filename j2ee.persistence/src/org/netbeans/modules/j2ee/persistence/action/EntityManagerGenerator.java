@@ -37,6 +37,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
+import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -96,7 +97,7 @@ public class EntityManagerGenerator {
                 workingCopy.toPhase(Phase.RESOLVED);
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
                 TreeMaker make = workingCopy.getTreeMaker();
-                
+               
                 for (Tree typeDeclaration : cut.getTypeDecls()){
                     if (Tree.Kind.CLASS == typeDeclaration.getKind()){
                         ClassTree clazz = (ClassTree) typeDeclaration;
@@ -207,9 +208,17 @@ public class EntityManagerGenerator {
     
     private PersistenceUnit getPersistenceUnit() {
         PersistenceScope persistenceScope = PersistenceScope.getPersistenceScope(targetFo);
+        
+        if (persistenceScope == null){
+            return null;
+        }
+        
         try {
             // TODO: fix ASAP! 1st PU is taken, needs to find the one which realy owns given file
-            return PersistenceMetadata.getDefault().getRoot(persistenceScope.getPersistenceXml()).getPersistenceUnit(0);
+            Persistence persistence = PersistenceMetadata.getDefault().getRoot(persistenceScope.getPersistenceXml());
+            if(persistence != null){
+                return persistence.getPersistenceUnit(0);
+            }
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }

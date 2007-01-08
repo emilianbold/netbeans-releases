@@ -4,7 +4,7 @@ import java.util.*;
 import javax.annotation.Resource;
 import javax.persistence.PersistenceContext;
 
-@PersistenceContext(name = "persistence/LogicalName", unitName = "")
+@PersistenceContext(name = "persistence/LogicalName", unitName = "MyPersistenceUnit")
 public class Test {
 @Resource
 private javax.transaction.UserTransaction utx;

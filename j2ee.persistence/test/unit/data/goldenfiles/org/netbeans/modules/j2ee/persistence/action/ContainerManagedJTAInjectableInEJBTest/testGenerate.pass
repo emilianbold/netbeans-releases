@@ -2,12 +2,13 @@ package org.netbeans.test;
 
 import java.util.*;
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 public class Test {
-@javax.persistence.PersistenceContext
-private EntityManager em;
+    @PersistenceContext
+    private EntityManager em;
 
-public void create(Object object) {
-    em.persist(object);
-}
+    public void create(Object object) {
+        em.persist(object);
+    }
 }

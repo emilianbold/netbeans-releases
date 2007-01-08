@@ -56,7 +56,7 @@ public class ContainerManagedJTANonInjectableInWebTest extends EntityManagerGene
         options.setReturnType("Object");
         
         FileObject result = generate(FileUtil.toFileObject(testFile), options);
-        print(result);
+
         assertFile(result);
     }
     
