@@ -210,7 +210,7 @@ public class LabelWidget extends Widget {
             Color color = ((Color) background);
             gr.setColor (color.brighter ());
             gr.drawString (label, x + 1, y + 1);
-            gr.setColor (color.brighter ());
+            gr.setColor (color.darker ());
             gr.drawString (label, x, y);
         } else {
             gr.setColor (getForeground ());
