@@ -25,8 +25,11 @@ import java.awt.event.ActionListener;
 import java.util.StringTokenizer;
 import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableColumn;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -36,7 +39,7 @@ import org.openide.util.NbBundle;
  * Customizer for Enterprise Application packaging.
  */
 public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPanel, ListSelectionListener, HelpCtx.Provider {
-        
+    
     private Dialog dialog;
     private final AddFilter filterDlg = new AddFilter();
     private final DefaultListModel dlm = new DefaultListModel();
@@ -44,26 +47,26 @@ public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPan
     private final VisualPropertySupport vps;
     private final VisualArchiveIncludesSupport vws;
     private final ActionListener actionListener;
-
+    
     public CustomizerJarContent(EarProjectProperties earProperties) {
         initComponents();
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_A11YDesc"));
-
-        this.earProperties = earProperties;        
+        
+        this.earProperties = earProperties;
         vps = new VisualPropertySupport(earProperties);
         vws = new VisualArchiveIncludesSupport( earProperties.getProject(),
-                                            (String) earProperties.get(EarProjectProperties.J2EE_PLATFORM),
-                                            jTableAddContent,
-                                            jButtonAddJar,
-                                            jButtonAddLib,
-                                            jButtonAddProject,
-                                            jButtonRemove);
-
+                (String) earProperties.get(EarProjectProperties.J2EE_PLATFORM),
+                jTableAddContent,
+                jButtonAddJar,
+                jButtonAddLib,
+                jButtonAddProject,
+                jButtonRemove);
+        
         jListExContent.setModel(dlm);
         
         // XXX correct these when the sematics are well defined
         //jButtonAddLib.setEnabled(false);
-    
+        
         actionListener = new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 if (event.getSource() == DialogDescriptor.OK_OPTION) {
@@ -75,6 +78,28 @@ public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPan
         };
         
         jListExContent.getSelectionModel().addListSelectionListener(this);
+        initTableVisualProperties(jTableAddContent);
+    }
+    
+    private void initTableVisualProperties(JTable table) {
+        //table.setGridColor(jTableCpC.getBackground());
+        table.setRowHeight(jTableAddContent.getRowHeight() + 4);
+        table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        table.setIntercellSpacing(new java.awt.Dimension(0, 0));
+        // set the color of the table's JViewport
+        table.getParent().setBackground(table.getBackground());
+   
+        //#88174 - Need horizontal scrollbar for library names
+        //ugly but I didn't find a better way how to do it
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        TableColumn column = table.getColumnModel().getColumn(0);
+        column.setMinWidth(230);
+        column.setWidth(230);
+        column.setMinWidth(75);
+        column = table.getColumnModel().getColumn(1);
+        column.setMinWidth(135);
+        column.setWidth(135);
+        column.setMinWidth(28);
     }
     
     public void initValues() {
@@ -95,7 +120,7 @@ public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPan
         
         // Set the initial state of the buttons
         valueChanged(null);
-    } 
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -283,7 +308,7 @@ public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPan
 
     }
     // </editor-fold>//GEN-END:initComponents
-
+    
     private void jButtonRemoveFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRemoveFilterActionPerformed
         Object[] items = jListExContent.getSelectedValues();
         for (int i = 0; i < items.length; i++) {
@@ -291,7 +316,7 @@ public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPan
         }
         setExcludeProperty();
     }//GEN-LAST:event_jButtonRemoveFilterActionPerformed
-
+    
     private void jButtonAddFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddFilterActionPerformed
         DialogDescriptor descriptor = new DialogDescriptor(filterDlg, NbBundle.getMessage(CustomizerJarContent.class, "LBL_AddFilter_Title"), true, actionListener); //NOI18N
         Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
@@ -318,15 +343,15 @@ public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPan
     private javax.swing.JTable jTableAddContent;
     private javax.swing.JTextField jTextFieldFileName;
     // End of variables declaration//GEN-END:variables
-        
+    
     private void closeDialog() {
         if (dialog != null) {
             dialog.dispose();
         }
     }
-
+    
     public void valueChanged(ListSelectionEvent e) {
-        jButtonRemoveFilter.setEnabled(!(jListExContent.isSelectionEmpty()));        
+        jButtonRemoveFilter.setEnabled(!(jListExContent.isSelectionEmpty()));
     }
     
     private void setExcludeProperty() {
@@ -335,12 +360,12 @@ public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPan
         exclude = exclude.substring(1, exclude.length() -1);
         earProperties.put(EarProjectProperties.BUILD_CLASSES_EXCLUDES, exclude);
     }
-
+    
     /** Help context where to find more about the paste type action.
      * @return the help context for this action
      */
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CustomizerJarContent.class);
     }
-
+    
 }

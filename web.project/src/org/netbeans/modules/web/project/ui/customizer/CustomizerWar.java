@@ -20,42 +20,41 @@
 package org.netbeans.modules.web.project.ui.customizer;
 
 import java.awt.Component;
-
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableCellRenderer;
-
+import javax.swing.table.TableColumn;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /** Customizer for WAR packaging.
  */
 public class CustomizerWar extends JPanel implements HelpCtx.Provider {
-
+    
     WebProjectProperties uiProperties;
-
+    
     /** Creates new form CustomizerCompile */
     public CustomizerWar(WebProjectProperties uiProperties) {
         this.uiProperties = uiProperties;
         initComponents();
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerWar.class, "ACS_CustomizeWAR_A11YDesc")); //NOI18N
-
+        
         jTextFieldFileName.setDocument( uiProperties.WAR_NAME_MODEL );
         jTextFieldExContent.setDocument( uiProperties.BUILD_CLASSES_EXCLUDES_MODEL );
         uiProperties.WAR_COMPRESS_MODEL.setMnemonic( jCheckBoxCompress.getMnemonic() );
-        jCheckBoxCompress.setModel( uiProperties.WAR_COMPRESS_MODEL ); 
+        jCheckBoxCompress.setModel( uiProperties.WAR_COMPRESS_MODEL );
         uiProperties.WAR_PACKAGE_MODEL.setMnemonic( jCheckBoxCreateWAR.getMnemonic() );
-        jCheckBoxCreateWAR.setModel( uiProperties.WAR_PACKAGE_MODEL ); 
- 
+        jCheckBoxCreateWAR.setModel( uiProperties.WAR_PACKAGE_MODEL );
+        
         initTableVisualProperties(jTableAddContent);
         
         WarIncludesUi.EditMediator.register( uiProperties.getProject(),
-                                             jTableAddContent,
-                                             jButtonAddJar.getModel(), 
-                                             jButtonAddLib.getModel(), 
-                                             jButtonAddProject.getModel(), 
-                                             jButtonRemove.getModel());
+                jTableAddContent,
+                jButtonAddJar.getModel(),
+                jButtonAddLib.getModel(),
+                jButtonAddProject.getModel(),
+                jButtonRemove.getModel());
     }
     
     private void initTableVisualProperties(JTable table) {
@@ -73,12 +72,24 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider {
                 return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             }
         });
-
-        table.setRowHeight(jTableAddContent.getRowHeight() + 4);        
-        table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);        
-        table.setIntercellSpacing(new java.awt.Dimension(0, 0));        
+        
+        table.setRowHeight(jTableAddContent.getRowHeight() + 4);
+        table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        table.setIntercellSpacing(new java.awt.Dimension(0, 0));
         // set the color of the table's JViewport
         table.getParent().setBackground(table.getBackground());
+        
+        //#88174 - Need horizontal scrollbar for library names
+        //ugly but I didn't find a better way how to do it
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        TableColumn column = table.getColumnModel().getColumn(0);
+        column.setMinWidth(179);
+        column.setWidth(179);
+        column.setMinWidth(75);
+        column = table.getColumnModel().getColumn(1);
+        column.setMinWidth(178);
+        column.setWidth(178);
+        column.setMinWidth(75);
     }
     
     /** This method is called from within the constructor to
@@ -286,12 +297,12 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider {
     private javax.swing.JTextField jTextFieldExContent;
     private javax.swing.JTextField jTextFieldFileName;
     // End of variables declaration//GEN-END:variables
-        
+    
     /** Help context where to find more about the paste type action.
      * @return the help context for this action
      */
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CustomizerWar.class);
     }
-
+    
 }

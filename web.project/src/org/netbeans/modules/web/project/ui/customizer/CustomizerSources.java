@@ -20,19 +20,18 @@
 package org.netbeans.modules.web.project.ui.customizer;
 
 import java.io.File;
-
 import javax.swing.JFileChooser;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
-
+import javax.swing.table.TableColumn;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-
 import org.netbeans.modules.web.project.WebProject;
 
 /**
@@ -52,7 +51,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         testRoots.setModel( uiProperties.TEST_ROOTS_MODEL );
         sourceRoots.getTableHeader().setReorderingAllowed(false);
         testRoots.getTableHeader().setReorderingAllowed(false);
-
+        
         FileObject projectFolder = uiProperties.getProject().getProjectDirectory();
         File pf = FileUtil.toFile( projectFolder );
         this.projectLocation.setText( pf == null ? "" : pf.getPath() ); // NOI18N
@@ -61,51 +60,75 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         jTextFieldWebPages.setDocument(uiProperties.WEB_DOCBASE_DIR_MODEL);
         
         WebSourceRootsUi.EditMediator emSR = WebSourceRootsUi.registerEditMediator(
-            (WebProject)uiProperties.getProject(),
-            ((WebProject)uiProperties.getProject()).getSourceRoots(),
-            sourceRoots,
-            addSourceRoot,
-            removeSourceRoot, 
-            upSourceRoot, 
-            downSourceRoot);
+                (WebProject)uiProperties.getProject(),
+                ((WebProject)uiProperties.getProject()).getSourceRoots(),
+                sourceRoots,
+                addSourceRoot,
+                removeSourceRoot,
+                upSourceRoot,
+                downSourceRoot);
         
         WebSourceRootsUi.EditMediator emTSR = WebSourceRootsUi.registerEditMediator(
-            (WebProject)uiProperties.getProject(),
-            ((WebProject)uiProperties.getProject()).getTestSourceRoots(),
-            testRoots,
-            addTestRoot,
-            removeTestRoot, 
-            upTestRoot, 
-            downTestRoot);
+                (WebProject)uiProperties.getProject(),
+                ((WebProject)uiProperties.getProject()).getTestSourceRoots(),
+                testRoots,
+                addTestRoot,
+                removeTestRoot,
+                upTestRoot,
+                downTestRoot);
         
         emSR.setRelatedEditMediator( emTSR );
         emTSR.setRelatedEditMediator( emSR );
         
-        this.jComboBoxSourceLevel.setModel(uiProperties.JAVAC_SOURCE_MODEL);        
-        uiProperties.JAVAC_SOURCE_MODEL.addListDataListener(new ListDataListener () {
+        this.jComboBoxSourceLevel.setModel(uiProperties.JAVAC_SOURCE_MODEL);
+        uiProperties.JAVAC_SOURCE_MODEL.addListDataListener(new ListDataListener() {
             public void intervalAdded(ListDataEvent e) {
-                enableSourceLevel ();
+                enableSourceLevel();
             }
-
+            
             public void intervalRemoved(ListDataEvent e) {
-                enableSourceLevel ();
+                enableSourceLevel();
             }
-
+            
             public void contentsChanged(ListDataEvent e) {
-                enableSourceLevel ();
-            }                                    
+                enableSourceLevel();
+            }
         });
-        enableSourceLevel ();
-    }
-
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx (CustomizerSources.class);
+        enableSourceLevel();
+        initTableVisualProperties(sourceRoots);
+        initTableVisualProperties(testRoots);
     }
     
-    private void enableSourceLevel () {
+    private void initTableVisualProperties(JTable table) {
+        //table.setGridColor(jTableCpC.getBackground());
+        table.setRowHeight(testRoots.getRowHeight() + 4);
+        table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        table.setIntercellSpacing(new java.awt.Dimension(0, 0));
+        // set the color of the table's JViewport
+        table.getParent().setBackground(table.getBackground());
+
+        //#88174 - Need horizontal scrollbar for library names
+        //ugly but I didn't find a better way how to do it
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        TableColumn column = table.getColumnModel().getColumn(0);
+        column.setMinWidth(190);
+        column.setWidth(190);
+        column.setMinWidth(75);
+       
+        column = table.getColumnModel().getColumn(1);
+        column.setMinWidth(190);
+        column.setWidth(190);
+        column.setMinWidth(75);
+    }
+    
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(CustomizerSources.class);
+    }
+    
+    private void enableSourceLevel() {
         this.jComboBoxSourceLevel.setEnabled(jComboBoxSourceLevel.getItemCount()>0);
     }
-
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -434,11 +457,11 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
 
     }
     // </editor-fold>//GEN-END:initComponents
-
+    
     private void jButtonBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBrowseActionPerformed
         JFileChooser chooser = new JFileChooser();
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-        chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         File fileName = new File(jTextFieldWebPages.getText());
         File webPages = fileName.isAbsolute() ? fileName : new File(projectFld, fileName.getPath());
         if (webPages.exists()) {
@@ -484,5 +507,5 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
     private javax.swing.JButton upSourceRoot;
     private javax.swing.JButton upTestRoot;
     // End of variables declaration//GEN-END:variables
-
+    
 }
