@@ -419,33 +419,8 @@ public class JMeterIntegrationEngine {
   
   private HashTree parseJMeterTree(final String planPath) {
     FileObject planFile = FileUtil.toFileObject(new File(planPath));
-    planFile.removeFileChangeListener(scriptChangeListener);
-    planFile.addFileChangeListener(scriptChangeListener);
     return parseJMeterTree(planFile);
   }
-  
-  private FileChangeListener scriptChangeListener = new FileChangeListener() {
-    
-    public void fileFolderCreated(FileEvent fe) {}
-    
-    public void fileDataCreated(FileEvent fe) {}
-    
-    public void fileChanged(FileEvent fe) {
-      FileObject fo = fe.getFile();
-      HashTree newTree = parseJMeterTree(fo);
-      testPlans.put(FileUtil.toFile(fo).getAbsolutePath(), newTree);
-    }
-    
-    public void fileDeleted(FileEvent fe) {
-      testPlans.remove(fe.getFile().getPath());
-    }
-    
-    public void fileRenamed(FileRenameEvent fe) {
-      System.out.println("here hozno ");
-    }
-    
-    public void fileAttributeChanged(FileAttributeEvent fe) {}
-  };
   
   private HashTree parseJMeterTree(final FileObject file) {
     InputStream planInputStream = null;
