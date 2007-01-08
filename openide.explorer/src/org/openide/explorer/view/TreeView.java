@@ -992,18 +992,15 @@ public abstract class TreeView extends JScrollPane {
         TreeNode parent = (TreeNode) parentPath.getLastPathComponent();
         Object[] parentPaths = parentPath.getPath();
         TreePath newSelection = null;
-
-        if (parent.getChildCount() > 0) {
+        
+        int childCount = parent.getChildCount();
+        if (childCount > 0) {
             // get parent path, add child to it
             int childPathLength = parentPaths.length + 1;
             Object[] childPath = new Object[childPathLength];
             System.arraycopy(parentPaths, 0, childPath, 0, parentPaths.length);
 
-            int selectedChild = childIndices[0] - 1;
-
-            if (selectedChild < 0) {
-                selectedChild = 0;
-            }
+            int selectedChild = Math.min(childIndices[0], childCount-1);
 
             childPath[childPathLength - 1] = parent.getChildAt(selectedChild);
             newSelection = new TreePath(childPath);
