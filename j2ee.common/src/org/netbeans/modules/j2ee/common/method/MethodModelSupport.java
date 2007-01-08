@@ -119,7 +119,6 @@ public final class MethodModelSupport {
         TreeUtilities treeUtilities = workingCopy.getTreeUtilities();
         List<VariableTree> paramsList = new ArrayList<VariableTree>();
         if (methodModel.getParameters() != null) {
-            int index = 0;
             for (MethodModel.Variable parameter : methodModel.getParameters()) {
                 VariableTree variableTree = treeMaker.Variable(
                         treeMaker.Modifiers(Collections.<Modifier>emptySet()),
@@ -253,7 +252,8 @@ public final class MethodModelSupport {
             case OTHER :
             case PACKAGE :
             case TYPEVAR :
-            case WILDCARD : break;
+            case WILDCARD :
+            default:break;
         }
         return null;
     }
