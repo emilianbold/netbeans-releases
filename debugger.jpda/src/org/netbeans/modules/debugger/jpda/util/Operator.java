@@ -169,6 +169,9 @@ public class Operator {
                              if (logger.isLoggable(Level.FINE)) {
                                  printEvent (e, null);
                              }
+                             synchronized (Operator.this) {
+                                 stop = true;
+                             }
 //                             disconnected = true;
                              if (finalizer != null) finalizer.run ();
                              //S ystem.out.println ("EVENT: " + e); // NOI18N
@@ -206,6 +209,9 @@ public class Operator {
                                  resume = resume & exec.exec (e);
                              } catch (VMDisconnectedException exc) {   
 //                                 disconnected = true;
+                                 synchronized (Operator.this) {
+                                     stop = true;
+                                 }
                                  if (finalizer != null) finalizer.run ();
                                  //S ystem.out.println ("EVENT: " + e); // NOI18N
                                  //S ystem.out.println ("Operator end"); // NOI18N
@@ -303,9 +309,10 @@ public class Operator {
      */
     public void stop() {
         synchronized (this) {
-            stop = true;
             staledRequests.clear();
             staledEvents.clear();
+            if (stop) return ; // Do not interrupt the thread when we're stopped
+            stop = true;
         }
         thread.interrupt();
     }
