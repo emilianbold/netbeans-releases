@@ -280,6 +280,10 @@ public class DetectorTest extends TestBase {
         assertFalse("BLE was not thrown", wasThrown[0]);
     }
     
+    public void testArrayAccess() throws Exception {
+        performTest("ArrayAccess");
+    }
+    
     private void performTest(String fileName) throws Exception {
         performTest(fileName, new Performer() {
             public Collection<Highlight> compute(CompilationController parameter, Document doc) {

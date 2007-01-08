@@ -1013,7 +1013,9 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
 
         @Override
         public Void visitArrayAccess(ArrayAccessTree tree, EnumSet<UseTypes> d) {
-            handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getExpression()), EnumSet.of(UseTypes.READ));
+            if (tree.getExpression() != null && tree.getExpression().getKind() == Kind.IDENTIFIER) {
+                handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getExpression()), EnumSet.of(UseTypes.READ));
+            }
             
             if (tree.getIndex() instanceof IdentifierTree) {
                 handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getIndex()), EnumSet.of(UseTypes.READ));
