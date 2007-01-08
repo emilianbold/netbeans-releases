@@ -942,8 +942,7 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
         private void initGui (Set invalidRoots) {
             setLayout( new GridBagLayout ());                        
             JLabel label = new JLabel ();
-            label.setText (NbBundle.getMessage(SourceFoldersPanel.class,"LBL_InvalidRoot"));
-            label.setDisplayedMnemonic(NbBundle.getMessage(SourceFoldersPanel.class,"MNE_InvalidRoot").charAt(0));            
+            org.openide.awt.Mnemonics.setLocalizedText(label, NbBundle.getMessage(SourceFoldersPanel.class,"LBL_InvalidRoot"));
             GridBagConstraints c = new GridBagConstraints();
             c.gridx = GridBagConstraints.RELATIVE;
             c.gridy = GridBagConstraints.RELATIVE;
