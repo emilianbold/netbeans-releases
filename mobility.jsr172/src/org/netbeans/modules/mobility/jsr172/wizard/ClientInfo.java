@@ -25,13 +25,11 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
-
 import java.awt.Component;
 import java.io.BufferedOutputStream;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Properties;
-
 import javax.swing.JPanel;
 import javax.swing.JFileChooser;
 import javax.swing.JRadioButton;
@@ -41,8 +39,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.e2e.api.wsdl.wsdl2java.WSDL2JavaFactory;
 import org.netbeans.modules.mobility.jsr172.generator.Jsr172Generator;
-import org.netbeans.modules.mobility.jsr172.validator.ValidationProcessorAction;
 import org.netbeans.modules.mobility.end2end.util.Util;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -50,14 +48,14 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.mobility.jsr172.validator.WSIValidator;
+import org.netbeans.modules.e2e.api.wsdl.wsdl2java.WSDL2Java;
+import org.netbeans.modules.e2e.wsdl.wsdl2java.WSDL2JavaImpl;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
@@ -775,7 +773,8 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
                 }
                 validatingRP.post(new Runnable() {
                     public void run() {
-                        wsdlValid = isWSICompliant(getDownloadWsdl());
+//                        wsdlValid = isWSICompliant(getDownloadWsdl());
+                        wsdlValid = checkJSR172Compliant( getDownloadWsdl());
                         validating = false;
                         descriptorPanel.fireChangeEvent();
                     }
@@ -855,6 +854,8 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
                 validatingRP.post(new Runnable() {
                     public void run() {
                         wsdlValid = isWSICompliant(f);
+                        System.err.println("2");
+//                        wsdlValid = checkJSR172Compliant( f );
                         validating = false;
                         descriptorPanel.fireChangeEvent();
                     }
@@ -1033,7 +1034,43 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         
         return result;
     }
+     
+    private synchronized boolean checkJSR172Compliant( final byte[] b ) {
+        boolean result = false;
+        File tempWSDL = null;
+        try {
+            tempWSDL = File.createTempFile( "jsr172validate", "wsdl" ); //NOI18N
+            final BufferedOutputStream bos = new BufferedOutputStream( new FileOutputStream( tempWSDL ));
+            bos.write( b );
+            bos.close();
+            
+            WSDL2Java.Configuration config = new WSDL2Java.Configuration();
+            config.setWSDLFileName( tempWSDL.toURL().toString());
+            WSDL2Java wsdl2java = WSDL2JavaFactory.getWSDL2Java( config );
+            
+            List<WSDL2Java.ValidationResult> validationResult = wsdl2java.validate();
+            for( WSDL2Java.ValidationResult v : validationResult ) {
+                if( v.getErrorLevel() == WSDL2Java.ValidationResult.ErrorLevel.FATAL ) {
+                    DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( v.getMessage(), NotifyDescriptor.ERROR_MESSAGE ));                    
+                    return false;
+                }
+                if( v.getErrorLevel() == WSDL2Java.ValidationResult.ErrorLevel.WARNING ) {
+                    DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( v.getMessage(), NotifyDescriptor.WARNING_MESSAGE ));                    
+                    return true;
+                }
+                
+            }                        
+        } catch( IOException e ) {
+            
+        } finally {
+            if( tempWSDL != null ) {
+                tempWSDL.delete();
+            }
+        }
         
+        return true;
+    }
+    
     protected synchronized boolean isWSICompliant(final byte[] b) {
         boolean result = false;
         File tempWsdl = null;
@@ -1065,14 +1102,14 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
             bos.close();
             
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            final WSIValidator wsiValidator = new WSIValidator( baos, "wscompile", p ); //NOI18N
+//            final WSIValidator wsiValidator = new WSIValidator( baos, "wscompile", p ); //NOI18N
             final String[] args = {"-gen", tempConfig.getAbsolutePath() }; //NOI18N
-            wsiValidator.run( args );
-            final Integer result = (Integer)p.get( ValidationProcessorAction.PROP_VALIDITY );
-            if (result == null){
-                return false;
-            }
-            val = result.intValue();
+//            wsiValidator.run( args );
+//            final Integer result = (Integer)p.get( ValidationProcessorAction.PROP_VALIDITY );
+//            if (result == null){
+//                return false;
+//            }
+//            val = result.intValue();
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         } finally {
@@ -1080,20 +1117,20 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
                 tempConfig.delete();
         }
         
-        if( val == ValidationProcessorAction.VALIDITY_OK ) {
+//        if( val == ValidationProcessorAction.VALIDITY_OK ) {
             wsiErrorMsg = "";
             return true;
-        } 
-        final List<ValidationProcessorAction.Error> errors = (List) p.get(ValidationProcessorAction.PROP_ERRORS);
-        final StringBuffer errorString = new StringBuffer();
-        for ( ValidationProcessorAction.Error error : errors ) {
-            errorString.append(error.getMessage());
-            errorString.append('\n'); //NOI18N
-        }
-        wsiErrorMsg = NbBundle.getMessage(WebServiceClientWizardDescriptor.class,"ERR_NotWSI", errorString); //NOI18N
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(wsiErrorMsg, NotifyDescriptor.ERROR_MESSAGE));
+//        } 
+//        final List<ValidationProcessorAction.Error> errors = (List) p.get(ValidationProcessorAction.PROP_ERRORS);
+//        final StringBuffer errorString = new StringBuffer();
+//        for ( ValidationProcessorAction.Error error : errors ) {
+//            errorString.append(error.getMessage());
+//            errorString.append('\n'); //NOI18N
+//        }
+//        wsiErrorMsg = NbBundle.getMessage(WebServiceClientWizardDescriptor.class,"ERR_NotWSI", errorString); //NOI18N
+//        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(wsiErrorMsg, NotifyDescriptor.ERROR_MESSAGE));
         
-        return false;
+//        return false;
     }
     
     private void updateHelperValues() {

@@ -131,8 +131,7 @@ public class WebServiceClientWizardIterator implements TemplateWizard.Iterator {
         panels = null;
     }
     
-    public Set<E2EDataObject> instantiate(final TemplateWizard wiz) throws IOException {
-        
+    public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
         // Steps:
         // 1. invoke wizard to select which service to add a reference to.
         //    How to interpret node input set --
@@ -217,8 +216,8 @@ public class WebServiceClientWizardIterator implements TemplateWizard.Iterator {
         
         final Boolean b = (Boolean)wiz.getProperty(PROP_CREATE_MIDLET);
         e2eDO.generate(b != null && b.booleanValue());
-        Set<E2EDataObject> result;
-        result = new HashSet<E2EDataObject>();
+        Set<DataObject> result;
+        result = new HashSet();
         result.add(e2eDO);
         
         return result;
@@ -284,6 +283,5 @@ public class WebServiceClientWizardIterator implements TemplateWizard.Iterator {
             }
         }
         return res;
-    }
-    
+    }    
 }
