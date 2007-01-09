@@ -65,28 +65,18 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
     public static final Class CLS = ComponentsSelectionPanel.class;
     
     public static final String DEFAULT_TITLE = 
-            ResourceUtils.getString(CLS, "CSP.title");
+            ResourceUtils.getString(CLS, "CSP.title"); // NOI18N
     public static final String DEFAULT_DESCRIPTION = 
-            ResourceUtils.getString(CLS, "CSP.description");
+            ResourceUtils.getString(CLS, "CSP.description"); // NOI18N
     
     public static final String MESSAGE_TEXT_PROPERTY = 
-            "message.text";
+            "message.text"; // NOI18N
     public static final String MESSAGE_CONTENT_TYPE_PROPERTY = 
-            "message.content.type";
-    public static final String DISPLAY_NAME_LABEL_TEXT_PROPERTY = 
-            "display.name.label.text";
+            "message.content.type"; // NOI18N
     public static final String DESCRIPTION_TEXT_PROPERTY = 
-            "description.text";
+            "description.text"; // NOI18N
     public static final String DESCRIPTION_CONTENT_TYPE_PROPERTY = 
-            "description.content.type";
-    public static final String REQUIREMENTS_LABEL_TEXT_PROPERTY = 
-            "requirements.label.text";
-    public static final String CONFLICTS_LABEL_TEXT_PROPERTY = 
-            "conflicts.label.text";
-    public static final String TOTAL_DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY = 
-            "total.download.size.label.text";
-    public static final String TOTAL_DISK_SPACE_LABEL_TEXT_PROPERTY = 
-            "total.disk.space.label.text";
+            "description.content.type"; // NOI18N
     public static final String SIZES_LABEL_TEXT_PROPERTY = 
             "sizes.label.text"; // NOI18N
     public static final String DEFAULT_INSTALLATION_SIZE_PROPERTY = 
@@ -95,61 +85,37 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             "default.download.size"; // NOI18N
     
     public static final String DEFAULT_MESSAGE_TEXT = 
-            ResourceUtils.getString(CLS, "CSP.message.text");
+            ResourceUtils.getString(CLS, "CSP.message.text"); // NOI18N
     public static final String DEFAULT_MESSAGE_CONTENT_TYPE = 
-            ResourceUtils.getString(CLS, "CSP.message.content.type");
-    public static final String DEFAULT_DISPLAY_NAME_LABEL_TEXT = 
-            ResourceUtils.getString(CLS, "CSP.display.name.label.text");
+            ResourceUtils.getString(CLS, "CSP.message.content.type"); // NOI18N
     public static final String DEFAULT_DESCRIPTION_TEXT = 
-            ResourceUtils.getString(CLS, "CSP.description.text");
+            ResourceUtils.getString(CLS, "CSP.description.text"); // NOI18N
     public static final String DEFAULT_DESCRIPTION_CONTENT_TYPE = 
-            ResourceUtils.getString(CLS, "CSP.description.content.type");
-    public static final String DEFAULT_REQUIREMENTS_LABEL_TEXT = 
-            ResourceUtils.getString(CLS, "CSP.requirements.label.text");
-    public static final String DEFAULT_CONFLICTS_LABEL_TEXT = 
-            ResourceUtils.getString(CLS, "CSP.conflicts.label.text");
-    public static final String DEFAULT_TOTAL_DOWNLOAD_SIZE_LABEL_TEXT = 
-            ResourceUtils.getString(CLS, "CSP.total.download.size.label.text");
-    public static final String DEFAULT_TOTAL_DISK_SPACE_LABEL_TEXT = 
-            ResourceUtils.getString(CLS, "CSP.total.disk.space.label.text");
+            ResourceUtils.getString(CLS, "CSP.description.content.type"); // NOI18N
     public static final String DEFAULT_SIZES_LABEL_TEXT = 
-            ResourceUtils.getString(CLS, "FSP.sizes.label.text"); // NOI18N
+            ResourceUtils.getString(CLS, "CSP.sizes.label.text"); // NOI18N
     public static final String DEFAULT_INSTALLATION_SIZE = 
-            ResourceUtils.getString(CLS, "FSP.default.installation.size"); // NOI18N
+            ResourceUtils.getString(CLS, "CSP.default.installation.size"); // NOI18N
     public static final String DEFAULT_DOWNLOAD_SIZE = 
-            ResourceUtils.getString(CLS, "FSP.default.download.size"); // NOI18N
-    
-    public static final String EMPTY_DISPLAY_NAME_LABEL_TEXT = 
-            ResourceUtils.getString(CLS, "CSP.empty.display.name.label.text");
-    public static final String EMPTY_DESCRIPTION_TEXT = 
-            ResourceUtils.getString(CLS, "CSP.empty.description.text");
-    public static final String EMPTY_REQUIREMENTS_LABEL_TEXT = 
-            ResourceUtils.getString(CLS, "CSP.empty.requirements.label.text");
-    public static final String EMPTY_CONFLICTS_LABEL_TEXT = 
-            ResourceUtils.getString(CLS, "CSP.empty.conflicts.label.text");
-    
-    public static final String DEFAULT_TOTAL_DOWNLOAD_SIZE = 
-            ResourceUtils.getString(CLS, "CSP.total.download.size");
-    public static final String DEFAULT_TOTAL_DISK_SPACE = 
-            ResourceUtils.getString(CLS, "CSP.total.disk.space");
+            ResourceUtils.getString(CLS, "CSP.default.download.size"); // NOI18N
     
     public static final String ERROR_NO_CHANGES_PROPERTY = 
-            "error.no.changes";
+            "error.no.changes"; // NOI18N
     public static final String ERROR_REQUIREMENT_INSTALL_PROPERTY = 
-            "error.requirement.install";
+            "error.requirement.install"; // NOI18N
     public static final String ERROR_CONFLICT_INSTALL_PROPERTY = 
-            "error.conflict.install";
+            "error.conflict.install"; // NOI18N
     public static final String ERROR_REQUIREMENT_UNINSTALL_PROPERTY = 
-            "error.requirement.uninstall";
+            "error.requirement.uninstall"; // NOI18N
     
     public static final String DEFAULT_ERROR_NO_CHANGES = 
-            ResourceUtils.getString(CLS, "CSP.error.no.changes");
+            ResourceUtils.getString(CLS, "CSP.error.no.changes"); // NOI18N
     public static final String DEFAULT_ERROR_REQUIREMENT_INSTALL = 
-            ResourceUtils.getString(CLS, "CSP.error.requirement.install");
+            ResourceUtils.getString(CLS, "CSP.error.requirement.install"); // NOI18N
     public static final String DEFAULT_ERROR_CONFLICT_INSTALL = 
-            ResourceUtils.getString(CLS, "CSP.error.conflict.install");
+            ResourceUtils.getString(CLS, "CSP.error.conflict.install"); // NOI18N
     public static final String DEFAULT_ERROR_REQUIREMENT_UNINSTALL = 
-            ResourceUtils.getString(CLS, "CSP.error.requirement.uninstall");
+            ResourceUtils.getString(CLS, "CSP.error.requirement.uninstall"); // NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
@@ -159,13 +125,8 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         
         setProperty(MESSAGE_TEXT_PROPERTY, DEFAULT_MESSAGE_TEXT);
         setProperty(MESSAGE_CONTENT_TYPE_PROPERTY, DEFAULT_MESSAGE_CONTENT_TYPE);
-        setProperty(DISPLAY_NAME_LABEL_TEXT_PROPERTY, DEFAULT_DISPLAY_NAME_LABEL_TEXT);
         setProperty(DESCRIPTION_TEXT_PROPERTY, DEFAULT_DESCRIPTION_TEXT);
         setProperty(DESCRIPTION_CONTENT_TYPE_PROPERTY, DEFAULT_DESCRIPTION_CONTENT_TYPE);
-        setProperty(REQUIREMENTS_LABEL_TEXT_PROPERTY, DEFAULT_REQUIREMENTS_LABEL_TEXT);
-        setProperty(CONFLICTS_LABEL_TEXT_PROPERTY, DEFAULT_CONFLICTS_LABEL_TEXT);
-        setProperty(TOTAL_DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY, DEFAULT_TOTAL_DOWNLOAD_SIZE_LABEL_TEXT);
-        setProperty(TOTAL_DISK_SPACE_LABEL_TEXT_PROPERTY, DEFAULT_TOTAL_DISK_SPACE_LABEL_TEXT);
         setProperty(SIZES_LABEL_TEXT_PROPERTY, DEFAULT_SIZES_LABEL_TEXT);
         
         setProperty(DEFAULT_INSTALLATION_SIZE_PROPERTY, DEFAULT_INSTALLATION_SIZE);
