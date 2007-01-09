@@ -66,8 +66,8 @@ public final class EntityEJBWizard implements WizardDescriptor.InstantiatingIter
         WizardDescriptor.Panel p = JavaTemplates.createPackageChooser(project,sourceGroups, ejbPanel, true);
 
         JComponent c = (JComponent) p.getComponent();
-        Util.changeLabelInComponent(c, NbBundle.getMessage(Util.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"), NbBundle.getMessage(EntityEJBWizard.class, "LBL_EJB_Name") );
-        Util.hideLabelAndLabelFor(c, NbBundle.getMessage(Util.class, "LBL_JavaTargetChooserPanelGUI_CreatedFile_Label"));
+        Util.changeLabelInComponent(c, NbBundle.getMessage(EntityEJBWizard.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"), NbBundle.getMessage(EntityEJBWizard.class, "LBL_EJB_Name") );
+        Util.hideLabelAndLabelFor(c, NbBundle.getMessage(EntityEJBWizard.class, "LBL_JavaTargetChooserPanelGUI_CreatedFile_Label"));
         panels = new WizardDescriptor.Panel[] {p};
         Utils.mergeSteps(wiz, panels, null);
 
