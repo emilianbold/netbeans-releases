@@ -235,8 +235,9 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
 
         spCondition.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         spCondition.setToolTipText(org.openide.util.NbBundle.getMessage(LineBreakpointPanel.class, "ACSD_TF_Line_Breakpoint_Condition")); // NOI18N
-        tfCondition.setToolTipText(org.openide.util.NbBundle.getMessage(LineBreakpointPanel.class, "ACSD_TF_Line_Breakpoint_Condition")); // NOI18N
+        spCondition.setMinimumSize(spCondition.getPreferredSize());
         tfCondition.setContentType("text/x-java");
+        tfCondition.setToolTipText(org.openide.util.NbBundle.getMessage(LineBreakpointPanel.class, "ACSD_TF_Line_Breakpoint_Condition")); // NOI18N
         spCondition.setViewportView(tfCondition);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
