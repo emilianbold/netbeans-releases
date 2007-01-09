@@ -6,13 +6,13 @@ import javax.microedition.lcdui.*;
 /**
  * @author __USER__
  */
-public class EmptyVisualDesign {
+public class VisualDesign {
 
     private MIDlet midlet;
 
     //GEN-LINE:|fields|0|
 
-    public EmptyVisualDesign (MIDlet midlet) {
+    public VisualDesign (MIDlet midlet) {
         this.midlet = midlet;
     }
 

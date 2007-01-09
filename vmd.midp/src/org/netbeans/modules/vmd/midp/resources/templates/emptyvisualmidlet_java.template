@@ -6,11 +6,14 @@ import javax.microedition.lcdui.*;
 /**
  * @author __USER__
  */
-public class EmptyVisualMIDlet extends MIDlet {
+public class VisualMIDlet extends MIDlet {
 
     private boolean midletPaused = false;
 
     //GEN-LINE:|fields|0|
+
+    public VisualMIDlet () {
+    }
 
     //GEN-LINE:|methods|0|
 
