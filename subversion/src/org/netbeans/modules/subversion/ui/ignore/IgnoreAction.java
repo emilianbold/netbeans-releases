@@ -130,7 +130,8 @@ public class IgnoreAction extends ContextAction {
                         } else if (actionStatus == UNIGNORING) {
                             currentPatterns.removeAll(patterns);
                         }
-                        client.setIgnoredPatterns(parent, new ArrayList<String>(currentPatterns));
+                        client.setIgnoredPatterns(parent, new ArrayList<String>(currentPatterns));    
+                        
                     } catch (SVNClientException e) {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                     }
@@ -138,6 +139,10 @@ public class IgnoreAction extends ContextAction {
                 // refresh files manually, we do not suppport wildcards in ignore patterns so this is sufficient
                 for (File file : files) {
                     Subversion.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                }
+                // refresh also the parents
+                for (File parent : names.keySet()) {
+                    Subversion.getInstance().getStatusCache().refresh(parent, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                 }
             }
         };            
