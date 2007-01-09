@@ -73,6 +73,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
     private static final String SEE_TAG = "@see"; //NOI18N
     private static final String SINCE_TAG = "@since"; //NOI18N
     private static final String INHERIT_DOC_TAG = "@inheritDoc"; //NOI18N
+    private static final String LINKPLAIN_TAG = "@linkplain"; //NOI18N
     
     public static final JavaCompletionDoc create(CompilationController controller, Element element) {
         return new JavaCompletionDoc(controller, element, null);
@@ -499,9 +500,10 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                 ClassDoc refClass = stag.referencedClass();
                 String memberName = stag.referencedMemberName();
                 String label = stag.label();
+                boolean plain = LINKPLAIN_TAG.equals(stag.name());
                 if (memberName != null) {
                     if (refClass != null) {
-                        createLink(sb, eu.elementFor(stag.referencedMember()), "<code>" + (label != null && label.length() > 0 ? label : (refClass.simpleTypeName() + "." + memberName)) + "</code>"); //NOI18N
+                        createLink(sb, eu.elementFor(stag.referencedMember()), (plain ? "" : "<code>") + (label != null && label.length() > 0 ? label : (refClass.simpleTypeName() + "." + memberName)) + (plain ? "" : "</code>")); //NOI18N
                     } else {
                         sb.append(stag.referencedClassName());
                         sb.append('.'); //NOI18N
@@ -509,7 +511,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                     }
                 } else {
                     if (refClass != null) {
-                        createLink(sb, eu.elementFor(refClass), "<code>" + (label != null && label.length() > 0 ? label : refClass.simpleTypeName()) + "</code>"); //NOI18N
+                        createLink(sb, eu.elementFor(refClass), (plain ? "" : "<code>") + (label != null && label.length() > 0 ? label : refClass.simpleTypeName()) + (plain ? "" : "</code>")); //NOI18N
                     } else {
                         sb.append(stag.referencedClassName());
                     }
