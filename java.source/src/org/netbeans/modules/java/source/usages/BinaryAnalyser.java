@@ -163,7 +163,7 @@ public class BinaryAnalyser implements LowMemoryListener {
                         try {
                             analyse (in);
                         } catch (InvalidClassFormatException icf) {
-                            Logger.getLogger("global").info("Invalid class file format: "+file.getAbsolutePath());      //NOI18N
+                            Logger.getLogger(BinaryAnalyser.class.getName()).info("Invalid class file format: "+file.getAbsolutePath());      //NOI18N
                         }
                         if (this.lowMemory.getAndSet(false)) {
                             this.store();
@@ -183,7 +183,7 @@ public class BinaryAnalyser implements LowMemoryListener {
                 try {
                     analyse( zipFile.getInputStream( ze ) );
                 } catch (InvalidClassFormatException icf) {
-                    Logger.getLogger("global").info("Invalid class file format: "+zipFile.getName()+"!/"+ze.getName());     //NOI18N
+                    Logger.getLogger(BinaryAnalyser.class.getName()).info("Invalid class file format: "+ new File(zipFile.getName()).toURI() + "!/" + ze.getName());     //NOI18N
                 } catch (IOException x) {
                     Exceptions.attachMessage(x, "While scanning: " + ze.getName());                                         //NOI18N
                     throw x;
