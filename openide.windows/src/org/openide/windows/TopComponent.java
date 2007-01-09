@@ -58,7 +58,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.plaf.basic.BasicHTML;
 import javax.swing.text.Keymap;
-import org.openide.awt.Actions;
 import org.openide.awt.UndoRedo;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
@@ -102,6 +101,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * the user expects to really close (and prompt to save) when closed
      * in any
      * @deprecated Do not use. It is redundant since workspaces are not supported anymore. */
+    @Deprecated
     public static final int CLOSE_EACH = 0;
 
     /** Behavior in which a top component closed (by the user) in one workspace
@@ -112,6 +112,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * the component is only likely to result from the user's wanting to remove
      * it from active view (on the current workspace).
      * @deprecated Do not use. It is redundant since workspaces are not supported anymore. */
+    @Deprecated
     public static final int CLOSE_LAST = 1;
 
     /** Persistence type of TopComponent instance. TopComponent is persistent. */
@@ -200,7 +201,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
     private void initActionMap(Lookup lookup) {
         ActionMap inner = null;
         if (lookup != null) {
-            inner = (ActionMap)lookup.lookup(ActionMap.class);
+            inner = lookup.lookup(ActionMap.class);
         }
         if (inner == null) {
             inner = new ActionMap();
@@ -348,6 +349,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * <em>Node:</em> Currently workspaces are not supported. The method has the same effect
      * like {@link #open()}.
      * @deprecated Use {@link #open()} instead. */
+    @Deprecated
     public void open(Workspace workspace) {
         WindowManager.getDefault().topComponentOpen(this);
     }
@@ -362,6 +364,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * <em>Node:</em> Currently workspaces are not supported. The method has the same effect
      * like {@link #isOpened()}.
      * @deprecated Use {@link #isOpened()} instead. */
+    @Deprecated
     public final boolean isOpened(Workspace workspace) {
         return WindowManager.getDefault().topComponentIsOpened(this);
     }
@@ -377,6 +380,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * <em>Node:</em> Currently workspaces are not supported. The method has the same effect
      * like {@link #close()}.
      * @deprecated Use {@link #close()} instead. */
+    @Deprecated
     public final boolean close(Workspace workspace) {
         if (!isOpened()) {
             return true;
@@ -416,6 +420,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * @return true if top component is ready to close, false otherwise.
      * @deprecated Do not use anymore. Use {@link #canClose()} instead.
      * Both parameters are redundant since workspaces are not supported anymore. */
+    @Deprecated
     public boolean canClose(Workspace workspace, boolean last) {
         return true;
     }
@@ -426,6 +431,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * all existing workspaces.
      * Subclasses will usually perform initializing tasks here.
      * @deprecated Use {@link #componentOpened} instead. */
+    @Deprecated
     protected void openNotify() {
     }
 
@@ -435,6 +441,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * Subclasses will usually perform cleaning tasks here.
      * @deprecated Use {@link #componentClosed} instead.
      */
+    @Deprecated
     protected void closeNotify() {
     }
 
@@ -442,6 +449,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * @return array of system actions for this component
      * @deprecated Use {@link #getActions()} instead.
      */
+    @Deprecated
     public SystemAction[] getSystemActions() {
         return new SystemAction[0];
     }
@@ -477,6 +485,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * @throws IllegalArgumentException if an unrecognized close mode was supplied
      * @see #close()
      * @deprecated Do not use. It is redundant since workspaces are not supported anymore. */
+    @Deprecated
     public final void setCloseOperation(final int closeOperation) {
         if ((closeOperation != CLOSE_EACH) && (closeOperation != CLOSE_LAST)) {
             throw new IllegalArgumentException(
@@ -495,6 +504,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
     /** Get the current close mode for this component.
      * @return one of {@link #CLOSE_EACH} or {@link #CLOSE_LAST}
      * @deprecated Do not use. It is redundant since workspaces are not supported anymore. */
+    @Deprecated
     public final int getCloseOperation() {
         return closeOperation;
     }
@@ -605,6 +615,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * window system.  The default implementation does nothing, and does not call
      * super.requestFocus().
      */
+    @Deprecated
     public void requestFocus() {
         if (isFocusable()) {
             //Issue 44304 - output window is focusable when empty, need some
@@ -625,6 +636,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * for focus management only but not activation of <code>TopComponent</code> inside
      * window system. The default implementation does nothing, and does not call
      * super.requestFocusInWindow(). */
+    @Deprecated
     public boolean requestFocusInWindow() {
         if (isFocusable()) {
             return super.requestFocusInWindow();
@@ -865,7 +877,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         // XXX #30189 Reason of overriding: to process global shortcut.
         if ((JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT == condition) && (ret == false) && !e.isConsumed()) { // NOI18N
 
-            Keymap km = (Keymap) Lookup.getDefault().lookup(Keymap.class);
+            Keymap km = Lookup.getDefault().lookup(Keymap.class);
             Action action = (km != null) ? km.getAction(ks) : null;
 
             if (action == null) {
@@ -1238,6 +1250,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * with some Node's display name, we recommend you to do it manually in
      * your client's code.
      */
+    @Deprecated
     public static class NodeName extends NodeAdapter {
         /** asociation with top component */
         private TopComponent top;
@@ -1269,6 +1282,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
          * 
          * @deprecated Please do not use, public just by an accident.
          */
+        @Deprecated
         public NodeName(TopComponent top) {
             this.top = top;
         }
@@ -1277,6 +1291,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
          *
          * @deprecated Please do not use, public just by an accident.
         */
+        @Deprecated
         public void propertyChange(PropertyChangeEvent ev) {
             if (ev.getPropertyName().equals(Node.PROP_DISPLAY_NAME)) {
                 Node n = (Node) node.get();
@@ -1337,7 +1352,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
             name = org.openide.util.Utilities.translate(name);
 
             try {
-                ClassLoader loader = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
+                ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
 
                 if (loader == null) {
                     loader = getClass().getClassLoader();
