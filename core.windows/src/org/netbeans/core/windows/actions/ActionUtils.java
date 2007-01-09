@@ -77,6 +77,9 @@ public abstract class ActionUtils {
             actions.add(new UndockWindowAction(tc));
         } else if (kind == Constants.MODE_KIND_SLIDING) {
             actions.add(new CloseWindowAction(tc));
+            if (mode.getState() == Constants.MODE_STATE_JOINED) {
+                actions.add(new MaximizeWindowAction(tc));
+            }
             actions.add(new UndockWindowAction(tc));
         }
         
