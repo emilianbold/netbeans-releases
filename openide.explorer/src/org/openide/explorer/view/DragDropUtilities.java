@@ -281,20 +281,17 @@ final class DragDropUtilities extends Object {
     * @param dropIndex where the object is dropped
     */
     static PasteType getDropType(Node node, Transferable trans, int action, int dropIndex) {
-        if (!trans.isDataFlavorSupported(ExTransferable.multiFlavor)) {
-            // only single, so return drop type
-            PasteType pt = null;
-
-            try {
-                pt = node.getDropType(trans, action, dropIndex);
-            } catch (NullPointerException npe) {
-                Exceptions.printStackTrace(npe);
-
-                // there is not drop type
-            }
-
-            return pt;
-        } else {
+        PasteType paste = null;
+        
+        try {
+            paste = node.getDropType(trans, action, dropIndex);
+            if (paste!=null)
+                return paste;
+        } catch (NullPointerException npe) {
+            Exceptions.printStackTrace(npe);
+        }
+            
+        if (trans.isDataFlavorSupported(ExTransferable.multiFlavor)) {
             // multi transferable, we must do extra work
             try {
                 MultiTransferObject obj = (MultiTransferObject) trans.getTransferData(ExTransferable.multiFlavor);
