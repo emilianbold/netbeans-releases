@@ -35,12 +35,12 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- You can override default qa-functional-compiler if you need something special -->
 
-    <target name="qa-functional-compiler" depends="init-cp">
+    <!--<target name="qa-functional-compiler" depends="init-cp">
         <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**,org/netbeans/test/editor/app/**">
             <classpath>
-                <path refid="jemmy.and.jelly.path"/>
+                <path refid="jemmy.and.jelly.path"/>-->
                 <!--<pathelement location="${openide.dir}/core/openide.jar"/>-->
-                <pathelement location="${openide/fs.dir}/core/org-openide-filesystems.jar"/>
+                <!--<pathelement location="${openide/fs.dir}/core/org-openide-filesystems.jar"/>
                 <pathelement location="${openide/util.dir}/lib/org-openide-util.jar"/>
 		<pathelement location="${openide/loaders.dir}/modules/org-openide-loaders.jar" />
                 <pathelement location="${openide/text.dir}/modules/org-openide-text.jar"/>
@@ -58,7 +58,7 @@ Microsystems, Inc. All Rights Reserved.
 		<pathelement location="${projects/projectuiapi.dir}/modules/org-netbeans-modules-projectuiapi.jar"/>
             </classpath>
         </buildTests>
-    </target>
+    </target>-->
          
     <target name="qa-functional-compiler-completion">
         <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**,org/netbeans/test/editor/app/**">

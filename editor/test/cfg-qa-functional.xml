@@ -36,11 +36,11 @@ executor="ide-nogui">
    <testbag testattribs="validation" name="Editor Validation">
          <testset dir="qa-functional/src">
              <patternset>
-               <include name="lib/DummyTestSuite.class"/>
-               <include name="keyboard_shortcuts/KeyboardShortcutsTestSuite.class"/>
-               <include name="general/GeneralTestSuite.class"/>
-               <include name="popup_menus/PopupMenusTestSuite.class"/>
-               <include name="search_replace/SearchAndReplaceTestSuite.class"/>               
+               <include name="lib/DummyTest.class"/>
+               <include name="keyboard_shortcuts/*Test.class"/>
+               <include name="general/*Test.class"/>
+               <include name="popup_menus/MainMenuTest.class"/>
+               <include name="search_replace/SearchAndReplaceTest.class"/>               
              </patternset>
          </testset>
      </testbag>
