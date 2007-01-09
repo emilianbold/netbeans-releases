@@ -296,7 +296,7 @@ class PSheet extends JPanel implements MouseListener {
     public void doLayout() {
         Component[] c = getComponents();
 
-        if (c.length > 0) {
+        if (c.length > 0 && getWidth() >= 0 && getHeight() >= 0) {
             Insets ins = getInsets();
             c[0].setBounds(ins.left, ins.top, getWidth() - (ins.right + ins.left), getHeight() - ins.top + ins.bottom);
 
