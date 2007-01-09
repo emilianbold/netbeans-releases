@@ -1767,7 +1767,15 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 try {
                     writer.println(String.format("Coupling error: class file %s, source file %s", uri, source.toUri().toASCIIString()));
                     writer.println("----- Sig file content: -------------------------------------------"); // NOI18N
-                    writer.println(classSource != null ? classSource.getCharContent(true) : "no content");
+                    if (classSource == null) {
+                        writer.println("no content"); //NOI18N
+                    } else {
+                        if (classSource.getName().toLowerCase().endsWith(".sig")) { // NOI18N
+                            writer.println(classSource.getCharContent(true));
+                        } else {
+                            writer.println("not a sig file"); // NOI18N
+                        }
+                    }
                     writer.println("----- Source file content: ----------------------------------------"); // NOI18N
                     writer.println(source.getCharContent(true));
                     writer.println("----- Tree: -------------------------------------------------------"); // NOI18N
