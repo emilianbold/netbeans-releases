@@ -23,7 +23,7 @@ package org.netbeans.installer.wizard.components.sequences;
 import java.util.List;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.product.ProductRegistry;
+import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.wizard.components.WizardSequence;
 import org.netbeans.installer.wizard.components.actions.CreateRedistributableBundleAction;
@@ -43,7 +43,7 @@ import org.netbeans.installer.wizard.components.panels.SelectedComponentsLicense
  */
 public class MainSequence extends WizardSequence {
     public void executeForward() {
-        final ProductRegistry        registry    = ProductRegistry.getInstance();
+        final Registry        registry    = Registry.getInstance();
         final List<Product> toInstall   = registry.getComponentsToInstall();
         final List<Product> toUninstall = registry.getComponentsToUninstall();
         

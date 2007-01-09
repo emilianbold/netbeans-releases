@@ -69,7 +69,7 @@ import org.w3c.dom.Node;
  *
  * @author Kirill Sorokin
  */
-public final class Product extends ProductRegistryNode {
+public final class Product extends RegistryNode {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final String INSTALLATION_LOCATION_PROPERTY = "installation.location";
@@ -94,7 +94,7 @@ public final class Product extends ProductRegistryNode {
     private List<Dependency> rawDependencies = new ArrayList<Dependency>();
     
     private NbiClassLoader classLoader;
-    private ConfigurationLogic configurationLogic;
+    private ProductConfigurationLogic configurationLogic;
     
     private Throwable installationError;
     private List<Throwable> installationWarnings;
@@ -431,7 +431,7 @@ public final class Product extends ProductRegistryNode {
         setStatus(Status.NOT_INSTALLED);
     }
     
-    private void saveLegalArtifacts(ConfigurationLogic configurationLogic) throws IOException, NoSuchAlgorithmException {
+    private void saveLegalArtifacts(ProductConfigurationLogic configurationLogic) throws IOException, NoSuchAlgorithmException {
         Text license = configurationLogic.getLicense();
         if (license != null) {
             File file = new File(
@@ -490,7 +490,7 @@ public final class Product extends ProductRegistryNode {
         return null;
     }
     
-    public ConfigurationLogic loadConfigurationLogic() throws InitializationException {
+    public ProductConfigurationLogic loadConfigurationLogic() throws InitializationException {
         if (configurationLogic != null) {
             return configurationLogic;
         }
@@ -513,7 +513,7 @@ public final class Product extends ProductRegistryNode {
             
             classLoader = new NbiClassLoader(configurationLogicUris);
             
-            configurationLogic = (ConfigurationLogic) classLoader.loadClass(classname).newInstance();
+            configurationLogic = (ProductConfigurationLogic) classLoader.loadClass(classname).newInstance();
             configurationLogic.setProductComponent(this);
             
             return configurationLogic;
@@ -529,7 +529,7 @@ public final class Product extends ProductRegistryNode {
     }
     
     public File getCacheDirectory() {
-        return new File(ProductRegistry.getInstance().getLocalProductCache(), uid + File.separator + version.toString());
+        return new File(Registry.getInstance().getLocalProductCache(), uid + File.separator + version.toString());
     }
     
     private File getInstalledFilesList() {
@@ -657,10 +657,10 @@ public final class Product extends ProductRegistryNode {
         this.visible = visible;
     }
     
-    public List<ProductRegistryNode> getVisibleChildren() {
-        List<ProductRegistryNode> visibleChildren = new LinkedList<ProductRegistryNode>();
+    public List<RegistryNode> getVisibleChildren() {
+        List<RegistryNode> visibleChildren = new LinkedList<RegistryNode>();
         
-        for (ProductRegistryNode child: children) {
+        for (RegistryNode child: children) {
             if (child.isVisible()) {
                 visibleChildren.add(child);
             }

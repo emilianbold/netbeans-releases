@@ -20,7 +20,7 @@
  */
 package org.netbeans.installer.product.filters;
 
-import org.netbeans.installer.product.ProductRegistryNode;
+import org.netbeans.installer.product.RegistryNode;
 
 /**
  *
@@ -33,7 +33,7 @@ public class OrFilter implements RegistryFilter {
         this.filters = filters;
     }
     
-    public boolean accept(final ProductRegistryNode node) {
+    public boolean accept(final RegistryNode node) {
         for (RegistryFilter filter: filters) {
             if (filter.accept(node)) {
                 return true;

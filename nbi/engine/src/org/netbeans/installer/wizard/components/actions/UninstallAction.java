@@ -22,7 +22,7 @@ package org.netbeans.installer.wizard.components.actions;
 
 import java.util.List;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.product.ProductRegistry;
+import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.utils.Status;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
@@ -50,7 +50,7 @@ public class UninstallAction extends CompositeWizardAction {
     }
     
     public void execute() {
-        final ProductRegistry registry = ProductRegistry.getInstance();
+        final Registry registry = Registry.getInstance();
         final List<Product> components = registry.getComponentsToUninstall();
         final int percentageChunk = Progress.COMPLETE / components.size();
         final int percentageLeak = Progress.COMPLETE % components.size();
@@ -80,7 +80,7 @@ public class UninstallAction extends CompositeWizardAction {
                 
                 // since the component failed to uninstall  - we should remove
                 // the components it depends on from our plans to uninstall
-                for(Product requirement : ProductRegistry.getInstance().getRequiredComponents(component)) {
+                for(Product requirement : Registry.getInstance().getRequiredComponents(component)) {
                     if (requirement.getStatus() == Status.TO_BE_UNINSTALLED) {
                         UninstallationException requirementError = new UninstallationException("Could not uninstall " + requirement.getDisplayName() + ", since the uninstallation of " + component.getDisplayName() + "failed", e);
                         
@@ -98,7 +98,7 @@ public class UninstallAction extends CompositeWizardAction {
     }
     
     public boolean canExecuteForward() {
-        return ProductRegistry.getInstance().getComponentsToUninstall().size() > 0;
+        return Registry.getInstance().getComponentsToUninstall().size() > 0;
     }
     
     public boolean isPointOfNoReturn() {

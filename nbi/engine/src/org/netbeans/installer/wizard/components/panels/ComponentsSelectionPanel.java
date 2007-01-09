@@ -50,8 +50,8 @@ import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.product.ProductRegistry;
-import org.netbeans.installer.product.ProductRegistryNode;
+import org.netbeans.installer.product.Registry;
+import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.product.utils.Status;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
@@ -215,7 +215,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         }
         
         protected String validateInput() {
-            ProductRegistry registry = ProductRegistry.getInstance();
+            Registry registry = Registry.getInstance();
             
             List<Product> toInstall   = new ArrayList<Product>();
             List<Product> toUninstall = new ArrayList<Product>();
@@ -361,7 +361,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             TreePath path = componentsTree.getSelectionPath();
             
             if (path != null) {
-                ProductRegistryNode node = (ProductRegistryNode) path.getLastPathComponent();
+                RegistryNode node = (RegistryNode) path.getLastPathComponent();
                 descriptionPane.setText(node.getDescription());
             } else {
                 descriptionPane.setText("");
@@ -371,7 +371,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         }
         
         private void updateSizes() {
-            final List<Product> toInstall = ProductRegistry.getInstance().getComponentsToInstall();
+            final List<Product> toInstall = Registry.getInstance().getComponentsToInstall();
             
             String installationSize = 
                     component.getProperty(DEFAULT_INSTALLATION_SIZE_PROPERTY);
@@ -403,23 +403,23 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 new Vector<TreeModelListener>();
         
         public Object getRoot() {
-            return ProductRegistry.getInstance().getProductTreeRoot();
+            return Registry.getInstance().getProductTreeRoot();
         }
         
         public Object getChild(Object node, int index) {
-            return ((ProductRegistryNode) node).getVisibleChildren().get(index);
+            return ((RegistryNode) node).getVisibleChildren().get(index);
         }
         
         public int getChildCount(Object node) {
-            return ((ProductRegistryNode) node).getVisibleChildren().size();
+            return ((RegistryNode) node).getVisibleChildren().size();
         }
         
         public boolean isLeaf(Object node) {
-            return ((ProductRegistryNode) node).getVisibleChildren().size() == 0;
+            return ((RegistryNode) node).getVisibleChildren().size() == 0;
         }
         
         public void valueForPathChanged(TreePath path, Object value) {
-            ProductRegistryNode node = (ProductRegistryNode) path.getLastPathComponent();
+            RegistryNode node = (RegistryNode) path.getLastPathComponent();
             
             if (node instanceof Product) {
                 Product product = (Product) node;
@@ -443,7 +443,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         }
         
         public int getIndexOfChild(Object node, Object child) {
-            return ((ProductRegistryNode) node).getVisibleChildren().indexOf(child);
+            return ((RegistryNode) node).getVisibleChildren().indexOf(child);
         }
         
         public void addTreeModelListener(TreeModelListener listener) {
@@ -564,8 +564,8 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 final boolean leaf,
                 final int row,
                 final boolean focus) {
-            if (value instanceof ProductRegistryNode) {
-                ProductRegistryNode node = (ProductRegistryNode) value;
+            if (value instanceof RegistryNode) {
+                RegistryNode node = (RegistryNode) value;
                 
                 setText(node.getDisplayName());
                 setToolTipText(node.getDisplayName());

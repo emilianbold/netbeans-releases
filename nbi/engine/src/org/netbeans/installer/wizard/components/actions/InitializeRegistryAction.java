@@ -20,7 +20,7 @@
  */
 package org.netbeans.installer.wizard.components.actions;
 
-import org.netbeans.installer.product.ProductRegistry;
+import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
@@ -55,7 +55,7 @@ public class InitializeRegistryAction extends WizardAction {
             Progress progress = new Progress();
             
             ((WizardActionUi) getWizardUi()).setProgress(progress);
-            ProductRegistry.getInstance().initializeRegistry(progress);
+            Registry.getInstance().initializeRegistry(progress);
         } catch (InitializationException e) {
             ErrorManager.notify(ErrorLevel.CRITICAL, "Cannot init registry", e);
         }

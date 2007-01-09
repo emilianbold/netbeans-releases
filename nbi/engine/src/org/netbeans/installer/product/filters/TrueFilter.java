@@ -20,7 +20,7 @@
  */
 package org.netbeans.installer.product.filters;
 
-import org.netbeans.installer.product.ProductRegistryNode;
+import org.netbeans.installer.product.RegistryNode;
 
 /**
  *
@@ -29,7 +29,7 @@ import org.netbeans.installer.product.ProductRegistryNode;
 public class TrueFilter implements RegistryFilter {
     public static final TrueFilter INSTANCE = new TrueFilter();
     
-    public boolean accept(final ProductRegistryNode node) {
+    public boolean accept(final RegistryNode node) {
         return true;
     }
 }

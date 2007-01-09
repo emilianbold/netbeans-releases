@@ -33,7 +33,7 @@ import org.w3c.dom.Element;
  *
  * @author Kirill Sorokin
  */
-public class Group extends ProductRegistryNode {
+public class Group extends RegistryNode {
     public Group() {
         uid = "";
         displayNames.put(Locale.getDefault(), "Product Tree Root");
@@ -42,7 +42,7 @@ public class Group extends ProductRegistryNode {
     }
     
     public boolean isEmpty() {
-        for (ProductRegistryNode node: getVisibleChildren()) {
+        for (RegistryNode node: getVisibleChildren()) {
             if (node instanceof Group) {
                 if (!((Group) node).isEmpty()) {
                     return false;

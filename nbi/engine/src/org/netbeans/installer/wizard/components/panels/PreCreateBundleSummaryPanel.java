@@ -25,7 +25,7 @@ import java.awt.Insets;
 import java.util.List;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.product.ProductRegistry;
+import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
@@ -81,11 +81,11 @@ public class PreCreateBundleSummaryPanel extends WizardPanel {
     }
     
     public boolean canExecuteForward() {
-        return ProductRegistry.getInstance().getComponentsToInstall().size() > 0;
+        return Registry.getInstance().getComponentsToInstall().size() > 0;
     }
     
     public boolean canExecuteBackward() {
-        return ProductRegistry.getInstance().getComponentsToInstall().size() > 0;
+        return Registry.getInstance().getComponentsToInstall().size() > 0;
     }
     
     public WizardUi getWizardUi() {
@@ -149,7 +149,7 @@ public class PreCreateBundleSummaryPanel extends WizardPanel {
             final String messageText = component.getProperty(MESSAGE_TEXT_PROPERTY);
             messagePane.setText(messageText);
             
-            List<Product> componentsToBundle = ProductRegistry.getInstance().getComponentsToInstall();
+            List<Product> componentsToBundle = Registry.getInstance().getComponentsToInstall();
             
             componentsToBundleLabel.setVisible(true);
             componentsToBundlePane.setVisible(true);

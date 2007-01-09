@@ -20,7 +20,7 @@
  */
 package org.netbeans.installer.wizard.components.actions;
 
-import org.netbeans.installer.product.ProductRegistry;
+import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.exceptions.FinalizationException;
@@ -37,7 +37,7 @@ public class FinalizeRegistryAction extends WizardAction {
             Progress progress = new Progress();
             
             ((WizardActionUi) getWizardUi()).setProgress(progress);
-            ProductRegistry.getInstance().finalizeRegistry(progress);
+            Registry.getInstance().finalizeRegistry(progress);
         } catch (FinalizationException e) {
             ErrorManager.notify(ErrorLevel.ERROR, "Cannot finalize registry", e);
         }

@@ -22,7 +22,7 @@ package org.netbeans.installer.wizard.components.actions;
 
 import java.util.List;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.product.ProductRegistry;
+import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.utils.Status;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.LogManager;
@@ -53,7 +53,7 @@ public class DownloadInstallationDataAction extends CompositeWizardAction {
     }
     
     public void execute() {
-        final ProductRegistry registry = ProductRegistry.getInstance();
+        final Registry registry = Registry.getInstance();
         final List<Product> components = registry.getComponentsToInstall();
         final int percentageChunk = Progress.COMPLETE / components.size();
         final int percentageLeak = Progress.COMPLETE % components.size();
@@ -120,7 +120,7 @@ public class DownloadInstallationDataAction extends CompositeWizardAction {
     }
     
     public boolean canExecuteForward() {
-        return ProductRegistry.getInstance().getComponentsToInstall().size() > 0;
+        return Registry.getInstance().getComponentsToInstall().size() > 0;
     }
     
     public boolean isPointOfNoReturn() {

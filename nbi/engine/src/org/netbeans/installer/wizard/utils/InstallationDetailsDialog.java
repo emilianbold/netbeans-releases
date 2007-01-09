@@ -39,7 +39,7 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import org.netbeans.installer.product.utils.DetailedStatus;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.product.ProductRegistry;
+import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.helper.swing.NbiDialog;
@@ -93,7 +93,7 @@ public class InstallationDetailsDialog extends NbiDialog {
         private Object root = new Object();
         
         public InstallationDetailsTreeModel() {
-            ProductRegistry registry = ProductRegistry.getInstance();
+            Registry registry = Registry.getInstance();
             
             components.addAll(registry.getComponentsInstalledSuccessfullyDuringThisSession());
             components.addAll(registry.getComponentsInstalledWithWarningsDuringThisSession());

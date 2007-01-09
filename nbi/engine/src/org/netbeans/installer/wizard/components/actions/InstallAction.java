@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.product.ProductRegistry;
+import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.utils.Status;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.helper.ErrorLevel;
@@ -53,7 +53,7 @@ public class InstallAction extends CompositeWizardAction {
     }
     
     public boolean canExecuteForward() {
-        return ProductRegistry.getInstance().getComponentsToInstall().size() > 0;
+        return Registry.getInstance().getComponentsToInstall().size() > 0;
     }
     
     public boolean isPointOfNoReturn() {
@@ -61,7 +61,7 @@ public class InstallAction extends CompositeWizardAction {
     }
     
     public void execute() {
-        final ProductRegistry registry = ProductRegistry.getInstance();
+        final Registry registry = Registry.getInstance();
         final List<Product> components = registry.getComponentsToInstall();
         final int percentageChunk = Progress.COMPLETE / components.size();
         final int percentageLeak = Progress.COMPLETE % components.size();
@@ -108,7 +108,7 @@ public class InstallAction extends CompositeWizardAction {
                 
                 // since the component failed to install  - we should remove the
                 // depending components from our plans to install
-                for(Product dependent : ProductRegistry.getInstance().getDependingComponents(component)) {
+                for(Product dependent : Registry.getInstance().getDependingComponents(component)) {
                     if (dependent.getStatus()  == Status.TO_BE_INSTALLED) {
                         InstallationException dependentError = new InstallationException("Could not install " + dependent.getDisplayName() + ", since the installation of " + component.getDisplayName() + "failed", e);
                         

@@ -23,7 +23,7 @@ package org.netbeans.installer.product.filters;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.product.ProductRegistryNode;
+import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.helper.Version;
@@ -65,7 +65,7 @@ public class ProductFilter implements RegistryFilter {
         this.platforms.add(platform);
     }
     
-    public boolean accept(final ProductRegistryNode node) {
+    public boolean accept(final RegistryNode node) {
         if (node instanceof Product) {
             Product component = (Product) node;
             if (uid != null) {

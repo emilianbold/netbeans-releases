@@ -27,7 +27,7 @@ import java.awt.event.ActionListener;
 import java.util.List;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.product.ProductRegistry;
+import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.LogManager;
@@ -171,7 +171,7 @@ public class PostCreateBundleSummaryPanel extends WizardPanel {
         }
         
         protected void initialize() {
-            ProductRegistry registry = ProductRegistry.getInstance();
+            Registry registry = Registry.getInstance();
             
             if (registry.wereErrorsEncountered()) {
                 messagePane.setContentType(component.getProperty(MESSAGE_ERRORS_CONTENT_TYPE_PROPERTY));

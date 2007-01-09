@@ -20,7 +20,7 @@
  */
 package org.netbeans.installer.product.filters;
 
-import org.netbeans.installer.product.ProductRegistryNode;
+import org.netbeans.installer.product.RegistryNode;
 
 /**
  *
@@ -28,6 +28,6 @@ import org.netbeans.installer.product.ProductRegistryNode;
  */
 public interface RegistryFilter {
     
-    public abstract boolean accept(final ProductRegistryNode node);
+    public abstract boolean accept(final RegistryNode node);
     
 }

@@ -25,7 +25,7 @@ import java.awt.Insets;
 import java.util.List;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.product.ProductRegistry;
+import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
@@ -90,13 +90,13 @@ public class PreInstallSummaryPanel extends WizardPanel {
     }
     
     public boolean canExecuteForward() {
-        return ProductRegistry.getInstance().getComponentsToInstall().size() +
-                ProductRegistry.getInstance().getComponentsToUninstall().size() > 0;
+        return Registry.getInstance().getComponentsToInstall().size() +
+                Registry.getInstance().getComponentsToUninstall().size() > 0;
     }
     
     public boolean canExecuteBackward() {
-        return ProductRegistry.getInstance().getComponentsToInstall().size() +
-                ProductRegistry.getInstance().getComponentsToUninstall().size() > 0;
+        return Registry.getInstance().getComponentsToInstall().size() +
+                Registry.getInstance().getComponentsToUninstall().size() > 0;
     }
     
     public WizardUi getWizardUi() {
@@ -162,8 +162,8 @@ public class PreInstallSummaryPanel extends WizardPanel {
             final String messageText = component.getProperty(MESSAGE_TEXT_PROPERTY);
             messagePane.setText(messageText);
             
-            List<Product> componentsToInstall = ProductRegistry.getInstance().getComponentsToInstall();
-            List<Product> componentsToUninstall = ProductRegistry.getInstance().getComponentsToUninstall();
+            List<Product> componentsToInstall = Registry.getInstance().getComponentsToInstall();
+            List<Product> componentsToUninstall = Registry.getInstance().getComponentsToUninstall();
             
             if (componentsToUninstall.size() > 0) {
                 componentsToUninstallLabel.setVisible(true);

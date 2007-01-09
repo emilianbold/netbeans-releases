@@ -36,7 +36,7 @@ import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.downloader.DownloadManager;
-import org.netbeans.installer.product.ProductRegistry;
+import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StreamUtils;
@@ -299,8 +299,8 @@ public class Installer {
                 if (i < arguments.length - 2) {
                     String uid = arguments[i + 1];
                     String version = arguments[i + 2];
-                    System.setProperty(ProductRegistry.TARGET_COMPONENT_UID_PROPERTY, uid);
-                    System.setProperty(ProductRegistry.TARGET_COMPONENT_VERSION_PROPERTY, version);
+                    System.setProperty(Registry.TARGET_COMPONENT_UID_PROPERTY, uid);
+                    System.setProperty(Registry.TARGET_COMPONENT_VERSION_PROPERTY, version);
                     
                     i = i + 2;
                     
@@ -362,7 +362,7 @@ public class Installer {
                     if (!stateFile.exists()) {
                         ErrorManager.notify(WARNING, "The specified state file \"" + stateFile + "\", does not exist. \"--state\" parameter is ignored.");
                     } else {
-                        System.setProperty(ProductRegistry.SOURCE_STATE_FILE_PATH_PROPERTY, stateFile.getAbsolutePath());
+                        System.setProperty(Registry.SOURCE_STATE_FILE_PATH_PROPERTY, stateFile.getAbsolutePath());
                     }
                     
                     i = i + 1;
@@ -385,7 +385,7 @@ public class Installer {
                     if (stateFile.exists()) {
                         ErrorManager.notify(WARNING, "The specified state file \"" + stateFile + "\", exists. \"--record\" parameter is ignored.");
                     } else {
-                        System.setProperty(ProductRegistry.TARGET_STATE_FILE_PATH_PROPERTY, stateFile.getAbsolutePath());
+                        System.setProperty(Registry.TARGET_STATE_FILE_PATH_PROPERTY, stateFile.getAbsolutePath());
                     }
                     
                     i = i + 1;
@@ -467,7 +467,7 @@ public class Installer {
                 if (i < arguments.length - 1) {
                     String value = arguments[i + 1];
                     
-                    System.setProperty(ProductRegistry.TARGET_PLATFORM_PROPERTY, value);
+                    System.setProperty(Registry.TARGET_PLATFORM_PROPERTY, value);
                     
                     i = i + 1;
                 } else {
@@ -485,7 +485,7 @@ public class Installer {
         
         // validate arguments ///////////////////////////////////////////////////////
         if (System.getProperty(Wizard.SILENT_MODE_ACTIVE_PROPERTY) != null) {
-            if (System.getProperty(ProductRegistry.SOURCE_STATE_FILE_PATH_PROPERTY) == null) {
+            if (System.getProperty(Registry.SOURCE_STATE_FILE_PATH_PROPERTY) == null) {
                 System.getProperties().remove(Wizard.SILENT_MODE_ACTIVE_PROPERTY);
                 ErrorManager.notify(WARNING, "\"--state\" option is required when using \"--silent\". \"--silent\" will be ignored.");
             }
@@ -582,8 +582,8 @@ public class Installer {
             
             jos.putNextEntry(new JarEntry(DATA_DIRECTORY + "bundled-product-registry.xml"));
             
-            Document doc = ProductRegistry.getInstance().getEmptyRegistryDocument();
-            ProductRegistry.getInstance().saveRegistryDocument(doc,jos);
+            Document doc = Registry.getInstance().getEmptyRegistryDocument();
+            Registry.getInstance().saveRegistryDocument(doc,jos);
             
             jos.putNextEntry(new JarEntry(ENGINE_JAR_CONTENT_LIST));
             jos.write(StringUtils.asString(entries, SystemUtils.getLineSeparator()).getBytes());
