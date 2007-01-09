@@ -49,20 +49,22 @@ public abstract class EjbMethodController {
         EjbMethodController controller = null;
         try {
             ejbJar = provider.getMergedDDRoot(ejbModule.getMetadataUnit());
-            EnterpriseBeans beans = ejbJar.getEnterpriseBeans();
-            if (beans != null) {
-                Session session = (Session) beans.findBeanByName(EnterpriseBeans.SESSION, Ejb.EJB_CLASS, className);
-                if (session != null) {
-                    controller = new SessionMethodController(ejbClassFO, session);
-                    // TODO EJB3: on Java EE 5.0 this always sets controller to null
-                    if (!controller.hasLocal() && !controller.hasRemote()) {
-                        // this is either an error or a web service 
-                        controller = null;
-                    }
-                } else {
-                    Entity entity = (Entity) beans.findBeanByName(EnterpriseBeans.ENTITY, Ejb.EJB_CLASS, className);
-                    if (entity != null) {
-                        controller = new EntityMethodController(ejbClassFO, entity, ejbJar);
+            if (ejbJar != null) {
+                EnterpriseBeans beans = ejbJar.getEnterpriseBeans();
+                if (beans != null) {
+                    Session session = (Session) beans.findBeanByName(EnterpriseBeans.SESSION, Ejb.EJB_CLASS, className);
+                    if (session != null) {
+                        controller = new SessionMethodController(ejbClassFO, session);
+                        // TODO EJB3: on Java EE 5.0 this always sets controller to null
+                        if (!controller.hasLocal() && !controller.hasRemote()) {
+                            // this is either an error or a web service 
+                            controller = null;
+                        }
+                    } else {
+                        Entity entity = (Entity) beans.findBeanByName(EnterpriseBeans.ENTITY, Ejb.EJB_CLASS, className);
+                        if (entity != null) {
+                            controller = new EntityMethodController(ejbClassFO, entity, ejbJar);
+                        }
                     }
                 }
             }
