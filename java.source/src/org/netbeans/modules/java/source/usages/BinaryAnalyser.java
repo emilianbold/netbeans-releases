@@ -49,6 +49,7 @@ import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.ClassName;
 import org.netbeans.modules.classfile.Code;
 import org.netbeans.modules.classfile.ConstantPool;
+import org.netbeans.modules.classfile.InvalidClassFormatException;
 import org.netbeans.modules.classfile.LocalVariableTableEntry;
 import org.netbeans.modules.classfile.LocalVariableTypeTableEntry;
 import org.netbeans.modules.classfile.Method;
@@ -159,7 +160,11 @@ public class BinaryAnalyser implements LowMemoryListener {
                             cacheCleared = true;
                         }
                         InputStream in = new BufferedInputStream (new FileInputStream (file));
-                        analyse (in);
+                        try {
+                            analyse (in);
+                        } catch (InvalidClassFormatException icf) {
+                            Logger.getLogger("global").info("Invalid class file format: "+file.getAbsolutePath());      //NOI18N
+                        }
                         if (this.lowMemory.getAndSet(false)) {
                             this.store();
                         }
@@ -177,8 +182,10 @@ public class BinaryAnalyser implements LowMemoryListener {
             if ( !ze.isDirectory()  && this.accepts(ze.getName()))  {
                 try {
                     analyse( zipFile.getInputStream( ze ) );
+                } catch (InvalidClassFormatException icf) {
+                    Logger.getLogger("global").info("Invalid class file format: "+zipFile.getName()+"!/"+ze.getName());     //NOI18N
                 } catch (IOException x) {
-                    Exceptions.attachMessage(x, "While scanning: " + ze.getName());
+                    Exceptions.attachMessage(x, "While scanning: " + ze.getName());                                         //NOI18N
                     throw x;
                 }
                 if (this.lowMemory.getAndSet(false)) {
