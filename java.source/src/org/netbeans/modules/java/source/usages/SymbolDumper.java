@@ -25,6 +25,7 @@ import com.sun.tools.javac.code.Types;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
@@ -239,16 +240,16 @@ public class SymbolDumper extends SimpleTypeVisitor6<Void, Boolean> {
     public static void dump(PrintWriter output, Types types, TypeElement type, Element enclosingElement) {
         SymbolDumper.dumpImpl(output, types, type, enclosingElement);
         
+        output.append('\n');
+        
         for (Element e : type.getEnclosedElements()) {
             if (e.getKind().isClass() || e.getKind().isInterface()) {
                 //ignore innerclasses:
                 continue;
             }
-            output.append('\n');
             SymbolDumper.dumpImpl(output, types, e);
         }
         
-        output.append('\n');
         output.append('W');
                 
         dumpAnnotations(new SymbolDumper(output, types), type);
@@ -321,12 +322,16 @@ public class SymbolDumper extends SimpleTypeVisitor6<Void, Boolean> {
     private static void dumpImpl(PrintWriter output, Types types, Element el) {
         if (el.getKind().isField()) {
             dumpImpl(output, types, (VariableElement) el);
+            output.append('\n');
             return;
         }
         if (el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR) {
             dumpImpl(output, types, (ExecutableElement) el);
+            output.append('\n');
             return;
         }
+        
+        Logger.getLogger(SymbolDumper.class.getName()).info("Unhandled ElementKind: " + el.getKind());
     }
     
     private static void dumpImpl(PrintWriter output, Types types, VariableElement variable) {
