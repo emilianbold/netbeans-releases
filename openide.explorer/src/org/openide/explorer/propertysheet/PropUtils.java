@@ -832,7 +832,10 @@ final class PropUtils {
                         if ((p.getValueType() == Boolean.class) || (p.getValueType() == Boolean.TYPE)) {
                             result = new Boolean3WayEditor();
                         } else {
-                            result = new DifferentValuesEditor(result);
+                             if(result instanceof ExPropertyEditor)
+                                 result = new ExDifferentValuesEditor(result);
+                             else
+                                 result = new DifferentValuesEditor(result);
                         }
                     }
                 } catch (IllegalAccessException iae) {
@@ -1640,12 +1643,17 @@ final class PropUtils {
 
     /** Property editor for properties which belong to more than one property, but have
      *  different values.   */
-    static final class DifferentValuesEditor implements PropertyEditor {
-        private PropertyEditor ed;
+    static class DifferentValuesEditor implements PropertyEditor {
+        protected PropertyEditor ed;
         private boolean notSet = true;
 
         public DifferentValuesEditor(PropertyEditor ed) {
             this.ed = ed;
+            addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt){
+                   notSet=false;
+                }
+            });
         }
 
         public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -1718,6 +1726,22 @@ final class PropUtils {
         }
     }
 
+    /** 
+      * Extended Property editor for properties which belong to more than one property, but have
+      * different values.   
+      */
+    static final class ExDifferentValuesEditor extends DifferentValuesEditor implements ExPropertyEditor{
+ 
+        public ExDifferentValuesEditor(PropertyEditor ed){
+            super(ed);
+        }
+
+        public void attachEnv(PropertyEnv env){
+            ((ExPropertyEditor)ed).attachEnv(env);
+        }
+    }
+ 
+        
     /** Dummy property editor for properties which have no real editor.
      *  The property sheet does not handle null property editors;  this editor
      * stands in, and returns &quot;No property editor&quot; from getAsText() */
