@@ -25,6 +25,8 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -74,13 +76,16 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -443,7 +448,14 @@ public final class J2SEProject implements Project, AntProjectListener {
                     try {
                         ProjectManager.getDefault().saveProject(J2SEProject.this);
                     } catch (IOException e) {
-                        ErrorManager.getDefault().notify(e);
+                        //#91398 provide a better error message in case of read-only location of project.
+                        if (!J2SEProject.this.getProjectDirectory().canWrite()) {
+                            NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(J2SEProject.class, "ERR_ProjectReadOnly",
+                                    J2SEProject.this.getProjectDirectory().getName()));
+                            DialogDisplayer.getDefault().notify(nd);
+                        } else {
+                            ErrorManager.getDefault().notify(e);
+                        }
                     }
                     return null;
                 }
@@ -460,7 +472,12 @@ public final class J2SEProject implements Project, AntProjectListener {
             try {
                 ProjectManager.getDefault().saveProject(J2SEProject.this);
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+                if (!J2SEProject.this.getProjectDirectory().canWrite()) {
+                    // #91398 - ignore, we already reported on project open. 
+                    // not counting with someone setting the ro flag while the project is opened.
+                } else {
+                    ErrorManager.getDefault().notify(e);
+                }
             }
             
             // unregister project's classpaths to GlobalPathRegistry

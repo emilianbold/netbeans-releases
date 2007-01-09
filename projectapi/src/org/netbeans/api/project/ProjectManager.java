@@ -567,6 +567,11 @@ public final class ProjectManager {
                 }
             });
         } catch (MutexException e) {
+            //##91398 have a more descriptive error message, in case of RO folders.
+            // the correct reporting still up to the specific project type.
+            if (!p.getProjectDirectory().canWrite()) {
+                throw new IOException("Project folder is not writeable.");
+            }
             throw (IOException)e.getException();
         }
     }
