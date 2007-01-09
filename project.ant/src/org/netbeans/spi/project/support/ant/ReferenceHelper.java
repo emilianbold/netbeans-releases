@@ -493,8 +493,10 @@ public final class ReferenceHelper {
             references = upgradeTo20(references);
             removeOldReferences();
             modified = true;
+        } else if (references.getNamespaceURI().equals(REFS_NS2) && ref.getNS().equals(REFS_NS)) { // #91760
+            ref.upgrade();
         }
-        modified = updateRawReferenceElement(ref, references);
+        modified |= updateRawReferenceElement(ref, references);
         if (modified) {
             storeReferences(references);
         }

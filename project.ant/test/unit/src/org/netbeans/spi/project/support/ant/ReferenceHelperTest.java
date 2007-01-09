@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import org.netbeans.api.project.Project;
@@ -38,6 +39,7 @@ import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ant.Util;
 import org.netbeans.modules.queries.AlwaysRelativeCollocationQuery;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -1019,5 +1021,58 @@ public class ReferenceHelperTest extends NbTestCase {
 	
 	assertEquals("referencing correct file", FileUtil.toFile(srcDir).getAbsolutePath(), resolvedFile.getAbsolutePath());
     }
-    
+
+    public void testSlash1ToSlash2Upgrade() throws Exception { // #91760
+        class AnArtifact extends AntArtifact {
+            URI u;
+            Properties p;
+            public AnArtifact(URI u, Properties p) {
+                this.u = u;
+                this.p = p;
+            }
+            public String getType() {
+                return "jar";
+            }
+            public File getScriptLocation() {
+                return sisterh.resolveFile(getTargetName() + ".xml");
+            }
+            public String getTargetName() {
+                return u.toString().replaceAll("\\.jar$", "");
+            }
+            public String getCleanTargetName() {
+                return "clean";
+            }
+            @Override
+            public URI[] getArtifactLocations() {
+                return new URI[] {u};
+            }
+            @Override
+            public Properties getProperties() {
+                return p;
+            }
+
+        }
+        URI xJar = new URI(null, null, "x.jar", null);
+        r.addReference(new AnArtifact(xJar, new Properties()), xJar);
+        assertReferenceXmlFragment(ReferenceHelper.REFS_NS, "x.xml");
+        Properties p = new Properties();
+        p.setProperty("k", "v");
+        URI yJar = new URI(null, null, "y.jar", null);
+        r.addReference(new AnArtifact(yJar, p), yJar);
+        assertReferenceXmlFragment(ReferenceHelper.REFS_NS2, "${project.proj2}/x.xml", "${project.proj2}/y.xml");
+        URI zJar = new URI(null, null, "z.jar", null);
+        r.addReference(new AnArtifact(zJar, new Properties()), zJar);
+        assertReferenceXmlFragment(ReferenceHelper.REFS_NS2, "${project.proj2}/x.xml", "${project.proj2}/y.xml", "${project.proj2}/z.xml");
+    }
+    private void assertReferenceXmlFragment(String namespace, String... scriptLocations) {
+        Element refs = p.getLookup().lookup(AuxiliaryConfiguration.class).getConfigurationFragment(ReferenceHelper.REFS_NAME, namespace, true);
+        assertNotNull(refs);
+        List<String> actualScriptLocations = new ArrayList<String>();
+        for (Element ref : Util.findSubElements(refs)) {
+            Element script = Util.findElement(ref, "script", namespace);
+            actualScriptLocations.add(Util.findText(script));
+        }
+        assertEquals(Arrays.asList(scriptLocations), actualScriptLocations);
+    }
+
 }
