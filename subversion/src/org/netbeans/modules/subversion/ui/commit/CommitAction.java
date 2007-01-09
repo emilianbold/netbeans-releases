@@ -29,14 +29,14 @@ import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.SVNBaseDir;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
-
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.util.*;
 import java.util.List;
 import java.text.MessageFormat;
-
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.VersioningListener;
@@ -151,7 +151,20 @@ public class CommitAction extends ContextAction {
                 refreshCommitDialog(panel, data, commitButton);
             }
         });
-
+        data.getTableModel().addTableModelListener(new TableModelListener() {
+            public void tableChanged(TableModelEvent e) {
+                Map<SvnFileNode, CommitOptions> map = data.getCommitFiles();
+                boolean commitEnabled = false;
+                for(CommitOptions co : map.values()) {
+                    if(co != CommitOptions.EXCLUDE) {
+                        commitEnabled = true;
+                        break;
+                    }
+                }
+                commitButton.setEnabled(commitEnabled);
+            }
+        });
+        
         panel.putClientProperty("contentTitle", contentTitle);  // NOI18N
         panel.putClientProperty("DialogDescriptor", dd); // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
