@@ -47,6 +47,7 @@ public class ProxySettings {
     public static final String USE_PROXY_AUTHENTICATION = "useProxyAuthentication";
     public static final String PROXY_AUTHENTICATION_USERNAME = "proxyAuthenticationUsername";
     public static final String PROXY_AUTHENTICATION_PASSWORD = "proxyAuthenticationPassword";
+    public static final String USE_PROXY_ALL_PROTOCOLS = "useProxyAllProtocols";
     
     private static String presetNonProxyHosts;
 
@@ -97,6 +98,10 @@ public class ProxySettings {
     
     public static boolean useAuthentication () {
         return getPreferences ().getBoolean (USE_PROXY_AUTHENTICATION, false);
+    }
+    
+    public static boolean useProxyAllProtocols () {
+        return getPreferences ().getBoolean (USE_PROXY_ALL_PROTOCOLS, true);
     }
     
     public static String getAuthenticationUsername () {
