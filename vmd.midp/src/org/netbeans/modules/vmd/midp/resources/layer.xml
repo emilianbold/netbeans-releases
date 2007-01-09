@@ -24,7 +24,7 @@
         <folder name="MIDP">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.midp.resources.Bundle"/>
 
-            <file name="EmptyVisualMIDlet.java" url="templates/emptyvisualmidlet_java.template">
+            <file name="VisualMIDlet.java" url="templates/emptyvisualmidlet_java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.midp.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" stringvalue="nbresloc:org/netbeans/modules/vmd/io/resources/design.gif"/>
                 <attr name="template" boolvalue="true"/>
@@ -33,13 +33,13 @@
                 <attr name="MIDP" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="MIDP"/>
             </file>
-            <file name="EmptyVisualMIDlet.vmd" url="templates/emptyvisualmidlet_vmd.template">
+            <file name="VisualMIDlet.vmd" url="templates/emptyvisualmidlet_vmd.template">
                 <attr name="template" boolvalue="true"/>
             </file>
 
-            <attr name="EmptyVisualMIDlet.java/EmptyVisualDesign.java" boolvalue="true"/>
+            <attr name="VisualMIDlet.java/VisualDesign.java" boolvalue="true"/>
 
-            <file name="EmptyVisualDesign.java" url="templates/emptyvisualdesign_java.template">
+            <file name="VisualDesign.java" url="templates/emptyvisualdesign_java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.midp.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" stringvalue="nbresloc:org/netbeans/modules/vmd/io/resources/design.gif"/>
                 <attr name="template" boolvalue="true"/>
@@ -48,7 +48,7 @@
                 <attr name="MIDP" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="MIDP"/>
             </file>
-            <file name="EmptyVisualDesign.vmd" url="templates/emptyvisualdesign_vmd.template">
+            <file name="VisualDesign.vmd" url="templates/emptyvisualdesign_vmd.template">
                 <attr name="template" boolvalue="true"/>
             </file>
 
