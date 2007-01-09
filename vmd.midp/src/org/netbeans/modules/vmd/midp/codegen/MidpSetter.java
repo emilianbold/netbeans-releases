@@ -92,9 +92,8 @@ public class MidpSetter implements Setter {
     }
 
     public void generateSetterCode (MultiGuardedSection section, DesignComponent component, Map<String, Parameter> name2parameter) {
-        CodeWriter writer = section.getWriter ();
         if (! exceptions.isEmpty ())
-            writer.write ("try {\n"); // NOI18N
+            section.getWriter ().write ("try {\n"); // NOI18N
 
         if (arrayParameterName != null) {
             Parameter arrayParameter = name2parameter.get (arrayParameterName);
@@ -102,40 +101,40 @@ public class MidpSetter implements Setter {
             for (int index = 0; index < count; index ++) {
                 if (! arrayParameter.isRequiredToBeSet (component, index))
                     continue;
-                writer.write (CodeReferencePresenter.generateDirectAccessCode (component));
-                writer.write (instanceNameSuffix);
-                writer.write (" ("); // NOI18N
+                section.getWriter ().write (CodeReferencePresenter.generateDirectAccessCode (component));
+                section.getWriter ().write (instanceNameSuffix);
+                section.getWriter ().write (" ("); // NOI18N
                 for (int paramIndex = 0; paramIndex < parameterNames.size (); paramIndex ++) {
                     if (paramIndex > 0)
-                        writer.write (", "); // NOI18N
+                        section.getWriter ().write (", "); // NOI18N
                     String parameterName = parameterNames.get (paramIndex);
                     Parameter parameter = name2parameter.get (parameterName);
                     parameter.generateParameterCode (component, section, index);
                 }
-                writer.write (");\n"); // NOI18N
+                section.getWriter ().write (");\n"); // NOI18N
             }
         } else {
-            writer.write (CodeReferencePresenter.generateDirectAccessCode (component));
-            writer.write (instanceNameSuffix);
-            writer.write (" ("); // NOI18N
+            section.getWriter ().write (CodeReferencePresenter.generateDirectAccessCode (component));
+            section.getWriter ().write (instanceNameSuffix);
+            section.getWriter ().write (" ("); // NOI18N
             for (int paramIndex = 0 ; paramIndex < parameterNames.size (); paramIndex ++) {
                 if (paramIndex > 0)
-                    writer.write (", "); // NOI18N
+                    section.getWriter ().write (", "); // NOI18N
                 String parameterName = parameterNames.get (paramIndex);
                 Parameter parameter = name2parameter.get (parameterName);
                 parameter.generateParameterCode (component, section, -1);
             }
-            writer.write (");\n"); // NOI18N
+            section.getWriter ().write (");\n"); // NOI18N
         }
 
         if (! exceptions.isEmpty ()) {
             for (String exception : exceptions) {
-                writer.write ("} catch (" + exception + " e) {\n").commit (); // NOI18N
+                section.getWriter ().write ("} catch (" + exception + " e) {\n").commit (); // NOI18N
                 section.switchToEditable (component.getComponentID () + "-@" + exception); // NOI18N
                 section.getWriter ().write ("e.printStackTrace ();\n").commit (); // NOI18N
                 section.switchToGuarded ();
             }
-            writer.write ("}\n"); // NOI18N
+            section.getWriter ().write ("}\n"); // NOI18N
         }
     }
 
