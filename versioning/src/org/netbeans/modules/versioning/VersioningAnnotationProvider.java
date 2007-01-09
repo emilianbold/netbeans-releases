@@ -35,6 +35,8 @@ import org.openide.awt.Mnemonics;
 
 import javax.swing.*;
 import java.util.*;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -235,7 +237,18 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         for (File file : filesToRefresh) {
             for (File parent = file.getParentFile(); parent != null; parent = parent.getParentFile()) {
                 try {
-                    FileObject fo = FileUtil.toFileObject(parent);
+                    FileObject fo;
+                    // TODO: #73233 diagnostics: remove afterwards 
+                    try {
+                        fo = FileUtil.toFileObject(parent);                        
+                    } catch (IllegalArgumentException e) {
+                        Logger.getLogger(VersioningAnnotationProvider.class.getName()).log(Level.INFO, "Issue #73233 log begins:");
+                        Logger.getLogger(VersioningAnnotationProvider.class.getName()).log(Level.INFO, "Original File: " + file.getAbsolutePath());
+                        Logger.getLogger(VersioningAnnotationProvider.class.getName()).log(Level.INFO, "Illegal file: " + parent.getAbsolutePath());
+                        RuntimeException ex = new RuntimeException("Please report this and append your messages.log file to issue http://www.netbeans.org/issues/show_bug.cgi?id=73233");
+                        ex.initCause(e);
+                        throw ex;
+                    }
                     if (fo != null) {
                         FileSystem fs = fo.getFileSystem();
                         Set<FileObject> fsFolders = folders.get(fs);
