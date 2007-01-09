@@ -138,6 +138,17 @@ public class CasualDiff {
     private int endPos(JCTree t) {
         return model.getEndPos(t, oldTopLevel);
     }
+    
+    private int endPos(com.sun.tools.javac.util.List<? extends JCTree> trees) {
+        int result = -1;
+	if (trees.nonEmpty()) {
+	    result = endPos(trees.head);
+	    for (com.sun.tools.javac.util.List <? extends JCTree> l = trees.tail; l.nonEmpty(); l = l.tail) {
+		result = endPos(l.head);
+	    }
+	}
+        return result;
+    }
 
     protected void diffTopLevel(JCCompilationUnit oldT, JCCompilationUnit newT) {
         oldTopLevel = oldT;
@@ -832,6 +843,17 @@ public class CasualDiff {
         }
         int oldPos = oldT.pos != Position.NOPOS ? getOldPos(oldT) : getOldPos(parent);
         printer.print(origText.substring(lastPrinted, lastPrinted = oldPos));
+        int result = endPos(oldT.annotations);
+        if (listsMatch(oldT.annotations, newT.annotations)) {
+            if (result > 0) {
+                printer.print(origText.substring(lastPrinted, lastPrinted = result));
+            }
+        } else {
+            printer.printAnnotations(newT.annotations);
+            if (result > 0) {
+                printer.print(origText.substring(lastPrinted, lastPrinted = result));
+            }
+        }
         if (oldT.flags != newT.flags) {
             int endPos = endPos(oldT);
             if (endPos > 0) {
@@ -841,9 +863,8 @@ public class CasualDiff {
                 printer.print(newT.toString());
             }
         }
-        // todo (#pf): Skip the annotation for the time being - bug!
-        // diffList(oldT.annotations, newT.annotations, insertLine, oldPos);
-        return lastPrinted;
+        printer.print(origText.substring(lastPrinted, endPos(oldT)));
+        return endPos(oldT);
     }
     
     protected void diffLetExpr(LetExpr oldT, LetExpr newT) {
@@ -1325,6 +1346,7 @@ public class CasualDiff {
         if (!matcher.match()) {
             return ret;
         }
+        JCTree lastdel = null; // last deleted element
         ResultItem<JCTree>[] result = matcher.getResult();
         int posHint = initialPos;
         estimator.initialize(oldList, workingCopy);
@@ -1380,6 +1402,21 @@ public class CasualDiff {
                         }
                     }
                     if (!found) {
+                        if (lastdel != null && treesMatch(item.element, lastdel, false)) {
+                            VeryPretty oldPrinter = this.printer;
+                            int old = oldPrinter.indent();
+                            this.printer = new VeryPretty(context, JavaFormatOptions.getDefault());
+                            this.printer.reset(old);
+                            int index = oldList.indexOf(lastdel);
+                            int[] poss = estimator.getPositions(index);
+                            diffTree(lastdel, item.element, poss);
+                            printer.print(this.printer.toString());
+    //                                if (pointer < poss[1])
+    //                                    printer.print(origText.substring(pointer, pointer = poss[1]));
+                            this.printer = oldPrinter;
+                            this.printer.undent(old);
+                            break;
+                        }
                         if (j == 0 && !oldList.isEmpty()) {
                             posHint = estimator.getPositions(0)[0];
                         }
@@ -1402,6 +1439,7 @@ public class CasualDiff {
                 }
                 case DELETE: {
                     int[] pos = estimator.getPositions(i);
+                    lastdel = oldList.get(i);
                     if (ret[0] < 0) {
                         ret[0] = pos[0];
                     }
