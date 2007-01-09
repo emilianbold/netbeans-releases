@@ -63,6 +63,9 @@ public final class LogRecords {
         PushbackInputStream wrap = new PushbackInputStream(is, 32);
         byte[] arr = new byte[5];
         int len = wrap.read(arr);
+        if (len == -1) {
+            return;
+        }
         wrap.unread(arr, 0, len);
         
         if (arr[0] == '<' &&
