@@ -149,7 +149,7 @@ public class AttrSupports extends Object {
             
             logger.fine("JSP CC: delegating CC query to java file:\n" //NOI18N
                             + fakedClassBody.substring(0, shiftedOffset)
-                            + "|" + fakedClassBody.substring(shiftedOffset)); //NOI18N
+                            + "|" + fakedClassBody.substring(shiftedOffset) + "\n"); //NOI18N
             
             CompletionQueryDelegatedToJava delegate = new CompletionQueryDelegatedToJava(
                     offset, shiftedOffset, CompletionProvider.COMPLETION_QUERY_TYPE);

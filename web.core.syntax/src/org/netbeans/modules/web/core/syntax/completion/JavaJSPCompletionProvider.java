@@ -113,7 +113,7 @@ public class JavaJSPCompletionProvider implements CompletionProvider {
                 if (shiftedOffset >= 0){
                     logger.fine("JSP CC: delegating CC query to java file:\n" //NOI18N
                             + fakedClassBody.substring(0, shiftedOffset)
-                            + "|" + fakedClassBody.substring(shiftedOffset)); //NOI18N
+                            + "|" + fakedClassBody.substring(shiftedOffset) + "\n"); //NOI18N
                     
                     CompletionQueryDelegatedToJava delegate = new CompletionQueryDelegatedToJava(
                             caretOffset, shiftedOffset, queryType);
