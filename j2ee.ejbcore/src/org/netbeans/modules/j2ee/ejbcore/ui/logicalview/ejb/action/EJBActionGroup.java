@@ -93,29 +93,31 @@ public class EJBActionGroup extends NodeAction implements Presenter.Popup {
     }
     
     protected boolean enable(org.openide.nodes.Node[] activatedNodes) {
-        if (activatedNodes.length != 1) {
-            return false;
-        }
-        FileObject fileObject = activatedNodes[0].getLookup().lookup(FileObject.class);
-        if (fileObject == null) {
-            return false;
-        }
-        JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        final String[] className = new String[1];
-        try {
-            javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
-                public void run(WorkingCopy workingCopy) throws Exception {
-                    workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
-                    //TODO: RETOUCHE get selected class from Node
-                    TypeElement typeElement = SourceUtils.newInstance(workingCopy).getTypeElement();
-                    className[0] = typeElement.getQualifiedName().toString();
-                }
-            });
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
-        }
-        EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className[0]);
-        return ejbMethodController != null;
+        //TODO: RETOUCHE
+        return false;
+//        if (activatedNodes.length != 1) {
+//            return false;
+//        }
+//        FileObject fileObject = activatedNodes[0].getLookup().lookup(FileObject.class);
+//        if (fileObject == null) {
+//            return false;
+//        }
+//        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+//        final String[] className = new String[1];
+//        try {
+//            javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+//                public void run(WorkingCopy workingCopy) throws Exception {
+//                    workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
+//                    //TODO: RETOUCHE get selected class from Node
+//                    TypeElement typeElement = SourceUtils.newInstance(workingCopy).getTypeElement();
+//                    className[0] = typeElement.getQualifiedName().toString();
+//                }
+//            });
+//        } catch (IOException ex) {
+//            ErrorManager.getDefault().notify(ex);
+//        }
+//        EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className[0]);
+//        return ejbMethodController != null;
     }
     
     protected void performAction(org.openide.nodes.Node[] activatedNodes) {
