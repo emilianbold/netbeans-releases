@@ -105,15 +105,15 @@ public class RepositoryPathNode extends AbstractNode {
     }
             
     private RepositoryPathNode(Children children, BrowserClient client, RepositoryPathEntry entry, boolean repositoryFolder) {
-        super(children);
+        super(entry.getSvnNodeKind() == SVNNodeKind.DIR ? children : Children.LEAF);
         this.entry = entry;
         this.client = client;
         this.repositoryFolder = repositoryFolder;
 
         if(entry.getSvnNodeKind() == SVNNodeKind.DIR) {
-           setIconBaseWithExtension("org/netbeans/modules/subversion/ui/browser/defaultFolder.gif");       // NOI18N
+            setIconBaseWithExtension("org/openide/loaders/defaultFolder.gif");       // NOI18N
         } else {
-            setIconBaseWithExtension("org/netbeans/modules/subversion/ui/browser/defaultFile.gif");         // NOI18N    
+            setIconBaseWithExtension("org/openide/loaders/defaultFile.gif");         // NOI18N    
         }
         initProperties();
     }
@@ -130,34 +130,6 @@ public class RepositoryPathNode extends AbstractNode {
         sheet.put(ps);
         setSheet(sheet);        
     }   
-    
-    public Image getIcon(int type) {
-        if(entry.getSvnNodeKind() != SVNNodeKind.DIR) {
-            return null;
-        }
-        Image img = null;
-        if (type == BeanInfo.ICON_COLOR_16x16) {
-            img = (Image)UIManager.get("Nb.Explorer.Folder.icon");  // NOI18N
-        }
-        if (img == null) {
-            img = super.getIcon(type);
-        }
-        return img;
-    }
-
-    public Image getOpenedIcon(int type) {
-        if(entry.getSvnNodeKind() != SVNNodeKind.DIR) {
-            return null;
-        }
-        Image img = null;
-        if (type == BeanInfo.ICON_COLOR_16x16) {
-            img = (Image)UIManager.get("Nb.Explorer.Folder.openedIcon");  // NOI18N
-        }
-        if (img == null) {
-            img = super.getOpenedIcon(type);
-        }
-        return img;
-    }
     
     public String getDisplayName() {
         return getName();
@@ -244,7 +216,7 @@ public class RepositoryPathNode extends AbstractNode {
 
         protected Node[] createNodes(Object key) {
             if (key instanceof Node) {
-                return new Node[] {(Node)key};
+                return new Node[] {(Node) key};
             }
             
             RepositoryPathEntry entry = (RepositoryPathEntry) key;                        
