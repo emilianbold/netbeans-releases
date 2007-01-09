@@ -389,12 +389,14 @@ public class DbSchemaEjbGenerator {
         relation.setRelationName(roleA.getEntityName() + '-' + roleB.getEntityName()); // NOI18N
         relations.add(relation);
         
-        List list = new ArrayList(roleAHelper.getCMPMapping().getCmrFieldMapping().keySet());
+        List list = getFieldNames(roleAHelper);
+        list.addAll(roleAHelper.getCMPMapping().getCmrFieldMapping().keySet());
         roleACmr = uniqueAlgorithm(list, roleACmr, null);
         
         roleAHelper.getCMPMapping().getCmrFieldMapping().put(roleACmr, localColumnNames(key));
 
         list.clear();
+        list.addAll(getFieldNames(roleBHelper));
         list.addAll(roleBHelper.getCMPMapping().getCmrFieldMapping().keySet());
         roleBCmr = uniqueAlgorithm(list, roleBCmr, null);
         
@@ -445,13 +447,7 @@ public class DbSchemaEjbGenerator {
         
         for (int i = 0; i < beans.length; i++) {
             beans[i].makeMembersUnique(); // cmp-field names are unique
-            List cmpFields = beans[i].getFields();
-            List l = new ArrayList(beans.length+
-                                   cmpFields.size());
-            for (Iterator fieldIt=cmpFields.iterator(); fieldIt.hasNext();) {
-		EntityMember mem = (EntityMember) fieldIt.next();
-                l.add(mem.getMemberName());
-}
+            List l = getFieldNames(beans[i]);
             
             for (Iterator it=beans[i].getRoles().iterator();it.hasNext();) {
                 RelationshipRole r = (RelationshipRole) it.next();
@@ -460,6 +456,15 @@ public class DbSchemaEjbGenerator {
             }
         }
         return beans;
+    }
+    
+    private List getFieldNames(EntityClass bean) {
+        List result = new ArrayList();
+        for (Iterator i = bean.getFields().iterator(); i.hasNext();) {
+            EntityMember mem = (EntityMember) i.next();
+            result.add(mem.getMemberName());
+        }
+        return result;
     }
     
     /**
