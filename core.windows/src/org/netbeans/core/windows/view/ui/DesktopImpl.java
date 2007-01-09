@@ -418,7 +418,7 @@ public final class DesktopImpl {
                     Rectangle splitRootRect = viewComponent.getBounds();
 
                     if (Constants.LEFT.equals(side)) {
-                        result.height = splitRootRect.height;
+                        result.height = size.height;
                         if (lastSize != null && !lastSize.equals(size)) {
                             int wid = curView.getSlideBounds().width;
                             if (wid > (size.width - viewRect.width)) {
@@ -429,7 +429,7 @@ public final class DesktopImpl {
                             }
                         }
                     } else if (Constants.RIGHT.equals(side)) {
-                        result.height = splitRootRect.height;
+                        result.height = size.height;
                         if (lastSize != null && !lastSize.equals(size)) {
                             int avail = size.width - Math.max(viewRect.width, viewPrefSize.width);
                             int wid = curView.getSlideBounds().width;
@@ -442,7 +442,7 @@ public final class DesktopImpl {
                             }
                         }
                     } else if (Constants.BOTTOM.equals(side)) {
-                        result.width = splitRootRect.width;
+                        result.width = size.width;
                         if (lastSize != null && !lastSize.equals(size)) {
                             int avail = size.height - Math.max(viewRect.height, viewPrefSize.height);
                             int hei = viewRect.height;
