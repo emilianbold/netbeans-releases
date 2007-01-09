@@ -1124,14 +1124,14 @@ public final class ReferenceHelper {
     
     /**
      * Try to find an <code>AntArtifact</code> object and location corresponding
-     * to a given reference. If the supplied string is not a recognized 
-     * reference to a build artifact, returns null.
+     * to a given reference. If the supplied string is not a recognized
+     * reference to a build artifact, returns an array of nulls.
      * <p>
      * Acquires read access.
      * @param reference a reference string as present in an Ant property and as
      *   created by {@link #addReference(AntArtifact, URI)}
-     * @return always returns array of two items. The items may be null. First
-     *   one is instance of AntArtifact and second is instance of URI and is 
+     * @return always returns array of two items. The items may be both null. First
+     *   one is instance of AntArtifact and second is instance of URI and is
      *   AntArtifact's location
      * @since 1.5
      */
