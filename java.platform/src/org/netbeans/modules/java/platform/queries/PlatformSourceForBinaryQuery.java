@@ -24,21 +24,19 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Iterator;
 import java.util.ArrayList;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.ErrorManager;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 
@@ -48,6 +46,10 @@ import org.openide.util.WeakListeners;
  */
 
 public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImplementation {
+    
+    private static final String JAR_FILE = "jar:file:";                 //NOI18N
+    private static final String RTJAR_PATH = "/jre/lib/rt.jar!/";       //NOI18N
+    private static final String SRC_ZIP = "/src.zip";                    //NOI18N
 
     private Map/*<URL, SourceForBinaryQuery.Result>*/ cache = new HashMap ();
 
@@ -74,6 +76,22 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
                     res = new Result (platforms[i]);
                     this.cache.put (binaryRoot, res);
                     return res;
+                }
+            }
+        }
+        String binaryRootS = binaryRoot.toExternalForm();
+        if (binaryRootS.startsWith(JAR_FILE)) {
+            if (binaryRootS.endsWith(RTJAR_PATH)) {
+                //Unregistered platform
+                String srcZipS = binaryRootS.substring(4,binaryRootS.length() - RTJAR_PATH.length()) + SRC_ZIP;
+                try {
+                    URL srcZip = FileUtil.getArchiveRoot(new URL(srcZipS));
+                    FileObject fo = URLMapper.findFileObject(srcZip);
+                    if (fo != null) {
+                        return new UnregisteredPlatformResult (fo);
+                    }
+                } catch (MalformedURLException mue) {
+                    Exceptions.printStackTrace(mue);
                 }
             }
         }
@@ -131,4 +149,26 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             }
         }
     }
-}
+    
+    private static class UnregisteredPlatformResult implements SourceForBinaryQuery.Result {
+        
+        private FileObject srcRoot;
+        
+        private UnregisteredPlatformResult (FileObject fo) {
+            assert fo != null;
+            srcRoot = fo;
+        }
+    
+        public FileObject[] getRoots() {            
+            return srcRoot.isValid() ? new FileObject[] {srcRoot} : new FileObject[0];
+        }
+        
+        public void addChangeListener(ChangeListener l) {
+            //Not supported, no listening.
+        }
+        
+        public void removeChangeListener(ChangeListener l) {
+            //Not supported, no listening.
+        }
+}}
+
