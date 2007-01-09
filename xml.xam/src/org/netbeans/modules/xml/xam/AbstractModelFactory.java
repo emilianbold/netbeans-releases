@@ -57,16 +57,19 @@ public abstract class AbstractModelFactory<M extends Model> {
     
 
     /**
-     * Create new model from given model source or null if there are errors.
-     * The returned model might not be valid, i.e., source is well-formed. 
-     * Note that the returned model is not cached so client code should handle 
-     * sharing if needed.
+     * Create new model from given model source; returns null if there are errors
+     * during creation. 
+     * 
+     * Note that, the returned model might not be valid, i.e., source is well-formed. 
+     * Also, that the returned model is not cached and does not have background 
+     * auto-sync support.
      */
     public M createFreshModel(ModelSource modelSource) {
         M model = createModel(modelSource);
         try {
             if (model != null) {
                 model.sync();
+                propSupport.firePropertyChange(MODEL_LOADED_PROPERTY, null, model);
             }
         } catch (IOException ioe) {
             Logger.getLogger(this.getClass().getName()).log(Level.FINE, "Sync has errors", ioe);
@@ -164,6 +167,9 @@ public abstract class AbstractModelFactory<M extends Model> {
         return models;
     }
     
+    /**
+     * Returns list of models currently cached by the factory.
+     */
     public List<M> getModels() {
         List<WeakReference<M>> refs;
         synchronized(this) {
@@ -182,10 +188,17 @@ public abstract class AbstractModelFactory<M extends Model> {
         return ret;
     }
     
+    /**
+     * Adds property change listener on the factory to be notified on
+     * when new models are loaded by the factory.
+     */
     public void addPropertyChangeListener(PropertyChangeListener l) {
         propSupport.addPropertyChangeListener(l);
     }
 
+    /**
+     * Removes property change listener.
+     */
     public void removePropertyChangeListener(PropertyChangeListener l) {
         propSupport.removePropertyChangeListener(l);
     }
