@@ -41,7 +41,6 @@ import org.openide.DialogDisplayer;
 import org.openide.DialogDescriptor;
 import org.openide.nodes.Node;
 import org.openide.awt.StatusDisplayer;
-
 import javax.swing.*;
 import java.io.*;
 import java.util.*;
@@ -49,6 +48,7 @@ import java.util.List;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.*;
+import org.netbeans.modules.subversion.FileStatusCache;
 
 /**
  * Exports diff to file:
@@ -91,18 +91,23 @@ public class ExportDiffAction extends ContextAction {
         }
         return super.getName();
     }
-
-    protected int getFileEnabledStatus() {
-        return enabledForStatus;
-    }
-
+    
     public boolean enable(Node[] nodes) {
+        Context ctx = SvnUtils.getCurrentContext(nodes);
+        File[] files = getModifiedFiles(ctx, enabledForStatus);         
+        if(files.length < 1) {
+            return false;
+        }
+  
         TopComponent activated = TopComponent.getRegistry().getActivated();
         if (activated instanceof DiffSetupSource) {
             return true;
         }
-        return  super.enable(nodes) && 
-                Lookup.getDefault().lookup(DiffProvider.class) != null;
+        boolean b1 = super.enable(nodes);
+        System.out.println("super.enable(nodes) " + b1);
+        boolean b2 = Lookup.getDefault().lookup(DiffProvider.class) != null;
+        System.out.println("Lookup.getDefault().lookup(DiffProvider.class) != null " + b2);
+        return b1 && b2;                
     }
 
     protected void performContextAction(final Node[] nodes) {
@@ -333,4 +338,32 @@ public class ExportDiffAction extends ContextAction {
         }
     }
 
+    /**
+     * Utility method that returns all non-excluded modified files that are
+     * under given roots (folders) and have one of specified statuses.
+     *
+     * @param context context to search
+     * @param includeStatus bit mask of file statuses to include in result
+     * @return File [] array of Files having specified status
+     */
+    public static File [] getModifiedFiles(Context context, int includeStatus) {
+        File[] all = Subversion.getInstance().getStatusCache().listFiles(context, includeStatus);
+        List<File> files = new ArrayList<File>();
+        for (int i = 0; i < all.length; i++) {
+            File file = all[i];            
+            files.add(file);            
+        }
+        
+        // ensure that command roots (files that were explicitly selected by user) are included in Diff
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        File [] rootFiles = context.getRootFiles();
+        for (int i = 0; i < rootFiles.length; i++) {
+            File file = rootFiles[i];
+            if (file.isFile() && (cache.getStatus(file).getStatus() & includeStatus) != 0 && !files.contains(file)) {
+                files.add(file);
+            }
+        }
+        return files.toArray(new File[files.size()]);
+    }
+        
 }
