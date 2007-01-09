@@ -209,10 +209,6 @@ public class JspCompletionItem {
             this(prefix, ti, (SyntaxElement.Tag)null);
         }
         
-        public CharSequence getInsertPrefix() {
-            return getItemText();
-        }
-        
         public boolean hasHelp(){
             return true;
         }
@@ -365,10 +361,6 @@ public class JspCompletionItem {
             return ti;
         }
         
-        public CharSequence getInsertPrefix() {
-            return getItemText();
-        }
-        
         public String getHelp(){
             URL url = super.getHelpURL();
             if (url != null){
@@ -437,10 +429,6 @@ public class JspCompletionItem {
             this.tagInfo = tagInfo;
             if (tagInfo != null)
                 setHelp(tagInfo.getInfoString());
-        }
-        
-        public CharSequence getInsertPrefix() {
-            return null;
         }
         
         public int getSortPriority() {
@@ -587,10 +575,6 @@ public class JspCompletionItem {
     
     /** Item representing a JSP attribute value. */
     static class AttributeValue extends JspResultItem {
-        
-        public CharSequence getInsertPrefix() {
-            return null;
-        }
         
         AttributeValue( String text ) {
             //super(text, Color.red);
