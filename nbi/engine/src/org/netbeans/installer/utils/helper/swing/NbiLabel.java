@@ -28,6 +28,8 @@ import org.netbeans.installer.utils.StringUtils;
  * @author Kirill Sorokin
  */
 public class NbiLabel extends JLabel {
+    public static final String DEFAULT_TEXT = " ";
+    
     public NbiLabel() {
         super();
         
@@ -43,6 +45,4 @@ public class NbiLabel extends JLabel {
             super.setDisplayedMnemonic(StringUtils.fetchMnemonic(text));
         }
     }
-    
-    private static final String DEFAULT_TEXT = " ";
 }

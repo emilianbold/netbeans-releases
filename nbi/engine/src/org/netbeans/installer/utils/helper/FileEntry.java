@@ -29,11 +29,8 @@ import org.netbeans.installer.utils.exceptions.ParseException;
 import org.w3c.dom.Element;
 
 public class FileEntry {
-    private long size             = 0;
-    
-    private String md5            = "";
-    private String sha1           = "";
-    private String crc32          = "";
+    private long    size          = 0;
+    private String  md5           = "";
     
     private boolean directory     = false;
     private boolean empty         = false;
@@ -42,11 +39,11 @@ public class FileEntry {
     private boolean packedJarFile = false;
     private boolean signedJarFile = false;
     
-    private long lastModified     = 0;
+    private long    lastModified  = 0;
     
-    private int permissions       = 0;
+    private int     permissions   = 0;
     
-    private String name           = null;
+    private String  name          = null;
     
     public FileEntry(Element element) {
         String type = element.getAttribute("type");
@@ -59,8 +56,6 @@ public class FileEntry {
             
             size  = new Long(element.getAttribute("size"));
             md5   = element.getAttribute("md5");
-            crc32 = element.getAttribute("crc32");
-            sha1  = element.getAttribute("sha1");
             
             lastModified = new Long(element.getAttribute("modified"));
             
@@ -80,9 +75,7 @@ public class FileEntry {
             
             if (!directory) {
                 size    = file.length();
-                md5     = FileUtils.getMd5String(file);
-                sha1    = FileUtils.getSha1String(file);
-                crc32   = FileUtils.getCrc32String(file);
+                md5     = FileUtils.getMd5(file);
                 jarFile = FileUtils.isJarFile(file);
                 
                 if (jarFile) {
@@ -113,22 +106,6 @@ public class FileEntry {
     
     public void setMd5(String md5) {
         this.md5 = md5;
-    }
-    
-    public String getSha1() {
-        return sha1;
-    }
-    
-    public void setSha1(String sha1) {
-        this.sha1 = sha1;
-    }
-    
-    public String getCrc32() {
-        return crc32;
-    }
-    
-    public void setCrc32(String crc32) {
-        this.crc32 = crc32;
     }
     
     public boolean isDirectory() {
@@ -205,8 +182,6 @@ public class FileEntry {
             element.setAttribute("size",       "" + size);
             element.setAttribute("modified",   "" + lastModified);
             element.setAttribute("md5",        "" + md5);
-            element.setAttribute("crc32",      "" + crc32);
-            element.setAttribute("sha1",       "" + sha1);
             element.setAttribute("jar",        "" + jarFile);
             element.setAttribute("packed-jar", "" + packedJarFile);
             element.setAttribute("signed-jar", "" + signedJarFile);

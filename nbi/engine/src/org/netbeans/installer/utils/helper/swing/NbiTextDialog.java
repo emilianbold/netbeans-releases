@@ -27,7 +27,7 @@ import java.awt.Insets;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.installer.utils.helper.Text;
-import org.netbeans.installer.wizard.containers.FrameWizardContainer;
+import org.netbeans.installer.wizard.containers.SwingFrameContainer;
 
 public class NbiTextDialog extends NbiDialog {
     private NbiTextPane   textPane;

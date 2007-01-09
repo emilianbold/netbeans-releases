@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 import junit.framework.TestCase;
-import org.netbeans.installer.product.ProductComponent;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.exceptions.UnresolvedDependencyException;
 /*
  * Created on 29 ¿‚„ÛÒÚ 2006 „., 16:45
@@ -40,12 +40,12 @@ import org.netbeans.installer.utils.exceptions.UnresolvedDependencyException;
 
 public class TestCircles extends TestCase {
     
-    private List<ProductComponent> list;
+    private List<Product> list;
     
     public void testThingInSelf() {
         try {
-            list = new LinkedList<ProductComponent>();
-            ProductComponent component = new ProductComponent();
+            list = new LinkedList<Product>();
+            Product component = new Product();
             component.addRequirement(component);
             list.add(component);
             checkCircles();
@@ -56,10 +56,10 @@ public class TestCircles extends TestCase {
     
     public void testMoreSofisticatedRequirements() {
         try {
-            list = new LinkedList<ProductComponent>();
-            ProductComponent component = new ProductComponent();
-            ProductComponent depp = new ProductComponent();
-            ProductComponent jony = new ProductComponent();
+            list = new LinkedList<Product>();
+            Product component = new Product();
+            Product depp = new Product();
+            Product jony = new Product();
             list.add(component);
             list.add(depp);
             list.add(jony);
@@ -74,10 +74,10 @@ public class TestCircles extends TestCase {
     
     public void testRequirementsAndConflicts() {
         try {
-            list = new LinkedList<ProductComponent>();
-            ProductComponent component = new ProductComponent();
-            ProductComponent depp = new ProductComponent();
-            ProductComponent jonny = new ProductComponent();
+            list = new LinkedList<Product>();
+            Product component = new Product();
+            Product depp = new Product();
+            Product jonny = new Product();
             list.add(component);
             list.add(depp);
             list.add(jonny);
@@ -92,11 +92,11 @@ public class TestCircles extends TestCase {
     
     public void testSofisticatedRequirementsAndConflicts() {
         try {
-            list = new LinkedList<ProductComponent>();
-            ProductComponent root = new ProductComponent();
-            ProductComponent depp = new ProductComponent();
-            ProductComponent jonny = new ProductComponent();
-            ProductComponent independant = new ProductComponent();
+            list = new LinkedList<Product>();
+            Product root = new Product();
+            Product depp = new Product();
+            Product jonny = new Product();
+            Product independant = new Product();
             list.add(root);
             list.add(depp);
             list.add(jonny);
@@ -114,10 +114,10 @@ public class TestCircles extends TestCase {
     
     public void testOkConflicts() {
         try {
-            list = new LinkedList<ProductComponent>();
-            ProductComponent root = new ProductComponent();
-            ProductComponent depp = new ProductComponent();
-            ProductComponent jonny = new ProductComponent();          
+            list = new LinkedList<Product>();
+            Product root = new Product();
+            Product depp = new Product();
+            Product jonny = new Product();          
             list.add(depp);
             list.add(jonny);
             list.add(root);
@@ -131,16 +131,16 @@ public class TestCircles extends TestCase {
     }
     
     private void checkCircles() throws UnresolvedDependencyException {
-        for (ProductComponent component : list) {
-            final Stack<ProductComponent> visited = new Stack<ProductComponent>();
-            final Set<ProductComponent> conflictSet = new HashSet<ProductComponent>();
-            final Set<ProductComponent> requirementSet = new HashSet<ProductComponent>();
+        for (Product component : list) {
+            final Stack<Product> visited = new Stack<Product>();
+            final Set<Product> conflictSet = new HashSet<Product>();
+            final Set<Product> requirementSet = new HashSet<Product>();
             checkCircles(component, visited, conflictSet, requirementSet);
         }
     }
     
-    private void checkCircles(ProductComponent component, Stack<ProductComponent> visited,
-            Set<ProductComponent> conflictSet, Set<ProductComponent> requirementSet)
+    private void checkCircles(Product component, Stack<Product> visited,
+            Set<Product> conflictSet, Set<Product> requirementSet)
             throws UnresolvedDependencyException {
         if (visited.contains(component) || conflictSet.contains(component))
             throw new UnresolvedDependencyException("circles found");
@@ -149,7 +149,7 @@ public class TestCircles extends TestCase {
         if (!Collections.disjoint(requirementSet, component.getConflicts()))
             throw new UnresolvedDependencyException("circles found");
         conflictSet.addAll(component.getConflicts());
-        for (ProductComponent comp : component.getRequirements())
+        for (Product comp : component.getRequirements())
             checkCircles(comp, visited, conflictSet, requirementSet);
         visited.pop();
     }

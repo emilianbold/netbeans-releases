@@ -26,7 +26,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 import javax.swing.border.EmptyBorder;
-import org.netbeans.installer.product.ProductComponent;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
@@ -37,12 +37,12 @@ import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
-import org.netbeans.installer.wizard.SwingUi;
-import org.netbeans.installer.wizard.WizardUi;
+import org.netbeans.installer.wizard.ui.SwingUi;
+import org.netbeans.installer.wizard.ui.WizardUi;
 import org.netbeans.installer.wizard.components.WizardPanel;
 import org.netbeans.installer.wizard.components.WizardPanel.WizardPanelSwingUi;
 import org.netbeans.installer.wizard.components.WizardPanel.WizardPanelUi;
-import org.netbeans.installer.wizard.containers.WizardContainerSwing;
+import org.netbeans.installer.wizard.containers.SwingContainer;
 import org.netbeans.installer.wizard.utils.InstallationDetailsDialog;
 import org.netbeans.installer.wizard.utils.InstallationLogDialog;
 
@@ -145,7 +145,7 @@ public class PostInstallSummaryPanel extends WizardPanel {
         setProperty(SEND_LOG_BUTTON_TEXT_PROPERTY, DEFAULT_SEND_LOG_BUTTON_TEXT);
         setProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY, DEFAULT_COMPONENTS_LIST_SEPARATOR);
         
-        setProperty(DIALOG_TITLE_PROPERTY, DEFAULT_DIALOG_TITLE);
+        setProperty(TITLE_PROPERTY, DEFAULT_DIALOG_TITLE);
     }
     
     public WizardUi getWizardUi() {
@@ -168,7 +168,7 @@ public class PostInstallSummaryPanel extends WizardPanel {
         }
         
         // swing ui specific ////////////////////////////////////////////////////////
-        public SwingUi getSwingUi(WizardContainerSwing container) {
+        public SwingUi getSwingUi(SwingContainer container) {
             if (swingUi == null) {
                 swingUi = new PostInstallSummaryPanelSwingUi(component, container);
             }
@@ -207,7 +207,7 @@ public class PostInstallSummaryPanel extends WizardPanel {
         
         public PostInstallSummaryPanelSwingUi(
                 final PostInstallSummaryPanel component,
-                final WizardContainerSwing container) {
+                final SwingContainer container) {
             super(component, container);
             
             this.component = component;
@@ -243,7 +243,7 @@ public class PostInstallSummaryPanel extends WizardPanel {
                 messagePane.setText(component.getProperty(MESSAGE_SUCCESS_TEXT_PROPERTY));
             }
             
-            List<ProductComponent> products;
+            List<Product> products;
             
             products = registry.getComponentsInstalledSuccessfullyDuringThisSession();
             if (products.size() > 0) {

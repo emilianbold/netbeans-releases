@@ -162,11 +162,11 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     }
     
     public void setLocation(File location) {
-        getWizard().getProductComponent().setProperty(JDK_LOCATION_PROPERTY, location.getAbsolutePath());
+        getWizard().getProduct().setProperty(JDK_LOCATION_PROPERTY, location.getAbsolutePath());
     }
     
     public File getSelectedLocation() {
-        String path = getWizard().getProductComponent().getProperty(JDK_LOCATION_PROPERTY);
+        String path = getWizard().getProduct().getProperty(JDK_LOCATION_PROPERTY);
         
         if (path == null) {
             if (jdkLocations.size() != 0) {

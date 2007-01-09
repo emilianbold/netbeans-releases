@@ -41,7 +41,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.installer.product.ProductComponent;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.product.filters.TrueFilter;
 import org.netbeans.installer.product.utils.Status;
@@ -56,10 +56,10 @@ import org.netbeans.installer.utils.helper.swing.NbiList;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiTextField;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
-import org.netbeans.installer.wizard.SwingUi;
-import org.netbeans.installer.wizard.WizardUi;
+import org.netbeans.installer.wizard.ui.SwingUi;
+import org.netbeans.installer.wizard.ui.WizardUi;
 import org.netbeans.installer.wizard.components.WizardComponent;
-import org.netbeans.installer.wizard.containers.WizardContainerSwing;
+import org.netbeans.installer.wizard.containers.SwingContainer;
 
 /**
  *
@@ -124,7 +124,7 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
             this.component = component;
         }
         
-        public SwingUi getSwingUi(WizardContainerSwing container) {
+        public SwingUi getSwingUi(SwingContainer container) {
             if (swingUi == null) {
                 swingUi = new ApplicationLocationPanelSwingUi(component, container);
             }
@@ -151,7 +151,7 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
         
         public ApplicationLocationPanelSwingUi(
                 final ApplicationLocationPanel component,
-                final WizardContainerSwing container) {
+                final SwingContainer container) {
             super(component, container);
             
             this.component = component;

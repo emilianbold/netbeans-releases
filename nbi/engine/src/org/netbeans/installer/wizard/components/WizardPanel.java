@@ -20,9 +20,9 @@
  */
 package org.netbeans.installer.wizard.components;
 
-import org.netbeans.installer.wizard.SwingUi;
-import org.netbeans.installer.wizard.containers.WizardContainerSwing;
-import org.netbeans.installer.wizard.WizardUi;
+import org.netbeans.installer.wizard.ui.SwingUi;
+import org.netbeans.installer.wizard.containers.SwingContainer;
+import org.netbeans.installer.wizard.ui.WizardUi;
 
 /**
  *
@@ -66,7 +66,7 @@ public abstract class WizardPanel extends WizardComponent {
             this.component = component;
         }
         
-        public SwingUi getSwingUi(WizardContainerSwing container) {
+        public SwingUi getSwingUi(SwingContainer container) {
             if (swingUi == null) {
                 swingUi = new WizardPanelSwingUi(component, container);
             }
@@ -80,7 +80,7 @@ public abstract class WizardPanel extends WizardComponent {
         
         public WizardPanelSwingUi(
                 final WizardPanel component,
-                final WizardContainerSwing container) {
+                final SwingContainer container) {
             super(component, container);
             
             this.component = component;

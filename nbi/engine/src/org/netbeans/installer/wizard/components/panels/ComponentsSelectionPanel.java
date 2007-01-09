@@ -47,9 +47,9 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
-import org.netbeans.installer.product.ProductComponent;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.ProductRegistry;
-import org.netbeans.installer.product.ProductTreeNode;
+import org.netbeans.installer.product.ProductRegistryNode;
 import org.netbeans.installer.product.utils.Status;
 import org.netbeans.installer.product.filters.TrueFilter;
 import org.netbeans.installer.utils.helper.ErrorLevel;
@@ -62,10 +62,10 @@ import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 import org.netbeans.installer.utils.helper.swing.treetable.NbiTreeColumnCellRenderer;
 import org.netbeans.installer.utils.helper.swing.treetable.NbiTreeTable;
 import org.netbeans.installer.utils.helper.swing.treetable.NbiTreeTableModel;
-import org.netbeans.installer.wizard.SwingUi;
-import org.netbeans.installer.wizard.WizardUi;
+import org.netbeans.installer.wizard.ui.SwingUi;
+import org.netbeans.installer.wizard.ui.WizardUi;
 import org.netbeans.installer.wizard.components.WizardComponent;
-import org.netbeans.installer.wizard.containers.WizardContainerSwing;
+import org.netbeans.installer.wizard.containers.SwingContainer;
 
 /**
  *
@@ -74,6 +74,9 @@ import org.netbeans.installer.wizard.containers.WizardContainerSwing;
 public class ComponentsSelectionPanel extends ErrorMessagePanel {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
+    public static final String DEFAULT_TITLE = ResourceUtils.getString(ComponentsSelectionPanel.class, "CSP.title");
+    public static final String DEFAULT_DESCRIPTION = ResourceUtils.getString(ComponentsSelectionPanel.class, "CSP.description");
+    
     public static final String MESSAGE_TEXT_PROPERTY = "message.text";
     public static final String MESSAGE_CONTENT_TYPE_PROPERTY = "message.content.type";
     public static final String DISPLAY_NAME_LABEL_TEXT_PROPERTY = "display.name.label.text";
@@ -83,8 +86,6 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
     public static final String CONFLICTS_LABEL_TEXT_PROPERTY = "conflicts.label.text";
     public static final String TOTAL_DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY = "total.download.size.label.text";
     public static final String TOTAL_DISK_SPACE_LABEL_TEXT_PROPERTY = "total.disk.space.label.text";
-    
-    public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(ComponentsSelectionPanel.class, "CSP.dialog.title");
     
     public static final String DEFAULT_MESSAGE_TEXT = ResourceUtils.getString(ComponentsSelectionPanel.class, "CSP.message.text");
     public static final String DEFAULT_MESSAGE_CONTENT_TYPE = ResourceUtils.getString(ComponentsSelectionPanel.class, "CSP.message.content.type");
@@ -117,6 +118,9 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public ComponentsSelectionPanel() {
+        setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
+        setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
+        
         setProperty(MESSAGE_TEXT_PROPERTY, DEFAULT_MESSAGE_TEXT);
         setProperty(MESSAGE_CONTENT_TYPE_PROPERTY, DEFAULT_MESSAGE_CONTENT_TYPE);
         setProperty(DISPLAY_NAME_LABEL_TEXT_PROPERTY, DEFAULT_DISPLAY_NAME_LABEL_TEXT);
@@ -131,8 +135,6 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         setProperty(ERROR_REQUIREMENT_INSTALL_PROPERTY, DEFAULT_ERROR_REQUIREMENT_INSTALL);
         setProperty(ERROR_CONFLICT_INSTALL_PROPERTY, DEFAULT_ERROR_CONFLICT_INSTALL);
         setProperty(ERROR_REQUIREMENT_UNINSTALL_PROPERTY, DEFAULT_ERROR_REQUIREMENT_UNINSTALL);
-        
-        setProperty(DIALOG_TITLE_PROPERTY, DEFAULT_DIALOG_TITLE);
     }
     
     public WizardUi getWizardUi() {
@@ -154,7 +156,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             this.component = component;
         }
         
-        public SwingUi getSwingUi(WizardContainerSwing container) {
+        public SwingUi getSwingUi(SwingContainer container) {
             if (swingUi == null) {
                 swingUi = new ComponentsSelectionPanelSwingUi(component, container);
             }
@@ -181,7 +183,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         
         public ComponentsSelectionPanelSwingUi(
                 final ComponentsSelectionPanel component,
-                final WizardContainerSwing container) {
+                final SwingContainer container) {
             super(component, container);
             
             this.component = component;
@@ -266,10 +268,10 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         public String validateInput() {
             ProductRegistry registry = ProductRegistry.getInstance();
             
-            List<ProductComponent> toInstall   = new ArrayList<ProductComponent>();
-            List<ProductComponent> toUninstall = new ArrayList<ProductComponent>();
+            List<Product> toInstall   = new ArrayList<Product>();
+            List<Product> toUninstall = new ArrayList<Product>();
             
-            for (ProductComponent product: registry.getComponents()) {
+            for (Product product: registry.getComponents()) {
                 if (product.getStatus() == Status.TO_BE_INSTALLED) {
                     toInstall.add(product);
                 }
@@ -282,22 +284,22 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 return component.getProperty(ERROR_NO_CHANGES_PROPERTY);
             }
             
-            for (ProductComponent product: toInstall) {
-                for (ProductComponent requirement: product.getRequirements()) {
+            for (Product product: toInstall) {
+                for (Product requirement: product.getRequirements()) {
                     if ((requirement.getStatus() != Status.TO_BE_INSTALLED) && (requirement.getStatus() != Status.INSTALLED)) {
                         return StringUtils.format(component.getProperty(ERROR_REQUIREMENT_INSTALL_PROPERTY), product.getDisplayName(), requirement.getDisplayName());
                     }
                 }
                 
-                for (ProductComponent conflict: product.getConflicts()) {
+                for (Product conflict: product.getConflicts()) {
                     if ((conflict.getStatus() == Status.TO_BE_INSTALLED) || (conflict.getStatus() == Status.INSTALLED)) {
                         return StringUtils.format(component.getProperty(ERROR_CONFLICT_INSTALL_PROPERTY), product.getDisplayName(), conflict.getDisplayName());
                     }
                 }
             }
             
-            for (ProductComponent product: toUninstall) {
-                for (ProductComponent dependent: registry.getComponents()) {
+            for (Product product: toUninstall) {
+                for (Product dependent: registry.getComponents()) {
                     if (dependent.requires(product) && 
                             ((dependent.getStatus() == Status.INSTALLED) || 
                             (dependent.getStatus() == Status.TO_BE_INSTALLED))) {
@@ -327,7 +329,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 conflictsLabel.setText(component.parseString(EMPTY_CONFLICTS_LABEL_TEXT) + " ");
                 conflictsLabel.setEnabled(false);
             } else {
-                ProductTreeNode node = (ProductTreeNode) componentsTreeTable.getModel().getValueAt(selectedRow, 0);
+                ProductRegistryNode node = (ProductRegistryNode) componentsTreeTable.getModel().getValueAt(selectedRow, 0);
                 
                 displayNameLabel.setText(StringUtils.format(component.getProperty(DISPLAY_NAME_LABEL_TEXT_PROPERTY), node.getDisplayName()) + " ");
                 displayNameLabel.setEnabled(true);
@@ -336,16 +338,16 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 descriptionPane.setEnabled(true);
                 descriptionPane.setCaretPosition(0);
                 
-                if ((node instanceof ProductComponent) && (((ProductComponent) node).getRequirements().size() > 0)) {
-                    requirementsLabel.setText(StringUtils.format(component.getProperty(REQUIREMENTS_LABEL_TEXT_PROPERTY), StringUtils.asString(((ProductComponent) node).getRequirements())) + " ");
+                if ((node instanceof Product) && (((Product) node).getRequirements().size() > 0)) {
+                    requirementsLabel.setText(StringUtils.format(component.getProperty(REQUIREMENTS_LABEL_TEXT_PROPERTY), StringUtils.asString(((Product) node).getRequirements())) + " ");
                     requirementsLabel.setEnabled(true);
                 } else {
                     requirementsLabel.setText(component.parseString(EMPTY_REQUIREMENTS_LABEL_TEXT) + " ");
                     requirementsLabel.setEnabled(false);
                 }
                 
-                if ((node instanceof ProductComponent) && (((ProductComponent) node).getConflicts().size() > 0)) {
-                    conflictsLabel.setText(StringUtils.format(component.getProperty(CONFLICTS_LABEL_TEXT_PROPERTY), StringUtils.asString(((ProductComponent) node).getConflicts())) + " ");
+                if ((node instanceof Product) && (((Product) node).getConflicts().size() > 0)) {
+                    conflictsLabel.setText(StringUtils.format(component.getProperty(CONFLICTS_LABEL_TEXT_PROPERTY), StringUtils.asString(((Product) node).getConflicts())) + " ");
                     conflictsLabel.setEnabled(true);
                 } else {
                     conflictsLabel.setText(component.parseString(EMPTY_CONFLICTS_LABEL_TEXT) + " ");
@@ -355,9 +357,9 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         }
         
         private void updateTotalSizes() {
-            List<ProductComponent> components = new ArrayList<ProductComponent>();
+            List<Product> components = new ArrayList<Product>();
             
-            for (ProductComponent component: ProductRegistry.getInstance().queryComponents(new TrueFilter())) {
+            for (Product component: ProductRegistry.getInstance().queryComponents(new TrueFilter())) {
                 if (component.getStatus() == Status.TO_BE_INSTALLED) {
                     components.add(component);
                 }
@@ -369,7 +371,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             } else {
                 long totalDownloadSize = 0;
                 long totalDiskSpace = 0;
-                for (ProductComponent component: components) {
+                for (Product component: components) {
                     totalDownloadSize += component.getDownloadSize();
                     totalDiskSpace += component.getRequiredDiskSpace();
                 }
@@ -388,15 +390,15 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         }
         
         public Object getChild(Object parent, int index) {
-            return ((ProductTreeNode) parent).getVisibleChildren().get(index);
+            return ((ProductRegistryNode) parent).getVisibleChildren().get(index);
         }
         
         public int getChildCount(Object parent) {
-            return ((ProductTreeNode) parent).getVisibleChildren().size();
+            return ((ProductRegistryNode) parent).getVisibleChildren().size();
         }
         
         public boolean isLeaf(Object node) {
-            return ((ProductTreeNode) node).getVisibleChildren().size() == 0;
+            return ((ProductRegistryNode) node).getVisibleChildren().size() == 0;
         }
         
         public void valueForPathChanged(TreePath path, Object newValue) {
@@ -404,7 +406,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         }
         
         public int getIndexOfChild(Object parent, Object child) {
-            return ((ProductTreeNode) parent).getVisibleChildren().indexOf(child);
+            return ((ProductRegistryNode) parent).getVisibleChildren().indexOf(child);
         }
         
         public void addTreeModelListener(TreeModelListener listener) {
@@ -416,240 +418,6 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         public void removeTreeModelListener(TreeModelListener listener) {
             synchronized (listeners) {
                 listeners.remove(listener);
-            }
-        }
-    }
-    
-    public static class ComponentsTreeTableModel extends NbiTreeTableModel {
-        public ComponentsTreeTableModel() {
-            super(new ComponentsTreeModel());
-        }
-        
-        public int getTreeColumnIndex() {
-            return 0;
-        }
-        
-        public int getColumnCount() {
-            return 2;
-        }
-        
-        public String getColumnName(int column) {
-            return "";
-        }
-        
-        public Class<?> getColumnClass(int column) {
-            switch (column) {
-                case 0:
-                    return ProductTreeNode.class;
-                case 1:
-                    return Status.class;
-                default:
-                    return null;
-            }
-        }
-        
-        public boolean isCellEditable(int row, int column) {
-            switch (column) {
-                case 0:
-                    return false;
-                case 1:
-                    return true;
-                default:
-                    return false;
-            }
-        }
-        
-        public Object getValueAt(int row, int column) {
-            ProductTreeNode node = (ProductTreeNode) getTree().getPathForRow(row).getLastPathComponent();
-            
-            switch (column) {
-                case 0:
-                    return node;
-                case 1:
-                    if (node instanceof ProductComponent) {
-                        return ((ProductComponent) node).getStatus();
-                    } else {
-                        return null;
-                    }
-                default:
-                    return null;
-            }
-        }
-        
-        public void setValueAt(Object value, int row, int column) {
-            if (column == 1) {
-                ProductTreeNode node = (ProductTreeNode) getTree().getPathForRow(row).getLastPathComponent();
-                if (node instanceof ProductComponent) {
-                    ((ProductComponent) node).setStatus((Status) value);
-                }
-                fireTableRowsUpdated(row, row);
-            }
-        }
-    }
-    
-    public static class ComponentsTreeColumnCellRenderer extends NbiTreeColumnCellRenderer {
-        public ComponentsTreeColumnCellRenderer(final NbiTreeTable treeTable) {
-            super(treeTable);
-        }
-        
-        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-            super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
-            
-            ProductTreeNode node = (ProductTreeNode) value;
-            
-            setIcon(node.getIcon());
-            setText(node.getDisplayName());
-            
-            return this;
-        }
-    }
-    
-    public static class ComponentsStatusCellRenderer extends JCheckBox implements TableCellRenderer {
-        private static final JLabel EMPTY = new JLabel();
-        
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean selected, boolean hasFocus, int row, int column) {
-            if (selected) {
-                setOpaque(true);
-                setBackground(table.getSelectionBackground());
-                setForeground(table.getSelectionForeground());
-                EMPTY.setOpaque(true);
-                EMPTY.setBackground(table.getSelectionBackground());
-            } else {
-                setOpaque(false);
-                setBackground(table.getBackground());
-                setForeground(table.getForeground());
-                EMPTY.setOpaque(false);
-                EMPTY.setBackground(table.getBackground());
-            }
-            
-            if (value != null) {
-                Status status = (Status) value;
-                
-                if ((status == Status.INSTALLED) || (status == Status.TO_BE_INSTALLED)) {
-                    setSelected(true);
-                } else {
-                    setSelected(false);
-                }
-                
-                setText(status.getDisplayName());
-                
-                return this;
-            } else {
-                return EMPTY;
-            }
-        }
-    }
-    
-    public static class ComponentsStatusCellEditor extends JCheckBox implements TableCellEditor {
-        private Status status;
-        
-        Vector<CellEditorListener> listeners = new Vector<CellEditorListener>();
-        
-        public ComponentsStatusCellEditor() {
-            addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    fireEditingStopped();
-                }
-            });
-        }
-        
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean selected, int row, int column) {
-            if (selected) {
-                setOpaque(true);
-                setBackground(table.getSelectionBackground());
-                setForeground(table.getSelectionForeground());
-            } else {
-                setOpaque(false);
-                setBackground(table.getBackground());
-                setForeground(table.getForeground());
-            }
-            
-            if (value != null) {
-                status = (Status) value;
-                
-                if ((status == Status.INSTALLED) || (status == Status.TO_BE_INSTALLED)) {
-                    setSelected(true);
-                } else {
-                    setSelected(false);
-                }
-                
-                setText(status.getDisplayName());
-                
-                return this;
-            } else {
-                return null;
-            }
-        }
-        
-        public Object getCellEditorValue() {
-            if (isSelected()) {
-                switch (status) {
-                    case NOT_INSTALLED:
-                        return Status.TO_BE_INSTALLED;
-                    case TO_BE_UNINSTALLED:
-                        return Status.INSTALLED;
-                    default:
-                        return status;
-                }
-            } else {
-                switch (status) {
-                    case INSTALLED:
-                        return Status.TO_BE_UNINSTALLED;
-                    case TO_BE_INSTALLED:
-                        return Status.NOT_INSTALLED;
-                    default:
-                        return status;
-                }
-            }
-        }
-        
-        public boolean isCellEditable(EventObject anEvent) {
-            return true;
-        }
-        
-        public boolean shouldSelectCell(EventObject anEvent) {
-            return false;
-        }
-        
-        public boolean stopCellEditing() {
-            return true;
-        }
-        
-        public void cancelCellEditing() {
-            // do nothing
-        }
-        
-        public void addCellEditorListener(CellEditorListener listener) {
-            synchronized (listeners) {
-                listeners.add(listener);
-            }
-        }
-        
-        public void removeCellEditorListener(CellEditorListener listener) {
-            synchronized (listeners) {
-                listeners.remove(listener);
-            }
-        }
-        
-        private void fireEditingCanceled() {
-            synchronized (listeners) {
-                CellEditorListener[] clone = listeners.toArray(new CellEditorListener[0]);
-                ChangeEvent event = new ChangeEvent(this);
-                
-                for (CellEditorListener listener: clone) {
-                    listener.editingCanceled(event);
-                }
-            }
-        }
-        
-        private void fireEditingStopped() {
-            synchronized (listeners) {
-                CellEditorListener[] clone = listeners.toArray(new CellEditorListener[0]);
-                ChangeEvent event = new ChangeEvent(this);
-                
-                for (CellEditorListener listener: clone) {
-                    listener.editingStopped(event);
-                }
             }
         }
     }

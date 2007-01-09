@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.installer.product.ProductComponent;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExecutionResults;
@@ -381,10 +381,10 @@ public abstract class UnixNativeUtils extends NativeUtils {
         return true;
     }
     
-    public void addComponentToSystemInstallManager(ProductComponent comp) {
+    public void addComponentToSystemInstallManager(Product comp) {
     }
     
-    public void removeComponentFromSystemInstallManager(ProductComponent comp) {
+    public void removeComponentFromSystemInstallManager(Product comp) {
     }
     
     // native declarations //////////////////////////////////////////////////////////

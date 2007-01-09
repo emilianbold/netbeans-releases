@@ -5,8 +5,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import javax.ejb.Local;
-import org.netbeans.installer.product.ProductComponent;
-import org.netbeans.installer.product.ProductTreeNode;
+import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.product.ProductRegistryNode;
 import org.netbeans.installer.utils.helper.Platform;
 
 /**
@@ -57,9 +57,9 @@ public interface Manager {
     // miscellanea //////////////////////////////////////////////////////////////////
     File getFile(String name, String file) throws ManagerException;
     
-    ProductTreeNode getRoot(Platform platform, String... names) throws ManagerException;
+    ProductRegistryNode getRoot(Platform platform, String... names) throws ManagerException;
     
-    List<ProductComponent> getComponents(Platform platform, String... names) throws ManagerException;
+    List<Product> getComponents(Platform platform, String... names) throws ManagerException;
     
     File createBundle(Platform platform, String[] names, String[] components) throws ManagerException;
 }

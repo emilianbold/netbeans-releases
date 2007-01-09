@@ -22,12 +22,10 @@ package org.netbeans.installer.wizard.components.sequences;
 
 import java.util.List;
 import org.netbeans.installer.Installer;
-import org.netbeans.installer.product.ProductComponent;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.ProductRegistry;
-import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
-import org.netbeans.installer.wizard.Wizard;
-import org.netbeans.installer.wizard.components.*;
+import org.netbeans.installer.wizard.components.WizardSequence;
 import org.netbeans.installer.wizard.components.actions.CreateRedistributableBundleAction;
 import org.netbeans.installer.wizard.components.actions.DownloadConfigurationLogicAction;
 import org.netbeans.installer.wizard.components.actions.DownloadInstallationDataAction;
@@ -45,19 +43,25 @@ import org.netbeans.installer.wizard.components.panels.SelectedComponentsLicense
  */
 public class MainSequence extends WizardSequence {
     public void executeForward() {
-        final ProductRegistry registry = ProductRegistry.getInstance();
-        final List<ProductComponent> toInstall = registry.getComponentsToInstall();
-        final List<ProductComponent> toUninstall = registry.getComponentsToUninstall();
+        final ProductRegistry        registry    = ProductRegistry.getInstance();
+        final List<Product> toInstall   = registry.getComponentsToInstall();
+        final List<Product> toUninstall = registry.getComponentsToUninstall();
         
-        removeAllChildren();
+        // remove all current children (if there are any), as the components 
+        // selection has probably changed and we need to rebuild from scratch
+        getChildren().clear();
         
+        // the set of wizard components differs greatly depending on the execution
+        // mode - if we're installing, we ask for input, run a wizard sequence for 
+        // each selected component and then download and install; if we're creating 
+        // a bundle, we only need to download and package things
         switch (Installer.getInstance().getExecutionMode()) {
             case NORMAL:
                 if (toInstall.size() > 0) {
                     addChild(new DownloadConfigurationLogicAction());
                     addChild(new SelectedComponentsLicensesPanel());
                     
-                    for (ProductComponent component: toInstall) {
+                    for (Product component: toInstall) {
                         addChild(new ProductComponentWizardSequence(component));
                     }
                 }
@@ -83,7 +87,9 @@ public class MainSequence extends WizardSequence {
                 addChild(new PostCreateBundleSummaryPanel());
                 break;
             default:
-                ErrorManager.notify(ErrorLevel.CRITICAL, 
+                // there is no real way to recover from this fancy error, so we 
+                // inform the user and die
+                ErrorManager.notifyCritical(
                         "A terrible and weird error happened - installer's " +
                         "execution mode is not recognized");
         }
@@ -97,5 +103,9 @@ public class MainSequence extends WizardSequence {
     
     public boolean canExecuteBackward() {
         return false;
+    }
+    
+    public boolean isPointOfNoReturn() {
+        return true;
     }
 }

@@ -36,7 +36,7 @@ public class NbiClassLoader extends URLClassLoader {
         super(new URL[]{}, Installer.getInstance().getClass().getClassLoader());
         
         for(ExtendedURI uri : uris) {
-            addURL(uri.getLocalUri().toURL());
+            addURL(uri.getLocal().toURL());
         }
     }
     

@@ -18,23 +18,20 @@
  *
  * $Id$
  */
-package org.netbeans.installer.infra.server.ejb;
+package org.netbeans.installer.wizard.containers;
 
-import org.netbeans.installer.product.ProductRegistryNode;
-import org.netbeans.installer.product.filters.RegistryFilter;
+import org.netbeans.installer.utils.helper.swing.NbiButton;
 
 /**
  *
  * @author Kirill Sorokin
  */
-public class IconCorrectingFilter implements RegistryFilter {
-    public boolean accept(final ProductRegistryNode node) {
-        if (node.getIconUri().getLocal() != null) {
-            if (node.getIconUri().getLocal().getScheme().equals("file")) {
-                node.getIconUri().setLocal(null);
-            }
-        }
-        
-        return true;
-    }
+public interface SwingContainer extends WizardContainer {
+    NbiButton getHelpButton();
+    
+    NbiButton getBackButton();
+    
+    NbiButton getNextButton();
+    
+    NbiButton getCancelButton();
 }

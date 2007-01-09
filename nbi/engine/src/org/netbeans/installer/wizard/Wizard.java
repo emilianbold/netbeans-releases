@@ -32,8 +32,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import org.netbeans.installer.Installer;
-import org.netbeans.installer.product.ProductComponent;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.helper.ErrorLevel;
+import org.netbeans.installer.utils.helper.PropertyContainer;
 import org.netbeans.installer.utils.helper.UiMode;
 import org.netbeans.installer.wizard.components.WizardComponent;
 import static org.netbeans.installer.utils.helper.ErrorLevel.DEBUG;
@@ -46,10 +47,8 @@ import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.XMLUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.InitializationException;
-import org.netbeans.installer.wizard.conditions.AndCondition;
-import org.netbeans.installer.wizard.conditions.WizardCondition;
 import org.netbeans.installer.wizard.containers.WizardContainer;
-import org.netbeans.installer.wizard.containers.FrameWizardContainer;
+import org.netbeans.installer.wizard.containers.SwingFrameContainer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -118,11 +117,14 @@ public class Wizard {
         return instance;
     }
     
-    public static List<WizardComponent> loadWizardComponents(String componentsURI) throws InitializationException {
+    public static List<WizardComponent> loadWizardComponents(
+            final String componentsURI) throws InitializationException {
         return loadWizardComponents(componentsURI, Wizard.class.getClassLoader());
     }
     
-    public static List<WizardComponent> loadWizardComponents(String componentsURI, ClassLoader loader) throws InitializationException {
+    public static List<WizardComponent> loadWizardComponents(
+            final String componentsURI, 
+            final ClassLoader loader) throws InitializationException {
         try {
             File schemaFile =
                     FileProxy.getInstance().getFile(componentsSchemaURI, loader);
@@ -164,7 +166,10 @@ public class Wizard {
         return executionMode;
     }
     
-    private static List<WizardComponent> loadWizardComponents(Element element, ClassLoader loader) throws InitializationException {
+    // private //////////////////////////////////////////////////////////////////////
+    private static List<WizardComponent> loadWizardComponents(
+            final Element element, 
+            final ClassLoader loader) throws InitializationException {
         List<WizardComponent> components = new ArrayList<WizardComponent>();
         
         for (Element child: XMLUtils.getChildren(element, "component")) {
@@ -174,7 +179,9 @@ public class Wizard {
         return components;
     }
     
-    private static WizardComponent loadWizardComponent(Element element, ClassLoader loader) throws InitializationException {
+    private static WizardComponent loadWizardComponent(
+            final Element element, 
+            final ClassLoader loader) throws InitializationException {
         WizardComponent component = null;
         Element         child     = null;
         
@@ -186,11 +193,6 @@ public class Wizard {
             child = XMLUtils.getChild(element, "components");
             if (child != null) {
                 component.addChildren(loadWizardComponents(child, loader));
-            }
-            
-            child = XMLUtils.getChild(element, "conditions");
-            if (child != null) {
-                component.setCondition(new AndCondition(WizardCondition.loadWizardConditions(child, loader)));
             }
             
             child = XMLUtils.getChild(element, "properties");
@@ -211,49 +213,53 @@ public class Wizard {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     protected List<WizardComponent> components;
-    protected WizardContainer       frame;
+    protected WizardContainer       container;
     
-    private   ProductComponent      productComponent;
-    private   int                   currentIndex;
+    private   PropertyContainer     product;
+    private   ClassLoader           loader;
+    
+    private   int                   index;
     private   Wizard                parent;
     
     // constructors /////////////////////////////////////////////////////////////////
     private Wizard() {
-        this.currentIndex     = -1;
+        this.index  = -1;
+        this.loader = getClass().getClassLoader();
     }
     
     private Wizard(final Wizard parent) {
         this();
         
-        this.parent           = parent;
-        this.frame            = parent.getContainer();
-        this.productComponent = parent.getProductComponent();
-    }
-    
-    private Wizard(final ProductComponent component, final Wizard parent, int index) {
-        this(parent);
+        this.parent    = parent;
+        this.container = parent.container;
         
-        this.productComponent = component;
-        this.components = component.getWizardComponents();
-        this.currentIndex = index;
+        this.product   = parent.product;
+        this.loader    = parent.loader;
     }
     
     private Wizard(final List<WizardComponent> components, final Wizard parent, int index) {
         this(parent);
         
         this.components = components;
-        this.currentIndex = index;
+        this.index      = index;
+    }
+    
+    private Wizard(final PropertyContainer product, final ClassLoader loader, final List<WizardComponent> components, final Wizard parent, int index) {
+        this(components, parent, index);
+        
+        this.product = product;
+        this.loader  = loader;
     }
     
     // wizard lifecycle control methods /////////////////////////////////////////////
     public void open() {
         switch (executionMode) {
             case SWING:
-                frame = new FrameWizardContainer();
+                container = new SwingFrameContainer();
                 
                 SwingUtilities.invokeLater(new Runnable(){
                     public void run() {
-                        frame.setVisible(true);
+                        container.setVisible(true);
                     }
                 });
                 break;
@@ -272,7 +278,7 @@ public class Wizard {
     public void close() {
         switch (executionMode) {
             case SWING:
-                frame.setVisible(false);
+                container.setVisible(false);
                 break;
             case SILENT:
                 // we don't have to initialize anything for silent mode
@@ -292,13 +298,13 @@ public class Wizard {
         // the call to the parent wizard, and if there is no parent wizard... we
         // should be here in the first place
         if (component != null) {
-            currentIndex = components.indexOf(component);
+            index = components.indexOf(component);
             
             component.setWizard(this);
             switch (executionMode) {
                 case SWING:
                     if (component.getWizardUi() != null) {
-                        frame.updateWizardUi(component.getWizardUi());
+                        container.updateWizardUi(component.getWizardUi());
                     }
                     break;
                 case SILENT:
@@ -326,13 +332,13 @@ public class Wizard {
         // the call to the parent wizard, and if there is no parent wizard... we
         // should be here in the first place
         if (component != null) {
-            currentIndex = components.indexOf(component);
+            index = components.indexOf(component);
             
             component.setWizard(this);
             switch (executionMode) {
                 case SWING:
                     if (component.getWizardUi() != null) {
-                        frame.updateWizardUi(component.getWizardUi());
+                        container.updateWizardUi(component.getWizardUi());
                     }
                     break;
                 case SILENT:
@@ -363,12 +369,11 @@ public class Wizard {
             return false;
         }
         
-        for (int i = currentIndex - 1; i > -1; i--) {
+        for (int i = index - 1; i > -1; i--) {
             WizardComponent component = components.get(i);
             
-            // if the component can be executed backward and its conditions are met,
-            // it is the previous one
-            if (component.canExecuteBackward() && component.getCondition().evaluate()) {
+            // if the component can be executed backward it is the previous one
+            if (component.canExecuteBackward()) {
                 return true;
             }
             
@@ -392,22 +397,26 @@ public class Wizard {
         return (getNext() != null) || ((parent != null) && parent.hasNext());
     }
     
-    // getters & setters ////////////////////////////////////////////////////////////
+    // getters //////////////////////////////////////////////////////////////////////
+    public int getIndex() {
+        return index;
+    }
+    
     public WizardContainer getContainer() {
-        return frame;
+        return container;
     }
     
-    public ProductComponent getProductComponent() {
-        return productComponent;
+    public PropertyContainer getProduct() {
+        return product;
     }
     
-    public int getCurrentIndex() {
-        return currentIndex;
+    public ClassLoader getClassLoader() {
+        return loader;
     }
     
     // factory methods for children /////////////////////////////////////////////////
-    public Wizard createSubWizard(ProductComponent component, int index) {
-        return new Wizard(component, this, index);
+    public Wizard createSubWizard(PropertyContainer product, ClassLoader loader, List<WizardComponent> components, int index) {
+        return new Wizard(product, loader, components, this, index);
     }
     
     public Wizard createSubWizard(List<WizardComponent> components, int index) {
@@ -416,8 +425,8 @@ public class Wizard {
     
     // private //////////////////////////////////////////////////////////////////////
     private WizardComponent getCurrent() {
-        if ((currentIndex > -1) && (currentIndex < components.size())) {
-            return components.get(currentIndex);
+        if ((index > -1) && (index < components.size())) {
+            return components.get(index);
         } else {
             return null;
         }
@@ -430,12 +439,11 @@ public class Wizard {
             return null;
         }
         
-        for (int i = currentIndex - 1; i > -1; i--) {
+        for (int i = index - 1; i > -1; i--) {
             WizardComponent component = components.get(i);
             
-            // if the component can be executed backward and its conditions are met,
-            // it is the previous one
-            if (component.canExecuteBackward() && component.getCondition().evaluate()) {
+            // if the component can be executed backward it is the previous one
+            if (component.canExecuteBackward()) {
                 return component;
             }
             
@@ -453,12 +461,11 @@ public class Wizard {
     }
     
     private WizardComponent getNext() {
-        for (int i = currentIndex + 1; i < components.size(); i++) {
+        for (int i = index + 1; i < components.size(); i++) {
             WizardComponent component = components.get(i);
             
-            // if the component can be executed forward and its conditions are met,
-            // it is the next one
-            if (component.canExecuteForward() && component.getCondition().evaluate()) {
+            // if the component can be executed forward it is the next one
+            if (component.canExecuteForward()) {
                 return component;
             }
         }

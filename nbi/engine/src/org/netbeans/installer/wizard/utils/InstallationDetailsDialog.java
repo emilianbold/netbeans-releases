@@ -38,7 +38,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import org.netbeans.installer.product.utils.DetailedStatus;
-import org.netbeans.installer.product.ProductComponent;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.LogManager;
@@ -47,7 +47,7 @@ import org.netbeans.installer.utils.helper.swing.NbiScrollPane;
 import org.netbeans.installer.utils.helper.swing.treetable.NbiTreeColumnCellRenderer;
 import org.netbeans.installer.utils.helper.swing.treetable.NbiTreeTable;
 import org.netbeans.installer.utils.helper.swing.treetable.NbiTreeTableModel;
-import org.netbeans.installer.wizard.containers.FrameWizardContainer;
+import org.netbeans.installer.wizard.containers.SwingFrameContainer;
 
 public class InstallationDetailsDialog extends NbiDialog {
     private NbiTreeTable   detailsTreeTable;
@@ -87,8 +87,8 @@ public class InstallationDetailsDialog extends NbiDialog {
     }
     
     private static class InstallationDetailsTreeModel implements TreeModel {
-        private List<ProductComponent> components = new ArrayList<ProductComponent>();
-        private Map<ProductComponent, List<String>> propertiesMap = new HashMap<ProductComponent, List<String>>();
+        private List<Product> components = new ArrayList<Product>();
+        private Map<Product, List<String>> propertiesMap = new HashMap<Product, List<String>>();
         
         private Object root = new Object();
         
@@ -112,8 +112,8 @@ public class InstallationDetailsDialog extends NbiDialog {
             if (parent.equals(root)) {
                 return components.get(index);
             } else {
-                if (parent instanceof ProductComponent) {
-                    initComponentProperties((ProductComponent) parent);
+                if (parent instanceof Product) {
+                    initComponentProperties((Product) parent);
                     return propertiesMap.get(parent).get(index);
                 } else {
                     return null;
@@ -126,15 +126,15 @@ public class InstallationDetailsDialog extends NbiDialog {
                 return components.size();
             }
             
-            if (parent instanceof ProductComponent) {
-                initComponentProperties((ProductComponent) parent);
+            if (parent instanceof Product) {
+                initComponentProperties((Product) parent);
                 return propertiesMap.get(parent).size();
             } else {
                 return 0;
             }
         }
         
-        private void initComponentProperties(ProductComponent component) {
+        private void initComponentProperties(Product component) {
             List<String> properties = propertiesMap.get(component);
             if (properties == null) {
                 properties = new ArrayList<String>();
@@ -168,7 +168,7 @@ public class InstallationDetailsDialog extends NbiDialog {
         }
         
         public boolean isLeaf(Object node) {
-            return !((node.equals(root)) || (node instanceof ProductComponent));
+            return !((node.equals(root)) || (node instanceof Product));
         }
         
         public void valueForPathChanged(TreePath path, Object newValue) {
@@ -239,8 +239,8 @@ public class InstallationDetailsDialog extends NbiDialog {
                 case 0:
                     return node;
                 case 1:
-                    if (node instanceof ProductComponent) {
-                        return ((ProductComponent) node).getDetailedStatus();
+                    if (node instanceof Product) {
+                        return ((Product) node).getDetailedStatus();
                     } else {
                         return null;
                     }
@@ -267,8 +267,8 @@ public class InstallationDetailsDialog extends NbiDialog {
             setForeground(treeTable.getForeground());
             setBackground(treeTable.getBackground());
             
-            if (value instanceof ProductComponent) {
-                ProductComponent component = (ProductComponent) value;
+            if (value instanceof Product) {
+                Product component = (Product) value;
                 
                 setIcon(component.getIcon());
                 setText(component.getDisplayName());

@@ -53,7 +53,7 @@ public class NbiDialog extends JDialog {
     
     private void initComponents() {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setContentPane(new ContentPane());
+        setContentPane(new NbiContentPane());
         
         if (owner != null) {
             setSize(owner.getSize());
@@ -71,10 +71,10 @@ public class NbiDialog extends JDialog {
         super.setVisible(visible);
     }
     
-    public class ContentPane extends JPanel {
+    public class NbiContentPane extends JPanel {
         private Image backgroundImage;
         
-        public ContentPane() {
+        public NbiContentPane() {
             if (NbiDialog.this.owner != null) {
                 backgroundImage = NbiDialog.this.owner.getBackgroundImage();
             }

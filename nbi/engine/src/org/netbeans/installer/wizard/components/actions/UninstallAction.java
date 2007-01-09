@@ -21,7 +21,7 @@
 package org.netbeans.installer.wizard.components.actions;
 
 import java.util.List;
-import org.netbeans.installer.product.ProductComponent;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.product.utils.Status;
 import org.netbeans.installer.utils.helper.ErrorLevel;
@@ -37,7 +37,7 @@ import org.netbeans.installer.wizard.components.actions.CompositeWizardAction.Co
 public class UninstallAction extends CompositeWizardAction {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String DIALOG_TITLE_PROPERTY = WizardPanel.DIALOG_TITLE_PROPERTY;
+    public static final String DIALOG_TITLE_PROPERTY = WizardPanel.TITLE_PROPERTY;
     public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(UninstallAction.class, "UA.dialog.title");
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -51,7 +51,7 @@ public class UninstallAction extends CompositeWizardAction {
     
     public void execute() {
         final ProductRegistry registry = ProductRegistry.getInstance();
-        final List<ProductComponent> components = registry.getComponentsToUninstall();
+        final List<Product> components = registry.getComponentsToUninstall();
         final int percentageChunk = Progress.COMPLETE / components.size();
         final int percentageLeak = Progress.COMPLETE % components.size();
         
@@ -60,7 +60,7 @@ public class UninstallAction extends CompositeWizardAction {
         overallProgress.setPercentage(percentageLeak);
         
         ((CompositeWizardActionUi) getWizardUi()).setOverallProgress(overallProgress);
-        for (ProductComponent component: components) {
+        for (Product component: components) {
             currentProgress = new Progress();
             currentProgress.setTitle("Uninstalling " + component.getDisplayName());
             ((CompositeWizardActionUi) getWizardUi()).setCurrentProgress(currentProgress);
@@ -80,7 +80,7 @@ public class UninstallAction extends CompositeWizardAction {
                 
                 // since the component failed to uninstall  - we should remove
                 // the components it depends on from our plans to uninstall
-                for(ProductComponent requirement : ProductRegistry.getInstance().getRequiredComponents(component)) {
+                for(Product requirement : ProductRegistry.getInstance().getRequiredComponents(component)) {
                     if (requirement.getStatus() == Status.TO_BE_UNINSTALLED) {
                         UninstallationException requirementError = new UninstallationException("Could not uninstall " + requirement.getDisplayName() + ", since the uninstallation of " + component.getDisplayName() + "failed", e);
                         

@@ -30,9 +30,9 @@ import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiProgressBar;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.progress.ProgressListener;
-import org.netbeans.installer.wizard.SwingUi;
-import org.netbeans.installer.wizard.WizardUi;
-import org.netbeans.installer.wizard.containers.WizardContainerSwing;
+import org.netbeans.installer.wizard.ui.SwingUi;
+import org.netbeans.installer.wizard.ui.WizardUi;
+import org.netbeans.installer.wizard.containers.SwingContainer;
 
 /**
  *
@@ -58,7 +58,7 @@ public abstract class WizardAction extends WizardComponent {
                 finished = true;
                 
                 if (!canceled) {
-                    wizard.next();
+                    getWizard().next();
                 }
             }
         }.start();
@@ -110,7 +110,7 @@ public abstract class WizardAction extends WizardComponent {
             this.component = component;
         }
         
-        public SwingUi getSwingUi(WizardContainerSwing container) {
+        public SwingUi getSwingUi(SwingContainer container) {
             if (swingUi == null) {
                 swingUi = new WizardActionSwingUi(component, container);
             }
@@ -141,7 +141,7 @@ public abstract class WizardAction extends WizardComponent {
         
         public WizardActionSwingUi(
                 final WizardComponent component,
-                final WizardContainerSwing container) {
+                final SwingContainer container) {
             super(component, container);
             
             initComponents();

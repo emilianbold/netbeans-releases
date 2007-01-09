@@ -28,7 +28,7 @@ import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.installer.product.ProductComponent;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
@@ -38,9 +38,9 @@ import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiTextField;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
-import org.netbeans.installer.wizard.SwingUi;
-import org.netbeans.installer.wizard.WizardUi;
-import org.netbeans.installer.wizard.containers.WizardContainerSwing;
+import org.netbeans.installer.wizard.ui.SwingUi;
+import org.netbeans.installer.wizard.ui.WizardUi;
+import org.netbeans.installer.wizard.containers.SwingContainer;
 
 /**
  *
@@ -110,7 +110,7 @@ public class DestinationPanel extends ErrorMessagePanel {
             this.component = component;
         }
         
-        public SwingUi getSwingUi(WizardContainerSwing container) {
+        public SwingUi getSwingUi(SwingContainer container) {
             if (swingUi == null) {
                 swingUi = new DestinationPanelSwingUi(component, container);
             }
@@ -142,7 +142,7 @@ public class DestinationPanel extends ErrorMessagePanel {
         
         public DestinationPanelSwingUi(
                 final DestinationPanel component,
-                final WizardContainerSwing container) {
+                final SwingContainer container) {
             super(component, container);
             
             this.component = component;
@@ -160,7 +160,7 @@ public class DestinationPanel extends ErrorMessagePanel {
             
             destinationButton.setText(component.getProperty(DESTINATION_BUTTON_TEXT_PROPERTY));
             
-            String destination = component.getWizard().getProductComponent().getProperty(ProductComponent.INSTALLATION_LOCATION_PROPERTY);
+            String destination = component.getWizard().getProduct().getProperty(Product.INSTALLATION_LOCATION_PROPERTY);
             if (destination == null) {
                 destination = DEFAULT_DESTINATION;
             }
@@ -169,8 +169,8 @@ public class DestinationPanel extends ErrorMessagePanel {
         }
         
         protected void saveInput() {
-            component.getWizard().getProductComponent().setProperty(
-                    ProductComponent.INSTALLATION_LOCATION_PROPERTY, 
+            component.getWizard().getProduct().setProperty(
+                    Product.INSTALLATION_LOCATION_PROPERTY, 
                     new File(destinationField.getText().trim()).getAbsolutePath());
         }
         

@@ -34,9 +34,9 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.MutualHashMap;
 import org.netbeans.installer.utils.helper.MutualMap;
-import org.netbeans.installer.utils.helper.ThreadUtil;
 
 /**
  * @author Danila_Dugurov
@@ -103,7 +103,7 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
     if (worker.isFree()) return;
     if (!terminator.isAlive()) terminator.start();
     terminator.terminate(process);
-    ThreadUtil.sleep(timeQuantum);
+    SystemUtils.sleep(timeQuantum);
     if (terminator.isBusy()) {
       terminator.stop();
       terminator = new Terminator();

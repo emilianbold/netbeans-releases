@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.installer.product.ProductComponent;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.helper.ErrorLevel;
@@ -393,11 +393,11 @@ public final class SystemUtils {
         getNativeUtils().removeShortcut(shortcut, locationType, deleteEmptyParents);
     }
     
-    public static void addComponentToSystemInstallManager(ProductComponent comp) throws NativeException {
+    public static void addComponentToSystemInstallManager(Product comp) throws NativeException {
         getNativeUtils().addComponentToSystemInstallManager(comp);
     }
     
-    public static void removeComponentFromSystemInstallManager(ProductComponent comp) throws NativeException {
+    public static void removeComponentFromSystemInstallManager(Product comp) throws NativeException {
         getNativeUtils().removeComponentFromSystemInstallManager(comp);
     }
     

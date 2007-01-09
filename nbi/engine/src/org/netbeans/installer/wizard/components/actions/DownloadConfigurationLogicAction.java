@@ -21,7 +21,7 @@
 package org.netbeans.installer.wizard.components.actions;
 
 import java.util.List;
-import org.netbeans.installer.product.ProductComponent;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.product.utils.Status;
 import org.netbeans.installer.utils.ErrorManager;
@@ -38,7 +38,7 @@ import org.netbeans.installer.wizard.components.WizardPanel;
 public class DownloadConfigurationLogicAction extends CompositeWizardAction {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String DIALOG_TITLE_PROPERTY = WizardPanel.DIALOG_TITLE_PROPERTY;
+    public static final String DIALOG_TITLE_PROPERTY = WizardPanel.TITLE_PROPERTY;
     public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(DownloadConfigurationLogicAction.class, "DCLA.dialog.title");
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -56,7 +56,7 @@ public class DownloadConfigurationLogicAction extends CompositeWizardAction {
     
     public void execute() {
         final ProductRegistry registry = ProductRegistry.getInstance();
-        final List<ProductComponent> components = registry.getComponentsToInstall();
+        final List<Product> components = registry.getComponentsToInstall();
         final int percentageChunk = Progress.COMPLETE / components.size();
         final int percentageLeak  = Progress.COMPLETE % components.size();
         
@@ -65,7 +65,7 @@ public class DownloadConfigurationLogicAction extends CompositeWizardAction {
         overallProgress.setPercentage(percentageLeak);
         
         ((CompositeWizardActionUi) getWizardUi()).setOverallProgress(overallProgress);
-        for (ProductComponent component: components) {
+        for (Product component: components) {
             // initiate the progress for the current element
             currentProgress = new Progress();
             ((CompositeWizardActionUi) getWizardUi()).setCurrentProgress(currentProgress);
@@ -92,7 +92,7 @@ public class DownloadConfigurationLogicAction extends CompositeWizardAction {
                 // since the component failed to download and hence failed to
                 // install - we should remove the depending components from
                 // our plans to install
-                for(ProductComponent dependent: registry.getDependingComponents(component)) {
+                for(Product dependent: registry.getDependingComponents(component)) {
                     if (dependent.getStatus()  == Status.TO_BE_INSTALLED) {
                         InstallationException dependentError = new InstallationException("Could not install " + dependent.getDisplayName() + ", since the installation of " + component.getDisplayName() + "failed", error);
                         

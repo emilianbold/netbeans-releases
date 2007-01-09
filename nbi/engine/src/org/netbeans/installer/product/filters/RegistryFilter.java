@@ -18,23 +18,16 @@
  *
  * $Id$
  */
-package org.netbeans.installer.infra.server.ejb;
+package org.netbeans.installer.product.filters;
 
 import org.netbeans.installer.product.ProductRegistryNode;
-import org.netbeans.installer.product.filters.RegistryFilter;
 
 /**
  *
  * @author Kirill Sorokin
  */
-public class IconCorrectingFilter implements RegistryFilter {
-    public boolean accept(final ProductRegistryNode node) {
-        if (node.getIconUri().getLocal() != null) {
-            if (node.getIconUri().getLocal().getScheme().equals("file")) {
-                node.getIconUri().setLocal(null);
-            }
-        }
-        
-        return true;
-    }
+public interface RegistryFilter {
+    
+    public abstract boolean accept(final ProductRegistryNode node);
+    
 }

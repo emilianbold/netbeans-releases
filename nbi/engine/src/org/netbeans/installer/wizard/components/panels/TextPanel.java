@@ -24,12 +24,12 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
-import org.netbeans.installer.wizard.SwingUi;
-import org.netbeans.installer.wizard.WizardUi;
+import org.netbeans.installer.wizard.ui.SwingUi;
+import org.netbeans.installer.wizard.ui.WizardUi;
 import org.netbeans.installer.wizard.components.WizardComponent;
 import org.netbeans.installer.wizard.components.WizardPanel;
 import org.netbeans.installer.wizard.components.WizardPanel.WizardPanelUi;
-import org.netbeans.installer.wizard.containers.WizardContainerSwing;
+import org.netbeans.installer.wizard.containers.SwingContainer;
 
 /**
  *
@@ -73,7 +73,7 @@ public class TextPanel extends WizardPanel {
         }
         
         // swing ui specific ////////////////////////////////////////////////////////
-        public SwingUi getSwingUi(WizardContainerSwing container) {
+        public SwingUi getSwingUi(SwingContainer container) {
             if (swingUi == null) {
                 swingUi = new TextPanelSwingUi(component, container);
             }
@@ -89,12 +89,16 @@ public class TextPanel extends WizardPanel {
         
         public TextPanelSwingUi(
                 final TextPanel component, 
-                final WizardContainerSwing container) {
+                final SwingContainer container) {
             super(component, container);
             
             this.component = component;
             
             initComponents();
+        }
+        
+        public boolean hasTitle() {
+            return false;
         }
         
         protected void initialize() {

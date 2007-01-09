@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.netbeans.installer.infra.server.ejb.Manager;
 import org.netbeans.installer.infra.server.ejb.ManagerException;
-import org.netbeans.installer.product.ProductComponent;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 
@@ -29,13 +29,13 @@ public class Feed extends HttpServlet {
         final String[]    registries = request.getParameterValues("registry");
         
         try {
-            List<ProductComponent> components;
+            List<Product> components;
             String                 feedType;
             
             // if the user did not specify any registry to look for the components,
             // we cannot guess for him - will return an empty feed
             if ((registries == null) || (registries.length == 0)) {
-                components = new ArrayList<ProductComponent>();
+                components = new ArrayList<Product>();
             } else {
                 components = manager.getComponents(SystemUtils.getCurrentPlatform(), registries);
             }
@@ -60,7 +60,7 @@ public class Feed extends HttpServlet {
         out.close();
     }
     
-    private void buildRss(List<ProductComponent> components, PrintWriter out) throws IOException {
+    private void buildRss(List<Product> components, PrintWriter out) throws IOException {
         out.println("<rss version=\"2.0\">");
         out.println("    <channel>");
         
@@ -68,13 +68,13 @@ public class Feed extends HttpServlet {
         out.println("        <link>http://localhost/</link>");
         out.println("        <description><![CDATA[NetBeans Installer Components Feed]]></description>");
         
-        for (ProductComponent component: components) {
+        for (Product component: components) {
             out.println("            <item>");
             out.println("                <guid>" + component.getUid() + "_" + component.getVersion() + "</guid>");
             out.println("                <title><![CDATA[" + component.getDisplayName() + "]]></title>");
             out.println("                <link>http://localhost/</link>");
             out.println("                <description><![CDATA[" + component.getDescription() + "]]></description>");
-            out.println("                <pubDate>" + StringUtils.httpFormat(component.getUpdated()) + "</pubDate>");
+            out.println("                <pubDate>" + StringUtils.httpFormat(component.getBuildDate()) + "</pubDate>");
             out.println("            </item>");
         }
         

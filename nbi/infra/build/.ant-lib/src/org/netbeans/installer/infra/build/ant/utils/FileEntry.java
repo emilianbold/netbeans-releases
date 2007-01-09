@@ -24,34 +24,28 @@ import java.io.File;
 import java.io.IOException;
 
 public class FileEntry {
-    private long size = 0;
+    private long    size          = 0;
+    private String  md5           = null;
     
-    private String md5 = null;
-    private String sha1 = null;
-    private String crc32 = null;
-    
-    private boolean directory = false;
-    private boolean empty = false;
+    private boolean directory     = false;
+    private boolean empty         = false;
     
     private boolean jarFile       = false;
     private boolean packedJarFile = false;
     private boolean signedJarFile = false;
     
-    private long lastModified = 0;
+    private long    lastModified  = 0;
     
-    private int permissions = 0;
+    private int     permissions   = 0;
     
-    private String name = null;
+    private String  name          = null;
     
     public FileEntry(File file, String name) throws IOException {
-        this.directory     = file.isDirectory();
+        this.directory = file.isDirectory();
         
         if (!directory) {
-            this.size          = file.length();
-            
-            this.md5 = AntUtils.getMd5(file);
-            this.sha1 = AntUtils.getSha1(file);
-            this.crc32 = AntUtils.getCrc32(file);
+            this.size = file.length();
+            this.md5  = AntUtils.getMd5(file);
             
             this.jarFile = AntUtils.isJarFile(file);
             if (jarFile) {
@@ -81,22 +75,6 @@ public class FileEntry {
     
     public void setMd5(String md5) {
         this.md5 = md5;
-    }
-    
-    public String getSha1() {
-        return sha1;
-    }
-    
-    public void setSha1(String sha1) {
-        this.sha1 = sha1;
-    }
-    
-    public String getCrc32() {
-        return crc32;
-    }
-    
-    public void setCrc32(String crc32) {
-        this.crc32 = crc32;
     }
     
     public boolean isDirectory() {

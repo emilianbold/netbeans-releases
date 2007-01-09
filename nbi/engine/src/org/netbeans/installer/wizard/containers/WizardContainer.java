@@ -21,6 +21,7 @@
 package org.netbeans.installer.wizard.containers;
 
 import org.netbeans.installer.wizard.*;
+import org.netbeans.installer.wizard.ui.WizardUi;
 
 /**
  *

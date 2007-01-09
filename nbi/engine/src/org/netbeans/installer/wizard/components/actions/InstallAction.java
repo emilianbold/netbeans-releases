@@ -23,7 +23,7 @@ package org.netbeans.installer.wizard.components.actions;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.installer.product.ProductComponent;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.product.utils.Status;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
@@ -40,7 +40,7 @@ import org.netbeans.installer.wizard.components.actions.CompositeWizardAction.Co
 public class InstallAction extends CompositeWizardAction {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String DIALOG_TITLE_PROPERTY = WizardPanel.DIALOG_TITLE_PROPERTY;
+    public static final String DIALOG_TITLE_PROPERTY = WizardPanel.TITLE_PROPERTY;
     public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(InstallAction.class, "IA.dialog.title");
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -62,18 +62,18 @@ public class InstallAction extends CompositeWizardAction {
     
     public void execute() {
         final ProductRegistry registry = ProductRegistry.getInstance();
-        final List<ProductComponent> components = registry.getComponentsToInstall();
+        final List<Product> components = registry.getComponentsToInstall();
         final int percentageChunk = Progress.COMPLETE / components.size();
         final int percentageLeak = Progress.COMPLETE % components.size();
         
-        final Map<ProductComponent, Progress> progresses = new HashMap<ProductComponent, Progress>();
+        final Map<Product, Progress> progresses = new HashMap<Product, Progress>();
         
         overallProgress = new CompositeProgress();
         overallProgress.setTitle("Installing selected components");
         overallProgress.setPercentage(percentageLeak);
         
         ((CompositeWizardActionUi) getWizardUi()).setOverallProgress(overallProgress);
-        for (ProductComponent component:components) {
+        for (Product component:components) {
             currentProgress = new Progress();
             currentProgress.setTitle("Installing " + component.getDisplayName());
             ((CompositeWizardActionUi) getWizardUi()).setCurrentProgress(currentProgress);
@@ -86,10 +86,10 @@ public class InstallAction extends CompositeWizardAction {
                     currentProgress.setCanceled(false);
                     component.rollback(currentProgress);
                     
-                    for (ProductComponent toUninstall: registry.getComponentsInstalledDuringThisSession()) {
+                    for (Product toUninstall: registry.getComponentsInstalledDuringThisSession()) {
                         toUninstall.setStatus(Status.TO_BE_UNINSTALLED);
                     }
-                    for (ProductComponent toUninstall: registry.getComponentsToUninstall()) {
+                    for (Product toUninstall: registry.getComponentsToUninstall()) {
                         component.rollback(progresses.get(component));
                     }
                     break;
@@ -108,7 +108,7 @@ public class InstallAction extends CompositeWizardAction {
                 
                 // since the component failed to install  - we should remove the
                 // depending components from our plans to install
-                for(ProductComponent dependent : ProductRegistry.getInstance().getDependingComponents(component)) {
+                for(Product dependent : ProductRegistry.getInstance().getDependingComponents(component)) {
                     if (dependent.getStatus()  == Status.TO_BE_INSTALLED) {
                         InstallationException dependentError = new InstallationException("Could not install " + dependent.getDisplayName() + ", since the installation of " + component.getDisplayName() + "failed", e);
                         

@@ -22,8 +22,9 @@ package org.netbeans.installer.utils;
 
 import javax.swing.JOptionPane;
 import org.netbeans.installer.Installer;
-import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.helper.ErrorLevel;
+import static org.netbeans.installer.utils.helper.ErrorLevel.CRITICAL;
+import static org.netbeans.installer.utils.helper.ErrorLevel.ERROR;
 
 /**
  *
@@ -38,6 +39,14 @@ public class ErrorManager {
     
     public static synchronized void notify(int level, String message) {
         notify(level, message, null);
+    }
+    
+    public static synchronized void notifyError(String message) {
+        notify(ERROR, message);
+    }
+    
+    public static synchronized void notifyCritical(String message) {
+        notify(CRITICAL, message);
     }
     
     public static synchronized void notify(Throwable exception) {

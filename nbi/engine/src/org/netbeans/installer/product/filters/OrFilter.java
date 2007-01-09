@@ -20,21 +20,21 @@
  */
 package org.netbeans.installer.product.filters;
 
-import org.netbeans.installer.product.ProductTreeNode;
+import org.netbeans.installer.product.ProductRegistryNode;
 
 /**
  *
  * @author Kirill Sorokin
  */
-public class OrFilter implements ProductTreeFilter {
-    private ProductTreeFilter[] filters;
+public class OrFilter implements RegistryFilter {
+    private RegistryFilter[] filters;
     
-    public OrFilter(final ProductTreeFilter... filters) {
+    public OrFilter(final RegistryFilter... filters) {
         this.filters = filters;
     }
     
-    public boolean accept(final ProductTreeNode node) {
-        for (ProductTreeFilter filter: filters) {
+    public boolean accept(final ProductRegistryNode node) {
+        for (RegistryFilter filter: filters) {
             if (filter.accept(node)) {
                 return true;
             }

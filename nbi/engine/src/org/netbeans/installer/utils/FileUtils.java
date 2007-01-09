@@ -173,19 +173,30 @@ public final class FileUtils {
         return date;
     }
     
-    public static long getFileSize(File file) {
-        if(file==null || file.isDirectory() || !file.exists()) {
-            return -1;
+    public static long getSize(File file) {
+        long size = -1;
+        
+        if ((file != null) && !file.isDirectory() && file.exists()) {
+            try {
+                size = file.length();
+            } catch (SecurityException e) {
+                ErrorManager.notify(ErrorLevel.DEBUG, e);
+            }
         }
-        try {
-            return file.length();
-        } catch (SecurityException ex) {
-            return -1;
-        }
+        
+        return size;
     }
     
     public static long getFreeSpace(File file) {
-        return -1;
+        long freeSpace = 0;
+        
+        try {
+            freeSpace = SystemUtils.getNativeUtils().getFreeSpace(file);
+        } catch (NativeException e) {
+            ErrorManager.notify(ErrorLevel.ERROR, "Cannot get free disk space amount", e);
+        }
+        
+        return freeSpace;
     }
     
     public static long getCrc32(File file) throws IOException {
@@ -210,24 +221,20 @@ public final class FileUtils {
         return crc.getValue();
     }
     
-    public static String getCrc32String(File file) throws IOException {
-        return Long.toString(getCrc32(file));
+    public static String getMd5(File file) throws IOException, NoSuchAlgorithmException {
+        return StringUtils.asHexString(getMd5Bytes(file));
     }
     
-    public static byte[] getMd5(File file) throws IOException, NoSuchAlgorithmException {
+    public static byte[] getMd5Bytes(File file) throws IOException, NoSuchAlgorithmException {
         return getDigest(file, "MD5");
     }
     
-    public static String getMd5String(File file) throws IOException, NoSuchAlgorithmException {
-        return StringUtils.asHexString(getMd5(file));
+    public static String getSha1(File file) throws IOException, NoSuchAlgorithmException {
+        return StringUtils.asHexString(getSha1Bytes(file));
     }
     
-    public static byte[] getSha1(File file) throws IOException, NoSuchAlgorithmException {
+    public static byte[] getSha1Bytes(File file) throws IOException, NoSuchAlgorithmException {
         return getDigest(file, "SHA1");
-    }
-    
-    public static String getSha1String(File file) throws IOException, NoSuchAlgorithmException {
-        return StringUtils.asHexString(getSha1(file));
     }
     
     public static byte[] getDigest(File file, String algorithm) throws IOException, NoSuchAlgorithmException {
@@ -795,7 +802,7 @@ public final class FileUtils {
         //first of all check java implementation
         //LogManager.log("");
         //LogManager.log( ((isReadNotWrite) ? "READ " : "WRITE ") + "Checking file(dir): " + file);
-        boolean javaAccessCheck = (isReadNotWrite) ? file.canRead() : file.canWrite();        
+        boolean javaAccessCheck = (isReadNotWrite) ? file.canRead() : file.canWrite();
         // don`t treat read-only attributes for directories as "can`t write" on windows
         if(SystemUtils.isWindows() && !isReadNotWrite && file.isDirectory()) {
             javaAccessCheck = true;

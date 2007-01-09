@@ -14,9 +14,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.netbeans.installer.infra.server.ejb.Manager;
 import org.netbeans.installer.infra.server.ejb.ManagerException;
-import org.netbeans.installer.product.ProductComponent;
-import org.netbeans.installer.product.ProductGroup;
-import org.netbeans.installer.product.ProductTreeNode;
+import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.product.components.Group;
+import org.netbeans.installer.product.ProductRegistryNode;
 import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -143,7 +143,7 @@ public class CreateBundle extends HttpServlet {
         }
     }
     
-    private void buildRegistryTable(PrintWriter out, ProductTreeNode root, Platform platform) {
+    private void buildRegistryTable(PrintWriter out, ProductRegistryNode root, Platform platform) {
         out.println("            <table class=\"registry\">");
         
         buildRegistryNodes(out, root.getChildren(), platform);
@@ -151,10 +151,10 @@ public class CreateBundle extends HttpServlet {
         out.println("            </table>");
     }
     
-    private void buildRegistryNodes(PrintWriter out, List<ProductTreeNode> nodes, Platform platform) {
-        for (ProductTreeNode node: nodes) {
-            if (node instanceof ProductComponent) {
-                if (!((ProductComponent) node).getSupportedPlatforms().contains(platform)) {
+    private void buildRegistryNodes(PrintWriter out, List<ProductRegistryNode> nodes, Platform platform) {
+        for (ProductRegistryNode node: nodes) {
+            if (node instanceof Product) {
+                if (!((Product) node).getSupportedPlatforms().contains(platform)) {
                     continue;
                 }
             }
@@ -166,7 +166,7 @@ public class CreateBundle extends HttpServlet {
             if (node.getIconUri() == null) {
                 icon = "img/default-icon.png";
             } else {
-                icon = node.getIconUri().getRemoteUri().toString();
+                icon = node.getIconUri().getRemote().toString();
             }
             
             if (node.getChildren().size() > 0) {
@@ -183,16 +183,16 @@ public class CreateBundle extends HttpServlet {
             String platforms   = null;
             String title       = "";
             
-            if (node instanceof ProductComponent) {
-                version   = ((ProductComponent) node).getVersion().toString();
-                platforms = StringUtils.asString(((ProductComponent) node).getSupportedPlatforms(), " ");
-                title     = StringUtils.asString(((ProductComponent) node).getSupportedPlatforms());
+            if (node instanceof Product) {
+                version   = ((Product) node).getVersion().toString();
+                platforms = StringUtils.asString(((Product) node).getSupportedPlatforms(), " ");
+                title     = StringUtils.asString(((Product) node).getSupportedPlatforms());
                 type      = "component";
                 
                 id = uid + "_" + version + "_" + platforms.replace(" ", "_") + "_" + type;
             }
             
-            if (node instanceof ProductGroup) {
+            if (node instanceof Group) {
                 type = "group";
                 
                 id = uid + "_" + type;

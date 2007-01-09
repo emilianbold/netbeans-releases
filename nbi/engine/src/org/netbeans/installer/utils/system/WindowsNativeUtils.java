@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import org.netbeans.installer.Installer;
-import org.netbeans.installer.product.ProductComponent;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
@@ -310,7 +310,7 @@ public class WindowsNativeUtils extends NativeUtils {
         }
     }
     
-    public void addComponentToSystemInstallManager(ProductComponent component) throws NativeException {
+    public void addComponentToSystemInstallManager(Product component) throws NativeException {
         LogManager.logIndent("adding component to windows registry uninstall section");
         
         String uid         = getUidKey(component);
@@ -345,7 +345,7 @@ public class WindowsNativeUtils extends NativeUtils {
         LogManager.logUnindent("... finished adding of the component to windows registry uninstall section");
     }
     
-    public void removeComponentFromSystemInstallManager(ProductComponent component) throws NativeException {
+    public void removeComponentFromSystemInstallManager(Product component) throws NativeException {
         String uid         = getUidKey(component);
         String installPath = component.getInstallationLocation().getPath();
         
@@ -660,7 +660,7 @@ public class WindowsNativeUtils extends NativeUtils {
         }
     }
     
-    private String getUidKey(ProductComponent component) {
+    private String getUidKey(Product component) {
         return NBI_UID_PREFIX + component.getUid() + "-" + component.getVersion().toString();
     }
     

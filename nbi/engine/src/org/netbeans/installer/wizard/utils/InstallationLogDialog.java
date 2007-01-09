@@ -39,7 +39,7 @@ import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiScrollPane;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
-import org.netbeans.installer.wizard.containers.FrameWizardContainer;
+import org.netbeans.installer.wizard.containers.SwingFrameContainer;
 
 public class InstallationLogDialog extends NbiDialog {
     private NbiTextPane   logPane;

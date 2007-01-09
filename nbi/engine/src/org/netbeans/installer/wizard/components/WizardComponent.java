@@ -20,17 +20,11 @@
  */
 package org.netbeans.installer.wizard.components;
 
-import java.awt.AlphaComposite;
-import java.awt.Color;
-import java.awt.Composite;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import javax.swing.border.LineBorder;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
@@ -38,12 +32,10 @@ import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
-import org.netbeans.installer.wizard.SwingUi;
-import org.netbeans.installer.wizard.containers.WizardContainerSwing;
+import org.netbeans.installer.wizard.ui.SwingUi;
+import org.netbeans.installer.wizard.containers.SwingContainer;
 import org.netbeans.installer.wizard.Wizard;
-import org.netbeans.installer.wizard.WizardUi;
-import org.netbeans.installer.wizard.conditions.TrueCondition;
-import org.netbeans.installer.wizard.conditions.WizardCondition;
+import org.netbeans.installer.wizard.ui.WizardUi;
 
 /**
  *
@@ -52,15 +44,18 @@ import org.netbeans.installer.wizard.conditions.WizardCondition;
 public abstract class WizardComponent {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String DIALOG_TITLE_PROPERTY       = "dialog.title";
+    public static final String TITLE_PROPERTY              = "title";
+    public static final String DESCRIPTION_PROPERTY        = "description";
     public static final String HELP_BUTTON_TEXT_PROPERTY   = "help.button.text";
     public static final String BACK_BUTTON_TEXT_PROPERTY   = "back.button.text";
     public static final String NEXT_BUTTON_TEXT_PROPERTY   = "next.button.text";
     public static final String CANCEL_BUTTON_TEXT_PROPERTY = "cancel.button.text";
     public static final String FINISH_BUTTON_TEXT_PROPERTY = "finish.button.text";
     
-    public static final String DEFAULT_DIALOG_TITLE =
-            ResourceUtils.getString(WizardComponent.class, "WC.dialog.title");
+    public static final String DEFAULT_TITLE =
+            ResourceUtils.getString(WizardComponent.class, "WC.title");
+    public static final String DEFAULT_DESCRIPTION =
+            ResourceUtils.getString(WizardComponent.class, "WC.description");
     public static final String DEFAULT_HELP_BUTTON_TEXT =
             ResourceUtils.getString(WizardComponent.class, "WC.help.button.text");
     public static final String DEFAULT_BACK_BUTTON_TEXT =
@@ -74,14 +69,14 @@ public abstract class WizardComponent {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    protected Wizard wizard;
+    private Wizard wizard;
     
-    protected List<WizardComponent> components = new ArrayList<WizardComponent>();
-    protected WizardCondition       condition  = new TrueCondition();
-    protected Properties            properties = new Properties();
+    private List<WizardComponent> components = new ArrayList<WizardComponent>();
+    private Properties            properties = new Properties();
     
     protected WizardComponent() {
-        setProperty(DIALOG_TITLE_PROPERTY, DEFAULT_DIALOG_TITLE);
+        setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
+        setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
         
         setProperty(HELP_BUTTON_TEXT_PROPERTY, DEFAULT_HELP_BUTTON_TEXT);
         setProperty(BACK_BUTTON_TEXT_PROPERTY, DEFAULT_BACK_BUTTON_TEXT);
@@ -110,6 +105,16 @@ public abstract class WizardComponent {
         return false;
     }
     
+    // wizard ///////////////////////////////////////////////////////////////////////
+    public final Wizard getWizard() {
+        return wizard;
+    }
+    
+    public final void setWizard(final Wizard wizard) {
+        this.wizard = wizard;
+    }
+    
+    // children /////////////////////////////////////////////////////////////////////
     public final void addChild(final WizardComponent component) {
         components.add(component);
     }
@@ -126,20 +131,13 @@ public abstract class WizardComponent {
         return components;
     }
     
-    protected final void removeAllChildren() {
-        components.clear();
-    }
-    
-    public final void setCondition(final WizardCondition condition) {
-        this.condition = condition;
-    }
-    
-    public final WizardCondition getCondition() {
-        return condition;
-    }
-    
+    // properties ///////////////////////////////////////////////////////////////////
     public final String getProperty(final String name) {
         return getProperty(name, true);
+    }
+    
+    public final String getRawProperty(final String name) {
+        return getProperty(name, false);
     }
     
     public final void setProperty(final String name, final String value) {
@@ -150,50 +148,35 @@ public abstract class WizardComponent {
         return properties;
     }
     
-    public final Wizard getWizard() {
-        return wizard;
+    // helpers //////////////////////////////////////////////////////////////////////
+    protected final String parseString(final String string) {
+        return SystemUtils.parseString(string, wizard.getClassLoader());
     }
     
-    public final void setWizard(final Wizard wizard) {
-        this.wizard = wizard;
+    protected final File parsePath(final String path) {
+        return SystemUtils.parsePath(path, wizard.getClassLoader());
     }
     
-    // some helper methods //////////////////////////////////////////////////////////
-    public final String getProperty(final String name, final boolean parse) {
+    protected final String getString(final String baseName, final String key) {
+        return ResourceUtils.getString(baseName, key, wizard.getClassLoader());
+    }
+    
+    protected final String getString(final String baseName, final String key, final Object... arguments) {
+        return ResourceUtils.getString(baseName, key, wizard.getClassLoader(), arguments);
+    }
+    
+    protected final InputStream getResource(final String path) {
+        return ResourceUtils.getResource(path, wizard.getClassLoader());
+    }
+    
+    // private //////////////////////////////////////////////////////////////////////
+    private final String getProperty(final String name, final boolean parse) {
         String value = properties.getProperty(name);
         
         if (parse) {
             return value != null ? parseString(value) : null;
         } else {
             return value;
-        }
-    }
-    
-    public final String parseString(final String string) {
-        return SystemUtils.parseString(string, getCorrectClassLoader());
-    }
-    
-    public final File parsePath(final String path) {
-        return SystemUtils.parsePath(path, getCorrectClassLoader());
-    }
-    
-    public final String getString(final String baseName, final String key) {
-        return ResourceUtils.getString(baseName, key, getCorrectClassLoader());
-    }
-    
-    public final String getString(final String baseName, final String key, final Object... arguments) {
-        return ResourceUtils.getString(baseName, key, getCorrectClassLoader(), arguments);
-    }
-    
-    public final InputStream getResource(final String path) {
-        return ResourceUtils.getResource(path, getCorrectClassLoader());
-    }
-    
-    public final ClassLoader getCorrectClassLoader() {
-        if (getWizard().getProductComponent() != null) {
-            return getWizard().getProductComponent().getClassLoader();
-        } else {
-            return getClass().getClassLoader();
         }
     }
     
@@ -207,7 +190,7 @@ public abstract class WizardComponent {
             this.component = component;
         }
         
-        public SwingUi getSwingUi(final WizardContainerSwing container) {
+        public SwingUi getSwingUi(final SwingContainer container) {
             if (swingUi == null) {
                 swingUi = new WizardComponentSwingUi(component, container);
             }
@@ -221,15 +204,56 @@ public abstract class WizardComponent {
     
     public static class WizardComponentSwingUi extends SwingUi {
         protected WizardComponent      component;
-        protected WizardContainerSwing container;
+        protected SwingContainer container;
         
         public WizardComponentSwingUi(
                 final WizardComponent component,
-                final WizardContainerSwing container) {
+                final SwingContainer container) {
             this.component = component;
             this.container = container;
+        }
+        
+        public boolean hasTitle() {
+            return true;
+        }
+        
+        public String getTitle() {
+            return component.getProperty(TITLE_PROPERTY);
+        }
+        
+        public String getDescription() {
+            return component.getProperty(DESCRIPTION_PROPERTY);
+        }
+        
+        public void evaluateHelpButtonClick() {
+            // does nothing
+        }
+        
+        public void evaluateBackButtonClick() {
+            component.getWizard().previous();
+        }
+        
+        public void evaluateNextButtonClick() {
+            String errorMessage = validateInput();
             
-            initComponents();
+            if (errorMessage == null) {
+                saveInput();
+                component.getWizard().next();
+            } else {
+                ErrorManager.notify(ErrorLevel.ERROR, errorMessage);
+            }
+        }
+        
+        public void evaluateCancelButtonClick() {
+            if (!UiUtils.showYesNoDialog("Are you sure you want to cancel?")) {
+                return;
+            }
+            
+            Installer.getInstance().cancel();
+        }
+        
+        public NbiButton getDefaultButton() {
+            return container.getNextButton();
         }
         
         protected void initializeContainer() {
@@ -281,59 +305,6 @@ public abstract class WizardComponent {
         
         protected String validateInput() {
             return null; // null means that everything is OK
-        }
-        
-        public String getDialogTitle() {
-            return component.getProperty(DIALOG_TITLE_PROPERTY);
-        }
-        
-        public void evaluateHelpButtonClick() {
-            // does nothing
-        }
-        
-        public void evaluateBackButtonClick() {
-            component.getWizard().previous();
-        }
-        
-        public void evaluateNextButtonClick() {
-            String errorMessage = validateInput();
-            
-            if (errorMessage == null) {
-                saveInput();
-                component.getWizard().next();
-            } else {
-                ErrorManager.notify(ErrorLevel.ERROR, errorMessage);
-            }
-        }
-        
-        public void evaluateCancelButtonClick() {
-            if (!UiUtils.showYesNoDialog("Are you sure you want to cancel?")) {
-                return;
-            }
-            
-            Installer.getInstance().cancel();
-        }
-        
-        public NbiButton getDefaultButton() {
-            return container.getNextButton();
-        }
-        
-        protected void paintComponent(Graphics graphics) {
-            super.paintComponent(graphics);
-            
-            Graphics2D graphics2d = (Graphics2D) graphics;
-            
-            Composite oldComposite = graphics2d.getComposite();
-            
-            graphics2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.85f));
-            graphics2d.setColor(Color.WHITE);
-            graphics2d.fillRect(0, 0, this.getWidth(), this.getHeight());
-            
-            graphics2d.setComposite(oldComposite);
-        }
-        
-        private void initComponents() {
-            setBorder(new LineBorder(Color.BLACK, 1));
         }
     }
 }

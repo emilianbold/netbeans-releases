@@ -24,19 +24,19 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.util.List;
 import javax.swing.border.EmptyBorder;
-import org.netbeans.installer.product.ProductComponent;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
-import org.netbeans.installer.wizard.SwingUi;
-import org.netbeans.installer.wizard.WizardUi;
+import org.netbeans.installer.wizard.ui.SwingUi;
+import org.netbeans.installer.wizard.ui.WizardUi;
 import org.netbeans.installer.wizard.components.WizardPanel;
 import org.netbeans.installer.wizard.components.WizardPanel.WizardPanelSwingUi;
 import org.netbeans.installer.wizard.components.WizardPanel.WizardPanelUi;
-import org.netbeans.installer.wizard.containers.WizardContainerSwing;
+import org.netbeans.installer.wizard.containers.SwingContainer;
 
 /**
  *
@@ -77,7 +77,7 @@ public class PreCreateBundleSummaryPanel extends WizardPanel {
         setProperty(DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY, DEFAULT_DOWNLOAD_SIZE_LABEL_TEXT);
         setProperty(REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY, DEFAULT_REQUIRED_DISK_SPACE_LABEL_TEXT);
         
-        setProperty(DIALOG_TITLE_PROPERTY, DEFAULT_DIALOG_TITLE);
+        setProperty(TITLE_PROPERTY, DEFAULT_DIALOG_TITLE);
     }
     
     public boolean canExecuteForward() {
@@ -108,7 +108,7 @@ public class PreCreateBundleSummaryPanel extends WizardPanel {
         }
         
         // swing ui specific ////////////////////////////////////////////////////////
-        public SwingUi getSwingUi(WizardContainerSwing container) {
+        public SwingUi getSwingUi(SwingContainer container) {
             if (swingUi == null) {
                 swingUi = new PreCreateBundleSummaryPanelSwingUi(component, container);
             }
@@ -130,7 +130,7 @@ public class PreCreateBundleSummaryPanel extends WizardPanel {
         
         public PreCreateBundleSummaryPanelSwingUi(
                 final PreCreateBundleSummaryPanel component,
-                final WizardContainerSwing container) {
+                final SwingContainer container) {
             super(component, container);
             
             this.component = component;
@@ -149,7 +149,7 @@ public class PreCreateBundleSummaryPanel extends WizardPanel {
             final String messageText = component.getProperty(MESSAGE_TEXT_PROPERTY);
             messagePane.setText(messageText);
             
-            List<ProductComponent> componentsToBundle = ProductRegistry.getInstance().getComponentsToInstall();
+            List<Product> componentsToBundle = ProductRegistry.getInstance().getComponentsToInstall();
             
             componentsToBundleLabel.setVisible(true);
             componentsToBundlePane.setVisible(true);
@@ -166,12 +166,12 @@ public class PreCreateBundleSummaryPanel extends WizardPanel {
             componentsToBundlePane.setText(componentsToInstallText);
             
             long downloadSize = 0;
-            for (ProductComponent component: componentsToBundle) {
+            for (Product component: componentsToBundle) {
                 downloadSize += component.getDownloadSize();
             }
             
             long requiredDiskSpace = 0;
-            for (ProductComponent component: componentsToBundle) {
+            for (Product component: componentsToBundle) {
                 requiredDiskSpace += component.getRequiredDiskSpace();
             }
             

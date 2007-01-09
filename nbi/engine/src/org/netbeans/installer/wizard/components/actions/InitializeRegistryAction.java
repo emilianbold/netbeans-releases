@@ -23,15 +23,33 @@ package org.netbeans.installer.wizard.components.actions;
 import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.components.WizardAction;
+import org.netbeans.installer.wizard.components.WizardAction.WizardActionUi;
 
 /**
  *
  * @author Kirill Sorokin
  */
 public class InitializeRegistryAction extends WizardAction {
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String DEFAULT_TITLE = ResourceUtils.getString(
+            InitializeRegistryAction.class, 
+            "IRA.title");
+    public static final String DEFAULT_DESCRIPTION = ResourceUtils.getString(
+            InitializeRegistryAction.class, 
+            "IRA.description");
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
+    public InitializeRegistryAction() {
+        setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
+        setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
+    }
+    
     public void execute() {
         try {
             Progress progress = new Progress();

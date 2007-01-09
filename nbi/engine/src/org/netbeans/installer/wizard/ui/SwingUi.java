@@ -18,23 +18,29 @@
  *
  * $Id$
  */
-package org.netbeans.installer.infra.server.ejb;
+package org.netbeans.installer.wizard.ui;
 
-import org.netbeans.installer.product.ProductRegistryNode;
-import org.netbeans.installer.product.filters.RegistryFilter;
+import org.netbeans.installer.utils.helper.swing.NbiButton;
+import org.netbeans.installer.utils.helper.swing.NbiPanel;
 
 /**
  *
  * @author Kirill Sorokin
  */
-public class IconCorrectingFilter implements RegistryFilter {
-    public boolean accept(final ProductRegistryNode node) {
-        if (node.getIconUri().getLocal() != null) {
-            if (node.getIconUri().getLocal().getScheme().equals("file")) {
-                node.getIconUri().setLocal(null);
-            }
-        }
-        
-        return true;
-    }
+public abstract class SwingUi extends NbiPanel {
+    public abstract boolean hasTitle();
+    
+    public abstract String getTitle();
+    
+    public abstract String getDescription();
+    
+    public abstract void evaluateHelpButtonClick();
+    
+    public abstract void evaluateBackButtonClick();
+    
+    public abstract void evaluateNextButtonClick();
+    
+    public abstract void evaluateCancelButtonClick();
+    
+    public abstract NbiButton getDefaultButton();
 }

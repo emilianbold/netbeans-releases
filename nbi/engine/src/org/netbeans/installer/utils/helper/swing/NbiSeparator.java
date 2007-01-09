@@ -18,23 +18,21 @@
  *
  * $Id$
  */
-package org.netbeans.installer.infra.server.ejb;
+package org.netbeans.installer.utils.helper.swing;
 
-import org.netbeans.installer.product.ProductRegistryNode;
-import org.netbeans.installer.product.filters.RegistryFilter;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
 
 /**
  *
  * @author Kirill Sorokin
  */
-public class IconCorrectingFilter implements RegistryFilter {
-    public boolean accept(final ProductRegistryNode node) {
-        if (node.getIconUri().getLocal() != null) {
-            if (node.getIconUri().getLocal().getScheme().equals("file")) {
-                node.getIconUri().setLocal(null);
-            }
-        }
-        
-        return true;
+public class NbiSeparator extends JSeparator {
+    public NbiSeparator() {
+        super(SwingConstants.HORIZONTAL);
+    }
+    
+    public NbiSeparator(int orientation) {
+        super(orientation);
     }
 }

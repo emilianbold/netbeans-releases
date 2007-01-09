@@ -24,19 +24,19 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.util.List;
 import javax.swing.border.EmptyBorder;
-import org.netbeans.installer.product.ProductComponent;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
-import org.netbeans.installer.wizard.SwingUi;
-import org.netbeans.installer.wizard.WizardUi;
+import org.netbeans.installer.wizard.ui.SwingUi;
+import org.netbeans.installer.wizard.ui.WizardUi;
 import org.netbeans.installer.wizard.components.WizardPanel;
 import org.netbeans.installer.wizard.components.WizardPanel.WizardPanelSwingUi;
 import org.netbeans.installer.wizard.components.WizardPanel.WizardPanelUi;
-import org.netbeans.installer.wizard.containers.WizardContainerSwing;
+import org.netbeans.installer.wizard.containers.SwingContainer;
 
 /**
  *
@@ -86,7 +86,7 @@ public class PreInstallSummaryPanel extends WizardPanel {
         setProperty(DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY, DEFAULT_DOWNLOAD_SIZE_LABEL_TEXT);
         setProperty(REQUIRED_DISK_SPACE_LABEL_TEXT_PROPERTY, DEFAULT_REQUIRED_DISK_SPACE_LABEL_TEXT);
         
-        setProperty(DIALOG_TITLE_PROPERTY, DEFAULT_DIALOG_TITLE);
+        setProperty(TITLE_PROPERTY, DEFAULT_DIALOG_TITLE);
     }
     
     public boolean canExecuteForward() {
@@ -119,7 +119,7 @@ public class PreInstallSummaryPanel extends WizardPanel {
         }
         
         // swing ui specific ////////////////////////////////////////////////////////
-        public SwingUi getSwingUi(WizardContainerSwing container) {
+        public SwingUi getSwingUi(SwingContainer container) {
             if (swingUi == null) {
                 swingUi = new PreInstallSummaryPanelSwingUi(component, container);
             }
@@ -143,7 +143,7 @@ public class PreInstallSummaryPanel extends WizardPanel {
         
         public PreInstallSummaryPanelSwingUi(
                 final PreInstallSummaryPanel component,
-                final WizardContainerSwing container) {
+                final SwingContainer container) {
             super(component, container);
             
             this.component = component;
@@ -162,8 +162,8 @@ public class PreInstallSummaryPanel extends WizardPanel {
             final String messageText = component.getProperty(MESSAGE_TEXT_PROPERTY);
             messagePane.setText(messageText);
             
-            List<ProductComponent> componentsToInstall = ProductRegistry.getInstance().getComponentsToInstall();
-            List<ProductComponent> componentsToUninstall = ProductRegistry.getInstance().getComponentsToUninstall();
+            List<Product> componentsToInstall = ProductRegistry.getInstance().getComponentsToInstall();
+            List<Product> componentsToUninstall = ProductRegistry.getInstance().getComponentsToUninstall();
             
             if (componentsToUninstall.size() > 0) {
                 componentsToUninstallLabel.setVisible(true);
@@ -198,12 +198,12 @@ public class PreInstallSummaryPanel extends WizardPanel {
                 componentsToInstallPane.setText(componentsToInstallText);
                 
                 long downloadSize = 0;
-                for (ProductComponent component: componentsToInstall) {
+                for (Product component: componentsToInstall) {
                     downloadSize += component.getDownloadSize();
                 }
                 
                 long requiredDiskSpace = 0;
-                for (ProductComponent component: componentsToInstall) {
+                for (Product component: componentsToInstall) {
                     requiredDiskSpace += component.getRequiredDiskSpace();
                 }
                 

@@ -21,10 +21,10 @@
 package org.netbeans.installer.wizard.components.actions;
 
 import java.io.File;
-import org.netbeans.installer.product.ProductComponent;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
-import org.netbeans.installer.wizard.WizardUi;
+import org.netbeans.installer.wizard.ui.WizardUi;
 import org.netbeans.installer.wizard.components.WizardAction;
 
 /**
@@ -32,34 +32,36 @@ import org.netbeans.installer.wizard.components.WizardAction;
  * @author Kirill Sorokin
  */
 public class SetInstallationLocationAction extends WizardAction {
-    public static final String SOURCE_COMPONENT_UID_PROPERTY = "source.component";
+    public static final String SOURCE_UID_PROPERTY = "source.component";
     public static final String RELATIVE_LOCATION_PROPERTY = "relative.location";
     
     public void execute() {
-        String uid = getProperty(SOURCE_COMPONENT_UID_PROPERTY);
+        String uid              = getProperty(SOURCE_UID_PROPERTY);
         String relativeLocation = getProperty(RELATIVE_LOCATION_PROPERTY);
         
         if (uid == null) {
-            ErrorManager.notify(ErrorLevel.ERROR, "Required property not set");
+            ErrorManager.notifyError("Required property not set");
             return;
         }
         
-        ProductComponent targetComponent = getWizard().getProductComponent();
-        ProductComponent sourceComponent = targetComponent.getRequirementByUid(uid);
+        // we do expect the property container of the wizard to be a product, if 
+        // it's not we should fail
+        Product target = (Product) getWizard().getProduct();
+        Product source = target.getRequirementByUid(uid);
         
-        if (sourceComponent == null) {
-            ErrorManager.notify(ErrorLevel.ERROR, "Component with the given uid does not exist");
+        if (source == null) {
+            ErrorManager.notifyError("Component with the given uid does not exist");
             return;
         }
         
-        File newLocation;
+        File location;
         if (relativeLocation != null) {
-            newLocation = new File(sourceComponent.getInstallationLocation(), relativeLocation);
+            location = new File(source.getInstallationLocation(), relativeLocation);
         } else {
-            newLocation = sourceComponent.getInstallationLocation();
+            location = source.getInstallationLocation();
         }
         
-        targetComponent.setInstallationLocation(newLocation.getAbsoluteFile());
+        target.setInstallationLocation(location.getAbsoluteFile());
     }
     
     public WizardUi getWizardUi() {

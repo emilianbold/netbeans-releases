@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.List;
-import org.netbeans.installer.product.ProductComponent;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
@@ -90,9 +90,9 @@ public abstract class NativeUtils {
     
     public abstract void removeShortcut(Shortcut shortcut, ShortcutLocationType locationType, boolean deleteEmptyParents) throws NativeException;
     
-    public abstract void addComponentToSystemInstallManager(ProductComponent comp) throws NativeException;
+    public abstract void addComponentToSystemInstallManager(Product comp) throws NativeException;
     
-    public abstract void removeComponentFromSystemInstallManager(ProductComponent comp) throws NativeException;
+    public abstract void removeComponentFromSystemInstallManager(Product comp) throws NativeException;
     
     public abstract String getEnvironmentVariable(String name, EnvironmentScope scope, boolean expand) throws NativeException;
     

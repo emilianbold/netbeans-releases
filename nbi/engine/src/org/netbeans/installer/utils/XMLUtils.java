@@ -321,15 +321,14 @@ public abstract class XMLUtils {
     
     public static ExtendedURI parseExtendedUri(Element element) throws ParseException {
         try {
-            URI    uri           = new URI(XMLUtils.getChildNodeTextContent(element, "default-uri"));
-            long   estimatedSize = Long.parseLong(XMLUtils.getAttribute(element, "size"));
-            String md5           = XMLUtils.getAttribute(element, "md5");
-            String crc32         = XMLUtils.getAttribute(element, "crc32");
+            URI    uri  = new URI(XMLUtils.getChildNodeTextContent(element, "default-uri"));
+            long   size = Long.parseLong(XMLUtils.getAttribute(element, "size"));
+            String md5  = XMLUtils.getAttribute(element, "md5");
             
             if (uri.getScheme().equals("file")) {
-                return new ExtendedURI(uri, uri, estimatedSize, md5, crc32);
+                return new ExtendedURI(uri, uri, size, md5);
             } else {
-                return new ExtendedURI(uri, estimatedSize, md5, crc32);
+                return new ExtendedURI(uri, size, md5);
             }
         } catch (URISyntaxException e) {
             throw new ParseException("Cannot parse extended URI", e);
@@ -367,8 +366,8 @@ public abstract class XMLUtils {
         return result;
     }
     
-    private static HashMap <String,String> getAttributesFromChildName(String childname) {
-        HashMap <String,String> map = new HashMap <String,String> ();
+    private static HashMap<String,String> getAttributesFromChildName(String childname) {
+        HashMap<String,String> map = new HashMap<String,String> ();
         if(childname!=null) {
             int start = childname.indexOf(ATTR_BEGIN);
             int end = childname.indexOf(ATTR_END);
@@ -390,7 +389,7 @@ public abstract class XMLUtils {
         return map;
     }
     
-    private static boolean hasAttributes(Node childNode, HashMap <String, String> attributes) {
+    private static boolean hasAttributes(Node childNode, HashMap<String, String> attributes) {
         int size = attributes.size();
         if (size==0) {
             return true;
@@ -410,7 +409,7 @@ public abstract class XMLUtils {
     private static void processChild(List<Node> result, Node childNode, String childnameString) {
         String name =  childNode.getNodeName();
         String[] names = getChildNamesFromString(childnameString,name);
-        HashMap <String,String> attributes = getAttributesFromChildName(childnameString);
+        HashMap<String,String> attributes = getAttributesFromChildName(childnameString);
         for (String n:names) {
             if (name.equals(n) && hasAttributes(childNode,attributes)) {
                 result.add(childNode);

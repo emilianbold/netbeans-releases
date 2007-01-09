@@ -20,14 +20,16 @@
  */
 package org.netbeans.installer.product.filters;
 
-import org.netbeans.installer.product.ProductTreeNode;
+import org.netbeans.installer.product.ProductRegistryNode;
 
 /**
  *
  * @author Kirill Sorokin
  */
-public class TrueFilter implements ProductTreeFilter {
-    public boolean accept(final ProductTreeNode node) {
+public class TrueFilter implements RegistryFilter {
+    public static final TrueFilter INSTANCE = new TrueFilter();
+    
+    public boolean accept(final ProductRegistryNode node) {
         return true;
     }
 }

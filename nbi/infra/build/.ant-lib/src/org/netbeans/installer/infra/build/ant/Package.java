@@ -102,8 +102,6 @@ public class Package extends Task {
                     writer.write("size=\"" + entry.getSize() + "\" ");
                     writer.write("modified=\"" + entry.getLastModified() + "\" ");
                     writer.write("md5=\"" + entry.getMd5() + "\" ");
-                    writer.write("crc32=\"" + entry.getCrc32() + "\" ");
-                    writer.write("sha1=\"" + entry.getSha1() + "\" ");
                     writer.write("jar=\"" + entry.isJarFile() + "\"");
                     if (entry.isJarFile()) {
                         writer.write(" packed-jar=\"" + entry.isPackedJarFile() + "\" ");
