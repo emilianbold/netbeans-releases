@@ -51,7 +51,7 @@ public abstract class AbstractHelp extends Help implements HelpConstants {
     protected final Collection<? extends HelpSet> getHelpSets() {
         if (helpsets == null) {
             Installer.log.fine("searching for instances of HelpSet...");
-            helpsets = Lookup.getDefault().lookup(new Lookup.Template<HelpSet>(HelpSet.class));
+            helpsets = Lookup.getDefault().lookupResult(HelpSet.class);
             helpsets.addLookupListener(new LookupListener() {
                 public void resultChanged(LookupEvent ev) {
                     helpSetsChanged();
