@@ -109,6 +109,15 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
             </folder>
             <folder name="x-tag">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.syntax.resources.Bundle"/>
+                <folder name="NetBeans">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="fontsColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.syntax.resources.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+                
                 <folder name="Popup">
                     <folder name="goto">
                         <!--
