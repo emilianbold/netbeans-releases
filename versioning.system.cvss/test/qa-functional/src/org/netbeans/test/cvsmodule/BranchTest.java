@@ -275,24 +275,37 @@ public class BranchTest extends JellyTestCase {
         cvss.stop();
         //
         //Ok button
+        TimeoutExpiredException tee = null;
         try {
             JButtonOperator btnOk = new JButtonOperator(browseTags, "OK");
             JButtonOperator btnHelp = new JButtonOperator(browseTags, "Help");
             JButtonOperator btnCancel = new JButtonOperator(browseTags, "Cancel");
             btnCancel.push();
-        } catch(TimeoutExpiredException e) {
-            throw e;
+        } catch(Exception e) {
+            if (e instanceof TimeoutExpiredException) {
+                tee = (TimeoutExpiredException) e;
+            } else {
+                throw e;
+            }
         }
+        assertNull("All components should be available, but some of them were not!", tee);
+        
+        tee = null;
         try {
             JTextFieldOperator tf1 = new JTextFieldOperator(sbo, 0);
-            tf1.getFocus();
+            //tf1.getFocus();
             
             JButtonOperator btnBranch = new JButtonOperator(sbo, "Switch");
             JButtonOperator btnHelp = new JButtonOperator(sbo, "Help");
             JButtonOperator btnCancel = new JButtonOperator(sbo, "Cancel");
-        } catch (TimeoutExpiredException ex) {
-            throw ex;
+        } catch (Exception e) {
+            if (e instanceof TimeoutExpiredException) {
+                tee = (TimeoutExpiredException) e;
+            } else {
+                throw e;
+            }
         }        
+        assertNull("All components should be available, but some of them were not!", tee);
         
         //check functionality of radiobutton selection 
         sbo.switchToTrunk();
