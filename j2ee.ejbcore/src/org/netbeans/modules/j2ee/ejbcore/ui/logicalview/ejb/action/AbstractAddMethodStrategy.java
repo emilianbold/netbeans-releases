@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
-import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
-import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -158,15 +156,11 @@ public abstract class AbstractAddMethodStrategy {
     }
     
     protected static MethodsNode getMethodsNode() {
-        Node[] nodes = (Node[])Utilities.actionsGlobalContext().lookup(new Lookup.Template(Node.class)).allInstances().toArray(new Node[0]);
+        Node[] nodes = Utilities.actionsGlobalContext().lookup(new Lookup.Template<Node>(Node.class)).allInstances().toArray(new Node[0]);
         if (nodes.length != 1) {
             return null;
         }
-        Object object = nodes[0].getLookup().lookup(MethodsNode.class);
-        if (object instanceof MethodsNode) {
-            return (MethodsNode) object;
-        }
-        return null;
+        return nodes[0].getLookup().lookup(MethodsNode.class);
     }
     
 }

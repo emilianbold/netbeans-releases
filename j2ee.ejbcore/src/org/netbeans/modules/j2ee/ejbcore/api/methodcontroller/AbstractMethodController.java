@@ -239,25 +239,26 @@ public abstract class AbstractMethodController extends EjbMethodController {
     @Override
     public boolean hasMethodInInterface(MethodModel method, MethodType methodType, boolean local) {
         String intf = null;
+        MethodModel methodCopy = method;
         if (methodType.getKind() == MethodType.Kind.BUSINESS) {
             intf = findBusinessInterface(local ? model.getLocal() : model.getRemote());
         } else if (methodType.getKind() == MethodType.Kind.CREATE) {
-            String name = chopAndUpper(method.getName(), "ejb"); //NOI18N
+            String name = chopAndUpper(methodCopy.getName(), "ejb"); //NOI18N
             String type = local ? model.getLocal() : model.getRemote();
-            method = MethodModel.create(
+            methodCopy = MethodModel.create(
                     name,
                     type,
-                    method.getBody(),
-                    method.getParameters(),
-                    method.getExceptions(),
-                    method.getModifiers()
+                    methodCopy.getBody(),
+                    methodCopy.getParameters(),
+                    methodCopy.getExceptions(),
+                    methodCopy.getModifiers()
                     );
             intf = local ? model.getLocalHome() : model.getHome();
         }
-        if (method.getName() == null || intf == null || method.getReturnType() == null) {
+        if (methodCopy.getName() == null || intf == null || methodCopy.getReturnType() == null) {
             return true;
         }
-        if (findInClass(intf, method)) {
+        if (findInClass(intf, methodCopy)) {
             return true;
         }
         return false;
@@ -272,7 +273,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
     
     private MethodModel addExceptionIfNecessary(MethodModel method, String exceptionName) {
         if (!method.getExceptions().contains(exceptionName)) {
-            List<String> exceptions = new ArrayList(method.getExceptions());
+            List<String> exceptions = new ArrayList<String>(method.getExceptions());
             exceptions.add(exceptionName);
             return MethodModel.create(
                     method.getName(),
@@ -309,7 +310,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
         final List<String> result = new ArrayList<String>();
         try {
             javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
-                public void run(CompilationController controller) throws Exception {
+                public void run(CompilationController controller) throws IOException {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
                     TypeElement typeElement = controller.getElements().getTypeElement(className);
                     Types types = controller.getTypes();
@@ -469,13 +470,14 @@ public abstract class AbstractMethodController extends EjbMethodController {
     
     public final void removeMethod(MethodModel method, boolean local, boolean isComponent) {
         String clazz = getBeanInterface(local, isComponent);
+        MethodModel methodCopy = method;
         assert clazz != null;
         if (!local) {
-            method = addExceptionIfNecessary(method, RemoteException.class.getName());
+            methodCopy = addExceptionIfNecessary(methodCopy, RemoteException.class.getName());
         }
         try {
-            removeMethodFromClass(clazz, method);
-            createBeanMethod(method);
+            removeMethodFromClass(clazz, methodCopy);
+            createBeanMethod(methodCopy);
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
@@ -499,7 +501,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
         JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
         final boolean [] result = new boolean[] {false};
         javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
-            public void run(CompilationController controller) throws Exception {
+            public void run(CompilationController controller) throws IOException {
                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = controller.getElements().getTypeElement(clazz);
                 for (ExecutableElement method : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
@@ -517,7 +519,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
         FileObject fileObject = resolveFileObjectForClass(ejbClassFO, className);
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
-            public void run(WorkingCopy workingCopy) throws Exception {
+            public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
                 Trees trees = workingCopy.getTrees();
                 TypeElement clazz = workingCopy.getElements().getTypeElement(className);
@@ -533,7 +535,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
         FileObject fileObject = resolveFileObjectForClass(ejbClassFO, className);
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
-            public void run(WorkingCopy workingCopy) throws Exception {
+            public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
                 if (methodFindInClass(className, methodModel)) {
                     TypeElement foundClass = workingCopy.getElements().getTypeElement(className);
@@ -560,7 +562,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
         final FileObject[] result = new FileObject[1];
         JavaSource javaSource = JavaSource.forFileObject(referenceFileObject);
         javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
-            public void run(CompilationController controller) throws Exception {
+            public void run(CompilationController controller) {
                 TypeElement typeElement = controller.getElements().getTypeElement(className);
                 result[0] = SourceUtils.getFile(typeElement, controller.getClasspathInfo());
             }

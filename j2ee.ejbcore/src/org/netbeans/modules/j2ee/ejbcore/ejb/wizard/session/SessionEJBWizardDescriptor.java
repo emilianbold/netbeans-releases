@@ -28,27 +28,27 @@ import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePanel, ChangeListener {
     
-    private SessionEJBWizardPanel p;
-    private boolean isWaitingForScan = false;
+    private SessionEJBWizardPanel wizardPanel;
+    //TODO: RETOUCHE
+//    private boolean isWaitingForScan = false;
     
-    private List changeListeners = new ArrayList();
+    private final List<ChangeListener> changeListeners = new ArrayList<ChangeListener>();
 
     private WizardDescriptor wizardDescriptor;
 
-    public void addChangeListener(javax.swing.event.ChangeListener l) {
-        changeListeners.add(l);
+    public void addChangeListener(ChangeListener changeListener) {
+        changeListeners.add(changeListener);
     }
     
     public java.awt.Component getComponent() {
-        if (p == null) {
-            p = new SessionEJBWizardPanel(this);
+        if (wizardPanel == null) {
+            wizardPanel = new SessionEJBWizardPanel(this);
             // add listener to events which could cause valid status to change
         }
-        return p;
+        return wizardPanel;
     }
     
     public org.openide.util.HelpCtx getHelp() {
@@ -62,9 +62,9 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
         if (wizardDescriptor == null) {
             return true;
         }
-        boolean isLocalOrRemote = (p.isLocal() || p.isRemote());
+        boolean isLocalOrRemote = (wizardPanel.isLocal() || wizardPanel.isRemote());
         if (!isLocalOrRemote) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SessionEJBWizardPanel.class,"ERR_RemoteOrLocal_MustBeSelected")); //NOI18N
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SessionEJBWizardDescriptor.class,"ERR_RemoteOrLocal_MustBeSelected")); //NOI18N
             return false;
         }
         
@@ -91,8 +91,8 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
         wizardDescriptor = (WizardDescriptor) settings;
     }
     
-    public void removeChangeListener(javax.swing.event.ChangeListener l) {
-        changeListeners.remove(l);
+    public void removeChangeListener(ChangeListener changeListener) {
+        changeListeners.remove(changeListener);
     }
     
     public void storeSettings(Object settings) {
@@ -100,15 +100,15 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
     }
     
     public boolean hasRemote() {
-        return p.isRemote();
+        return wizardPanel.isRemote();
     }
     
     public boolean hasLocal() {
-        return p.isLocal();
+        return wizardPanel.isLocal();
     }
     
     public boolean isStateful() {
-        return !p.isStateless();
+        return !wizardPanel.isStateless();
     }
     
     public boolean isFinishPanel() {
@@ -116,17 +116,17 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
     }
     
     protected final void fireChangeEvent() {
-        Iterator it;
+        Iterator<ChangeListener> iterator;
         synchronized (changeListeners) {
-            it = new HashSet(changeListeners).iterator();
+            iterator = new HashSet<ChangeListener>(changeListeners).iterator();
         }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+        ChangeEvent changeEvent = new ChangeEvent(this);
+        while (iterator.hasNext()) {
+            iterator.next().stateChanged(changeEvent);
         }
     }
 
-    public void stateChanged(ChangeEvent e) {
+    public void stateChanged(ChangeEvent changeEvent) {
         fireChangeEvent();
     }
 

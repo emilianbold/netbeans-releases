@@ -28,33 +28,32 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.SessionEJBWizardPanel;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 public class EntityEJBWizardDescriptor implements WizardDescriptor.FinishablePanel, ChangeListener {
 
-    private EntityEJBWizardPanel p;
+    private EntityEJBWizardPanel wizardPanel;
     
-    private List changeListeners = new ArrayList();
+    private final List<ChangeListener> changeListeners = new ArrayList<ChangeListener>();
     
     private WizardDescriptor wizardDescriptor;
     
-    private boolean isWaitingForScan = false;
+    // TODO: RETOUCHE
+//    private boolean isWaitingForScan = false;
 
-    public void addChangeListener(javax.swing.event.ChangeListener l) {
-        changeListeners.add(l);
+    public void addChangeListener(ChangeListener changeListener) {
+        changeListeners.add(changeListener);
     }
     
     public java.awt.Component getComponent() {
-        if (p == null) {
-            p = new EntityEJBWizardPanel(this);
+        if (wizardPanel == null) {
+            wizardPanel = new EntityEJBWizardPanel(this);
             // add listener to events which could cause valid status to change
         }
-        return p;
+        return wizardPanel;
     }
     
     public org.openide.util.HelpCtx getHelp() {
@@ -75,12 +74,12 @@ public class EntityEJBWizardDescriptor implements WizardDescriptor.FinishablePan
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityEJBWizardDescriptor.class,"MSG_DisabledForEJB3")); //NOI18N
             return false;
         }
-        boolean isLocalOrRemote = (p.isLocal() || p.isRemote());
+        boolean isLocalOrRemote = (wizardPanel.isLocal() || wizardPanel.isRemote());
         if (!isLocalOrRemote) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityEJBWizardDescriptor.class,"ERR_RemoteOrLocal_MustBeSelected")); //NOI18N
             return false;
         }
-        if (p.getPrimaryKeyClassName().trim().equals("")) { //NOI18N
+        if (wizardPanel.getPrimaryKeyClassName().trim().equals("")) { //NOI18N
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityEJBWizardDescriptor.class,"ERR_PrimaryKeyNotEmpty")); //NOI18N
             return false;
         }
@@ -111,8 +110,8 @@ public class EntityEJBWizardDescriptor implements WizardDescriptor.FinishablePan
         wizardDescriptor = (WizardDescriptor) settings;
     }
     
-    public void removeChangeListener(javax.swing.event.ChangeListener l) {
-        changeListeners.remove(l);
+    public void removeChangeListener(ChangeListener changeListener) {
+        changeListeners.remove(changeListener);
     }
     
     public void storeSettings(Object settings) {
@@ -120,19 +119,19 @@ public class EntityEJBWizardDescriptor implements WizardDescriptor.FinishablePan
     }
     
     public boolean isCMP() {
-        return p.isCMP();
+        return wizardPanel.isCMP();
     }
     
     public boolean hasRemote() {
-        return p.isRemote();
+        return wizardPanel.isRemote();
     }
 
     public boolean hasLocal() {
-        return p.isLocal();
+        return wizardPanel.isLocal();
     }
 
     public String getPrimaryKeyClassName() {
-        return p.getPrimaryKeyClassName();
+        return wizardPanel.getPrimaryKeyClassName();
     }
     
     public boolean isFinishPanel() {
@@ -140,17 +139,17 @@ public class EntityEJBWizardDescriptor implements WizardDescriptor.FinishablePan
     }
     
     protected final void fireChangeEvent() {
-        Iterator it;
+        Iterator<ChangeListener> iterator;
         synchronized (changeListeners) {
-            it = new HashSet(changeListeners).iterator();
+            iterator = new HashSet<ChangeListener>(changeListeners).iterator();
         }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+        ChangeEvent changeEvent = new ChangeEvent(this);
+        while (iterator.hasNext()) {
+            iterator.next().stateChanged(changeEvent);
         }
     }
 
-    public void stateChanged(ChangeEvent e) {
+    public void stateChanged(ChangeEvent changeEvent) {
         fireChangeEvent();
     }
 

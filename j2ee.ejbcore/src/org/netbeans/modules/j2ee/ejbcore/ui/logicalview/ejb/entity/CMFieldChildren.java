@@ -23,6 +23,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmrField;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
@@ -32,7 +33,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
 import org.openide.filesystems.FileObject;
-
 import org.openide.nodes.*;
 
 
@@ -40,7 +40,7 @@ import org.openide.nodes.*;
 /**
  * @author Chris Webster
  */
-public class CMFieldChildren extends Children.Keys implements PropertyChangeListener {
+public class CMFieldChildren extends Children.Keys<CommonDDBean> implements PropertyChangeListener {
     private final EntityMethodController controller;
     private final Entity model;
     private final EjbJar ejbJar;
@@ -67,21 +67,21 @@ public class CMFieldChildren extends Children.Keys implements PropertyChangeList
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 if (controller.getBeanClass() == null) {
-                    setKeys(Collections.EMPTY_LIST);
+                    setKeys(Collections.<CommonDDBean>emptySet());
                 } else {
-                    List keys = getCmrFields(model.getEjbName());
+                    List<CommonDDBean> keys = getCmrFields(model.getEjbName());
                     CmpField[] cmpFields = model.getCmpField();
-                    Arrays.sort(cmpFields, new Comparator() {
-                        public int compare(Object o1, Object o2) {
-                            String s1 = ((CmpField) o1).getFieldName();
-                            String s2 = ((CmpField) o2).getFieldName();
-                            if (s1 == null) {
-                                s1 = "";
+                    Arrays.sort(cmpFields, new Comparator<CmpField>() {
+                        public int compare(CmpField cmpField1, CmpField cmpField2) {
+                            String fieldName1 = cmpField1.getFieldName();
+                            String fieldName2 = cmpField2.getFieldName();
+                            if (fieldName1 == null) {
+                                fieldName1 = "";
                             }
-                            if (s2 == null) {
-                                s2 = "";
+                            if (fieldName2 == null) {
+                                fieldName2 = "";
                             }
-                            return s1.compareTo(s2);
+                            return fieldName1.compareTo(fieldName2);
                         }
                     });
                     keys.addAll(Arrays.asList(cmpFields));
@@ -94,25 +94,25 @@ public class CMFieldChildren extends Children.Keys implements PropertyChangeList
     protected void removeNotify() {
         model.removePropertyChangeListener(this);
         ejbJar.removePropertyChangeListener(this);
-        setKeys(Collections.EMPTY_SET);
+        setKeys(Collections.<CommonDDBean>emptySet());
         super.removeNotify();
     }
      
-    protected Node[] createNodes(Object key) {
+    protected Node[] createNodes(CommonDDBean key) {
         Node[] nodes = null;
         if (key instanceof CmpField) {
             CmpField field = (CmpField) key;
-            Node n = new CMPFieldNode(field, controller, ddFile);
-            nodes = new Node[] { n };
+            Node node = new CMPFieldNode(field, controller, ddFile);
+            nodes = new Node[] { node };
         } else if (key instanceof CmrField) {
             CmrField field = (CmrField) key;
-            Node n = new CMRFieldNode(field, controller, ddFile);
-            nodes = new Node[] { n };
+            Node node = new CMRFieldNode(field, controller, ddFile);
+            nodes = new Node[] { node };
         }
         return nodes;
     }
     
-    public void propertyChange(PropertyChangeEvent ev) {
+    public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
         updateKeys();
     }
     
@@ -123,30 +123,29 @@ public class CMFieldChildren extends Children.Keys implements PropertyChangeList
                role.getCmrField() != null) ? role.getCmrField():null;
     }
     
-    private void getFields(String ejbName, List l) {
-        Relationships r = ejbJar.getSingleRelationships();
-        if (r != null) {
-            EjbRelation[] relations = r.getEjbRelation();
+    private void getFields(String ejbName, List<CommonDDBean> list) {
+        Relationships relationships = ejbJar.getSingleRelationships();
+        if (relationships != null) {
+            EjbRelation[] relations = relationships.getEjbRelation();
             if (relations != null) {
                 for (int i = 0; i < relations.length; i++) {
-                    CmrField f = 
-                            getCmrField(relations[i].getEjbRelationshipRole(), ejbName); 
-                    if (f != null) {
-                        l.add(f);
+                    CmrField cmrField = getCmrField(relations[i].getEjbRelationshipRole(), ejbName); 
+                    if (cmrField != null) {
+                        list.add(cmrField);
                     }
-                    f = getCmrField(relations[i].getEjbRelationshipRole2(), ejbName);
-                    if (f != null) {
-                        l.add(f);
+                    cmrField = getCmrField(relations[i].getEjbRelationshipRole2(), ejbName);
+                    if (cmrField != null) {
+                        list.add(cmrField);
                     }
                 }
             }
         }
     }
     
-    private List getCmrFields(String ejbName) {
-        List l = new LinkedList();
-        getFields(ejbName+"", l);
-        return l;
+    private List<CommonDDBean> getCmrFields(String ejbName) {
+        List<CommonDDBean> resultList = new LinkedList<CommonDDBean>();
+        getFields(ejbName + "", resultList);
+        return resultList;
     }
     
 }

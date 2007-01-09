@@ -19,28 +19,10 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import javax.swing.Action;
-import javax.swing.JButton;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.actions.NodeAction;
 
@@ -120,7 +102,7 @@ public class SendJMSMessageAction extends NodeAction {
     }
     
     public String getName() {
-        return NbBundle.getMessage(CallEjbAction.class, "LBL_SendJMSMessageAction");
+        return NbBundle.getMessage(SendJMSMessageAction.class, "LBL_SendJMSMessageAction");
     }
     
     public HelpCtx getHelpCtx() {
@@ -175,7 +157,7 @@ public class SendJMSMessageAction extends NodeAction {
      */
 
     public Action createContextAwareInstance(Lookup actionContext) {
-        boolean enable = enable((Node[])actionContext.lookup(new Lookup.Template (Node.class)).allInstances().toArray(new Node[0]));
+        boolean enable = enable(actionContext.lookup(new Lookup.Template<Node>(Node.class)).allInstances().toArray(new Node[0]));
         return enable ? this : null;
     }
     

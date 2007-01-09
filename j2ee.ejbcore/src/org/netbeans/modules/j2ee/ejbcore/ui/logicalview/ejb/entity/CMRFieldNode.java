@@ -24,7 +24,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import javax.swing.Action;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.OpenAction;
@@ -33,17 +32,18 @@ import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.WeakListeners;
 import java.io.IOException;
-import java.util.List;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmrField;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
 import org.openide.filesystems.FileObject;
 
 
 public class CMRFieldNode extends AbstractNode implements PropertyChangeListener, OpenCookie {
-    private CmrField field;
-    private EntityMethodController controller;
+    
     private static final String CMR_FIELD_ICON = "org/netbeans/modules/j2ee/ejbcore/resources/CMRFieldIcon.gif"; //NOI18N
-    private FileObject ddFile;
+
+    private final CmrField field;
+    private final EntityMethodController controller;
+    private final FileObject ddFile;
     
     public CMRFieldNode(CmrField field, EntityMethodController controller, FileObject ddFile) {
         super(Children.LEAF);
@@ -74,8 +74,8 @@ public class CMRFieldNode extends AbstractNode implements PropertyChangeListener
         fireDisplayNameChange(null,null);
     }
     
-    public Node.Cookie getCookie(Class type) {
-        if(type == OpenCookie.class) {
+    public OpenCookie getCookie(Class<OpenCookie> type) {
+        if(OpenCookie.class.equals(type)) {
             return this;
         }
         return super.getCookie(type);
@@ -95,14 +95,14 @@ public class CMRFieldNode extends AbstractNode implements PropertyChangeListener
     
     //implementation of OpenCookie
     public void open() {
-        List methods = controller.getMethods(field);
-        if (!methods.isEmpty()) {
-            //TODO: RETOUCHE
+        //TODO: RETOUCHE
+//        List methods = controller.getMethods(field);
+//        if (!methods.isEmpty()) {
 //            Method getMethod = (Method) methods.get(0);
 //            OpenCookie cookie = (OpenCookie) JMIUtils.getCookie(getMethod, OpenCookie.class);
 //            if(cookie != null){
 //                cookie.open();
 //            }
-        }
+//        }
     }
 }

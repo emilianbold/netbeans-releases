@@ -53,7 +53,7 @@ public final class EntityMethodController extends AbstractMethodController {
     private final FileObject ejbClassFO;
     private final Entity model;
     private final EjbJar parent;
-    private final Set<Modifier> modifiersPublicAbstract = new HashSet(2);
+    private final Set<Modifier> modifiersPublicAbstract = new HashSet<Modifier>(2);
 
     public EntityMethodController(FileObject ejbClassFO, Entity model, EjbJar parent) {
         super(ejbClassFO, model);
@@ -132,7 +132,7 @@ public final class EntityMethodController extends AbstractMethodController {
         Query[] queries = model.getQuery();
         for (Query query : queries) {
             String queryMethodName = query.getQueryMethod().getMethodName();
-            if (queryMethodName.equals(prependAndUpper(fieldName, "findBy"))) {
+            if (prependAndUpper(fieldName, "findBy").equals(queryMethodName)) {
                 return query;
             }
         }
@@ -171,7 +171,7 @@ public final class EntityMethodController extends AbstractMethodController {
      * @throws java.io.IOException
      */
     public void deleteField(CmrField field, FileObject ddFileObject) throws IOException {
-        List methods = getMethods(field.getCmrFieldName());
+        List<MethodModel> methods = getMethods(field.getCmrFieldName());
         removeMethodsFromBean(methods);
         // remove relation from DD
         deleteRelationships(field.getCmrFieldName());

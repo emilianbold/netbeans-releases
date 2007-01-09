@@ -23,7 +23,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -48,6 +47,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -64,41 +64,43 @@ public class CallEjbPanel extends javax.swing.JPanel {
     
     public static final String IS_VALID = "CallEjbPanel_isValid"; //NOI18N
 
-    private WorkingCopy workingCopy;
-    private Set refNameSet;
-    private NodeDisplayPanel nodeDisplayPanel;
-    private ServiceLocatorStrategyPanel slPanel;
-    private NodeAcceptor nodeAcceptor;
-    private Project project;
-    private TypeElement beanClass;
-    private FileObject srcFile;
-    private String ejbName;
+    private final WorkingCopy workingCopy;
+    private final Set<String> refNameSet;
+    private final NodeDisplayPanel nodeDisplayPanel;
+    private final ServiceLocatorStrategyPanel slPanel;
+    private final NodeAcceptor nodeAcceptor;
+    private final Project project;
+    private final TypeElement beanClass;
+    private final FileObject srcFile;
     
     /** Creates new form CallEjbPanel */
     public CallEjbPanel(WorkingCopy workingCopy, Node rootNode, String lastLocator, TypeElement beanClass) {
         initComponents();
         this.workingCopy = workingCopy;
-        srcFile= workingCopy.getFileObject();
+        this.srcFile= workingCopy.getFileObject();
         this.project = FileOwnerQuery.getOwner(srcFile);
         this.beanClass = beanClass;
-        this.refNameSet = Collections.EMPTY_SET;
         this.nodeAcceptor = new NodeAcceptorImpl();
         
+        Set<String> refNames = null;
         // This is working only for EJB project. Will need some enhancement in EnterpriseReferenceContainer API?
-        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(srcFile);;
+        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(srcFile);
         if (ejbModule != null) {
+            EjbJar ejbJar = null;
             try {
-                EjbJar ejbJar = DDProvider.getDefault().getMergedDDRoot(ejbModule.getMetadataUnit());
+                ejbJar = DDProvider.getDefault().getMergedDDRoot(ejbModule.getMetadataUnit());
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(e);
+            }
+            if (ejbJar != null) {
                 EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
                 if (enterpriseBeans != null) {
                     Ejb[] ejbs = enterpriseBeans.getEjbs();
                     for (int i = 0; i < ejbs.length; i++) {
                         if (beanClass.getQualifiedName().contentEquals(ejbs[i].getEjbClass())) {
-                            String displayName = ejbs[i].getDefaultDisplayName();
-                            this.ejbName = displayName == null ? ejbs[i].getEjbName() : displayName;
                             EjbRef[] ejbRefs = ejbs[i].getEjbRef();
                             EjbLocalRef[] ejbLocalRefs = ejbs[i].getEjbLocalRef();
-                            this.refNameSet = new HashSet(ejbRefs.length + ejbLocalRefs.length);
+                            refNames = new HashSet<String>(ejbRefs.length + ejbLocalRefs.length);
                             for (int j = 0; j < ejbRefs.length; j++) {
                                 this.refNameSet.add(ejbRefs[j].getEjbRefName());
                             }
@@ -108,10 +110,9 @@ public class CallEjbPanel extends javax.swing.JPanel {
                         }
                     }
                 }
-            } catch (IOException e) {
-                this.refNameSet = Collections.EMPTY_SET;
             }
         }
+        this.refNameSet = (refNames == null ? Collections.<String>emptySet() : refNames);
         setErrorFieldColor(true);
         nodeDisplayPanel = new NodeDisplayPanel(rootNode);
         nodeDisplayPanel.setBorder(new EtchedBorder());
@@ -130,7 +131,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
             }
         });
         referenceNameTextField.addKeyListener(new KeyAdapter() {
-            public void keyReleased(KeyEvent e) {
+            public void keyReleased(KeyEvent keyEvent) {
                 validateReferences();
             }
         });
@@ -142,13 +143,13 @@ public class CallEjbPanel extends javax.swing.JPanel {
             }
         });
         slPanel.getClassName().getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
+            public void insertUpdate(DocumentEvent documentEvent) {
                 validateReferences();
             }
-            public void removeUpdate(DocumentEvent e) {
+            public void removeUpdate(DocumentEvent documentEvent) {
                 validateReferences();
             }
-            public void changedUpdate(DocumentEvent e) {
+            public void changedUpdate(DocumentEvent documentEvent) {
                 validateReferences();
             }
         });
@@ -162,11 +163,11 @@ public class CallEjbPanel extends javax.swing.JPanel {
     
     private void setErrorFieldColor(boolean error){
         if (error){
-            Color c = UIManager.getColor("nb.errorForeground"); //NOI18N
-            errorField.setForeground(c == null ? new Color(89, 79, 191) : c);
+            Color color = UIManager.getColor("nb.errorForeground"); //NOI18N
+            errorField.setForeground(color == null ? new Color(89, 79, 191) : color);
         } else {
-            Color c = UIManager.getColor("nb.warningForeground"); //NOI18N
-            errorField.setForeground(c == null ? Color.DARK_GRAY : c);
+            Color color = UIManager.getColor("nb.warningForeground"); //NOI18N
+            errorField.setForeground(color == null ? Color.DARK_GRAY : color);
         }
     }
     
@@ -181,11 +182,9 @@ public class CallEjbPanel extends javax.swing.JPanel {
     }
     
     private void setMessage(String message){
-        if (message == null) {
-            message = " ";
-        }
-        errorField.setText(message);
-        errorField.setToolTipText(message);
+        String messageCopy = (message == null ? " " : message);
+        errorField.setText(messageCopy);
+        errorField.setToolTipText(messageCopy);
         errorField.setCaretPosition(0);
     }
     
@@ -414,6 +413,8 @@ public class CallEjbPanel extends javax.swing.JPanel {
     }
     
     private class NodeAcceptorImpl implements  NodeAcceptor {
+        
+        public NodeAcceptorImpl() {}
         
         public boolean acceptNodes(Node[] nodes) {
             setErrorMessage(" "); //NOI18N

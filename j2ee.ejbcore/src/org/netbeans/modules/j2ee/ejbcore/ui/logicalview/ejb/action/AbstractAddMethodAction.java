@@ -18,14 +18,11 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action._RetoucheUtil;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action._RetoucheUtil;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action._RetoucheUtil;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.openide.ErrorManager;
@@ -53,7 +50,7 @@ public abstract class AbstractAddMethodAction extends AbstractAction implements 
 
     public Action createContextAwareInstance(Lookup actionContext) {
         this.context = actionContext;
-        boolean enable = enable((Node[])context.lookup(new Lookup.Template (Node.class)).allInstances().toArray(new Node[0]));
+        boolean enable = enable(actionContext.lookup(new Lookup.Template<Node>(Node.class)).allInstances().toArray(new Node[0]));
         return enable ? this : null;
     }
     

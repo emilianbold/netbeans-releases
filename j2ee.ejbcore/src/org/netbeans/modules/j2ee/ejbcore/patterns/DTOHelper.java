@@ -38,32 +38,30 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelationshipRole;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 
 /**
  * DTO helper class
  * @author blaha
  */
 public class DTOHelper {
-    private Project project;
+    private final Project project;
     private EjbJar ejbJar;
     private Entity entity;
-    private TypeElement classElm;
+    private final TypeElement classElm;
     private EnterpriseBeans beans;
-    private FileObject fo;
+    private final FileObject fileObject;
     
     /** Create new instance of Data Transfer Object helper class
      * @param me <code>MemberElement</code> that represents entity implementation class
      */
-    public DTOHelper(CompilationController cc, Element feature) {
+    public DTOHelper(CompilationController controller, Element feature) {
         classElm = (TypeElement) feature.getEnclosingElement();
-        fo = cc.getFileObject();
-        project = FileOwnerQuery.getOwner(fo);
+        fileObject = controller.getFileObject();
+        project = FileOwnerQuery.getOwner(fileObject);
         
-        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fo);
+        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject);
         
         
         DDProvider provider = DDProvider.getDefault();
@@ -84,22 +82,21 @@ public class DTOHelper {
      * @return CmrField[] array
      */
     public CmrField[] getCmrFields() {
-        ArrayList cmrFields = new ArrayList();
-        EjbRelation[] r = getRelation();
-        if(r != null){
-            int j = 0;
-            for(int i = 0; i < r.length; i++) {
-                EjbRelationshipRole role = r[i].getEjbRelationshipRole();
+        ArrayList<CmrField> cmrFields = new ArrayList<CmrField>();
+        EjbRelation[] ejbRelations = getRelation();
+        if(ejbRelations != null){
+            for (EjbRelation ejbRelation : ejbRelations) {
+                EjbRelationshipRole role = ejbRelation.getEjbRelationshipRole();
                 if(isUseEjb(role)) {
                     cmrFields.add(role.getCmrField());
                 }
-                role = r[i].getEjbRelationshipRole2();
+                role = ejbRelation.getEjbRelationshipRole2();
                 if(isUseEjb(role)) {
                     cmrFields.add(role.getCmrField());
                 }
             }
         }
-        return (CmrField[])cmrFields.toArray();
+        return cmrFields.toArray(new CmrField[0]);
     }
     
     /* Get all relations in EJB jar
@@ -116,18 +113,18 @@ public class DTOHelper {
      */
     public boolean isMultiple(CmrField cmrField) {
         boolean isMultiple = false;
-        EjbRelation[] r = getRelation();
-        if(r != null){
-            for(int i = 0; i < r.length; i++) {
-                EjbRelationshipRole role = r[i].getEjbRelationshipRole();
+        EjbRelation[] ejbRelations = getRelation();
+        if(ejbRelations != null){
+            for (EjbRelation ejbRelation : ejbRelations) {
+                EjbRelationshipRole role = ejbRelation.getEjbRelationshipRole();
                 if(cmrField == role.getCmrField() &&
-                        role.MULTIPLICITY_MANY.equals(r[i].getEjbRelationshipRole2().
+                        role.MULTIPLICITY_MANY.equals(ejbRelation.getEjbRelationshipRole2().
                         getMultiplicity())) {
                     isMultiple = true;
                 }
-                role = r[i].getEjbRelationshipRole2();
+                role = ejbRelation.getEjbRelationshipRole2();
                 if(cmrField == role.getCmrField() &&
-                        role.MULTIPLICITY_MANY.equals(r[i].getEjbRelationshipRole().
+                        role.MULTIPLICITY_MANY.equals(ejbRelation.getEjbRelationshipRole().
                         getMultiplicity())) {
                     isMultiple = true;
                 }
@@ -143,18 +140,18 @@ public class DTOHelper {
     public String getOppositeFieldType(CmrField cmrField){
         String ejbName;
         String cmrFieldType2 = "";
-        EjbRelation[] r = getRelation();
-        if(r != null) {
-            for(int i = 0; i < r.length; i++) {
-                EjbRelationshipRole role = r[i].getEjbRelationshipRole();
+        EjbRelation[] ejbRelations = getRelation();
+        if(ejbRelations != null) {
+            for (EjbRelation ejbRelation : ejbRelations) {
+                EjbRelationshipRole role = ejbRelation.getEjbRelationshipRole();
                 if(cmrField == role.getCmrField()) {
-                    ejbName = r[i].getEjbRelationshipRole2().getRelationshipRoleSource().getEjbName();
+                    ejbName = ejbRelation.getEjbRelationshipRole2().getRelationshipRoleSource().getEjbName();
                     cmrFieldType2 = findLocalIntNameByEntityName(ejbName);
                     break;
                 }
-                role = r[i].getEjbRelationshipRole2();
+                role = ejbRelation.getEjbRelationshipRole2();
                 if(cmrField == role.getCmrField()) {
-                    ejbName = r[i].getEjbRelationshipRole().getRelationshipRoleSource().getEjbName();
+                    ejbName = ejbRelation.getEjbRelationshipRole().getRelationshipRoleSource().getEjbName();
                     cmrFieldType2 = findLocalIntNameByEntityName(ejbName);
                     break;
                 }
@@ -269,7 +266,7 @@ public class DTOHelper {
         SourceGroup[] folders= Util.getJavaSourceGroups(project);
 
         for(int i = 0; i < folders.length; i++){
-            if(folders[i].contains(fo)){
+            if(folders[i].contains(fileObject)){
                 entityFolder = folders[i];
             }
          }

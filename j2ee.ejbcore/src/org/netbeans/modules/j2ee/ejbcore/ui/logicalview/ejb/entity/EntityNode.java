@@ -24,10 +24,8 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddActionGroup;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.GenerateDTOAction;
-import org.openide.actions.*;
 import org.openide.cookies.OpenCookie;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 import java.awt.datatransfer.Transferable;
@@ -35,8 +33,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.EjbTransferable;
@@ -44,7 +42,11 @@ import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.EjbViewContro
 import org.openide.util.WeakListeners;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.DeleteEJBDialog;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.GoToSourceActionGroup;
+import org.openide.actions.DeleteAction;
+import org.openide.actions.OpenAction;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
@@ -92,18 +94,18 @@ public class EntityNode extends AbstractNode implements OpenCookie{
     
     // Create the popup menu:
     public Action[] getActions(boolean context) {
-        Node[] nodes = (Node[])Utilities.actionsGlobalContext().lookup(new Lookup.Template(Node.class)).allInstances().toArray(new Node[0]);
-        List list = new ArrayList();
+        Collection<? extends Node> nodes = Utilities.actionsGlobalContext().lookup(new Lookup.Template<Node>(Node.class)).allInstances();
+        List<SystemAction> list = new ArrayList<SystemAction>();
         list.add(SystemAction.get(OpenAction.class));
         list.add(null);
         list.add(SystemAction.get(DeleteAction.class));
-        if (nodes.length == 1) {
+        if (nodes.size() == 1) {
             list.add(SystemAction.get(AddActionGroup.class));
             list.add(null);
             list.add(SystemAction.get(GoToSourceActionGroup.class));
             list.add(SystemAction.get(GenerateDTOAction.class));
         }
-        return (SystemAction[])list.toArray(new SystemAction[0]);
+        return list.toArray(new SystemAction[0]);
     }
     
     public HelpCtx getHelpCtx() {
@@ -137,14 +139,14 @@ public class EntityNode extends AbstractNode implements OpenCookie{
     
     public Transferable clipboardCopy() throws IOException {
         EjbReference ejbRef = controller.createEjbReference();
-        String ejbRefString = "";
+        StringBuilder ejbRefString = new StringBuilder("");
         if (ejbRef.supportsRemoteInvocation()) {
-            ejbRefString += controller.getRemoteStringRepresentation("Entity");
+            ejbRefString.append(controller.getRemoteStringRepresentation("Entity"));
         }
         if (ejbRef.supportsLocalInvocation()) {
-            ejbRefString += controller.getLocalStringRepresentation("Entity");
+            ejbRefString.append(controller.getLocalStringRepresentation("Entity"));
         }
-        return new EjbTransferable(ejbRefString,ejbRef);
+        return new EjbTransferable(ejbRefString.toString(), ejbRef);
     }
     
     public Transferable clipboardCut() throws IOException {
@@ -152,9 +154,9 @@ public class EntityNode extends AbstractNode implements OpenCookie{
     }
     
     public void open() {
-        DataObject ce = controller.getBeanDo();
-        if (ce != null) {
-            OpenCookie cookie = (OpenCookie) ce.getCookie(OpenCookie.class);
+        DataObject dataObject = controller.getBeanDo();
+        if (dataObject != null) {
+            OpenCookie cookie = dataObject.getCookie(OpenCookie.class);
             if(cookie != null){
                 cookie.open();
             }
@@ -170,7 +172,7 @@ public class EntityNode extends AbstractNode implements OpenCookie{
      */
     public Object getValue(String attributeName) {
         Object retValue;
-        if (attributeName.equals("customDelete")) {
+        if ("customDelete".equals(attributeName)) {
             retValue = Boolean.TRUE;
         } else {
             retValue = super.getValue(attributeName);

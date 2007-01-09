@@ -30,7 +30,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
-
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Children;
@@ -39,20 +38,20 @@ import org.openide.nodes.Node;
 /**
  * Provides EJB tree of all open projects. This class is not used for displaying Enterprise Beans node in project view.
  */
-public final class EJBListViewChildren extends Children.Keys {
+public final class EJBListViewChildren extends Children.Keys<EJBListViewChildren.KEY> {
 
-    public static final String KEY_EJBS = "ejbKey"; //NOI18N
+    public enum KEY { EJB }
     
-    private Sources sources;
-    private ClassPath cp;
-    private Project project;
+    private final Sources sources;
+    private final ClassPath classPath;
+    private final Project project;
 
     public EJBListViewChildren(Project project) {
         assert project != null;
         this.project = project;
         sources = ProjectUtils.getSources(project);
         assert sources != null;
-        cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(getRoots());
+        classPath = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(getRoots());
     }
 
     private FileObject[] getRoots() {
@@ -71,20 +70,20 @@ public final class EJBListViewChildren extends Children.Keys {
     }
 
     private void createNodes() {
-        List l = new ArrayList();
-        l.add(KEY_EJBS);
-        setKeys(l);
+        List<KEY> keys = new ArrayList<KEY>();
+        keys.add(KEY.EJB);
+        setKeys(keys);
     }
 
     @Override
     protected void removeNotify() {
-        setKeys(Collections.EMPTY_SET);
+        setKeys(Collections.<KEY>emptySet());
         super.removeNotify();
     }
 
-    public Node[] createNodes(Object key) {
-        Node n = null;
-        if (key == KEY_EJBS) {
+    public Node[] createNodes(KEY key) {
+        Node node = null;
+        if (key == KEY.EJB) {
             EjbJar[] apiEjbJars = EjbJar.getEjbJars(project);
             org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = null;
             try {
@@ -93,10 +92,10 @@ public final class EJBListViewChildren extends Children.Keys {
                 ErrorManager.getDefault().notify(ioe);
             }
             if (ejbJar != null) {
-                n = J2eeProjectView.createEjbsView(ejbJar, cp, apiEjbJars[0].getDeploymentDescriptor(), project);
+                node = J2eeProjectView.createEjbsView(ejbJar, classPath, apiEjbJars[0].getDeploymentDescriptor(), project);
             }
         }
-        return n == null ? new Node[0] : new Node[] {n};
+        return node == null ? new Node[0] : new Node[] {node};
     }
 
 }

@@ -35,17 +35,18 @@ import org.openide.util.NbBundle;
 
 public class MessageEJBWizardPanel implements WizardDescriptor.FinishablePanel {
     
-    private MessageEJBVisualPanel p;
-    private List changeListeners = new ArrayList();
-    private WizardDescriptor wizardDescriptor;
-    private boolean isWaitingForScan = false;
+    private MessageEJBVisualPanel wizardPanel;
+    private final List<ChangeListener> changeListeners = new ArrayList<ChangeListener>();
+    private final WizardDescriptor wizardDescriptor;
+    //TODO: RETOUCHE
+//    private boolean isWaitingForScan = false;
 
     public MessageEJBWizardPanel(WizardDescriptor wizardDescriptor) {
         this.wizardDescriptor = wizardDescriptor;
     }
 
-    public void addChangeListener(javax.swing.event.ChangeListener l) {
-        changeListeners.add(l);
+    public void addChangeListener(ChangeListener changeListener) {
+        changeListeners.add(changeListener);
     }
     
     public boolean isValid() {
@@ -82,8 +83,8 @@ public class MessageEJBWizardPanel implements WizardDescriptor.FinishablePanel {
     public void readSettings(Object settings) {
     }
     
-    public void removeChangeListener(javax.swing.event.ChangeListener l) {
-        changeListeners.remove(l);
+    public void removeChangeListener(ChangeListener changeListener) {
+        changeListeners.remove(changeListener);
     }
     
     public void storeSettings(Object settings) {
@@ -95,13 +96,13 @@ public class MessageEJBWizardPanel implements WizardDescriptor.FinishablePanel {
     }
     
     protected final void fireChangeEvent() {
-        Iterator it;
+        Iterator<ChangeListener> iterator;
         synchronized (changeListeners) {
-            it = new HashSet(changeListeners).iterator();
+            iterator = new HashSet<ChangeListener>(changeListeners).iterator();
         }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+        ChangeEvent changeEvent = new ChangeEvent(this);
+        while (iterator.hasNext()) {
+            iterator.next().stateChanged(changeEvent);
         }
     }
 
@@ -110,15 +111,15 @@ public class MessageEJBWizardPanel implements WizardDescriptor.FinishablePanel {
     }
 
     public java.awt.Component getComponent() {
-        if (p == null) {
-            p = new MessageEJBVisualPanel();
+        if (wizardPanel == null) {
+            wizardPanel = new MessageEJBVisualPanel();
             // add listener to events which could cause valid status to change
         }
-        return p;
+        return wizardPanel;
     }
 
     public boolean isQueue() {
-        return p.isQueue();
+        return wizardPanel.isQueue();
     }
 
 }

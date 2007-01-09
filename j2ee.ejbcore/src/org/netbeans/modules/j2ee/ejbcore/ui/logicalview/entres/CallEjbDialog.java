@@ -55,7 +55,7 @@ public class CallEjbDialog {
         Project enterpriseProject = FileOwnerQuery.getOwner(workingCopy.getFileObject());
         
         Project[] allProjects = Utils.getCallableEjbProjects(enterpriseProject);
-        List ejbProjectNodes = new LinkedList();
+        List<Node> ejbProjectNodes = new LinkedList<Node>();
         
         for (int i = 0; i < allProjects.length; i++) {
             Node projectView = new EjbsNode(allProjects[i]);
@@ -67,7 +67,7 @@ public class CallEjbDialog {
         }
         
         Children.Array children = new Children.Array();
-        children.add((Node[])ejbProjectNodes.toArray(new Node[ejbProjectNodes.size()]));
+        children.add(ejbProjectNodes.toArray(new Node[ejbProjectNodes.size()]));
         Node root = new AbstractNode(children);
         root.setDisplayName(NbBundle.getMessage(CallEjbDialog.class, "LBL_EJBModules"));
         EnterpriseReferenceContainer erc = (EnterpriseReferenceContainer)
@@ -78,7 +78,7 @@ public class CallEjbDialog {
             panel.disableServiceLocator();
         }
         
-        final DialogDescriptor nd = new DialogDescriptor(
+        final DialogDescriptor dialogDescriptor = new DialogDescriptor(
                 panel,
                 title,
                 true,
@@ -94,7 +94,7 @@ public class CallEjbDialog {
                 if (evt.getPropertyName().equals(CallEjbPanel.IS_VALID)) {
                     Object newvalue = evt.getNewValue();
                     if ((newvalue != null) && (newvalue instanceof Boolean)) {
-                        nd.setValid(((Boolean)newvalue).booleanValue());
+                        dialogDescriptor.setValid(((Boolean)newvalue).booleanValue());
                     }
                 }
             }
@@ -102,7 +102,7 @@ public class CallEjbDialog {
         
         panel.validateReferences();
         
-        Object button = DialogDisplayer.getDefault().notify(nd);
+        Object button = DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (button != NotifyDescriptor.OK_OPTION) {
             return false;
         }

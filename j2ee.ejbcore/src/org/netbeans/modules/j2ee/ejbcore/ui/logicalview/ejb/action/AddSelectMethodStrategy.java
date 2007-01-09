@@ -19,10 +19,6 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
-import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
-import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
-import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
-import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
@@ -54,7 +50,7 @@ public class AddSelectMethodStrategy extends AbstractAddMethodStrategy {
     
     @Override
     public MethodType getPrototypeMethod(FileObject fileObject, String classHandle) throws IOException {
-        Set<Modifier> modifiers = new HashSet();
+        Set<Modifier> modifiers = new HashSet<Modifier>();
         modifiers.add(Modifier.PUBLIC);
         modifiers.add(Modifier.ABSTRACT);
         MethodModel method = MethodModel.create(

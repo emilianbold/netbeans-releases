@@ -18,18 +18,11 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
-import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
-import org.netbeans.modules.j2ee.ejbcore.Utils;
-import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -46,27 +39,27 @@ public class GoToSourceActionGroup extends EJBActionGroup {
 
     protected Action[] grouped() {
         EntityAndSession ejb = getEjb();
-        ClassPath cp = getClassPath();
-        List actions = new ArrayList();
-        actions.add(new GoToSourceAction(cp, ejb.getEjbClass(),
-                NbBundle.getMessage(GoToSourceAction.class, "LBL_GoTo_BeanImplementation")));
+        ClassPath classPath = getClassPath();
+        List<Action> actions = new ArrayList<Action>();
+        actions.add(new GoToSourceAction(classPath, ejb.getEjbClass(),
+                NbBundle.getMessage(GoToSourceActionGroup.class, "LBL_GoTo_BeanImplementation")));
         if (ejb.getRemote() != null) {
-            actions.add(new GoToSourceAction(cp, ejb.getRemote(),
-                NbBundle.getMessage(GoToSourceAction.class, "LBL_GoTo_RemoteInterface")));
+            actions.add(new GoToSourceAction(classPath, ejb.getRemote(),
+                NbBundle.getMessage(GoToSourceActionGroup.class, "LBL_GoTo_RemoteInterface")));
         }
         if (ejb.getLocal() != null) {
-            actions.add(new GoToSourceAction(cp, ejb.getLocal(),
-                NbBundle.getMessage(GoToSourceAction.class, "LBL_GoTo_LocalInterface")));
+            actions.add(new GoToSourceAction(classPath, ejb.getLocal(),
+                NbBundle.getMessage(GoToSourceActionGroup.class, "LBL_GoTo_LocalInterface")));
         }
         if (ejb.getHome() != null) {
-            actions.add(new GoToSourceAction(cp, ejb.getHome(),
-                NbBundle.getMessage(GoToSourceAction.class, "LBL_GoTo_RemoteHomeInterface")));
+            actions.add(new GoToSourceAction(classPath, ejb.getHome(),
+                NbBundle.getMessage(GoToSourceActionGroup.class, "LBL_GoTo_RemoteHomeInterface")));
         }
         if (ejb.getLocalHome() != null) {
-            actions.add(new GoToSourceAction(cp, ejb.getLocalHome(),
-                NbBundle.getMessage(GoToSourceAction.class, "LBL_GoTo_LocalHomeInterface")));
+            actions.add(new GoToSourceAction(classPath, ejb.getLocalHome(),
+                NbBundle.getMessage(GoToSourceActionGroup.class, "LBL_GoTo_LocalHomeInterface")));
         }
-        return (Action[]) actions.toArray(new Action[actions.size()]);
+        return actions.toArray(new Action[actions.size()]);
     }
 
     public HelpCtx getHelpCtx() {
@@ -100,11 +93,11 @@ public class GoToSourceActionGroup extends EJBActionGroup {
         return null;
     }
 
-    private org.netbeans.modules.j2ee.api.ejbjar.EjbJar getApiEjbJar(TypeElement jc) {
-        //TODO: RETOUCHE
-        return null;
+    //TODO: RETOUCHE
+//    private org.netbeans.modules.j2ee.api.ejbjar.EjbJar getApiEjbJar(TypeElement jc) {
+//        return null;
 //        FileObject fo = JavaModel.getFileObject(jc.getResource());
 //        return org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fo);
-    }
+//    }
     
 }
