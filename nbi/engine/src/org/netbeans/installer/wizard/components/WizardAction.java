@@ -100,7 +100,9 @@ public abstract class WizardAction extends WizardComponent {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
-    public static class WizardActionUi extends WizardComponentUi implements ProgressListener {
+    public static class WizardActionUi 
+            extends WizardComponentUi 
+            implements ProgressListener {
         protected WizardAction component;
         protected Progress     progress;
         
@@ -134,7 +136,8 @@ public abstract class WizardAction extends WizardComponent {
         }
     }
     
-    public static class WizardActionSwingUi extends WizardComponentSwingUi {
+    public static class WizardActionSwingUi 
+            extends WizardComponentSwingUi {
         private NbiLabel       titleLabel;
         private NbiLabel       detailLabel;
         private NbiProgressBar progressBar;
@@ -192,32 +195,32 @@ public abstract class WizardAction extends WizardComponent {
         
         private void initComponents() {
             titleLabel  = new NbiLabel();
-            detailLabel = new NbiLabel();
             progressBar = new NbiProgressBar();
+            detailLabel = new NbiLabel();
             
             add(titleLabel, new GridBagConstraints(
                     0, 0,                             // x, y
                     1, 1,                             // width, height
-                    1.0, 0.3,                         // weight-x, weight-y
+                    1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.SOUTH,         // anchor
                     GridBagConstraints.HORIZONTAL,    // fill
                     new Insets(11, 11, 0, 11),        // padding
                     0, 0));                           // ??? (padx, pady)
-            add(detailLabel, new GridBagConstraints(
+            add(progressBar, new GridBagConstraints(
                     0, 1,                             // x, y
                     1, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.CENTER,        // anchor
-                    GridBagConstraints.HORIZONTAL,    // fill
-                    new Insets(4, 11, 0, 11),         // padding
-                    0, 0));                           // ??? (padx, pady)
-            add(progressBar, new GridBagConstraints(
-                    0, 2,                             // x, y
-                    1, 1,                             // width, height
-                    1.0, 0.7,                         // weight-x, weight-y
                     GridBagConstraints.NORTH,         // anchor
                     GridBagConstraints.HORIZONTAL,    // fill
                     new Insets(4, 11, 11, 11),        // padding
+                    0, 0));                           // ??? (padx, pady)
+            add(detailLabel, new GridBagConstraints(
+                    0, 2,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 1.0,                         // weight-x, weight-y
+                    GridBagConstraints.PAGE_START,    // anchor
+                    GridBagConstraints.HORIZONTAL,    // fill
+                    new Insets(4, 11, 0, 11),         // padding
                     0, 0));                           // ??? (padx, pady)
         }
     }

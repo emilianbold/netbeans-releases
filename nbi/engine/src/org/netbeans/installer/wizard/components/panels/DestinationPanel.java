@@ -49,37 +49,58 @@ import org.netbeans.installer.wizard.containers.SwingContainer;
 public class DestinationPanel extends ErrorMessagePanel {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    private static final String MESSAGE_TEXT_PROPERTY = "message.text";
-    private static final String MESSAGE_CONTENT_TYPE_PROPERTY = "message.content.type";
-    private static final String DESTINATION_LABEL_TEXT_PROPERTY = "destination.label.text";
-    private static final String DESTINATION_BUTTON_TEXT_PROPERTY = "destination.button.text";
+    public static final Class CLS = DestinationPanel.class;
     
-    private static final String DEFAULT_MESSAGE_TEXT = ResourceUtils.getString(DestinationPanel.class, "DP.message.text");
-    private static final String DEFAULT_MESSAGE_CONTENT_TYPE = ResourceUtils.getString(DestinationPanel.class, "DP.message.content.type");
-    private static final String DEFAULT_DESTINATION_LABEL_TEXT = ResourceUtils.getString(DestinationPanel.class, "DP.destination.label.text");
-    private static final String DEFAULT_DESTINATION_BUTTON_TEXT = ResourceUtils.getString(DestinationPanel.class, "DP.destination.button.text");
+    public static final String DEFAULT_TITLE = 
+            ResourceUtils.getString(CLS, "DP.title"); // NOI18N
+    public static final String DEFAULT_DESCRIPTION = 
+            ResourceUtils.getString(CLS, "DP.description"); // NOI18N
     
-    private static final String ERROR_NULL_PROPERTY = "error.null";
-    private static final String ERROR_NOT_VALID_PROPERTY = "error.not.valid";
-    private static final String ERROR_NOT_DIRECTORY_PROPERTY = "error.not.directory";
-    private static final String ERROR_NOT_READABLE_PROPERTY = "error.not.readable";
-    private static final String ERROR_NOT_WRITABLE_PROPERTY = "error.not.writable";
-    private static final String ERROR_NOT_EMPTY_PROPERTY = "error.not.empty";
+    public static final String DESTINATION_LABEL_TEXT_PROPERTY 
+            = "destination.label.text"; // NOI18N
+    public static final String DESTINATION_BUTTON_TEXT_PROPERTY 
+            = "destination.button.text"; // NOI18N
     
-    private static final String DEFAULT_ERROR_NULL = ResourceUtils.getString(DestinationPanel.class, "DP.error.null");
-    private static final String DEFAULT_ERROR_NOT_VALID = ResourceUtils.getString(DestinationPanel.class, "DP.error.not.valid");
-    private static final String DEFAULT_ERROR_NOT_DIRECTORY = ResourceUtils.getString(DestinationPanel.class, "DP.error.not.directory");
-    private static final String DEFAULT_ERROR_NOT_READABLE = ResourceUtils.getString(DestinationPanel.class, "DP.error.not.readable");
-    private static final String DEFAULT_ERROR_NOT_WRITABLE = ResourceUtils.getString(DestinationPanel.class, "DP.error.not.writable");
-    private static final String DEFAULT_ERROR_NOT_EMPTY = ResourceUtils.getString(DestinationPanel.class, "DP.error.not.empty");
+    public static final String DEFAULT_DESTINATION_LABEL_TEXT = 
+            ResourceUtils.getString(CLS, "DP.destination.label.text"); // NOI18N
+    public static final String DEFAULT_DESTINATION_BUTTON_TEXT = 
+            ResourceUtils.getString(CLS, "DP.destination.button.text"); // NOI18N
     
-    private static final String DEFAULT_DESTINATION = ResourceUtils.getString(DestinationPanel.class, "DP.default.destination");
+    public static final String ERROR_NULL_PROPERTY = 
+            "error.null"; // NOI18N
+    public static final String ERROR_NOT_VALID_PROPERTY = 
+            "error.not.valid"; // NOI18N
+    public static final String ERROR_NOT_DIRECTORY_PROPERTY = 
+            "error.not.directory"; // NOI18N
+    public static final String ERROR_NOT_READABLE_PROPERTY = 
+            "error.not.readable"; // NOI18N
+    public static final String ERROR_NOT_WRITABLE_PROPERTY = 
+            "error.not.writable"; // NOI18N
+    public static final String ERROR_NOT_EMPTY_PROPERTY = 
+            "error.not.empty"; // NOI18N
+    
+    public static final String DEFAULT_ERROR_NULL = 
+            ResourceUtils.getString(CLS, "DP.error.null"); // NOI18N
+    public static final String DEFAULT_ERROR_NOT_VALID = 
+            ResourceUtils.getString(CLS, "DP.error.not.valid"); // NOI18N
+    public static final String DEFAULT_ERROR_NOT_DIRECTORY = 
+            ResourceUtils.getString(CLS, "DP.error.not.directory"); // NOI18N
+    public static final String DEFAULT_ERROR_NOT_READABLE = 
+            ResourceUtils.getString(CLS, "DP.error.not.readable"); // NOI18N
+    public static final String DEFAULT_ERROR_NOT_WRITABLE = 
+            ResourceUtils.getString(CLS, "DP.error.not.writable"); // NOI18N
+    public static final String DEFAULT_ERROR_NOT_EMPTY = 
+            ResourceUtils.getString(CLS, "DP.error.not.empty"); // NOI18N
+    
+    public static final String DEFAULT_DESTINATION = 
+            ResourceUtils.getString(CLS, "DP.default.destination"); // NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public DestinationPanel() {
-        setProperty(MESSAGE_TEXT_PROPERTY, DEFAULT_MESSAGE_TEXT);
-        setProperty(MESSAGE_CONTENT_TYPE_PROPERTY, DEFAULT_MESSAGE_CONTENT_TYPE);
+        setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
+        setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
+        
         setProperty(DESTINATION_LABEL_TEXT_PROPERTY, DEFAULT_DESTINATION_LABEL_TEXT);
         setProperty(DESTINATION_BUTTON_TEXT_PROPERTY, DEFAULT_DESTINATION_BUTTON_TEXT);
         
@@ -121,22 +142,12 @@ public class DestinationPanel extends ErrorMessagePanel {
     
     public static class DestinationPanelSwingUi extends ErrorMessagePanelSwingUi {
         /////////////////////////////////////////////////////////////////////////////
-        // Constants
-        public static final String ERROR_ICON =
-                "org/netbeans/installer/wizard/components/panels/error.png";
-        public static final String EMPTY_ICON =
-                "org/netbeans/installer/wizard/components/panels/empty.png";
-        
-        /////////////////////////////////////////////////////////////////////////////
         // Instance
         protected DestinationPanel component;
         
-        private NbiTextPane    messagePane;
         private NbiLabel       destinationLabel;
         private NbiTextField   destinationField;
         private NbiButton      destinationButton;
-        
-        private NbiPanel       spacer;
         
         private JFileChooser fileChooser;
         
@@ -153,25 +164,30 @@ public class DestinationPanel extends ErrorMessagePanel {
         protected void initialize() {
             super.initialize();
             
-            messagePane.setContentType(component.getProperty(MESSAGE_CONTENT_TYPE_PROPERTY));
-            messagePane.setText(component.getProperty(MESSAGE_TEXT_PROPERTY));
+            destinationLabel.setText(
+                    component.getProperty(DESTINATION_LABEL_TEXT_PROPERTY));
+            destinationButton.setText(
+                    component.getProperty(DESTINATION_BUTTON_TEXT_PROPERTY));
             
-            destinationLabel.setText(component.getProperty(DESTINATION_LABEL_TEXT_PROPERTY));
+            String destination = component.
+                    getWizard().
+                    getProduct().
+                    getProperty(Product.INSTALLATION_LOCATION_PROPERTY);
             
-            destinationButton.setText(component.getProperty(DESTINATION_BUTTON_TEXT_PROPERTY));
-            
-            String destination = component.getWizard().getProduct().getProperty(Product.INSTALLATION_LOCATION_PROPERTY);
             if (destination == null) {
                 destination = DEFAULT_DESTINATION;
             }
             
-            destinationField.setText(component.parsePath(destination).getAbsolutePath());
+            destinationField.setText(component.parsePath(destination).getPath());
         }
         
         protected void saveInput() {
+            String value = 
+                    new File(destinationField.getText().trim()).getAbsolutePath();
+            
             component.getWizard().getProduct().setProperty(
                     Product.INSTALLATION_LOCATION_PROPERTY, 
-                    new File(destinationField.getText().trim()).getAbsolutePath());
+                    value);
         }
         
         protected String validateInput() {
@@ -215,8 +231,6 @@ public class DestinationPanel extends ErrorMessagePanel {
         }
         
         private void initComponents() {
-            messagePane = new NbiTextPane();
-            
             destinationField = new NbiTextField();
             destinationField.getDocument().addDocumentListener(new DocumentListener() {
                 public void changedUpdate(DocumentEvent e) {
@@ -240,17 +254,34 @@ public class DestinationPanel extends ErrorMessagePanel {
                 }
             });
             
-            spacer = new NbiPanel();
-            
-            add(messagePane, new GridBagConstraints(0, 0, 2, 1, 1.0, 0.3, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 0, 11), 0, 0));
-            add(destinationLabel, new GridBagConstraints(0, 1, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(7, 11, 0, 11), 0, 0));
-            add(destinationField, new GridBagConstraints(0, 2, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(4, 11, 0, 4), 0, 0));
-            add(destinationButton, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(4, 0, 0, 11), 0, 0));
-            add(spacer, new GridBagConstraints(0, 3, 2, 1, 1.0, 0.7, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 11, 0, 11), 0, 0));
-            
             fileChooser = new JFileChooser();
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             fileChooser.setMultiSelectionEnabled(false);
+            
+            add(destinationLabel, new GridBagConstraints(
+                    0, 0,                             // x, y
+                    2, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.LINE_START,    // anchor
+                    GridBagConstraints.HORIZONTAL,    // fill
+                    new Insets(11, 11, 0, 11),        // padding
+                    0, 0));                           // padx, pady - ???
+            add(destinationField, new GridBagConstraints(
+                    0, 1,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.LINE_START,    // anchor
+                    GridBagConstraints.HORIZONTAL,    // fill
+                    new Insets(4, 11, 0, 0),          // padding
+                    0, 0));                           // padx, pady - ???
+            add(destinationButton, new GridBagConstraints(
+                    1, 1,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.LINE_START,    // anchor
+                    GridBagConstraints.NONE,          // fill
+                    new Insets(4, 4, 0, 11),          // padding
+                    0, 0));                           // padx, pady - ???
         }
     }
 }

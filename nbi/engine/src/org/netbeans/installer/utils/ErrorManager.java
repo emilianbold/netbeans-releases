@@ -45,6 +45,10 @@ public class ErrorManager {
         notify(ERROR, message);
     }
     
+    public static synchronized void notifyError(String message, Throwable e) {
+        notify(ERROR, message, e);
+    }
+    
     public static synchronized void notifyCritical(String message) {
         notify(CRITICAL, message);
     }
