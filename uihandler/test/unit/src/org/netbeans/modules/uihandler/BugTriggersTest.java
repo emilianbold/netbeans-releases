@@ -20,6 +20,7 @@
 package org.netbeans.modules.uihandler;
 
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.logging.Level;
@@ -39,17 +40,21 @@ import org.openide.NotifyDescriptor;
 public class BugTriggersTest extends NbTestCase {
     private static Installer o;
     
-    static {
-        Locale.setDefault(new Locale("te", "ST"));
-        o = Installer.findObject(Installer.class, true);
-        o.restored();
-    }
-    
     public BugTriggersTest(String testName) {
         super(testName);
     }
     
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+    
     protected void setUp() throws Exception {
+        if (o == null) {
+            Locale.setDefault(new Locale("te", "ST"));
+            o = Installer.findObject(Installer.class, true);
+            o.restored();
+        }
+        
         assertNotNull("Installer created", o);
         MockServices.setServices(DD.class);
         
@@ -64,6 +69,7 @@ public class BugTriggersTest extends NbTestCase {
         IOException ex = new IOException("Chyba");
         ErrorManager.getDefault().notify(ex);
         
+        waitRP();
         assertNotNull("Descriptor called", DD.d);
     }
     
@@ -72,7 +78,18 @@ public class BugTriggersTest extends NbTestCase {
         IOException ex = new IOException("Chyba");
         Logger.getAnonymousLogger().log(Level.WARNING, null, ex);
         
+        waitRP();
         assertNotNull("Descriptor called", DD.d);
+    }
+    
+    private void waitRP() throws Exception {
+        class R implements java.lang.Runnable {
+            public void run() {
+            }
+        }
+        R run = new R();
+
+        Installer.RP.post(run, 1000, Thread.MIN_PRIORITY).waitFinished();
     }
     
     public static final class DD extends DialogDisplayer {
@@ -85,6 +102,8 @@ public class BugTriggersTest extends NbTestCase {
         }
 
         public Dialog createDialog(DialogDescriptor descriptor) {
+            assertTrue("Invoked only in AWT thread", EventQueue.isDispatchThread());
+            
             d = descriptor;
             if (toReturn == -1) {
                 fail("There should be something to return");

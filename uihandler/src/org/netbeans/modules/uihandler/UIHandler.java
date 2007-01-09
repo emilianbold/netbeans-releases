@@ -30,7 +30,7 @@ import java.util.logging.LogRecord;
  *
  * @author Jaroslav Tulach
  */
-public class UIHandler extends Handler {
+public class UIHandler extends Handler implements Runnable {
     private final Queue<LogRecord> logs;
     private final boolean exceptionOnly;
     static final PropertyChangeSupport SUPPORT = new PropertyChangeSupport(UIHandler.class);
@@ -70,7 +70,7 @@ public class UIHandler extends Handler {
             record.getLevel().intValue() >= Level.WARNING.intValue() &&
             record.getThrown() != null
         ) {
-            Installer.displaySummary("ERROR_URL", false); // NOI18N
+            Installer.RP.post(this);
         }
     }
 
@@ -80,4 +80,7 @@ public class UIHandler extends Handler {
     public void close() throws SecurityException {
     }
     
+    public void run() {
+        Installer.displaySummary("ERROR_URL", false); // NOI18N
+    }
 }

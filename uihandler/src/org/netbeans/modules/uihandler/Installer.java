@@ -68,8 +68,10 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -82,6 +84,7 @@ public class Installer extends ModuleInstall {
     private static UIHandler ui = new UIHandler(logs, false);
     private static UIHandler handler = new UIHandler(logs, true);
     static final Logger LOG = Logger.getLogger(Installer.class.getName());
+    static final RequestProcessor RP = new RequestProcessor("UI Gestures"); // NOI18N
     
     public void restored() {
         File logFile = logFile();
@@ -402,13 +405,15 @@ public class Installer extends ModuleInstall {
         }
     }
     
-    private static final class Submit implements ActionListener {
+    private static final class Submit implements ActionListener, Runnable {
         private String msg;
         boolean okToExit;
         private DialogDescriptor dd;
         private Dialog d;
         private SubmitPanel panel;
-        
+        private URL url;
+        private Object[] buttons;
+        private String exitMsg;
         public Submit(String msg) {
             this.msg = msg;
         }
@@ -419,9 +424,8 @@ public class Installer extends ModuleInstall {
                 a.deactivated(log);
             }
 
-            String exitMsg = NbBundle.getMessage(Installer.class, "MSG_" + msg + "_EXIT"); // NOI18N
-            URL url = null;
-            Object[] buttons = new Object[] { exitMsg };
+            exitMsg = NbBundle.getMessage(Installer.class, "MSG_" + msg + "_EXIT"); // NOI18N
+            buttons = new Object[] { exitMsg };
             for (;;) {
                 try {
                     if (url == null) {
@@ -461,11 +465,10 @@ public class Installer extends ModuleInstall {
                 }
                 break;
             }
-
-            List<LogRecord> recs = getLogs();
-            
-            
-            
+            Mutex.EVENT.readAccess(this);
+        }
+        
+        public void run() {
             HtmlBrowser browser = new HtmlBrowser();
             browser.setURL(url);
             browser.setEnableLocation(false);
