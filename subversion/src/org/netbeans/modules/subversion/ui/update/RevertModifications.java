@@ -114,8 +114,10 @@ public class RevertModifications implements PropertyChangeListener {
 
     public void propertyChange(PropertyChangeEvent evt) {
         if( evt.getPropertyName().equals(RepositoryPaths.PROP_VALID) ) {
-            boolean valid = ((Boolean)evt.getNewValue()).booleanValue();
-            okButton.setEnabled(valid);
+            if(okButton != null) {
+                boolean valid = ((Boolean)evt.getNewValue()).booleanValue();
+                okButton.setEnabled(valid);
+            }
         }        
     }
 
