@@ -23,7 +23,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.MissingResourceException;
-import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -80,7 +79,7 @@ final class UINode extends AbstractNode implements VisualData {
         }
         
         if ("UI_ACTION_BUTTON_PRESS".equals(r.getMessage())) { // NOI18N
-            setDisplayName(Actions.cutAmpersand((String)r.getParameters()[4]));
+            setDisplayName(Actions.cutAmpersand(getParam(r, 4)));
             String thru = (String)r.getParameters()[1];
             if (thru.contains("Toolbar") || r.getParameters()[0] instanceof JButton) {
                 setIconBaseWithExtension("org/netbeans/modules/uihandler/toolbars.gif");
@@ -90,11 +89,11 @@ final class UINode extends AbstractNode implements VisualData {
                 htmlKey = "HTML_menu";
             }
         } else if ("UI_ACTION_KEY_PRESS".equals(r.getMessage())) { // NOI18N
-            setDisplayName(Actions.cutAmpersand((String)r.getParameters()[4]));
+            setDisplayName(Actions.cutAmpersand(getParam(r, 4)));
             setIconBaseWithExtension("org/netbeans/modules/uihandler/key.png");
             htmlKey = "HTML_key";
         } else if ("UI_ACTION_EDITOR".equals(r.getMessage())) { // NOI18N
-            setDisplayName(Actions.cutAmpersand((String)r.getParameters()[4]));
+            setDisplayName(Actions.cutAmpersand(getParam(r, 4)));
             setIconBaseWithExtension("org/netbeans/modules/uihandler/key.png");
             htmlKey = "HTML_key";
         } else if ("UI_ENABLED_MODULES".equals(r.getMessage())) { // NOI18N
@@ -146,6 +145,14 @@ final class UINode extends AbstractNode implements VisualData {
         } else {
             return NbBundle.getMessage(UINode.class, htmlKey, getDisplayName());
         }
+    }
+    
+    static String getParam(LogRecord r, int index) {
+        Object[] arr = r.getParameters();
+        if (arr == null || arr.length <= index || !(arr[index] instanceof String)) {
+            return "";
+        }
+        return (String)arr[index];
     }
     
     static Node create(LogRecord r) {

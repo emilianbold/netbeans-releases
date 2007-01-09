@@ -53,4 +53,11 @@ public class UINodeTest extends TestCase {
             fail("wrong display name, shall contain Ahoj and 1: " + n.getDisplayName());
         }
     }
+    
+    public void testSomeNPE() {
+        LogRecord r = new LogRecord(Level.FINE, "UI_ACTION_EDITOR");
+        Node n = UINode.create(r);
+        assertNotNull(n);
+        assertEquals("No name", "", n.getDisplayName());
+    }
 }
