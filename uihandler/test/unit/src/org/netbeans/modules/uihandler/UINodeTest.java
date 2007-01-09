@@ -59,5 +59,14 @@ public class UINodeTest extends TestCase {
         Node n = UINode.create(r);
         assertNotNull(n);
         assertEquals("No name", "", n.getDisplayName());
+        assertNotNull(n.getName());
+    }
+    
+    public void testHasNonNullName() {
+        LogRecord r = new LogRecord(Level.WARNING, null);
+        r.setThrown(new Exception());
+        Node n = UINode.create(r);
+        assertNotNull(n);
+        assertNotNull(n.getName());
     }
 }

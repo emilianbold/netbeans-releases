@@ -49,7 +49,11 @@ final class UINode extends AbstractNode implements VisualData {
     private UINode(LogRecord r, Children ch) {
         super(ch, Lookups.fixed(r));
         log = r;
-        setName(r.getMessage());
+        if (r.getMessage() == null) {
+            setName("Seq: " + r.getSequenceNumber());
+        } else {
+            setName(r.getMessage());
+        }
         if (r.getResourceBundle() != null) {
             try {
                 String msg = r.getResourceBundle().getString(r.getMessage());
