@@ -66,7 +66,7 @@ public class J2SEProjectGenerator {
      * @throws IOException in case something went wrong
      */
     public static AntProjectHelper createProject(final File dir, final String name, final String mainClass, final String manifestFile) throws IOException {
-        final FileObject dirFO = createProjectDir (dir);
+        final FileObject dirFO = FileUtil.createFolder(dir);
         // if manifestFile is null => it's TYPE_LIB
         final AntProjectHelper[] h = new AntProjectHelper[1];
         dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
@@ -88,7 +88,7 @@ public class J2SEProjectGenerator {
     public static AntProjectHelper createProject(final File dir, final String name,
                                                   final File[] sourceFolders, final File[] testFolders, final String manifestFile) throws IOException {
         assert sourceFolders != null && testFolders != null: "Package roots can't be null";   //NOI18N
-        final FileObject dirFO = createProjectDir (dir);
+        final FileObject dirFO = FileUtil.createFolder(dir);
         final AntProjectHelper[] h = new AntProjectHelper[1];
         // this constructor creates only java application type
         dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
@@ -277,36 +277,7 @@ public class J2SEProjectGenerator {
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);        
         return h;
     }
-
-    private static FileObject createProjectDir (File dir) throws IOException {
-        Stack<String> stack = new Stack<String>();
-        while (!dir.exists()) {
-            stack.push (dir.getName());
-            dir = dir.getParentFile();
-        }        
-        FileObject dirFO = FileUtil.toFileObject (dir);
-        if (dirFO == null) {
-            refreshFileSystem(dir);
-            dirFO = FileUtil.toFileObject (dir);
-        }
-        assert dirFO != null;
-        while (!stack.isEmpty()) {
-            dirFO = dirFO.createFolder(stack.pop());
-        }        
-        return dirFO;
-    }   
     
-    private static void refreshFileSystem (final File dir) throws FileStateInvalidException {
-        File rootF = dir;
-        while (rootF.getParentFile() != null) {
-            rootF = rootF.getParentFile();
-        }
-        FileObject dirFO = FileUtil.toFileObject(rootF);
-        assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
-        dirFO.getFileSystem().refresh(false);
-    }
-    
-
     private static void createMainClass( String mainClassName, FileObject srcFolder ) throws IOException {
         
         int lastDotIdx = mainClassName.lastIndexOf( '.' );
