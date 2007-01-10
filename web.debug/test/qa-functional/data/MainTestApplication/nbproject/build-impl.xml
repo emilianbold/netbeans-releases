@@ -1,29 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-*** GENERATED FROM project.xml - DO NOT EDIT  ***
-***         EDIT ../build.xml INSTEAD         ***
+        *** GENERATED FROM project.xml - DO NOT EDIT  ***
+        ***         EDIT ../build.xml INSTEAD         ***
 
-For the purpose of easier reading the script
-is divided into following sections:
-  - initialization
-  - compilation
-  - dist
-  - execution
-  - debugging
-  - javadoc
-  - junit compilation
-  - junit execution
-  - junit debugging
-  - cleanup
+        For the purpose of easier reading the script
+        is divided into following sections:
+        - initialization
+        - compilation
+        - dist
+        - execution
+        - debugging
+        - javadoc
+        - junit compilation
+        - junit execution
+        - junit debugging
+        - cleanup
 
--->
-<project name="MainTestApplication-impl" default="build" basedir=".." xmlns:webproject3="http://www.netbeans.org/ns/web-project/3" xmlns:webproject2="http://www.netbeans.org/ns/web-project/2" xmlns:webproject1="http://www.netbeans.org/ns/web-project/1">
+        -->
+<project name="MainTestApplication-impl" default="build" basedir=".." xmlns:webproject3="http://www.netbeans.org/ns/web-project/3" xmlns:webproject2="http://www.netbeans.org/ns/web-project/2" xmlns:jaxws="http://www.netbeans.org/ns/jax-ws/1" xmlns:webproject1="http://www.netbeans.org/ns/web-project/1">
+    <import file="ant-deploy.xml"/>
     <target name="default" depends="dist,javadoc" description="Build whole project."/>
     <!--
-    ======================
-    INITIALIZATION SECTION
-    ======================
-    -->
+                INITIALIZATION SECTION
+            -->
     <target name="-pre-init">
         <!-- Empty placeholder for easier customization. -->
         <!-- You can override this target in the ../build.xml file. -->
@@ -86,6 +85,7 @@ is divided into following sections:
             <istrue value="${display.browser}"/>
         </condition>
         <available file="${conf.dir}/MANIFEST.MF" property="has.custom.manifest"/>
+        <available file="${conf.dir}/persistence.xml" property="has.persistence.xml"/>
         <condition property="do.war.package.with.custom.manifest">
             <and>
                 <istrue value="${war.package}"/>
@@ -103,6 +103,14 @@ is divided into following sections:
         <property value="${build.web.dir}/META-INF" name="build.meta.inf.dir"/>
         <property name="build.classes.dir.real" value="${build.classes.dir}"/>
         <property name="build.web.dir.real" value="${build.web.dir}"/>
+        <condition property="application.args.param" value="${application.args}" else="">
+            <and>
+                <isset property="application.args"/>
+                <not>
+                    <equals arg1="${application.args}" arg2="" trim="true"/>
+                </not>
+            </and>
+        </condition>
     </target>
     <target name="-post-init">
         <!-- Empty placeholder for easier customization. -->
@@ -215,7 +223,7 @@ is divided into following sections:
         <macrodef name="debug" uri="http://www.netbeans.org/ns/web-project/1">
             <attribute name="classname" default="${main.class}"/>
             <attribute name="classpath" default="${debug.classpath}"/>
-            <attribute name="args" default="${application.args}"/>
+            <attribute name="args" default="${application.args.param}"/>
             <sequential>
                 <java fork="true" classname="@{classname}">
                     <jvmarg value="-Xdebug"/>
@@ -240,15 +248,12 @@ is divided into following sections:
             <attribute name="file"/>
             <attribute name="propname"/>
             <sequential>
-                <property name="temp.dirname" value="${dist.ear.dir}/temp"/>
-                <mkdir dir="${dist.ear.dir}/temp"/>
                 <basename property="base_@{propname}" file="@{file}"/>
-                <unzip src="@{file}" dest="${temp.dirname}">
-                    <patternset>
-                        <include name="META-INF/tlds/*.tld"/>
-                    </patternset>
-                </unzip>
-                <available file="${temp.dirname}/META-INF/tlds" type="dir" property="hastlds_@{propname}"/>
+                <zipfileset id="tld.files_@{propname}" src="@{file}" includes="META-INF/*.tld META-INF/tlds/*.tld"/>
+                <pathconvert property="tld.files.path_@{propname}" refid="tld.files_@{propname}"/>
+                <condition value="yes" property="hastlds_@{propname}">
+                    <contains string="${tld.files.path_@{propname}}" substring=".tld" casesensitive="false"/>
+                </condition>
                 <condition value="${build.web.dir.real}/WEB-INF/lib" property="copy.to.dir_@{propname}">
                     <isset property="hastlds_@{propname}"/>
                 </condition>
@@ -266,16 +271,13 @@ is divided into following sections:
                 <condition value="" property="@{propname}">
                     <isset property="hastlds_@{propname}"/>
                 </condition>
-                <delete dir="${dist.ear.dir}/temp"/>
             </sequential>
         </macrodef>
     </target>
     <target name="init" depends="-pre-init,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-debug,-init-macrodef-copy-ear-war"/>
     <!--
-    ======================
-    COMPILATION SECTION
-    ======================
-    -->
+                COMPILATION SECTION
+            -->
     <target name="deps-module-jar" depends="init" if="no.dist.ear.dir" unless="no.deps">
         <ant target="jar" inheritall="false" antfile="${project.TestFreeformLibrary}/build.xml"/>
         <ant target="jar" inheritall="false" antfile="${project.TestLibrary}/build.xml"/>
@@ -299,7 +301,7 @@ is divided into following sections:
             <fileset excludes="${build.web.excludes}" dir="${web.docbase.dir}"/>
         </copy>
     </target>
-    <target name="-do-compile" depends="init, deps-jar, -pre-pre-compile, -pre-compile, -copy-manifest, -copy-webdir, library-inclusion-in-archive,library-inclusion-in-manifest" if="have.sources">
+    <target name="-do-compile" depends="init, deps-jar, -pre-pre-compile, -pre-compile, -copy-manifest, -copy-persistence-xml, -copy-webdir, library-inclusion-in-archive,library-inclusion-in-manifest" if="have.sources">
         <webproject2:javac destdir="${build.classes.dir.real}"/>
         <copy todir="${build.classes.dir.real}">
             <fileset dir="${src.secondaryjava.dir}" excludes="${build.classes.excludes}"/>
@@ -310,6 +312,12 @@ is divided into following sections:
         <mkdir dir="${build.meta.inf.dir}"/>
         <copy todir="${build.meta.inf.dir}">
             <fileset dir="${conf.dir}" includes="MANIFEST.MF"/>
+        </copy>
+    </target>
+    <target name="-copy-persistence-xml" if="has.persistence.xml">
+        <mkdir dir="${build.web.dir.real}/WEB-INF/classes/META-INF"/>
+        <copy todir="${build.web.dir.real}/WEB-INF/classes/META-INF">
+            <fileset dir="${conf.dir}" includes="persistence.xml"/>
         </copy>
     </target>
     <target name="-post-compile">
@@ -328,6 +336,10 @@ is divided into following sections:
                 <patternset includes="${javac.includes}"/>
             </customize>
         </webproject2:javac>
+        <copy todir="${build.classes.dir.real}">
+            <fileset dir="${src.secondaryjava.dir}" excludes="${build.classes.excludes}"/>
+            <fileset dir="${src.dir}" excludes="${build.classes.excludes}"/>
+        </copy>
     </target>
     <target name="-post-compile-single">
         <!-- Empty placeholder for easier customization. -->
@@ -372,10 +384,8 @@ is divided into following sections:
         <antcall target="-do-compile-single-jsp"/>
     </target>
     <!--
-    ======================
-    DIST BUILDING SECTION
-    ======================
-    -->
+                DIST BUILDING SECTION
+            -->
     <target name="-pre-dist">
         <!-- Empty placeholder for easier customization. -->
         <!-- You can override this target in the ../build.xml file. -->
@@ -433,31 +443,119 @@ is divided into following sections:
     <target name="dist" depends="init,compile,-pre-dist,do-dist,-post-dist" description="Build distribution (WAR)."/>
     <target name="dist-ear" depends="init,compile,-pre-dist,do-ear-dist,-post-dist" description="Build distribution (WAR) to be packaged into an EAR."/>
     <!--
-    ======================
-    EXECUTION SECTION
-    ======================
-    -->
+                EXECUTION SECTION
+            -->
     <target name="run" depends="run-deploy,run-display-browser" description="Deploy to server and show in browser."/>
-    <target name="run-deploy" depends="init,compile,compile-jsps,-do-compile-single-jsp,dist">
+    <target name="-pre-run-deploy">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="-post-run-deploy">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- You can override this target in the ../build.xml file. -->
+    </target>
+    <target name="-pre-nbmodule-run-deploy">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- This target can be overriden by NetBeans modules. Don't override it directly, use -pre-run-deploy task instead. -->
+    </target>
+    <target name="-post-nbmodule-run-deploy">
+        <!-- Empty placeholder for easier customization. -->
+        <!-- This target can be overriden by NetBeans modules. Don't override it directly, use -post-run-deploy task instead. -->
+    </target>
+    <target name="-run-deploy-am">
+        <!-- Task to deploy to the Access Manager runtime. -->
+    </target>
+    <target name="run-deploy" depends="init,compile,compile-jsps,-do-compile-single-jsp,dist,-pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,-post-run-deploy"/>
+    <target name="-run-deploy-nb" if="netbeans.home">
         <nbdeploy debugmode="false" clientUrlPart="${client.urlPart}" forceRedeploy="${forceRedeploy}"/>
+    </target>
+    <target name="-init-deploy-ant" unless="netbeans.home">
+        <property name="deploy.ant.archive" value="${dist.war}"/>
+        <property name="deploy.ant.docbase.dir" value="${web.docbase.dir}"/>
+        <property name="deploy.ant.resource.dir" value="${resource.dir}"/>
+        <property name="deploy.ant.enabled" value="true"/>
+    </target>
+    <target name="run-undeploy" depends="dist,-run-undeploy-nb,-init-deploy-ant,-undeploy-ant"/>
+    <target name="-run-undeploy-nb" if="netbeans.home">
+        <fail message="Undeploy is not supported from within the IDE"/>
     </target>
     <target name="verify" depends="init,dist">
         <nbverify file="${dist.war}"/>
     </target>
-    <target name="run-display-browser" if="do.display.browser" depends="run-deploy">
+    <target name="run-display-browser" depends="run-deploy,-init-display-browser,-display-browser-nb,-display-browser-cl"/>
+    <target name="-init-display-browser" if="do.display.browser">
+        <condition property="do.display.browser.nb">
+            <isset property="netbeans.home"/>
+        </condition>
+        <condition property="do.display.browser.cl">
+            <isset property="deploy.ant.enabled"/>
+        </condition>
+    </target>
+    <target name="-display-browser-nb" if="do.display.browser.nb">
         <nbbrowse url="${client.url}"/>
+    </target>
+    <target name="-get-browser" if="do.display.browser.cl" unless="browser">
+        <condition property="browser" value="rundll32">
+            <os family="windows"/>
+        </condition>
+        <condition property="browser.args" value="url.dll,FileProtocolHandler" else="">
+            <os family="windows"/>
+        </condition>
+        <condition property="browser" value="/usr/bin/open">
+            <os family="mac"/>
+        </condition>
+        <property environment="env"/>
+        <condition property="browser" value="${env.BROWSER}">
+            <isset property="env.BROWSER"/>
+        </condition>
+        <condition property="browser" value="/usr/bin/firefox">
+            <available file="/usr/bin/firefox"/>
+        </condition>
+        <condition property="browser" value="/usr/local/firefox/firefox">
+            <available file="/usr/local/firefox/firefox"/>
+        </condition>
+        <condition property="browser" value="/usr/bin/mozilla">
+            <available file="/usr/bin/mozilla"/>
+        </condition>
+        <condition property="browser" value="/usr/local/mozilla/mozilla">
+            <available file="/usr/local/mozilla/mozilla"/>
+        </condition>
+        <condition property="browser" value="/usr/sfw/lib/firefox/firefox">
+            <available file="/usr/sfw/lib/firefox/firefox"/>
+        </condition>
+        <condition property="browser" value="/opt/csw/bin/firefox">
+            <available file="/opt/csw/bin/firefox"/>
+        </condition>
+        <condition property="browser" value="/usr/sfw/lib/mozilla/mozilla">
+            <available file="/usr/sfw/lib/mozilla/mozilla"/>
+        </condition>
+        <condition property="browser" value="/opt/csw/bin/mozilla">
+            <available file="/opt/csw/bin/mozilla"/>
+        </condition>
+    </target>
+    <target name="-display-browser-cl" depends="-get-browser" if="do.display.browser.cl">
+        <fail unless="browser">
+                    Browser not found, cannot launch the deployed application. Try to set the BROWSER environment variable.
+                </fail>
+        <property name="browse.url" value="${deploy.ant.client.url}${client.urlPart}"/>
+        <echo>Launching ${browse.url}</echo>
+        <exec executable="${browser}" spawn="true">
+            <arg line="${browser.args} ${browse.url}"/>
+        </exec>
     </target>
     <target name="run-main" depends="init,compile-single">
         <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
         <webproject1:java classname="${run.class}"/>
     </target>
     <!--
-    ======================
-    DEBUGGING SECTION
-    ======================
-    -->
+                DEBUGGING SECTION
+            -->
     <target name="debug" description="Debug project in IDE." depends="init,compile,compile-jsps,-do-compile-single-jsp,dist" if="netbeans.home">
         <nbdeploy debugmode="true" clientUrlPart="${client.urlPart}"/>
+        <antcall target="connect-debugger"/>
+        <antcall target="debug-display-browser"/>
+    </target>
+    <target name="connect-debugger" unless="is.debugged">
         <nbjpdaconnect name="${name}" host="${jpda.host}" address="${jpda.address}" transport="${jpda.transport}">
             <classpath>
                 <path path="${debug.classpath}:${ws.debug.classpaths}"/>
@@ -466,7 +564,6 @@ is divided into following sections:
                 <path path="${web.docbase.dir}:${ws.web.docbase.dirs}"/>
             </sourcepath>
         </nbjpdaconnect>
-        <antcall target="debug-display-browser"/>
     </target>
     <target name="debug-display-browser" if="do.display.browser">
         <nbbrowse url="${client.url}"/>
@@ -489,10 +586,8 @@ is divided into following sections:
     </target>
     <target name="debug-fix" if="netbeans.home" depends="init,-pre-debug-fix,-do-debug-fix"/>
     <!--
-    ======================
-    JAVADOC SECTION
-    ======================
-    -->
+                JAVADOC SECTION
+            -->
     <target name="javadoc-build" depends="init">
         <mkdir dir="${dist.javadoc.dir}"/>
         <javadoc destdir="${dist.javadoc.dir}" source="${javac.source}" notree="${javadoc.notree}" use="${javadoc.use}" nonavbar="${javadoc.nonavbar}" noindex="${javadoc.noindex}" splitindex="${javadoc.splitindex}" author="${javadoc.author}" version="${javadoc.version}" windowtitle="${javadoc.windowtitle}" private="${javadoc.private}" additionalparam="${javadoc.additionalparam}" failonerror="true" useexternalfile="true">
@@ -514,11 +609,9 @@ is divided into following sections:
     </target>
     <target name="javadoc" depends="init,javadoc-build,javadoc-browse" description="Build Javadoc."/>
     <!--
-
-    =========================
-    JUNIT COMPILATION SECTION
-    =========================
-    -->
+                
+                JUNIT COMPILATION SECTION
+            -->
     <target name="-pre-pre-compile-test" if="have.tests" depends="init,compile">
         <mkdir dir="${build.test.classes.dir}"/>
     </target>
@@ -548,6 +641,9 @@ is divided into following sections:
                 <patternset includes="${javac.includes}"/>
             </customize>
         </webproject2:javac>
+        <copy todir="${build.test.classes.dir}">
+            <fileset dir="${test.src.dir}" excludes="**/*.java"/>
+        </copy>
     </target>
     <target name="-post-compile-test-single">
         <!-- Empty placeholder for easier customization. -->
@@ -555,11 +651,9 @@ is divided into following sections:
     </target>
     <target name="compile-test-single" depends="init,compile,-pre-pre-compile-test,-pre-compile-test-single,-do-compile-test-single,-post-compile-test-single"/>
     <!--
-
-    =======================
-    JUNIT EXECUTION SECTION
-    =======================
-    -->
+                
+                JUNIT EXECUTION SECTION
+            -->
     <target name="-pre-test-run" if="have.tests" depends="init">
         <mkdir dir="${build.test.results.dir}"/>
     </target>
@@ -584,11 +678,9 @@ is divided into following sections:
     </target>
     <target name="test-single" depends="init,compile-test-single,-pre-test-run-single,-do-test-run-single,-post-test-run-single" description="Run single unit test."/>
     <!--
-
-    =======================
-    JUNIT DEBUGGING SECTION
-    =======================
-    -->
+                
+                JUNIT DEBUGGING SECTION
+            -->
     <target name="-debug-start-debuggee-test" if="have.tests" depends="init,compile-test">
         <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
         <webproject1:debug classname="junit.textui.TestRunner" classpath="${debug.test.classpath}" args="${test.class}"/>
@@ -602,11 +694,9 @@ is divided into following sections:
     </target>
     <target name="debug-fix-test" if="netbeans.home" depends="init,-pre-debug-fix,-do-debug-fix-test"/>
     <!--
-
-    ======================
-    CLEANUP SECTION
-    ======================
-    -->
+                
+                CLEANUP SECTION
+            -->
     <target name="deps-clean" depends="init" if="no.dist.ear.dir" unless="no.deps">
         <ant target="clean" inheritall="false" antfile="${project.TestFreeformLibrary}/build.xml"/>
         <ant target="clean" inheritall="false" antfile="${project.TestLibrary}/build.xml"/>
@@ -620,12 +710,7 @@ is divided into following sections:
         <delete includeEmptyDirs="true" quiet="true">
             <fileset dir="${build.dir.to.clean}/WEB-INF/lib"/>
         </delete>
-        <delete includeEmptyDirs="true">
-            <fileset dir=".">
-                <include name="${build.dir}/**"/>
-                <exclude name="${build.dir.to.clean}/WEB-INF/lib/**"/>
-            </fileset>
-        </delete>
+        <delete dir="${build.dir}"/>
         <available file="${build.dir.to.clean}/WEB-INF/lib" type="dir" property="status.clean-failed"/>
         <delete dir="${dist.dir}"/>
     </target>

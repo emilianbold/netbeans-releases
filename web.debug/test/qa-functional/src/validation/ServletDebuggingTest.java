@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package validation;
@@ -199,9 +199,7 @@ public class ServletDebuggingTest extends JellyTestCase {
      * - stop server and wait until it finishes
      */
     public void testStopServer() {
-        // "Bundled Tomcat (x.y.z)"
-        String tomcatLabel = Bundle.getStringTrimmed("org.netbeans.modules.tomcat5.Bundle", "LBL_BundledTomcat");
-        J2eeServerNode serverNode = new J2eeServerNode(tomcatLabel);
+        J2eeServerNode serverNode = new J2eeServerNode(Utils.DEFAULT_SERVER);
         serverNode.stop();
     }
 }

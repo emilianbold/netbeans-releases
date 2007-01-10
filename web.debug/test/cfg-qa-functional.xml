@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="QA functional config">
 
-    <testbag testattribs="validation" executor="ide" name="web/jspdebug validation">
+    <testbag testattribs="validation" executor="ide-appserver" name="web/jspdebug validation">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="validation/JSPDebuggingOverallTest.class"/>
@@ -30,5 +30,6 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
+    <executor name="ide-appserver" antfile="build-qa-functional.xml" target="runidetest-with-appserver"/> 
     <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
 </mconfig>

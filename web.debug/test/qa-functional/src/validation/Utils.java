@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package validation;
@@ -51,7 +51,12 @@ import org.netbeans.jemmy.operators.JTreeOperator;
  */
 public class Utils {
     
-    private static int socketPort;
+    /** Default value for Sun App Server. If we test Tomcat, it is 
+     * overridden in setTomcatProperties() method. */
+    private static int socketPort = 9009;
+    public static final String SUN_APP_SERVER = "Sun";
+    public static final String TOMCAT = "Tomcat";
+    public static final String DEFAULT_SERVER = SUN_APP_SERVER;
     
     /** Sets Swing HTML Browser as default browser. */
     public static void setSwingBrowser() {
@@ -148,9 +153,7 @@ public class Utils {
         // wait until Debug toolbar dismiss
         debugToolbarOper.waitComponentVisible(false);
         // wait until server is not in transient state
-        // "Bundled Tomcat (x.y.z)"
-        String tomcatLabel = Bundle.getStringTrimmed("org.netbeans.modules.tomcat5.Bundle", "LBL_BundledTomcat");
-        J2eeServerNode serverNode = new J2eeServerNode(tomcatLabel);
+        J2eeServerNode serverNode = new J2eeServerNode(DEFAULT_SERVER);
         serverNode.waitFinished();
         new EventTool().waitNoEvent(2000);
 

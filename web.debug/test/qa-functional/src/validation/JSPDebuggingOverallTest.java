@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package validation;
@@ -76,7 +76,9 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new JSPDebuggingOverallTest("testOpenProjects"));
         suite.addTest(new JSPDebuggingOverallTest("testSetSwingBrowser"));
-        suite.addTest(new JSPDebuggingOverallTest("testSetTomcatPort"));
+        if(Utils.DEFAULT_SERVER.equals(Utils.TOMCAT)) {
+            suite.addTest(new JSPDebuggingOverallTest("testSetTomcatPort"));
+        }
         suite.addTest(new JSPDebuggingOverallTest("testRunProject"));
         suite.addTest(new JSPDebuggingOverallTest("testDebugProject"));
         suite.addTest(new JSPDebuggingOverallTest("testSetBreakpoint"));
@@ -192,7 +194,7 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         // assuming server is running in debug mode and page is opened in browser
         AttachDialogOperator ado = AttachDialogOperator.invoke();
         ado.selectConnector(ado.ITEM_SOCKET_ATTACH);
-        ado.setPort(Utils.getSocketPort()); // NOI18N
+        ado.setPort(Utils.getSocketPort());
         ado.ok();
         // "User program running"
         String runningLabel = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Debugger_running");
@@ -254,9 +256,7 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         stt.clear();
         
         // check it is not possible to stop server
-        // "Bundled Tomcat (x.y.z)"
-        String tomcatLabel = Bundle.getStringTrimmed("org.netbeans.modules.tomcat5.Bundle", "LBL_BundledTomcat");
-        J2eeServerNode serverNode = new J2eeServerNode(tomcatLabel);
+        J2eeServerNode serverNode = new J2eeServerNode(Utils.DEFAULT_SERVER);
         assertFalse("Start action on server node should be disabled when stopped at breakpoint.", new StartAction().isEnabled(serverNode));
         assertFalse("Stop action on server node should be disabled when stopped at breakpoint.", new StopAction().isEnabled(serverNode));
         assertFalse("Restart action on server node should be disabled when stopped at breakpoint.", new RestartAction().isEnabled(serverNode));
@@ -374,9 +374,7 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
      * - stop server and wait until it finishes
      */
     public void testStopServer() {
-        // "Bundled Tomcat (x.y.z)"
-        String tomcatLabel = Bundle.getStringTrimmed("org.netbeans.modules.tomcat5.Bundle", "LBL_BundledTomcat");
-        J2eeServerNode serverNode = new J2eeServerNode(tomcatLabel);
+        J2eeServerNode serverNode = new J2eeServerNode(Utils.DEFAULT_SERVER);
         serverNode.stop();
     }
     
@@ -386,15 +384,14 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
     private TopComponentOperator waitBrowser() {
         long oldTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
         try {
-            // increase time to wait to 120 second (it fails on slower machines)
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 120000);
+            // increase time to wait to 240 second (it fails on slower machines)
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 240000);
             return new TopComponentOperator("Test JSP Page");// NOI18N
         } finally {
             // restore default timeout
             JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", oldTimeout);
             // log messages from output
-            getLog("TomcatMessages0").print(new OutputTabOperator("Bundled Tomcat", 0).getText()); // NOI18N
-            getLog("TomcatMessages1").print(new OutputTabOperator("Bundled Tomcat", 1).getText()); // NOI18N
+            getLog("ServerMessages").print(new OutputTabOperator(Utils.DEFAULT_SERVER).getText()); // NOI18N
             getLog("RunOutput").print(new OutputTabOperator(SAMPLE_WEB_PROJECT_NAME).getText()); // NOI18N
         }
     }
