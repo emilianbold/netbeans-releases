@@ -27,10 +27,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.io.IOException;
 import javax.swing.JTextField;
 import org.openide.util.NbBundle;
 import org.openide.awt.Mnemonics;
-import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.JavaSource;
 import org.openide.nodes.Node;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.nodes.FilterNode;
@@ -38,8 +39,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.NodeAcceptor;
 import org.openide.nodes.NodeOperation;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.openide.loaders.DataObject;
 import org.netbeans.api.project.SourceGroup;
 import org.openide.util.UserCancelException;
@@ -146,9 +145,13 @@ public class MBeanClassButton {
                         DataObject dob = (DataObject)nodes[0].getCookie(DataObject.class);
                         FileObject fo = null;
                         if (dob != null) fo = dob.getPrimaryFile();
-                        JavaClass foClass = WizardHelpers.getJavaClass(
-                                JavaModel.getResource(fo),fo.getName());
-                        accepted = Introspector.testCompliance(foClass);
+                        JavaSource foClass = JavaModelHelper.getSource(fo);
+                        try {
+                            accepted = JavaModelHelper.testMBeanCompliance(foClass);
+                        }catch(IOException ioe) {
+                            ioe.printStackTrace();
+                            accepted = false;
+                        }
                     }
                     return accepted;
                 }
@@ -196,18 +199,21 @@ public class MBeanClassButton {
                       .getPrimaryFile();
             
             /* display selected class name: */
-            String className = getClassName(selectedFileObj);
-            tf.setText(className);
+            try {
+                String className = getClassName(selectedFileObj);
+                tf.setText(className);
+            }catch(IOException ioe) {
+                ioe.printStackTrace();
+            }
             
         } catch (UserCancelException ex) {
             // if the user cancels the choice, do nothing
         }
     }
     
-    private static String getClassName(FileObject fileObj) {
-        //PENDING: is it ensured that the classpath is non-null?
-        return ClassPath.getClassPath(fileObj, ClassPath.SOURCE)
-               .getResourceName(fileObj, '.', false);
+    private static String getClassName(FileObject fileObj) throws IOException {
+        JavaSource js = JavaModelHelper.getSource(fileObj);
+        return JavaModelHelper.getFullClassName(js);
     }
     
     class UIListener implements ActionListener, DocumentListener,

@@ -19,32 +19,18 @@
 package org.netbeans.modules.jmx.agentwizard;
 
 import java.awt.Component;
-import java.net.URL;
-import java.net.MalformedURLException;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
 import java.util.ResourceBundle;
 import javax.swing.event.*;
-import javax.swing.DefaultListModel;
-import java.io.File;
-
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
-import javax.swing.ListSelectionModel;
 
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.awt.Mnemonics;
-import org.openide.loaders.TemplateWizard;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 
 import org.netbeans.modules.jmx.WizardConstants;
-import org.netbeans.modules.jmx.WizardHelpers;
 import org.netbeans.modules.jmx.GenericWizardPanel;
 
 import org.netbeans.modules.jmx.runtime.J2SEProjectType;

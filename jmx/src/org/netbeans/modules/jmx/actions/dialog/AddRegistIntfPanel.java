@@ -20,13 +20,11 @@
 package org.netbeans.modules.jmx.actions.dialog;
 
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.jmx.WizardHelpers;
-import org.netbeans.modules.jmx.actions.AddRegisterIntfAction;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.jmx.JavaModelHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -43,7 +41,7 @@ import org.openide.util.NbBundle;
 public class AddRegistIntfPanel extends javax.swing.JPanel {
     
     /** class to add registration of MBean */
-    private JavaClass currentClass;
+    private JavaSource currentClass;
     
     private ResourceBundle bundle;
     
@@ -53,15 +51,15 @@ public class AddRegistIntfPanel extends javax.swing.JPanel {
      * Creates new form Panel.
      * @param  node  node selected when the Register Mbean action was invoked
      */
-    public AddRegistIntfPanel(Node node) {
+    public AddRegistIntfPanel(Node node) throws IOException {
         bundle = NbBundle.getBundle(AddRegistIntfPanel.class);
         
         DataObject dob = (DataObject)node.getCookie(DataObject.class);
         FileObject fo = null;
         if (dob != null) fo = dob.getPrimaryFile();
         
-        currentClass = WizardHelpers.getJavaClassInProject(fo);
-        
+        currentClass = JavaModelHelper.getSource(fo);
+        String className = JavaModelHelper.getSimpleName(currentClass);
         // init tags
         
         initComponents();
@@ -76,7 +74,7 @@ public class AddRegistIntfPanel extends javax.swing.JPanel {
         keepRefCheckBox.getAccessibleContext().setAccessibleDescription(
                 bundle.getString("ACCESS_REGISTRATION_KEEP_DESCRIPTION")); // NOI18N
         
-        infoTextArea.setText(currentClass.getSimpleName() + " " + // NOI18N
+        infoTextArea.setText(className + " " + // NOI18N
                 bundle.getString("LBL_MBeanRegistration_Informations")); // NOI18N
         
         //for functionnals tests
@@ -124,9 +122,9 @@ public class AddRegistIntfPanel extends javax.swing.JPanel {
     
     /**
      * Returns the MBean class to add operations.
-     * @return <CODE>JavaClass</CODE> the MBean class
+     * @return <CODE>JavaSource</CODE> the MBean class
      */
-    public JavaClass getMBeanClass() {
+    public JavaSource getMBeanClass() {
         return currentClass;
     }
     

@@ -30,9 +30,9 @@ import org.openide.loaders.DataObject;
  * @author tl156378
  */
 public class MBeanDO {
-    private List/*<MBeanAttribute>*/ attributes;
-    private List/*<MBeanOperation>*/ operations;
-    private List/*<MBeanNotification>*/ notifs;
+    private List<MBeanAttribute> attributes;
+    private List<MBeanOperation> operations;
+    private List<MBeanNotification> notifs;
 
     private String name;
     private String packageName;
@@ -56,20 +56,25 @@ public class MBeanDO {
         Collections.sort(this.attributes);
         this.operations = operations;
         Collections.sort(this.operations);
-        this.notifs = new ArrayList();
+        this.notifs = new ArrayList<MBeanNotification>();
     }
     
     public MBeanDO() {
-        this.attributes = new ArrayList();
-        this.operations = new ArrayList();
-        this.notifs = new ArrayList();
+        this.attributes = new ArrayList<MBeanAttribute>();
+        this.operations = new ArrayList<MBeanOperation>();
+        this.notifs = new ArrayList<MBeanNotification>();
     }
     
-    public List getAttributes() {
+    public boolean isExtendedStandardMBean() {
+        return isWrapppedClass() || 
+                getType().equals(WizardConstants.MBEAN_EXTENDED);
+    }
+    
+    public List<MBeanAttribute> getAttributes() {
         return attributes;
     }
     
-    public List getOperations() {
+    public List<MBeanOperation> getOperations() {
         return operations;
     }
 
@@ -113,12 +118,12 @@ public class MBeanDO {
         this.notifs = notifs;
     }
 
-    public void setAttributes(List attributes) {
+    public void setAttributes(List<MBeanAttribute> attributes) {
         this.attributes = attributes;
         Collections.sort(this.attributes);
     }
 
-    public void setOperations(List operations) {
+    public void setOperations(List<MBeanOperation> operations) {
         this.operations = operations;
         Collections.sort(this.operations);
     }

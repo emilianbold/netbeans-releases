@@ -18,15 +18,7 @@
  */
 package org.netbeans.modules.jmx.agentwizard;
 
-import javax.swing.JOptionPane;
-import java.text.MessageFormat;
-
 import java.awt.Component;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
-import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -36,29 +28,18 @@ import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import java.awt.Dimension;
-import javax.swing.KeyStroke;
-import java.io.OutputStream;
 
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.Project;
 import org.openide.loaders.TemplateWizard;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 
-import org.netbeans.jmi.javamodel.*;
-import org.netbeans.modules.javacore.api.JavaModel;
-
 import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.WizardHelpers;
-import org.netbeans.modules.jmx.configwizard.ConfigPanel;
 
 import org.netbeans.modules.jmx.runtime.J2SEProjectType;
 
@@ -187,9 +168,7 @@ public class JMXAgentIterator implements TemplateWizard.Iterator {
         try {
             AgentGenerator gen = new AgentGenerator();
             
-            java.util.Set set = gen.generateAgent(wizard).getCreated();
-            FileObject agentFile = (FileObject) set.toArray()[0];
-            
+            java.util.Set set = gen.generateAgent(wizard);
             try {
                 //Set project main class
                 Boolean mainMethodSelected = (Boolean) wiz.getProperty(
@@ -201,11 +180,8 @@ public class JMXAgentIterator implements TemplateWizard.Iterator {
                 if(J2SEProjectType.isProjectTypeSupported(project)) {
                     if ( ((mainMethodSelected != null) && (mainMethodSelected)) &&
                             ((mainProjectClassSelected != null) && (mainProjectClassSelected)) ) {
-                        
-                        Resource agentRc = JavaModel.getResource(agentFile);
-                        JavaClass agentClass = WizardHelpers.getJavaClass(agentRc,
-                                agentFile.getName());
-                        J2SEProjectType.overwriteProperty(project, "main.class", agentClass.getName());// NOI18N
+                        final String agentName = Templates.getTargetName(wiz);
+                        J2SEProjectType.overwriteProperty(project, "main.class", agentName);// NOI18N
                     }
                 }
             } catch (Exception ex) {

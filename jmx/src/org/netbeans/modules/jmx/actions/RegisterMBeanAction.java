@@ -18,95 +18,82 @@
  */
 
 package org.netbeans.modules.jmx.actions;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.actions.CookieAction;
-import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.jmx.*;
 import org.netbeans.modules.jmx.actions.dialog.RegisterMBeanPanel;
-import org.netbeans.modules.jmx.actions.generator.RegisterMBeanGenerator;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
  * Action used to add MBean registration code to an existing JMX Agent.
  * @author tl156378
  */
-public class RegisterMBeanAction extends CookieAction {
+public class RegisterMBeanAction extends NodeAction {
     
     private FileObject fo;
     private DataObject dob;
-    private Resource rc;
     
     /**
-     * Creates a new instance of AddAttrAction 
+     * Creates a new instance of AddAttrAction
      */
     public RegisterMBeanAction() {
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N 
-    }
-    
-    protected Class[] cookieClasses() {
-        return new Class[] { SourceCookie.class };
-    }
-     
-    protected int mode() {
-        // allow one exactly class node
-        return MODE_EXACTLY_ONE;    
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
     public boolean asynchronous() {
         return true; // yes, this action should run asynchronously
         // would be better to rewrite it to synchronous (running in AWT thread),
         // just replanning test generation to RequestProcessor
-    }  
+    }
     
-    protected boolean enable (Node[] nodes) {
-        if (!super.enable(nodes)) return false;
+    protected boolean enable(Node[] nodes) {
+        return true;
+        /*
         if (nodes.length == 0) return false;
+        dob = (DataObject) nodes[0].getLookup().lookup(DataObject.class);
+        if(dob == null) return false;
         
-        dob = (DataObject)nodes[0].getCookie(DataObject.class);
-        fo = null;
-        if (dob == null) return false;
-        
-        fo = dob.getPrimaryFile();
-       
-        JavaClass foClass = WizardHelpers.getJavaClassInProject(fo);
-        if (foClass == null)
+        FileObject fo = dob.getPrimaryFile();
+        if(fo == null)
             return false;
         
-        //We need to do all MDR access in a transaction
-        JavaModel.getJavaRepository().beginTrans(false);
+        JavaSource foClass = JavaModelHelper.getSource(fo);
+        if (foClass == null) return false;
         try {
-            JavaModel.setClassPath(fo);
-            rc = JavaModel.getResource(fo);
-            return Introspector.isGeneratedAgent(foClass);
-        } finally {
-            JavaModel.getJavaRepository().endTrans();
+            return JavaModelHelper.isGeneratedAgent(foClass);
+        }catch(IOException ex) {
+            ex.printStackTrace();
         }
+        return false;
+         */
     }
     
     protected void performAction(Node[] nodes) {
-        // show configuration dialog
-        // when dialog is canceled, escape the action
-        RegisterMBeanPanel cfg = new RegisterMBeanPanel(nodes[0]);
-        if (!cfg.configure()) {
-            return;
-        }
-        RegisterMBeanGenerator generator = new RegisterMBeanGenerator();
         try {
-            if (cfg.standardMBeanSelected()) {
-                generator.generate(cfg.getJavaClass(),cfg.getMBeanObjectName(),
-                        cfg.getClassName(), cfg.getInterfaceName(), 
-                        cfg.getConstructorSignature());
-            } else {
-                generator.generate(cfg.getJavaClass(), cfg.getMBeanClass(),
-                        cfg.getMBeanObjectName(), cfg.getConstructorSignature());
+            // show configuration dialog
+            // when dialog is canceled, escape the action
+            RegisterMBeanPanel cfg = new RegisterMBeanPanel(nodes[0]);
+            if (!cfg.configure()) {
+                return;
             }
+            
+            if (cfg.standardMBeanSelected()) {
+                JavaModelHelper.generateStdMBeanRegistration(cfg.getAgentJavaSource(),
+                        cfg.getMBeanObjectName(),
+                        cfg.getInterfaceName(),
+                        cfg.getConstructor());
+            } else {
+                JavaModelHelper.generateMBeanRegistration(cfg.getAgentJavaSource(),
+                        cfg.getMBeanObjectName(),
+                        cfg.getConstructor());
+                //EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
+                //ec.open();
+            }
+            DataObject dob = cfg.getDataObject();
             EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
             ec.open();
         } catch (Exception e) {
@@ -114,11 +101,11 @@ public class RegisterMBeanAction extends CookieAction {
         }
     }
     
-    public HelpCtx getHelpCtx () {
+    public HelpCtx getHelpCtx() {
         return new HelpCtx(""); // NOI18N
     }
     
-    public String getName () {
-        return NbBundle.getMessage (RegisterMBeanAction.class, "LBL_Action_RegisterMBean"); // NOI18N
+    public String getName() {
+        return NbBundle.getMessage(RegisterMBeanAction.class, "LBL_Action_RegisterMBean"); // NOI18N
     }
 }

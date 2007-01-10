@@ -20,19 +20,16 @@
 package org.netbeans.modules.jmx.actions.dialog;
 
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.jmx.FireEvent;
-import org.netbeans.modules.jmx.Introspector;
+import org.netbeans.modules.jmx.JavaModelHelper;
 import org.netbeans.modules.jmx.MBeanAttribute;
-import org.netbeans.modules.jmx.WizardHelpers;
-import org.netbeans.modules.jmx.actions.AddAttrAction;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -49,8 +46,8 @@ import org.openide.util.NbBundle;
 public class AddAttributesPanel extends javax.swing.JPanel 
         implements FireEvent, ListSelectionListener {
     
-    /** class to add registration of MBean */
-    private JavaClass currentClass;
+    /** class to add Attributes to */
+    private JavaSource currentClass;
     
     private AddMBeanAttributeTableModel attributeModel;
     private AddAttributeTable attributeTable;
@@ -83,7 +80,7 @@ public class AddAttributesPanel extends javax.swing.JPanel
         FileObject fo = null;
         if (dob != null) fo = dob.getPrimaryFile();
         
-        currentClass = WizardHelpers.getJavaClassInProject(fo);
+        currentClass = JavaModelHelper.getSource(fo);
         
         // init tags
         
@@ -98,7 +95,13 @@ public class AddAttributesPanel extends javax.swing.JPanel
         attrTableLabel.setLabelFor(attributeTable);
         
         //discovery of existing Attributes
-        MBeanAttribute[] existAttributes = Introspector.getAttributes(currentClass);
+        MBeanAttribute[] existAttributes = null;
+        try {
+            existAttributes = JavaModelHelper.getAttributes(currentClass);
+        }catch(IOException ioex) {
+            existAttributes = new MBeanAttribute[0];
+        }
+        
         for (int i = 0; i < existAttributes.length; i++)
             attributeModel.addAttribute(existAttributes[i]);
         attributeModel.setFirstEditable(existAttributes.length);
@@ -212,9 +215,9 @@ public class AddAttributesPanel extends javax.swing.JPanel
     
     /**
      * Returns the MBean class to add Attributes.
-     * @return <CODE>JavaClass</CODE> the MBean class
+     * @return <CODE>JavaSource</CODE> the MBean class
      */
-    public JavaClass getMBeanClass() {
+    public JavaSource getMBeanClass() {
         return currentClass;
     }
     

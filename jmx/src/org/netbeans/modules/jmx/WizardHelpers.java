@@ -20,7 +20,6 @@ package org.netbeans.modules.jmx;
 
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.AbstractJMXTableModel;
 import java.io.*;
-import java.lang.reflect.Modifier;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -30,10 +29,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Set;
 import javax.swing.JComboBox;
-import javax.swing.JEditorPane;
 import javax.swing.JTextField;
 
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
@@ -49,27 +46,13 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
 import org.openide.ErrorManager;
-
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.jmi.javamodel.Constructor;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Element;
-import org.netbeans.jmi.javamodel.JavaModelPackage;
-import org.netbeans.jmi.javamodel.Parameter;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileStateInvalidException;
+import org.openide.cookies.SaveCookie;
 
 import org.openide.filesystems.URLMapper;
-import org.openide.nodes.Node;
 import org.openide.util.Utilities;
-import org.openide.windows.TopComponent;
 
 /**
  * Helper class : all methods are static.
@@ -518,6 +501,33 @@ public class WizardHelpers
         } else if (type.equals(WizardConstants.FLOAT_NAME)) {
             result = true;
         } else if (type.equals(WizardConstants.DOUBLE_NAME)) {
+            result = true;
+        }
+        return result;
+    }
+    
+    /**
+     * Returns true if this type is primitive, else returns false
+     * @param type <CODE>String</CODE> a type name
+     * @return <CODE>boolean</CODE> true if it is a primitive type.
+     */
+    public static boolean isStandardWrapperType(String type) {
+        boolean result = false;
+        if (type.equals(WizardConstants.BOOLEAN_OBJ_NAME)) {
+            result = true;
+        } else if (type.equals(WizardConstants.BYTE_OBJ_NAME)) {
+            result = true;
+        } else if (type.equals(WizardConstants.CHAR_OBJ_NAME)) {
+            result = true;
+        } else if (type.equals(WizardConstants.INTEGER_OBJ_NAME)) {
+            result = true;
+        } else if (type.equals(WizardConstants.LONG_OBJ_NAME)) {
+            result = true;
+        } else if (type.equals(WizardConstants.FLOAT_OBJ_NAME)) {
+            result = true;
+        } else if (type.equals(WizardConstants.DOUBLE_OBJ_NAME)) {
+            result = true;
+        } if (type.equals(WizardConstants.STRING_OBJ_NAME)) {
             result = true;
         }
         return result;
@@ -1134,367 +1144,6 @@ public class WizardHelpers
     }
     
     /**
-     * Returns an object describing the main class of the specified
-     * file object containing java source.
-     * @return <code>JavaClass</code> with the data object's
-     *          main class; or <code>null</code> if the class was not
-     *          found (e.g. because of a broken source file)
-     * @param name <CODE>String</CODE> a class name
-     * @param res <code>Resource</code> examine
-     */
-    public static JavaClass getJavaClass(Resource res,
-                                         String name) {
-        List l = res.getClassifiers();
-        Iterator it = l.iterator();
-        String resName = fileToClassName(res.getName());
-        if (resName != null) {
-            while (it.hasNext()) {
-                Element e = (Element)it.next();
-                if ((e instanceof JavaClass) && ((JavaClass)e).getName().endsWith(name)) 
-                     return (JavaClass)e;
-            }
-        }
-        return null;
-    }
-    
-    public static JavaClass getJavaClassInCurrentProjectFirst(Project project, String className) {
-        JavaClass clazz = findClassInProject(project, className);
-         if(clazz == null) {
-            clazz = getFirstFoundJavaClassInWholeMDR(className);
-        }
-        
-        return clazz;
-    }
-    
-    /*
-     * jfdenise, method is trustable. 
-     * A FileObject is needed when you want to resolve class. It is used as a context.
-     */
-    public static JavaClass getFirstFoundJavaClassInWholeMDR(String className) {
-         JavaModelPackage pkg = JavaModel.getDefaultExtent();
-         JavaClass clazz = (JavaClass) pkg.getJavaClass().resolve(className);
-         if(clazz != null && 
-            clazz.getClass().getName().startsWith("org.netbeans.jmi.javamodel.UnresolvedClass")) // NOI18N
-            clazz = null;
-         
-         return clazz;
-    }
-    
-    /**
-     * jfdenise, method is trustable. 
-     * A FileObject is needed when you want to resolve class. It is used as a context.
-     */
-    public static JavaClass getJavaClassInProject(FileObject foClass) {
-        JavaModel.getJavaRepository().beginTrans(false);
-        try {
-            //Need to be in transaction to findout validity
-            if(!foClass.isValid()) return null;
-            
-            JavaModel.setClassPath(foClass);
-            Resource rc = JavaModel.getResource(foClass);
-            return getJavaClass(rc, foClass.getName());
-        } finally {
-            JavaModel.getJavaRepository().endTrans();
-        }
-    }
-    
-    /**
-     * jfdenise, method is trustable.
-     * A FileObject is needed when you want to resolve class. It is used as a context.
-     */
-    public static FileObject getFileObjectForJavaClass(JavaClass javaClass) {
-        return JavaModel.getFileObject(javaClass.getResource());
-    }
-    
-    /**
-     * jfdenise, method is trustable.
-     * If class not found, return null.
-     */
-    public static JavaClass findClassInProject(Project project, String fullClassName) {
-        Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] grps = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        FileObject fo = null;
-        JavaClass foundClass = null;
-        for(int i = 0; i < grps.length; i++) {
-            JavaModel.getJavaRepository().beginTrans(true);
-            try {
-                fo = grps[i].getRootFolder();
-                JavaModel.setClassPath(fo);
-                JavaModelPackage pkg = JavaModel.getJavaExtent(fo);
-                foundClass = (JavaClass) pkg.getJavaClass().resolve(fullClassName);
-                //Is it a class from the current project?
-                //It needs to be. We are going to generate the file in the current project test dir
-                //currentClass = (JavaClass) pkg.getJavaClass().resolve(fullClassName);
-                if ((foundClass == null) || (foundClass.getClass().getName().startsWith(
-                        "org.netbeans.jmi.javamodel.UnresolvedClass"))) {
-                    //Not a valid class in this Source Group. Continue...
-                    foundClass = null;
-                    continue;
-                }
-                //else break
-                break;
-            }finally {
-                JavaModel.getJavaRepository().endTrans();
-            }
-        }
-        return foundClass;
-    }
-    
-    /**
-     * Returns an array of JavaClass object which are MBean classes 
-     * contained in the specified project.
-     * @return <code>JavaClass[]</code> with the data object's
-     *          main classes; or an empty array if any MBean class was 
-     *          found (e.g. because of a broken source file)
-     * @param project <CODE>Project</CODE> a project
-     */
-    public static JavaClass[] getMBeanClasses(Project project) {
-        JavaClass[] projectClasses = getJavaClasses(project);
-        Set results = new HashSet();
-        for (int i = 0; i < projectClasses.length; i++) {
-            if (Introspector.isMBeanClass(projectClasses[i]))
-                results.add(projectClasses[i]);
-        }
-        return (JavaClass[]) results.toArray(new JavaClass[results.size()]);
-    }
-    
-    /**
-     * Returns an array of JavaClass object contained in the specified project.
-     * @return <code>JavaClass[]</code> with the data object's
-     *          main classes; or an empty array if any class was 
-     *          found (e.g. because of a broken source file)
-     * @param project <CODE>Project</CODE> a project
-     */
-    public static JavaClass[] getJavaClasses(Project project) {
-        SourceGroup[] sources = getSourceGroups(project);
-        Set results = new HashSet();
-        for (int i = 0; i < sources.length; i++) {
-            Enumeration<? extends FileObject> files = 
-                    sources[i].getRootFolder().getChildren(true);
-            while (files.hasMoreElements()) {
-                FileObject file = files.nextElement();
-                Resource rc = JavaModel.getResource(file);
-                if (rc != null) {
-                    JavaClass clazz = getJavaClass(rc,file.getName());
-                    if (clazz != null)
-                        results.add(clazz);
-                }
-            }
-        }
-        return (JavaClass[]) results.toArray(new JavaClass[results.size()]);
-    }
-    
-    /**
-     * Returns an object describing the main method of the specified class
-     *
-     * @param clazz <code>JavaClass</code> examine
-     * @return  <code>Method</code> with the data object's
-     *          method main; or <code>null</code> if the main method was not
-     *          found 
-     */
-    public static Method getMainMethod(JavaClass clazz) {  
-        List l = clazz.getChildren();
-        Iterator it = l.iterator();
-        while (it.hasNext()) {
-            Element e = (Element)it.next();
-            if (e instanceof Method) {
-                if (((Method) e).getName().equals(
-                           WizardConstants.MAIN_METHOD_NAME)) 
-                        return (Method) e;
-            }
-        }
-        return null;
-    }
-    
-    /**
-     * Returns an object describing the method with the specified name 
-     * of the specified class
-     *
-     * @param clazz <code>JavaClass</code> examine
-     * @param methodName <code>String</code> method name to find
-     * @return  <code>Method</code> with the data object's
-     *          method main; or <code>null</code> if the main method was not
-     *          found 
-     */
-    public static Method getMethod(JavaClass clazz, String methodName) {  
-        List l = clazz.getChildren();
-        Iterator it = l.iterator();
-        while (it.hasNext()) {
-            Element e = (Element)it.next();
-            if (e instanceof Method) {
-                if (((Method) e).getName().equals(
-                           methodName)) 
-                        return (Method) e;
-            }
-        }
-        return null;
-    }
-    
-    /**
-     * Returns an array containing all declared methods of the specified class.
-     *
-     * @param clazz <code>JavaClass</code> examine
-     * @return  <code>Method[]</code> class methods or <code>null</code> if 
-     * there is no method 
-     */
-    public static Method[] getClassMethods(JavaClass clazz) {  
-        List l = clazz.getChildren();
-        Iterator it = l.iterator();
-        Set results = new HashSet();
-        while (it.hasNext()) {
-            Element e = (Element)it.next();
-            if (e instanceof Method) {
-                results.add((Method) e);
-            }
-        }
-        return (Method[]) results.toArray(new Method[results.size()]);
-    }
-    
-    /**
-     * Returns an array containing all declared public methods of the specified class.
-     *
-     * @param clazz <code>JavaClass</code> examine
-     * @return  <code>Method[]</code> public class methods or <code>null</code> if 
-     * there is no public method.
-     */
-    public static Method[] getPublicClassMethods(JavaClass clazz) {
-        Method[] methods = getClassMethods(clazz);
-        Set results = new HashSet();
-        for (int i = 0; i < methods.length; i++) {
-            if (Modifier.isPublic(methods[i].getModifiers()))
-                results.add(methods[i]);
-        }
-        return (Method[]) results.toArray(new Method[results.size()]);
-    } 
-    
-    /**
-     * Returns an array containing all methods of the specified class or of their
-     * super classes.
-     *
-     * @param clazz <code>JavaClass</code> examine
-     * @return  <code>Method[]</code> class methods or <code>null</code> if 
-     * there is no method 
-     */
-    public static Method[] getMethods(JavaClass clazz, String methodName) {  
-        List l = clazz.getChildren();
-        Iterator it = l.iterator();
-        Set results = new HashSet();
-        while (it.hasNext()) {
-            Element e = (Element)it.next();
-            if (e instanceof Method) {
-                if (((Method) e).getName().equals(methodName))
-                    results.add((Method) e);
-            }
-        }
-        JavaClass superClazz = clazz.getSuperClass();
-        if (superClazz != null) {
-            JavaModelPackage pkg = (JavaModelPackage)clazz.refImmediatePackage();  
-            JavaClass superCls = (JavaClass)
-                pkg.getJavaClass().resolve(superClazz.getName());
-            Method[] methods = getMethods(superCls, methodName);
-            for (int i = 0; i < methods.length; i++)
-                results.add(methods[i]);
-        }
-        return (Method[]) results.toArray(new Method[results.size()]);
-    }
-    
-    /**
-     * Returns an array containing all  methods of the specified interface and 
-     * of their super interfaces.
-     *
-     * @param clazz <code>JavaClass</code> examine 
-     * @return  <code>Method[]</code> class methods or <code>null</code> if 
-     * there is no method 
-     */
-    public static Method[] getInterfaceMethods(JavaClass clazz) {  
-        List interfaces = clazz.getInterfaces();
-        Set results = new HashSet();
-        for (Iterator<JavaClass> it = interfaces.iterator(); it.hasNext();) {
-            JavaModelPackage pkg = (JavaModelPackage) clazz.refImmediatePackage();  
-            JavaClass superIntf = (JavaClass)
-                pkg.getJavaClass().resolve(it.next().getName());
-            Method[] methods = getInterfaceMethods(superIntf);
-            for (int i = 0; i < methods.length; i++) {
-                if (!containsMethod(results,methods[i]))
-                    results.add(methods[i]);
-            }
-        }
-        Method[] methods = getPublicClassMethods(clazz);
-        for (int i = 0; i < methods.length; i++) {
-            if (!containsMethod(results,methods[i]))
-                results.add(methods[i]);
-        }
-        return (Method[]) results.toArray(new Method[results.size()]);
-    }
-    
-    /**
-     * Returns an array containing all implemented interface names by this class.
-     *
-     * @param clazz <code>JavaClass</code> examine 
-     * @return  <code>String[]</code> class methods or an empty array if 
-     * there is no interface.
-     */
-    public static String[] getInterfaceNames(JavaClass clazz) {  
-        JavaModel.getJavaRepository().beginTrans(false);
-        try {
-            JavaModel.setClassPath(WizardHelpers.getFileObjectForJavaClass(clazz));
-            Set results = new HashSet();
-            JavaClass superClass = clazz.getSuperClass();
-            JavaModelPackage pkg = (JavaModelPackage) clazz.refImmediatePackage();
-            if (superClass != null) {
-                superClass = (JavaClass)
-                pkg.getJavaClass().resolve(superClass.getName());
-                List superCLassIntfs = superClass.getInterfaces();
-                for (Iterator<JavaClass> it = superCLassIntfs.iterator(); it.hasNext();) {
-                    String intfName = it.next().getName();
-                    if (!containsString(results,intfName))
-                        results.add(intfName);
-                    JavaClass superIntf = (JavaClass)
-                    pkg.getJavaClass().resolve(intfName);
-                    String[] intfs = getInterfaceNames(superIntf);
-                    for (int i = 0; i < intfs.length; i++) {
-                        if (!containsString(results,intfs[i]))
-                            results.add(intfs[i]);
-                    }
-                }
-            }
-            List interfaces = clazz.getInterfaces();
-            for (Iterator<JavaClass> it = interfaces.iterator(); it.hasNext();) {
-                JavaClass superIntf = (JavaClass)
-                pkg.getJavaClass().resolve(it.next().getName());
-                String[] intfs = getInterfaceNames(superIntf);
-                for (int i = 0; i < intfs.length; i++) {
-                    if (!containsString(results,intfs[i]))
-                        results.add(intfs[i]);
-                }
-            }
-            for (Iterator<JavaClass> it = interfaces.iterator(); it.hasNext();) {
-                JavaClass intf = it.next();
-                if (!containsString(results,intf.getName()))
-                    results.add(intf.getName());
-            }
-            return (String[]) results.toArray(new String[results.size()]);
-        }finally {
-            JavaModel.getJavaRepository().endTrans();
-        }
-    }
-    
-    /**
-     * Returns if this method is already contained in the set.
-     * @return <code>boolean</code> false if this method is already contained 
-     * in the set, else true.
-     */
-    public static boolean containsMethod(Set methods, Method method) {
-        for (Iterator<Method> it = methods.iterator(); it.hasNext();) {
-            Method currentMethod = it.next();
-            if ((method.getName().equals(currentMethod.getName())) &&
-                getSignature(method).equals(getSignature(currentMethod))) 
-                return true;
-        }
-        return false;
-    }
-    
-    /**
      * Returns if this string is already contained in the set.
      * @return <code>boolean</code> false if this method is already contained 
      * in the set, else true.
@@ -1506,97 +1155,6 @@ public class WizardHelpers
                 return true;
         }
         return false;
-    }
-    
-    /**
-     * returns the signature of this method. ex : java.lang.String,boolean,int.
-     */
-    public static String getSignature(Method method) {
-        List params = method.getParameters();
-        StringBuffer signature = new StringBuffer();
-        for (Iterator<Parameter> it = params.iterator(); it.hasNext();) {
-            signature.append(it.next().getType().getName());
-            if (it.hasNext())
-                signature.append(",");// NOI18N
-        }
-        return signature.toString();
-    }
-    
-    /**
-     * Returns an array containing all public constructors of the specified class.
-     *
-     * @param clazz <code>JavaClass</code> examine 
-     * @return  <code>Method[]</code> class methods or <code>null</code> if 
-     * there is no method 
-     */
-    public static Constructor[] getConstructors(JavaClass clazz) {  
-        List childs = clazz.getChildren();
-        Set results = new HashSet();
-        for (Iterator<JavaClass> it = childs.iterator(); it.hasNext();) {
-            Element e = (Element)it.next();
-            if (e instanceof Constructor) {
-                final int mods = ((Constructor) e).getModifiers();
-	        if (Modifier.isPublic(mods))
-                    results.add((Constructor) e);
-            }
-        }
-        return (Constructor[]) results.toArray(new Constructor[results.size()]);
-    }
-    
-    private static Constructor[] getAllConstructors(JavaClass clazz) {
-        List childs = clazz.getChildren();
-        Set results = new HashSet();
-        for (Iterator<JavaClass> it = childs.iterator(); it.hasNext();) {
-            Element e = (Element)it.next();
-            if (e instanceof Constructor) {
-                results.add((Constructor) e);
-            }
-        }
-        return (Constructor[]) results.toArray(new Constructor[results.size()]);
-    }
-    
-    private static boolean checkDefaultConstruct(JavaClass clazz) {
-        JavaModel.getJavaRepository().beginTrans(false);
-        try {
-            JavaModel.setClassPath(getFileObjectForJavaClass(clazz));
-            boolean superClassCheck = true;
-            if (clazz.getSuperClass() != null) {
-                JavaModelPackage pkg = (JavaModelPackage) clazz.getResource().refImmediatePackage();
-                JavaClass superClass = (JavaClass)
-                pkg.getJavaClass().resolve(clazz.getSuperClass().getName());
-                superClassCheck = checkDefaultConstruct(superClass);
-            }
-            Constructor[] constructors = getAllConstructors(clazz);
-            boolean defaultExists = false;
-            for (int i = 0 ; i < constructors.length ; i++) {
-                if ((constructors[i].getParameters().size() == 0) &&
-                        !Modifier.isPrivate(constructors[i].getModifiers())) {
-                    defaultExists = true;
-                    break;
-                }
-            }
-            return superClassCheck && (defaultExists || (constructors.length == 0));
-        }finally {
-            JavaModel.getJavaRepository().endTrans();
-        }
-    }
-    
-    public static boolean hasOnlyDefaultConstruct(JavaClass clazz) {
-        JavaModel.getJavaRepository().beginTrans(false);
-        try {
-            JavaModel.setClassPath(getFileObjectForJavaClass(clazz));
-            boolean superClassCheck = true;
-            if (clazz.getSuperClass() != null) {               
-                JavaModelPackage pkg = (JavaModelPackage) clazz.getResource().refImmediatePackage();
-                JavaClass superClass = (JavaClass)
-                pkg.getJavaClass().resolve(clazz.getSuperClass().getName());
-                superClassCheck = checkDefaultConstruct(superClass);
-            }
-            return (getAllConstructors(clazz).length == 0) &&
-                    superClassCheck;
-        }finally {
-            JavaModel.getJavaRepository().endTrans();
-        }
     }
     
     /**
@@ -1681,12 +1239,12 @@ public class WizardHelpers
         typeCombo.addItem(WizardConstants.BOOLEAN_NAME);
         typeCombo.addItem(WizardConstants.BYTE_NAME);
         typeCombo.addItem(WizardConstants.CHAR_NAME);
-        typeCombo.addItem(WizardConstants.DATE_OBJ_NAME);
+        typeCombo.addItem(WizardConstants.DATE_OBJ_FULLNAME);
         typeCombo.addItem(WizardConstants.INT_NAME);
         typeCombo.addItem(WizardConstants.LONG_NAME);
         typeCombo.addItem(WizardConstants.FLOAT_NAME);
         typeCombo.addItem(WizardConstants.DOUBLE_NAME);
-        typeCombo.addItem(WizardConstants.OBJECTNAME_NAME);        
+        typeCombo.addItem(WizardConstants.OBJECTNAME_FULLNAME);        
         typeCombo.addItem(WizardConstants.STRING_OBJ_NAME);
         typeCombo.setSelectedItem(WizardConstants.STRING_OBJ_NAME);
         typeCombo.setEditable(true);
@@ -1747,5 +1305,9 @@ public class WizardHelpers
         }
         return false;
     }*/
-    
+    public static void save(DataObject dO) throws IOException {
+        SaveCookie sc = (SaveCookie) dO.getCookie(SaveCookie.class);
+        if (null != sc)
+            sc.save();
+    }
 }

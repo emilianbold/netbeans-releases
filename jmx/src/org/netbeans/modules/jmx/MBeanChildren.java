@@ -24,11 +24,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.modules.javacore.api.JavaModel;
-
+import org.netbeans.api.java.source.JavaSource;
 /**
  * Displays folders and Java source files under a source node.
  * @author Marian Petras, Jesse Glick
@@ -41,8 +37,7 @@ public class MBeanChildren extends JavaChildren {
         super(parent);
     }
     
-    protected Node[] createNodes(Object original) {
-        Node originalNode = (Node) original;
+    protected Node[] createNodes(Node originalNode) {
         Node newNode;
         
         Object cookie = originalNode.getCookie(DataObject.class);
@@ -60,9 +55,8 @@ public class MBeanChildren extends JavaChildren {
                 DataObject dob = (DataObject) originalNode.getCookie(DataObject.class);
                 FileObject fo = null;
                 if (dob != null) fo = dob.getPrimaryFile();
-                JavaClass foClass = WizardHelpers.getJavaClass(
-                        JavaModel.getResource(fo),fo.getName());
-                accepted = Introspector.testCompliance(foClass);
+                JavaSource foClass = JavaModelHelper.getSource(fo);
+                accepted = JavaModelHelper.testMBeanCompliance(foClass);
                 } catch (Exception e) {
                     accepted  = false;
                 }

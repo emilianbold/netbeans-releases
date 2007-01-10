@@ -47,7 +47,6 @@ public class WizardConstants
     public static final String AGENT_TEMPLATE_CLASS             = "Agent"; // NOI18N
     public static final String MAIN_METHOD_NAME                 = "main"; // NOI18N
     public static final String PROP_AGENT_DEFAULT_NAME          = "JMXAgent";// NOI18N
-    public static final String PROP_AGENT_INIT_METHOD_NAME      = "init"; // NOI18N
     public static final String PROP_AGENT_MAIN_METHOD_SELECTED  = 
             "wizdata.agentMainMethodSelected"; // NOI18N
     public static final String PROP_AGENT_SAMPLE_CODE_SELECTED  = 
@@ -95,7 +94,7 @@ public class WizardConstants
     static public final String ACCESS_EXT           = "access";// NOI18N
     static public final String PASSWORD_EXT         = "password";// NOI18N
     static public final String MBEAN_ITF_SUFFIX     = "MBean";// NOI18N
-    static public final String JUNIT_TEST_SUFFIX    = "Test";// NOI18N
+    static public final String MXBEAN_ITF_SUFFIX     = "MXBean";// NOI18N
     static public final String AGENT_ITF_SUFFIX     = "Agent";// NOI18N
     public static final String MBEAN_SUPPORT_SUFFIX = "DynamicSupport";// NOI18N
     
@@ -139,22 +138,22 @@ public class WizardConstants
     
     static public final String MBEAN_POPUP_EDIT_BUTTON = "Edit";// NOI18N
     static public final String MBEAN_DESCR_DEFVALUE    = " Description";// NOI18N
-    static public final String JUNIT_TEST_CLASS_NAME_DEFVALUE = 
-            "NewJMXResourceTest";        // NOI18N
     static public final String MBEAN_NAME_DEFVALUE = "NewJMXResource";// NOI18N
     
     // MBean types
     static public final String MBEAN_STANDARDMBEAN = "Standard";// NOI18N
+    static public final String MXBEAN = "MXBean";// NOI18N
+    static public final String MXBEAN_SUFFIX = "MXBean";// NOI18N
+    static public final String MXBEAN_ANNOTATION = "MXBean";// NOI18N
     static public final String MBEAN_DYNAMICMBEAN  = "Dynamic";// NOI18N
     static public final String MBEAN_EXTENDED      = "Extended";// NOI18N
-    
+    static public final String MBEAN_FROM_EXISTING_CLASS      = "FromExistingClass";// NOI18N
     // Attributes stored on the template wizard:
     /** type String. */
 
     // information of the MBean panel
     public static final String PROP_MBEAN_DESCRIPTION            = "wizdata.mbeanDescription"; // NOI18N
-    public static final String PROP_MBEAN_TYPE                   = "wizdata.mbeanType";       // NOI18N 
-    public static final String PROP_JUNIT_SELECTED               = "wizdata.junitSelected";// NOI18N
+    public static final String PROP_MBEAN_TYPE                   = "wizdata.mbeanType";       // NOI18N
     public static final String PROP_ATTR_NB                      = "wizdata.attributeNb"; // NOI18N
     public static final String PROP_ATTR_NAME                    = "wizdata.attributeName"; // NOI18N
     public static final String PROP_ATTR_TYPE                    = "wizdata.attributeType"; // NOI18N
@@ -172,18 +171,6 @@ public class WizardConstants
     public static final String PROP_NOTIF_CLASS                  = "wizdata.notifClass"; // NOI18N
     public static final String PROP_NOTIF_DESCR                  = "wizdata.notifDescription"; // NOI18N
     public static final String PROP_NOTIF_TYPE                   = "wizdata.notifType"; // NOI18N
-    public static final String PROP_JUNIT_CLASSNAME              = "wizdata.junitClassName"; // NOI18N
-    public static final String PROP_JUNIT_LOCATION               = "wizdata.junitLocation"; // NOI18N
-    public static final String PROP_JUNIT_PACKAGE                = "wizdata.junitPackage"; // NOI18N
-    public static final String PROP_JUNIT_SETUP_SELECTED         = "wizdata.junitSetupSelected";// NOI18N
-    public static final String PROP_JUNIT_TEARDOWN_SELECTED      = "wizdata.junitTeardownSelected";// NOI18N
-    public static final String PROP_JUNIT_DEFMETHBODIES_SELECTED = "wizdata.junitDefMethBodiesSelected";// NOI18N
-    public static final String PROP_JUNIT_JAVADOC_SELECTED       = "wizdata.junitJavadocSelected";// NOI18N
-    public static final String PROP_JUNIT_HINT_SELECTED          = "wizdata.junitHintSelected";// NOI18N
-    
-    // action to create JUnit tests for an existing MBean
-    public static final String PROP_MBEAN_JUNIT_TEST_MBEANDO = "wizdata.mbeanjunitMBeanDO";// NOI18N
-    public static final String PROP_MBEAN_JUNIT_TEST_GENINFO = "wizdata.mbeanjunitMBeanGenInfo";// NOI18N
             
     // number of times the user switched panels
     public static final String PROP_USER_ORDER_NUMBER            = "wizdata.intro_attributeName";// NOI18N

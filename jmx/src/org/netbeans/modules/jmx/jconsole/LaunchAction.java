@@ -70,17 +70,16 @@ public class LaunchAction extends javax.swing.AbstractAction {
             try {
                 
                 JConsoleSettings settings = JConsoleSettings.getDefault();
-                String cp = settings.getClassPath();
+                String cp = settings.NETBEANS_CLASS_PATH + File.pathSeparator + 
+                        settings.getClassPath();
                 String url = settings.getDefaultUrl() == null ? "" : settings.getDefaultUrl();// NOI18N
                 String polling = String.valueOf(settings.getPolling());
                 String vmOptions = settings.getVMOptions() == null ? "" : settings.getVMOptions();// NOI18N
                 String tile = !settings.getTile() ? "-notile" : "";// NOI18N
                 String javahome = System.getProperty("jdk.home");// NOI18N
-                String fileSep = System.getProperty("file.separator");// NOI18N
-                String cpSep = System.getProperty("path.separator");// NOI18N
-                
-                String commonCmdLine  = javahome + fileSep + "bin" + fileSep +"java" + " "+ vmOptions + " " + // NOI18N
-                        "-classpath ";// NOI18N
+                String pluginsPath = settings.getPluginsPath();
+                String otherArgs = settings.getOtherArgs();
+                String commonCmdLine = javahome + File.separator + "bin" + File.separator + "java" + " " + vmOptions + " " + "-classpath ";// NOI18N
                 
                 String enclosing = "";// NOI18N
                 
@@ -89,12 +88,16 @@ public class LaunchAction extends javax.swing.AbstractAction {
                 if(os.startsWith("Win"))// NOI18N
                     enclosing = "\"";// NOI18N
                 
-                String classpath = enclosing + cp + cpSep + javahome + fileSep + "lib" + // NOI18N
-                                               fileSep + "jconsole.jar" + enclosing;// NOI18N
-                    
+                String classpath = enclosing + cp + File.pathSeparator + javahome + File.separator + "lib" + // NOI18N
+                                               File.separator + "jconsole.jar" + enclosing;// NOI18N
+                String args = "-interval=" + polling + " " + tile + (otherArgs == null ? "" : " " + otherArgs); // NOI18N
+                if(JConsoleSettings.isNetBeansJVMGreaterThanJDK15()) {
+                    if(pluginsPath != null && !pluginsPath.equals("")) {
+                        args = args + " -pluginpath " + pluginsPath;
+                    }
+                }
                 String cmdLine = commonCmdLine + classpath + 
-                                 " sun.tools.jconsole.JConsole -interval="  + // NOI18N
-                                 polling + " " + tile + " " + url;// NOI18N
+                                 " sun.tools.jconsole.JConsole "+ args + " " + url;// NOI18N
                 
                 String msg1 = NbBundle.getMessage(LaunchAction.class,"LBL_ActionStartingMessage");// NOI18N
                 
@@ -125,9 +128,10 @@ public class LaunchAction extends javax.swing.AbstractAction {
                 
                 
             }catch(Exception e) {
+                console.message(e.toString());
                 System.out.println(e.toString());
             } finally{
-                stopped(console);
+               stopped(console);
             }
         }
     }
@@ -197,7 +201,7 @@ public class LaunchAction extends javax.swing.AbstractAction {
         started = false;
         String msg = NbBundle.getMessage(LaunchAction.class,"LBL_ActionStoppedMessage");// NOI18N
         console.message(msg);
-        console.close();
+        //console.close();
         //console = null;
     }
     

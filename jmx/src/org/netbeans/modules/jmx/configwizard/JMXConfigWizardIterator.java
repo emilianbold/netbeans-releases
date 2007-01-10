@@ -65,7 +65,6 @@ public class JMXConfigWizardIterator implements TemplateWizard.Iterator
     private static final int INDEX_TARGET = 2;
     private static final int INDEX_RMI = 3;
     private static final int INDEX_SNMP = 4;
-    private static final int INDEX_OTHER = 5;
 
     /** name of panel &quot;Name &amp; Location&quot; */
     private final String nameTarget = NbBundle.getMessage(
@@ -79,10 +78,6 @@ public class JMXConfigWizardIterator implements TemplateWizard.Iterator
     private final String nameSNMP = NbBundle.getMessage(
             JMXConfigWizardIterator.class,
             "LBL_SNMP_Panel");  // NOI18N
-    
-    private final String nameOther = NbBundle.getMessage(
-            JMXConfigWizardIterator.class,
-            "LBL_OTHER_Panel");  // NOI18N
     
     /** index of the current panel */
     private int current;
@@ -142,7 +137,7 @@ public class JMXConfigWizardIterator implements TemplateWizard.Iterator
     /**
      */
     public boolean hasNext() {
-        return current < INDEX_OTHER;
+        return current < INDEX_SNMP;
     }
 
     /**
@@ -174,8 +169,6 @@ public class JMXConfigWizardIterator implements TemplateWizard.Iterator
                 return getRMIPanel();
             case INDEX_SNMP:
                 return getSNMPPanel();
-            case INDEX_OTHER:
-                return getOtherPanel();
             default:
                 throw new IllegalStateException();
         }
@@ -218,13 +211,6 @@ public class JMXConfigWizardIterator implements TemplateWizard.Iterator
         }
         return snmpPanel;
     }
-    
-    private WizardDescriptor.Panel getOtherPanel() {
-        if (otherPanel == null) {
-            otherPanel = new OtherPanel.OtherWizardPanel();
-        }
-        return otherPanel;
-    }
 
     /**
      */
@@ -236,8 +222,6 @@ public class JMXConfigWizardIterator implements TemplateWizard.Iterator
                 return nameRMI;
             case INDEX_SNMP:
                 return nameSNMP;
-            case INDEX_OTHER:
-                return nameOther;
             default:
                 throw new AssertionError(current);
         }
@@ -270,8 +254,6 @@ public class JMXConfigWizardIterator implements TemplateWizard.Iterator
                   "LBL_RMI_Panel"),// NOI18N
           NbBundle.getMessage(JMXConfigWizardIterator.class,
                   "LBL_SNMP_Panel"),// NOI18N
-          NbBundle.getMessage(JMXConfigWizardIterator.class,
-                  "LBL_OTHER_Panel"),// NOI18N
           };
 
         ((javax.swing.JComponent)getTargetPanel().getComponent()).
@@ -286,10 +268,6 @@ public class JMXConfigWizardIterator implements TemplateWizard.Iterator
                 putClientProperty("WizardPanel_contentData", panelNames); // NOI18N
         ((javax.swing.JComponent)getSNMPPanel().getComponent()).
                 putClientProperty("WizardPanel_contentSelectedIndex", new Integer(2)); // NOI18N
-        ((javax.swing.JComponent)getOtherPanel().getComponent()).
-                putClientProperty("WizardPanel_contentData", panelNames); // NOI18N
-        ((javax.swing.JComponent)getOtherPanel().getComponent()).
-                putClientProperty("WizardPanel_contentSelectedIndex", new Integer(3)); // NOI18N
         
         wiz.putProperty(WizardConstants.RMI_PORT, 
                 Integer.valueOf(bundle.getString("RMI_Port_Default")));// NOI18N

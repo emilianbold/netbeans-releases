@@ -18,13 +18,10 @@
  */
 
 package org.netbeans.modules.jmx.actions;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.modules.javacore.api.JavaModel;
+import java.io.IOException;
+import org.netbeans.api.java.source.JavaSource;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.actions.CookieAction;
-import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.jmx.*;
@@ -32,74 +29,57 @@ import org.netbeans.modules.jmx.actions.dialog.AddRegistIntfPanel;
 import org.netbeans.modules.jmx.mbeanwizard.generator.AddRegistIntfGenerator;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
  * Action used to add MBeanRegistration implementation to an existing MBean.
  * @author tl156378
  */
-public class AddRegisterIntfAction extends CookieAction {
+public class AddRegisterIntfAction extends NodeAction {
     
     private DataObject dob;
-    private Resource rc;
     
     /**
-     * Creates a new instance of UpdateAttrAction 
+     * Creates a new instance of UpdateAttrAction
      */
     public AddRegisterIntfAction() {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
         
     }
     
-    protected Class[] cookieClasses() {
-        return new Class[] { SourceCookie.class };
-    }
-     
-    protected int mode() {
-        // allow multiple selected nodes (classes, packages)
-        return MODE_EXACTLY_ONE;    
-    }
-    
     public boolean asynchronous() {
         return false; // yes, this action should run asynchronously
         // would be better to rewrite it to synchronous (running in AWT thread),
         // just replanning test generation to RequestProcessor
-    }  
-    
-    protected boolean enable (Node[] nodes) {
-        if (!super.enable(nodes)) return false;
-        if (nodes.length == 0) return false;
-        
-        dob = (DataObject)nodes[0].getCookie(DataObject.class);
-        FileObject fo = null;
-        if (dob == null) return false;
-        
-        fo = dob.getPrimaryFile();
-        
-        JavaClass foClass = WizardHelpers.getJavaClassInProject(fo);
-        if (foClass == null) return false;
-        
-        //We need to do all MDR access in a transaction
-        JavaModel.getJavaRepository().beginTrans(false);
-        try {
-            JavaModel.setClassPath(fo);
-            rc = JavaModel.getResource(fo);
-           
-            boolean isMBean = Introspector.testCompliance(foClass);
-            boolean hasMBeanRegistIntf = Introspector.hasMBeanRegistIntf(foClass);
-            
-            return isMBean && !hasMBeanRegistIntf;
-        } finally {
-            JavaModel.getJavaRepository().endTrans();
-        }
     }
     
-    protected void performAction (Node[] nodes) {
-        FileObject fo = null;
-        if (dob != null) fo = dob.getPrimaryFile();
-        //We need to do all MDR access in a transaction
-        JavaModel.getJavaRepository().beginTrans(false);
+    protected boolean enable(Node[] nodes) {
+        if (nodes.length == 0) return false;
+        dob = (DataObject) nodes[0].getLookup().lookup(DataObject.class);
+        if(dob == null) return false;
+        
+        FileObject fo = dob.getPrimaryFile();
+        if(fo == null)
+            return false;
+        
+        JavaSource foClass = JavaModelHelper.getSource(fo);
+        if (foClass == null) return false;
         try {
-            JavaModel.setClassPath(fo);
+            boolean isMBean = JavaModelHelper.testMBeanCompliance(foClass);
+            boolean hasMBeanRegistIntf = JavaModelHelper.implementsMBeanRegistrationItf(foClass);
+            
+            return isMBean && !hasMBeanRegistIntf;
+        }catch(IOException ex) {
+            ex.printStackTrace();
+        }
+        return false;
+    }
+    
+    protected void performAction(Node[] nodes) {
+        try {
+            FileObject fo = null;
+            if (dob != null) fo = dob.getPrimaryFile();
+            
             // show configuration dialog
             // when dialog is canceled, escape the action
             AddRegistIntfPanel cfg = new AddRegistIntfPanel(nodes[0]);
@@ -107,23 +87,20 @@ public class AddRegisterIntfAction extends CookieAction {
                 return;
             }
             AddRegistIntfGenerator generator = new AddRegistIntfGenerator();
-            try {
-                generator.update(fo, cfg.getMBeanClass(),rc,cfg.getKeepRefSelected());
-                EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
-                ec.open();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } finally {
-            JavaModel.getJavaRepository().endTrans();
+            
+            generator.update(fo, cfg.getKeepRefSelected());
+            EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
+            ec.open();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
     
-    public HelpCtx getHelpCtx () {
+    public HelpCtx getHelpCtx() {
         return new HelpCtx(""); // NOI18N
     }
     
-    public String getName () {
+    public String getName() {
         return NbBundle.getMessage(AddRegisterIntfAction.class,"LBL_Action_AddMBeanRegistrationIntf"); // NOI18N
     }
 }

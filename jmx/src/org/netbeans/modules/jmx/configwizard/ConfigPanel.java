@@ -57,21 +57,34 @@ public class ConfigPanel extends javax.swing.JPanel
         this.wiz = wiz;
         bundle = NbBundle.getBundle(ConfigPanel.class);
         initComponents ();
+        
         Mnemonics.setLocalizedText(rmiAccessFileJLabel,
                      bundle.getString("LBL_RMI_Access_File"));//NOI18N
         Mnemonics.setLocalizedText(rmiPasswordFileJLabel,
                      bundle.getString("LBL_RMI_Password_File"));//NOI18N
         
+        
+        Mnemonics.setLocalizedText(threadContentionJCheckBox,
+                                   bundle.getString("LBL_ThreadContention"));//NOI18N
+        
+        
+        //Set tooltips
+        threadContentionJCheckBox.setToolTipText(bundle.getString("TLTP_Thread_Contention"));//NOI18N
+        
         // Provide a name in the title bar.
         setName(bundle.getString("LBL_Config_Panel")); // NOI18N
-        
-        
+                
         //Accessibility
+        threadContentionJCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_OTHER_CONTENTION")); // NOI18N
+        threadContentionJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_OTHER_CONTENTION_DESCRIPTION"));// NOI18N
+
         rmiAccessFileJTextField.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_RMI_ACCESS_FILE")); // NOI18N
         rmiAccessFileJTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_RMI_ACCESS_FILE_DESCRIPTION"));// NOI18N
         
         rmiPasswordFileJTextField.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_RMI_PASSWORD_FILE"));// NOI18N
         rmiPasswordFileJTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_RMI_PASSWORD_FILE_DESCRIPTION"));// NOI18N
+
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
     }
     
     /** This method is called from within the constructor to
@@ -89,6 +102,7 @@ public class ConfigPanel extends javax.swing.JPanel
         rmiPasswordFileJLabel = new javax.swing.JLabel();
         rmiAccessFileJTextField = new javax.swing.JTextField();
         rmiPasswordFileJTextField = new javax.swing.JTextField();
+        threadContentionJCheckBox = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -135,12 +149,22 @@ public class ConfigPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         northWestCenterPanel.add(rmiPasswordFileJTextField, gridBagConstraints);
 
+        threadContentionJCheckBox.setText("jCheckBox1");
+        threadContentionJCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        threadContentionJCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(13, 0, 0, 0);
+        northWestCenterPanel.add(threadContentionJCheckBox, gridBagConstraints);
+
         northPanel.add(northWestCenterPanel, java.awt.BorderLayout.CENTER);
 
         add(northPanel, java.awt.BorderLayout.NORTH);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel northPanel;
@@ -149,6 +173,7 @@ public class ConfigPanel extends javax.swing.JPanel
     private javax.swing.JTextField rmiAccessFileJTextField;
     private javax.swing.JLabel rmiPasswordFileJLabel;
     private javax.swing.JTextField rmiPasswordFileJTextField;
+    private javax.swing.JCheckBox threadContentionJCheckBox;
     // End of variables declaration//GEN-END:variables
     
     /**
@@ -299,6 +324,12 @@ public class ConfigPanel extends javax.swing.JPanel
             }
             getPanel().rmiAccessFileJTextField.setText(rmiAccessFileName);
             getPanel().rmiPasswordFileJTextField.setText(rmiPasswordFileName);
+            Boolean threadContention = (Boolean)
+                    templateWiz.getProperty(WizardConstants.
+                    THREAD_CONTENTION_MONITOR); 
+            if(threadContention != null)
+               getPanel().threadContentionJCheckBox.
+                       setSelected(threadContention);
         }
         
         public void storeSettings(Object settings) {
@@ -312,6 +343,10 @@ public class ConfigPanel extends javax.swing.JPanel
             if (nameTextField != null) {
                 Templates.setTargetName(templateWiz,nameTextField.getText());
             }
+            Boolean threadContention = 
+                    getPanel().threadContentionJCheckBox.isSelected();
+            templateWiz.putProperty(WizardConstants.THREAD_CONTENTION_MONITOR, 
+                    threadContention);
         }
               
         public HelpCtx getHelp() {

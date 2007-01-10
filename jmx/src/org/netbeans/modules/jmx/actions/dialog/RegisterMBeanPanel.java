@@ -22,31 +22,20 @@ package org.netbeans.modules.jmx.actions.dialog;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.Iterator;
-import java.util.List;
+import java.io.IOException;
+import java.util.Map;
 import java.util.ResourceBundle;
+import javax.lang.model.element.ExecutableElement;
 import javax.swing.JButton;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.jmi.javamodel.Constructor;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.JavaModelPackage;
-import org.netbeans.jmi.javamodel.Parameter;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.jmx.Introspector;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.WizardHelpers;
 import org.netbeans.modules.jmx.ClassButton;
 import org.netbeans.modules.jmx.MBeanClassButton;
-import org.netbeans.modules.jmx.actions.RegisterMBeanAction;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -57,17 +46,18 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.jmx.JavaModelHelper;
 
 /**
  * Panel which is used to ask which MBean to instantiate and register.
  * @author  tl156378
  */
-public class RegisterMBeanPanel extends javax.swing.JPanel 
+public class RegisterMBeanPanel extends javax.swing.JPanel
         implements ItemListener, DocumentListener {
     
     /** class to add registration of MBean */
-    private JavaClass currentClass;
-    private JavaClass mbeanClass = null;
+    private JavaSource agentClass;
+    private JavaSource mbeanClass = null;
     private Project project = null;
     
     private ResourceBundle bundle;
@@ -76,20 +66,21 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
     private boolean isMBean = false;
     private boolean isExistingClass = false;
     private boolean isValid = false;
-    
+    private DataObject dob;
+    private Map<String, ExecutableElement> constructorsMap;
     /**
      * Returns the current Java class.
      * @return <CODE>JavaClass</CODE> current specified Java class
      */
-    public JavaClass getJavaClass() {
-        return currentClass;
+    public JavaSource getAgentJavaSource() {
+        return agentClass;
     }
     
     /**
      * Returns the current user defined MBean class.
      * @return <CODE>JavaClass</CODE> specified MBean class
      */
-    public JavaClass getMBeanClass() {
+    public JavaSource getMBeanJavaSource() {
         return mbeanClass;
     }
     
@@ -117,7 +108,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         if (standardMBeanRadioButton.isSelected())
             return classNameTextField.getText();
         else
-            return WizardConstants.NULL; 
+            return WizardConstants.NULL;
     }
     
     /**
@@ -128,23 +119,23 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         if (standardMBeanRadioButton.isSelected()) {
             String interfaceName = (String) interfaceComboBox.getSelectedItem();
             if (bundle.getString("LBL_GeneratedInterface").equals(interfaceName)) // NOI18N
-                return WizardConstants.NULL;
+                return null;
             else
                 return interfaceName;
         } else
-            return WizardConstants.NULL;
+            return null;
     }
     
     /**
      * Returns the current user defined constructor signature.
      * @return <CODE>String</CODE> signature of choosed constructor
      */
-    public String getConstructorSignature() {
+    public ExecutableElement getConstructor() {
         String construct = (String) constructorComboBox.getSelectedItem();
         if (bundle.getString("LBL_StandardMBeanDefaultConstructor").equals(construct)) // NOI18N
-            return WizardConstants.NULL;
+            return null;
         else
-            return construct;
+            return constructorsMap.get(construct);
     }
     
     /**
@@ -156,12 +147,12 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         
         initComponents();
         
-        DataObject dob = (DataObject)node.getCookie(DataObject.class);
+        dob = (DataObject)node.getCookie(DataObject.class);
         FileObject fo = null;
         if (dob != null) fo = dob.getPrimaryFile();
         project = WizardHelpers.getProject(fo);
         
-        currentClass = WizardHelpers.getJavaClassInProject(fo);
+        agentClass = JavaModelHelper.getSource(fo);
         
         // init tags
         userMBeanRadioButton.setSelected(true);
@@ -222,9 +213,6 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         interfaceComboBox.getAccessibleContext().setAccessibleDescription(
                 bundle.getString("ACCESS_REGISTER_STDMBEAN_INTERFACE_DESCRIPTION")); // NOI18N
         
-        
-        
-        
         getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
     }
     
@@ -233,11 +221,14 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
                 (!standardMBeanSelected() && isMBean && isValid));
     }
     
+    public DataObject getDataObject() {
+        return dob;
+    }
     /**
      * Displays a configuration dialog and updates Register MBean options
      * according to the user's settings.
      */
-    public boolean configure() {
+    public boolean configure() throws IOException {
         
         // create and display the dialog:
         String title = bundle.getString("LBL_RegisterMBeanAction.Title"); // NOI18N
@@ -302,12 +293,17 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
     }
     
     private void updateState(String currentMBeanClass) {
+        try {
         updateComponentsState();
         if (standardMBeanSelected()) {
             String className = classNameTextField.getText();
             updateIntfAndConst(className);
         } else
             updateConstructors(currentMBeanClass);
+        }catch(IOException ex) {
+            ex.printStackTrace();
+            System.out.println(ex);
+        }
     }
     
     private void updateComponentsState() {
@@ -324,12 +320,12 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         interfaceComboBox.setEnabled(standardMBean);
     }
     
-    private void updateIntfAndConst(String className) {
+    private void updateIntfAndConst(String className) throws IOException {
         isValid = true;
         stateLabel.setText(""); // NOI18N
         
-        JavaClass clazz = WizardHelpers.findClassInProject(project, className);
         
+        JavaSource clazz = JavaModelHelper.findClassInProject(project, className);
         //clear combobox list of interfaces and constructors
         interfaceComboBox.removeAllItems();
         constructorComboBox.removeAllItems();
@@ -347,18 +343,11 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
             
             boolean isMBean = false;
             
-            //Introspector MUST be bound with MDR transaction + class classpath
-            JavaModel.getJavaRepository().beginTrans(false);
-            try {
-                JavaModel.setClassPath(WizardHelpers.getFileObjectForJavaClass(clazz));
-                isMBean = Introspector.testCompliance(clazz);
-            }finally {
-                JavaModel.getJavaRepository().endTrans();
-            }
+            isMBean = JavaModelHelper.testMBeanCompliance(clazz);
             
             if (isMBean)
                 interfaceComboBox.addItem(bundle.getString("LBL_GeneratedInterface")); // NOI18N
-            String[] interfaces = WizardHelpers.getInterfaceNames(clazz);
+            String[] interfaces = JavaModelHelper.getInterfaceNames(clazz);
             boolean hasIntf = (interfaces.length > 0);
             if (hasIntf) {
                 for (int i = 0; i < interfaces.length ; i++) {
@@ -383,23 +372,16 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
             }
             
             //discovery of class constructors
-            Constructor[] constructors =
-                    WizardHelpers.getConstructors(clazz);
+            // WARNING THE Constructor is the JMI one, not from Reflect
+            constructorsMap = JavaModelHelper.getConstructors(clazz);
+            
+            Object[] constructors = getConstructors(constructorsMap);
+                    
             if (constructors.length > 0) {
                 constructorComboBox.addItem(
                         bundle.getString("LBL_StandardMBeanDefaultConstructor")); // NOI18N
                 for (int i = 0; i < constructors.length; i++) {
-                    Constructor currentConstruct = constructors[i];
-                    List params = currentConstruct.getParameters();
-                    String construct = clazz.getSimpleName() + "("; // NOI18N
-                    for (Iterator<Parameter> it = params.iterator(); it.hasNext();) {
-                        construct += WizardHelpers.getClassName(
-                                it.next().getType().getName());
-                        if (it.hasNext())
-                            construct += ", "; // NOI18N
-                    }
-                    construct += ")"; // NOI18N
-                    constructorComboBox.addItem(construct);
+                    constructorComboBox.addItem(constructors[i]);
                 }
                 //select first row
                 constructorComboBox.setSelectedItem(
@@ -407,12 +389,12 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
             } else {
                 constructorComboBox.addItem(
                         bundle.getString("LBL_StandardMBeanDefaultConstructor")); // NOI18N
-                if (WizardHelpers.hasOnlyDefaultConstruct(clazz))
-                    constructorComboBox.addItem(clazz.getSimpleName() + "()"); // NOI18N
+                if (JavaModelHelper.hasOnlyDefaultConstruct(clazz))
+                    constructorComboBox.addItem(JavaModelHelper.getSimpleName(clazz) + "()"); // NOI18N
                 //select first row
                 constructorComboBox.setSelectedItem(
                         bundle.getString("LBL_StandardMBeanDefaultConstructor")); // NOI18N
-            } 
+            }
         } else {
             if (className.equals("")) // NOI18N
                 stateLabel.setText(""); // NOI18N
@@ -422,56 +404,43 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         btnOK.setEnabled(isAcceptable());
     }
     
-    private void updateConstructors(String currentMBeanClass) {
+    private Object[] getConstructors(Map<String, ExecutableElement> m) {
+        return m.keySet().toArray();
+    }
+    private void updateConstructors(String currentMBeanClass) throws IOException {
         //clear the comboBox list of MBean constructors
         constructorComboBox.removeAllItems();
         isValid = true;
         //clear information message
         stateLabel.setText( ""); // NOI18N
-
-        mbeanClass = WizardHelpers.findClassInProject(project, currentMBeanClass);
         
+        mbeanClass = JavaModelHelper.findClassInProject(project, currentMBeanClass);
+        System.out.println("FOUND CLASS IN PROJECT " + mbeanClass);
         isMBean = false;
         if (mbeanClass != null) {
-            //Introspector MUST be bound with MDR transaction + class classpath
-            JavaModel.getJavaRepository().beginTrans(false);
-            try{
-                JavaModel.setClassPath(WizardHelpers.getFileObjectForJavaClass(mbeanClass));
-                isMBean = Introspector.isMBeanClass(mbeanClass);    
-            }finally {
-                JavaModel.getJavaRepository().endTrans();
-            }
+            isMBean = JavaModelHelper.testMBeanCompliance(mbeanClass);
         }
-        
+ 
         objectNameLabel.setEnabled(isMBean);
         objectNameTextField.setEnabled(isMBean);
         constructorLabel.setEnabled(isMBean);
         constructorComboBox.setEnabled(isMBean);
         if (isMBean) {
-            objectNameTextField.setText(WizardHelpers.reversePackageName(
-                    WizardHelpers.getPackageName(mbeanClass.getName())) +
-                    ":type=" + mbeanClass.getSimpleName()); // NOI18N
-            Constructor[] constructors =
-                    WizardHelpers.getConstructors(mbeanClass);
+            String className = JavaModelHelper.getSimpleName(mbeanClass);
+            String packageName = JavaModelHelper.getPackage(mbeanClass);
+            objectNameTextField.setText(packageName + ":type=" + className);
+            // NOI18N
+            constructorsMap = JavaModelHelper.getConstructors(mbeanClass);    
+            Object[] constructors = getConstructors(constructorsMap);
             if (constructors.length > 0) {
                 constructorComboBox.setEnabled(true);
                 for (int i = 0; i < constructors.length; i++) {
-                    Constructor currentConstruct = constructors[i];
-                    List params = currentConstruct.getParameters();
-                    String construct = mbeanClass.getSimpleName() + "("; // NOI18N
-                    for (Iterator<Parameter> it = params.iterator(); it.hasNext();) {
-                        construct += WizardHelpers.getClassName(
-                                it.next().getType().getName());
-                        if (it.hasNext())
-                            construct += ", "; // NOI18N
-                    }
-                    construct += ")"; // NOI18N
-                    constructorComboBox.addItem(construct);
+                    constructorComboBox.addItem(constructors[i]);
                 }
                 //select first row
                 constructorComboBox.setSelectedItem(0); // NOI18N
-            } else if (WizardHelpers.hasOnlyDefaultConstruct(mbeanClass)) {
-                constructorComboBox.addItem(mbeanClass.getSimpleName() + "()"); // NOI18N
+            } else if (JavaModelHelper.hasOnlyDefaultConstruct(mbeanClass)) {
+                constructorComboBox.addItem(className + "()"); // NOI18N
                 constructorComboBox.setSelectedItem(0); // NOI18N
             } else {
                 isValid = false;
@@ -479,6 +448,8 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
                 stateLabel.setText(bundle.getString("LBL_ClassWithNoConstructor")); // NOI18N
             }
         }
+        System.out.println("Is MBean " + isMBean);
+        System.out.println("currentMBeanClass " + currentMBeanClass);
         if ((!isMBean) && (!currentMBeanClass.equals(""))) { // NOI18N
             isValid = false;
             stateLabel.setText(bundle.getString("LBL_NotMBeanClass")); // NOI18N
@@ -719,21 +690,21 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         add(northPanel, java.awt.BorderLayout.NORTH);
 
     }
-    // </editor-fold>//GEN-END:initComponents
-
+    // </editor-fold>                        
+//GEN-END:initComponents
     private void mbeanBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mbeanBrowseButtonActionPerformed
 // TODO add your handling code here:
     }//GEN-LAST:event_mbeanBrowseButtonActionPerformed
-
+    
     private void stabdardMBeanRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stabdardMBeanRadioButtonActionPerformed
         updateState(null);
     }//GEN-LAST:event_stabdardMBeanRadioButtonActionPerformed
-
+    
     private void userMBeanRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_userMBeanRadioButtonActionPerformed
         String newMBeanClass = mbeanClassTextField.getText();
         updateState(newMBeanClass);
     }//GEN-LAST:event_userMBeanRadioButtonActionPerformed
-            
+    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel addedInfosLabel;
@@ -755,8 +726,8 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
     private javax.swing.JRadioButton standardMBeanRadioButton;
     private javax.swing.JLabel stateLabel;
     private javax.swing.JRadioButton userMBeanRadioButton;
-    // End of variables declaration//GEN-END:variables
-    
+    // End of variables declaration                   
+//GEN-END:variables
     public void itemStateChanged(ItemEvent e) {
         String newMBeanClass = (String) mbeanClassTextField.getText();
         updateState(newMBeanClass);
@@ -769,7 +740,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
             updateState(newMBeanClass);
         } catch (BadLocationException excep) {}
     }
-
+    
     
     public void removeUpdate(DocumentEvent e) {
         Document doc = e.getDocument();
@@ -778,7 +749,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
             updateState(newMBeanClass);
         } catch (BadLocationException excep) {}
     }
-
+    
     public void changedUpdate(DocumentEvent e) {
         Document doc = e.getDocument();
         try {

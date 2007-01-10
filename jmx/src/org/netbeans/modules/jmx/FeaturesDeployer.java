@@ -42,9 +42,9 @@ public class FeaturesDeployer {
      * Returns if the JVM supports local management features.
      * @return <CODE>boolean</CODE> true if feature is supported
      */
-    public static String enableLocal() {
+    public static String enableMM() {
         return runOnSun() ?
-            "Actions/Management/org-netbeans-modules-jmx-runtime-EnableLocalManagementAction.instance" : // NOI18N
+            "Actions/Management/org-netbeans-modules-jmx-runtime-EnableMMAction.instance" : // NOI18N
             null;
     }
     
@@ -52,29 +52,9 @@ public class FeaturesDeployer {
      * Returns if the JVM supports local management debug features.
      * @return <CODE>boolean</CODE> true only if JVM supports local management debug features
      */
-    public static String debugLocal() {
+    public static String debugMM() {
         return runOnSun() ?
-            "Actions/Management/org-netbeans-modules-jmx-runtime-DebugLocalManagementAction.instance" : // NOI18N
-            null;
-    }
-     
-    /**
-     * Returns if the JVM supports remote management features.
-     * @return <CODE>boolean</CODE> true only if JVM supports remote management features.
-     */
-    public static String enableRemote() {
-        return runOnSun() ?
-            "Actions/Management/org-netbeans-modules-jmx-runtime-EnableRemoteManagementAction.instance" : // NOI18N
-            null;
-    }
-      
-    /**
-     * Returns if the JVM supports remote management debug features.
-     * @return <CODE>boolean</CODE> true only if JVM supports remote management debug features.
-     */
-    public static String debugRemote() {
-        return runOnSun() ?
-            "Actions/Management/org-netbeans-modules-jmx-runtime-DebugRemoteManagementAction.instance" : // NOI18N
+            "Actions/Management/org-netbeans-modules-jmx-runtime-DebugMMAction.instance" : // NOI18N
             null;
     }
     

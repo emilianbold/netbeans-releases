@@ -18,13 +18,10 @@
  */
 
 package org.netbeans.modules.jmx.actions;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.modules.javacore.api.JavaModel;
+import java.io.IOException;
+import org.netbeans.api.java.source.JavaSource;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.actions.CookieAction;
-import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.jmx.*;
@@ -32,79 +29,66 @@ import org.netbeans.modules.jmx.actions.dialog.AddNotifPanel;
 import org.netbeans.modules.jmx.mbeanwizard.generator.AddNotifGenerator;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
  * Action used to add notifications to an existing MBean.
  * @author tl156378
  */
-public class AddNotifAction extends CookieAction {
+public class AddNotifAction extends NodeAction {
     
     private DataObject dob;
-    private Resource rc;
     
     /**
-     * Creates a new instance of UpdateAttrAction 
+     * Creates a new instance of UpdateAttrAction
      */
     public AddNotifAction() {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
-    protected Class[] cookieClasses() {
-        return new Class[] { SourceCookie.class };
-    }
-     
-    protected int mode() {
-        // allow multiple selected nodes (classes, packages)
-        return MODE_EXACTLY_ONE;    
-    }
     
     public boolean asynchronous() {
         return true; // yes, this action should run asynchronously
         // would be better to rewrite it to synchronous (running in AWT thread),
         // just replanning test generation to RequestProcessor
-    }  
+    }
     
-    protected boolean enable (Node[] nodes) {
-        if (!super.enable(nodes)) return false;
+    protected boolean enable(Node[] nodes) {
         if (nodes.length == 0) return false;
+        dob = (DataObject) nodes[0].getLookup().lookup(DataObject.class);
+        if(dob == null) return false;
         
-        dob = (DataObject)nodes[0].getCookie(DataObject.class);
-        FileObject fo = null;
-        if (dob == null) return false;
+        FileObject fo = dob.getPrimaryFile();
+        if(fo == null)
+            return false;
         
-        fo = dob.getPrimaryFile();
-        
-        JavaClass foClass = WizardHelpers.getJavaClassInProject(fo);
+        JavaSource foClass = JavaModelHelper.getSource(fo);
         if (foClass == null) return false;
-        
-        //We need to do all MDR access in a transaction
-        JavaModel.getJavaRepository().beginTrans(false);
         try {
-            JavaModel.setClassPath(fo);
-            rc = JavaModel.getResource(fo);
-            boolean isMBean = Introspector.testCompliance(foClass);
-            boolean isNotifBroadCaster = Introspector.isNotifBroadCaster(foClass);
+            boolean isMBean = JavaModelHelper.testMBeanCompliance(foClass);
+            boolean isNotifBroadCaster = JavaModelHelper.implementsNotificationEmitterItf(foClass);
             
             return isMBean && !isNotifBroadCaster;
-        } finally {
-            JavaModel.getJavaRepository().endTrans();
+        }catch(IOException ex) {
+            ex.printStackTrace();
+            return false;
         }
     }
     
-    protected void performAction (Node[] nodes) {
-        // show configuration dialog
-        // when dialog is canceled, escape the action
-        AddNotifPanel cfg = new AddNotifPanel(nodes[0]);
-        if (!cfg.configure()) {
-            return;
-        }
-        AddNotifGenerator generator = new AddNotifGenerator();
-        
-        //We need the file object to determine the classpath
-        FileObject fo = null;
-        if (dob != null) fo = dob.getPrimaryFile();
+    protected void performAction(Node[] nodes) {
         try {
-            generator.update(fo, cfg.getMBeanClass(),rc,cfg.getNotifications(),
+            // show configuration dialog
+            // when dialog is canceled, escape the action
+            AddNotifPanel cfg = new AddNotifPanel(nodes[0]);
+            if (!cfg.configure()) {
+                return;
+            }
+            AddNotifGenerator generator = new AddNotifGenerator();
+            
+            //We need the file object to determine the classpath
+            FileObject fo = null;
+            if (dob != null) fo = dob.getPrimaryFile();
+            generator.update(fo, cfg.getNotifications(),
                     cfg.getGenBroadcastDeleg(),cfg.getGenSeqNumber());
             EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
             ec.open();
@@ -113,11 +97,11 @@ public class AddNotifAction extends CookieAction {
         }
     }
     
-    public HelpCtx getHelpCtx () {
+    public HelpCtx getHelpCtx() {
         return new HelpCtx(""); // NOI18N
     }
     
-    public String getName () {
-        return NbBundle.getMessage (AddNotifAction.class,"LBL_Action_AddMBeanNotification"); // NOI18N
+    public String getName() {
+        return NbBundle.getMessage(AddNotifAction.class,"LBL_Action_AddMBeanNotification"); // NOI18N
     }
 }

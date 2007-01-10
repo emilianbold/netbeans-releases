@@ -37,8 +37,7 @@ public class JavaChildren extends FilterNode.Children {
         super(parent);
     }
 
-    protected Node[] createNodes(Object original) {
-        Node originalNode = (Node) original;
+    protected Node[] createNodes(Node originalNode) {
         Node newNode;
         
         Object cookie = originalNode.getCookie(DataObject.class);

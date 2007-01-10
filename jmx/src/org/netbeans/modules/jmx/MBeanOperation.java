@@ -20,11 +20,13 @@
 package org.netbeans.modules.jmx;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Parameter;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.CompilationInfo;
 
 /**
  *
@@ -33,7 +35,7 @@ import org.netbeans.jmi.javamodel.Parameter;
 public class MBeanOperation implements Comparable {
 
     private String name;
-    private Method method;
+    private ExecutableElement method;
     private boolean methodExists = false;
     private boolean wrapped = false;
     private String description;
@@ -42,42 +44,42 @@ public class MBeanOperation implements Comparable {
     private List<MBeanOperationException> exceptions = null;
     private List classParameterTypes;
     /** Creates a new instance of MBeanOperation */
-    public MBeanOperation(Method method, String description, List classParameterTypes) {
+    public MBeanOperation(ExecutableElement method, String description, 
+            List<? extends TypeParameterElement> classParameterTypes, CompilationInfo info) {
+        
         this.method = method;
         this.description = description;
-        this.name = method.getName();
+        this.name = method.getSimpleName().toString();
         this.methodExists = true;
-        List methodParameterTypes = method.getTypeParameters();
-        if(classParameterTypes.contains(method.getType()) || 
-           methodParameterTypes.contains(method.getType()))
-            this.returnTypeName = "Object";
-        else
-            this.returnTypeName = method.getType().getName();
+        
+        List<? extends TypeParameterElement> methodParameterTypes = method.getTypeParameters();
+        TypeMirror type = method.getReturnType();
+        
+        returnTypeName = JavaModelHelper.getTypeName(type, methodParameterTypes, classParameterTypes, info);
         
         this.classParameterTypes = classParameterTypes;
         
         //inits exceptions
-        List<JavaClass> exceptions = method.getExceptions();
+        List<? extends TypeMirror> exceptions = method.getThrownTypes();
+        
         ArrayList exceptArray = new ArrayList();
-        for (Iterator<JavaClass> it = exceptions.iterator(); it.hasNext();) {
-            JavaClass excep = it.next();
+        
+        for (TypeMirror exception : exceptions) {
+            Element ex = info.getTypes().asElement(exception);
             exceptArray.add(
-                    new MBeanOperationException(excep.getName(), ""));// NOI18N
+                    new MBeanOperationException(ex.getSimpleName().toString(), ""));// NOI18N
         }
+        
         this.exceptions = exceptArray;
+        List<? extends VariableElement> params = method.getParameters();
         //inits parameters
-        List<Parameter> params = method.getParameters();
         ArrayList paramArray = new ArrayList();
         int i = 0;
-        
-        for (Iterator<Parameter> it = params.iterator(); it.hasNext();) {
-            Parameter param = it.next();
-            String typeName = null;
-            if(methodParameterTypes.contains(param.getType())||
-               classParameterTypes.contains(param.getType())) 
-                typeName = "Object";
-            else
-                typeName = param.isVarArg() ? param.getType().getName() + "..." : param.getType().getName(); // NOI18N
+        boolean isVarArg = method.isVarArgs();
+        for (VariableElement param : params) {
+            TypeMirror paramType = param.asType();
+            String typeName = JavaModelHelper.getTypeName(paramType, methodParameterTypes, classParameterTypes, info);
+            
             paramArray.add(
                     new MBeanOperationParameter("param"+ i, // NOI18N
                         typeName, ""));// NOI18N
@@ -163,7 +165,7 @@ public class MBeanOperation implements Comparable {
         }
     }
     
-    public Method getMethod() {
+    public ExecutableElement getMethod() {
         return method;
     }
     
@@ -482,5 +484,6 @@ public class MBeanOperation implements Comparable {
         
         return getSimpleSignature().compareTo(op.getSimpleSignature());
     }
-    
+        private Object TypeKind;
+
 }

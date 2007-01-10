@@ -20,15 +20,12 @@
 package org.netbeans.modules.jmx.actions.dialog;
 
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.jmx.JavaModelHelper;
 import org.netbeans.modules.jmx.MBeanNotification;
-import org.netbeans.modules.jmx.WizardConstants;
-import org.netbeans.modules.jmx.WizardHelpers;
-import org.netbeans.modules.jmx.actions.AddNotifAction;
 import org.netbeans.modules.jmx.mbeanwizard.listener.AddTableRowListener;
 import org.netbeans.modules.jmx.mbeanwizard.listener.RemTableRowListener;
 import org.netbeans.modules.jmx.mbeanwizard.table.NotificationTable;
@@ -49,7 +46,7 @@ import org.openide.util.NbBundle;
 public class AddNotifPanel extends javax.swing.JPanel {
     
     /** class to add registration of MBean */
-    private JavaClass currentClass;
+    private JavaSource currentClass;
     
     private MBeanNotificationTableModel notificationModel;
     private NotificationTable notificationTable;
@@ -88,22 +85,22 @@ public class AddNotifPanel extends javax.swing.JPanel {
      * Creates new form RemoveAttrPanel.
      * @param  node  node selected when the Register Mbean action was invoked
      */
-    public AddNotifPanel(Node node) {
+    public AddNotifPanel(Node node) throws IOException {
         bundle = NbBundle.getBundle(AddNotifPanel.class);
         
         DataObject dob = (DataObject)node.getCookie(DataObject.class);
         FileObject fo = null;
         if (dob != null) fo = dob.getPrimaryFile();
         
-        currentClass = WizardHelpers.getJavaClassInProject(fo);
+        currentClass = JavaModelHelper.getSource(fo);
         
         // init tags
         
         initComponents();
-        
+        String className = JavaModelHelper.getFullClassName(currentClass);
         notificationModel = new MBeanNotificationTableModel();
         notificationModel.setDefaultTypeValue(
-                getMBeanClass().getName().toLowerCase() + ".type"); // NOI18N
+                className.toLowerCase() + ".type"); // NOI18N
         notificationTable = new NotificationTable(this, notificationModel);
         notificationTable.setName("notificationTable"); // NOI18N
         notificationTable.setBorder(new javax.swing.border.EtchedBorder());
@@ -193,9 +190,9 @@ public class AddNotifPanel extends javax.swing.JPanel {
     
     /**
      * Returns the MBean class to add notifications.
-     * @return <CODE>JavaClass</CODE> the MBean class
+     * @return <CODE>JavaSource</CODE> the MBean class
      */
-    public JavaClass getMBeanClass() {
+    public JavaSource getMBeanClass() {
         return currentClass;
     }
     

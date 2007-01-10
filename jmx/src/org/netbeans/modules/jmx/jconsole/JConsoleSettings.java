@@ -37,20 +37,39 @@ public class JConsoleSettings extends SystemOption implements ChangeListener
     private static final String PROP_POLLING     = "POLLING"; // NOI18N
     private static final String PROP_TILE   = "TILE"; // NOI18N
     private static final String PROP_CLASSPATH  = "CLASSPATH"; // NOI18N
+    private static final String PROP_PLUGINSPATH  = "PLUGINS"; // NOI18N
     private static final String PROP_VM_OPTIONS = "VM_OPTIONS"; //NOI18N
+    private static final String PROP_OTHER_ARGS = "OTHER_ARGS"; //NOI18N
     private static final String PROP_URL = "DEFAULT_URL"; //NOI18N
-    private String cp;
+    
+    public static String NETBEANS_CLASS_PATH;
+    
+    private static Boolean greater;
+    static {
+         NETBEANS_CLASS_PATH = System.getProperty("java.class.path");// NOI18N
+    }
     
     protected void initialize () 
     {
         super.initialize();
         
         setPolling(4);
-        setTile(Boolean.TRUE);
-        cp = System.getProperty("java.class.path");// NOI18N
-        setClassPath(cp);
+        setTile(Boolean.TRUE);   
     }
-
+    
+    public static boolean isNetBeansJVMGreaterThanJDK15() {
+        if(greater == null) {
+            //Check if we are running on 1.6 minimum
+            try {
+                Class.forName("javax.swing.SwingWorker");// NOI18N
+               greater = true;
+            }catch(ClassNotFoundException e) {
+                greater = false;
+            }
+        }
+        return greater;
+    }
+    
     public String displayName ()
     {
         return "JConsole settings";// NOI18N
@@ -74,6 +93,7 @@ public class JConsoleSettings extends SystemOption implements ChangeListener
     {
         putProperty(PROP_TILE, tile);
     }
+    
     public String getClassPath()
     {
         return (String)getProperty(PROP_CLASSPATH);
@@ -81,12 +101,17 @@ public class JConsoleSettings extends SystemOption implements ChangeListener
 
     public void setClassPath(String value)
     {
-        //In case original classpath has been erased
-        if(value == null) value = cp;
-        if (!value.contains(cp))
-            value = cp + value;
-        
         putProperty(PROP_CLASSPATH, value);
+    }
+    
+    public String getPluginsPath()
+    {
+        return (String)getProperty(PROP_PLUGINSPATH);
+    }
+
+    public void setPluginsPath(String value)
+    {
+        putProperty(PROP_PLUGINSPATH, value);
     }
     
     public Integer getPolling()
@@ -109,6 +134,16 @@ public class JConsoleSettings extends SystemOption implements ChangeListener
     public void setVMOptions(String other)
     {
         putProperty (PROP_VM_OPTIONS, other, true);
+    }
+    
+    public String getOtherArgs()
+    {
+        return (String)getProperty (PROP_OTHER_ARGS);
+    }
+    
+    public void setOtherArgs(String other)
+    {
+        putProperty (PROP_OTHER_ARGS, other, true);
     }
     
     public String getDefaultUrl()

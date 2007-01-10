@@ -25,15 +25,13 @@ import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.modules.javacore.api.JavaModel;
+
+import java.io.IOException;
+
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.jmx.FireEvent;
-import org.netbeans.modules.jmx.Introspector;
+import org.netbeans.modules.jmx.JavaModelHelper;
 import org.netbeans.modules.jmx.MBeanOperation;
-import org.netbeans.modules.jmx.WizardHelpers;
-import org.netbeans.modules.jmx.actions.AddAttrAction;
-import org.netbeans.modules.jmx.actions.AddOpAction;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -51,7 +49,7 @@ public class AddOperationsPanel extends javax.swing.JPanel
         implements FireEvent, ListSelectionListener {
     
     /** class to add registration of MBean */
-    private JavaClass currentClass;
+    private JavaSource currentClass;
     
     private AddMBeanOperationTableModel operationModel;
     private AddOperationTable operationTable;
@@ -84,7 +82,7 @@ public class AddOperationsPanel extends javax.swing.JPanel
         FileObject fo = null;
         if (dob != null) fo = dob.getPrimaryFile();
         
-        currentClass = WizardHelpers.getJavaClassInProject(fo);
+        currentClass = JavaModelHelper.getSource(fo);
         
         // init tags
         initComponents();
@@ -98,7 +96,13 @@ public class AddOperationsPanel extends javax.swing.JPanel
         opTableLabel.setLabelFor(operationTable);
         
         //discovery of existing Operations
-        MBeanOperation[] existOperations = Introspector.getOperations(currentClass);
+        MBeanOperation[] existOperations = null;
+        try {
+            existOperations = JavaModelHelper.getOperations(currentClass);
+        }catch(IOException ioex) {
+            existOperations = new MBeanOperation[0];
+        }
+
         for (int i = 0; i < existOperations.length; i++)
             operationModel.addOperation(existOperations[i]);
         operationModel.setFirstEditable(existOperations.length);
@@ -223,7 +227,7 @@ public class AddOperationsPanel extends javax.swing.JPanel
      * Returns the MBean class to add operations.
      * @return <CODE>JavaClass</CODE> the MBean class
      */
-    public JavaClass getMBeanClass() {
+    public JavaSource getMBeanClass() {
         return currentClass;
     }
     

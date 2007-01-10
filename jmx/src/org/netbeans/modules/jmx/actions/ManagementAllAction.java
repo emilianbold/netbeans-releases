@@ -18,25 +18,15 @@
  */
 
 package org.netbeans.modules.jmx.actions;
-import java.awt.event.ActionEvent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import org.openide.cookies.SourceCookie;
-import org.openide.loaders.DataFolder;
-import org.openide.src.ClassElement;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
-import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.nodes.Node;
-import org.openide.loaders.DataObject;
-import org.openide.filesystems.FileObject;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.modules.jmx.WizardHelpers;
-import org.netbeans.modules.jmx.Introspector;
+import org.openide.util.actions.NodeAction;
 
 /** 
  * Action which just groups update actions.
@@ -44,7 +34,7 @@ import org.netbeans.modules.jmx.Introspector;
  * @author  tleveque
  * @version 1.0
  */
-public class ManagementAllAction extends CookieAction implements Presenter.Menu, Presenter.Popup {
+public class ManagementAllAction extends NodeAction implements Presenter.Menu, Presenter.Popup {
 
     /*
     public void actionPerformed (ActionEvent ev) {
@@ -53,14 +43,6 @@ public class ManagementAllAction extends CookieAction implements Presenter.Menu,
      */
     
     private final String actionName = NbBundle.getMessage(ManagementAllAction.class, "LBL_ManagementAction"); // NOI18N 
-    
-    protected int mode() {
-        return MODE_EXACTLY_ONE;    
-    }
-    
-    protected Class[] cookieClasses() {
-        return new Class[] { DataFolder.class, SourceCookie.class, ClassElement.class };
-    }
     
     protected void performAction(org.openide.nodes.Node[] node) {
         // do nothing; should not be called        
@@ -80,7 +62,6 @@ public class ManagementAllAction extends CookieAction implements Presenter.Menu,
                 SystemAction.get(AddOpAction.class),
                 SystemAction.get(AddNotifAction.class),
                 SystemAction.get(AddRegisterIntfAction.class),
-                SystemAction.get(GenJUnitTestAction.class),
                 null,
                 SystemAction.get(RegisterMBeanAction.class)
             };
@@ -105,20 +86,6 @@ public class ManagementAllAction extends CookieAction implements Presenter.Menu,
     }
     
     protected boolean enable (Node[] nodes) {
-        /*
-        if (!super.enable(nodes)) return false;
-
-        if (nodes.length == 0) return false;
-        
-        DataObject dob = (DataObject)nodes[0].getCookie(DataObject.class);
-        FileObject fo = null;
-        if (dob != null) fo = dob.getPrimaryFile();
-        JavaClass foClass = 
-                WizardHelpers.getJavaClass(JavaModel.getResource(fo),fo.getName());
-        
-        boolean isAgent = Introspector.isGeneratedAgent(foClass);
-        boolean isMBean = Introspector.testCompliance(foClass);
-        return isAgent || isMBean;*/
         return true;
     }
 

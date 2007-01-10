@@ -19,25 +19,29 @@
 
 package org.netbeans.modules.jmx;
 
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Parameter;
 import java.util.List;
 import java.util.ArrayList;
-import org.netbeans.jmi.javamodel.Type;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.ArrayType;
+import org.netbeans.api.java.source.CompilationInfo;
 
 /**
  * class representing a MBean Attribute.
  * @author tl156378
  */
 public class MBeanAttribute implements Comparable {
-
+    
     private String name;
     private String typeName;
     private String description;
     private String access;
-    private Method getter;
+    private ExecutableElement getter;
     private List<String> getterExceptions = new ArrayList();
-    private Method setter;
+    private ExecutableElement setter;
     private List<String> setterExceptions = new ArrayList();
     private boolean isReadable;
     private boolean isWritable;
@@ -46,24 +50,23 @@ public class MBeanAttribute implements Comparable {
     private boolean setMethodExits = false;
     private boolean wrapped = false;
     private List classParameterTypes;
+    private boolean isArray;
+    
     /** Creates a new instance of MBeanAttribute */
-    public MBeanAttribute(String name, String description, 
-            Method getter, Method setter, List classParameterTypes) {
+    public MBeanAttribute(String name, String description,
+            ExecutableElement getter, ExecutableElement setter,
+            List<? extends TypeParameterElement> classParameterTypes, CompilationInfo info) {
         this.name = name;
         this.description = description;
         this.getter = getter;
         this.setter = setter;
         this.classParameterTypes = classParameterTypes;
         if (getter != null) {
-            List methodParameterTypes = getter.getTypeParameters();
-            if(methodParameterTypes.contains(getter.getType()) ||
-               classParameterTypes.contains(getter.getType()))
-                this.typeName = "Object";
-            else
-                this.typeName = getter.getType().getName();
-            
+            List<? extends TypeParameterElement> methodParameterTypes = getter.getTypeParameters();
+            TypeMirror type = getter.getReturnType();
+            typeName = JavaModelHelper.getTypeName(type, methodParameterTypes, classParameterTypes, info);
             this.isReadable = true;
-            boolean hasIsMethod = (getter.getName().startsWith("is")); // NOI18N
+            boolean hasIsMethod = (getter.getSimpleName().toString().startsWith("is")); // NOI18N
             this.getMethodExits = !hasIsMethod;
             this.isMethodExits = hasIsMethod;
             
@@ -72,13 +75,10 @@ public class MBeanAttribute implements Comparable {
             else
                 this.access = WizardConstants.ATTR_ACCESS_READ_ONLY;
         } else {
-            List methodParameterTypes = setter.getTypeParameters();
-            Type t = ((Parameter) setter.getParameters().get(0)).getType();
-            if(methodParameterTypes.contains(t) ||
-               classParameterTypes.contains(t))
-                this.typeName = "Object";
-            else
-                this.typeName = t.getName();
+            List<? extends TypeParameterElement> methodParameterTypes = setter.getTypeParameters();
+            TypeMirror type = setter.getParameters().get(0).asType();
+            typeName = JavaModelHelper.getTypeName(type, methodParameterTypes, classParameterTypes, info);
+            
             this.access = WizardConstants.ATTR_ACCESS_WRITE_ONLY;
             this.setMethodExits = true;
         }
@@ -180,19 +180,19 @@ public class MBeanAttribute implements Comparable {
     public String getDescription() {
         return description;
     }
-
-    public Method getGetter() {
+    
+    public ExecutableElement getGetter() {
         return getter;
     }
-
-    public Method getSetter() {
+    
+    public ExecutableElement getSetter() {
         return setter;
     }
     
     public List<String> getGetterExceptions() {
         return getterExceptions;
     }
-
+    
     public List<String> getSetterExceptions() {
         return setterExceptions;
     }
@@ -200,11 +200,11 @@ public class MBeanAttribute implements Comparable {
     public void setGetterExceptions(List<String> exceptions) {
         this.getterExceptions = exceptions;
     }
-
+    
     public void setSetterExceptions(List<String> exceptions) {
         this.setterExceptions = exceptions;
     }
-
+    
     public String getTypeName() {
         return typeName;
     }
@@ -232,35 +232,35 @@ public class MBeanAttribute implements Comparable {
     public void setTypeName(String type) {
         this.typeName = type;
     }
-
+    
     public boolean getIsMethodExits() {
         return isMethodExits;
     }
-
+    
     public void setIsMethodExits(boolean isMethodExits) {
         this.isMethodExits = isMethodExits;
     }
-
+    
     public boolean getGetMethodExits() {
         return getMethodExits;
     }
-
+    
     public void setGetMethodExits(boolean getMethodExits) {
         this.getMethodExits = getMethodExits;
     }
-
+    
     public boolean getSetMethodExits() {
         return setMethodExits;
     }
-
+    
     public void setSetMethodExits(boolean setMethodExits) {
         this.setMethodExits = setMethodExits;
     }
-
+    
     public boolean isWrapped() {
         return wrapped;
     }
-
+    
     public void setWrapped(boolean wrapped) {
         this.wrapped = wrapped;
     }
@@ -271,5 +271,4 @@ public class MBeanAttribute implements Comparable {
         
         return concat.compareTo(obj.getName() + obj.getTypeName());
     }
-    
 }
