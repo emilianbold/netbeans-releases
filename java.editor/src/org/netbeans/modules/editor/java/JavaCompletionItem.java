@@ -45,6 +45,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
+import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
@@ -166,7 +167,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
     }
 
-    public static final JavaCompletionItem createInitializeAllConstructorItem(Iterable<VariableElement> fields, TypeElement parent, int substitutionOffset) {
+    public static final JavaCompletionItem createInitializeAllConstructorItem(Iterable<? extends VariableElement> fields, TypeElement parent, int substitutionOffset) {
         return new InitializeAllConstructorItem(fields, parent, substitutionOffset);
     }
 
@@ -1239,7 +1240,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         protected void substituteText(final JTextComponent c, final int offset, final int len) {
             BaseDocument doc = (BaseDocument)c.getDocument();
-
             if (len > 0) {
                 doc.atomicLock();
                 try {
@@ -1250,7 +1250,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     doc.atomicUnlock();
                 }
             }
-
             try {
                 JavaSource js = JavaSource.forDocument(c.getDocument());
                 js.runModificationTask(new CancellableTask<WorkingCopy>() {
@@ -1258,28 +1257,24 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     }
                     public void run(WorkingCopy copy) throws IOException {
                         copy.toPhase(Phase.ELEMENTS_RESOLVED);
-                        ExecutableElement ee = elemHandle.resolve(copy);
-                        
-                        if (ee == null) {
+                        ExecutableElement ee = elemHandle.resolve(copy);                        
+                        if (ee == null)
                             return;
-                        }
-                        
                         TreePath tp = copy.getTreeUtilities().pathFor(offset);
-                        Tree t = tp.getLeaf();
-                        if (t.getKind() == Tree.Kind.CLASS) {
-                            if (Utilities.isInMethod(tp)) {
+                        if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
+                            if (Utilities.isInMethod(tp))
                                 copy.toPhase(Phase.RESOLVED);
-                            }
-                        
-                            Tree lastBefore = null;
-                            for (Tree tree : ((ClassTree) t).getMembers()) {
-                                if (copy.getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tree) < offset) {
-                                    lastBefore = tree;
-                                } else {
+                            int idx = 0;
+                            for (Tree tree : ((ClassTree)tp.getLeaf()).getMembers()) {
+                                if (copy.getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tree) < offset)
+                                    idx++;
+                                else
                                     break;
-                                }
                             }
-                            OverrideImplementMethodGenerator.generateOverrideImplement(copy, ee, tp, lastBefore, (ClassTree) t);
+                            if (implement)
+                                GeneratorUtils.generateAbstractMethodImplementation(copy, tp, ee, idx);
+                            else
+                                GeneratorUtils.generateMethodOverride(copy, tp, ee, idx);
                         }
                     }
                 }).commit();
@@ -1463,17 +1458,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         }
                         public void run(WorkingCopy copy) throws IOException {
                             copy.toPhase(JavaSource.Phase.RESOLVED);
-                            TreePath path = copy.getTreeUtilities().pathFor(off);
-                            
+                            TreePath path = copy.getTreeUtilities().pathFor(off);                            
                             while (path.getLeaf() != path.getCompilationUnit()) {
-                                Tree lastTree = path.getLeaf();
-                                Tree tree = path.getParentPath().getLeaf();
-                                
-                                if (tree.getKind() == Tree.Kind.NEW_CLASS && lastTree.getKind() == Tree.Kind.CLASS) {
-                                    AbstractMethodImplGenerator.implementAllAbstractMethods(copy, path, (ClassTree) lastTree);
+                                Tree tree = path.getLeaf();
+                                Tree parentTree = path.getParentPath().getLeaf();                                
+                                if (parentTree.getKind() == Tree.Kind.NEW_CLASS && tree.getKind() == Tree.Kind.CLASS) {
+                                    GeneratorUtils.generateAllAbstractMethodImplementations(copy, path);
                                     break;
-                                }
-                                
+                                }                                
                                 path = path.getParentPath();
                             }
                         }
@@ -1619,17 +1611,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         }
                         public void run(WorkingCopy copy) throws IOException {
                             copy.toPhase(JavaSource.Phase.RESOLVED);
-                            TreePath path = copy.getTreeUtilities().pathFor(off);
-                            
+                            TreePath path = copy.getTreeUtilities().pathFor(off);                            
                             while (path.getLeaf() != path.getCompilationUnit()) {
-                                Tree lastTree = path.getLeaf();
-                                Tree tree = path.getParentPath().getLeaf();
-                                
-                                if (tree.getKind() == Tree.Kind.NEW_CLASS && lastTree.getKind() == Tree.Kind.CLASS) {
-                                    AbstractMethodImplGenerator.implementAllAbstractMethods(copy, path, (ClassTree) lastTree);
+                                Tree tree = path.getLeaf();
+                                Tree parentTree = path.getParentPath().getLeaf();                                
+                                if (parentTree.getKind() == Tree.Kind.NEW_CLASS && tree.getKind() == Tree.Kind.CLASS) {
+                                    GeneratorUtils.generateAllAbstractMethodImplementations(copy, path);
                                     break;
-                                }
-                                
+                                }                                
                                 path = path.getParentPath();
                             }
                         }
@@ -1987,10 +1976,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String PARAMETER_NAME_COLOR = "<font color=#b200b2>"; //NOI18N
         private static ImageIcon icon[] = new ImageIcon[4];
 
-        private Iterable<VariableElement> fields;
+        private Iterable<? extends VariableElement> fields;
         private TypeElement parent;
         
-        private InitializeAllConstructorItem(Iterable<VariableElement> fields, TypeElement parent, int substitutionOffset) {
+        private InitializeAllConstructorItem(Iterable<? extends VariableElement> fields, TypeElement parent, int substitutionOffset) {
             super(substitutionOffset);
             this.fields = fields;
             this.parent = parent;
@@ -2087,7 +2076,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     doc.atomicUnlock();
                 }
             }
-
             try {
                 JavaSource js = JavaSource.forDocument(c.getDocument());
                 js.runModificationTask(new CancellableTask<WorkingCopy>() {
@@ -2096,17 +2084,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     public void run(WorkingCopy copy) throws IOException {
                         copy.toPhase(JavaSource.Phase.PARSED);
                         TreePath tp = copy.getTreeUtilities().pathFor(offset);
-                        Tree t = tp.getLeaf();
-                        if (t.getKind() == Tree.Kind.CLASS) {
-                            Tree lastBefore = null;
-                            for (Tree tree : ((ClassTree) t).getMembers()) {
-                                if (copy.getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tree) < offset) {
-                                    lastBefore = tree;
-                                } else {
+                        if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
+                            int idx = 0;
+                            for (Tree tree : ((ClassTree)tp.getLeaf()).getMembers()) {
+                                if (copy.getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tree) < offset)
+                                    idx++;
+                                else
                                     break;
-                                }
                             }
-                            CreateConstructor.createConstructor(copy, fields, parent, tp, lastBefore, (ClassTree) t);
+                            GeneratorUtils.generateConstructor(copy, tp, fields, idx);
                         }
                     }
                 }).commit();
@@ -2114,37 +2100,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
         }
 
-        private static class CreateConstructor {
-            
-            public static void createConstructor(WorkingCopy wc, Iterable<VariableElement> fields, TypeElement parent, TreePath path, Tree putBefore, ClassTree node) {
-                assert path.getLeaf() == node;
-                TreeMaker make = wc.getTreeMaker();
-                TypeElement te = (TypeElement)wc.getTrees().getElement(path);
-                if (te != null) {
-                    List<Tree> members = new ArrayList<Tree>(node.getMembers());
-                    int pos = putBefore != null ? members.indexOf(putBefore) + 1: members.size();
-                    
-                    Set<Modifier> mods = EnumSet.of(Modifier.PUBLIC);
-                    
-                    //create body:
-                    List<StatementTree> statements = new ArrayList();
-                    List<VariableTree> arguments = new ArrayList();
-
-                    for (VariableElement ve : fields) {
-                        AssignmentTree a = make.Assignment(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier(ve.getSimpleName()));
-
-                        statements.add(make.ExpressionStatement(a));
-                        arguments.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), ve.getSimpleName(), make.Type(ve.asType()), null));
-                    }
-                    
-                    BlockTree body = make.Block(statements, false);
-
-                    ClassTree decl = make.insertClassMember(node, pos, make.Method(make.Modifiers(mods), "<init>", null, Collections.<TypeParameterTree> emptyList(), arguments, Collections.<ExpressionTree>emptyList(), body, null));
-                    wc.rewrite(node, decl);
-                }
-            }            
-        }
-        
         public String toString() {
             StringBuilder sb = new StringBuilder();
             for (Modifier mod : EnumSet.of(Modifier.PUBLIC)) {

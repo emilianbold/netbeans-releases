@@ -18,8 +18,22 @@
  */
 package org.netbeans.modules.java.editor.codegen;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,20 +47,26 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Types;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Jan Lahoda
+ * @author Jan Lahoda, Dusan Balek
  */
 public class GeneratorUtils {
     
@@ -56,64 +76,11 @@ public class GeneratorUtils {
     }
     
     public static List<? extends ExecutableElement> findUndefs(CompilationInfo info, TypeElement impl) {
-        List<ExecutableElement> undef = new ArrayList<ExecutableElement>();
-        List<TypeElement> classes = getAllClasses(impl);
-        
-        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+        if (ERR.isLoggable(ErrorManager.INFORMATIONAL))
             ERR.log(ErrorManager.INFORMATIONAL, "findUndefs(" + info + ", " + impl + ")");
-            ERR.log(ErrorManager.INFORMATIONAL, "classes=" + classes);
-        }
-        
-        for (TypeElement te : getAllParents(impl)) {
-            if (te.getModifiers().contains(Modifier.ABSTRACT)) {
-                for (Element e : te.getEnclosedElements()) {
-                    if (e.getKind() == ElementKind.METHOD && e.getModifiers().contains(Modifier.ABSTRACT)) {
-                        ExecutableElement ee = (ExecutableElement)e;
-                        
-                        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                            ERR.log(ErrorManager.INFORMATIONAL, "ee=" + ee);
-                            ERR.log(ErrorManager.INFORMATIONAL, "isOverriden(info, ee, classes)=" + isOverriden(info, ee, classes));
-                        }
-                        
-                        Element over = SourceUtils.getImplementationOf(info, ee, impl);
-                        
-                        if (over == null || over == ee) {
-                            boolean quit = false;
-                            
-                            for (ExecutableElement o : undef) {
-                                if (o.getSimpleName().toString().contentEquals(ee.getSimpleName())) {
-                                    boolean equals = o.getReturnType().equals(ee.getReturnType());
-                                    List<? extends VariableElement> op = o.getParameters();
-                                    List<? extends VariableElement> eep = ee.getParameters();
-                                    
-                                    equals &= op.size() == eep.size();
-                                    
-                                    Iterator<? extends VariableElement> oi = op.iterator();
-                                    Iterator<? extends VariableElement> eei = eep.iterator();
-                                    
-                                    while (equals && oi.hasNext()) {
-                                        VariableElement ov = oi.next();
-                                        VariableElement eev = eei.next();
-                                        
-                                        equals &= ov.asType().equals(eev.asType());
-                                    }
-                                    
-                                    quit |= equals;
-                                }
-                            }
-                            
-                            if (!quit)
-                                undef.add(ee);
-                        }
-                    }
-                }
-            }
-        }
-        
-        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+        List<? extends ExecutableElement> undef = findUndefs(info, impl, impl);
+        if (ERR.isLoggable(ErrorManager.INFORMATIONAL))
             ERR.log(ErrorManager.INFORMATIONAL, "undef=" + undef);
-        }
-        
         return undef;
     }
     
@@ -165,6 +132,157 @@ public class GeneratorUtils {
         return result;
     }
 
+    public static void generateAllAbstractMethodImplementations(WorkingCopy wc, TreePath path) {
+        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
+        TypeElement te = (TypeElement)wc.getTrees().getElement(path);
+        if (te != null) {
+            TreeMaker make = wc.getTreeMaker();
+            ClassTree nue = (ClassTree)path.getLeaf();
+            for(ExecutableElement element : findUndefs(wc, te, te))
+                nue = make.addClassMember(nue, createMethod(wc, element, (DeclaredType)te.asType()));
+            wc.rewrite(path.getLeaf(), nue);
+        }
+    }
+    
+    public static void generateAbstractMethodImplementation(WorkingCopy wc, TreePath path, ExecutableElement element, int index) {
+        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
+        TypeElement te = (TypeElement)wc.getTrees().getElement(path);
+        if (te != null) {
+            ClassTree decl = wc.getTreeMaker().insertClassMember((ClassTree)path.getLeaf(), index, createMethod(wc, element, (DeclaredType)te.asType()));
+            wc.rewrite(path.getLeaf(), decl);
+        }
+    }
+    
+    public static void generateMethodOverride(WorkingCopy wc, TreePath path, ExecutableElement element, int index) {
+        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
+        TypeElement te = (TypeElement)wc.getTrees().getElement(path);
+        if (te != null) {
+            ClassTree decl = wc.getTreeMaker().insertClassMember((ClassTree)path.getLeaf(), index, createMethod(wc, element, (DeclaredType)te.asType()));
+            wc.rewrite(path.getLeaf(), decl);
+        }
+    }
+
+    public static void generateConstructor(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> initFields, int index) {
+        TreeMaker make = wc.getTreeMaker();
+        List<VariableTree> arguments = new ArrayList();
+        List<StatementTree> statements = new ArrayList();
+        ModifiersTree parameterModifiers = make.Modifiers(EnumSet.noneOf(Modifier.class));
+        for (VariableElement ve : initFields) {
+            arguments.add(make.Variable(parameterModifiers, ve.getSimpleName(), make.Type(ve.asType()), null));
+            statements.add(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier(ve.getSimpleName())))); //NOI18N
+        }
+        BlockTree body = make.Block(statements, false);
+        ClassTree decl = make.insertClassMember((ClassTree)path.getLeaf(), index, make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC)), "<init>", null, Collections.<TypeParameterTree> emptyList(), arguments, Collections.<ExpressionTree>emptyList(), body, null)); //NOI18N
+        wc.rewrite(path.getLeaf(), decl);
+    }
+    
+    private static MethodTree createMethod(WorkingCopy wc, ExecutableElement element, DeclaredType type) {
+        TreeMaker make = wc.getTreeMaker();
+        Set<Modifier> mods = element.getModifiers();
+        Set<Modifier> flags = mods.isEmpty() ? EnumSet.noneOf(Modifier.class) : EnumSet.copyOf(mods);
+        boolean isAbstract = flags.remove(Modifier.ABSTRACT);
+        flags.remove(Modifier.NATIVE);
+        
+        ExecutableType et = (ExecutableType)wc.getTypes().asMemberOf(type, element);
+        List<TypeParameterTree> typeParams = new ArrayList<TypeParameterTree>();
+        for (TypeParameterElement tpe: element.getTypeParameters()) {
+            List<ExpressionTree> bounds = new ArrayList<ExpressionTree>();
+            for (TypeMirror bound : tpe.getBounds()) {
+                if (bound.getKind() != TypeKind.NULL) {
+                    //if the bound is java.lang.Object, do not generate the extends clause:
+                    if (bound.getKind() != TypeKind.DECLARED || !"java.lang.Object".contentEquals(((TypeElement)((DeclaredType)bound).asElement()).getQualifiedName())) //NOI18N
+                        bounds.add((ExpressionTree)make.Type(bound));
+                }
+            }            
+            typeParams.add(make.TypeParameter(tpe.getSimpleName(), bounds));
+        }
+
+        Tree returnType = make.Type(et.getReturnType());
+
+        List<VariableTree> params = new ArrayList<VariableTree>();        
+        boolean isVarArgs = element.isVarArgs();
+        Iterator<? extends VariableElement> formArgNames = element.getParameters().iterator();
+        Iterator<? extends TypeMirror> formArgTypes = et.getParameterTypes().iterator();
+        ModifiersTree parameterModifiers = make.Modifiers(EnumSet.noneOf(Modifier.class));
+        while (formArgNames.hasNext() && formArgTypes.hasNext()) {
+            VariableElement formArgName = formArgNames.next();
+            TypeMirror formArgType = formArgTypes.next();
+            if (isVarArgs && !formArgNames.hasNext())
+                parameterModifiers = make.Modifiers(1L<<34, Collections.<AnnotationTree>emptyList());
+            params.add(make.Variable(parameterModifiers, formArgName.getSimpleName(), make.Type(formArgType), null));
+        }
+
+        List<ExpressionTree> throwsList = new ArrayList<ExpressionTree>();
+        for (TypeMirror tm : et.getThrownTypes()) {
+            throwsList.add((ExpressionTree)make.Type(tm));
+        }
+        
+        BlockTree body;
+        List<AnnotationTree> annotations = new ArrayList<AnnotationTree>();
+        if (isAbstract) {
+            List<StatementTree> blockStatements = new ArrayList<StatementTree>();
+            TypeElement uoe = wc.getElements().getTypeElement("java.lang.UnsupportedOperationException"); //NOI18N
+            //TODO: if uoe == null: cannot resolve UnsupportedOperationException for some reason, create a different body in such a case
+            if (uoe != null) {
+                NewClassTree nue = make.NewClass(null, Collections.<ExpressionTree>emptyList(), make.QualIdent(uoe), Collections.singletonList(make.Literal("Not supported yet.")), null);
+                blockStatements.add(make.Throw(nue));
+            }
+            body = make.Block(blockStatements, false);
+        } else {
+            List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();
+            for (VariableElement ve : element.getParameters()) {
+                arguments.add(make.Identifier(ve.getSimpleName()));
+            }            
+            MethodInvocationTree inv = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.Identifier("super"), element.getSimpleName()), arguments); //NOI18N
+            StatementTree statement = wc.getTypes().getNoType(TypeKind.VOID) == element.getReturnType() ?
+                make.ExpressionStatement(inv) : make.Return(inv);
+            body = make.Block(Collections.singletonList(statement), false);
+            
+            //add @Override annotation if developing for 1.5:
+            if (GeneratorUtils.supportsOverride(wc.getFileObject())) {
+                annotations.add(make.Annotation(make.Identifier("Override"), Collections.<ExpressionTree>emptyList())); //NOI18N
+            }
+        }
+
+        return make.Method(make.Modifiers(flags, annotations), element.getSimpleName(), returnType, typeParams, params, throwsList, body, null);
+    }
+    
+    private static List<? extends ExecutableElement> findUndefs(CompilationInfo info, TypeElement impl, TypeElement element) {
+        List<ExecutableElement> undef = new ArrayList<ExecutableElement>();
+        ElementUtilities eu = info.getElementUtilities();
+        if (element.getModifiers().contains(Modifier.ABSTRACT)) {
+            for (Element e : element.getEnclosedElements()) {
+                if (e.getKind() == ElementKind.METHOD && e.getModifiers().contains(Modifier.ABSTRACT)) {
+                    ExecutableElement ee = (ExecutableElement)e;
+                    Element eeImpl = eu.getImplementationOf(ee, impl);
+                    if (eeImpl == null || eeImpl == ee)
+                        undef.add(ee);
+                }
+            }
+        }
+        Types types = info.getTypes();
+        DeclaredType implType = (DeclaredType)impl.asType();
+        for (TypeMirror t : types.directSupertypes(element.asType())) {
+            for (ExecutableElement ee : findUndefs(info, impl, (TypeElement)((DeclaredType)t).asElement())) {
+                //check if "the same" method has already been added:
+                boolean exists = false;
+                TypeMirror eeType = types.asMemberOf(implType, ee);
+                for (ExecutableElement existing : undef) {
+                    if (existing.getSimpleName().contentEquals(ee.getSimpleName())) {
+                        TypeMirror existingType = types.asMemberOf(implType, existing);
+                        if (types.isSameType(eeType, existingType)) {
+                            exists = true;
+                            break;
+                        }
+                    }
+                }                
+                if (!exists)
+                    undef.add(ee);
+            }
+        }        
+        return undef;
+    }
+    
     private static List<? extends VariableElement> findAllAccessibleFields(CompilationInfo info, TypeElement accessibleFrom, TypeElement toScan) {
         List<VariableElement> result = new ArrayList<VariableElement>();
 
