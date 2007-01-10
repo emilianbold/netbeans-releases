@@ -19,8 +19,16 @@
 
 package org.netbeans.modules.j2ee.common.method;
 
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.PrimitiveTypeTree;
+import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -31,6 +39,8 @@ import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
@@ -73,7 +83,7 @@ public class MethodModelSupportTest extends NbTestCase {
                 "    }" +
                 "}");
         runUserActionTask(testFO, new AbstractTask<CompilationController>() {
-            public void run(CompilationController controller) throws Exception {
+            public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = SourceUtils.newInstance(controller).getTypeElement();
                 for (ExecutableElement method : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
@@ -128,7 +138,7 @@ public class MethodModelSupportTest extends NbTestCase {
                 "public class TestClass {" +
                 "}");
         runUserActionTask(testFO, new AbstractTask<CompilationController>() {
-            public void run(CompilationController controller) throws Exception {
+            public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 Elements elements = controller.getElements();
                 Types types = controller.getTypes();
@@ -151,9 +161,43 @@ public class MethodModelSupportTest extends NbTestCase {
         });
     }
     
-    private static void runUserActionTask(FileObject javaFile, CancellableTask<CompilationController> taskToTest) throws Exception {
+    public void testCreateMethodTree() throws Exception {
+        final MethodModel methodModel = MethodModel.create(
+                "method",
+                "void",
+                "{ String name; }", // for now, Retouche requires those parenthesis (they won't appear in file)
+                Collections.<MethodModel.Variable>emptyList(),
+                Collections.<String>emptyList(),
+                Collections.<Modifier>emptySet()
+                );
+        TestUtilities.copyStringToFileObject(testFO,
+                "package foo;" +
+                "public class TestClass {" +
+                "}");
+        runModificationTask(testFO, new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                MethodTree methodTree = MethodModelSupport.createMethodTree(workingCopy, methodModel);
+                assertEquals(0, methodTree.getModifiers().getFlags().size());
+                PrimitiveTypeTree returnTypeTree = (PrimitiveTypeTree) methodTree.getReturnType();
+                assertTrue(TypeKind.VOID == returnTypeTree.getPrimitiveTypeKind());
+                assertTrue(methodTree.getName().contentEquals("method"));
+                assertEquals(0, methodTree.getParameters().size());
+                assertEquals(0, methodTree.getThrows().size());
+                List<? extends StatementTree> statements = methodTree.getBody().getStatements();
+                assertEquals(1, statements.size());
+            }
+        });
+    }
+    
+    private static void runUserActionTask(FileObject javaFile, CancellableTask<CompilationController> taskToTest) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(javaFile);
         javaSource.runUserActionTask(taskToTest, true);
+    }
+
+    private static ModificationResult runModificationTask(FileObject javaFile, CancellableTask<WorkingCopy> taskToTest) throws Exception {
+        JavaSource javaSource = JavaSource.forFileObject(javaFile);
+        return javaSource.runModificationTask(taskToTest);
     }
 
 }

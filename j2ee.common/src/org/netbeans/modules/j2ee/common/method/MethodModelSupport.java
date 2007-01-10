@@ -134,7 +134,6 @@ public final class MethodModelSupport {
             TypeElement element = workingCopy.getElements().getTypeElement(exceptionName);
             throwsList.add(treeMaker.QualIdent(element));
         }
-        StatementTree bodyTree = treeUtilities.parseStatement(methodModel.getBody(), new SourcePositions[1]);
         return treeMaker.Method(
                 treeMaker.Modifiers(methodModel.getModifiers()),
                 methodModel.getName(),
@@ -142,9 +141,7 @@ public final class MethodModelSupport {
                 Collections.<TypeParameterTree>emptyList(),
                 paramsList,
                 throwsList,
-                //TODO: RETOUCHE add method body
-                //                treeMaker.Block(Collections.<StatementTree>singletonList(bodyTree), false),
-                treeMaker.Block(Collections.<StatementTree>emptyList(), false),
+                methodModel.getBody(),
                 null
                 );
     }
