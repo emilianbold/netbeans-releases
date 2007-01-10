@@ -18,22 +18,22 @@
  */
 package org.netbeans.modules.vmd.api.io.providers;
 
-import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
-import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
-import org.netbeans.modules.vmd.io.DataObjectContextImpl;
 import org.netbeans.modules.vmd.io.CodeResolver;
+import org.netbeans.modules.vmd.io.DataObjectContextImpl;
 import org.netbeans.modules.vmd.io.editor.EditorViewDescription;
 import org.netbeans.modules.vmd.io.editor.EditorViewFactorySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.WeakHashMap;
 
 /**
  * Custom DataObject used by the IOSupport class must:
@@ -146,37 +146,24 @@ public final class IOSupport {
     }
 
     /**
-     * Creates pane for editor support.
+     * Creates an array of multi view descriptions for editor support for a specified context.
      * @param context the data object context
-     * @param showingType the showing type; could be null
-     * @param closeHandler
      */
-    public static CloneableEditorSupport.Pane createEditorSupportPane (DataObjectContext context, ShowingType showingType, CloseOperationHandler closeHandler) {
+    public static MultiViewDescription[] createEditorSupportPane (DataObjectContext context) {
         Collection<DataEditorView> views = EditorViewFactorySupport.createEditorViews (context);
-        DataEditorView defaultView;
-        if (showingType != ShowingType.EDIT) {
-            defaultView = Collections.max (views, new Comparator<DataEditorView>() {
-                public int compare (DataEditorView o1, DataEditorView o2) {
-                    return o1.getOpenPriority () - o2.getOpenPriority ();
-                }
-            });
-        } else {
-            defaultView = Collections.max (views, new Comparator<DataEditorView>() {
-                public int compare (DataEditorView o1, DataEditorView o2) {
-                    return o1.getEditPriority () - o2.getEditPriority ();
-                }
-            });
-        }
         ArrayList<EditorViewDescription> descriptions = new ArrayList<EditorViewDescription> ();
-        EditorViewDescription defaultDescription = null;
-        for (DataEditorView view : views) {
-            EditorViewDescription description = new EditorViewDescription (context, view);
-            if (view == defaultView)
-                defaultDescription = description;
-            descriptions.add (description);
-        }
-        return (CloneableEditorSupport.Pane) MultiViewFactory.createCloneableMultiView (descriptions.toArray (new MultiViewDescription[descriptions.size ()]), defaultDescription, closeHandler);
+        for (DataEditorView view : views)
+            descriptions.add (new EditorViewDescription (context, view));
+        return descriptions.toArray (new MultiViewDescription[descriptions.size ()]);
+    }
 
+    /**
+     * Returns data editor view instance assigned to a multi view description.
+     * @param description the description
+     * @return the data editor view
+     */
+    public static DataEditorView getDataEditorView (MultiViewDescription description) {
+        return description instanceof EditorViewDescription ? ((EditorViewDescription) description).getView () : null;
     }
 
     /**
@@ -202,15 +189,6 @@ public final class IOSupport {
             return;
         CodeResolver resolver = resolvers.get (activatedView.getContext ().getDataObject ());
         resolver.viewActivated (activatedView);
-    }
-
-    /**
-     * Describes which showing type (opening/editing) is invoked by user.
-     */
-    public enum ShowingType {
-
-        OPEN, EDIT
-
     }
 
 }

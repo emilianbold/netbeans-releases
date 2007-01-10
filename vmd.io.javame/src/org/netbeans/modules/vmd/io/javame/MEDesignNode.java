@@ -18,10 +18,14 @@
  */
 package org.netbeans.modules.vmd.io.javame;
 
+import org.openide.actions.EditAction;
+import org.openide.actions.OpenAction;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
+import org.openide.util.actions.SystemAction;
 
+import javax.swing.*;
 import java.awt.*;
 
 /**
@@ -33,6 +37,22 @@ public class MEDesignNode extends FilterNode {
 
     public MEDesignNode (Node originalNode) {
         super (originalNode);
+    }
+
+    @Override
+    public Action[] getActions (boolean context) {
+        Action[] actions = super.getActions (context);
+        if (actions == null  ||  actions.length <= 0)
+            return actions;
+        Action[] newActions = new Action[actions.length + 1];
+        newActions[0] = actions[0];
+        newActions[1] = SystemAction.get (EditAction.class);
+        System.arraycopy (actions, 1, newActions, 2, actions.length - 1);
+        return newActions;
+    }
+
+    public Action getPreferredAction () {
+        return SystemAction.get (OpenAction.class);
     }
 
     public Image getIcon (int type) {

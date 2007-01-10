@@ -18,16 +18,25 @@
  */
 package org.netbeans.modules.vmd.io.javame;
 
+import org.netbeans.core.api.multiview.MultiViewHandler;
+import org.netbeans.core.api.multiview.MultiViews;
+import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
+import org.netbeans.core.spi.multiview.MultiViewDescription;
+import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.mobility.editor.pub.J2MEDataObject.J2MEEditorSupport;
+import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.IOUtils;
 import org.netbeans.modules.vmd.api.io.providers.DocumentSerializer;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.GuardedSectionsFactory;
 import org.netbeans.spi.editor.guards.GuardedSectionsProvider;
-import org.openide.cookies.*;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.OpenCookie;
+import org.openide.cookies.PrintCookie;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
@@ -42,23 +51,24 @@ import java.io.*;
  */
 // TODO - save cookie is not added/removed to/from MEDesignEditorSupport based on the saveDocument, notifyModified, notifyUnmodified, notifyClosed
 public class MEDesignEditorSupport extends J2MEEditorSupport implements EditorCookie.Observable, OpenCookie, EditCookie, PrintCookie {
-    
+
     private MEDesignDataObject dataObject;
 //    private Save saveCookie = new Save();
     private CloseOperationHandler closeHandler;
     private TopComponent mvtc;
-    private IOSupport.ShowingType showingType;
+
+    private MultiViewDescription[] descriptions;
 
     private GuardsEditor guardsEditor;
     private GuardedSectionsProvider sections;
-    
+
     public MEDesignEditorSupport(MEDesignDataObject dataObject) {
         super(dataObject);
         this.dataObject = dataObject;
         closeHandler = new CloseHandler (dataObject);
         setMIMEType("text/x-java"); // NOI18N
     }
-    
+
     @Override
     public void saveDocument() throws IOException {
         DocumentSerializer documentSerializer = IOSupport.getDocumentSerializer (dataObject);
@@ -67,7 +77,7 @@ public class MEDesignEditorSupport extends J2MEEditorSupport implements EditorCo
         documentSerializer.saveDocument();
         super.saveDocument();
     }
-    
+
     @Override
     public boolean notifyModified() {
         if (!super.notifyModified()) {
@@ -76,46 +86,87 @@ public class MEDesignEditorSupport extends J2MEEditorSupport implements EditorCo
         updateDisplayName();
         return true;
     }
-    
+
     @Override
     protected void notifyUnmodified() {
         super.notifyUnmodified();
         updateDisplayName();
     }
-    
+
     @Override
     protected void notifyClosed() {
         mvtc = null;
         super.notifyClosed();
         IOSupport.notifyDataObjectClosed (dataObject);
     }
-    
+
     public void open() {
-        showingType = IOSupport.ShowingType.OPEN;
         super.open();
+
+        TopComponent mvtc = this.mvtc;
+        if (mvtc != null) {
+            MultiViewHandler handler = MultiViews.findMultiViewHandler (mvtc);
+            int bestPriority = Integer.MIN_VALUE;
+            int bestIndex = -1;
+            int index = 0;
+            for (MultiViewDescription description : descriptions) {
+                DataEditorView dataEditorView = IOSupport.getDataEditorView (description);
+                int openPriority = dataEditorView.getOpenPriority ();
+                if (openPriority > bestPriority) {
+                    bestPriority = openPriority;
+                    bestIndex = index;
+                }
+                index ++;
+            }
+            MultiViewPerspective perspective = handler.getPerspectives ()[bestIndex];
+            handler.requestActive (perspective);
+            handler.requestVisible (perspective);
+        }
     }
-    
+
     public void edit() {
-        showingType = IOSupport.ShowingType.EDIT;
-        super.open();
+        super.edit();
+
+        TopComponent mvtc = this.mvtc;
+        if (mvtc != null) {
+            MultiViewHandler handler = MultiViews.findMultiViewHandler (mvtc);
+            int bestPriority = Integer.MIN_VALUE;
+            int bestIndex = -1;
+            int index = 0;
+            for (MultiViewDescription description : descriptions) {
+                DataEditorView dataEditorView = IOSupport.getDataEditorView (description);
+                int editPriority = dataEditorView.getEditPriority ();
+                if (editPriority > bestPriority) {
+                    bestPriority = editPriority;
+                    bestIndex = index;
+                }
+                index ++;
+            }
+            MultiViewPerspective perspective = handler.getPerspectives ()[bestIndex];
+            handler.requestActive (perspective);
+            handler.requestVisible (perspective);
+        }
     }
-    
+
     @Override
     protected Pane createPane() {
-        return IOSupport.createEditorSupportPane (IOSupport.getDataObjectContext (dataObject), showingType, closeHandler);
+        descriptions = IOSupport.createEditorSupportPane (IOSupport.getDataObjectContext (dataObject));
+        return (CloneableEditorSupport.Pane) MultiViewFactory.createCloneableMultiView (descriptions, null, closeHandler);
+
+
     }
-    
+
     public void setMVTC(TopComponent mvtc) {
         this.mvtc = mvtc;
         updateDisplayName ();
     }
-    
+
     protected CloneableTopComponent createCloneableTopComponent() {
         CloneableTopComponent tc = super.createCloneableTopComponent();
         this.mvtc = tc;
         return tc;
     }
-    
+
     public void updateDisplayName() {
         final TopComponent tc = mvtc;
         if (tc == null)
@@ -129,7 +180,7 @@ public class MEDesignEditorSupport extends J2MEEditorSupport implements EditorCo
             }
         });
     }
-    
+
     @Override
     protected void loadFromStreamToKitHook (StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
         if (sections == null) {
@@ -175,7 +226,7 @@ public class MEDesignEditorSupport extends J2MEEditorSupport implements EditorCo
 //        }
 //
 //    }
-    
+
     private static class CloseHandler implements CloseOperationHandler, Serializable {
 
         private static final long serialVersionUID = -1;
@@ -196,13 +247,13 @@ public class MEDesignEditorSupport extends J2MEEditorSupport implements EditorCo
     }
 
     private class GuardsEditor implements GuardedEditorSupport {
-        
+
         private StyledDocument document;
-        
+
         public GuardsEditor(StyledDocument document) {
             this.document = document;
         }
-        
+
         public StyledDocument getDocument() {
             return document;
         }
@@ -210,7 +261,7 @@ public class MEDesignEditorSupport extends J2MEEditorSupport implements EditorCo
         public void setDocument(StyledDocument document) {
             this.document = document;
         }
-        
+
     }
-    
+
 }

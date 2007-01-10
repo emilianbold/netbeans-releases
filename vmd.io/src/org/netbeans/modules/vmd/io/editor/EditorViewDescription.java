@@ -70,4 +70,8 @@ public class EditorViewDescription implements MultiViewDescription, Serializable
         return new EditorViewElement (context, view);
     }
 
+    public DataEditorView getView () {
+        return view;
+    }
+
 }
