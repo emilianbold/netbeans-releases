@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import javax.swing.UIManager;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ui.wizard.AddServerInstanceWizard;
@@ -144,10 +145,7 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
 
         setLayout(new java.awt.GridBagLayout());
 
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/deployment/impl/ui/Bundle"); // NOI18N
-        getAccessibleContext().setAccessibleName(bundle.getString("ASCN_ServerManager")); // NOI18N
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_ServerCustomizer")); // NOI18N
-        servers.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        servers.setBorder(null);
         servers.setPreferredSize(new java.awt.Dimension(220, 400));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -168,7 +166,6 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
                 addServer(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -184,7 +181,6 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
                 removeServer(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -196,7 +192,6 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
         cards.setLayout(new java.awt.CardLayout());
 
         messageArea.setLayout(new java.awt.GridBagLayout());
-
         cards.add(messageArea, "card3");
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
@@ -241,7 +236,6 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
         serverType.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_Server Type")); // NOI18N
 
         clientArea.setLayout(new java.awt.GridBagLayout());
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
@@ -273,8 +267,11 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(serversLabel, gridBagConstraints);
         serversLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "LBL_Servers")); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/deployment/impl/ui/Bundle"); // NOI18N
         serversLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ServerList")); // NOI18N
 
+        getAccessibleContext().setAccessibleName(bundle.getString("ASCN_ServerManager")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServersCustomizer.class, "ASCD_ServerCustomizer")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     private void removeServer(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeServer
@@ -450,6 +447,7 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
             this.setRootVisible(false);
             this.tree.setEditable(false);
             this.tree.setShowsRootHandles(false);
+            this.setBorder(UIManager.getBorder("Nb.ScrollPane.border")); // NOI18N
         }
         
     }
