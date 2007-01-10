@@ -31,6 +31,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.openide.explorer.ExplorerManager;
@@ -63,7 +64,7 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
         treeView.setDropTarget(true);
               
         treeView.setDefaultActionAllowed (false);
-        treeView.setBorder(BorderFactory.createEtchedBorder());
+        treeView.setBorder(UIManager.getBorder("Nb.ScrollPane.border")); // NOI18N
         treeView.getAccessibleContext().setAccessibleDescription(browserAcsd);
         treeView.getAccessibleContext().setAccessibleName(browserAcsn);   
         if(singleSelection) {
