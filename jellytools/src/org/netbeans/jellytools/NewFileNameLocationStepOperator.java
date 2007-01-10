@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools;
@@ -117,7 +117,7 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
      */
     public JLabelOperator lblProject() {
         if(_lblProject == null) {
-            _lblProject = new JLabelOperator(this, Bundle.getString("org.netbeans.modules.project.ui.Bundle",
+            _lblProject = new JLabelOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle",
                     "LBL_TemplateChooserPanelGUI_jLabel1"));
         }
         return _lblProject;
@@ -143,7 +143,7 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
      */
     public JLabelOperator lblCreatedFile() {
         if(_lblCreatedFile == null) {
-            _lblCreatedFile = new JLabelOperator(this, Bundle.getString("org.netbeans.modules.java.project.Bundle","LBL_JavaTargetChooserPanelGUI_CreatedFile_Label"));
+            _lblCreatedFile = new JLabelOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.java.project.Bundle","LBL_JavaTargetChooserPanelGUI_CreatedFile_Label"));
         }
         return _lblCreatedFile;
     }
