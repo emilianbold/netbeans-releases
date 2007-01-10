@@ -67,7 +67,8 @@ public class EnterpriseRefActionGroup extends NodeAction implements Presenter.Po
     }
     
     protected boolean enable(org.openide.nodes.Node[] activatedNodes) {
-        return true;
+        //TODO: RETOUCHE
+        return false;
     }
     
     protected void performAction(org.openide.nodes.Node[] activatedNodes) {
