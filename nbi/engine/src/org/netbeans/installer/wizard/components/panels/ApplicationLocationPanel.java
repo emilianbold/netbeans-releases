@@ -68,28 +68,21 @@ import org.netbeans.installer.wizard.containers.SwingContainer;
 public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String MESSAGE_TEXT_PROPERTY = "message.text";
-    public static final String MESSAGE_TEXT_NOTHING_FOUND_PROPERTY = "message.text.nothing.found";
-    public static final String MESSAGE_CONTENT_TYPE_PROPERTY = "message.content.type";
+    public static final Class CLS = ApplicationLocationPanel.class;
+    
     public static final String LOCATION_LABEL_TEXT_PROPERTY = "location.label.text";
     public static final String LOCATION_BUTTON_TEXT_PROPERTY = "location.button.text";
     public static final String LIST_LABEL_TEXT_PROPERTY = "list.label.text";
     
-    public static final String DEFAULT_MESSAGE_TEXT = ResourceUtils.getString(ApplicationLocationPanel.class, "ALP.message.text");
-    public static final String DEFAULT_MESSAGE_TEXT_NOTHING_FOUND = ResourceUtils.getString(ApplicationLocationPanel.class, "ALP.message.text.nothing.found");
-    public static final String DEFAULT_MESSAGE_CONTENT_TYPE = ResourceUtils.getString(ApplicationLocationPanel.class, "ALP.message.content.type");
-    public static final String DEFAULT_LOCATION_LABEL_TEXT = ResourceUtils.getString(ApplicationLocationPanel.class, "ALP.location.label.text");
-    public static final String DEFAULT_LOCATION_BUTTON_TEXT = ResourceUtils.getString(ApplicationLocationPanel.class, "ALP.location.button.text");
-    public static final String DEFAULT_LIST_LABEL_TEXT = ResourceUtils.getString(ApplicationLocationPanel.class, "ALP.list.label.text");
+    public static final String DEFAULT_LOCATION_LABEL_TEXT = ResourceUtils.getString(CLS, "ALP.location.label.text");
+    public static final String DEFAULT_LOCATION_BUTTON_TEXT = ResourceUtils.getString(CLS, "ALP.location.button.text");
+    public static final String DEFAULT_LIST_LABEL_TEXT = ResourceUtils.getString(CLS, "ALP.list.label.text");
     
-    public static final String DEFAULT_LOCATION = ResourceUtils.getString(ApplicationLocationPanel.class, "ALP.default.location");
+    public static final String DEFAULT_LOCATION = ResourceUtils.getString(CLS, "ALP.default.location");
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public ApplicationLocationPanel() {
-        setProperty(MESSAGE_TEXT_PROPERTY, DEFAULT_MESSAGE_TEXT);
-        setProperty(MESSAGE_TEXT_NOTHING_FOUND_PROPERTY, DEFAULT_MESSAGE_TEXT_NOTHING_FOUND);
-        setProperty(MESSAGE_CONTENT_TYPE_PROPERTY, DEFAULT_MESSAGE_CONTENT_TYPE);
         setProperty(LOCATION_LABEL_TEXT_PROPERTY, DEFAULT_LOCATION_LABEL_TEXT);
         setProperty(LOCATION_BUTTON_TEXT_PROPERTY, DEFAULT_LOCATION_BUTTON_TEXT);
         setProperty(LIST_LABEL_TEXT_PROPERTY, DEFAULT_LIST_LABEL_TEXT);
@@ -136,7 +129,6 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
     public static class ApplicationLocationPanelSwingUi extends ErrorMessagePanelSwingUi {
         private ApplicationLocationPanel component;
         
-        private NbiTextPane    messagePane;
         private NbiLabel       locationLabel;
         private NbiTextField   locationField;
         private NbiButton      locationButton;
@@ -160,14 +152,14 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
         }
         
         protected void initialize() {
-            messagePane.setContentType(component.getProperty(MESSAGE_CONTENT_TYPE_PROPERTY));
-            messagePane.setText(component.getProperty(MESSAGE_TEXT_PROPERTY));
+            super.initialize();
+            
             locationLabel.setText(component.getProperty(LOCATION_LABEL_TEXT_PROPERTY));
             locationButton.setText(component.getProperty(LOCATION_BUTTON_TEXT_PROPERTY));
             listLabel.setText(component.getProperty(LIST_LABEL_TEXT_PROPERTY));
             
             LocationsListModel model = new LocationsListModel(
-                    component.getLocations(), 
+                    component.getLocations(),
                     component.getLabels());
             list.setModel(model);
             
@@ -179,7 +171,9 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
                     locationField.setText(model.getLocationAt(0).getAbsolutePath());
                 }
                 
-                setListVisibility(true);
+                listLabel.setVisible(true);
+                list.setVisible(true);
+                listReplacement.setVisible(false);
             } else {
                 if (selectedLocation != null) {
                     locationField.setText(selectedLocation.getAbsolutePath());
@@ -187,7 +181,9 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
                     locationField.setText(SystemUtils.parsePath(DEFAULT_LOCATION).getAbsolutePath());
                 }
                 
-                setListVisibility(false);
+                listLabel.setVisible(false);
+                list.setVisible(false);
+                listReplacement.setVisible(true);
             }
             
             updateErrorMessage();
@@ -202,8 +198,6 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
         }
         
         private void initComponents() {
-            messagePane = new NbiTextPane();
-            
             locationField = new NbiTextField();
             locationField.getDocument().addDocumentListener(new DocumentListener() {
                 public void changedUpdate(DocumentEvent event) {
@@ -246,14 +240,12 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
             
             listReplacement = new NbiPanel();
             
-            add(messagePane, new GridBagConstraints(0, 0, 2, 1, 1.0, 0.3, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 0, 11), 0, 0));
             add(locationLabel, new GridBagConstraints(0, 1, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(7, 11, 0, 11), 0, 0));
             add(locationField, new GridBagConstraints(0, 2, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(4, 11, 0, 4), 0, 0));
             add(locationButton, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(4, 0, 0, 11), 0, 0));
-            add(spacer, new GridBagConstraints(0, 3, 2, 1, 0.0, 0.2, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 11, 0, 11), 0, 0));
-            add(listLabel, new GridBagConstraints(0, 4, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(7, 11, 0, 11), 0, 0));
-            add(list, new GridBagConstraints(0, 5, 2, 1, 1.0, 0.5, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(4, 11, 11, 11), 0, 0));
-            add(listReplacement, new GridBagConstraints(0, 6, 2, 1, 1.0, 0.5, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(4, 11, 0, 11), 0, 0));
+            add(listLabel, new GridBagConstraints(0, 3, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(11, 11, 0, 11), 0, 0));
+            add(list, new GridBagConstraints(0, 4, 2, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(4, 11, 0, 11), 0, 0));
+            add(listReplacement, new GridBagConstraints(0, 5, 2, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(4, 11, 0, 11), 0, 0));
             
             fileChooser = new JFileChooser();
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -296,17 +288,6 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
             }
             
             list.clearSelection();
-        }
-        
-        private void setListVisibility(boolean state) {
-            listLabel.setVisible(state);
-            listLabel.setEnabled(state);
-            
-            list.setVisible(state);
-            list.setEnabled(state);
-            
-            listReplacement.setVisible(!state);
-            listReplacement.setEnabled(!state);
         }
     }
     

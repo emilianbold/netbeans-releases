@@ -20,10 +20,9 @@
  */
 package org.netbeans.installer.utils.helper.swing;
 
-import javax.swing.BorderFactory;
 import javax.swing.JList;
 import javax.swing.ListSelectionModel;
-import javax.swing.border.BevelBorder;
+import javax.swing.plaf.basic.BasicBorders;
 
 /**
  *
@@ -33,8 +32,7 @@ public class NbiList extends JList {
     public NbiList() {
         super();
         
-        setOpaque(false);
-        setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+        setBorder(BasicBorders.getTextFieldBorder());
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 }

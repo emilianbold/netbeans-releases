@@ -143,7 +143,7 @@ public class Registry {
     public static final String STATE_FILE_STUB_PROPERTY =
             "nbi.state.file.stub";
     
-    public static final String TARGET_PLATFORM_PROPERTY = 
+    public static final String TARGET_PLATFORM_PROPERTY =
             "nbi.target.platform";
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -505,7 +505,7 @@ public class Registry {
         
         if (componentsElement != null) {
             for (Element child: XMLUtils.getChildren(componentsElement)) {
-                if (child.getNodeName().equals("component")) {
+                if (child.getNodeName().equals("product")) {
                     Product component = new Product().loadFromDom(child);
                     List<Product> existing = getProductComponents(component.getUid(), component.getVersion(), component.getSupportedPlatforms());
                     
@@ -750,6 +750,18 @@ public class Registry {
         return (candidates.size() > 0) ? candidates : null;
     }
     
+    public List<Product> getProducts(String uid) {
+        List<Product> candidates = queryComponents(new ProductFilter(uid, targetPlatform));
+        
+        return (candidates.size() > 0) ? candidates : null;
+    }
+    
+    public List<Product> getProducts(String uid, List<Platform> platforms) {
+        List<Product> candidates = queryComponents(new ProductFilter(uid, platforms));
+        
+        return (candidates.size() > 0) ? candidates : null;
+    }
+    
     public Product getProductComponent(String uid, Version lower, Version upper) {
         Product newest = null;
         
@@ -791,6 +803,26 @@ public class Registry {
         }
         
         return false;
+    }
+    
+    public long getInstallationSize() {
+        long size = 0;
+        
+        for (Product product: getComponentsToInstall()) {
+            size += product.getRequiredDiskSpace();
+        }
+        
+        return size;
+    }
+    
+    public long getDownloadSize() {
+        long size = 0;
+        
+        for (Product product: getComponentsToInstall()) {
+            size += product.getDownloadSize();
+        }
+        
+        return size;
     }
     
     // installation order related queries ///////////////////////////////////////////
@@ -866,14 +898,14 @@ public class Registry {
     // verification /////////////////////////////////////////////////////////////////
     public boolean checkDependenciesForInstall(Product component) {
         for (Product requirement: component.getRequirements()) {
-            if ((requirement.getStatus() != Status.INSTALLED) && 
+            if ((requirement.getStatus() != Status.INSTALLED) &&
                     (requirement.getStatus() != Status.TO_BE_INSTALLED)) {
                 return false;
             }
         }
         
         for (Product conflict: component.getConflicts()) {
-            if ((conflict.getStatus() != Status.NOT_INSTALLED) && 
+            if ((conflict.getStatus() != Status.NOT_INSTALLED) &&
                     (conflict.getStatus() != Status.TO_BE_UNINSTALLED)) {
                 return false;
             }
@@ -1014,7 +1046,7 @@ public class Registry {
             progress.addPercentage(percentageChunk + percentageLeak);
             
             LogManager.log(ErrorLevel.DEBUG, "    parsing components...");
-            List<Node> componentsNodes = XMLUtils.getChildList(documentElement, "./components/component");
+            List<Node> componentsNodes = XMLUtils.getChildList(documentElement, "./components/product");
             for (Node componentNode: componentsNodes) {
                 String uid = XMLUtils.getAttribute(componentNode, "uid");
                 Version version = new Version(XMLUtils.getAttribute(componentNode, "version"));
@@ -1125,7 +1157,7 @@ public class Registry {
             if (components.size() > 0) {
                 Element componentsNode = document.createElement("components");
                 for (Product component: components) {
-                    Element componentNode = document.createElement("component");
+                    Element componentNode = document.createElement("product");
                     
                     componentNode.setAttribute("uid", component.getUid());
                     componentNode.setAttribute("version", component.getVersion().toString());
@@ -1181,7 +1213,7 @@ public class Registry {
     
     // miscellanea //////////////////////////////////////////////////////////////////
     private int getNumberOfComponents(Node node) {
-        List<Node> list = XMLUtils.getChildList(node,"./components/(component,group)");
+        List<Node> list = XMLUtils.getChildList(node,"./components/(product,group)");
         int result = list.size();
         for(int i=0;i<list.size();i++) {
             result += getNumberOfComponents(list.get(i));

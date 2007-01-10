@@ -67,7 +67,7 @@ public class DownloadConfigurationLogicAction extends WizardAction {
         overallProgress.setTitle("Downloading configuration logic for selected components");
         overallProgress.setPercentage(percentageLeak);
         
-        ((WizardActionUi) getWizardUi()).setProgress(overallProgress);
+        getWizardUi().setProgress(overallProgress);
         for (Product component: components) {
             // initiate the progress for the current element
             currentProgress = new Progress();

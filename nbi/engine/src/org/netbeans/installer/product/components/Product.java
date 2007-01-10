@@ -28,7 +28,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.jar.JarFile;
-import org.netbeans.installer.product.*;
+import org.netbeans.installer.product.Registry;
+import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.product.utils.DetailedStatus;
 import org.netbeans.installer.product.utils.Status;
 import org.netbeans.installer.utils.FileProxy;
@@ -46,7 +47,6 @@ import org.netbeans.installer.utils.exceptions.FinalizationException;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
-import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -770,7 +770,7 @@ public final class Product extends RegistryNode {
     
     // node <-> dom /////////////////////////////////////////////////////////////////
     protected String getTagName() {
-        return "component";
+        return "product";
     }
     
     protected Element saveToDom(Element element) throws FinalizationException {

@@ -176,6 +176,8 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
     }
     
     public static class ComponentsSelectionPanelSwingUi extends ErrorMessagePanelSwingUi {
+        /////////////////////////////////////////////////////////////////////////////
+        // Instance
         private ComponentsSelectionPanel component;
         
         private NbiTextPane   messagePane;
@@ -295,7 +297,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 }
                 public void treeNodesInserted(TreeModelEvent event) {
                     updateSizes();
-                    updateErrorMessage();                    
+                    updateErrorMessage();
                 }
                 public void treeNodesRemoved(TreeModelEvent event) {
                     updateSizes();
@@ -303,7 +305,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 }
                 public void treeStructureChanged(TreeModelEvent event) {
                     updateSizes();
-                    updateErrorMessage();                    
+                    updateErrorMessage();
                 }
             });
             
@@ -312,6 +314,8 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             
             // descriptionPane
             descriptionPane = new NbiTextPane();
+            descriptionPane.setBorder(
+                    new EmptyBorder(5, 5, 5, 5));
             
             // descriptionPane scrollPane
             descriptionScrollPane = new NbiScrollPane(descriptionPane);
@@ -342,7 +346,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             add(descriptionScrollPane, new GridBagConstraints(
                     1, 1,                             // x, y
                     1, 1,                             // width, height
-                    0.3, 1.0,                         // weight-x, weight-y
+                    0.4, 1.0,                         // weight-x, weight-y
                     GridBagConstraints.PAGE_START,    // anchor
                     GridBagConstraints.BOTH,          // fill
                     new Insets(6, 6, 0, 11),          // padding
@@ -371,228 +375,220 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         }
         
         private void updateSizes() {
-            final List<Product> toInstall = Registry.getInstance().getComponentsToInstall();
+            long installationSize = Registry.getInstance().getInstallationSize();
+            long downloadSize = Registry.getInstance().getDownloadSize();
             
-            String installationSize = 
-                    component.getProperty(DEFAULT_INSTALLATION_SIZE_PROPERTY);
-            String downloadSize = 
-                    component.getProperty(DEFAULT_DOWNLOAD_SIZE_PROPERTY);
-            
-            if (toInstall.size() > 0) {
-                long installationSizeLong = 0;
-                long downloadSizeLong = 0;
-                
-                for (Product product: toInstall) {
-                    installationSizeLong += product.getRequiredDiskSpace();
-                    downloadSizeLong += product.getDownloadSize();
-                }
-                
-                installationSize = StringUtils.formatSize(installationSizeLong);
-                downloadSize = StringUtils.formatSize(downloadSizeLong);
-            }
-            
-            sizesLabel.setText(StringUtils.format(
-                    component.getProperty(SIZES_LABEL_TEXT_PROPERTY), 
-                    installationSize, 
-                    downloadSize));
-        }
-    }
-    
-    public static class ComponentsTreeModel implements TreeModel {
-        private Vector<TreeModelListener> listeners = 
-                new Vector<TreeModelListener>();
-        
-        public Object getRoot() {
-            return Registry.getInstance().getProductTreeRoot();
-        }
-        
-        public Object getChild(Object node, int index) {
-            return ((RegistryNode) node).getVisibleChildren().get(index);
-        }
-        
-        public int getChildCount(Object node) {
-            return ((RegistryNode) node).getVisibleChildren().size();
-        }
-        
-        public boolean isLeaf(Object node) {
-            return ((RegistryNode) node).getVisibleChildren().size() == 0;
-        }
-        
-        public void valueForPathChanged(TreePath path, Object value) {
-            RegistryNode node = (RegistryNode) path.getLastPathComponent();
-            
-            if (node instanceof Product) {
-                Product product = (Product) node;
-                boolean selected = (Boolean) value;
-                
-                if (selected && (product.getStatus() == Status.NOT_INSTALLED)) {
-                    product.setStatus(Status.TO_BE_INSTALLED);
-                }
-                if (selected && (product.getStatus() == Status.TO_BE_UNINSTALLED)) {
-                    product.setStatus(Status.INSTALLED);
-                }
-                if (!selected && (product.getStatus() == Status.INSTALLED)) {
-                    product.setStatus(Status.TO_BE_UNINSTALLED);
-                }
-                if (!selected && (product.getStatus() == Status.TO_BE_INSTALLED)) {
-                    product.setStatus(Status.NOT_INSTALLED);
-                }
-                
-                fireNodeChanged(path);
-            }
-        }
-        
-        public int getIndexOfChild(Object node, Object child) {
-            return ((RegistryNode) node).getVisibleChildren().indexOf(child);
-        }
-        
-        public void addTreeModelListener(TreeModelListener listener) {
-            synchronized (listeners) {
-                listeners.add(listener);
-            }
-        }
-        
-        public void removeTreeModelListener(TreeModelListener listener) {
-            synchronized (listeners) {
-                listeners.remove(listener);
-            }
-        }
-        
-        private void fireNodeChanged(TreePath path) {
-            TreeModelListener[] clone = listeners.toArray(new TreeModelListener[0]);
-            TreeModelEvent event = new TreeModelEvent(this, path);
-            
-            for (TreeModelListener listener: clone) {
-                listener.treeNodesChanged(event);
-            }
-        }
-    }
-    
-    public static class ComponentsTreeCellRenderer extends NbiCheckBox implements TreeCellRenderer, TreeCellEditor {
-        private List<CellEditorListener> listeners = 
-                new LinkedList<CellEditorListener>();
-        
-        public ComponentsTreeCellRenderer() {
-            addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
-                    fireEditingStopped();
-                }
-            });
-        }
-        
-        public Component getTreeCellRendererComponent(
-                final JTree tree,
-                final Object value,
-                final boolean selected,
-                final boolean expanded,
-                final boolean leaf,
-                final int row,
-                final boolean focus) {
-            return getComponent(tree, value, selected, expanded, leaf, row, focus);
-        }
-        
-        public Component getTreeCellEditorComponent(
-                final JTree tree,
-                final Object value,
-                final boolean selected,
-                final boolean expanded,
-                final boolean leaf,
-                final int row) {
-            return getComponent(tree, value, selected, expanded, leaf, row, false);
-        }
-        
-        public Object getCellEditorValue() {
-            if (isSelected()) {
-                return true;
+            if (installationSize == 0) {
+                sizesLabel.setText(StringUtils.format(
+                        component.getProperty(SIZES_LABEL_TEXT_PROPERTY),
+                        component.getProperty(DEFAULT_INSTALLATION_SIZE_PROPERTY),
+                        component.getProperty(DEFAULT_DOWNLOAD_SIZE_PROPERTY)));
             } else {
-                return false;
+                sizesLabel.setText(StringUtils.format(
+                        component.getProperty(SIZES_LABEL_TEXT_PROPERTY),
+                        StringUtils.formatSize(installationSize),
+                        StringUtils.formatSize(downloadSize)));
             }
         }
         
-        public boolean isCellEditable(EventObject event) {
-            return true;
-        }
-        
-        public boolean shouldSelectCell(EventObject event) {
-            return true;
-        }
-        
-        public boolean stopCellEditing() {
-            fireEditingStopped();
-            return true;
-        }
-        
-        public void cancelCellEditing() {
-            fireEditingCanceled();
-        }
-        
-        public void addCellEditorListener(CellEditorListener listener) {
-            synchronized (listeners) {
-                listeners.add(listener);
-            }
-        }
-        
-        public void removeCellEditorListener(CellEditorListener listener) {
-            synchronized (listeners) {
-                listeners.remove(listener);
-            }
-        }
-        
-        private void fireEditingStopped() {
-            CellEditorListener[] clone = listeners.toArray(new CellEditorListener[0]);
-            ChangeEvent event = new ChangeEvent(this);
+        /////////////////////////////////////////////////////////////////////////////
+        // Inner Classes
+        public static class ComponentsTreeModel implements TreeModel {
+            private Vector<TreeModelListener> listeners =
+                    new Vector<TreeModelListener>();
             
-            for (CellEditorListener listener: clone) {
-                listener.editingStopped(event);
+            public Object getRoot() {
+                return Registry.getInstance().getProductTreeRoot();
             }
-        }
-        
-        private void fireEditingCanceled() {
-            CellEditorListener[] clone = listeners.toArray(new CellEditorListener[0]);
-            ChangeEvent event = new ChangeEvent(this);
             
-            for (CellEditorListener listener: clone) {
-                listener.editingCanceled(event);
+            public Object getChild(Object node, int index) {
+                return ((RegistryNode) node).getVisibleChildren().get(index);
             }
-        }
-        
-        private JComponent getComponent(
-                final JTree tree,
-                final Object value,
-                final boolean selected,
-                final boolean expanded,
-                final boolean leaf,
-                final int row,
-                final boolean focus) {
-            if (value instanceof RegistryNode) {
-                RegistryNode node = (RegistryNode) value;
+            
+            public int getChildCount(Object node) {
+                return ((RegistryNode) node).getVisibleChildren().size();
+            }
+            
+            public boolean isLeaf(Object node) {
+                return ((RegistryNode) node).getVisibleChildren().size() == 0;
+            }
+            
+            public void valueForPathChanged(TreePath path, Object value) {
+                RegistryNode node = (RegistryNode) path.getLastPathComponent();
                 
-                setText(node.getDisplayName());
-                setToolTipText(node.getDisplayName());
+                if (node instanceof Product) {
+                    Product product = (Product) node;
+                    boolean selected = (Boolean) value;
+                    
+                    if (selected && (product.getStatus() == Status.NOT_INSTALLED)) {
+                        product.setStatus(Status.TO_BE_INSTALLED);
+                    }
+                    if (selected && (product.getStatus() == Status.TO_BE_UNINSTALLED)) {
+                        product.setStatus(Status.INSTALLED);
+                    }
+                    if (!selected && (product.getStatus() == Status.INSTALLED)) {
+                        product.setStatus(Status.TO_BE_UNINSTALLED);
+                    }
+                    if (!selected && (product.getStatus() == Status.TO_BE_INSTALLED)) {
+                        product.setStatus(Status.NOT_INSTALLED);
+                    }
+                    
+                    fireNodeChanged(path);
+                }
             }
             
-            if (value instanceof Product) {
-                Product product = (Product) value;
+            public int getIndexOfChild(Object node, Object child) {
+                return ((RegistryNode) node).getVisibleChildren().indexOf(child);
+            }
+            
+            public void addTreeModelListener(TreeModelListener listener) {
+                synchronized (listeners) {
+                    listeners.add(listener);
+                }
+            }
+            
+            public void removeTreeModelListener(TreeModelListener listener) {
+                synchronized (listeners) {
+                    listeners.remove(listener);
+                }
+            }
+            
+            private void fireNodeChanged(TreePath path) {
+                TreeModelListener[] clone = listeners.toArray(new TreeModelListener[0]);
+                TreeModelEvent event = new TreeModelEvent(this, path);
                 
-                if ((product.getStatus() == Status.INSTALLED) ||
-                        (product.getStatus() == Status.TO_BE_INSTALLED)) {
-                    setSelected(true);
+                for (TreeModelListener listener: clone) {
+                    listener.treeNodesChanged(event);
+                }
+            }
+        }
+        
+        public static class ComponentsTreeCellRenderer extends NbiCheckBox implements TreeCellRenderer, TreeCellEditor {
+            private List<CellEditorListener> listeners =
+                    new LinkedList<CellEditorListener>();
+            
+            public ComponentsTreeCellRenderer() {
+                addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent event) {
+                        fireEditingStopped();
+                    }
+                });
+            }
+            
+            public Component getTreeCellRendererComponent(
+                    final JTree tree,
+                    final Object value,
+                    final boolean selected,
+                    final boolean expanded,
+                    final boolean leaf,
+                    final int row,
+                    final boolean focus) {
+                return getComponent(tree, value, selected, expanded, leaf, row, focus);
+            }
+            
+            public Component getTreeCellEditorComponent(
+                    final JTree tree,
+                    final Object value,
+                    final boolean selected,
+                    final boolean expanded,
+                    final boolean leaf,
+                    final int row) {
+                return getComponent(tree, value, selected, expanded, leaf, row, false);
+            }
+            
+            public Object getCellEditorValue() {
+                if (isSelected()) {
+                    return true;
                 } else {
-                    setSelected(false);
+                    return false;
                 }
             }
             
-            if (selected) {
-                setOpaque(true);
-                setForeground(UIManager.getColor("Tree.selectionForeground"));
-                setBackground(UIManager.getColor("Tree.selectionBackground"));
-            } else {
-                setOpaque(false);                
-                setForeground(UIManager.getColor("Tree.textForeground"));
-                setBackground(UIManager.getColor("Tree.textBackground"));
+            public boolean isCellEditable(EventObject event) {
+                return true;
             }
             
-            return this;
+            public boolean shouldSelectCell(EventObject event) {
+                return true;
+            }
+            
+            public boolean stopCellEditing() {
+                fireEditingStopped();
+                return true;
+            }
+            
+            public void cancelCellEditing() {
+                fireEditingCanceled();
+            }
+            
+            public void addCellEditorListener(CellEditorListener listener) {
+                synchronized (listeners) {
+                    listeners.add(listener);
+                }
+            }
+            
+            public void removeCellEditorListener(CellEditorListener listener) {
+                synchronized (listeners) {
+                    listeners.remove(listener);
+                }
+            }
+            
+            private void fireEditingStopped() {
+                CellEditorListener[] clone = listeners.toArray(new CellEditorListener[0]);
+                ChangeEvent event = new ChangeEvent(this);
+                
+                for (CellEditorListener listener: clone) {
+                    listener.editingStopped(event);
+                }
+            }
+            
+            private void fireEditingCanceled() {
+                CellEditorListener[] clone = listeners.toArray(new CellEditorListener[0]);
+                ChangeEvent event = new ChangeEvent(this);
+                
+                for (CellEditorListener listener: clone) {
+                    listener.editingCanceled(event);
+                }
+            }
+            
+            private JComponent getComponent(
+                    final JTree tree,
+                    final Object value,
+                    final boolean selected,
+                    final boolean expanded,
+                    final boolean leaf,
+                    final int row,
+                    final boolean focus) {
+                if (value instanceof RegistryNode) {
+                    RegistryNode node = (RegistryNode) value;
+                    
+                    setText(node.getDisplayName());
+                    setToolTipText(node.getDisplayName());
+                }
+                
+                if (value instanceof Product) {
+                    Product product = (Product) value;
+                    
+                    if ((product.getStatus() == Status.INSTALLED) ||
+                            (product.getStatus() == Status.TO_BE_INSTALLED)) {
+                        setSelected(true);
+                    } else {
+                        setSelected(false);
+                    }
+                }
+                
+                if (selected) {
+                    setOpaque(true);
+                    setForeground(UIManager.getColor("Tree.selectionForeground"));
+                    setBackground(UIManager.getColor("Tree.selectionBackground"));
+                } else {
+                    setOpaque(false);
+                    setForeground(UIManager.getColor("Tree.textForeground"));
+                    setBackground(UIManager.getColor("Tree.textBackground"));
+                }
+                
+                return this;
+            }
         }
     }
 }

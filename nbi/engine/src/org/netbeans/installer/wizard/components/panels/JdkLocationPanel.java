@@ -46,8 +46,6 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     public static final String MINIMUM_JDK_VERSION_PROPERTY = "minimum.jdk.version";
     public static final String MAXIMUM_JDK_VERSION_PROPERTY = "maximum.jdk.version";
     
-    public static final String DEFAULT_MESSAGE_TEXT = ResourceUtils.getString(JdkLocationPanel.class, "JLP.message.text");
-    public static final String DEFAULT_MESSAGE_CONTENT_TYPE = ResourceUtils.getString(JdkLocationPanel.class, "JLP.message.content.type");
     public static final String DEFAULT_LOCATION_LABEL_TEXT = ResourceUtils.getString(JdkLocationPanel.class, "JLP.location.label.text");
     public static final String DEFAULT_LOCATION_BUTTON_TEXT = ResourceUtils.getString(JdkLocationPanel.class, "JLP.location.button.text");
     public static final String DEFAULT_LIST_LABEL_TEXT = ResourceUtils.getString(JdkLocationPanel.class, "JLP.list.label.text");
@@ -83,9 +81,6 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
         setProperty(MINIMUM_JDK_VERSION_PROPERTY, DEFAULT_MINIMUM_JDK_VERSION);
         setProperty(MAXIMUM_JDK_VERSION_PROPERTY, DEFAULT_MAXIMUM_JDK_VERSION);
         
-        setProperty(MESSAGE_TEXT_PROPERTY, DEFAULT_MESSAGE_TEXT);
-        setProperty(MESSAGE_TEXT_NOTHING_FOUND_PROPERTY, DEFAULT_MESSAGE_TEXT_NOTHING_FOUND);
-        setProperty(MESSAGE_CONTENT_TYPE_PROPERTY, DEFAULT_MESSAGE_CONTENT_TYPE);
         setProperty(LOCATION_LABEL_TEXT_PROPERTY, DEFAULT_LOCATION_LABEL_TEXT);
         setProperty(LOCATION_BUTTON_TEXT_PROPERTY, DEFAULT_LOCATION_BUTTON_TEXT);
         setProperty(LIST_LABEL_TEXT_PROPERTY, DEFAULT_LIST_LABEL_TEXT);

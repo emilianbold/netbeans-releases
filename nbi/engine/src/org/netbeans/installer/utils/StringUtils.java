@@ -364,8 +364,8 @@ public abstract class StringUtils {
             int read = stream.read(buffer);
             
             String readString = new String(buffer, 0, read);
-            for(String string : readString.split("(?:\n\r|\r\n|\n|\r)")) {
-                builder.append(string).append("\n");
+            for(String string : readString.split("(?:\r\n|\n|\r)")) {
+                builder.append(string).append(SystemUtils.getLineSeparator());
             }
         }
         

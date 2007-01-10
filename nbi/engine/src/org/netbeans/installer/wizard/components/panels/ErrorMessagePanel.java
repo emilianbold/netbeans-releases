@@ -77,9 +77,9 @@ public class ErrorMessagePanel extends WizardPanel {
     public static class ErrorMessagePanelSwingUi extends WizardPanelSwingUi {
         /////////////////////////////////////////////////////////////////////////////
         // Constants
-        public static final String ERROR_ICON = 
+        public static final String ERROR_ICON =
                 "org/netbeans/installer/wizard/components/panels/error.png";
-        public static final String EMPTY_ICON = 
+        public static final String EMPTY_ICON =
                 "org/netbeans/installer/wizard/components/panels/empty.png";
         
         /////////////////////////////////////////////////////////////////////////////
@@ -94,7 +94,7 @@ public class ErrorMessagePanel extends WizardPanel {
         private ValidatingThread validatingThread;
         
         public ErrorMessagePanelSwingUi(
-                final ErrorMessagePanel component, 
+                final ErrorMessagePanel component,
                 final SwingContainer container) {
             super(component, container);
             
@@ -108,6 +108,30 @@ public class ErrorMessagePanel extends WizardPanel {
             initComponents();
         }
         
+        public void evaluateNextButtonClick() {
+            super.evaluateNextButtonClick();
+            
+            if (validatingThread != null) {
+                validatingThread.pause();
+            }
+        }
+        
+        public void evaluateCancelButtonClick() {
+            super.evaluateCancelButtonClick();
+            
+            if (validatingThread != null) {
+                validatingThread.pause();
+            }
+        }
+        
+        public void evaluateBackButtonClick() {
+            super.evaluateBackButtonClick();
+            
+            if (validatingThread != null) {
+                validatingThread.pause();
+            }
+        }
+        
         protected void initialize() {
             if (validatingThread == null) {
                 validatingThread = new ValidatingThread(this);
@@ -115,24 +139,6 @@ public class ErrorMessagePanel extends WizardPanel {
             } else {
                 validatingThread.play();
             }
-        }
-        
-        public void evaluateNextButtonClick() {
-            super.evaluateNextButtonClick();
-            
-            validatingThread.pause();
-        }
-        
-        public void evaluateCancelButtonClick() {
-            super.evaluateCancelButtonClick();
-            
-            validatingThread.pause();
-        }
-        
-        public void evaluateBackButtonClick() {
-            super.evaluateBackButtonClick();
-            
-            validatingThread.pause();
         }
         
         protected void updateErrorMessage() {
@@ -158,7 +164,7 @@ public class ErrorMessagePanel extends WizardPanel {
                     1.0, 0.0,                          // weight-x, weight-y
                     GridBagConstraints.CENTER,         // anchor
                     GridBagConstraints.HORIZONTAL,     // fill
-                    new Insets(7, 11, 11, 11),         // padding
+                    new Insets(11, 11, 11, 11),        // padding
                     0, 0));                            // ??? (padx, pady)
         }
         

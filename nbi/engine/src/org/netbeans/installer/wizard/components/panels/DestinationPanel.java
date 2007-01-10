@@ -35,9 +35,7 @@ import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
-import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiTextField;
-import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
 import org.netbeans.installer.wizard.containers.SwingContainer;
@@ -196,38 +194,42 @@ public class DestinationPanel extends ErrorMessagePanel {
             final String path   = file.getAbsolutePath();
             
             if (string.equals("")) {
-                return StringUtils.format(component.getProperty(ERROR_NULL_PROPERTY), path);
+                return StringUtils.format(
+                        component.getProperty(ERROR_NULL_PROPERTY), 
+                        path);
             }
             
             if (!SystemUtils.isPathValid(path)) {
-                return StringUtils.format(component.getProperty(ERROR_NOT_VALID_PROPERTY), path);
+                return StringUtils.format(
+                        component.getProperty(ERROR_NOT_VALID_PROPERTY), 
+                        path);
             }
             
             if (file.exists() && !file.isDirectory()) {
-                return StringUtils.format(component.getProperty(ERROR_NOT_DIRECTORY_PROPERTY), path);
+                return StringUtils.format(
+                        component.getProperty(ERROR_NOT_DIRECTORY_PROPERTY), 
+                        path);
             }
             
             if (!FileUtils.canRead(file)) {
-                return StringUtils.format(component.getProperty(ERROR_NOT_READABLE_PROPERTY), path);
+                return StringUtils.format(
+                        component.getProperty(ERROR_NOT_READABLE_PROPERTY), 
+                        path);
             }
             
             if (!FileUtils.canWrite(file)) {
-                return StringUtils.format(component.getProperty(ERROR_NOT_WRITABLE_PROPERTY), path);
+                return StringUtils.format(
+                        component.getProperty(ERROR_NOT_WRITABLE_PROPERTY), 
+                        path);
             }
             
             if (!FileUtils.isEmpty(file)) {
-                return StringUtils.format(component.getProperty(ERROR_NOT_EMPTY_PROPERTY), path);
+                return StringUtils.format(
+                        component.getProperty(ERROR_NOT_EMPTY_PROPERTY), 
+                        path);
             }
             
             return null;
-        }
-        
-        private void browseButtonPressed() {
-            fileChooser.setSelectedFile(new File(destinationField.getText()));
-            
-            if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-                destinationField.setText(fileChooser.getSelectedFile().getAbsolutePath());
-            }
         }
         
         private void initComponents() {
@@ -269,19 +271,27 @@ public class DestinationPanel extends ErrorMessagePanel {
             add(destinationField, new GridBagConstraints(
                     0, 1,                             // x, y
                     1, 1,                             // width, height
-                    1.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.LINE_START,    // anchor
+                    1.0, 1.0,                         // weight-x, weight-y
+                    GridBagConstraints.PAGE_START,    // anchor
                     GridBagConstraints.HORIZONTAL,    // fill
                     new Insets(4, 11, 0, 0),          // padding
                     0, 0));                           // padx, pady - ???
             add(destinationButton, new GridBagConstraints(
                     1, 1,                             // x, y
                     1, 1,                             // width, height
-                    1.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.LINE_START,    // anchor
+                    0.0, 1.0,                         // weight-x, weight-y
+                    GridBagConstraints.PAGE_START,    // anchor
                     GridBagConstraints.NONE,          // fill
                     new Insets(4, 4, 0, 11),          // padding
                     0, 0));                           // padx, pady - ???
+        }
+        
+        private void browseButtonPressed() {
+            fileChooser.setSelectedFile(new File(destinationField.getText()));
+            
+            if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                destinationField.setText(fileChooser.getSelectedFile().getAbsolutePath());
+            }
         }
     }
 }

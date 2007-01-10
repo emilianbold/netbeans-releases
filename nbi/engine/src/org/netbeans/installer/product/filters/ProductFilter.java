@@ -33,15 +33,20 @@ import org.netbeans.installer.utils.helper.Version;
  * @author Kirill Sorokin
  */
 public class ProductFilter implements RegistryFilter {
-    private String   uid = null;
+    private String uid = null;
     
     private List<Platform> platforms = new LinkedList<Platform>();
     
-    private Version  versionLower = null;
-    private Version  versionUpper = null;
+    private Version versionLower = null;
+    private Version versionUpper = null;
     
     public ProductFilter() {
         // does nothing
+    }
+    
+    public ProductFilter(final String uid, final Platform platform) {
+        this.uid = uid;
+        this.platforms.add(platform);
     }
     
     public ProductFilter(final String uid, final Version version, final Platform platform) {
@@ -51,10 +56,16 @@ public class ProductFilter implements RegistryFilter {
         this.platforms.add(platform);
     }
     
+    public ProductFilter(final String uid, final List<Platform> platforms) {
+        this.uid          = uid;
+        this.platforms.addAll(platforms);
+    }
+    
     public ProductFilter(final String uid, final Version version, final List<Platform> platforms) {
         this.uid          = uid;
-        this.platforms    = new LinkedList<Platform>(platforms);
-        this.versionLower = this.versionUpper = version;
+        this.versionLower = version;
+        this.versionUpper = version;
+        this.platforms.addAll(platforms);
     }
     
     public ProductFilter(final String uid, final Version versionLower, final Version versionUpper, final Platform platform) {
@@ -67,20 +78,25 @@ public class ProductFilter implements RegistryFilter {
     
     public boolean accept(final RegistryNode node) {
         if (node instanceof Product) {
-            Product component = (Product) node;
+            Product product = (Product) node;
+            
             if (uid != null) {
-                if (!component.getUid().equals(uid)) {
+                if (!product.getUid().equals(uid)) {
                     return false;
                 }
             }
+            
             if ((versionLower != null) && (versionUpper != null)) {
-                if (!component.getVersion().newerOrEquals(versionLower) || !component.getVersion().olderOrEquals(versionUpper)) {
+                if (!product.getVersion().newerOrEquals(versionLower) ||
+                        !product.getVersion().olderOrEquals(versionUpper)) {
                     return false;
                 }
             }
             
             if (platforms.size() > 0) {
-                if (!SystemUtils.intersects(component.getSupportedPlatforms(), platforms)) {
+                if (!SystemUtils.intersects(
+                        product.getSupportedPlatforms(),
+                        platforms)) {
                     return false;
                 }
             }

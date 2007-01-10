@@ -64,7 +64,7 @@ public class SetInstallationLocationAction extends WizardAction {
         target.setInstallationLocation(location.getAbsoluteFile());
     }
     
-    public WizardUi getWizardUi() {
+    public WizardActionUi getWizardUi() {
         return null; // we do not have any ui for this action
     }
 }

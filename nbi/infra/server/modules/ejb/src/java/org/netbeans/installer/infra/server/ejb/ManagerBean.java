@@ -22,8 +22,8 @@ import javax.ejb.Stateless;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.Group;
-import org.netbeans.installer.product.ProductRegistry;
-import org.netbeans.installer.product.ProductRegistryNode;
+import org.netbeans.installer.product.Registry;
+import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.product.filters.TrueFilter;
 import org.netbeans.installer.product.utils.Status;
 import org.netbeans.installer.utils.FileUtils;
@@ -160,10 +160,10 @@ public class ManagerBean implements Manager {
         String string = null;
         
         try {
-            final ProductRegistry registry = new ProductRegistry(registryXml);
+            final Registry registry = new Registry(registryXml);
             
             final File descriptor = new File(componentsDir,
-                    FileUtils.getJarAttribute(archive, "Component-Descriptor"));
+                    FileUtils.getJarAttribute(archive, "Product-Descriptor"));
             
             FileUtils.unjar(archive, componentsDir);
             
@@ -181,7 +181,7 @@ public class ManagerBean implements Manager {
                     component.getSupportedPlatforms());
             
             if (existingComponents != null) {
-                Queue<ProductRegistryNode> nodes = new LinkedList<ProductRegistryNode>();
+                Queue<RegistryNode> nodes = new LinkedList<RegistryNode>();
                 
                 for (Product existing: existingComponents) {
                     existing.getParent().removeChild(existing);
@@ -189,7 +189,7 @@ public class ManagerBean implements Manager {
                 }
                 
                 while(nodes.peek() != null) {
-                    ProductRegistryNode node = nodes.poll();
+                    RegistryNode node = nodes.poll();
                     
                     if (node instanceof Product) {
                         Product temp = (Product) node;
@@ -203,7 +203,7 @@ public class ManagerBean implements Manager {
                         FileUtils.deleteFile(new File(groupsDir, temp.getUid()));
                     }
                     
-                    for (ProductRegistryNode child: node.getChildren()) {
+                    for (RegistryNode child: node.getChildren()) {
                         nodes.offer(child);
                     }
                 }
@@ -213,7 +213,7 @@ public class ManagerBean implements Manager {
                 FileUtils.unjar(archive, componentsDir);
             }
             
-            ProductRegistryNode parent;
+            RegistryNode parent;
             
             List<Product> parents = null;
             if (!parentVersion.equals("null") && !parentPlatforms.equals("null")) {
@@ -290,18 +290,18 @@ public class ManagerBean implements Manager {
         final File registryXml   = new File(registryDir, REGISTRY_XML);
         
         try {
-            final ProductRegistry registry = new ProductRegistry(registryXml);
+            final Registry registry = new Registry(registryXml);
             
             final List<Product> existing = registry.getProductComponents(uid, new Version(version), StringUtils.parsePlatforms(platforms));
             
             if (existing != null) {
                 existing.get(0).getParent().removeChild(existing.get(0));
                 
-                Queue<ProductRegistryNode> nodes = new LinkedList<ProductRegistryNode>();
+                Queue<RegistryNode> nodes = new LinkedList<RegistryNode>();
                 nodes.offer(existing.get(0));
                 
                 while(nodes.peek() != null) {
-                    ProductRegistryNode node = nodes.poll();
+                    RegistryNode node = nodes.poll();
                     
                     if (node instanceof Product) {
                         Product temp = (Product) node;
@@ -313,7 +313,7 @@ public class ManagerBean implements Manager {
                         FileUtils.deleteFile(new File(groupsDir, temp.getUid()));
                     }
                     
-                    for (ProductRegistryNode child: node.getChildren()) {
+                    for (RegistryNode child: node.getChildren()) {
                         nodes.offer(child);
                     }
                 }
@@ -351,7 +351,7 @@ public class ManagerBean implements Manager {
         String string = null;
         
         try {
-            final ProductRegistry registry = new ProductRegistry(registryXml);
+            final Registry registry = new Registry(registryXml);
             
             final File descriptor = new File(groupsDir,
                     FileUtils.getJarAttribute(archive, "Group-Descriptor"));
@@ -370,11 +370,11 @@ public class ManagerBean implements Manager {
             if (existing != null) {
                 existing.getParent().removeChild(existing);
                 
-                Queue<ProductRegistryNode> nodes = new LinkedList<ProductRegistryNode>();
+                Queue<RegistryNode> nodes = new LinkedList<RegistryNode>();
                 nodes.offer(existing);
                 
                 while(nodes.peek() != null) {
-                    ProductRegistryNode node = nodes.poll();
+                    RegistryNode node = nodes.poll();
                     
                     if (node instanceof Product) {
                         Product temp = (Product) node;
@@ -386,7 +386,7 @@ public class ManagerBean implements Manager {
                         FileUtils.deleteFile(new File(groupsDir, temp.getUid()));
                     }
                     
-                    for (ProductRegistryNode child: node.getChildren()) {
+                    for (RegistryNode child: node.getChildren()) {
                         nodes.offer(child);
                     }
                 }
@@ -396,7 +396,7 @@ public class ManagerBean implements Manager {
                 FileUtils.unjar(archive, groupsDir);
             }
             
-            ProductRegistryNode parent;
+            RegistryNode parent;
             
             List<Product> parents = null;
             if (!parentVersion.equals("null") && !parentPlatforms.equals("null")) {
@@ -459,18 +459,18 @@ public class ManagerBean implements Manager {
         final File registryXml = new File(registryDir, REGISTRY_XML);
         
         try {
-            final ProductRegistry registry = new ProductRegistry(registryXml);
+            final Registry registry = new Registry(registryXml);
             
             final Group existing = registry.getProductGroup(uid);
             
             if (existing != null) {
                 existing.getParent().removeChild(existing);
                 
-                Queue<ProductRegistryNode> nodes = new LinkedList<ProductRegistryNode>();
+                Queue<RegistryNode> nodes = new LinkedList<RegistryNode>();
                 nodes.offer(existing);
                 
                 while(nodes.peek() != null) {
-                    ProductRegistryNode node = nodes.poll();
+                    RegistryNode node = nodes.poll();
                     
                     if (node instanceof Product) {
                         Product temp = (Product) node;
@@ -482,7 +482,7 @@ public class ManagerBean implements Manager {
                         FileUtils.deleteFile(new File(groupsDir, temp.getUid()));
                     }
                     
-                    for (ProductRegistryNode child: node.getChildren()) {
+                    for (RegistryNode child: node.getChildren()) {
                         nodes.offer(child);
                     }
                 }
@@ -512,7 +512,7 @@ public class ManagerBean implements Manager {
         return new File(registryDir, file);
     }
     
-    public ProductRegistryNode getRoot(Platform platform, String... names) throws ManagerException {
+    public RegistryNode getRoot(Platform platform, String... names) throws ManagerException {
         if (names.length > 0) {
             List<File> files = new LinkedList<File>();
             
@@ -526,7 +526,7 @@ public class ManagerBean implements Manager {
             }
             
             try {
-                return new ProductRegistry(platform, files).getProductTreeRoot();
+                return new Registry(platform, files).getProductTreeRoot();
             } catch (InitializationException e) {
                 e.printStackTrace();
                 throw new ManagerException("Could not load registry", e);
@@ -552,7 +552,7 @@ public class ManagerBean implements Manager {
             }
             
             try {
-                components.addAll(new ProductRegistry(platform, files).
+                components.addAll(new Registry(platform, files).
                         queryComponents(new TrueFilter()));
             } catch (InitializationException e) {
                 e.printStackTrace();
@@ -593,7 +593,7 @@ public class ManagerBean implements Manager {
             }
             remote = remote.trim();
             
-            ProductRegistry registry = new ProductRegistry(platform, files);
+            Registry registry = new Registry(platform, files);
             for (String string: components) {
                 String[] parts = string.split(",");
                 
@@ -682,7 +682,7 @@ public class ManagerBean implements Manager {
         
         if (!registryxml.exists()) {
             try {
-                Document document = ProductRegistry.
+                Document document = Registry.
                         getInstance().getEmptyRegistryDocument();
                 XMLUtils.saveXMLDocument(document, registryxml);
             } catch (XMLException e) {

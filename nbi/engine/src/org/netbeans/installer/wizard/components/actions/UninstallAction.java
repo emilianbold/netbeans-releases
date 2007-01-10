@@ -31,14 +31,14 @@ import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
-import org.netbeans.installer.wizard.components.WizardPanel;
-import org.netbeans.installer.wizard.components.actions.CompositeWizardAction.CompositeWizardActionUi;
+import org.netbeans.installer.wizard.components.WizardAction;
 
-public class UninstallAction extends CompositeWizardAction {
+public class UninstallAction extends WizardAction {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String DIALOG_TITLE_PROPERTY = WizardPanel.TITLE_PROPERTY;
-    public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(UninstallAction.class, "UA.dialog.title");
+    public static final String DEFAULT_TITLE = 
+            ResourceUtils.getString(UninstallAction.class, 
+            "UA.dialog.title");
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
@@ -46,7 +46,7 @@ public class UninstallAction extends CompositeWizardAction {
     private Progress          currentProgress;
     
     public UninstallAction() {
-        setProperty(DIALOG_TITLE_PROPERTY, DEFAULT_DIALOG_TITLE);
+        setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
     }
     
     public void execute() {
@@ -59,11 +59,10 @@ public class UninstallAction extends CompositeWizardAction {
         overallProgress.setTitle("Uninstalling selected components");
         overallProgress.setPercentage(percentageLeak);
         
-        ((CompositeWizardActionUi) getWizardUi()).setOverallProgress(overallProgress);
+        getWizardUi().setProgress(overallProgress);
         for (Product component: components) {
             currentProgress = new Progress();
             currentProgress.setTitle("Uninstalling " + component.getDisplayName());
-            ((CompositeWizardActionUi) getWizardUi()).setCurrentProgress(currentProgress);
             
             overallProgress.addChild(currentProgress, percentageChunk);
             try {

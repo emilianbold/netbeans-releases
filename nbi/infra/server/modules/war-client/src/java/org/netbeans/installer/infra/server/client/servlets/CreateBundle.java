@@ -16,7 +16,7 @@ import org.netbeans.installer.infra.server.ejb.Manager;
 import org.netbeans.installer.infra.server.ejb.ManagerException;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.Group;
-import org.netbeans.installer.product.ProductRegistryNode;
+import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -143,7 +143,7 @@ public class CreateBundle extends HttpServlet {
         }
     }
     
-    private void buildRegistryTable(PrintWriter out, ProductRegistryNode root, Platform platform) {
+    private void buildRegistryTable(PrintWriter out, RegistryNode root, Platform platform) {
         out.println("            <table class=\"registry\">");
         
         buildRegistryNodes(out, root.getChildren(), platform);
@@ -151,8 +151,8 @@ public class CreateBundle extends HttpServlet {
         out.println("            </table>");
     }
     
-    private void buildRegistryNodes(PrintWriter out, List<ProductRegistryNode> nodes, Platform platform) {
-        for (ProductRegistryNode node: nodes) {
+    private void buildRegistryNodes(PrintWriter out, List<RegistryNode> nodes, Platform platform) {
+        for (RegistryNode node: nodes) {
             if (node instanceof Product) {
                 if (!((Product) node).getSupportedPlatforms().contains(platform)) {
                     continue;

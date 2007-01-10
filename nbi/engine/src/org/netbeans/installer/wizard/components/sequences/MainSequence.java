@@ -34,8 +34,8 @@ import org.netbeans.installer.wizard.components.actions.UninstallAction;
 import org.netbeans.installer.wizard.components.panels.PostCreateBundleSummaryPanel;
 import org.netbeans.installer.wizard.components.panels.PostInstallSummaryPanel;
 import org.netbeans.installer.wizard.components.panels.PreCreateBundleSummaryPanel;
-import org.netbeans.installer.wizard.components.panels.PreInstallSummaryPanel;
 import org.netbeans.installer.wizard.components.panels.SelectedComponentsLicensesPanel;
+import org.netbeans.installer.wizard.components.panels.netbeans.NbPreInstallSummaryPanel;
 
 /**
  *
@@ -66,7 +66,7 @@ public class MainSequence extends WizardSequence {
                     }
                 }
                 
-                addChild(new PreInstallSummaryPanel());
+                addChild(new NbPreInstallSummaryPanel());
                 
                 if (toUninstall.size() > 0) {
                     addChild(new UninstallAction());

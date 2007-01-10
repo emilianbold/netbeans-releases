@@ -70,7 +70,6 @@ public class NbiFrame extends JFrame {
     private void initComponents() {
         // the frame itself
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setResizable(false);
         
         setSize(frameWidth, frameHeight);
         setIconImage(new ImageIcon(frameIcon).getImage());
@@ -80,9 +79,9 @@ public class NbiFrame extends JFrame {
         setContentPane(contentPane);
     }
     
-    public static final int DEFAULT_FRAME_WIDTH             = 500;
-    public static final int DEFAULT_FRAME_HEIGHT            = 400;
-    public static final URL DEFAULT_WIZARD_FRAME_ICON       = SwingFrameContainer.class.getClassLoader().getResource("org/netbeans/installer/wizard/wizard-icon.png");
+    public static final int DEFAULT_FRAME_WIDTH             = 600;
+    public static final int DEFAULT_FRAME_HEIGHT            = 500;
+    public static final URL DEFAULT_WIZARD_FRAME_ICON       = NbiFrame.class.getClassLoader().getResource("org/netbeans/installer/wizard/wizard-icon.png");
     
     public static final String WIZARD_FRAME_WIDTH_PROPERTY  = "nbi.wizard.frame.width";
     public static final String WIZARD_FRAME_HEIGHT_PROPERTY = "nbi.wizard.frame.height";

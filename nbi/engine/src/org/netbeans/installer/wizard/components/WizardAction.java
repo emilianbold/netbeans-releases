@@ -72,12 +72,12 @@ public abstract class WizardAction extends WizardComponent {
         return false;
     }
     
-    public WizardUi getWizardUi() {
+    public WizardActionUi getWizardUi() {
         if (wizardUi == null) {
             wizardUi = new WizardActionUi(this);
         }
         
-        return wizardUi;
+        return (WizardActionUi) wizardUi;
     }
     
     public void initialize() {
@@ -153,13 +153,17 @@ public abstract class WizardAction extends WizardComponent {
         public void initializeContainer() {
             super.initializeContainer();
             
+            // set up the help button
+            container.getHelpButton().setEnabled(false);
+            container.getHelpButton().setVisible(false);
+            
             // set up the back button
             container.getBackButton().setEnabled(false);
-            container.getBackButton().setVisible(false);
+            container.getBackButton().setVisible(true);
             
             // set up the next (or finish) button
             container.getNextButton().setEnabled(false);
-            container.getNextButton().setVisible(false);
+            container.getNextButton().setVisible(true);
             
             // set up the cancel button
             container.getCancelButton().setVisible(true);
@@ -212,7 +216,7 @@ public abstract class WizardAction extends WizardComponent {
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.NORTH,         // anchor
                     GridBagConstraints.HORIZONTAL,    // fill
-                    new Insets(4, 11, 11, 11),        // padding
+                    new Insets(4, 11, 0, 11),         // padding
                     0, 0));                           // ??? (padx, pady)
             add(detailLabel, new GridBagConstraints(
                     0, 2,                             // x, y

@@ -32,16 +32,16 @@ import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
-import org.netbeans.installer.wizard.components.WizardPanel;
+import org.netbeans.installer.wizard.components.WizardAction;
+import org.netbeans.installer.wizard.components.WizardAction.WizardActionUi;
 
 
-public class DownloadInstallationDataAction extends CompositeWizardAction {
+public class DownloadInstallationDataAction extends WizardAction {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final Class CLASS = DownloadInstallationDataAction.class;
-    
-    public static final String DIALOG_TITLE_PROPERTY = WizardPanel.TITLE_PROPERTY;
-    public static final String DEFAULT_DIALOG_TITLE = ResourceUtils.getString(CLASS, "DIDA.dialog.title");
+    public static final String DEFAULT_TITLE = 
+            ResourceUtils.getString(DownloadInstallationDataAction.class, 
+            "DIDA.dialog.title");
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
@@ -49,7 +49,7 @@ public class DownloadInstallationDataAction extends CompositeWizardAction {
     private Progress          currentProgress;
     
     public DownloadInstallationDataAction() {
-        setProperty(DIALOG_TITLE_PROPERTY, DEFAULT_DIALOG_TITLE);
+        setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
     }
     
     public void execute() {
@@ -62,11 +62,10 @@ public class DownloadInstallationDataAction extends CompositeWizardAction {
         overallProgress.setTitle("Downloading installation data for selected components");
         overallProgress.setPercentage(percentageLeak);
         
-        ((CompositeWizardActionUi) getWizardUi()).setOverallProgress(overallProgress);
+        getWizardUi().setProgress(overallProgress);
         for (Product component: components) {
             // initiate the progress for the current element
             currentProgress = new Progress();
-            ((CompositeWizardActionUi) getWizardUi()).setCurrentProgress(currentProgress);
             
             overallProgress.addChild(currentProgress, percentageChunk);
             try {
