@@ -31,7 +31,6 @@ import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
@@ -181,6 +180,10 @@ public final class TimesCollectorPeer {
 
         public long getTime( ) {
             return iw.size();
+        }
+        
+        public Collection getInstances() {
+            return iw.getInstances();
         }
         
         private void add( Object o ) {

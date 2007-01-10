@@ -71,6 +71,15 @@ public class InstanceWatcher {
         return references.size();
     }
     
+    public Collection getInstances() {
+        List l = new ArrayList(references.size());
+        for (WeakReference wr : references) {
+            Object inst = wr.get();
+            if (inst != null) l.add(inst);
+        }
+        return l;
+    }
+    
     /*
     public Iterator iterator() {
         

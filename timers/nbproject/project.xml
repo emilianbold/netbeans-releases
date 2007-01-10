@@ -6,6 +6,22 @@
             <code-name-base>org.netbeans.modules.timers</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.openide.awt</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.8</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.dialogs</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.explorer</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -24,6 +40,14 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.modules</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.2</specification-version>
+                    </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.openide.nodes</code-name-base>
@@ -50,6 +74,10 @@
                 <friend>org.netbeans.modules.java.source</friend>
                 <package>org.netbeans.api.timers</package>
             </friend-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/insanelib.jar</runtime-relative-path>
+                <binary-origin>external/insanelib.jar</binary-origin>
+            </class-path-extension>
         </data>
     </configuration>
 </project>

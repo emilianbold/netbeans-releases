@@ -18,23 +18,32 @@
  */
 package org.netbeans.modules.timers;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dialog;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
-import javax.swing.JList;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
-import org.openide.ErrorManager;
+import org.netbeans.insane.live.LiveReferences;
+import org.openide.DialogDescriptor;
 import org.openide.explorer.view.NodeRenderer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.DialogDisplayer;
 
 /**
  *
@@ -45,6 +54,8 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
     /** Creates new form TimeComponentPanel */
     public TimeComponentPanel() {
         initComponents();
+        times.addMouseListener(new PopupAdapter());
+        jList1.addMouseListener(new ListPopupAdapter());
         key2RowNumber = new HashMap<String, Integer>();
         TimesCollectorPeer.getDefault().addPropertyChangeListener(this);
         fillIn();
@@ -158,6 +169,18 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
             changeRow(fo, key);
         }
     }
+
+    private TimesCollectorPeer.Description getDescForRow(FileObject fo, int row) {
+        Collection<String> keys = TimesCollectorPeer.getDefault().getKeysForFile(fo);
+        Iterator<String> it = keys.iterator();
+        String key = null;
+        for (int i= 0; i<=row; i++) {
+            assert (it.hasNext());
+            key = it.next();
+        }
+        return TimesCollectorPeer.getDefault().getDescription(fo, key);
+    }
+
     
     private void changeRow(FileObject fo, String key) {
         Integer row = key2RowNumber.get(key);
@@ -220,6 +243,34 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
             }
         });
     }
+
+
+    private static void dumpRoots(Collection objs) {
+        JPanel inner = new JPanel();
+        inner.setLayout(new BorderLayout());
+        JProgressBar bar = new JProgressBar();
+        inner.add(new JLabel("Computing object reachability"), BorderLayout.CENTER);
+        inner.add(bar, BorderLayout.SOUTH);
+        Dialog d = DialogDisplayer.getDefault().createDialog(new DialogDescriptor(
+                inner, "Please wait"));
+        d.pack();
+        d.setModal(false);
+        d.setVisible(true);
+        
+        String report = getRoots(objs, bar, inner);
+
+        inner.removeAll();
+        JScrollPane pane = new JScrollPane();
+        JTextArea editor = new JTextArea(report);
+        editor.setColumns(80);
+        editor.setEditable(false);
+        pane.setViewportView(editor);
+        inner.add(pane, BorderLayout.CENTER);
+        d.setSize(Math.min(600, editor.getPreferredSize().width+30), Math.min(400, editor.getPreferredSize().height + 70));
+        d.invalidate();
+        d.validate();
+        d.repaint();
+    }
     
     private static class FileObjectListRenderer extends DefaultListCellRenderer {
         private NodeRenderer r;
@@ -244,5 +295,105 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }
         
+    }
+    
+    class PopupAdapter extends org.openide.awt.MouseUtils.PopupMouseAdapter {
+        PopupAdapter() {
+        }
+
+        protected void showPopup(MouseEvent e) {
+            int selRow = times.rowAtPoint(e.getPoint());
+
+            if (!times.isRowSelected(selRow)) {
+                // This will set ExplorerManager selection as well.
+                // If selRow == -1 the selection will be cleared.
+                times.getSelectionModel().setSelectionInterval(selRow, selRow);
+            }
+
+            if (selRow != -1) {
+                Point p = SwingUtilities.convertPoint(e.getComponent(), e.getX(), e.getY(), TimeComponentPanel.this);
+                createPopup((int) p.getX(), (int) p.getY(), selRow);
+            }
+        }
+        
+        void createPopup(int x, int y, int row) {
+            TimesCollectorPeer.Description desc = getDescForRow((FileObject) jList1.getSelectedValue(), row);
+            if (!(desc instanceof TimesCollectorPeer.ObjectCountDescripton)) return;
+            
+            final TimesCollectorPeer.ObjectCountDescripton oc = (TimesCollectorPeer.ObjectCountDescripton) desc;
+            JPopupMenu popup = new JPopupMenu();
+            popup.add(new AbstractAction("Find refs") {
+
+                public void actionPerformed(ActionEvent arg0) {
+                    dumpRoots(oc.getInstances());
+                }
+            });
+            popup.show(TimeComponentPanel.this, x, y);
+        }
+    }
+
+    class ListPopupAdapter extends org.openide.awt.MouseUtils.PopupMouseAdapter {
+        ListPopupAdapter() {
+        }
+
+        protected void showPopup(MouseEvent e) {
+            int selRow = jList1.locationToIndex(e.getPoint());
+
+            if (!jList1.isSelectedIndex(selRow)) {
+                // If selRow == -1 the selection will be cleared.
+                jList1.getSelectionModel().setSelectionInterval(selRow, selRow);
+            }
+
+            if (selRow != -1) {
+                Point p = SwingUtilities.convertPoint(e.getComponent(), e.getX(), e.getY(), TimeComponentPanel.this);
+                createPopup((int) p.getX(), (int) p.getY(), selRow);
+            }
+        }
+        
+        void createPopup(int x, int y, int row) {
+            final FileObject[] fo = new FileObject[] {(FileObject) jList1.getSelectedValue()};
+            JPopupMenu popup = new JPopupMenu();
+            popup.add(new AbstractAction("Find refs") {
+
+                public void actionPerformed(ActionEvent arg0) {
+                    try {
+                        FileObject f = fo[0];
+
+                        fo[0] = null;
+                        // hack - DO.find, we'not really interrested in
+                        // the FileObject reachability
+                        // This will go away for general key type
+                        dumpRoots(Collections.singleton(DataObject.find(f)));
+                    }
+                    catch (DataObjectNotFoundException ex) {
+                        java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+                                                                         ex.getMessage(),
+                                                                         ex);
+                    }
+                }
+            });
+            popup.show(TimeComponentPanel.this, x, y);
+        }
+    }
+
+
+    private static String getRoots(Collection objects, JProgressBar bar, final JPanel inner) {
+        // scanning intentionally blocks AWT, force repaints
+        bar.getModel().addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent arg0) {
+                inner.paintImmediately(inner.getBounds());
+            }
+        });
+        Map/*<Object,Path>*/ traces = LiveReferences.fromRoots(objects, null, bar.getModel());
+        StringBuffer sb = new StringBuffer();
+        
+        for (Object inst : traces.keySet()) {
+            sb.append(inst);
+            sb.append(":\n");
+            sb.append(traces.get(inst));
+            sb.append("\n\n");
+        }
+  
+        return sb.toString();
     }
 }
