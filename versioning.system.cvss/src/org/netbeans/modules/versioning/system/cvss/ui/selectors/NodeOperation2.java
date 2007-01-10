@@ -70,7 +70,7 @@ public final class NodeOperation2 extends BeanTreeView implements PropertyChange
 
         setPopupAllowed (false);
         setDefaultActionAllowed (false);
-        setBorder(BorderFactory.createEtchedBorder());
+        setBorder(UIManager.getBorder("Nb.ScrollPane.border")); // NOI18N
 
         JLabel label = new JLabel();
         Mnemonics.setLocalizedText(label, subtitle);
