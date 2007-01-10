@@ -20,7 +20,6 @@
 package org.netbeans.modules.subversion.ui.status;
 
 import org.netbeans.modules.subversion.*;
-import org.netbeans.modules.subversion.ui.actions.*;
 import org.netbeans.modules.subversion.ui.blame.BlameAction;
 import org.netbeans.modules.subversion.ui.commit.*;
 import org.netbeans.modules.subversion.ui.commit.CommitAction;
@@ -56,8 +55,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.Component;
 import java.awt.Color;
+import java.awt.Point;
 import java.util.*;
 import java.io.File;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
@@ -143,6 +144,13 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
             SyncFileNode.COLUMN_NAME_STATUS,
             SyncFileNode.COLUMN_NAME_PATH}
         );
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction");
+        table.getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                showPopup(org.netbeans.modules.versioning.util.Utils.getPositionForPopup(table));
+            }
+        });
     }
 
     void setDefaultColumnSizes() {
@@ -268,6 +276,11 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         });
     }
 
+    private void showPopup(Point p) {
+        JPopupMenu menu = getPopup();
+        menu.show(table, p.x, p.y);
+    }
+    
     /**
      * Constructs contextual Menu: File Node
         <pre>
