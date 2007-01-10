@@ -455,6 +455,10 @@ public class Installer extends ModuleInstall {
                     LOG.log(Level.WARNING, null, ex);
                 } catch (SAXException ex) {
                     LOG.log(Level.WARNING, url.toExternalForm(), ex);
+                } catch (java.net.SocketTimeoutException ex) {
+                    LOG.log(Level.INFO, url.toExternalForm(), ex);
+                    url = getClass().getResource("UnknownHostException.html");
+                    continue;
                 } catch (UnknownHostException ex) {
                     LOG.log(Level.INFO, url.toExternalForm(), ex);
                     url = getClass().getResource("UnknownHostException.html");
