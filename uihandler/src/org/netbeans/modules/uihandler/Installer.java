@@ -37,12 +37,14 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -191,24 +193,22 @@ public class Installer extends ModuleInstall {
         return displaySummary("EXIT_URL", false); // NOI18N
     }
     
-    private static ThreadLocal<Object> DISPLAYING = new ThreadLocal<Object>();
+    private static AtomicReference<String> DISPLAYING = new AtomicReference<String>();
     static boolean displaySummary(String msg, boolean explicit) {
-        if (DISPLAYING.get() != null) {
+        if (!DISPLAYING.compareAndSet(null, msg)) {
             return true;
         }
         
-        if (!explicit) {
-            boolean dontAsk = NbPreferences.forModule(Installer.class).getBoolean("ask.never.again." + msg, false); // NOI18N
-            if (dontAsk) {
-                LOG.log(Level.INFO, "UI Gesture Collector's ask.never.again.{0} is true, exiting", msg); // NOI18N
-                return true;
-            }
-        }
-        
-        
         boolean v = true;
         try {
-            DISPLAYING.set(msg);
+            if (!explicit) {
+                boolean dontAsk = NbPreferences.forModule(Installer.class).getBoolean("ask.never.again." + msg, false); // NOI18N
+                if (dontAsk) {
+                    LOG.log(Level.INFO, "UI Gesture Collector's ask.never.again.{0} is true, exiting", msg); // NOI18N
+                    return true;
+                }
+            }
+            
             v = doDisplaySummary(msg);
         } finally {
             DISPLAYING.set(null);
@@ -405,7 +405,7 @@ public class Installer extends ModuleInstall {
         }
     }
     
-    private static final class Submit implements ActionListener, Runnable {
+    private static final class Submit implements ActionListener, Mutex.Action<Void> {
         private String msg;
         boolean okToExit;
         private DialogDescriptor dd;
@@ -438,7 +438,6 @@ public class Installer extends ModuleInstall {
                     }
                     
                     URLConnection conn = url.openConnection();
-                    conn.setReadTimeout(5000);
                     File tmp = File.createTempFile("uigesture", ".html");
                     tmp.deleteOnExit();
                     FileOutputStream os = new FileOutputStream(tmp);
@@ -468,7 +467,7 @@ public class Installer extends ModuleInstall {
             Mutex.EVENT.readAccess(this);
         }
         
-        public void run() {
+        public Void run() {
             HtmlBrowser browser = new HtmlBrowser();
             browser.setURL(url);
             browser.setEnableLocation(false);
@@ -499,6 +498,8 @@ public class Installer extends ModuleInstall {
             if (res == exitMsg) {
                 okToExit = true;
             }
+            
+            return null;
         }
     
     
@@ -542,6 +543,9 @@ public class Installer extends ModuleInstall {
                     panel.getExplorerManager().setRootContext(root);
                 }
                 dd.setMessage(panel);
+                List<Object> buttons = new ArrayList<Object>(Arrays.asList(dd.getOptions()));
+                buttons.remove(e.getSource());
+                dd.setOptions(buttons.toArray());
                 return;
             }
             
@@ -563,5 +567,5 @@ public class Installer extends ModuleInstall {
             }
 
         }
-    } // end Submit
+} // end Submit
 }
