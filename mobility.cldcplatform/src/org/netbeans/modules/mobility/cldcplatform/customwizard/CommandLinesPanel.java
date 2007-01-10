@@ -427,10 +427,10 @@ public class CommandLinesPanel extends javax.swing.JPanel implements WizardPanel
         if (foundPlatforms != null  &&  foundPlatforms.length > 0)
             message = "ERR_PlatformExists"; // NOI18N
         
-        if (deviceName.getText().length() < 0)
+        if (deviceName.getText().length() <= 0)
             message = "ERR_EnterDeviceName"; // NOI18N
         
-        if (platformName.getText().length() < 0)
+        if (platformName.getText().length() <= 0)
             message = "ERR_EnterPlatformName"; // NOI18N
         
         final String platformHomeString = platformHome.getText();
