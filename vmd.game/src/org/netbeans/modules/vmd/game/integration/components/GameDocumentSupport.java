@@ -33,6 +33,9 @@ import org.netbeans.modules.vmd.game.model.TiledLayerCD;
  */
 public class GameDocumentSupport {
 	
+	//this class must listen for changes in my model and add items to designer2 model
+	//i.e GameDocumentSupport implements SceneListener
+	
 	public static DesignComponent addSprite(DesignDocument document) {
 		DesignComponent rootComponent = document.getRootComponent();
 		DesignComponent sprite = document.createComponent(SpriteCD.TYPEID);
