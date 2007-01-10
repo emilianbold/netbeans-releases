@@ -42,7 +42,6 @@ public class VisualMIDlet extends MIDlet {
     }
 
     public void destroyApp(boolean unconditional) {
-        exitMIDlet ();
     }
 
 }
