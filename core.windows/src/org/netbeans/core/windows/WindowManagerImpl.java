@@ -1380,7 +1380,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
      * @return An array of TopComponents that are opened in editor modes (i.e. editor windows).
      */
     public TopComponent[] getEditorTopComponents() {
-        Set<TopComponent> editors = new HashSet<TopComponent>();
+        ArrayList<TopComponent> editors = new ArrayList<TopComponent>();
         Set<? extends Mode> modes = getModes();
         for(Mode mode: modes) {
             ModeImpl modeImpl = findModeImpl( mode.getName() ); // XXX probably useless
