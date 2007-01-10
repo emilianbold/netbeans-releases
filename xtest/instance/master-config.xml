@@ -126,6 +126,9 @@ Microsystems, Inc. All Rights Reserved.
         <module name="apisupport/samples/feedreader-sample-ui" testtypes ="unit" attributes="stable"/>
         <module name="apisupport/samples/PaintApp-sample-ui" testtypes ="unit" attributes="stable"/>
         <module name="apisupport/harness" testtypes ="unit" attributes="stable"/>
+        <module name="logger/uihandler" testtypes="unit" attributes="stable"/>
+        <module name="logger/uihandlerlib" testtypes="unit" attributes="stable"/>
+
         <!-- does not run: core/multiview -->
         <!-- other candidate modules in current default moduleconfig (except J2EE team): debuggercore debuggerjpda editor editor/fold editor/util mdr refactoring tasklist tasklist/core tasklist/docscan tasklist/suggestions tasklist/usertasks -->
     </config>
