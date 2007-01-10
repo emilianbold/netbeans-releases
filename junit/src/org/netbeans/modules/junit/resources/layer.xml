@@ -145,17 +145,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 	</file>
     </folder>
     
-    <!-- Help -->
-    <folder name="Services">
-        <folder name="Hidden">
-            <file name="org-netbeans-modules-junit-antlibrary.instance">
-                <attr name="instanceCreate" methodvalue="org.apache.tools.ant.module.spi.AutomaticExtraClasspath.url"/>
-                <attr name="instanceOf" stringvalue="org.apache.tools.ant.module.spi.AutomaticExtraClasspathProvider"/>
-                <attr name="url" urlvalue="nbinst://org.netbeans.modules.junit/modules/ext/junit-3.8.2.jar"/>
-            </file>
-        </folder>
-    </folder>
-
     <folder name="UI">
     	<folder name="Services">
                 <!-- Display the system option under the "Testing" category in Options. -->
