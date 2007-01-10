@@ -31,6 +31,7 @@ import java.util.Enumeration;
 import java.util.Set;
 import java.util.WeakHashMap;
 import javax.swing.JEditorPane;
+import javax.swing.JLabel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
@@ -38,8 +39,9 @@ import javax.swing.text.StyledDocument;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-
+import org.openide.NotifyDescriptor;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
@@ -62,11 +64,9 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.Utilities;
 import org.openide.windows.CloneableOpenSupport;
-import org.openide.windows.CloneableTopComponent;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openide.windows.TopComponent;
@@ -80,6 +80,8 @@ import org.openide.windows.TopComponent;
 public class PropertiesEditorSupport extends CloneableEditorSupport 
 implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serializable {
     
+    /** */
+    static final String PROP_NON_ASCII_CHAR_READ = "org.netbeans.modules.properties.nonAsciiPresent";   //NOI18N
     /** New lines in this file was delimited by '\n'. */
     private static final byte NEW_LINE_N = 0;
     /** New lines in this file was delimited by '\r'. */
@@ -248,6 +250,9 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         try {
             editorKit.read(newLineReader, document, 0);
             newLineType = newLineReader.getNewLineType();
+            if (newLineReader.wasNonAsciiCharacterRead()) {
+                document.putProperty(PROP_NON_ASCII_CHAR_READ, Boolean.TRUE);
+            }
         } finally {
             newLineReader.close();
         }
@@ -889,13 +894,17 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
 
     
     /** Cloneable top component to hold the editor kit. */
-    public static class PropertiesEditor extends CloneableEditor {
+    public static class PropertiesEditor extends CloneableEditor
+                                         implements Runnable {
         
         /** Holds the file being edited. */
         protected transient PropertiesFileEntry entry;
         
         /** Listener for entry's save cookie changes. */
         private transient PropertyChangeListener saveCookieLNode;
+        
+        /** */
+        private transient boolean hasBeenActivated = false;
         
         /** Generated serial version UID. */
         static final long serialVersionUID =-2702087884943509637L;
@@ -933,6 +942,49 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             this.entry.addPropertyChangeListener(
             WeakListeners.propertyChange(saveCookieLNode, this.entry));
         }
+        
+        /**
+         */
+        protected void componentActivated() {
+            super.componentActivated();
+            if (!hasBeenActivated) {
+                hasBeenActivated = true;
+                if (Boolean.TRUE.equals(getEditorPane().getDocument().getProperty(
+                                                       PROP_NON_ASCII_CHAR_READ))) {
+                    EventQueue.invokeLater(this);
+                }
+            }
+        }
+        
+        /**
+         */
+        public void run() {
+            String msg = NbBundle.getMessage(getClass(),
+                                             "MSG_OnlyLatin1Supported");//NOI18N
+            Object msgObject;
+            int nlIndex = msg.indexOf('\n');
+            if (nlIndex == -1) {
+                msgObject = msg;
+            } else {
+                StringBuilder buf = new StringBuilder(msg.length() + 40);
+                buf.append("<html>");                                   //NOI18N
+
+                int lastNlIndex = -1;
+                do {
+                    buf.append(msg.substring(lastNlIndex + 1, nlIndex));
+                    buf.append("<br>");                                 //NOI18N
+                    lastNlIndex = nlIndex;
+                    nlIndex = msg.indexOf('\n', lastNlIndex + 1);
+                } while (nlIndex != -1);
+                buf.append(msg.substring(lastNlIndex + 1));
+                msgObject = new JLabel(buf.toString());
+            }
+            
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(
+                            msgObject,
+                            NotifyDescriptor.WARNING_MESSAGE));
+        }
 
         /**
          * Overrides superclass method. 
@@ -965,6 +1017,8 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         
         /** The count of types new line delimiters used in the file */
         int[] newLineTypes;
+        /** */
+        private boolean nonAsciiCharacterRead = false;
         
         
         /** Creates new stream.
@@ -1009,10 +1063,30 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
                 newLineTypes[NEW_LINE_N]++;
                 return '\n';
             }
+            if (nextToRead > 0x7e) {
+                nonAsciiCharacterRead = true;
+            }
             
             return nextToRead;
         }
 
+        /**
+         * {@inheritdoc}
+         */
+        public int read(char cbuf[], int off, int len) throws IOException {
+            int charsCount = super.read(cbuf, off, len);
+            if (!nonAsciiCharacterRead && (charsCount > 0)) {
+                final int upperLimit = off + len;
+                for (int i = off; i < upperLimit; i++) {
+                    if (cbuf[i] > 0x7e) {
+                        nonAsciiCharacterRead = true;
+                        break;
+                    }
+                }
+            }
+            return charsCount;
+        }
+        
         /** Gets new line type. */
         public byte getNewLineType() {
             if (newLineTypes[0] > newLineTypes[1]) {
@@ -1020,6 +1094,12 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             } else {
                 return (newLineTypes[1] > newLineTypes[2]) ? NEW_LINE_R : NEW_LINE_RN;
             }
+        }
+        
+        /**
+         */
+        public boolean wasNonAsciiCharacterRead() {
+            return nonAsciiCharacterRead;
         }
         
     } // End of nested class NewLineReader.
