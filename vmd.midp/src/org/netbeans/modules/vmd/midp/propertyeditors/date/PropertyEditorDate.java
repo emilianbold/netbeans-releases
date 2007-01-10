@@ -126,7 +126,7 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
     
     private String getValueAsText(PropertyValue value) {
         Date date = new Date();
-        Object valueValue = value.getValue();
+        Object valueValue = value.getPrimitiveValue ();
         date.setTime((Long) valueValue);
         return DATE_TIME_FORMAT.format(date);
     }

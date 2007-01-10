@@ -31,7 +31,7 @@ public final class MidpValueSupport {
         switch (value.getKind ()) {
             case ENUM:
             case VALUE:
-                return value.getValue ().toString ();
+                return value.getPrimitiveValue ().toString ();
             case USERCODE:
                 return "<custom-code>";
             case NULL:

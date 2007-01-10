@@ -48,8 +48,8 @@ public final class MidpDocumentSupport {
     
     public static final Comparator<DesignComponent> COMPONENT_DISPLAY_NAME_COMPARATOR = new Comparator<DesignComponent>() {
         public int compare(DesignComponent component1, DesignComponent component2) {
-            String name1 = (String) component1.readProperty(ClassCD.PROP_INSTANCE_NAME).getValue();
-            String name2 = (String) component2.readProperty(ClassCD.PROP_INSTANCE_NAME).getValue();
+            String name1 = (String) component1.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue ();
+            String name2 = (String) component2.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue ();
             if (name1 == null)
                 return -1;
             else if (name2 == null)
@@ -187,7 +187,7 @@ public final class MidpDocumentSupport {
         for (DesignComponent componentChild : componentsUnderCommandCategory) {
             if (usedCommands != null && usedCommands.contains(componentChild))
                 continue;
-            if (registry.isInHierarchy(CommandCD.TYPEID, componentChild.getType()) && (Boolean) componentChild.readProperty(CommandCD.PROP_ORDINARY).getValue()) {
+            if (registry.isInHierarchy(CommandCD.TYPEID, componentChild.getType()) && (Boolean) componentChild.readProperty(CommandCD.PROP_ORDINARY).getPrimitiveValue ()) {
                 if (unusedCommands == null)
                     unusedCommands = new ArrayList<DesignComponent>();
                 unusedCommands.add(componentChild);

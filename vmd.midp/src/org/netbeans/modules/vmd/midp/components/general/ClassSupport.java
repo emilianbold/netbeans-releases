@@ -66,7 +66,7 @@ public class ClassSupport {
         public String getEditableName (DesignComponent component) {
             if (component == null)
                 throw new IllegalArgumentException("Component cannot be null"); // NOI18N
-            return (String) component.readProperty(ClassCD.PROP_INSTANCE_NAME).getValue();
+            return (String) component.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue ();
         }
 
         public void setEditableName (DesignComponent component, String name) {
@@ -93,7 +93,7 @@ public class ClassSupport {
     public static String resolveDisplayName (DesignComponent component) {
         PropertyValue value = component.readProperty (ClassCD.PROP_INSTANCE_NAME);
         if (value.getKind () == PropertyValue.Kind.VALUE && MidpTypes.TYPEID_JAVA_LANG_STRING.equals (value.getType ()))
-            return (String) value.getValue ();
+            return (String) value.getPrimitiveValue ();
         throw Debug.illegalState ("Invalid instance name (" + value + ") for component: " + component);
     }
 

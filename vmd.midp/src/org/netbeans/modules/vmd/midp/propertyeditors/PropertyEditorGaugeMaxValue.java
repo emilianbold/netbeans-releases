@@ -118,7 +118,7 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
             customEditor.setForever(true);
         } else {
             customEditor.unsetForever(true);
-            customEditor.setText(String.valueOf(value.getValue()));
+            customEditor.setText(String.valueOf(value.getPrimitiveValue ()));
         }
         radioButton.setSelected(!isCurrentValueAUserCodeType());
     }

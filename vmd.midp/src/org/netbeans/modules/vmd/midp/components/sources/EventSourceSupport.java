@@ -101,7 +101,7 @@ public final class EventSourceSupport {
 
             PropertyValue value = component.readProperty (ClassCD.PROP_INSTANCE_NAME);
             if (value.getKind () == PropertyValue.Kind.VALUE && MidpTypes.TYPEID_JAVA_LANG_STRING.equals (value.getType ()))
-                return (String) value.getValue ();
+                return (String) value.getPrimitiveValue ();
             throw new IllegalStateException ("Invalid instance name (" + value + ") for component: " + component);
         }
 
@@ -111,7 +111,7 @@ public final class EventSourceSupport {
 
         public String getEditableName (DesignComponent component) {
             DesignComponent refComponent = component.readProperty(PROP_COMMAND).getComponent();
-            String name = (String) refComponent.readProperty(ClassCD.PROP_INSTANCE_NAME).getValue();
+            String name = (String) refComponent.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue ();
             
             return name;
         }

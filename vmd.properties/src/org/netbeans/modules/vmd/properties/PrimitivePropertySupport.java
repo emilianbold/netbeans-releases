@@ -42,7 +42,7 @@ final class PrimitivePropertySupport extends DefaultPropertySupport {
         if (designerPropertyDescriptor.getPropertyNames() !=null &&! designerPropertyDescriptor.getPropertyNames().isEmpty()) {
             if (designerPropertyDescriptor.getPropertyEditorType().equals(Boolean.class) ||
                 designerPropertyDescriptor.getPropertyEditorType().equals(Integer.class)) {
-                this.value = readPropertyValue(designerPropertyDescriptor.getComponent(), designerPropertyDescriptor.getPropertyNames().iterator().next()).getValue();
+                this.value = readPropertyValue(designerPropertyDescriptor.getComponent(), designerPropertyDescriptor.getPropertyNames().iterator().next()).getPrimitiveValue ();
             } else
                 this.value = readPropertyValue(designerPropertyDescriptor.getComponent(), designerPropertyDescriptor.getPropertyNames().iterator().next());
         }

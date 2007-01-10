@@ -128,7 +128,7 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
         PropertyValue value = (PropertyValue) super.getValue();
         for (String key : values.keySet()) {
             PropertyValue tmpValue = values.get(key);
-            if (value.getValue().equals(tmpValue.getValue())) {
+            if (value.getPrimitiveValue ().equals(tmpValue.getPrimitiveValue ())) {
                 return key;
             }
         }
@@ -216,7 +216,7 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
         
         public void setValue(PropertyValue value) {
             for (String key : values.keySet()) {
-                if (values.get(key).getValue().equals(value.getValue())) {
+                if (values.get(key).getPrimitiveValue ().equals(value.getPrimitiveValue ())) {
                     combobox.setSelectedItem(key);
                     break;
                 }

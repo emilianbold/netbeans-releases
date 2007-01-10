@@ -111,7 +111,7 @@ public final class ItemCommandEventSourceCD extends ComponentDescriptor {
             
             protected String getRenameName() {
                 DesignComponent command = ItemCommandEventSourceCD.getCommandComponent(getComponent());
-                return (String) command.readProperty(CommandCD.PROP_LABEL).getValue();
+                return (String) command.readProperty(CommandCD.PROP_LABEL).getPrimitiveValue ();
             }
             
             protected void setRenameName(String name) {

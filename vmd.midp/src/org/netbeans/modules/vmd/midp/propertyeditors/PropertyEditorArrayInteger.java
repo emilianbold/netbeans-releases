@@ -53,7 +53,7 @@ public class PropertyEditorArrayInteger extends GroupPropertyEditor implements E
         GroupValue values = getValue();
         for (Iterator<String> i = Arrays.asList(getValue().getPropertyNames()).iterator() ; i.hasNext() ; ) {
             PropertyValue value = (PropertyValue) values.getValue(i.next());
-            text.append(value.getValue());
+            text.append(value.getPrimitiveValue ());
             if (i.hasNext())
                 text.append(","); //NOI18N
         }

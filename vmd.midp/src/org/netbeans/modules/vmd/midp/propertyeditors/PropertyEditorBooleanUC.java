@@ -140,7 +140,7 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         }
         
         public void setValue(PropertyValue value) {
-            if (value == null || value.getValue() == null || !MidpTypes.getBoolean(value)) {
+            if (value == null || value.getPrimitiveValue () == null || !MidpTypes.getBoolean(value)) {
                 combobox.setSelectedItem(FALSE_TEXT);
             } else {
                 combobox.setSelectedItem(TRUE_TEXT);

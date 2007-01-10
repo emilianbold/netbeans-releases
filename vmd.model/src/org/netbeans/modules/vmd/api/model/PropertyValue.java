@@ -262,7 +262,7 @@ public final class PropertyValue {
      * Returns primitive or enum value (not component, not array).
      * @return the value
      */
-    public Object getValue () {
+    public Object getPrimitiveValue () {
 //        assert kind == Kind.VALUE  ||  kind == Kind.ENUM;
         return value;
     }
@@ -458,14 +458,4 @@ public final class PropertyValue {
         return serialize ();
     }
 
-//    public boolean equals(Object obj) {
-//        if (obj == null && !(obj instanceof PropertyValue)) {
-//            return false;
-//        }
-//        PropertyValue val = (PropertyValue) obj;
-//        if (value != null && val.getValue() != null) {
-//            return kind.equals(val.getKind()) && value.equals(val.getValue());
-//        }
-//        return super.equals(obj);
-//    }
 }

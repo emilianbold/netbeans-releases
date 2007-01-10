@@ -83,15 +83,15 @@ public class MidpCodeSupport {
     private static void generatePrimitiveTypes (CodeWriter writer, PropertyValue value) {
         TypeID type = value.getType ();
         if (MidpTypes.TYPEID_INT.equals (type))
-            writer.write (value.getValue ().toString ());
+            writer.write (value.getPrimitiveValue ().toString ());
         else if (MidpTypes.TYPEID_LONG.equals (type))
-            writer.write (value.getValue ().toString () + "l"); // NOI18N
+            writer.write (value.getPrimitiveValue ().toString () + "l"); // NOI18N
         else if (MidpTypes.TYPEID_BOOLEAN.equals (type))
-            writer.write ((Boolean) value.getValue () ? "true" : "false"); // NOI18N
+            writer.write ((Boolean) value.getPrimitiveValue () ? "true" : "false"); // NOI18N
         else if (MidpTypes.TYPEID_JAVA_LANG_STRING.equals (type))
-            writer.write ("\"" + CodeSupport.encryptStringToJavaCode (value.getValue ().toString ()) + "\"");
+            writer.write ("\"" + CodeSupport.encryptStringToJavaCode (value.getPrimitiveValue ().toString ()) + "\"");
         else if (MidpTypes.TYPEID_JAVA_CODE.equals (type))
-            writer.write (value.getValue ().toString ());
+            writer.write (value.getPrimitiveValue ().toString ());
         //TODO
     }
 
@@ -99,7 +99,7 @@ public class MidpCodeSupport {
     private static void generateEnumTypes (CodeWriter writer, PropertyValue value) {
         TypeID type = value.getType ();
         if (MidpTypes.TYPEID_ALERT_TYPE.equals (type))
-            writer.write ("AlertType." + value.getValue ().toString ());
+            writer.write ("AlertType." + value.getPrimitiveValue ().toString ());
         //TODO
     }
 

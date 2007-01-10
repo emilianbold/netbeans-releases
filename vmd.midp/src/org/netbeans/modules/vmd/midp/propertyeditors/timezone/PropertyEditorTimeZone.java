@@ -76,7 +76,7 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode implements Pr
         }
 
         PropertyValue value = (PropertyValue) super.getValue();
-        return (String) value.getValue();
+        return (String) value.getPrimitiveValue ();
     }
     
     public void setText(String text) {
@@ -91,7 +91,7 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode implements Pr
         if (isCurrentValueANull() || value == null) {
             customEditor.setText("");
         } else {
-            customEditor.setText((String) value.getValue());
+            customEditor.setText((String) value.getPrimitiveValue ());
         }
         radioButton.setSelected(!isCurrentValueAUserCodeType());
     }

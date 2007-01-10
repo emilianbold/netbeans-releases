@@ -106,7 +106,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         }
         
         PropertyValue value = (PropertyValue) super.getValue();
-        return (String) value.getValue();
+        return (String) value.getPrimitiveValue ();
     }
     
     public void setText(String text) {
@@ -121,7 +121,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         if (isCurrentValueANull() || value == null) {
             customEditor.setText("");
         } else {
-            customEditor.setText((String) value.getValue());
+            customEditor.setText((String) value.getPrimitiveValue ());
         }
         radioButton.setSelected(!isCurrentValueAUserCodeType());
     }

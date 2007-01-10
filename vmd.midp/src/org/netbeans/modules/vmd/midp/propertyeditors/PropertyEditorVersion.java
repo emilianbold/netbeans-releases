@@ -51,7 +51,7 @@ public class PropertyEditorVersion extends DesignPropertyEditor {
     public Component getCustomEditor() {
         PropertyValue value = (PropertyValue) super.getValue();
         if (value != null && value.getKind() != PropertyValue.Kind.NULL) {
-            customEditor.setText((String) value.getValue());
+            customEditor.setText((String) value.getPrimitiveValue ());
         }
         return customEditor;
     }
@@ -69,7 +69,7 @@ public class PropertyEditorVersion extends DesignPropertyEditor {
         if (value == null || value.getKind() == PropertyValue.Kind.NULL) {
             return PropertyEditorUserCode.NULL_TEXT;
         }
-        return (String) value.getValue();
+        return (String) value.getPrimitiveValue ();
     }
     
     public void setAsText(String text) {

@@ -56,7 +56,7 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
     public Component getCustomEditor() {
         PropertyValue value = (PropertyValue) super.getValue();
         if (value != null) {
-            customEditor.setText((String) value.getValue());
+            customEditor.setText((String) value.getPrimitiveValue ());
         }
         return customEditor;
     }
@@ -80,7 +80,7 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
         if (value == null) {
             return PropertyEditorUserCode.NULL_TEXT;
         }
-        return (String) value.getValue();
+        return (String) value.getPrimitiveValue ();
     }
     
     public void setAsText(String text) {
@@ -94,7 +94,7 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
             public void run() {
                 PropertyValue newInstanceName = InstanceNameResolver.createFromSuggested(component, text);
                 PropertyEditorInstanceName.super.setValue(newInstanceName);
-                str[0] = (String) newInstanceName.getValue();
+                str[0] = (String) newInstanceName.getPrimitiveValue ();
             }
         });
         return str[0];

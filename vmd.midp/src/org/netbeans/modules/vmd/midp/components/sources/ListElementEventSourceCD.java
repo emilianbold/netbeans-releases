@@ -130,7 +130,7 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
                 }
 
                 protected String getRenameName () {
-                    return (String) getComponent ().readProperty (PROP_STRING).getValue ();
+                    return (String) getComponent ().readProperty (PROP_STRING).getPrimitiveValue ();
                 }
 
                 protected void setRenameName (String name) {
