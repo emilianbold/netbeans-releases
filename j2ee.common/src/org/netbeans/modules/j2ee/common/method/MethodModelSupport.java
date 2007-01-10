@@ -23,11 +23,9 @@ import javax.lang.model.type.ArrayType;
 import org.netbeans.api.java.source.CompilationController;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
-import com.sun.source.util.SourcePositions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,7 +38,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.openide.util.Parameters;
 
@@ -116,7 +113,6 @@ public final class MethodModelSupport {
         Parameters.notNull("workingCopy", workingCopy); //NOI18N
         Parameters.notNull("methodModel", methodModel); //NOI18N
         TreeMaker treeMaker = workingCopy.getTreeMaker();
-        TreeUtilities treeUtilities = workingCopy.getTreeUtilities();
         List<VariableTree> paramsList = new ArrayList<VariableTree>();
         if (methodModel.getParameters() != null) {
             for (MethodModel.Variable parameter : methodModel.getParameters()) {

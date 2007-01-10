@@ -22,13 +22,10 @@ package org.netbeans.modules.j2ee.common.method;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -195,7 +192,7 @@ public class MethodModelSupportTest extends NbTestCase {
         javaSource.runUserActionTask(taskToTest, true);
     }
 
-    private static ModificationResult runModificationTask(FileObject javaFile, CancellableTask<WorkingCopy> taskToTest) throws Exception {
+    private static ModificationResult runModificationTask(FileObject javaFile, CancellableTask<WorkingCopy> taskToTest) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(javaFile);
         return javaSource.runModificationTask(taskToTest);
     }
