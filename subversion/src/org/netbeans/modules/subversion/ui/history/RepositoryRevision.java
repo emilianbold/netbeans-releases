@@ -21,7 +21,6 @@ package org.netbeans.modules.subversion.ui.history;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessageChangePath;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
-
 import java.io.File;
 import java.util.*;
 
@@ -69,15 +68,27 @@ class RepositoryRevision {
         return message;
     }
 
+    public String toString() {        
+        StringBuffer text = new StringBuffer();
+        text.append(getLog().getRevision().getNumber());
+        text.append("\t");
+        text.append(getLog().getDate());
+        text.append("\t");
+        text.append(getLog().getAuthor()); // NOI18N
+        text.append("\n"); // NOI18N
+        text.append(getLog().getMessage());
+        return text.toString();
+    }
+    
     public class Event {
-
+    
         /**
          * The file or folder that this event is about. It may be null if the File cannot be computed.
          */ 
         private File    file;
-
+    
         private ISVNLogMessageChangePath changedPath;
-        
+
         private String name;
         private String path;
 
@@ -116,5 +127,14 @@ class RepositoryRevision {
         public String getPath() {
             return path;
         }
+        
+        public String toString() {
+            StringBuffer text = new StringBuffer();            
+            text.append("\t");
+            text.append(getPath());
+            return text.toString();
+        }
+
+        
     }
 }
