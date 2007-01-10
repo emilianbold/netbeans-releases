@@ -108,25 +108,26 @@ public final class MessageGenerator {
     private FileObject generateEJB30Classes() throws IOException {
         String ejbClassTemplate = isQueue ? EJB30_QUEUE_EJBCLASS : EJB30_TOPIC_EJBCLASS;
         FileObject resultFileObject = GenerationUtils.createClass(ejbClassTemplate,  pkg, ejbClassName, null);
-                
-        // Create server resources for this bean.
-        //
-        // !PW Posted via RequestProcessor for now because the merged annotion provider
-        // does not have any information for this bean if this is invoked syncronously.
-        // We need to find a more stable mechanism for the, perhaps new API that directly
-        // accepts the annotation reference created above.  This construct is too fragile.
-        //
-        // Note: Even with 1s (1000ms) delay, sometimes the data was still not available.
-        //
-        Project project = FileOwnerQuery.getOwner(pkg);
-        final J2eeModuleProvider pwm = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                if(pwm != null) {
-                    pwm.getConfigSupport().ensureResourceDefinedForEjb(ejbName, "message-driven"); //NOI18N
-                }
-            }
-        }, 2000);
+
+        //TODO: RETOUCHE we don't have model for annotations yet
+//        // Create server resources for this bean.
+//        //
+//        // !PW Posted via RequestProcessor for now because the merged annotion provider
+//        // does not have any information for this bean if this is invoked syncronously.
+//        // We need to find a more stable mechanism for the, perhaps new API that directly
+//        // accepts the annotation reference created above.  This construct is too fragile.
+//        //
+//        // Note: Even with 1s (1000ms) delay, sometimes the data was still not available.
+//        //
+//        Project project = FileOwnerQuery.getOwner(pkg);
+//        final J2eeModuleProvider pwm = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+//        RequestProcessor.getDefault().post(new Runnable() {
+//            public void run() {
+//                if(pwm != null) {
+//                    pwm.getConfigSupport().ensureResourceDefinedForEjb(ejbName, "message-driven"); //NOI18N
+//                }
+//            }
+//        }, 2000);
         
         return resultFileObject;
     }
