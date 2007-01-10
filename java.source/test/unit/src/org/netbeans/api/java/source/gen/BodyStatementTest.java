@@ -60,6 +60,7 @@ public class BodyStatementTest extends GeneratorTest {
 //        suite.addTest(new BodyStatementTest("testAssignRight"));
 //        suite.addTest(new BodyStatementTest("testAssignBoth"));
 //        suite.addTest(new BodyStatementTest("testReturn"));
+//        suite.addTest(new BodyStatementTest("testPlusBinary"));
         return suite;
     }
     
@@ -764,6 +765,54 @@ public class BodyStatementTest extends GeneratorTest {
                 MethodTree method = (MethodTree) clazz.getMembers().get(1);
                 ReturnTree rejturn = (ReturnTree) method.getBody().getStatements().get(0);
                 workingCopy.rewrite(rejturn.getExpression(), make.Identifier("nullanen2"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * #92187: Test in PLUS rename
+     */
+    public void testPlusBinary() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method() {\n" +
+            "        return \"[\" + key + \"; \" + value + \"]\"\n" +
+            "    }\n" +
+            "}\n");
+
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method() {\n" +
+            "        return \"[\" + key2 + \"; \" + value + \"]\"\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                ReturnTree rejturn = (ReturnTree) method.getBody().getStatements().get(0);
+                BinaryTree in = (BinaryTree) rejturn.getExpression();
+                for (int i = 0; i < 3; i++) {
+                    in = (BinaryTree) in.getLeftOperand();
+                }
+                IdentifierTree ident = (IdentifierTree) in.getRightOperand();
+                workingCopy.rewrite(ident, make.Identifier("key2"));
             }
             
             public void cancel() {
