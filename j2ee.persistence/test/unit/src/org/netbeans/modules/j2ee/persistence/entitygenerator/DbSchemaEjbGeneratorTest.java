@@ -45,13 +45,11 @@ public class DbSchemaEjbGeneratorTest extends NbTestCase {
         create table part2 (part1_id int not null references part1(id) primary key);
          */
         SchemaElement schema = SchemaElementUtil.forName(URLMapper.findFileObject(getClass().getResource("Issue92031.dbschema")));
-
         DbSchemaEjbGenerator generator = new DbSchemaEjbGenerator(
                 new GeneratedTablesImpl(new HashSet(Arrays.asList("PART1", "PART2"))),
                 schema);
 
         EntityClass[] beans = generator.getBeans();
-
         EntityClass bean = getBeanByTableName(beans, "PART2");
         assertNotNull(getFieldByName(bean, "part1"));
         RelationshipRole role = (RelationshipRole)bean.getRoles().iterator().next();

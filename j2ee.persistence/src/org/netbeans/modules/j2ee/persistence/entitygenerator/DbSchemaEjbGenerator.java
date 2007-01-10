@@ -19,7 +19,12 @@
 
 package org.netbeans.modules.j2ee.persistence.entitygenerator;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.dbschema.ColumnElement;
 import org.netbeans.modules.dbschema.ColumnPairElement;
 import org.netbeans.modules.dbschema.DBIdentifier;
@@ -40,7 +45,6 @@ public class DbSchemaEjbGenerator {
     private Map beans = new HashMap();
     private List relations = new ArrayList();
     private SchemaElement schemaElement;
-    private String packageName;
     
     /**
      * Creates a generator for a set of beans.
@@ -48,7 +52,7 @@ public class DbSchemaEjbGenerator {
      * @param genTables contains the tables to generate and their respective locations.
      * @param schemaElement the dbschema containing the tables to generate beans for.
      */
-    public DbSchemaEjbGenerator(GeneratedTables genTables, SchemaElement schemaElement/*Map<String, String> tableName2ClassName/*, String packageName*/) {
+    public DbSchemaEjbGenerator(GeneratedTables genTables, SchemaElement schemaElement) {
         this.schemaElement = schemaElement;
         this.genTables = genTables;
     
@@ -106,13 +110,11 @@ public class DbSchemaEjbGenerator {
     }
     
     public EntityClass[] getBeans() {
-        return (EntityClass[])
-        beans.values().toArray(new EntityClass[beans.size()]);
+        return (EntityClass[])beans.values().toArray(new EntityClass[beans.size()]);
     }
     
     public EntityRelation[] getRelations() {
-        return (EntityRelation[])
-        relations.toArray(new EntityRelation[relations.size()]);
+        return (EntityRelation[])relations.toArray(new EntityRelation[relations.size()]);
     }
     
     
