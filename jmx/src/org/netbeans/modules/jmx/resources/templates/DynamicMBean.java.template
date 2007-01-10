@@ -5,7 +5,7 @@
  */
 package Template.Classes;
 import javax.management.*;
-import java.lang.reflect.Constructor;
+import java.util.Arrays;
 
 /**
  * __NAME__ Dynamic MBean
@@ -19,43 +19,6 @@ public class __NAME__ extends __NAME__DynamicSupport
     {
         buildDynamicMBeanInfo();
     }
-
-   /**
-    * Gets the value of the specified attribute of the DynamicMBean.
-    * @param attributeName The attribute name
-    */
-   public Object getAttribute(String attributeName)
-       throws AttributeNotFoundException,
-              MBeanException,
-              ReflectionException {
-        throw new AttributeNotFoundException("Unknown Attribute "
-                      + attributeName);
-   }
-
-   /**
-    * Sets the value of the specified attribute of the DynamicMBean.
-    * @param attribute The attribute to set
-    */
-   public void setAttribute(Attribute attribute)
-       throws AttributeNotFoundException,
-              InvalidAttributeValueException,
-              MBeanException,
-              ReflectionException {
-        throw new AttributeNotFoundException("Unknown Attribute "
-                      + attribute.getName());
-   }
-
-   /**
-    * Allows an operation to be invoked on the DynamicMBean.
-    */
-   public Object invoke(String operationName,
-                        Object params[],
-                        String signature[])
-       throws MBeanException, ReflectionException {
-       throw new MBeanException(
-              new IllegalArgumentException("Unknown Operation " +
-                                           operationName));
-   }
 
    /**
     * Create the MBeanInfoConstructors.
@@ -74,30 +37,9 @@ public class __NAME__ extends __NAME__DynamicSupport
        return dMBeanInfo;
    }
 
-   /**
-    * Build the private dMBeanInfo field,
-    * which represents the management interface exposed by the MBean,
-    * that is, the set of attributes, constructors, operations and
-    * notifications which are available for management.
-    *
-    * A reference to the dMBeanInfo object is returned by the getMBeanInfo()
-    * method of the DynamicMBean interface. Note that, once constructed,
-    * an MBeanInfo object is immutable.
-    */
-   private void buildDynamicMBeanInfo() {
-       MBeanAttributeInfo[] dAttributes = new MBeanAttributeInfo[] {0};
-       MBeanConstructorInfo[] dConstructors = createConstructors();
-       {1}MBeanOperationInfo[] dOperations = new MBeanOperationInfo[] {2};
-       dMBeanInfo = new MBeanInfo("__NAME__",
-                                  "{3}",
-                                  dAttributes,
-                                  dConstructors,
-                                  dOperations,
-                                  getNotificationInfo());
-   }
    // </editor-fold>
 
-    public  MBeanNotificationInfo[] getNotificationInfo() {
+    public MBeanNotificationInfo[] getNotificationInfo() {
          return new MBeanNotificationInfo[] {};
     } 
 

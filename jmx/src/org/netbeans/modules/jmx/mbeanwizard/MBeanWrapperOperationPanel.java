@@ -28,13 +28,14 @@ import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanWrapperOperationTabl
 import org.netbeans.modules.jmx.MBeanDO;
 import org.netbeans.modules.jmx.MBeanOperation;
 import org.netbeans.modules.jmx.WizardConstants;
-import org.netbeans.jmi.javamodel.JavaClass;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
 import javax.swing.JLabel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.jmx.JavaModelHelper;
 import org.netbeans.modules.jmx.MBeanOperationException;
 import org.netbeans.modules.jmx.MBeanOperationParameter;
 import org.openide.WizardDescriptor;
@@ -276,8 +277,8 @@ public class MBeanWrapperOperationPanel extends MBeanOperationPanel
                 getPanel().getModel().clear();
                 MBeanDO mbdo = null;
                 try {
-                    mbdo = org.netbeans.modules.jmx.Introspector.introspectClass(
-                            (JavaClass)wiz.getProperty(WizardConstants.PROP_MBEAN_EXISTING_CLASS));
+                    mbdo = JavaModelHelper.getMBeanLikeModel(
+                            (JavaSource)wiz.getProperty(WizardConstants.PROP_MBEAN_EXISTING_CLASS));
                     
                     List<MBeanOperation> operations = mbdo.getOperations();
                     for (Iterator<MBeanOperation> it = operations.iterator(); it.hasNext();) {

@@ -19,23 +19,19 @@
 
 package org.netbeans.modules.jmx.mbeanwizard.generator;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.jmx.MBeanDO;
 import org.netbeans.modules.jmx.MBeanNotification;
 import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.WizardHelpers;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 
 /**
  * Wizard MBean code generator controller class.
- * @author tl156378
+ * @author jfdenise
  */
 public class GeneratorControler {
     
@@ -46,26 +42,30 @@ public class GeneratorControler {
      * @throws java.lang.Exception <CODE>Exception</CODE>
      * @return <CODE>CreationResults</CODE> the generated files set
      */
-    public static CreationResults generate(TemplateWizard wiz) 
+    public static Set generate(TemplateWizard wiz) 
     throws java.io.IOException, Exception {
         MBeanDO mbeanDO = Translator.createMBeanDO(wiz);
+        
         MBeanFileGenerator generator = null;
+        
         if (mbeanDO.getType().equals(
                 WizardConstants.MBEAN_DYNAMICMBEAN)) {
             generator = new DynMBeanClassGen();
         } else 
-            generator = new StdMBeanClassGen();
-        CreationResults result = new CreationResults(1);
+            if(mbeanDO.getType().equals(
+                WizardConstants.MXBEAN))
+                    generator = new StdMBeanClassGen(WizardConstants.MXBEAN_SUFFIX);
+            else
+                    generator = new StdMBeanClassGen(WizardConstants.MBEAN_ITF_SUFFIX); 
         FileObject createdFile = generator.generateMBean(mbeanDO);
         
         //add notifications
-        JavaClass mbeanClass = generator.getMBeanClass();
         if (mbeanDO.isNotificationEmitter()) {
             AddNotifGenerator notifGenerator = new AddNotifGenerator();
             List notifList = mbeanDO.getNotifs();
             MBeanNotification[] notifs = (MBeanNotification[])
                 notifList.toArray(new MBeanNotification[notifList.size()]);
-            notifGenerator.update(createdFile, mbeanClass, mbeanClass.getResource(), notifs,
+            notifGenerator.update(createdFile, notifs,
                     mbeanDO.isGenBroadcastDeleg(), mbeanDO.isGenSeqNumber());
         }
         
@@ -73,126 +73,13 @@ public class GeneratorControler {
         if (mbeanDO.implMBeanRegist()) {
             AddRegistIntfGenerator mbeanRegistGen = new AddRegistIntfGenerator();
             //TODO link to mbean wizard settings
-            mbeanRegistGen.update(null, mbeanClass, mbeanClass.getResource(),
-                    mbeanDO.isKeepPreRegistRef());
+            mbeanRegistGen.update(createdFile, mbeanDO.isKeepPreRegistRef());
         }
         
-        result.addCreated(createdFile);
+        Set<FileObject> s = new HashSet<FileObject>();
+        s.add(createdFile);
         
-        // JUnit tests generation
-        MBeanGenInfo genInfo = Translator.createGenInfo(wiz);
-        if (genInfo.isGenJUnit()) {
-            MBeanTestGen junitTestGenerator = new MBeanTestGen();
-            FileObject junitTestFile = 
-                    junitTestGenerator.generateTest(null, mbeanDO,genInfo);
-            result.addCreated(junitTestFile);
-        }
         WizardHelpers.refreshProjectTree(wiz);
-        return result;                         
+        return s;                         
     }
-       
-    private static void save(DataObject dO) throws IOException {
-        SaveCookie sc = (SaveCookie) dO.getCookie(SaveCookie.class);
-        if (null != sc)
-        sc.save();
-    }
-
-    /**
-     * Utility class representing the results of a file creation
-     * process. It gatheres all files (as FileObject) created and all
-     * classes (as JavaClasses) .
-     */
-    public static class CreationResults {
-        /**
-         * Empty CreationResults.
-         */
-        public static final CreationResults EMPTY = new CreationResults();
-        
-        private Set created; // Set< createdTest : FileObject >
-        private Set skipped; // Set< sourceClass : JavaClass >
-        private boolean abborted = false;
-        
-        /**
-         * Default constructor of CreationResults.
-         */
-        public CreationResults() { this(1);}
-        
-        /**
-         * Constructor of CreationResults. the expectedSize parameter allow to
-         * optimize the size of the file set structure.
-         * @param expectedSize <CODE>int</CODE> set size
-         */
-        public CreationResults(int expectedSize) {
-            created = new HashSet(expectedSize * 2 , 0.5f);
-            skipped = new HashSet(expectedSize * 2 , 0.5f);
-        }
-        
-        /**
-         * Set abborted.
-         */
-        public void setAbborted() {
-            abborted = true;
-        }
-        
-        /**
-         * Returns true if the process of creation was abborted. The
-         * result contains the results gathered so far.
-         * @return <CODE>boolean</CODE> true if the the creation is abborted
-         */
-        public boolean isAbborted() {
-            return abborted;
-        }
-        
-        
-        /**
-         * Adds a new entry to the set of created tests.
-         * @return true if it was added, false if it was present before
-         * @param test <CODE>Object</CODE> object to add
-         */
-        public boolean addCreated(FileObject test) {
-            return created.add(test);
-        }
-        
-        /**
-         * Adds a new <code>JavaClass</code> to the collection of
-         * skipped classes.
-         * @return true if it was added, false if it was present before
-         * @param c <CODE>JavaClass</CODE> class to add
-         */
-        public boolean addSkipped(JavaClass c) {
-            return skipped.add(c);
-        }
-        
-        /**
-         * Returns a set of classes that were skipped in the process.
-         * @return Set<JavaClass>
-         */
-        public Set getSkipped() {
-            return skipped;
-        }
-        
-        /**
-         * Returns a set of test data objects created.
-         * @return Set<FileObject>
-         */
-        public Set getCreated() {
-            return created;
-        }
-        
-        /**
-         * Combines two results into one. If any of the results is an
-         * abborted result, the combination is also abborted. The
-         * collections of created and skipped classes are unified.
-         * @param rhs the other CreationResult to combine into this
-         */
-        public void combine(CreationResults rhs) {
-            if (rhs.abborted) {
-                this.abborted = true;
-            }
-            
-            this.created.addAll(rhs.created);
-            this.skipped.addAll(rhs.skipped);
-        }
-        
-    } 
 }

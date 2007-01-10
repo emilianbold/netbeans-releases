@@ -12,7 +12,7 @@ import javax.management.*;
  * {0}
  * @author __USER__
  */
-public class __NAME__ implements __NAME__MBean {
+public class __NAME__ implements __NAME__MXBean {
 
     public __NAME__(){
     }

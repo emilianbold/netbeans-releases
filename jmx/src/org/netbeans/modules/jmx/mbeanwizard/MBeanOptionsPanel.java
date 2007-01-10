@@ -27,23 +27,21 @@ import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.awt.Mnemonics;
-
 import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.WizardHelpers;
 import org.netbeans.modules.jmx.GenericWizardPanel;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Modifier;
 import javax.swing.JTextField;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.JavaModelPackage;
-import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.api.java.source.JavaSource;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.jmx.ClassButton;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.jmx.JavaModelHelper;
 
 /**
  *
@@ -66,8 +64,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
     private boolean mbeanFromExistingClass = false;
     private boolean preRegParamSelected = false;
     private boolean mbeanRegIntfSelected = false;
-    private static enum mbeanType {StandardMBean, DynamicMBean, ExtendedStandardMBean};
-    private static mbeanType selectedMBeanType;
+    private static enum mbeanType {StandardMBean, DynamicMBean, ExtendedStandardMBean}private static mbeanType selectedMBeanType;
     
     /**
      * Create the wizard panel component and set up some basic properties
@@ -599,24 +596,31 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
                 File file = new File(filePath);
                 FileObject fo = FileUtil.toFileObject(file);
                 
-                
+                try {
                 //resolves all accessible classes for the current project
                 //classpath
-                JavaClass mbeanClass = WizardHelpers.findClassInProject(project, fullClassName);
-                
+                JavaSource mbeanClass = JavaModelHelper.findClassInProject(project, fullClassName);
+               
                 // checks that the class is neither null nor an interface nor
                 // abstract
                 if (mbeanClass == null) {
                     setErrorMsg(  "The specified class does not exist.");// NOI18N
                     return false;
                 }
-                if (mbeanClass.isInterface()) {
+                
+                boolean isInterface = JavaModelHelper.isInterface(mbeanClass);
+                boolean isAbstract = JavaModelHelper.isAbstract(mbeanClass);
+                if (isInterface) {
                     setErrorMsg(  "The specified class is an Interface.");// NOI18N
                     return false;
                 }
-                if (Modifier.isAbstract(mbeanClass.getModifiers())) {
+                if (isAbstract) {
                     setErrorMsg(  "The specified class is abstract.");// NOI18N
                     return false;
+                }
+                }catch(IOException ioe) {
+                    ioe.printStackTrace();
+                    setErrorMsg(ioe.toString());
                 }
             }
             setErrorMsg(WizardConstants.EMPTYSTRING);
@@ -824,10 +828,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
             
             //String mbeanName = mbeanNameTextField.getText();
             //wiz.putProperty (WizardConstants.PROP_MBEAN_NAME, mbeanName);
-            String mbeanName = (String)
-                            wiz.getProperty(WizardConstants.PROP_MBEAN_NAME);
-            wiz.putProperty (WizardConstants.PROP_JUNIT_CLASSNAME, 
-                    mbeanName + WizardConstants.JUNIT_TEST_SUFFIX);
+           
             /*
             Project project = Templates.getProject(wiz);
             if (createdFileTextField != null) {
@@ -884,11 +885,15 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
                         getPanel().orderNumber);
         }    
         
-        private JavaClass getExistingClass() {
+        private JavaSource getExistingClass() {
             String fullClassName = getPanel().
                     classSelectionJTextField.getText();
-            
-            return WizardHelpers.findClassInProject(project, fullClassName);
+            try {
+                return JavaModelHelper.findClassInProject(project, fullClassName);
+            }catch(IOException ioe) {
+                ioe.printStackTrace();
+            }
+            return null;
         }
         
         public HelpCtx getHelp() {

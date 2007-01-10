@@ -18,7 +18,6 @@
  */
 
 package org.netbeans.modules.jmx.mbeanwizard;
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -29,14 +28,14 @@ import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanWrapperAttributeTabl
 import org.netbeans.modules.jmx.MBeanDO;
 import org.netbeans.modules.jmx.MBeanAttribute;
 import org.netbeans.modules.jmx.WizardConstants;
-import org.netbeans.jmi.javamodel.JavaClass;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.jmx.JavaModelHelper;
 import org.openide.util.NbBundle;
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
@@ -290,8 +289,8 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel
                 getPanel().getModel().clear();
                 MBeanDO mbdo = null;
                 try {
-                    mbdo = org.netbeans.modules.jmx.Introspector.introspectClass(
-                            (JavaClass)wiz.getProperty(WizardConstants.PROP_MBEAN_EXISTING_CLASS));
+                    mbdo = JavaModelHelper.getMBeanLikeModel(
+                            (JavaSource)wiz.getProperty(WizardConstants.PROP_MBEAN_EXISTING_CLASS));
                     
                     List<MBeanAttribute> attributes = mbdo.getAttributes();
                     for (Iterator<MBeanAttribute> it = attributes.iterator(); it.hasNext();) {

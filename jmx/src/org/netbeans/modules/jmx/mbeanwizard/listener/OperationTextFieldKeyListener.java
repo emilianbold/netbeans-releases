@@ -63,7 +63,6 @@ public class OperationTextFieldKeyListener implements KeyListener {
         } else {
             nameField.getToolkit().beep();
         }
-        //txt = WizardHelpers.capitalizeFirstLetter(txt);
         nameField.setText(txt);
         if ((typedKey == KeyEvent.VK_BACK_SPACE) ||
                 (typedKey == KeyEvent.VK_DELETE))

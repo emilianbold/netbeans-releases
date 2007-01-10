@@ -6,14 +6,8 @@
 
 package Template.Classes;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
 
 
 /**
@@ -27,13 +21,8 @@ public class Manager {
      */
     public static void main(String[] args) throws Exception {
 
-        //manager instantiation and connection to the remote agent
-        __NAME__ manager = __NAME__.getDefault();
-          {0}
-        //close connection
-        manager.close();
-        
-        System.out.println("Connection closed.");   
+        //Manager instantiation and connection to the remote agent
+        __NAME__ manager = __NAME__.getDefault(); 
     }
     
     /**
@@ -42,10 +31,6 @@ public class Manager {
      * is called
      */
     public void connect() throws Exception {
-        {0}{1}{2}
-
-        //Get the MBeanServerConnection
-        mbsc = connector.getMBeanServerConnection();
     }
     
     /**

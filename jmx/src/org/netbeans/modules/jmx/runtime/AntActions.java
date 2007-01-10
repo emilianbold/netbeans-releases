@@ -28,34 +28,27 @@ import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 import org.openide.NotifyDescriptor;
 
 import javax.swing.*;
-import java.util.Properties;
-import java.util.Set;
 import sun.jvmstat.monitor.*;
 import sun.management.ConnectorAddressLink;
 
 import org.openide.util.RequestProcessor;
 import org.openide.execution.ExecutorTask;
-import org.openide.windows.InputOutput;
-import org.openide.DialogDescriptor;
-
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Properties;
 import java.io.File;
 import java.io.FileInputStream;
 
-import org.netbeans.modules.jmx.jconsole.JConsoleSettings;
-
 import javax.management.remote.*;
+import org.netbeans.modules.jmx.j2seproject.customizer.ManagementCompositePanelProvider;
 
 public class AntActions {
-    public static Action enableLocalManagement() {
+    
+    public static Action enableMM() {
         Action a = MainProjectSensitiveActions.mainProjectSensitiveAction(
                 new ProjectActionPerformer() {
             public boolean enable(Project project) {
@@ -64,14 +57,14 @@ public class AntActions {
             }
             
             public void perform(Project project) {
-                enableLocalManagement(project);
+                enableMM(project);
             }
         },
-                NbBundle.getMessage(AntActions.class, "LBL_EnableLocalManagementAction"), // NOI18N
+                NbBundle.getMessage(AntActions.class, "LBL_EnableMMAction"), // NOI18N
                 null);
         a.putValue(
                 Action.SHORT_DESCRIPTION,
-                NbBundle.getMessage(AntActions.class,"HINT_EnableLocalManagementAction")); // NOI18N
+                NbBundle.getMessage(AntActions.class,"HINT_EnableMMAction")); // NOI18N
         
         a.putValue(
                 "iconBase", // NOI18N
@@ -86,7 +79,7 @@ public class AntActions {
         return a;
     }
     
-    public static Action enableRemoteManagement() {
+    public static Action debugMM() {
         Action a = MainProjectSensitiveActions.mainProjectSensitiveAction(
                 new ProjectActionPerformer() {
             public boolean enable(Project project) {
@@ -95,39 +88,14 @@ public class AntActions {
             }
             
             public void perform(Project project) {
-                enableRemoteManagement(project);
+                debugMM(project);
             }
         },
-                NbBundle.getMessage(AntActions.class, "LBL_EnableRemoteManagementAction"), // NOI18N
+                NbBundle.getMessage(AntActions.class, "LBL_DebugMMAction"), // NOI18N
                 null);
         a.putValue(
                 Action.SHORT_DESCRIPTION,
-                NbBundle.getMessage(AntActions.class, "HINT_EnableRemoteManagementAction" ));// NOI18N
-        
-        a.putValue(
-                "iconBase", // NOI18N
-                "org/netbeans/modules/jmx/resources/run_project.png" // NOI18N
-                );
-        return a;
-    }
-    
-    public static Action debugLocalManagement() {
-        Action a = MainProjectSensitiveActions.mainProjectSensitiveAction(
-                new ProjectActionPerformer() {
-            public boolean enable(Project project) {
-                if (project == null) return false;
-                return J2SEProjectType.isProjectTypeSupported(project);
-            }
-            
-            public void perform(Project project) {
-                debugLocalManagement(project);
-            }
-        },
-                NbBundle.getMessage(AntActions.class, "LBL_DebugLocalManagementAction"), // NOI18N
-                null);
-        a.putValue(
-                Action.SHORT_DESCRIPTION,
-                NbBundle.getMessage(AntActions.class, "HINT_DebugLocalManagementAction")); // NOI18N
+                NbBundle.getMessage(AntActions.class, "HINT_DebugMMAction")); // NOI18N
 
         a.putValue(
                 "iconBase", // NOI18N
@@ -137,31 +105,6 @@ public class AntActions {
         a.putValue (
             Action.SMALL_ICON, 
             new ImageIcon (org.openide.util.Utilities.loadImage("org/netbeans/modules/jmx/resources/debug_project.png")) // NOI18N        
-                );
-        return a;
-    }
-    
-    public static Action debugRemoteManagement() {
-        Action a = MainProjectSensitiveActions.mainProjectSensitiveAction(
-                new ProjectActionPerformer() {
-            public boolean enable(Project project) {
-                if (project == null) return false;
-                return J2SEProjectType.isProjectTypeSupported(project);
-            }
-            
-            public void perform(Project project) {
-                debugRemoteManagement(project);
-            }
-        },
-                NbBundle.getMessage(AntActions.class, "LBL_DebugRemoteManagementAction"), // NOI18N
-                null);
-        a.putValue(
-                Action.SHORT_DESCRIPTION,
-                NbBundle.getMessage(AntActions.class,"HINT_DebugRemoteManagementAction")); // NOI18N
-
-        a.putValue(
-                "iconBase", // NOI18N
-                "org/netbeans/modules/jmx/resources/debug_project.png" // NOI18N
                 );
         return a;
     }
@@ -178,69 +121,74 @@ public class AntActions {
         return null;
     }
     
-    private static void enableLocalManagement(Project project) {
-       handleLocalManagement(project, "run-management");// NOI18N
+    private static void enableMM(Project project) {
+       handleMM(project, "run-management");// NOI18N
     }
-    
-    private static void debugLocalManagement(Project project) {
-       handleLocalManagement(project, "debug-management");// NOI18N
+    private static void debugMM(Project project) {
+       handleMM(project, "debug-management");// NOI18N
     }
-    
-    private static void enableRemoteManagement(Project project) {
-        handleRemoteManagement(project, "run-management");// NOI18N
-    }
-    
-    private static void debugRemoteManagement(Project project) {
-        handleRemoteManagement(project, "debug-management");// NOI18N
-    }
-    
    
     private static boolean isValidConfig(Integer port, String file) {
         if(file == null && port == null) return false;
         return true;
     }
     
-    private static void handleRemoteManagement(Project project, String target) {
+    private static void handleMM(Project project, String target) {
+        
+        // JConsole properties
+        Properties projectProperties = J2SEProjectType.getProjectProperties(project);
+        
+        // XXX Because we are unbundled, we enable management
+        boolean localAttach =
+                Boolean.valueOf(projectProperties.getProperty(ManagementCompositePanelProvider.ATTACH_JCONSOLE_KEY,"true")); // NOI18N
+        boolean rmiConnect =
+                Boolean.valueOf(projectProperties.getProperty(ManagementCompositePanelProvider.ENABLE_RMI_KEY,"false")); // NOI18N
+        
+        if(!rmiConnect && !localAttach) {
+            ManagementDialogs.getDefault().notify(
+                new NotifyDescriptor.Message(NbBundle.getMessage(J2SEProjectType.class, "ERR_MMNotEnabled"), NotifyDescriptor.WARNING_MESSAGE));// NOI18N
+            return;
+        }
+        
+        if(rmiConnect) {
+            handleRemoteManagement(project, target, projectProperties);
+        } else {
+            handleLocalManagement(project, target, projectProperties);
+        }
+    }
+    
+    private static void handleRemoteManagement(Project project, String target, Properties properties) {
         // 2. check if the project has been modified for management
         if(!J2SEProjectType.checkProjectIsModifiedForManagement(project)||
            !J2SEProjectType.checkProjectCanBeManaged(project))
             return;
         
-        //Access Settings
-        //TODO!!!
-        ConfigOptions options = ConfigOptions.getDefault();
-        
-        
-        
-        Integer rmiPort = null;
-        String configFile = null;
-        ConfigurationPanel dialog;
         String projectRootDir = FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath();
-        do{
-          dialog = new ConfigurationPanel(options.isPortSelectedChoice(),
-                options.getRMIPort(), 
-                options.getConfigurationFile(), 
-                options.isJConsoleAutoConnected(),
-                projectRootDir);
-           
-           if(dialog.isClosed()) return;
-           rmiPort = dialog.isPortSelected() ? dialog.getRMIPort() : null;
-           configFile = dialog.isFileSelected() ? dialog.getFilePath() : null;
-        }while(!isValidConfig(rmiPort, configFile));
         
-        boolean launchJConsole = dialog.isJConsoleToConnect();
-       
-        //Persist options
-        options.setPortSelectedChoice(Boolean.valueOf(dialog.isPortSelected()));
-        options.setConfigurationFile(dialog.getFilePath());
-        options.setRMIPort(dialog.getRMIPort());
-        options.setJConsoleAutoConnected(Boolean.valueOf(launchJConsole));
+        boolean launchJConsole = 
+                Boolean.valueOf(properties.
+                getProperty(ManagementCompositePanelProvider.ATTACH_JCONSOLE_KEY, 
+                "true"));
+        boolean useRMIPort = 
+                Boolean.valueOf(properties.
+                getProperty(ManagementCompositePanelProvider.RMI_USE_PORT_KEY, 
+                "true"));
+        
+        String rmiPort = null;
+        String configFile = null;
+        
+        if(useRMIPort)
+            rmiPort = properties.
+                getProperty(ManagementCompositePanelProvider.RMI_PORT_KEY);
+        if(!useRMIPort)
+            configFile = properties.
+                getProperty(ManagementCompositePanelProvider.CONFIG_FILE_KEY);
         
         try {
             //Add property to ant execution context
             Properties props = new Properties();
             if(rmiPort != null)
-                props.setProperty("com.sun.management.jmxremote.port", rmiPort.toString());// NOI18N
+                props.setProperty("com.sun.management.jmxremote.port", rmiPort);// NOI18N
             if(configFile != null)
                 props.setProperty("com.sun.management.config.file", configFile);// NOI18N
             
@@ -249,7 +197,7 @@ public class AntActions {
                Properties p = new Properties();
                File f = new File(configFile);
                p.load(new FileInputStream(f));
-               rmiPort = new Integer(p.getProperty("com.sun.management.jmxremote.port"));// NOI18N
+               rmiPort = p.getProperty("com.sun.management.jmxremote.port");// NOI18N
             }
                 
             //Should be set to "" if no auto connect
@@ -278,7 +226,7 @@ public class AntActions {
                 //Such task will launch JCOnsole only if run target doesn't fail AND
                 // A connector is found in shared memory.
                 RequestProcessor rp = new RequestProcessor();
-                JConsoleRemoteAction action = new JConsoleRemoteAction(rmiPort, project, t);
+                JConsoleRemoteAction action = new JConsoleRemoteAction(Integer.valueOf(rmiPort), project, t, properties);
                 rp.post(action);
             }
         
@@ -288,7 +236,7 @@ public class AntActions {
         }
     }
      
-    private static void handleLocalManagement(Project project, String target) {
+    private static void handleLocalManagement(Project project, String target, Properties properties) {
          // 2. check if the project has been modified for management
         if(!J2SEProjectType.checkProjectIsModifiedForManagement(project)||
            !J2SEProjectType.checkProjectCanBeManaged(project))
@@ -312,7 +260,7 @@ public class AntActions {
             // A connector is found in shared memory.
             RequestProcessor rp = new RequestProcessor();
             JConsoleAction action = new JConsoleAction("jmx.process.virtual.pid=" + // NOI18N
-                    key, project, t);
+                    key, project, t, properties);
             rp.post(action);
         }catch(Exception e) {
             System.out.println(e.toString());
@@ -341,10 +289,12 @@ public class AntActions {
         protected Object key;
         protected Project project;
         protected ExecutorTask t;
-        public JConsoleCommonAction(Object key, Project project, ExecutorTask t) {
+        protected Properties properties;
+        public JConsoleCommonAction(Object key, Project project, ExecutorTask t, Properties properties) {
             this.t = t;
             this.key = key;
             this.project = project;
+            this.properties = properties;
         }
         
         protected void handleApplicationDied(ExecutorTask t, String msg) {
@@ -355,16 +305,37 @@ public class AntActions {
         
         protected void connectJConsole(String url) {
             //Access to settings
-            JConsoleSettings settings = JConsoleSettings.getDefault();
-            String polling = String.valueOf(settings.getPolling());
-            String tile = !settings.getTile() ? "-notile" : ""; // NOI18N
-            String vmOptions = settings.getVMOptions() == null ? "" : settings.getVMOptions(); // NOI18N
+            String polling = 
+                    properties.getProperty(ManagementCompositePanelProvider.POLLING_PERIOD_KEY,"4");
             Properties props = new Properties();
             t.getInputOutput().getErr().println(NbBundle.getMessage(AntActions.class, "MSG_FoundProcessToConnectTo"));// NOI18N
             
-            props.setProperty("jconsole.settings.vmoptions", vmOptions);// NOI18N
+            props.setProperty("jconsole.settings.vmoptions", "");// NOI18N
             props.setProperty("jconsole.settings.polling", polling);// NOI18N
-            props.setProperty("jconsole.settings.notile", tile);// NOI18N
+            //Peegyback in notile
+            StringBuffer notileandothers = new StringBuffer("");// NOI18N
+            if(J2SEProjectType.isPlatformGreaterThanJDK15(project)) {
+                String pluginsPath = 
+                    properties.getProperty(ManagementCompositePanelProvider.PLUGINS_PATH_KEY);
+                boolean classpath = Boolean.valueOf(properties.getProperty(ManagementCompositePanelProvider.PLUGINS_CLASSPATH_KEY));
+                if(pluginsPath != null || classpath)
+                    notileandothers.append("-pluginpath ");// NOI18N
+                if(pluginsPath != null)
+                    notileandothers.append(pluginsPath);
+                
+                String runClasspath = (String) properties.get("javac.classpath") // NOI18N
+                        + File.pathSeparator + properties.get("build.dir") + File.separator + "classes" + // NOI18N
+                        File.pathSeparator + properties.get("file.reference.build-classes"); // NOI18N
+                if(classpath)
+                    notileandothers.append((pluginsPath != null ? File.pathSeparator : "") + runClasspath);// NOI18N
+                
+            }   
+            props.setProperty("jconsole.settings.notile", notileandothers.toString());// NOI18N
+            
+            // Not resolving custom types
+            boolean useClasspath = Boolean.valueOf(properties.getProperty(ManagementCompositePanelProvider.RESOLVE_CLASSPATH_KEY));
+            if(!useClasspath)
+                props.setProperty("run.classpath", "");// NOI18N
             
             props.setProperty("jconsole.managed.process.url", url);// NOI18N
             ExecutorTask jt = runTarget(project, "-connect-jconsole", props);// NOI18N
@@ -389,8 +360,8 @@ public class AntActions {
    */
     static class JConsoleAction extends JConsoleCommonAction implements Runnable {
         
-        public JConsoleAction(String key, Project project, ExecutorTask t) {
-            super(key, project, t);
+        public JConsoleAction(String key, Project project, ExecutorTask t, Properties properties) {
+            super(key, project, t, properties);
         }
     
         public void run() {
@@ -419,8 +390,8 @@ public class AntActions {
    */
     static class JConsoleRemoteAction extends JConsoleCommonAction implements Runnable {
         private String host;
-        public JConsoleRemoteAction(Integer rmiPort, Project project, ExecutorTask t) {
-            super(rmiPort, project, t);
+        public JConsoleRemoteAction(Integer rmiPort, Project project, ExecutorTask t, Properties properties) {
+            super(rmiPort, project, t, properties);
             this.host = "localhost";// NOI18N
         }
         

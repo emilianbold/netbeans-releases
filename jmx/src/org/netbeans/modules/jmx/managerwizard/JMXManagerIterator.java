@@ -38,10 +38,6 @@ import org.openide.loaders.TemplateWizard;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 
-import org.netbeans.jmi.javamodel.*;
-import org.netbeans.modules.javacore.api.JavaModel;
-//import org.netbeans.modules.jmx.FinishableDelegatedWizardPanel;
-
 import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.WizardHelpers;
 
@@ -176,7 +172,7 @@ public class JMXManagerIterator implements TemplateWizard.Iterator {
         try {
             ManagerGenerator gen = new ManagerGenerator();
 
-            java.util.Set set = gen.generateManager(wizard).getCreated();
+            java.util.Set set = gen.generateManager(wizard);
             FileObject managerFile = (FileObject) set.toArray()[0];
             
             try {
@@ -187,11 +183,9 @@ public class JMXManagerIterator implements TemplateWizard.Iterator {
                   if ((mainProjectClassSelected != null) && 
                         (mainProjectClassSelected)) {
                     Project project = Templates.getProject(wizard);
-                    Resource managerRc = JavaModel.getResource(managerFile);
-                    JavaClass managerClass = WizardHelpers.getJavaClass(
-                            managerRc,
-                            managerFile.getName());
-                    J2SEProjectType.overwriteProperty(project, "main.class", managerClass.getName());// NOI18N
+                    
+                    final String agentName = Templates.getTargetName(wiz);
+                    J2SEProjectType.overwriteProperty(project, "main.class", agentName);// NOI18N
                 }
             } catch (Exception ex) {
                 WizardHelpers.logErrorMessage("Setting project Main Class failure : ", ex);// NOI18N

@@ -17,9 +17,11 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.jmx.mbeanwizard.generator;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.jmx.Introspector;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.jmx.JavaModelHelper;
 import org.netbeans.modules.jmx.MBeanAttribute;
 import org.netbeans.modules.jmx.MBeanDO;
 import org.netbeans.modules.jmx.MBeanNotification;
@@ -35,9 +37,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.JavaModelPackage;
-import org.netbeans.modules.javacore.api.JavaModel;
 
 /**
  * create a Data Object for an MBean with the informations of the MBean 
@@ -56,7 +55,7 @@ public class Translator {
      * mBeanFilePath = /home/thomas/app/src/com/foo/bar
      * @param wiz <CODE>TemplateWizard</CODE> a wizard map
      */
-    public static MBeanDO createMBeanDO(TemplateWizard wiz) {
+    public static MBeanDO createMBeanDO(TemplateWizard wiz) throws IOException {
         MBeanDO mbean = new MBeanDO();
         
         String mBeanName = (String)wiz.getProperty(WizardConstants.PROP_MBEAN_NAME);
@@ -86,6 +85,8 @@ public class Translator {
         if ((mbeanType == null) ||
            ((!WizardConstants.MBEAN_STANDARDMBEAN.equals(mbeanType)) &&
             (!WizardConstants.MBEAN_EXTENDED.equals(mbeanType)) &&
+            (!WizardConstants.MXBEAN.equals(mbeanType)) &&
+            (!WizardConstants.MBEAN_FROM_EXISTING_CLASS.equals(mbeanType)) &&
             (!WizardConstants.MBEAN_DYNAMICMBEAN.equals(mbeanType))))
             throw new IllegalArgumentException("Bad MBean Type");// NOI18N
         mbean.setType(mbeanType);
@@ -96,11 +97,14 @@ public class Translator {
         DataFolder mbeanFolderDataObj = DataFolder.findFolder(mbeanFolder);
         mbean.setDataFolder(mbeanFolderDataObj);
         
-        JavaClass wrappedClass = (JavaClass) 
+        JavaSource wrappedClass = (JavaSource) 
             wiz.getProperty(WizardConstants.PROP_MBEAN_EXISTING_CLASS);
         mbean.setWrapppedClass((wrappedClass != null));
-        if (wrappedClass != null)
-            mbean.setWrappedClassName(wrappedClass.getName());
+        
+        if (wrappedClass != null) {
+            String className = JavaModelHelper.getFullClassName(wrappedClass);
+            mbean.setWrappedClassName(className);
+        }
         
         addAttributes(wiz,mbean,wrappedClass);
         addOperations(wiz,mbean);
@@ -129,84 +133,6 @@ public class Translator {
         mbean.setKeepPreRegistRef(keepRef);
         
         return mbean;
-    }
-    
-    /**
-     * Collects all informations needed for JUnit test generation and returns the 
-     * MBeanGenInfo object which represents these informations.
-     *
-     * example of members values :
-     * testClassName = CacheManagerTest
-     * testPackageName = com.foo.bar.test
-     * testFilePath = /home/thomas/app/src/com/foo/bar/test
-     */
-    public static MBeanGenInfo createGenInfo(WizardDescriptor wiz) {
-        MBeanGenInfo mbeanGenInfo = new MBeanGenInfo();
-        
-        Object genJUnitTestCheck = wiz.getProperty(WizardConstants.PROP_JUNIT_SELECTED);
-        boolean genJUnitTest;
-        if (genJUnitTestCheck == null)  
-            genJUnitTest = false;
-        else 
-            genJUnitTest = (Boolean) genJUnitTestCheck;
-        mbeanGenInfo.setGenJUnit(genJUnitTest);
-                
-        String testClassName = (String) 
-            wiz.getProperty(WizardConstants.PROP_JUNIT_CLASSNAME);
-        if (((testClassName == null) || (testClassName.equals(""))) && // NOI18N
-                mbeanGenInfo.isGenJUnit())
-            throw new IllegalArgumentException("test class name invalid");// NOI18N
-        mbeanGenInfo.setTestClassName(testClassName);
-        
-        String testPackageName = (String) 
-            wiz.getProperty(WizardConstants.PROP_JUNIT_PACKAGE);
-        if ((testPackageName == null) && mbeanGenInfo.isGenJUnit())
-            throw new IllegalArgumentException("test class package or path invalid");// NOI18N
-        mbeanGenInfo.setTestPackageName(testPackageName);
-        
-        String testFilePath = (String)
-            wiz.getProperty(WizardConstants.PROP_JUNIT_LOCATION);
-        if (((testFilePath == null) || (testFilePath.equals(""))) && genJUnitTest) // NOI18N
-            throw new IllegalArgumentException("test file path invalid"); // NOI18N
-        mbeanGenInfo.setTestFolderPath(testFilePath);
-        
-        // tag for generation
-        Boolean javadocSelected = (Boolean)
-            wiz.getProperty(WizardConstants.PROP_JUNIT_JAVADOC_SELECTED);
-        if (javadocSelected == null) 
-            mbeanGenInfo.setGenJUnitDoc(false);
-        else 
-            mbeanGenInfo.setGenJUnitDoc(javadocSelected.booleanValue());
-        
-        Boolean srcCodeHintsSelected = (Boolean)
-            wiz.getProperty(WizardConstants.PROP_JUNIT_HINT_SELECTED);
-        if (srcCodeHintsSelected == null) 
-            mbeanGenInfo.setGenJUnitSrcCodeHints(false);
-        else 
-            mbeanGenInfo.setGenJUnitSrcCodeHints(srcCodeHintsSelected.booleanValue());
-        
-        Boolean defMethSelected = (Boolean)
-            wiz.getProperty(WizardConstants.PROP_JUNIT_DEFMETHBODIES_SELECTED);
-        if (defMethSelected == null) 
-            mbeanGenInfo.setGenJUnitDefMethBod(false);
-        else 
-            mbeanGenInfo.setGenJUnitDefMethBod(defMethSelected.booleanValue());
-        
-        Boolean setUpSelected = (Boolean)
-            wiz.getProperty(WizardConstants.PROP_JUNIT_SETUP_SELECTED);
-        if (setUpSelected == null) 
-            mbeanGenInfo.setGenJUnitSetUp(false);
-        else 
-            mbeanGenInfo.setGenJUnitSetUp(setUpSelected.booleanValue());
-        
-        Boolean tearDownSelected = (Boolean)
-            wiz.getProperty(WizardConstants.PROP_JUNIT_TEARDOWN_SELECTED);
-        if (tearDownSelected == null) 
-            mbeanGenInfo.setGenJUnitTearDown(false);
-        else 
-            mbeanGenInfo.setGenJUnitTearDown(tearDownSelected.booleanValue());
-        
-        return mbeanGenInfo;
     }
     
     private static void addNotifications(WizardDescriptor wiz, MBeanDO mbean) {
@@ -270,7 +196,7 @@ public class Translator {
     }
     
     private static void addAttributes(WizardDescriptor wiz, MBeanDO mbean,
-            JavaClass wrappedClass) {
+            JavaSource wrappedClass) throws IOException {
         String strNbAttr = (String)wiz.getProperty(
                 WizardConstants.PROP_ATTR_NB);
         int nbAttr = 0;
@@ -311,7 +237,7 @@ public class Translator {
                 WizardConstants.PROP_INTRO_ATTR_NB);
         int nbWrapAttr = 0;
         if (strNbWrapAttr != null) {
-            nbWrapAttr = new Integer(strNbWrapAttr).intValue();
+            nbWrapAttr = Integer.valueOf(strNbWrapAttr);
         }
         for (int i = 0 ; i < nbWrapAttr ; i++) {
              String attrName   = (String)wiz.getProperty(
@@ -346,19 +272,8 @@ public class Translator {
                 MBeanAttribute attr =  new MBeanAttribute(
                     WizardHelpers.capitalizeFirstLetter(attrName), attrType,
                     attrAccess, attrDescr, true);
-                Introspector.discoverAttrMethods(wrappedClass,wrappedClass.getResource(),attr);
-                attributes.add(attr);
-            }
-        }
-        
-        //discover exceptions in existing methods (getter and setter)
-        if (mbean.isWrapppedClass()) {
-            JavaModelPackage pkg = JavaModel.getDefaultExtent();
-            JavaClass wrapClass = (JavaClass)
-                    pkg.getJavaClass().resolve(mbean.getWrappedClassName());
-            for (MBeanAttribute attribute : attributes) {
-                Introspector.updateAttrExceptions(wrapClass,
-                        wrapClass.getResource(),attribute);
+                MBeanAttribute updated = JavaModelHelper.searchAttributeImplementation(wrappedClass, attr);
+                attributes.add(updated);
             }
         }
         

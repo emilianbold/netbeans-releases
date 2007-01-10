@@ -31,37 +31,45 @@ import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.WizardHelpers;
 import org.netbeans.modules.jmx.GenericWizardPanel;
 import java.awt.Container;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.io.File;
+import java.io.IOException;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.jmx.ClassButton;
+import org.netbeans.modules.jmx.JavaModelHelper;
+import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 /**
  *
  * Class handling the graphical part of the standard MBean wizard panel
  *
  */
-public class StandardMBeanPanel extends javax.swing.JPanel
+public class MBeanPanel extends javax.swing.JPanel
 {
-    private StandardMBeanWizardPanel wiz;
+    private MBeanPanelWizardPanel wiz;
     private ResourceBundle bundle;
-    
+    private ClassButton classButton = null;
+   
     // temporary: for now, the user can proceed to the next panel automaticely
     private boolean mbeanNameSelected = true;
     private boolean descHasChanged = false;
     private boolean updateNameRunning = false;
-    private boolean mbeanFromExistingClass = false;
-    private boolean mbeanRegIntfSelected = false;
-    //private static enum mbeanType {StandardMBean, DynamicMBean, ExtendedStandardMBean};
-    //private static mbeanType selectedMBeanType;
-    
+    private Integer orderNumber = 0;
     /**
      * Create the wizard panel component and set up some basic properties
      * @param wiz a wizard panel to fill with user information
      */
-    public StandardMBeanPanel (final StandardMBeanWizardPanel wiz) 
+    public MBeanPanel(final MBeanPanelWizardPanel wiz) 
     {
         this.wiz = wiz;
-        bundle = NbBundle.getBundle(StandardMBeanPanel.class);
+        bundle = NbBundle.getBundle(MBeanPanel.class);
         initComponents ();
-        /* A transferer dans l'autre fichier
+       
         mbeanDescriptionJTextField.addFocusListener(new FocusListener() {
            private String description = null;
            public void focusGained(FocusEvent e) {
@@ -74,78 +82,54 @@ public class StandardMBeanPanel extends javax.swing.JPanel
            }
         });
         mbeanDescriptionJTextField.setName(  "mbeanDescriptionJTextField");// NOI18N
-         **/
+       
         // attach a documentlistener to the class text field to update the panel
         // each time the user fills something in to make sure it is not empty
-        /*
+        
         classSelectionJTextField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent evt) {
+                 orderNumber++;
                 wiz.fireEvent(); 
             }
             public void insertUpdate(DocumentEvent evt) {
+                 orderNumber++;
                 wiz.fireEvent();
             }
             public void removeUpdate(DocumentEvent evt) {
+                 orderNumber++;
                 wiz.fireEvent();
             }
         });
-         Nexiste plus dans ce fichier*/
-        
-
-        // init flags // does not exist any more
-        //selectedMBeanType = mbeanType.StandardMBean;
         
         // init labels
-        /* Does not exist any more
         Mnemonics.setLocalizedText(generatedFileJLabel,
                      bundle.getString("LBL_mbean_other_created_interface"));//NOI18N
         Mnemonics.setLocalizedText(mbeanDecriptionJLabel,
                      bundle.getString("LBL_mbean_description"));//NOI18N
-        Mnemonics.setLocalizedText(mbeanTypeJLabel,
-                     bundle.getString("LBL_mbean_type"));//NOI18N
-        Mnemonics.setLocalizedText(standardMBeanJRadioButton,
-                     bundle.getString("LBL_standard_mbean_type"));//NOI18N
-        Mnemonics.setLocalizedText(extendedMBeanJRadioButton,
-                     bundle.getString("LBL_extended_standard_mbean_type"));//NOI18N
-        Mnemonics.setLocalizedText(dynamicMBeanJRadioButton,
-                     bundle.getString("LBL_dynamic_mbean_type"));//NOI18N
-        
-        Mnemonics.setLocalizedText(fromExistingClassJCheckBox,
-                     bundle.getString("LBL_from_existing_class"));//NOI18N
-        Mnemonics.setLocalizedText(mbeanRegistrationJCheckBox,
-                     bundle.getString("LBL_registrationCbx"));//NOI18N
-        Mnemonics.setLocalizedText(preRegisterParamJCheckBox,
-                     bundle.getString("LBL_preRegisterParamCbx"));//NOI18N
-        */
+        Mnemonics.setLocalizedText(classSelectionJLabel,
+                     bundle.getString("LBL_class_selection"));//NOI18N
         // Provide a name in the title bar.
         setName(bundle.getString("LBL_Standard_Panel"));// NOI18N
         
         // Accessibility   
-        /* Does not exist any more
         generatedFileJTextField.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_GENERATED_FILE"));// NOI18N
         generatedFileJTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_GENERATED_FILE_DESCRIPTION"));// NOI18N
         mbeanDescriptionJTextField.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_DESCRIPTION"));// NOI18N
         mbeanDescriptionJTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_DESCRIPTION_DESCRIPTION"));// NOI18N
-        
+        browseButton.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_FROM_JAVA_CLASS_BROWSE_VALUE"));// NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_FROM_JAVA_CLASS_BROWSE_VALUE_DESCRIPTION"));// NOI18N
+
         mbeanDecriptionJLabel.setLabelFor(mbeanDescriptionJTextField);
-        
-        fromExistingClassJCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_FROM_JAVA_CLASS"));// NOI18N
-        fromExistingClassJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_FROM_JAVA_CLASS_DESCRIPTION"));// NOI18N
+       
         classSelectionJTextField.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_FROM_JAVA_CLASS_VALUE"));// NOI18N
         classSelectionJTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_FROM_JAVA_CLASS_VALUE_DESCRIPTION"));// NOI18N
-        standardMBeanJRadioButton.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_STANDARD_MBEAN"));// NOI18N
-        standardMBeanJRadioButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_STANDARD_MBEAN_DESCRIPTION"));// NOI18N
-        extendedMBeanJRadioButton.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_EXTENDED_MBEAN"));// NOI18N
-        extendedMBeanJRadioButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_EXTENDED_MBEAN_DESCRIPTION"));// NOI18N
-        dynamicMBeanJRadioButton.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_DYNAMIC_MBEAN"));// NOI18N
-        dynamicMBeanJRadioButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_DYNAMIC_MBEAN_DESCRIPTION"));// NOI18N
-        mbeanRegistrationJCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_REGISTRATION"));// NOI18N
-        mbeanRegistrationJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_REGISTRATION_DESCRIPTION"));// NOI18N
-        preRegisterParamJCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_REGISTRATION_KEEP"));// NOI18N
-        preRegisterParamJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_REGISTRATION_KEEP_DESCRIPTION"));// NOI18N
-        */
     }
-        
+    
+    public void setProject(Project project) {
+        if (classButton == null && wiz.mbeanType.equals(WizardConstants.MBEAN_FROM_EXISTING_CLASS))
+            classButton = new ClassButton(browseButton,classSelectionJTextField,WizardHelpers.getSourceGroups(project));
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -153,57 +137,77 @@ public class StandardMBeanPanel extends javax.swing.JPanel
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         mbeanTypeButtonGroup = new javax.swing.ButtonGroup();
-        mbeanDecriptionJLabel = new javax.swing.JLabel();
         mbeanDescriptionJTextField = new javax.swing.JTextField();
-        generatedFileJLabel = new javax.swing.JLabel();
         generatedFileJTextField = new javax.swing.JTextField();
-
-        setLayout(new java.awt.GridBagLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
-        add(mbeanDecriptionJLabel, gridBagConstraints);
+        mbeanDecriptionJLabel = new javax.swing.JLabel();
+        generatedFileJLabel = new javax.swing.JLabel();
+        classSelectionJLabel = new javax.swing.JLabel();
+        classSelectionJTextField = new javax.swing.JTextField();
+        browseButton = new javax.swing.JButton();
 
         mbeanDescriptionJTextField.setName("mbeanDescriptionJTextField");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(11, 5, 0, 0);
-        add(mbeanDescriptionJTextField, gridBagConstraints);
-
-        generatedFileJLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        generatedFileJLabel.setMaximumSize(new java.awt.Dimension(1000, 1000));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
-        add(generatedFileJLabel, gridBagConstraints);
 
         generatedFileJTextField.setEditable(false);
         generatedFileJTextField.setHorizontalAlignment(javax.swing.JTextField.LEFT);
         generatedFileJTextField.setName("generatedFileJTextField");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(11, 5, 0, 0);
-        add(generatedFileJTextField, gridBagConstraints);
+
+        mbeanDecriptionJLabel.setText("jLabel1");
+
+        generatedFileJLabel.setText("jLabel2");
+
+        classSelectionJLabel.setText("jLabel3");
+
+        classSelectionJTextField.setName("ExistingClassTextField");
+        classSelectionJTextField.setPreferredSize(new java.awt.Dimension(160, 19));
+
+        browseButton.setText("jButton1");
+        browseButton.setName("browseButton");
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(generatedFileJLabel)
+                    .add(mbeanDecriptionJLabel)
+                    .add(classSelectionJLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(mbeanDescriptionJTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(classSelectionJTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(browseButton))
+                    .add(generatedFileJTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(generatedFileJLabel)
+                    .add(generatedFileJTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(mbeanDecriptionJLabel)
+                    .add(mbeanDescriptionJTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(27, 27, 27)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(classSelectionJLabel)
+                    .add(classSelectionJTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(browseButton))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
     }// </editor-fold>//GEN-END:initComponents
   
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton browseButton;
+    private javax.swing.JLabel classSelectionJLabel;
+    private javax.swing.JTextField classSelectionJTextField;
     private javax.swing.JLabel generatedFileJLabel;
     private javax.swing.JTextField generatedFileJTextField;
     private javax.swing.JLabel mbeanDecriptionJLabel;
@@ -216,10 +220,10 @@ public class StandardMBeanPanel extends javax.swing.JPanel
      * Class handling the standard MBean wizard panel
      *
      */
-    public static class StandardMBeanWizardPanel extends GenericWizardPanel
+    public static class MBeanPanelWizardPanel extends GenericWizardPanel
             implements org.openide.WizardDescriptor.FinishablePanel 
     {    
-        private StandardMBeanPanel panel = null;
+        private MBeanPanel panel = null;
         private String projectLocation   = null;
         private ResourceBundle bundle = null;
         private TemplateWizard templateWiz = null;
@@ -227,18 +231,21 @@ public class StandardMBeanPanel extends javax.swing.JPanel
         private JTextField createdFileTextField = null;
         private JTextField projectTextField = null;
         private WizardDescriptor.Panel mbeanTargetWiz = null;
+        private String mbeanType;
+        private Project project;
         
-        /**
-         * Constructor
-         */
-        public StandardMBeanWizardPanel() {
+        public MBeanPanelWizardPanel(String mbeanType) {
+            bundle = NbBundle.getBundle(MBeanPanelWizardPanel.class);
+            this.mbeanType = mbeanType;
         }
         
         /**
          * Implementation of the FinishablePanel Interface; provides the Finish Button to be always enabled 
          * @return finish true if the panel can be the last one and enables the finish button
          */
-        public boolean isFinishPanel() { return false;} //{ return isValid();}
+        public boolean isFinishPanel() { 
+                return false;
+        }
         
         /**
          * Method returning the corresponding panel; here the StandardMBeanPanel
@@ -252,12 +259,13 @@ public class StandardMBeanPanel extends javax.swing.JPanel
          */
         public String getProjectLocation() { return projectLocation; }
         
-        private StandardMBeanPanel getPanel() 
+        private MBeanPanel getPanel() 
         {
             if (panel == null) {
-                panel = new StandardMBeanPanel(this);
+                panel = new MBeanPanel(this);
             }
             return panel;
+            
         }
         
         /**
@@ -274,11 +282,9 @@ public class StandardMBeanPanel extends javax.swing.JPanel
          * Method which returns whether the description has changed or not
          * @return descHasChanged true if the description has changed
          */
-        /* transfered
         public boolean descHasChanged() {
             return getPanel().descHasChanged;
         }
-        */
         /**
          * Method which enables the next button
          * @return boolean true if the information in the panel is sufficient 
@@ -286,7 +292,80 @@ public class StandardMBeanPanel extends javax.swing.JPanel
          */
         public boolean isValid () {
             
-            //return (fileNotExists() && isFromExistingClassValid());
+            return (fileNotExists() && isFromExistingClassValid());
+        }
+         /**
+         * Tests if the file already exists and displays an error message
+         * @return boolean true if the file to be generated does not exist
+         */
+        public boolean fileNotExists() {
+            if (WizardHelpers.fileExists(
+                    getPanel().generatedFileJTextField.getText())) {
+                setErrorMsg(  "The file " + // NOI18N
+                        WizardHelpers.getFileName(
+                            getPanel().generatedFileJTextField.getText()) +
+                          " already exists.");// NOI18N
+              return false;
+            }
+            return true;
+        }
+        
+        /**
+         * Tests if the mbean has to wrap an existing resource
+         * If yes, the boolean returns whether the class to wrap exists and is
+         * accessible from the project classpath
+         * As long as the resource is not valid (i.e does not exist or is not
+         * accessible) an error message is displayed
+         * @return boolean if the option to wrap a class as mbean is checked
+         * and the class is accessible from the classpath
+         */
+        public boolean isFromExistingClassValid() {
+            if(!mbeanType.equals(WizardConstants.MBEAN_FROM_EXISTING_CLASS))
+                return true;
+            
+            if(getPanel().classSelectionJTextField.getText().equals("")) { // NOI18N
+                setErrorMsg("Specify a class to wrap.");// NOI18N
+                return false;
+            }
+            
+            
+            String fullClassName = getPanel().
+                    classSelectionJTextField.getText();
+            
+            String filePath =
+                    (String)templateWiz.getProperty(WizardConstants.PROP_MBEAN_FILE_PATH);
+            
+            //gives an abstract representation of the directory
+            File file = new File(filePath);
+            FileObject fo = FileUtil.toFileObject(file);
+            
+            try {
+                //resolves all accessible classes for the current project
+                //classpath
+                JavaSource mbeanClass = JavaModelHelper.findClassInProject(project, fullClassName);
+                
+                // checks that the class is neither null nor an interface nor
+                // abstract
+                if (mbeanClass == null) {
+                    setErrorMsg(  "The specified class does not exist.");// NOI18N
+                    return false;
+                }
+                
+                boolean isInterface = JavaModelHelper.isInterface(mbeanClass);
+                boolean isAbstract = JavaModelHelper.isAbstract(mbeanClass);
+                if (isInterface) {
+                    setErrorMsg(  "The specified class is an Interface.");// NOI18N
+                    return false;
+                }
+                if (isAbstract) {
+                    setErrorMsg(  "The specified class is abstract.");// NOI18N
+                    return false;
+                }
+            }catch(IOException ioe) {
+                ioe.printStackTrace();
+                setErrorMsg(ioe.toString());
+            }
+            setErrorMsg(WizardConstants.EMPTYSTRING);
             return true;
         }
         
@@ -357,8 +436,7 @@ public class StandardMBeanPanel extends javax.swing.JPanel
                 }
             });
         }
-        /*
-         * transfered
+
         private void updateMBeanDesc(TemplateWizard wizard) {
             if (!descHasChanged()) {
                 String mbeanName = (String)
@@ -370,7 +448,6 @@ public class StandardMBeanPanel extends javax.swing.JPanel
                 getPanel().mbeanDescriptionJTextField.setText(desc);
             }
         }
-        */
         
         /**
          * Method which Called to read information from the wizard map in order to populate
@@ -383,22 +460,38 @@ public class StandardMBeanPanel extends javax.swing.JPanel
             templateWiz = (TemplateWizard) settings;
             initTargetComponentDef(mbeanTargetWiz.getComponent());
             
+            project = Templates.getProject(templateWiz);
             
-            //String clzz =  bundle.getString("LBL_mbean_other_created_class");// NOI18N
-            //String itf = bundle.getString("LBL_mbean_other_created_interface");// NOI18N
-            //String descr = bundle.getString("LBL_mbean_description");// NOI18N
+            getPanel().setProject(project);
             
-            /* transfered
+            String mbeanName = (String) 
+                templateWiz.getProperty(WizardConstants.PROP_MBEAN_NAME);
+            String mbeanFilePath = (String) 
+                templateWiz.getProperty(WizardConstants.PROP_MBEAN_FILE_PATH);
+            System.out.println(" getPanel()" + getPanel());
+            System.out.println(" getPanel().generatedFileJLabel" + getPanel().generatedFileJLabel);
+            System.out.println(" bundle " + bundle);
+            Mnemonics.setLocalizedText(getPanel().generatedFileJLabel,
+            bundle.getString("LBL_mbean_other_created_interface"));//NOI18N
+
+            getPanel().generatedFileJTextField.setText(mbeanFilePath + 
+                        File.separator + mbeanName +
+                        "MXBean" + "." + WizardConstants.JAVA_EXT);// NOI18N
+            
+            String itf = bundle.getString("LBL_mbean_other_created_interface");// NOI18N
+            String descr = bundle.getString("LBL_mbean_description");// NOI18N
+            
             
             int maxWidth = 0;
-            Mnemonics.setLocalizedText(getPanel().generatedFileJLabel, clzz);
+            
+            Mnemonics.setLocalizedText(getPanel().generatedFileJLabel, itf);
             maxWidth = (int) getPanel().generatedFileJLabel.getSize().getWidth();
             Mnemonics.setLocalizedText(getPanel().generatedFileJLabel, itf);
             maxWidth = (int) getPanel().generatedFileJLabel.getSize().getWidth() > maxWidth ? (int) getPanel().generatedFileJLabel.getSize().getWidth() : maxWidth;
             maxWidth = (int) getPanel().mbeanDecriptionJLabel.getSize().getWidth() > maxWidth ? (int) getPanel().mbeanDecriptionJLabel.getSize().getWidth() : maxWidth;
             
             int maxHeight = 0;
-            Mnemonics.setLocalizedText(getPanel().generatedFileJLabel, clzz);
+            Mnemonics.setLocalizedText(getPanel().generatedFileJLabel, itf);
             maxHeight = (int) getPanel().generatedFileJLabel.getSize().getHeight();
             Mnemonics.setLocalizedText(getPanel().generatedFileJLabel, itf);
             maxHeight = (int) getPanel().generatedFileJLabel.getSize().getHeight() > maxHeight ? (int) getPanel().generatedFileJLabel.getSize().getHeight() : maxHeight;
@@ -417,46 +510,41 @@ public class StandardMBeanPanel extends javax.swing.JPanel
                 getPanel().mbeanDescriptionJTextField.setPreferredSize(new java.awt.Dimension(maxWidth, maxHeight));
             }
             
-            // set tag for mbean type radio Button 
-            String mbeanType = 
-                    (String) templateWiz.getProperty(WizardConstants.PROP_MBEAN_TYPE);
-            if (mbeanType != null) {
-                getPanel().standardMBeanJRadioButton.setSelected(
-                        mbeanType.equals(WizardConstants.MBEAN_STANDARDMBEAN));
-                getPanel().extendedMBeanJRadioButton.setSelected(
-                        mbeanType.equals(WizardConstants.MBEAN_EXTENDED));
-                getPanel().dynamicMBeanJRadioButton.setSelected(
-                        mbeanType.equals(WizardConstants.MBEAN_DYNAMICMBEAN));
-            }
-            */
-            String mbeanName = (String) 
-                templateWiz.getProperty(WizardConstants.PROP_MBEAN_NAME);
-            String mbeanFilePath = (String) 
-                templateWiz.getProperty(WizardConstants.PROP_MBEAN_FILE_PATH);
-            
-            /* transfered
             if ((mbeanName != null) && (mbeanFilePath != null)) {
                 String suffix = null;
-                
-                if (getPanel().dynamicMBeanJRadioButton.isSelected()) {
-                    suffix = WizardConstants.MBEAN_SUPPORT_SUFFIX;
+                if(mbeanType.equals(WizardConstants.MBEAN_DYNAMICMBEAN)) {
                     Mnemonics.setLocalizedText(getPanel().generatedFileJLabel,
                      bundle.getString("LBL_mbean_other_created_class"));//NOI18N
+                    suffix = WizardConstants.MBEAN_SUPPORT_SUFFIX;
                 } else {
+                    if(mbeanType.equals(WizardConstants.MBEAN_STANDARDMBEAN) || mbeanType.equals(WizardConstants.MBEAN_EXTENDED)) {
+                        suffix = WizardConstants.MBEAN_ITF_SUFFIX;
+                    } else
+                        if(mbeanType.equals(WizardConstants.MXBEAN))
+                            suffix = WizardConstants.MXBEAN_SUFFIX;
+                        
                     Mnemonics.setLocalizedText(getPanel().generatedFileJLabel,
-                     bundle.getString("LBL_mbean_other_created_interface"));//NOI18N
-                    suffix = WizardConstants.MBEAN_ITF_SUFFIX;
+                        bundle.getString("LBL_mbean_other_created_interface"));//NOI18N
                 }
-                getPanel().generatedFileJTextField.setText(mbeanFilePath + 
+                
+                getPanel().generatedFileJTextField.setText(mbeanFilePath +
                         File.separator + mbeanName +
                         suffix +   "." + WizardConstants.JAVA_EXT);// NOI18N
-
+                
             } else {
                 getPanel().generatedFileJTextField.setText(  "");// NOI18N
             }
-             **/
             
-            /* transfered
+            if(mbeanType.equals(WizardConstants.MBEAN_FROM_EXISTING_CLASS)) {
+                getPanel().classSelectionJLabel.setVisible(true);
+                getPanel().classSelectionJTextField.setVisible(true);
+                getPanel().browseButton.setVisible(true);
+            } else {
+                getPanel().classSelectionJLabel.setVisible(false);
+                getPanel().classSelectionJTextField.setVisible(false);
+                getPanel().browseButton.setVisible(false);
+            }
+            
             String desc = (String) 
                 templateWiz.getProperty (WizardConstants.PROP_MBEAN_DESCRIPTION);
             if (desc == null) {
@@ -468,7 +556,14 @@ public class StandardMBeanPanel extends javax.swing.JPanel
             } 
             getPanel().mbeanDescriptionJTextField.setText(desc);
             updateMBeanDesc(templateWiz);
-             */
+            
+             Integer orderNumber = (Integer)templateWiz.getProperty(
+                    WizardConstants.PROP_USER_ORDER_NUMBER);
+            
+            if (orderNumber == null)
+                orderNumber = 0;
+            
+            getPanel().orderNumber = orderNumber;
         }
         
         /**
@@ -478,6 +573,8 @@ public class StandardMBeanPanel extends javax.swing.JPanel
         public void storeSettings (Object settings) 
         {            
             TemplateWizard wiz = (TemplateWizard) settings;
+            
+            project = Templates.getProject(templateWiz);
             
             String mbeanName = mbeanNameTextField.getText();
             wiz.putProperty (WizardConstants.PROP_MBEAN_NAME, mbeanName);
@@ -492,7 +589,6 @@ public class StandardMBeanPanel extends javax.swing.JPanel
                 
             }
             
-            /* transfered
             // storage of the description field
             String description = getPanel().mbeanDescriptionJTextField.getText();
             if ( (description != null) && (!description.equals(  "")) ) {// NOI18N
@@ -501,52 +597,29 @@ public class StandardMBeanPanel extends javax.swing.JPanel
             } else {
                 wiz.putProperty (WizardConstants.PROP_MBEAN_DESCRIPTION,   "");// NOI18N
             }
-            // storage of the existing class to wrap if there is one
-            if (getPanel().mbeanFromExistingClass) {
-                wiz.putProperty (WizardConstants.PROP_MBEAN_EXISTING_CLASS, 
+           
+            wiz.putProperty (WizardConstants.PROP_MBEAN_EXISTING_CLASS, 
                         getExistingClass());
-            } else {
-                wiz.putProperty (WizardConstants.PROP_MBEAN_EXISTING_CLASS, 
-                        null);
-            }
-            // store mbean type
-            if (getPanel().standardMBeanJRadioButton.isSelected())  
-                wiz.putProperty (WizardConstants.PROP_MBEAN_TYPE, 
-                        WizardConstants.MBEAN_STANDARDMBEAN);
-            else {
-                if (getPanel().dynamicMBeanJRadioButton.isSelected())   
-                    wiz.putProperty (WizardConstants.PROP_MBEAN_TYPE, 
-                            WizardConstants.MBEAN_DYNAMICMBEAN);
-                else { 
-                    wiz.putProperty (WizardConstants.PROP_MBEAN_TYPE, 
-                            WizardConstants.MBEAN_EXTENDED);
-                }
-            } 
-            */
+             
+            wiz.putProperty (WizardConstants.PROP_MBEAN_TYPE, 
+                        mbeanType);
+            
+            wiz.putProperty(WizardConstants.PROP_USER_ORDER_NUMBER, 
+                        getPanel().orderNumber);
+        
         }    
-        /* transfered
-        private JavaClass getExistingClass() {
+        
+        private JavaSource getExistingClass() {
             String fullClassName = getPanel().
                     classSelectionJTextField.getText();
-            
-            String filePath = WizardHelpers.getFolderPath(
-                    createdFileTextField.getText());
-            
-            //gives an abstract representation of the directory
-            File file = new File(filePath);
-            FileObject fo = FileUtil.toFileObject(file);
-            
-            //resolves all accessible classes for the default project
-            //classpath
-            JavaModelPackage pkg = JavaModel.getDefaultExtent();
-            
-            //checks if the class to wrap (i.e the class specified by
-            //the user) is accessible from the project classpath
-            JavaClass mbeanClass = (JavaClass) pkg.getJavaClass().resolve(
-                    fullClassName);
-            return mbeanClass;
+            try {
+                return JavaModelHelper.findClassInProject(project, fullClassName);
+            }catch(IOException ioe) {
+                ioe.printStackTrace();
+            }
+            return null;
         }
-        */
+         
         public HelpCtx getHelp() {
            return new HelpCtx(  "jmx_instrumenting_app");  // NOI18N
         } 

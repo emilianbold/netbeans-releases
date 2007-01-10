@@ -1,0 +1,37 @@
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ */
+
+package Template.Classes;
+import javax.management.*;
+import java.util.Arrays;
+
+/**
+ * Class __NAME__
+ * {0}
+ * @author __USER__
+ */
+public class __NAME__ extends StandardMBean implements __NAME__MBean {
+
+    public __NAME__() throws NotCompliantMBeanException {
+        super(__NAME__MBean.class);
+    }
+
+    public MBeanInfo getMBeanInfo() {
+            MBeanInfo mbinfo = super.getMBeanInfo();
+            return new MBeanInfo(mbinfo.getClassName(),
+                                 mbinfo.getDescription(),
+                                 mbinfo.getAttributes(),
+                                 mbinfo.getConstructors(),
+                                 mbinfo.getOperations(),
+                                 getNotificationInfo());
+    }
+
+    public MBeanNotificationInfo[] getNotificationInfo() {
+         return new MBeanNotificationInfo[] {};
+    }
+}
+
+

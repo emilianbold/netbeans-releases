@@ -18,35 +18,54 @@
  */
 package org.netbeans.modules.jmx.managerwizard;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionStatementTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
+import java.util.List;
 import java.text.MessageFormat;
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Set;
 import java.util.HashSet;
-
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.Comment;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.modules.jmx.JavaModelHelper;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
-import org.openide.cookies.SaveCookie;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-
 import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.WizardHelpers;
-import org.openide.loaders.TemplateWizard;
 
 /**
  *
  *  Wizard Agent code generator class
  */
-public class ManagerGenerator
-{
-    private String[] connectionTemplate;
-    private Boolean isSecurityChecked;
-    
+public class ManagerGenerator {
     /**
      * Entry point to generate manager code.
      * @param wiz <CODE>WizardDescriptor</CODE> a wizard
@@ -54,287 +73,308 @@ public class ManagerGenerator
      * @throws java.lang.Exception <CODE>Exception</CODE>
      * @return <CODE>CreationResults</CODE> results of manager creation
      */
-    public CreationResults generateManager(WizardDescriptor wiz)
-           throws java.io.IOException, Exception
-    {
+    public Set generateManager(final WizardDescriptor wiz)
+            throws java.io.IOException, Exception {
         FileObject createdFile = null;
-        String managerName = Templates.getTargetName(wiz);
+        final String managerName = Templates.getTargetName(wiz);
         FileObject managerFolder = Templates.getTargetFolder(wiz);
         DataFolder managerFolderDataObj = DataFolder.findFolder(managerFolder);
-        connectionTemplate = new String[3];
         
         //==============================================
         // manager generation
         //==============================================
-        
-        CreationResults result = new CreationResults(1);
         DataObject managerDObj = null;
         
-        //for memory optimisation, manipulating dataobjects and fileobjects
-        //has to be surrounded by a transaction
-        JavaModel.getJavaRepository().beginTrans(true);
-        try {
-            FileObject template = Templates.getTemplate( wiz );
-            DataObject dTemplate = DataObject.find( template );                
-            managerDObj = dTemplate.createFromTemplate( 
-                    managerFolderDataObj, managerName );
-            FileObject managerFile = managerDObj.getPrimaryFile();
-            Resource managerRc = JavaModel.getResource(managerFile);
-            JavaClass managerClass = WizardHelpers.getJavaClass(managerRc,
-                                                                   managerName);       
-            
-            //get information of the wizard descriptor
-            Boolean mainMethodSelected = (Boolean)wiz.getProperty(
-                    WizardConstants.PROP_MANAGER_MAIN_METHOD_SELECTED);
-            Boolean sampleSelected = (Boolean)wiz.getProperty(
-                    WizardConstants.PROP_MANAGER_SAMPLE_CODE_SELECTED);
-            isSecurityChecked = (Boolean)wiz.getProperty(
-                    WizardConstants.PROP_MANAGER_SECURITY_SELECTED);
-            
-            //get a reference on the main method
-            Method mainMethod = WizardHelpers.getMainMethod(managerClass);
-            if (!mainMethodSelected) {
-                //delete main method from the template
-                mainMethod.refDelete();
-            } else { //mainMethodSelected
-                //keep main method in the template
-                String[] sampleTemplate;
-                if (sampleSelected) {
-                    //fill a string array with the sample code
-                    sampleTemplate = fillSampleCode();
-                } else { //!sampleSelected
-                    sampleTemplate = new String[1];
-                    sampleTemplate[0] = WizardConstants.EMPTYSTRING;
-                }
-                //get the main method body text, format it and replace the 
-                //tag {0} with sampleTemplate[0]
-                String bodyText = mainMethod.getBodyText();
-                MessageFormat form = new MessageFormat(bodyText);
-                String newMethodBody = form.format(sampleTemplate);
-                //setBodyText adds by default a new line
-                mainMethod.setBodyText(newMethodBody);
-            }
-            //replace the tags in the connect method in the same manner
-            replaceTags(managerClass, wiz);
-            
-            save(managerDObj);
-        } finally {
-            //end the transaction
-            JavaModel.getJavaRepository().endTrans();
-        }
-        result.addCreated(managerDObj.getPrimaryFile());
-        return result;
-    }
-    
-    private String[] fillSampleCode() {
-        String[] temp = new String[1];
-        
-        temp[0] = "\n" +// NOI18N
-                  "/* *** SAMPLE MBEAN NAME DISCOVERY *** */ \n" +// NOI18N
-                  "/* \n" +// NOI18N
-                  " Set resultSet = \n" +// NOI18N
-                  "    manager.getMBeanServerConnection().queryNames(null, null);\n" +// NOI18N
-                  " for(Iterator i = resultSet.iterator(); i.hasNext();) {\n" +// NOI18N
-                  "     System.out.println(\"MBean name: \" + i.next());\n" +// NOI18N
-                  " }\n" +// NOI18N
-                  "*/\n";// NOI18N
-        
-        return temp;
-    }
-    
-    private void fillUserCredentials(WizardDescriptor wiz) {
-        //Boolean isSecurityChecked = (Boolean)wiz.getProperty(
-        //            WizardConstants.PROP_MANAGER_SECURITY_SELECTED);
-        Boolean isSampleCredential = (Boolean)wiz.getProperty(
-                    WizardConstants.PROP_MANAGER_CREDENTIAL_SAMPLE_SELECTED);
-        
-        if (isSecurityChecked) {
-            if (isSampleCredential) {
-                connectionTemplate[0] =
-                        "/* *** SAMPLE CREDENTIALS *** */\n" +// NOI18N
-                        "/* Replace userName and userPassword with your parameters. \n" +// NOI18N
-                        " * Provide env parameter when calling JMXConnectorFactory.connect(url, env)\n" +// NOI18N
-                        " */\n" +// NOI18N
-                        "/*\n" +// NOI18N
-                        "Map env = new HashMap(); \n" +// NOI18N
-                        "env.put(JMXConnector.CREDENTIALS, new String[]{\"" +// NOI18N
-                        "userName\", \"" +// NOI18N
-                        "userPassword" +// NOI18N
-                        "\"});\n" +// NOI18N
-                        "*/ \n \n";// NOI18N
-            } else { //user credential selected
+        FileObject template = Templates.getTemplate( wiz );
+        DataObject dTemplate = DataObject.find( template );
+        managerDObj = dTemplate.createFromTemplate(
+                managerFolderDataObj, managerName );
+        //Obtain an JavaSource - represents a java file
+        JavaSource js = JavaSource.forFileObject(managerDObj.getPrimaryFile());
+        Boolean mainMethodSelected = (Boolean)wiz.getProperty(
+                WizardConstants.PROP_MANAGER_MAIN_METHOD_SELECTED);
+        //Perform an action which changes the content of the java file
+        js.runModificationTask(new CancellableTask<WorkingCopy>() {
+            public void run(WorkingCopy w) throws Exception {
+                //get information of the wizard descriptor
+                Boolean sampleSelected = (Boolean)wiz.getProperty(
+                        WizardConstants.PROP_MANAGER_SAMPLE_CODE_SELECTED);
+                Boolean isSecurityChecked = (Boolean)wiz.getProperty(
+                        WizardConstants.PROP_MANAGER_SECURITY_SELECTED);
+                Boolean isUserCredential = (Boolean)wiz.getProperty(
+                        WizardConstants.PROP_MANAGER_USER_CREDENTIAL_SELECTED);
+                Boolean isSampleCredential = (Boolean)wiz.getProperty(
+                        WizardConstants.PROP_MANAGER_CREDENTIAL_SAMPLE_SELECTED);
                 String userName = (String)wiz.getProperty(
                         WizardConstants.PROP_MANAGER_USER_NAME);
                 String userPassword = (String)wiz.getProperty(
                         WizardConstants.PROP_MANAGER_USER_PASSWORD);
-                connectionTemplate[0] = 
-                    "Map env = new HashMap(); \n" +// NOI18N
-                    "env.put(JMXConnector.CREDENTIALS, new String[]{\"" +// NOI18N
-                                userName + "\", \"" +// NOI18N
-                                userPassword + // NOI18N
-                                "\"});\n \n";// NOI18N
+                String url = (String)wiz.getProperty(
+                        WizardConstants.PROP_MANAGER_AGENT_URL);
+                w.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                //Visitor for scanning javac's trees
+                TemplateTransformer transformer = new TemplateTransformer(w,
+                        managerName,
+                        sampleSelected == null ? false : sampleSelected,
+                        isSecurityChecked == null ? false : isSecurityChecked,
+                        isSampleCredential == null ? false : isSampleCredential,
+                        userName, userPassword, url,
+                        isUserCredential == null ? false : isUserCredential);
+                //execute the visitor on the root (CompilationUnitTree) with no parameter (null)
+                transformer.scan(new TreePath(w.getCompilationUnit()), null);
             }
-        } else // security box unchecked
-            connectionTemplate[0] = WizardConstants.EMPTYSTRING;
-    }
-    
-    private void fillURL(WizardDescriptor wiz) {
-        
-        //generation of a free form URL
-        connectionTemplate[1] = "//Create JMX Agent URL \n" +// NOI18N
-                "JMXServiceURL url = new JMXServiceURL(\""+// NOI18N
-                (String)wiz.getProperty(
-            WizardConstants.PROP_MANAGER_AGENT_URL) + "\");\n";// NOI18N
-    }
-    
-    private void fillConnector(WizardDescriptor wiz) {
-        
-        // custom initialisation of code to be generated
-        connectionTemplate[2] = "\n //Connect the JMXConnector \n" +// NOI18N
-                      "connector = " +// NOI18N
-                       "JMXConnectorFactory.connect(url, null);";// NOI18N
-        
-        if (isSecurityChecked) {
-            Boolean isUserCredential = (Boolean)wiz.getProperty(
-                    WizardConstants.PROP_MANAGER_USER_CREDENTIAL_SELECTED);
-            if (isUserCredential) {
-                // only if SecurityChecked and UserCredential, the code changes
-            connectionTemplate[2] = "\n //Connect the JMXConnector \n" +// NOI18N
-                      "connector = " +// NOI18N
-                      "JMXConnectorFactory.connect(url, env);";// NOI18N
+            
+            public void cancel() {
+                //Not important for userActionTasks
             }
-        }
+        }).commit();    //Commit the changes into document
+        
+        if(!mainMethodSelected)
+            JavaModelHelper.removeMethod(js, "main");
+        
+        WizardHelpers.save(managerDObj);
+        Set set = new HashSet();
+        set.add(managerDObj.getPrimaryFile());
+        return set;
     }
     
-    private void replaceTags(JavaClass clazz, WizardDescriptor wiz) {
-        JavaModel.getJavaRepository().beginTrans(true);
-        try {
-            Method connectMethod = WizardHelpers.getMethod(clazz, "connect");// NOI18N
-            String bodyText = connectMethod.getBodyText();
-            
-            //Boolean isSecurityChecked = (Boolean)wiz.getProperty(
-              //      WizardConstants.PROP_MANAGER_SECURITY_SELECTED);
-            Boolean isSampleCredential = (Boolean)wiz.getProperty(
-                    WizardConstants.PROP_MANAGER_CREDENTIAL_SAMPLE_SELECTED);
-            Boolean isUserCredential = (Boolean)wiz.getProperty(
-                    WizardConstants.PROP_MANAGER_USER_CREDENTIAL_SELECTED);
-            
-            fillUserCredentials(wiz);
-            fillURL(wiz);
-            fillConnector(wiz);
-            
-            MessageFormat form = new MessageFormat(bodyText);
-            //formating the array with the information of the code to
-            //generate
-            String newMethodBody = form.format(connectionTemplate);
-            connectMethod.setBodyText("\n" + newMethodBody);
-            
-        } finally {
-            JavaModel.getJavaRepository().endTrans();
+    private static class TemplateTransformer extends TreePathScanner<Void,Object> {
+        
+        private final String className;
+        private final WorkingCopy w;
+        private final boolean sampleSelected;
+        private final boolean isSecurityChecked;
+        private final boolean isSampleCredential;
+        private final String userName;
+        private final String userPassword;
+        private final String url;
+        private final boolean isUserCredential;
+        
+        public TemplateTransformer(WorkingCopy w, String className,
+                boolean sampleSelected, boolean isSecurityChecked,
+                boolean isSampleCredential, String userName,
+                String userPassword, String url, boolean isUserCredential) {
+            assert className != null;
+            assert w != null;
+            this.className = className;
+            this.w = w;
+            this.sampleSelected = sampleSelected;
+            this.isSecurityChecked = isSecurityChecked;
+            this.isSampleCredential = isSampleCredential;
+            this.userName = userName;
+            this.userPassword = userPassword;
+            this.url = url;
+            this.isUserCredential = isUserCredential;
         }
-    }
-    
-    private static void save(DataObject dO) throws IOException {
-            SaveCookie sc = (SaveCookie) dO.getCookie(SaveCookie.class);
-            if (null != sc)
-                sc.save();
-        }
+        
+        //Called for every method in the java source file
+        @Override
+        public Void visitMethod(MethodTree tree, Object p) {
+            //Obtain the owner of this method, getCurrentPath() returns a path from root (CompilationUnitTree) to current node (tree)
+            ClassTree owner = (ClassTree) getCurrentPath().getParentPath().getLeaf();
+            //Is it the generated class, for the case when the template has more classes
+            if (className.contentEquals(owner.getSimpleName())) {
+                //is this method a main method
+                //Get the Element for this method tree  - Trees.getElement(TreePath)
+                ExecutableElement e = (ExecutableElement)w.getTrees().getElement(getCurrentPath());
+                TreeMaker treeMaker = w.getTreeMaker();
+                if(JavaModelHelper.isMain(e)) {
+                    List<? extends StatementTree> statements = tree.getBody().getStatements();
+                    List<StatementTree> newStatements = new ArrayList<StatementTree>(statements);
+                    IdentifierTree managerField = w.getTreeMaker().Identifier("manager");
+                    MemberSelectTree closeSelect = treeMaker.MemberSelect(managerField, "close");
+                    MethodInvocationTree closeInvokation =
+                            treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(),
+                            closeSelect,
+                            Collections.<ExpressionTree>emptyList());
+                    
+                    ExpressionStatementTree t = treeMaker.ExpressionStatement(closeInvokation);
+                    newStatements.add((StatementTree)t);
+                    if (sampleSelected) {
+                        Comment comment0 = Comment.create("\n SAMPLE MBEAN NAME DISCOVERY. Uncomment following code."); // NOI18N
+                        Comment comment1= Comment.create("\n" +// NOI18N
+                                " Set resultSet = \n" +// NOI18N
+                                "    manager.getMBeanServerConnection().queryNames(null, null);\n" +// NOI18N
+                                " for(Iterator i = resultSet.iterator(); i.hasNext();) {\n" +// NOI18N
+                                "     System.out.println(\"MBean name: \" + i.next());\n" +// NOI18N
+                                " }\n");// NOI18N
+                        treeMaker.insertComment(t, comment0, -1, true);
+                        treeMaker.insertComment(t, comment1, -1, true);
+                    }
+                    Comment comment2 = Comment.create(" Close connection"); // NOI18N
+                    treeMaker.insertComment(t, comment2, -1, true);
+                    
+                    // Add System.out.println
+                    IdentifierTree systemField = treeMaker.Identifier("System");// NOI18N
+                    MemberSelectTree outSelect = treeMaker.MemberSelect(systemField, "out");// NOI18N
+                    MemberSelectTree printlnSelect = treeMaker.MemberSelect(outSelect, "println");// NOI18N
+                    LiteralTree msgValTree = treeMaker.Literal("Connection closed.");// NOI18N
+                    List<ExpressionTree> params = new ArrayList<ExpressionTree>(1);
+                    params.add(msgValTree);
+                    MethodInvocationTree printlnInvokation =
+                            treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(),
+                            printlnSelect,
+                            params);
+                    
+                    ExpressionStatementTree t2 = treeMaker.ExpressionStatement(printlnInvokation);
+                    newStatements.add((StatementTree)t2);
+                    
+                    BlockTree newBody = treeMaker.Block(newStatements, false);
+                    w.rewrite(tree.getBody(), newBody);
+                } else {
+                    if(e.getSimpleName().toString().equals("connect")) {
+                       // List<? extends StatementTree> statements = tree.getBody().getStatements();
+                       // List<StatementTree> newStatements = new ArrayList<StatementTree>(statements);
+                        List<StatementTree> newStatements = new ArrayList<StatementTree>();
+                        
+                        IdentifierTree connectorField = w.getTreeMaker().Identifier("connector");
+                        MemberSelectTree getMBSCSelect = treeMaker.MemberSelect(connectorField, "getMBeanServerConnection");
+                        MethodInvocationTree getMBSCInvokation =
+                                treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(),
+                                getMBSCSelect,
+                                Collections.<ExpressionTree>emptyList());
+                        
+                        IdentifierTree mbscField = w.getTreeMaker().Identifier("mbsc");
+                        AssignmentTree bt = treeMaker.Assignment(mbscField, getMBSCInvokation);
+                        
+                        ExpressionStatementTree t = treeMaker.ExpressionStatement(bt);
+                        Comment comment = Comment.create(" Get the MBeanServerConnection"); // NOI18N
+                        treeMaker.insertComment(t, comment, -1, true);
+                        
+                        fillURL(treeMaker, newStatements);
+                        
+                        fillUserCredentials(treeMaker, newStatements);
 
-     /**
-      * Utility class representing the results of a file creation
-      * process. It gatheres all files (as FileObject) created and all
-      * classes (as JavaClasses) .
-      */
-    public static class CreationResults {
-        /**
-         * empty results
-         */
-        public static final CreationResults EMPTY = new CreationResults();
-        
-        private Set created; // Set< createdTest : FileObject >
-        private Set skipped; // Set< sourceClass : JavaClass >
-        private boolean abborted = false;
-        
-        /**
-         * Construct a result group.
-         */
-        public CreationResults() { this(1);}
-        
-        /**
-         * Construct a result group.
-         * @param expectedSize <CODE>int</CODE> initial size
-         */
-        public CreationResults(int expectedSize) {
-            created = new HashSet(expectedSize * 2 , 0.5f);
-            skipped = new HashSet(expectedSize * 2 , 0.5f);
-        }
-        
-        /**
-         * Aborts the process of creation.
-         */
-        public void setAbborted() {
-            abborted = true;
-        }
-        
-        /**
-         * Returns true if the process of creation was abborted. The
-         * result contains the results gathered so far.
-         * @return <CODE>boolean</CODE> true if creation process was abborted
-         */
-        public boolean isAbborted() {
-            return abborted;
-        }
-        
-        
-        /**
-         * Adds a new entry to the set of created tests.
-         * @return true if it was added, false if it was present before
-         * @param test <CODE>FileObject</CODE> file to add
-         */
-        public boolean addCreated(FileObject test) {
-            return created.add(test);
-        }
-        
-        /**
-         * Adds a new <code>JavaClass</code> to the collection of
-         * skipped classes.
-         * @return true if it was added, false if it was present before
-         * @param c <CODE>JavaClass</CODE> class to add
-         */
-        public boolean addSkipped(JavaClass c) {
-            return skipped.add(c);
-        }
-        
-        /**
-         * Returns a set of classes that were skipped in the process.
-         * @return Set<JavaClass>
-         */
-        public Set getSkipped() {
-            return skipped;
-        }
-        
-        /**
-         * Returns a set of test data objects created.
-         * @return Set<FileObject>
-         */
-        public Set getCreated() {
-            return created;
-        }
-        
-        /**
-         * Combines two results into one. If any of the results is an
-         * abborted result, the combination is also abborted. The
-         * collections of created and skipped classes are unified.
-         * @param rhs the other CreationResult to combine into this
-         */
-        public void combine(CreationResults rhs) {
-            if (rhs.abborted) {
-                this.abborted = true;
+                        fillConnector(treeMaker, newStatements);
+                        
+                        newStatements.add((StatementTree)t);
+                        
+                        BlockTree newBody = treeMaker.Block(newStatements, false);
+                        w.rewrite(tree.getBody(), newBody);
+                    }
+                }
             }
-            
-            this.created.addAll(rhs.created);
-            this.skipped.addAll(rhs.skipped);
+            super.visitMethod(tree, p);
+            return null;
         }
         
+        private void fillUserCredentials(TreeMaker treeMaker,
+                List<StatementTree> newStatements) {
+            if (isSecurityChecked && !isSampleCredential) {
+                TypeElement hashMapClass =
+                        w.getElements().getTypeElement("java.util.HashMap");// NOI18N
+                ExpressionTree hashMapEx = treeMaker.QualIdent(hashMapClass);
+                TypeElement mapClass =
+                        w.getElements().getTypeElement("java.util.Map");// NOI18N
+                ExpressionTree mapEx = treeMaker.QualIdent(mapClass);
+                
+                NewClassTree mapConstructor =
+                        treeMaker.NewClass(null, Collections.<ExpressionTree>emptyList(),
+                        hashMapEx, Collections.<ExpressionTree>emptyList(), null);
+                VariableTree vt = treeMaker.Variable( treeMaker.Modifiers(
+                        Collections.<Modifier>emptySet(),
+                        Collections.<AnnotationTree>emptyList()
+                        ), "env", mapEx, mapConstructor);
+                
+               newStatements.add(vt);
+                
+                List<ExpressionTree> putParams = new ArrayList<ExpressionTree>(2);
+                
+                IdentifierTree envField = treeMaker.Identifier("env");// NOI18N
+                MemberSelectTree putSelect = treeMaker.MemberSelect(envField, "put");// NOI18N
+                
+                TypeElement connectorClass =
+                        w.getElements().getTypeElement("javax.management.remote.JMXConnector");// NOI18N
+                ExpressionTree connectorTree = treeMaker.QualIdent(connectorClass);
+                
+                MemberSelectTree credSelect = treeMaker.MemberSelect(connectorTree,
+                        "CREDENTIALS");// NOI18N
+                
+                putParams.add(credSelect);
+                
+                TypeElement stringClass =
+                        w.getElements().getTypeElement("java.lang.String");// NOI18N
+                ExpressionTree stringEx = treeMaker.QualIdent(stringClass);
+                LiteralTree user = treeMaker.Literal(userName);
+                LiteralTree userP = treeMaker.Literal(userPassword);
+                List<ExpressionTree> arrayInit = new ArrayList<ExpressionTree>(2);
+                arrayInit.add(user);
+                arrayInit.add(userP);
+                NewArrayTree arrayTree =
+                        treeMaker.NewArray(stringEx,
+                        Collections.<ExpressionTree>emptyList(), arrayInit);
+                putParams.add(arrayTree);
+                
+                MethodInvocationTree putInvokation =
+                        treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(),
+                        putSelect,
+                        putParams);
+                
+                ExpressionStatementTree t = treeMaker.ExpressionStatement(putInvokation);
+                newStatements.add(t);
+            }
+        }
+        
+        private void fillURL(TreeMaker treeMaker,
+                List<StatementTree> newStatements) {
+            TypeElement urlClass =
+                    w.getElements().getTypeElement("javax.management.remote.JMXServiceURL");// NOI18N
+            ExpressionTree urlTree = treeMaker.QualIdent(urlClass);
+            List<ExpressionTree> ctrParams = new ArrayList<ExpressionTree>(1);
+            ctrParams.add(treeMaker.Literal(url));
+            
+            NewClassTree urlConstructor =
+                    treeMaker.NewClass(null, Collections.<ExpressionTree>emptyList(),
+                    urlTree, ctrParams, null);
+            
+            VariableTree vt = treeMaker.Variable(treeMaker.Modifiers(
+                    Collections.<Modifier>emptySet(),
+                    Collections.<AnnotationTree>emptyList()
+                    ), "url", urlTree, urlConstructor);
+            Comment c = Comment.create(" Create JMX Agent URL");
+            treeMaker.insertComment(vt, c, -1, true);
+            newStatements.add(vt);
+        }
+        
+        private void fillConnector(TreeMaker treeMaker,
+                List<StatementTree> newStatements) {
+            TypeElement factoryClass =
+                    w.getElements().getTypeElement("javax.management.remote.JMXConnectorFactory");// NOI18N
+            ExpressionTree factoryTree = treeMaker.QualIdent(factoryClass);
+            MemberSelectTree connectSelect = treeMaker.MemberSelect(factoryTree, "connect");// NOI18N
+            List<ExpressionTree> connectParams = new ArrayList<ExpressionTree>(1);
+            connectParams.add(treeMaker.Identifier("url"));// NOI18N
+            
+            if (isSecurityChecked && isUserCredential)
+                connectParams.add(treeMaker.Identifier("env"));
+            else
+                connectParams.add(treeMaker.Literal(null));
+            
+            MethodInvocationTree connectInvokation =
+                    treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(),
+                    connectSelect,
+                    connectParams);
+            
+            IdentifierTree connectorField = w.getTreeMaker().Identifier("connector");// NOI18N
+            AssignmentTree bt = treeMaker.Assignment(connectorField, connectInvokation);
+            
+            ExpressionStatementTree t = treeMaker.ExpressionStatement(bt);
+            newStatements.add((StatementTree)t);
+            if (isSecurityChecked && isSampleCredential) {
+                Comment comment1= Comment.create("\n SAMPLE CREDENTIALS. Uncomment following code. \n" +
+                        " Replace userName and userPassword with your parameters. \n" + // NOI18N
+                        " Provide env parameter when calling JMXConnectorFactory.connect(url, env)\n");// NOI18N
+                Comment comment2= Comment.create("\n" +// NOI18N
+                        "Map env = new HashMap(); \n" +// NOI18N
+                        "env.put(JMXConnector.CREDENTIALS, new String[]{\"" +// NOI18N
+                        "userName\", \"" +// NOI18N
+                        "userPassword" +// NOI18N
+                        "\"});\n");// NOI18N
+                treeMaker.insertComment(t, comment1, -1, true);
+                treeMaker.insertComment(t, comment2, -1, true);
+            }
+            Comment comment = Comment.create(" Connect the JMXConnector"); // NOI18N
+            treeMaker.insertComment(t, comment, -1, true);
+        }
     }
 }

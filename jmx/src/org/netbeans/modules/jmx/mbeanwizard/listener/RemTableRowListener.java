@@ -17,13 +17,13 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.jmx.mbeanwizard.listener;
-import org.netbeans.modules.jmx.WizardHelpers;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.AbstractJMXTableModel;
 import javax.swing.JButton;
 import javax.swing.JTable;
-import javax.swing.SwingUtilities;
+
 
 /**
  * Generic class handling the listeners which removes rows to the different
