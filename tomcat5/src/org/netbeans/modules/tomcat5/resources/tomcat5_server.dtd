@@ -63,7 +63,7 @@ each forwarding to the associated Engine to perform request processing and creat
 The Engine element represents the entire request processing machinery associated with a particular Catalina Service. It receives and processes all requests from one or more Connectors, and returns the completed response to the Connector for ultimate transmission back to the client.
 -->
 
-<!ELEMENT Engine (Valve*, Logger?, Realm?, Host*) >
+<!ELEMENT Engine (Valve*, Logger?, Realm*, Host*) >
 <!ATTLIST Engine name CDATA #REQUIRED>
 <!ATTLIST Engine defaultHost CDATA #REQUIRED>
 <!ATTLIST Engine className CDATA #IMPLIED>
@@ -148,7 +148,7 @@ The DefaultContext element represents a subset of the configuration settings for
 <!--
 The DefaultContext element represents a subset of the configuration settings for a Context, and can be nested inside an Engine or Host element to represent default configuration properties for Contexts that are automatically created.
 -->
-<!ELEMENT Context (Loader?, Logger?, Valve*, Realm?, Manager?, Ejb*, Parameter*, Environment*, Listener*, InstanceListener?, Resource*, ResourceParams*) >
+<!ELEMENT Context (Loader?, Logger?, Valve*, Realm*, Manager?, Ejb*, Parameter*, Environment*, Listener*, InstanceListener?, Resource*, ResourceParams*) >
 <!ATTLIST Context path CDATA #REQUIRED>
 <!ATTLIST Context docBase CDATA #REQUIRED>
 <!ATTLIST Context className CDATA #IMPLIED>

@@ -6,7 +6,7 @@ to represent default configuration properties for Contexts that are automaticall
 
 <!ELEMENT Context (
     Loader?, Logger?, Valve*, 
-    Realm?, Manager?, Ejb*, Parameter*, Environment*, 
+    Realm*, Manager?, Ejb*, Parameter*, Environment*, 
     Listener*, InstanceListener?, Resource*, ResourceLink*, ResourceParams*) >
 <!ATTLIST Context path CDATA #REQUIRED>
 <!ATTLIST Context docBase CDATA #REQUIRED>
