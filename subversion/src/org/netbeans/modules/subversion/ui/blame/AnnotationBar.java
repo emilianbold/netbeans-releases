@@ -23,7 +23,6 @@ import org.netbeans.editor.*;
 import org.netbeans.editor.Utilities;
 import org.netbeans.api.editor.fold.*;
 import org.netbeans.api.diff.*;
-import org.netbeans.api.xml.parsers.*;
 import org.netbeans.spi.diff.*;
 import org.netbeans.modules.subversion.ui.update.RevertModifications;
 import org.netbeans.modules.subversion.ui.update.RevertModificationsAction;
@@ -33,13 +32,13 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.util.Context;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.*;
 import org.openide.loaders.*;
 import org.openide.filesystems.*;
 import org.openide.text.*;
 import org.openide.util.*;
 import org.openide.xml.*;
-import org.xml.sax.*;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 
@@ -202,8 +201,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         DiffProvider diff = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
         if (diff != null) {
             Reader r = new LinesReader(lines);
-            InputSource is = new DocumentInputSource(doc);
-            Reader docReader = is.getCharacterStream();
+            Reader docReader = Utils.getDocumentReader(doc);
             try {
 
                 Difference[] differences = diff.computeDiff(r, docReader);

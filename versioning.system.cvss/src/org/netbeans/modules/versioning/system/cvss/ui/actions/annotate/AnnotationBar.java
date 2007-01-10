@@ -23,7 +23,6 @@ import org.netbeans.editor.*;
 import org.netbeans.editor.Utilities;
 import org.netbeans.api.editor.fold.*;
 import org.netbeans.api.diff.*;
-import org.netbeans.api.xml.parsers.*;
 import org.netbeans.api.project.*;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.*;
@@ -38,7 +37,6 @@ import org.openide.filesystems.*;
 import org.openide.text.*;
 import org.openide.util.*;
 import org.openide.xml.*;
-import org.xml.sax.*;
 
 import javax.swing.*;
 import javax.swing.Timer;
@@ -198,8 +196,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         DiffProvider diff = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
         if (diff != null) {
             Reader r = new LinesReader(lines);
-            InputSource is = new DocumentInputSource(doc);
-            Reader docReader = is.getCharacterStream();
+            Reader docReader = org.netbeans.modules.versioning.util.Utils.getDocumentReader(doc);
             try {
 
                 Difference[] differences = diff.computeDiff(r, docReader);
