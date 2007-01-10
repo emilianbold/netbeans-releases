@@ -31,7 +31,6 @@ public class SpriteCD extends ComponentDescriptor {
 	public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.modules.vmd.game.model.Sprite"); // NOI18N
 	
 			
-	private static final String PROP_IMAGE_RESOURCE = "spritecd.prop.imageresource"; // NOI18N
 	private static final String PROP_DEFAULT_SEQUENCE = "spritecd.prop.defaultsequence"; // NOI18N
 	private static final String PROP_SEQUENCES = "spritecd.prop.sequences"; // NOI18N
 	
@@ -46,8 +45,6 @@ public class SpriteCD extends ComponentDescriptor {
 	
 	public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
 		return Arrays.asList(
-			new PropertyDescriptor(PROP_IMAGE_RESOURCE, ImageResourceCD.TYPEID, 
-				PropertyValue.createNull(), false, false, null),
 			new PropertyDescriptor(PROP_DEFAULT_SEQUENCE, SequenceCD.TYPEID, 
 				PropertyValue.createEmptyArray(SequenceCD.TYPEID), false, false, null),
 			new PropertyDescriptor(PROP_SEQUENCES, SequenceCD.TYPEID.getArrayType(), 
