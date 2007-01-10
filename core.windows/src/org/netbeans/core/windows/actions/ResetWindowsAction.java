@@ -25,6 +25,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.NbTopManager;
+import org.netbeans.core.windows.PersistenceHandler;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.persistence.PersistenceManager;
 import org.openide.ErrorManager;
@@ -88,7 +89,12 @@ public class ResetWindowsAction extends AbstractAction {
                 }
                 
                 //reset the window system
-                ws.clear();
+                ws.hide();
+                WindowManagerImpl.getInstance().resetModel();
+                PersistenceManager.getDefault().reset(); //keep mappings to TopComponents created so far
+                PersistenceHandler.getDefault().clear();
+                ws.load();
+                ws.show();        
 
                 //re-open editor windows that were opened before the reset
                 for( int i=0; i<editors.length; i++ ) {

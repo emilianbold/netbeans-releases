@@ -181,8 +181,7 @@ public final class PersistenceManager implements PropertyChangeListener {
         return defaultInstance;
     }
 
-    /** Clears our internal state. */
-    public void clear() { 
+    public void reset() {
         rootModuleFolder = null;
         rootLocalFolder  = null;
         compsModuleFolder = null;
@@ -195,6 +194,11 @@ public final class PersistenceManager implements PropertyChangeListener {
             changeHandler.stopHandling();
         }
         changeHandler = null;
+    }
+    
+    /** Clears our internal state. */
+    public void clear() { 
+        reset();
         topComponent2IDMap.clear();
         topComponentNonPersistent2IDMap.clear();
         globalIDSet = new HashSet<String>(30);
