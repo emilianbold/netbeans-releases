@@ -18,10 +18,10 @@
  */
 package org.netbeans.modules.vmd.midp.components.points;
 
-import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.handlers.CallPointEventHandlerCD;
@@ -30,10 +30,9 @@ import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorJavaString;
 
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 
 /**
  * @author David Kaspar
@@ -89,13 +88,7 @@ public class CallPointCD extends ComponentDescriptor {
             // properties
             createPropertiesPresenter (),
             // flow
-            new FlowInfoNodePresenter (),
-            // code
-            new CodeReferencePresenter () {
-                protected String generateAccessCode () { return generateDirectAccessCode (); }
-                protected String generateDirectAccessCode () { return MidpTypes.getJavaCode (getComponent ().readProperty (PROP_ACCESS_CODE)); }
-                protected String generateTypeCode () { throw Debug.illegalState (); }
-            }
+            new FlowInfoNodePresenter ()
         );
     }
 

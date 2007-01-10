@@ -19,11 +19,11 @@
 package org.netbeans.modules.vmd.midp.components.handlers;
 
 import org.netbeans.modules.vmd.api.codegen.CodeMultiGuardedLevelPresenter;
-import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
+import org.netbeans.modules.vmd.midp.codegen.MidpCodeSupport;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.points.CallPointCD;
@@ -70,9 +70,9 @@ public final class CallPointEventHandlerCD extends ComponentDescriptor {
             // code
             new CodeMultiGuardedLevelPresenter() {
                 protected void generateMultiGuardedSectionCode (MultiGuardedSection section) {
-                    String code = CodeReferencePresenter.generateAccessCode (getComponent ().readProperty (PROP_CALL_POINT).getComponent ());
-                    if (code != null)
-                        section.getWriter ().write (code + ";\n"); // NOI18N
+                    DesignComponent callPointComponent = getComponent ().readProperty (PROP_CALL_POINT).getComponent ();
+                    MidpCodeSupport.generateCodeForPropertyValue (section.getWriter (), callPointComponent.readProperty (CallPointCD.PROP_ACCESS_CODE));
+                    section.getWriter ().write ("\n"); // NOI18N
                 }
             },
             // delete
