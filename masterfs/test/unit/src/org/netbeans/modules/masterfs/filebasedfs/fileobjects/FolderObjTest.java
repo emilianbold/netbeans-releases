@@ -37,6 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.masterfs.filebasedfs.Statistics;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.openide.filesystems.FileObject;
@@ -1453,6 +1454,55 @@ public class FolderObjTest extends NbTestCase {
         assertEquals(stepsCount,createdIncrement.size());
         assertEquals(stepsCount,deletedIncrement.size());
         
+    }
+    
+    public void testRefreshDoesNotMultiplyFileObjects_89059 () throws Exception {
+        FileObject fo = FileBasedFileSystem.getFileObject(testFile);
+        fo.getChildren();
+        FileSystem fs = fo.getFileSystem();
+        FileChangeListener fcl = new FileChangeAdapter();
+        OutputStream os = null;
+        fs.addFileChangeListener(fcl);
+        fo.addFileChangeListener(fcl);
+        try {
+            //no change
+            int foInstancesInCache = Statistics.fileObjects();
+            fs.refresh(false);
+            assertTrue(foInstancesInCache >= Statistics.fileObjects());
+
+            //internal change
+            File ff = new File(testFile,"a/b/c/d/aa.txt");//NOI18N
+            FileUtil.createData(ff);
+            foInstancesInCache = Statistics.fileObjects();
+            fs.refresh(false);
+            assertTrue(foInstancesInCache >= Statistics.fileObjects());
+
+            //external change
+            FileObject ffObject = FileBasedFileSystem.getFileObject(ff);
+            foInstancesInCache = Statistics.fileObjects();
+            os = new java.io.FileOutputStream(ff);
+            os.write("dsdopsdsd".getBytes());//NOI18N
+            os.close();
+            fs.refresh(false);
+            assertTrue(foInstancesInCache >= Statistics.fileObjects());
+
+            assertTrue(new File(testFile,"nfile").createNewFile());//NOI18N
+            fs.refresh(false);
+            fo.refresh(false);
+            assertTrue(foInstancesInCache+1 >= Statistics.fileObjects());
+
+            foInstancesInCache = Statistics.fileObjects();
+            assertTrue(new File(testFile,"aa/bb/cc").mkdirs());//NOI18N
+            fs.refresh(false);
+            fo.refresh(false);
+            assertTrue(foInstancesInCache+3 >= Statistics.fileObjects());
+        } finally {
+            if (os != null) {
+                os.close();
+            }
+            fs.removeFileChangeListener(fcl);
+            fo.removeFileChangeListener(fcl);
+        }
     }
     
     /**
