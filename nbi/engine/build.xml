@@ -109,7 +109,9 @@ $Id$
             output="${basedir}/${dist.dir}/${native.launcher.windows.file}"
             jvmArguments="${native.launcher.windows.jvmargs}"
             i18nDir="${basedir}/${native.launcher.windows.i18n.dir}"
-            testJVM="${basedir}/${test.jvm.file}"/>
+            testJVM="${basedir}/${test.jvm.file}"
+            javaVersionMin="${native.launcher.windows.java.version.min}"
+            javaVersionMax="${native.launcher.windows.java.version.max}"/>
     </target>
     
     <target name="init-custom-tasks" depends="build-custom-tasks">
