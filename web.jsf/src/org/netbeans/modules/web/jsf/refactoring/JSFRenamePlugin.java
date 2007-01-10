@@ -49,6 +49,7 @@ import org.openide.text.PositionBounds;
  * @author Petr Pisl
  */
 
+//TODO need to be handled the rename packages for manged beans
 public class JSFRenamePlugin implements RefactoringPlugin {
     
     /** This one is important creature - makes sure that cycles between plugins won't appear */
@@ -90,22 +91,26 @@ public class JSFRenamePlugin implements RefactoringPlugin {
             
             if (element instanceof FileObject){
                 JavaSource source = JavaSource.forFileObject((FileObject) element);
-                try {
-                    source.runUserActionTask(new AbstractTask<CompilationController>() {
-                        public void cancel() {
-                        }
-                        
-                        public void run(CompilationController co) throws Exception {
-                            co.toPhase(JavaSource.Phase.RESOLVED);
-                            CompilationUnitTree cut = co.getCompilationUnit();
-                            treePathHandle = TreePathHandle.create(TreePath.getPath(cut, cut.getTypeDecls().get(0)), co);
-                            refactoring.getContext().add(co);
-                        }
-                    }, false);
-                } catch (IllegalArgumentException ex) {
-                    LOGGER.log(Level.WARNING, "Exception in JSFRenamePlugin", ex);
-                } catch (IOException ex) {
-                    LOGGER.log(Level.WARNING, "Exception in JSFRenamePlugin", ex);
+                // Can be null, if it is just folder. Should be handled as well and found
+                // whether is not a part of a package name. 
+                if (source != null){
+                    try {
+                        source.runUserActionTask(new AbstractTask<CompilationController>() {
+                            public void cancel() {
+                            }
+
+                            public void run(CompilationController co) throws Exception {
+                                co.toPhase(JavaSource.Phase.RESOLVED);
+                                CompilationUnitTree cut = co.getCompilationUnit();
+                                treePathHandle = TreePathHandle.create(TreePath.getPath(cut, cut.getTypeDecls().get(0)), co);
+                                refactoring.getContext().add(co);
+                            }
+                        }, false);
+                    } catch (IllegalArgumentException ex) {
+                        LOGGER.log(Level.WARNING, "Exception in JSFRenamePlugin", ex);
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.WARNING, "Exception in JSFRenamePlugin", ex);
+                    }
                 }
             }
             else 
