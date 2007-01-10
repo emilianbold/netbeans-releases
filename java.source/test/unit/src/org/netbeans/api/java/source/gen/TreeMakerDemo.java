@@ -108,6 +108,12 @@ public class TreeMakerDemo extends NbTestCase {
         }
         indent(indent, builder);
         switch (tree.getKind()) {
+            case ASSIGNMENT:
+                builder.append("make.Assignment(");
+                AssignmentTree assignmentTree = (AssignmentTree) tree;
+                reverse(assignmentTree.getVariable(), ++indent, builder, true);
+                reverse(assignmentTree.getExpression(), indent, builder, false);
+                break;
             case EXPRESSION_STATEMENT:
                 builder.append("make.ExpressionStatement(");
                 ExpressionStatementTree exprStatement = (ExpressionStatementTree) tree;
