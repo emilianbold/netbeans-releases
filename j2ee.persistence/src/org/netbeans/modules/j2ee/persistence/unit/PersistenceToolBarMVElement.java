@@ -26,6 +26,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.entity.WrapperPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardDescriptor;
@@ -288,10 +289,14 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
      * not, sets an appropriate error message to the panel.
      */
     private void validateUnitName(PersistenceUnitWizardPanel panel){
-        if (!panel.isNameUnique()){
-            panel.setErrorMessage(NbBundle.getMessage(PersistenceUnitWizardDescriptor.class,"ERR_PersistenceUnitNameNotUnique"));
-        } else {
-            panel.setErrorMessage(null);
+        try{
+            if (!panel.isNameUnique()){
+                panel.setErrorMessage(NbBundle.getMessage(PersistenceUnitWizardDescriptor.class,"ERR_PersistenceUnitNameNotUnique"));
+            } else {
+                panel.setErrorMessage(null);
+            }
+        } catch (InvalidPersistenceXmlException ipx){
+            panel.setErrorMessage(NbBundle.getMessage(PersistenceUnitWizardDescriptor.class,"ERR_InvalidPersistenceXml", ipx.getPath()));
         }
         
     }

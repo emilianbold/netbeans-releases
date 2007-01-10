@@ -33,6 +33,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
@@ -50,62 +51,62 @@ import org.openide.util.NbBundle;
  * @author Andrei Badea
  */
 public class EntityClassesPanel extends javax.swing.JPanel {
-
+    
     private JTextComponent packageComboBoxEditor;
-
+    
     private PersistenceGenerator persistenceGen;
     private Project project;
     private boolean cmp;
     private String tableSourceName; //either Datasource or a connection
-
+    
     private SelectedTables selectedTables;
-
+    
     private ChangeSupport changeSupport = new ChangeSupport(this);
     
     private PersistenceUnit persistenceUnit;
-
+    
     public EntityClassesPanel() {
         initComponents();
-
+        
         classNamesTable.getParent().setBackground(classNamesTable.getBackground());
         classNamesTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
-
+        
         packageComboBoxEditor = ((JTextComponent)packageComboBox.getEditor().getEditorComponent());
         Document packageComboBoxDocument = packageComboBoxEditor.getDocument();
         packageComboBoxDocument.addDocumentListener(new DocumentListener() {
-
+            
             public void removeUpdate(DocumentEvent e) {
                 packageChanged();
             }
-
+            
             public void insertUpdate(DocumentEvent e) {
                 packageChanged();
             }
-
+            
             public void changedUpdate(DocumentEvent e) {
                 packageChanged();
             }
         });
     }
-
+    
     public void addChangeListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
     }
-
+    
     public void initialize(PersistenceGenerator persistenceGen, Project project, boolean cmp, FileObject targetFolder) {
         this.persistenceGen = persistenceGen;
         this.project = project;
         this.cmp = cmp;
-
+        
         projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
-
+        
         SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
         SourceGroupUISupport.connect(locationComboBox, sourceGroups);
-
+        
         packageComboBox.setRenderer(PackageView.listRenderer());
-
+        
         updatePackageComboBox();
-
+        
         if (targetFolder != null) {
             // set default source group and package cf. targetFolder
             SourceGroup targetSourceGroup = SourceGroupSupport.getFolderSourceGroup(sourceGroups, targetFolder);
@@ -117,7 +118,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 }
             }
         }
-
+        
         if (!cmp) {
             // change text of named query/finder checkbox
             Mnemonics.setLocalizedText(generateFinderMethodsCheckBox,
@@ -125,18 +126,18 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             // hide local interface checkbox
             cmpFieldsInInterfaceCheckBox.setVisible(false);
         }
-
+        
         if (cmp) {
             classNamesLabel.setVisible(false);
             classNamesScrollPane.setVisible(false);
             spacerPanel.setVisible(false);
-
+            
             Mnemonics.setLocalizedText(specifyNamesLabel, org.openide.util.NbBundle.getMessage(EntityClassesPanel.class, "LBL_SpecifyBeansLocation"));
         }
-
+        
         updatePersistenceUnitButton();
     }
-
+    
     public void update(TableClosure tableClosure, String tableSourceName) {
         try {
             if (selectedTables == null) {
@@ -153,46 +154,46 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
-
+        
         TableUISupport.connectClassNames(classNamesTable, selectedTables);
         this.tableSourceName = tableSourceName;
     }
-
+    
     public SelectedTables getSelectedTables() {
         return selectedTables;
     }
-
+    
     public SourceGroup getLocationValue() {
         return (SourceGroup)locationComboBox.getSelectedItem();
     }
-
+    
     public String getPackageName() {
         return packageComboBoxEditor.getText();
     }
-
+    
     public boolean getCmpFieldsInInterface() {
         return cmpFieldsInInterfaceCheckBox.isSelected();
     }
-
+    
     public boolean getGenerateFinderMethods() {
         return generateFinderMethodsCheckBox.isSelected();
     }
-
+    
     public PersistenceUnit getPersistenceUnit() {
         return persistenceUnit;
     }
-
+    
     private void locationChanged() {
         updatePackageComboBox();
         updateSelectedTables();
         changeSupport.fireChange();
     }
-
+    
     private void packageChanged() {
         updateSelectedTables();
         changeSupport.fireChange();
     }
-
+    
     private void updatePackageComboBox() {
         SourceGroup sourceGroup = (SourceGroup)locationComboBox.getSelectedItem();
         if (sourceGroup != null) {
@@ -204,24 +205,32 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             packageComboBox.setModel(model);
         }
     }
-
+    
     
     
     private void updatePersistenceUnitButton() {
-        boolean showWarning = !cmp 
-                && !ProviderUtil.persistenceExists(project) 
-                && getPersistenceUnit() == null;
+        String warning = " ";
+        try{
         
-        createPUButton.setVisible(showWarning);
+            boolean showWarning = !cmp
+                    && !ProviderUtil.persistenceExists(project)
+                    && getPersistenceUnit() == null;
+            
+            createPUButton.setVisible(showWarning);
+            
+            if (showWarning) {
+                warning = NbBundle.getMessage(EntityClassesPanel.class, "ERR_NoPersistenceUnit");
+            }
 
-        String warning = " "; // NOI18N
-        if (showWarning) {
-            warning = NbBundle.getMessage(EntityClassesPanel.class, "ERR_NoPersistenceUnit");
+        } catch (InvalidPersistenceXmlException ipx){
+            createPUButton.setVisible(false);
+            warning = NbBundle.getMessage(EntityClassesPanel.class, "ERR_InvalidPersistenceUnit", ipx.getPath());
         }
+        
         createPUWarningLabel.setText(warning);
         createPUWarningLabel.setToolTipText(warning);
     }
-
+    
     private void updateSelectedTables() {
         if (selectedTables != null) {
             try {
@@ -231,16 +240,16 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             }
         }
     }
-
+    
     public void doLayout() {
         // preventing the PU warning label from enlarging the wizard
         Dimension size = createPUWarningLabel.getPreferredSize();
         size.width = getWidth();
         createPUWarningLabel.setPreferredSize(size);
-
+        
         super.doLayout();
     }
-
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -372,11 +381,11 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 .add(createPUButton))
         );
     }// </editor-fold>//GEN-END:initComponents
-
+    
     private void locationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locationComboBoxActionPerformed
         locationChanged();
     }//GEN-LAST:event_locationComboBoxActionPerformed
-
+    
     private void createPUButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createPUButtonActionPerformed
         persistenceUnit = Util.buildPersistenceUnitUsingWizard(project, tableSourceName, TableGeneration.NONE);
         if (persistenceUnit != null){
@@ -384,8 +393,8 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             changeSupport.fireChange();
         }
     }//GEN-LAST:event_createPUButtonActionPerformed
-
-
+    
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel classNamesLabel;
     private javax.swing.JScrollPane classNamesScrollPane;
@@ -403,22 +412,22 @@ public class EntityClassesPanel extends javax.swing.JPanel {
     private javax.swing.JPanel spacerPanel;
     private javax.swing.JLabel specifyNamesLabel;
     // End of variables declaration//GEN-END:variables
-
+    
     public static final class WizardPanel implements WizardDescriptor.Panel, ChangeListener {
-
+        
         private EntityClassesPanel component;
         private boolean componentInitialized;
-
+        
         private WizardDescriptor wizardDescriptor;
         private Project project;
         private boolean cmp;
-
+        
         private ChangeSupport changeSupport = new ChangeSupport(this);
-
+        
         public Component getComponent() {
             return getTypedComponent();
         }
-
+        
         private EntityClassesPanel getTypedComponent() {
             if (component == null) {
                 component = new EntityClassesPanel();
@@ -426,15 +435,15 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             }
             return component;
         }
-
+        
         public void removeChangeListener(ChangeListener listener) {
             changeSupport.removeChangeListener(listener);
         }
-
+        
         public void addChangeListener(ChangeListener listener) {
             changeSupport.addChangeListener(listener);
         }
-
+        
         public HelpCtx getHelp() {
             if (cmp) {
                 return new HelpCtx("org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp." + EntityClassesPanel.class.getSimpleName()); // NOI18N
@@ -442,22 +451,22 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 return new HelpCtx(EntityClassesPanel.class);
             }
         }
-
+        
         public void readSettings(Object settings) {
             wizardDescriptor = (WizardDescriptor)settings;
             RelatedCMPHelper helper = RelatedCMPWizard.getHelper(wizardDescriptor);
-
+            
             if (!componentInitialized) {
                 componentInitialized = true;
-
+                
                 PersistenceGenerator persistenceGen = helper.getPersistenceGenerator();
                 project = Templates.getProject(wizardDescriptor);
                 cmp = RelatedCMPWizard.isCMP(wizardDescriptor);
                 FileObject targetFolder = Templates.getTargetFolder(wizardDescriptor);
-
+                
                 getTypedComponent().initialize(persistenceGen, project, cmp, targetFolder);
             }
-
+            
             TableSource tableSource = helper.getTableSource();
             String tableSourceName = null;
             if (tableSource != null) {
@@ -470,33 +479,33 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                     tableSourceName = tableSource.getName();
                 }
             }
-
+            
             getTypedComponent().update(helper.getTableClosure(), tableSourceName);
         }
-
+        
         public boolean isValid() {
             SourceGroup sourceGroup = getTypedComponent().getLocationValue();
             if (sourceGroup == null) {
                 setErrorMessage(NbBundle.getMessage(EntityClassesPanel.class, "ERR_JavaTargetChooser_SelectSourceGroup"));
                 return false;
             }
-
+            
             String packageName = getTypedComponent().getPackageName();
             if (packageName.trim().equals("")) { // NOI18N
                 setErrorMessage(NbBundle.getMessage(EntityClassesPanel.class, "ERR_JavaTargetChooser_CantUseDefaultPackage"));
                 return false;
             }
-
+            
             if (!SourceGroupSupport.isValidPackageName(packageName)) {
                 setErrorMessage(NbBundle.getMessage(EntityClassesPanel.class,"ERR_JavaTargetChooser_InvalidPackage")); //NOI18N
                 return false;
             }
-
+            
             if (!SourceGroupSupport.isFolderWritable(sourceGroup, packageName)) {
                 setErrorMessage(NbBundle.getMessage(EntityClassesPanel.class, "ERR_JavaTargetChooser_UnwritablePackage")); //NOI18N
                 return false;
             }
-
+            
             SelectedTables selectedTables = getTypedComponent().getSelectedTables();
             // check for null needed since isValid() can be called when
             // EntityClassesPanel.update() has not been called yet, e.g. from within
@@ -508,18 +517,18 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                     return false;
                 }
             }
-
+            
             setErrorMessage(" "); // NOI18N
             return true;
         }
-
+        
         public void storeSettings(Object settings) {
             Object buttonPressed = ((WizardDescriptor)settings).getValue();
             if (buttonPressed.equals(WizardDescriptor.NEXT_OPTION) ||
                     buttonPressed.equals(WizardDescriptor.FINISH_OPTION)) {
-
+                
                 RelatedCMPHelper helper = RelatedCMPWizard.getHelper(wizardDescriptor);
-
+                
                 helper.setSelectedTables(getTypedComponent().getSelectedTables());
                 helper.setLocation(getTypedComponent().getLocationValue());
                 helper.setPackageName(getTypedComponent().getPackageName());
@@ -528,11 +537,11 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 helper.setPersistenceUnit(getTypedComponent().getPersistenceUnit());
             }
         }
-
+        
         public void stateChanged(ChangeEvent event) {
             changeSupport.fireChange(event);
         }
-
+        
         private void setErrorMessage(String errorMessage) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage", errorMessage); // NOI18N
         }

@@ -29,6 +29,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -83,11 +84,16 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityWizardDescriptor.class,"ERR_PrimaryKeyNotEmpty")); //NOI18N
             return false;
         }
-        if (!isPersistenceUnitDefined()) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_NoPersistenceUnit"));
-            return true; // just warning
+        try{
+            if (!isPersistenceUnitDefined()) {
+                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_NoPersistenceUnit"));
+                return true; // just warning
+            }
+        } catch (InvalidPersistenceXmlException ipx){
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_InvalidPersistenceXml", ipx.getPath()));
+            return true; // just a warning
         }
-
+        
         wizardDescriptor.putProperty("WizardPanel_errorMessage", " "); //NOI18N
         return true;
     }
@@ -98,16 +104,22 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
             project = Templates.getProject(wizardDescriptor);
             p.setProject(project);
         }
-            
-        if (ProviderUtil.isValidServerInstanceOrNone(project) && !isPersistenceUnitDefined()) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_NoPersistenceUnit"));
-            p.setPersistenceUnitButtonVisibility(true);
+        
+        try{
+            if (ProviderUtil.isValidServerInstanceOrNone(project) && !isPersistenceUnitDefined()) {
+                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_NoPersistenceUnit"));
+                p.setPersistenceUnitButtonVisibility(true);
+            }
+        } catch (InvalidPersistenceXmlException ipx){
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_InvalidPersistenceXml", ipx.getPath()));
+            p.setPersistenceUnitButtonVisibility(false);
         }
     }
-
-    private boolean isPersistenceUnitDefined(){
+    
+    private boolean isPersistenceUnitDefined() throws InvalidPersistenceXmlException {
         return ProviderUtil.persistenceExists(project) || getPersistenceUnit() != null;
     }
+    
     public void removeChangeListener(javax.swing.event.ChangeListener l) {
         changeListeners.remove(l);
     }

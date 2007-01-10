@@ -30,7 +30,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
@@ -101,9 +101,15 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
             return false;
         }
         if (panel != null && !panel.isValidPanel()) {
-            if (!panel.isNameUnique()){
-                wizardDescriptor.putProperty(ERROR_MSG_KEY,
-                        NbBundle.getMessage(PersistenceUnitWizardDescriptor.class,"ERR_PersistenceUnitNameNotUnique")); //NOI18N
+            try {
+                if (!panel.isNameUnique()){
+                    wizardDescriptor.putProperty(ERROR_MSG_KEY,
+                            NbBundle.getMessage(PersistenceUnitWizardDescriptor.class,"ERR_PersistenceUnitNameNotUnique")); //NOI18N
+                }
+            } catch (InvalidPersistenceXmlException ipx){
+                    wizardDescriptor.putProperty(ERROR_MSG_KEY,
+                            NbBundle.getMessage(PersistenceUnitWizardDescriptor.class,"ERR_InvalidPersistenceXml", ipx.getPath())); //NOI18N
+                
             }
             return false;
         }

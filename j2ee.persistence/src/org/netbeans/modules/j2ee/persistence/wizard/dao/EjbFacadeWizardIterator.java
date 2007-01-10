@@ -35,6 +35,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
@@ -50,6 +52,7 @@ import org.netbeans.modules.j2ee.persistence.action.EntityManagerGenerator;
 import org.netbeans.modules.j2ee.persistence.action.GenerationOptions;
 import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.Entity;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.PersistenceClientEntitySelection;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
@@ -77,7 +80,6 @@ public final class EjbFacadeWizardIterator implements WizardDescriptor.Instantia
     
     public Set instantiate() throws IOException {
         List<Entity> entities = (List<Entity>) wizard.getProperty(WizardProperties.ENTITY_CLASS);
-        Project project = Templates.getProject(wizard);
         final FileObject targetFolder = Templates.getTargetFolder(wizard);
         final Set createdFiles = new HashSet();
         final EjbFacadeWizardPanel2 panel = (EjbFacadeWizardPanel2) panels[1];
@@ -85,7 +87,13 @@ public final class EjbFacadeWizardIterator implements WizardDescriptor.Instantia
         
         PersistenceUnit persistenceUnit = (PersistenceUnit) wizard.getProperty(WizardProperties.PERSISTENCE_UNIT);
         if (persistenceUnit != null){
-            ProviderUtil.addPersistenceUnit(persistenceUnit, Templates.getProject(wizard));
+            try{
+                ProviderUtil.addPersistenceUnit(persistenceUnit, Templates.getProject(wizard));
+            } catch (InvalidPersistenceXmlException ipx){
+                // just log for debugging purposes, at this point the user has
+                // already been warned about an invalid persistence.xml
+                Logger.getLogger(EjbFacadeWizardIterator.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NO18N
+            }
         }
         
         for (Entity entity : entities) {

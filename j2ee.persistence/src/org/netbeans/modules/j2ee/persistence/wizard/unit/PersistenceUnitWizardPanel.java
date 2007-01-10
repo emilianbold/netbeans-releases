@@ -20,6 +20,7 @@
 package org.netbeans.modules.j2ee.persistence.wizard.unit;
 
 import javax.swing.JPanel;
+import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 
 /**
@@ -50,8 +51,10 @@ public abstract class PersistenceUnitWizardPanel extends JPanel {
      * Checks whether name of the persistence unit is unique among current
      * project's persistence units.
      * @return true if the name is unique, false otherwise.
+     * @throws InvalidPersistenceXmlException if the project has an invalid 
+     *  persistence.xml file.
      */
-    public abstract boolean isNameUnique();
+    public abstract boolean isNameUnique() throws InvalidPersistenceXmlException;
     
     /**
      * @return the selected provider.

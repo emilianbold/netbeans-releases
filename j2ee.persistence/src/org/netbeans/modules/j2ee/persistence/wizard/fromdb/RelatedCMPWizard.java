@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
@@ -32,6 +34,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
+import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -71,7 +74,7 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator implements 
     private int stepsStartPos;
     
     private WizardDescriptor wizardDescriptor;
-
+    
     private PersistenceGenerator generator;
     private RelatedCMPHelper helper;
     private ProgressPanel progressPanel;
@@ -81,7 +84,7 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator implements 
     }
     
     public static RelatedCMPWizard createForCMP() {
-	return new RelatedCMPWizard(TYPE_CMP);
+        return new RelatedCMPWizard(TYPE_CMP);
     }
     
     public RelatedCMPWizard(String type) {
@@ -111,7 +114,7 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator implements 
         };
         return panels;
     }
-
+    
     /**
      * Overriden to set the wizard content data and selected index for
      * each panel when it is needed, not in advance (which would cause
@@ -121,7 +124,7 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator implements 
         WizardDescriptor.Panel panel = super.current();
         
         if (steps == null) {
-            mergeSteps(new String[] { 
+            mergeSteps(new String[] {
                 NbBundle.getMessage(RelatedCMPWizard.class, "LBL_DatabaseTables"),
                 NbBundle.getMessage(RelatedCMPWizard.class, isCMP() ? "LBL_EntityBeansLocation" : "LBL_EntityClasses"),
             });
@@ -155,8 +158,8 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator implements 
     static boolean isCMP(WizardDescriptor wizardDescriptor) {
         return ((Boolean)wizardDescriptor.getProperty(PROP_CMP)).booleanValue();
     }
-
-    public final void initialize (TemplateWizard wiz) {
+    
+    public final void initialize(TemplateWizard wiz) {
         wizardDescriptor = wiz;
         
         Project project = Templates.getProject(wiz);
@@ -182,9 +185,9 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator implements 
         
         generator.init(wiz);
     }
-
+    
     public void mergeSteps(String[] thisSteps) {
-        Object prop = wizardDescriptor.getProperty (WIZARD_PANEL_CONTENT_DATA);
+        Object prop = wizardDescriptor.getProperty(WIZARD_PANEL_CONTENT_DATA);
         String[] beforeSteps;
         
         if (prop instanceof String[]) {
@@ -203,40 +206,46 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator implements 
         System.arraycopy(thisSteps, 0, steps, stepsStartPos, thisSteps.length);
     }
     
-    public final void uninitialize (TemplateWizard wiz) {
+    public final void uninitialize(TemplateWizard wiz) {
         generator.uninit();
     }
- 
+    
     public Set instantiate(final TemplateWizard wiz) throws IOException {
         Component c = WindowManager.getDefault().getMainWindow();
-
+        
         // create the pu first if needed
         if (helper.getPersistenceUnit() != null){
-            ProviderUtil.addPersistenceUnit(helper.getPersistenceUnit(), Templates.getProject(wiz));
+            try {
+                ProviderUtil.addPersistenceUnit(helper.getPersistenceUnit(), Templates.getProject(wiz));
+            } catch (InvalidPersistenceXmlException ipx){
+                // just log for debugging purposes, at this point the user has
+                // already been warned about an invalid persistence.xml
+                Logger.getLogger(RelatedCMPWizard.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NO18N
+            }
         }
         
         final String title = NbBundle.getMessage(RelatedCMPWizard.class, isCMP() ? "TXT_EjbGeneration" : "TXT_EntityClassesGeneration");
         final ProgressHandle handle = ProgressHandleFactory.createHandle(title);
         
         progressPanel = new ProgressPanel();
-	final JComponent progressComponent = ProgressHandleFactory.createProgressComponent(handle);
-
+        final JComponent progressComponent = ProgressHandleFactory.createProgressComponent(handle);
+        
         final Runnable r = new Runnable() {
-             public void run() {
-                 try {
-                     createBeans(wiz, handle);
-                 } catch (IOException ioe) {
-                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
-                     NotifyDescriptor nd =
-                             new NotifyDescriptor.Message(ioe.getLocalizedMessage(),
-                                     NotifyDescriptor.ERROR_MESSAGE);
-                     DialogDisplayer.getDefault().notify(nd);
-                 } finally {
-                     generator.uninit();
-                 }
-             }
+            public void run() {
+                try {
+                    createBeans(wiz, handle);
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                    NotifyDescriptor nd =
+                            new NotifyDescriptor.Message(ioe.getLocalizedMessage(),
+                            NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(nd);
+                } finally {
+                    generator.uninit();
+                }
+            }
         };
-
+        
         // Ugly hack ensuring the progress dialog opens after the wizard closes. Needed because:
         // 1) the wizard is not closed in the AWT event in which instantiate() is called.
         //    Instead it is closed in an event scheduled by SwingUtilities.invokeLater().
@@ -249,7 +258,7 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator implements 
         // -  the first invocation event of our runnable
         // -  the invocation event which closes the wizard
         // -  the second invocation event of our runnable
-
+        
         SwingUtilities.invokeLater(new Runnable() {
             private boolean first = true;
             public void run() {
@@ -262,29 +271,29 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator implements 
                 }
             }
         });
-
+        
         // The commented code below is the ideal state, but since there is not way to request
-        // TemplateWizard.Iterator.instantiate() be called asynchronously it 
-        // would cause the wizard to stay visible until the bean generation process 
+        // TemplateWizard.Iterator.instantiate() be called asynchronously it
+        // would cause the wizard to stay visible until the bean generation process
         // finishes. So for now just returning the package -- not a problem,
         // JavaPersistenceGenerator.createdObjects() returns an empty set anyway.
-
+        
         // remember to wait for createBeans() to actually return!
         // Set created = generator.createdObjects();
         // if (created.size() == 0) {
         //     created = Collections.singleton(SourceGroupSupport.getFolderForPackage(helper.getLocation(), helper.getPackageName()));
         // }
-
+        
         return Collections.singleton(SourceGroupSupport.getFolderForPackage(helper.getLocation(), helper.getPackageName()));
     }
     
-    private void createBeans (TemplateWizard wiz, ProgressHandle handle) throws IOException {
+    private void createBeans(TemplateWizard wiz, ProgressHandle handle) throws IOException {
         try {
             handle.start();
             Project project = Templates.getProject(wiz);
             handle.progress(NbBundle.getMessage(RelatedCMPWizard.class, "TXT_SavingSchema"));
             progressPanel.setText(NbBundle.getMessage(RelatedCMPWizard.class, "TXT_SavingSchema"));
-    
+            
             FileObject dbschemaFile = helper.getDBSchemaFile();
             if (dbschemaFile == null) {
                 FileObject configFilesFolder = getHelper(wiz).getConfigFilesFolder();
@@ -298,9 +307,9 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator implements 
                 String projectName = ProjectUtils.getInformation(project).getDisplayName();
                 dbschemaFile = DBSchemaManager.updateDBSchemas(helper.getSchemaElement(), helper.getDBSchemaFileList(), configFilesFolder, projectName);
             }
-    
-            String extracting = NbBundle.getMessage(RelatedCMPWizard.class, isCMP() ? 
-                    "TXT_ExtractingBeansAndRelationships" : "TXT_ExtractingEntityClassesAndRelationships");
+            
+            String extracting = NbBundle.getMessage(RelatedCMPWizard.class, isCMP() ?
+                "TXT_ExtractingBeansAndRelationships" : "TXT_ExtractingEntityClassesAndRelationships");
             
             handle.progress(extracting);
             progressPanel.setText(extracting);
@@ -310,13 +319,13 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator implements 
             FileObject pkg = SourceGroupSupport.getFolderForPackage(helper.getLocation(), helper.getPackageName());
             generator.generateBeans(progressPanel, helper, dbschemaFile, handle, false);
             
-//            if (EjbJar.VERSION_3_0.equals(dd.getVersion().toString())) {
-//                JavaPersistenceGenerator jpg = new JavaPersistenceGenerator();
-//                jpg.generateBeans(
-//            } else {
-//                CmpGenerator gen = new CmpGenerator();
-//                gen.generateBeans(progressPanel,helper, pkg, dbschemaFile, genHelper, handle, module.getDeploymentDescriptor(), pwm, dd, false);
-//            }
+            //            if (EjbJar.VERSION_3_0.equals(dd.getVersion().toString())) {
+            //                JavaPersistenceGenerator jpg = new JavaPersistenceGenerator();
+            //                jpg.generateBeans(
+            //            } else {
+            //                CmpGenerator gen = new CmpGenerator();
+            //                gen.generateBeans(progressPanel,helper, pkg, dbschemaFile, genHelper, handle, module.getDeploymentDescriptor(), pwm, dd, false);
+            //            }
         } finally {
             handle.finish();
             SwingUtilities.invokeLater(new Runnable() {

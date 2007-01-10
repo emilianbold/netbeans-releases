@@ -33,7 +33,6 @@ import java.util.Vector;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -49,6 +48,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.wizard.entity.WrapperPanel;
@@ -62,7 +62,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
-
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
@@ -449,12 +448,12 @@ public class Util {
         return null;
         
     }
-    public static boolean createPersistenceUnitUsingWizard(Project project) {
+    public static boolean createPersistenceUnitUsingWizard(Project project) throws InvalidPersistenceXmlException {
         return createPersistenceUnitUsingWizard(project, null, TableGeneration.CREATE);
     }
     
     public static boolean createPersistenceUnitUsingWizard(Project project,
-            String preselectedDB, TableGeneration tableGeneration) {
+            String preselectedDB, TableGeneration tableGeneration) throws InvalidPersistenceXmlException {
         
         PersistenceUnit punit = buildPersistenceUnitUsingWizard(project, preselectedDB, tableGeneration);
         if (punit == null){

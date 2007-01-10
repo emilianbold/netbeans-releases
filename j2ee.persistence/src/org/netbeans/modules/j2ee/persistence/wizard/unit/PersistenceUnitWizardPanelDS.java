@@ -35,11 +35,13 @@ import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.DefaultProvider;
+import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.util.PersistenceProviderComboboxHelper;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -185,7 +187,12 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         if (null == defaultProvider || isEmptyOrNull(getDatasource())){
             return false;
         }
-        if (!isNameValid()){
+        try{
+            if (!isNameValid()){
+                return false;
+            }
+        } catch (InvalidPersistenceXmlException ipx){
+            setErrorMessage(NbBundle.getMessage(PersistenceUnitWizardDescriptor.class,"ERR_InvalidPersistenceXml", ipx.getPath())); //NO18N
             return false;
         }
         return true;
@@ -195,14 +202,14 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
      * Checks whether name of the persistence unit is valid, i.e. it's not
      * empty and it's unique.
      */
-    private boolean isNameValid(){
+    private boolean isNameValid() throws InvalidPersistenceXmlException{
         return isEmptyOrNull(getPersistenceUnitName()) ? false : isNameUnique();
     }
     
     /**
      * @see PersistenceUnitWizardPanel#isNameUnique
      */
-    public boolean isNameUnique(){
+    public boolean isNameUnique() throws InvalidPersistenceXmlException{
         if (!ProviderUtil.persistenceExists(project)){
             return true;
         }

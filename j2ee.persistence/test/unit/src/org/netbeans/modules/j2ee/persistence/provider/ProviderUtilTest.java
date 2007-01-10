@@ -20,15 +20,20 @@
 
 package org.netbeans.modules.j2ee.persistence.provider;
 
+import java.io.File;
 import junit.framework.*;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Property;
+import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Tests for ProviderUtil.
  * @author Erno Mononen
  */
-public class ProviderUtilTest extends TestCase {
+public class ProviderUtilTest extends NbTestCase {
     
     private PersistenceUnit persistenceUnit;
     
@@ -61,7 +66,7 @@ public class ProviderUtilTest extends TestCase {
         assertPropertyExists(provider.getTableGenerationPropertyName());
         assertValueExists(provider.getTableGenerationCreateValue());
         assertNoSuchValue(provider.getTableGenerationDropCreateValue());
-
+        
         ProviderUtil.setTableGeneration(persistenceUnit, Provider.TABLE_GENERATION_DROPCREATE, provider);
         assertPropertyExists(provider.getTableGenerationPropertyName());
         assertValueExists(provider.getTableGenerationDropCreateValue());
@@ -77,7 +82,7 @@ public class ProviderUtilTest extends TestCase {
         assertPropertyExists(provider.getJdbcUrl());
         assertPropertyExists(provider.getJdbcUsername());
     }
-
+    
     public void testChangeProvider(){
         Provider originalProvider = ProviderUtil.HIBERNATE_PROVIDER;
         ProviderUtil.setProvider(persistenceUnit, originalProvider, null, Provider.TABLE_GENERATION_CREATE);
@@ -97,9 +102,9 @@ public class ProviderUtilTest extends TestCase {
         assertPropertyExists(newProvider.getJdbcUsername());
         assertPropertyExists(newProvider.getTableGenerationPropertyName());
     }
-
+    
     /**
-     * Tests that changing of provider preserves existing 
+     * Tests that changing of provider preserves existing
      * table generation value.
      */
     public void testTableGenerationPropertyIsPreserved(){
@@ -108,11 +113,11 @@ public class ProviderUtilTest extends TestCase {
         
         Provider newProvider = ProviderUtil.TOPLINK_PROVIDER;
         ProviderUtil.setProvider(persistenceUnit, newProvider, null, Provider.TABLE_GENERATION_CREATE);
-        assertEquals(newProvider.getTableGenerationPropertyName(), 
+        assertEquals(newProvider.getTableGenerationPropertyName(),
                 ProviderUtil.getProperty(persistenceUnit, newProvider.getTableGenerationPropertyName()).getName());
-        assertEquals(newProvider.getTableGenerationCreateValue(),                 
+        assertEquals(newProvider.getTableGenerationCreateValue(),
                 ProviderUtil.getProperty(persistenceUnit, newProvider.getTableGenerationPropertyName()).getValue());
-
+        
         
         
     }
@@ -121,7 +126,7 @@ public class ProviderUtilTest extends TestCase {
         Provider provider = ProviderUtil.KODO_PROVIDER;
         PersistenceUnit persistenceUnit = new PersistenceUnit();
         ProviderUtil.setProvider(persistenceUnit, provider, null, Provider.TABLE_GENERATION_CREATE);
-//        ProviderUtil.setTableGeneration(persistenceUnit, Provider.TABLE_GENERATION_CREATE, provider);
+        //        ProviderUtil.setTableGeneration(persistenceUnit, Provider.TABLE_GENERATION_CREATE, provider);
         
         ProviderUtil.removeProviderProperties(persistenceUnit);
         assertNoSuchProperty(provider.getTableGenerationPropertyName());
@@ -131,6 +136,18 @@ public class ProviderUtilTest extends TestCase {
         
     }
     
+    
+    public void testGetPUDataObject() throws Exception{
+        String invalidPersistenceXml = getDataDir().getAbsolutePath() + "/invalid_persistence.xml";
+        FileObject invalidPersistenceFO = FileUtil.toFileObject(new File(invalidPersistenceXml));
+        try{
+            ProviderUtil.getPUDataObject(invalidPersistenceFO);
+            fail("InvalidPersistenceXmlException should have been thrown");
+        } catch (InvalidPersistenceXmlException ipx){
+            assertEquals(invalidPersistenceXml, ipx.getPath());
+        }
+        
+    }
     /**
      * Asserts that property with given name exists in persistence unit.
      */
@@ -167,7 +184,7 @@ public class ProviderUtilTest extends TestCase {
     
     
     /**
-     * @return true if property with given name exists in persistence unit, 
+     * @return true if property with given name exists in persistence unit,
      * false otherwise.
      */
     protected boolean propertyExists(String propertyName){
@@ -181,7 +198,7 @@ public class ProviderUtilTest extends TestCase {
     }
     
     /**
-     * @return true if property with given value exists in persistence unit, 
+     * @return true if property with given value exists in persistence unit,
      * false otherwise.
      */
     protected boolean valueExists(String propertyValue){

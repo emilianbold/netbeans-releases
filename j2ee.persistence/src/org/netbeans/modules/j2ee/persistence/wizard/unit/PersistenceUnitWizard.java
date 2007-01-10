@@ -22,9 +22,12 @@ package org.netbeans.modules.j2ee.persistence.wizard.unit;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -118,10 +121,17 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
         }
         punit.setName(descriptor.getPersistenceUnitName());
         ProviderUtil.setTableGeneration(punit, descriptor.getTableGeneration(), project);
-        PUDataObject pud = ProviderUtil.getPUDataObject(project);
-        pud.addPersistenceUnit(punit);
-        pud.save();
-        return Collections.singleton(pud.getPrimaryFile());
+        try{
+            PUDataObject pud = ProviderUtil.getPUDataObject(project);
+            pud.addPersistenceUnit(punit);
+            pud.save();
+            return Collections.singleton(pud.getPrimaryFile());
+        } catch (InvalidPersistenceXmlException ipx){
+            // just log for debugging purposes, at this point the user has
+            // already been warned about an invalid persistence.xml
+            Logger.getLogger(PersistenceUnitWizard.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NO18N
+            return Collections.emptySet();
+        }
     }
     
     /**

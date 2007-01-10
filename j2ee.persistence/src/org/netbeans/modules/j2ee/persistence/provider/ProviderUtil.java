@@ -468,8 +468,10 @@ public class ProviderUtil {
      *  of the given <code>project</code> and saves it.
      * @param persistenceUnit the unit to be added
      * @param project the project to which the unit is to be added.
+     * @throws InvalidPersistenceXmlException if the given project has an invalid persistence.xml file.
+     * 
      */
-    public static void addPersistenceUnit(PersistenceUnit persistenceUnit, Project project){
+    public static void addPersistenceUnit(PersistenceUnit persistenceUnit, Project project) throws InvalidPersistenceXmlException{
         PUDataObject pud = getPUDataObject(project);
         pud.addPersistenceUnit(persistenceUnit);
         pud.save();
@@ -481,8 +483,10 @@ public class ProviderUtil {
      * not be null.
      *@return <code>PUDataObject</code> associated with given <code>fo</code>; never null.
      *@throws IllegalArgumentException if the given <code>fo</code> is null.
+     *@throws InvalidPersistenceXmlException if the given file object represents
+     * an invalid persistence.xml file.
      */
-    public static PUDataObject getPUDataObject(FileObject fo) {
+    public static PUDataObject getPUDataObject(FileObject fo) throws InvalidPersistenceXmlException{
         if (fo == null){
             throw new IllegalArgumentException("Called PUDataObject#getPUDataObject with null FileObject param"); //NO18N
         }
@@ -492,8 +496,9 @@ public class ProviderUtil {
         } catch (DataObjectNotFoundException ex) {
             ErrorManager.getDefault().notify(ex);
         }
-        assert dataObject instanceof PUDataObject : "Got invalid data object: " + dataObject; //NO18N
-        
+        if (!(dataObject instanceof PUDataObject)){
+            throw new InvalidPersistenceXmlException(FileUtil.getFileDisplayName(fo));
+        }
         return (PUDataObject) dataObject;
     }
     
@@ -504,8 +509,10 @@ public class ProviderUtil {
      * {@link #getDDFile} for testing whether a project has a persistence.xml file.
      *@param project the project whose PUDataObject is to be get.
      *@return <code>PUDataObject</code> associated with the given project; never null.
+     * @throws InvalidPersistenceXmlException if the given <code>project</code> had an existing
+     * invalid persitence.xml file.
      */
-    public static PUDataObject getPUDataObject(Project project) {
+    public static PUDataObject getPUDataObject(Project project) throws InvalidPersistenceXmlException{
         FileObject puFileObject = getDDFile(project);
         if (puFileObject == null) {
             puFileObject = createPersistenceDDFile(project);
@@ -545,8 +552,10 @@ public class ProviderUtil {
      * @project the project
      * @return true if given project has a persistence.xml containing
      * at least one persitence unit, false otherwise.
+     * @throws InvalidPersistenceXmlException if the given <code>project</code> has an 
+     *  invalid persistence.xml file.
      */
-    public static boolean persistenceExists(Project project){
+    public static boolean persistenceExists(Project project) throws InvalidPersistenceXmlException{
         if (getDDFile(project) == null){
             return false;
         }

@@ -33,6 +33,8 @@ import org.openide.util.*;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.JavaSource;
@@ -45,6 +47,7 @@ import org.netbeans.modules.j2ee.common.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
@@ -90,7 +93,13 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
     public Set instantiate() throws IOException {
         
         if (ejbPanel.getPersistenceUnit() != null){
-            ProviderUtil.addPersistenceUnit(ejbPanel.getPersistenceUnit(), Templates.getProject(wiz));
+            try {
+                ProviderUtil.addPersistenceUnit(ejbPanel.getPersistenceUnit(), Templates.getProject(wiz));
+            } catch (InvalidPersistenceXmlException ipx){
+                // just log for debugging purposes, at this point the user has 
+                // already been warned about an invalid persistence.xml
+                Logger.getLogger(EntityWizard.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NO18N
+            }
         }
         
         FileObject result = generateEntity(
@@ -177,7 +186,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                     idGetter = genUtils.addAnnotation(idGetter, idAnnotation);
                     idGetter = genUtils.addAnnotation(idGetter, generatedValueAnnotation);
                 }
-
+                
                 modifiedClazz = genUtils.addClassFields(clazz, Collections.singletonList(idField));
                 modifiedClazz = make.addClassMember(modifiedClazz, idSetter);
                 modifiedClazz = make.addClassMember(modifiedClazz, idGetter);
@@ -191,11 +200,17 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
         
         Project project = FileOwnerQuery.getOwner(targetFolder);
         if (project != null && !Util.isSupportedJavaEEVersion(project) && ProviderUtil.getDDFile(project) != null) {
-            PUDataObject pudo = ProviderUtil.getPUDataObject(project);
-            PersistenceUnit pu[] = pudo.getPersistence().getPersistenceUnit();
-            //only add if a PU exists, if there are more we do not know where to add - UI needed to ask
-            if (pu.length == 1) {
-                pudo.addClass(pu[0], targetName);
+            try{
+                PUDataObject pudo = ProviderUtil.getPUDataObject(project);
+                PersistenceUnit pu[] = pudo.getPersistence().getPersistenceUnit();
+                //only add if a PU exists, if there are more we do not know where to add - UI needed to ask
+                if (pu.length == 1) {
+                    pudo.addClass(pu[0], targetName);
+                }
+            } catch (InvalidPersistenceXmlException ipx){
+                // just log for debugging purposes, at this point the user has 
+                // already been warned about an invalid persistence.xml
+                Logger.getLogger(EntityWizard.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NO18N
             }
         }
         return entityFo;
