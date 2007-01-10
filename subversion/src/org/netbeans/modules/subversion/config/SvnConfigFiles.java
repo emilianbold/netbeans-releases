@@ -18,14 +18,10 @@
  */
 package org.netbeans.modules.subversion.config;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -41,8 +37,9 @@ import org.openide.util.Utilities;
  *
  * Handles the Subversions <b>servers</b> and <b>config</b> configuration files.</br>
  * Everytime the singleton instance is created are the values from the commandline clients
- * configuration directory (and registry folder in case of windows) merged into the Subversion 
- * modules configuration files. Already present proxy setting values wan't be changed, 
+ * configuration directory merged into the Subversion modules configuration files. 
+ * (registry on windows are ignored). 
+ * Already present proxy setting values wan't be changed, 
  * the remaining values are always taken from the commandline clients configuration files. 
  * The only exception is the 'store-auth-creds' key, which is always set to 'no'.
  * 
@@ -573,9 +570,7 @@ public class SvnConfigFiles {
      * in the folowing order:
      * <ol>
      *  <li> The per-user INI files
-     *  <li> The per-user Registry values (in case of Windows)
      *  <li> The system-wide INI files
-     *  <li> The system-wide Registry values (in case of Windows)
      * </ol> 
      *
      * @param fileName the file name
@@ -593,13 +588,7 @@ public class SvnConfigFiles {
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
-
-        String registryFileName = null;
-        if(Utilities.isWindows()) {
-            registryFileName = fileName.substring(0, 1).toUpperCase() + fileName.substring(1);
-            mergeFromRegistry("HKEY_LOCAL_MACHINE", registryFileName, system);          // NOI18N
-        }
-
+        
         Ini global = null;      
         try {
             global = new Ini(new FileReader(getGlobalConfigPath() + "/" + fileName));   // NOI18N
@@ -611,11 +600,7 @@ public class SvnConfigFiles {
                 
         if(global != null) {
             merge(global, system);
-        }
-        
-        if(Utilities.isWindows()) {
-            mergeFromRegistry("HKEY_CURRENT_USER", registryFileName, system);           // NOI18N
-        }
+        }        
 
         if(system.size() < 1) {
             ErrorManager.getDefault().log(ErrorManager.WARNING, "Could not load the file " + filePath + ". Falling back on svn defaults."); // NOI18N
@@ -745,104 +730,6 @@ public class SvnConfigFiles {
     }
 
     /**
-     * Merges all sections/keys/values from the given registry folder into the given ini file. 
-     * The registry key name is keyPrefix + "\\Software\\Tigris.org\\Subversion\\" + svnFile
-     *
-     * @param keyPrefix the registry key prefix
-     * @param svnFile the last registry key folder
-     * @param iniFile the target ini file in which the values from the registry folder are going to be merged
-     */   
-    private void mergeFromRegistry(String keyPrefix, String svnFile, Ini iniFile) {
-        String key = keyPrefix + "\\Software\\Tigris.org\\Subversion\\" + svnFile;        
-        File tmpFile;
-        try {
-            tmpFile = File.createTempFile("svn_registry", "");                                          // NOI18N               
-            tmpFile.deleteOnExit();            
-            String[] cmdLine = new String[] { "reg.exe", "export" , key, tmpFile.getAbsolutePath() };   // NOI18N            
-            
-            Process p;
-            try {
-                p = Runtime.getRuntime().exec(cmdLine);
-            } catch (IOException ex) {
-                // reg.exe doesn't seem to work, fallback on regedit.exe
-                cmdLine = new String[] { "regedit.exe", "/e" , tmpFile.getAbsolutePath(), key }; // NOI18N                
-                try {
-                    p = Runtime.getRuntime().exec(cmdLine);
-                } catch (IOException ex2) {
-                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Could not read the registry values for: " + key + ". " + ex2.getMessage());
-                    return;
-                }                
-            }
-            StreamHandler shErr = new StreamHandler(p.getErrorStream());
-            StreamHandler shIn = new StreamHandler(p.getInputStream());
-            shErr.start();
-            shIn.start();
-            p.waitFor(); 
-            shErr.join();
-            shIn.join();
-            
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);     
-            return;
-        } catch (InterruptedException ex) {
-            ErrorManager.getDefault().notify(ex);     
-            return;
-        }                 
-
-        if(!tmpFile.exists()) {
-            // no keys - no file
-            return;
-        }
-
-        key = "[" + key + "\\";     // for parsing purposes                                                  // NOI18N
-        BufferedInputStream is = null;        
-        BufferedReader br = null;
-        try {
-            is = FileUtils.createInputStream(tmpFile);                                    
-            br = new BufferedReader(new InputStreamReader(is, "Unicode"));                                   // NOI18N
-            String line = ""; // NOI18N
-            Ini.Section section = null;
-            while( (line = br.readLine()) != null ) {
-                line = line.trim();            
-                if(line.startsWith(key)) {
-                    String sectionName = line.substring(key.length(), line.length()-1).trim(); 
-                    if(sectionName.length() != 0) {                        
-                        section = (Ini.Section) iniFile.get(sectionName);
-                        if(section == null) {
-                            section = iniFile.add(sectionName);
-                        }                            
-                    }                    
-
-                } else {
-                    if( line.startsWith("\"#") && section != null ) {                                       // NOI18N
-                        String[] elements = line.split("\"=\"");                                            // NOI18N
-                        String variable = elements[0].substring(2);
-                        String value = elements[1].substring(0, elements[1].length()-1);
-                        if(!section.containsKey(variable)) {
-                            section.put(variable, value);
-                        }                        
-                    }                    
-                }
-            }            
-            
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);     
-        } finally {
-            try {                
-                if (br != null) {        
-                    br.close();
-                }                                
-                if (is != null) {        
-                    is.close();
-                }                
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);     
-            }                              
-        }
-        
-    }
-
-    /**
      * Returns the value for the %APPDATA% env variable on windows
      *
      */
@@ -885,30 +772,5 @@ public class SvnConfigFiles {
         }
         return "";                                                                                  // NOI18N
     }
-    
-    private class StreamHandler extends Thread {
-        private InputStream is;
-        private byte[] inputBuffer = new byte[1024];
-        StreamHandler(InputStream is) {
-            this.is = is;
-        }
-
-        public void run() {
-            try {
-                while(is.read(inputBuffer) != -1) {
-                    // nothing to do
-                };                
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
-            } finally {
-                if(is != null) {
-                    try {
-                        is.close();
-                    } catch (IOException ex) {
-                        ErrorManager.getDefault().notify(ex);
-                    }
-                }
-            }
-        }
-    }  
+        
 }
