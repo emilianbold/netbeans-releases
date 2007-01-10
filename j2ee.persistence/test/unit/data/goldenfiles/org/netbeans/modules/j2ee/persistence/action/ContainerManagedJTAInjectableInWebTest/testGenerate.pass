@@ -6,24 +6,24 @@ import javax.persistence.PersistenceContext;
 
 @PersistenceContext(name = "persistence/LogicalName", unitName = "MyPersistenceUnit")
 public class Test {
-@Resource
-private javax.transaction.UserTransaction utx;
+    @Resource
+    private javax.transaction.UserTransaction utx;
 
-protected void create(Object object) {
-    try {
-        javax.naming.Context ctx = (javax.naming.Context) new javax.naming.InitialContext().lookup("java:comp/env");
+    protected void create(Object object) {
+        try {
+            javax.naming.Context ctx = (javax.naming.Context) new javax.naming.InitialContext().lookup("java:comp/env");
 
-        utx.begin();
-        javax.persistence.EntityManager em = (javax.persistence.EntityManager) ctx.lookup("persistence/LogicalName");
+            utx.begin();
+            javax.persistence.EntityManager em = (javax.persistence.EntityManager) ctx.lookup("persistence/LogicalName");
 
-        em.persist(object);
-        utx.commit();
+            em.persist(object);
+            utx.commit();
+        }
+        catch (Exception e) {
+            java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,
+                                                                         "exception caught",
+                                                                         e);
+            throw new RuntimeException(e);
+        }
     }
-    catch (Exception e) {
-        java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE,
-                                                                     "exception caught",
-                                                                     e);
-        throw new RuntimeException(e);
-    }
-}
 }

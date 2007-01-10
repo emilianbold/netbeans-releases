@@ -56,7 +56,6 @@ public class ContainerManagedJTAInjectableInWebTest extends EntityManagerGenerat
         options.setReturnType("Object");
         
         FileObject result = generate(FileUtil.toFileObject(testFile), options);
-        print(result);
         assertFile(result);
     }
     
