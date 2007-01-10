@@ -22,6 +22,7 @@ package org.netbeans.core.windows.actions;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import javax.swing.AbstractAction;
+import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.NbTopManager;
 import org.netbeans.core.windows.WindowManagerImpl;
@@ -55,6 +56,9 @@ public class ResetWindowsAction extends AbstractAction {
         }
         
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        
+        wm.getMainWindow().setExtendedState( JFrame.NORMAL );
+        
         //get a list of editor windows that should stay open even after the reset
         final TopComponent[] editors = wm.getEditorTopComponents();
         
