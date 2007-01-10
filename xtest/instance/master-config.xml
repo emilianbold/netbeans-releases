@@ -86,7 +86,7 @@ Microsystems, Inc. All Rights Reserved.
         <module name="j2ee/ejbapi" testtypes="unit" attributes="stable"/>
 <!--        <module name="j2ee/ejbcore" testtypes="unit" attributes="stable"/> -->
         <module name="j2ee/ejbfreeform" testtypes="unit" attributes="stable"/>
-<!--        <module name="j2ee/ejbjarproject" testtypes="unit" attributes="stable"/> -->
+        <module name="j2ee/ejbjarproject" testtypes="unit" attributes="stable"/>
 <!--        <module name="j2ee/metadata" testtypes="unit" attributes="stable"/> -->
         <module name="j2ee/persistence" testtypes="unit" attributes="stable"/>
         <module name="j2ee/persistenceapi" testtypes="unit" attributes="stable"/>

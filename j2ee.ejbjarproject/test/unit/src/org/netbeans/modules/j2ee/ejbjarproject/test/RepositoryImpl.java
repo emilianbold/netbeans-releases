@@ -27,8 +27,8 @@ import org.openide.filesystems.XMLFileSystem;
 import org.xml.sax.SAXException;
 
 /**
- * Repository whose getDefaultFileSystem() returns a writeable FS containing
- * the layer of the websvc/jaxwsmodel. It is put in the default lookup,
+ * Repository whose getDefaultFileSystem() returns a writeable FS.
+ * It is put in the default lookup,
  * thus it is returned by Repository.getDefault().
  *
  * @author Andrei Badea, Radko Najman
@@ -42,14 +42,8 @@ public class RepositoryImpl extends Repository {
     }
     
     private static FileSystem createDefFs() {
-        try
-        {
-            FileSystem writeFs = FileUtil.createMemoryFileSystem();
-            FileSystem layerWebsvcJaxWsModel = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/websvc/jaxwsmodel/resources/layer.xml"));
-            return new MultiFileSystem(new FileSystem[] { writeFs, layerWebsvcJaxWsModel });
-        } catch (SAXException e) {
-            return null;
-        }
+        FileSystem writeFs = FileUtil.createMemoryFileSystem();
+        // add any other file systems here
+        return new MultiFileSystem(new FileSystem[] { writeFs });
     }
-    
 }
