@@ -96,7 +96,13 @@ public class EjbDeploymentConfiguration extends JBDeploymentConfiguration
      */
     public EjbDeploymentConfiguration(DeployableObject deployableObject) {
         super(deployableObject);
-        isEJB3 = ("3.0".equals(deployableObject.getDDBeanRoot().getDDBeanRootVersion())); // NOI81N
+        if (deployableObject != null && deployableObject.getDDBeanRoot() != null &&
+            "3.0".equals(deployableObject.getDDBeanRoot().getDDBeanRootVersion())) { // NOI81N
+            isEJB3 = true;
+        }
+        else {
+            isEJB3 = false;
+        }
     }
     
     /**
@@ -119,18 +125,21 @@ public class EjbDeploymentConfiguration extends JBDeploymentConfiguration
             }
         }
         
-        //listen on the resource-ref element
-        deplObj.getDDBeanRoot().addXpathListener(SESSION_RESOURCE_REF, this);
-        deplObj.getDDBeanRoot().addXpathListener(ENTITY_RESOURCE_REF, this);
-        deplObj.getDDBeanRoot().addXpathListener(SESSION_EJB_REF, this);
-        deplObj.getDDBeanRoot().addXpathListener(ENTITY_EJB_REF, this);
-        deplObj.getDDBeanRoot().addXpathListener(MSGDRV_RESOURCE_REF, this);
-        deplObj.getDDBeanRoot().addXpathListener(MSGDRV_EJB_REF, this);
-        deplObj.getDDBeanRoot().addXpathListener(MSGDRV, this);
-        deplObj.getDDBeanRoot().addXpathListener(MSGDRV_MSG_DEST, this);
-        deplObj.getDDBeanRoot().addXpathListener(SESSION_MSG_DEST_REF, this);
-        deplObj.getDDBeanRoot().addXpathListener(ENTITY_MSG_DEST_REF, this);
-        deplObj.getDDBeanRoot().addXpathListener(MSGDRV_MSG_DEST_REF, this);
+        if (deplObj != null && deplObj.getDDBeanRoot() != null ) {
+            //listen on the resource-ref element
+            DDBeanRoot root = deplObj.getDDBeanRoot();
+            root.addXpathListener(SESSION_RESOURCE_REF, this);
+            root.addXpathListener(ENTITY_RESOURCE_REF, this);
+            root.addXpathListener(SESSION_EJB_REF, this);
+            root.addXpathListener(ENTITY_EJB_REF, this);
+            root.addXpathListener(MSGDRV_RESOURCE_REF, this);
+            root.addXpathListener(MSGDRV_EJB_REF, this);
+            root.addXpathListener(MSGDRV, this);
+            root.addXpathListener(MSGDRV_MSG_DEST, this);
+            root.addXpathListener(SESSION_MSG_DEST_REF, this);
+            root.addXpathListener(ENTITY_MSG_DEST_REF, this);
+            root.addXpathListener(MSGDRV_MSG_DEST_REF, this);
+        }
     }
        
     /**

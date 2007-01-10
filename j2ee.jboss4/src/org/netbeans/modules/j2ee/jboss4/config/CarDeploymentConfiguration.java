@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import javax.enterprise.deploy.model.DDBean;
+import javax.enterprise.deploy.model.DDBeanRoot;
 import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.model.XpathEvent;
 import javax.enterprise.deploy.model.XpathListener;
@@ -86,11 +87,14 @@ public class CarDeploymentConfiguration extends JBDeploymentConfiguration
             }
         }
         
-        //listen on the resource-ref element
-        deplObj.getDDBeanRoot().addXpathListener(DISPLAY_NAME, this);
-        deplObj.getDDBeanRoot().addXpathListener(RESOURCE_REF, this);
-        deplObj.getDDBeanRoot().addXpathListener(EJB_REF, this);
-        deplObj.getDDBeanRoot().addXpathListener(SERVICE_REF, this);
+        if (deplObj != null && deplObj.getDDBeanRoot() != null ) {
+            //listen on the resource-ref element
+            DDBeanRoot root = deplObj.getDDBeanRoot();
+            root.addXpathListener(DISPLAY_NAME, this);
+            root.addXpathListener(RESOURCE_REF, this);
+            root.addXpathListener(EJB_REF, this);
+            root.addXpathListener(SERVICE_REF, this);
+        }
     }
     
     /**
