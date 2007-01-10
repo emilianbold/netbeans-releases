@@ -292,7 +292,8 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
                 transaction.fireEvents();
             }
             // no-need to flush or undo/redo support while in sync
-            if (! inSync() && transaction.hasEvents()) {
+            if (! inSync() && transaction.hasEvents() ||
+                transaction.hasEventsAfterFiring()) {
                 getAccess().flush();
             }
             if (! inUndoRedo()) {
@@ -361,6 +362,7 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
         private final List<ComponentEvent> componentListenerEvents;
         private final Thread transactionThread;
         private boolean eventAdded;
+        private Boolean eventsAddedAfterFiring;
         private boolean hasEvents;
         
         public Transaction() {
@@ -368,18 +370,31 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
             componentListenerEvents = new ArrayList<ComponentEvent>();
             transactionThread = Thread.currentThread();
             eventAdded = false;
+            eventsAddedAfterFiring = null;
             hasEvents = false;
         }
         
         public void addPropertyChangeEvent(PropertyChangeEvent pce) {
             propertyChangeEvents.add(pce);
-            eventAdded = true;
+            // do not chain events during undo/redo
+            if (eventsAddedAfterFiring == null || ! inUndoRedo) {
+                eventAdded = true;
+            }
+            if (eventsAddedAfterFiring != null) {
+                eventsAddedAfterFiring = Boolean.TRUE;
+            }
             hasEvents = true;
         }
         
         public void addComponentEvent(ComponentEvent cle) {
             componentListenerEvents.add(cle);
-            eventAdded = true;
+            // do not chain events during undo/redo
+            if (eventsAddedAfterFiring == null || ! inUndoRedo) {
+                eventAdded = true;
+            }
+            if (eventsAddedAfterFiring != null) {
+                eventsAddedAfterFiring = Boolean.TRUE;
+            }
             hasEvents = true;
         }
         
@@ -388,6 +403,9 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
         }
         
         public void fireEvents() {
+            if (eventsAddedAfterFiring == null) {
+                eventsAddedAfterFiring = Boolean.FALSE;
+            }
             while (eventAdded) {
                 eventAdded = false;
                 fireCompleteEventSet();
@@ -440,6 +458,19 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
         public boolean hasEvents() {
             return hasEvents;
         }
+
+        public boolean hasEventsAfterFiring() {
+            return eventsAddedAfterFiring != null && eventsAddedAfterFiring.booleanValue();
+        }
+    }
+    
+    /**
+     * Whether the model has started firing events.  This is the indication of 
+     * beginning of endTransaction call and any subsequent mutations are from
+     * handlers of main transaction events or some of their own events.
+     */
+    public boolean startedFiringEvents() {
+        return transaction != null && transaction.eventsAddedAfterFiring != null;
     }
     
     protected class ModelUndoableEdit extends CompoundEdit {

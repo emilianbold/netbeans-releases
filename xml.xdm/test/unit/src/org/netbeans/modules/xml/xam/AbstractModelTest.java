@@ -30,6 +30,7 @@ public class AbstractModelTest extends TestCase {
     PropertyListener plistener;
     TestComponentListener listener;
     TestModel model;
+    Document doc;
 
     static class PropertyListener implements PropertyChangeListener {
         List<PropertyChangeEvent> events  = new ArrayList<PropertyChangeEvent>();
@@ -92,7 +93,8 @@ public class AbstractModelTest extends TestCase {
     }
     
     private void defaultSetup() throws Exception {
-        model = Util.loadModel("resources/test1.xml");
+        doc = Util.getResourceAsDocument("resources/test1.xml");
+        model = Util.loadModel(doc);
         model.addComponentListener(listener);
         model.addPropertyChangeListener(plistener);
     }
@@ -140,7 +142,7 @@ public class AbstractModelTest extends TestCase {
         defaultSetup();
         assertEquals("testState.invalid", State.VALID, model.getState());
 
-        Util.setDocumentContentTo(model.getBaseDocument(), "resources/Bad.xml");
+        Util.setDocumentContentTo(doc, "resources/Bad.xml");
         try {
             model.sync();
             assertFalse("not getting expected ioexception", true);
@@ -149,7 +151,7 @@ public class AbstractModelTest extends TestCase {
             plistener.assertEvent(Model.STATE_PROPERTY, Model.State.VALID, Model.State.NOT_WELL_FORMED);
         }
         
-        Util.setDocumentContentTo(model.getBaseDocument(), "resources/test1.xml");
+        Util.setDocumentContentTo(doc, "resources/test1.xml");
         model.sync();
         assertEquals("testState.valid", State.VALID, model.getState());
         plistener.assertEvent(Model.STATE_PROPERTY, Model.State.NOT_WELL_FORMED, Model.State.VALID);
@@ -167,19 +169,27 @@ public class AbstractModelTest extends TestCase {
         String testValue = "edit #1: testRemoveAttribute";
         a1.setValue(testValue);
         model.endTransaction();
-        assertEquals("setup", testValue, a1.getValue());
+        assertEquals(testValue, a1.getValue());
 
         um.undo();
         assertNull("after undo expect no attribute 'value'", a1.getValue());
         
         um.redo();
-        assertEquals("setup", testValue, a1.getValue());
+        assertEquals(testValue, a1.getValue());
 
-        Util.setDocumentContentTo(model.getBaseDocument(), "resources/test1.xml");
+        Util.setDocumentContentTo(doc, "resources/test1.xml");
         model.sync();
         assertNull("sync back to original, expect no attribute 'value'", a1.getValue());
         plistener.assertEvent("value", testValue, null);
         listener.assertEvent(ComponentEvent.EventType.VALUE_CHANGED, a1);
+        
+        um.undo();
+        model.getAccess().flush(); // after fix for 83963 need flush after undo/redo
+        
+        assertEquals(testValue, a1.getValue());
+        model = Util.dumpAndReloadModel(model);
+        a1 = model.getRootComponent().getChild(A.class);
+        assertEquals(testValue, a1.getValue());
     }
     
     public void testMultipleMutationUndoRedo() throws Exception {
@@ -274,7 +284,7 @@ public class AbstractModelTest extends TestCase {
         model.addUndoableEditListener(urListener);
         assertEquals("setup: initial", 1, model.getRootComponent().getChildren(C.class).size());
         
-        Util.setDocumentContentTo(model.getBaseDocument(), "resources/test2.xml");
+        Util.setDocumentContentTo(doc, "resources/test2.xml");
         model.sync();
         assertEquals("setup: sync", 0, model.getRootComponent().getChildren(C.class).size());
 
@@ -285,7 +295,7 @@ public class AbstractModelTest extends TestCase {
         assertEquals("undo sync", 0, model.getRootComponent().getChildren(C.class).size());
     }
     
-    public void FIXME_testSourceEditSyncUndo() throws Exception {
+    public void testSourceEditSyncUndo() throws Exception {
         defaultSetup();
         UndoManager urListener = new UndoManager();
         Document doc = model.getBaseDocument();
@@ -297,16 +307,23 @@ public class AbstractModelTest extends TestCase {
         model.endTransaction();		
         assertEquals("first edit setup", 2, model.getRootComponent().getChildren(B.class).size());
         
+        // see fix for issue 83963, with this fix we need coordinate edits from
+        // on XDM model and on document buffer.  This reduce XDM undo/redo efficiency,
+        // but is the best we can have to satisfy fine-grained text edit undo requirements.
         model.removeUndoableEditListener(urListener);
         doc.addUndoableEditListener(urListener);
-        Util.setDocumentContentTo(model.getBaseDocument(), "resources/test2.xml");
+        
+        Util.setDocumentContentTo(doc, "resources/test2.xml");
         assertEquals("undo sync", 1, model.getRootComponent().getChildren(C.class).size());
         model.sync();
+        doc.removeUndoableEditListener(urListener);
         
         assertEquals("sync setup", 1, model.getRootComponent().getChildren(B.class).size());
         assertEquals("sync setup", 0, model.getRootComponent().getChildren(C.class).size());
         
-        urListener.undo(); urListener.undo(); // setDocumentContentTo did delete all, then insert
+        // setDocumentContentTo did delete all, then insert, hence 2 undo's'
+        urListener.undo(); urListener.undo(); 
+        model.sync(); // the above undo's are just on document buffer, needs sync (inefficient).
         assertEquals("undo sync", 1, model.getRootComponent().getChildren(C.class).size());
         assertEquals("undo sync", 2, model.getRootComponent().getChildren(B.class).size());
 
@@ -317,7 +334,9 @@ public class AbstractModelTest extends TestCase {
         assertEquals("redo first edit", 1, model.getRootComponent().getChildren(C.class).size());
         assertEquals("redo first edit", 2, model.getRootComponent().getChildren(B.class).size());
 
-        urListener.redo();
+        // needs to back track the undo's, still needs sync'
+        urListener.redo(); urListener.redo();
+        model.sync();
         assertEquals("redo to sync", 1, model.getRootComponent().getChildren(B.class).size());
         assertEquals("redo to sync", 0, model.getRootComponent().getChildren(C.class).size());
     }
@@ -413,8 +432,8 @@ public class AbstractModelTest extends TestCase {
     }
     
     public void testStartTransactionAfterModelSyncedIntoUnparseableState() throws Exception {
-        TestModel model = Util.loadModel("resources/test1.xml");
-        Util.setDocumentContentTo(model.getBaseDocument(), "resources/Bad.xml");
+        defaultSetup();
+        Util.setDocumentContentTo(doc, "resources/Bad.xml");
         try {
             model.sync();
             assertFalse("Did not get expected IOException", true);
@@ -432,11 +451,12 @@ public class AbstractModelTest extends TestCase {
     
     // sync with ns change will cause identity change and subsequently component delete/added events.
     public void testNamespaceAttribute() throws Exception {
-        model = Util.loadModel("resources/test3.xml");
+        doc = Util.getResourceAsDocument("resources/test3.xml");
+        model = Util.loadModel(doc);
         model.addComponentListener(listener);
         TestComponent root = model.getRootComponent();
         
-        Util.setDocumentContentTo(model.getBaseDocument(), "resources/test3_changedNSonA2.xml");
+        Util.setDocumentContentTo(doc, "resources/test3_changedNSonA2.xml");
         model.sync();
         
         listener.assertEvent(ComponentEvent.EventType.CHILD_REMOVED, root);
@@ -465,15 +485,15 @@ public class AbstractModelTest extends TestCase {
 
     // sync with ns change will cause identity change and subsequently component delete/added events.
     public void testRootNSChangeOK() throws Exception {
-		Document doc = Util.getResourceAsDocument("resources/test1.xml");
-		assert doc != null;
+        Document doc = Util.getResourceAsDocument("resources/test1.xml");
+        assert doc != null;
         TestModel2 model = new TestModel2(doc);
         model.sync();
         model.addComponentListener(listener);
         TestComponent root = model.getRootComponent();
         assertEquals(TestComponent.NS_URI, model.getRootComponent().getNamespaceURI());
         
-        Util.setDocumentContentTo(model.getBaseDocument(), "resources/test1_rootnschange.xml");
+        Util.setDocumentContentTo(doc, "resources/test1_rootnschange.xml");
         model.sync();
         assertEquals(Model.State.VALID, model.getState());
         assertTrue(root != model.getRootComponent());
@@ -483,7 +503,7 @@ public class AbstractModelTest extends TestCase {
     public void testRootNSChangeException() throws Exception {
         defaultSetup();
         
-        Util.setDocumentContentTo(model.getBaseDocument(), "resources/test1_rootnschange.xml");
+        Util.setDocumentContentTo(doc, "resources/test1_rootnschange.xml");
         try {
             model.sync();
             assertTrue("Should have thrown IOException", false);
@@ -497,7 +517,7 @@ public class AbstractModelTest extends TestCase {
     public void testRootChange() throws Exception {
         defaultSetup();
         TestComponent root = model.getRootComponent();
-        Util.setDocumentContentTo(model.getBaseDocument(), "resources/test1_rootchange.xml");
+        Util.setDocumentContentTo(doc, "resources/test1_rootchange.xml");
         model.sync();
         
         assertEquals("root is same", root, model.getRootComponent());
@@ -618,7 +638,7 @@ public class AbstractModelTest extends TestCase {
         setupSyncFault(new FaultInjector() {
             public void injectFaultAndCheck(Object actor) throws Exception {
                 model.injectFaultInFindComponent();
-                Util.setDocumentContentTo(model.getBaseDocument(), "resources/test2.xml");
+                Util.setDocumentContentTo(doc, "resources/test2.xml");
                 model.sync();
             }
         });
@@ -628,7 +648,7 @@ public class AbstractModelTest extends TestCase {
         setupSyncFault(new FaultInjector() {
             public void injectFaultAndCheck(Object actor) throws Exception {
                 model.injectFaultInSyncUpdater();
-                Util.setDocumentContentTo(model.getBaseDocument(), "resources/test2.xml");
+                Util.setDocumentContentTo(doc, "resources/test2.xml");
                 model.sync();
             }
         });
@@ -638,7 +658,7 @@ public class AbstractModelTest extends TestCase {
         setupSyncFault(new FaultInjector() {
             public void injectFaultAndCheck(Object actor) throws Exception {
                 model.injectFaultInEventFiring();
-                Util.setDocumentContentTo(model.getBaseDocument(), "resources/test2.xml");
+                Util.setDocumentContentTo(doc, "resources/test2.xml");
                 model.sync();
             }
         });
@@ -739,21 +759,22 @@ public class AbstractModelTest extends TestCase {
         assertTrue(diffs.toString(), ((Change)diffs.get(2)).isAttributeChanged());
 
         defaultSetup();
-        Util.setDocumentContentTo(model.getBaseDocument(), "resources/test1_1.xml");
+        Util.setDocumentContentTo(doc, "resources/test1_1.xml");
         model.sync();
         assertEquals("diffs="+diffs, "foo", model.getRootComponent().getChild(B.class).getValue());
     }
 
     public void testSyncWithReorder() throws Exception {
-        model = Util.loadModel("resources/testreorder.xml");
+        doc = Util.getResourceAsDocument("resources/testreorder.xml");
+        model = Util.loadModel(doc);
         model.addComponentListener(listener);
         model.addPropertyChangeListener(plistener);
         
-        Util.setDocumentContentTo(model.getBaseDocument(), "resources/testreorder_1.xml");
+        Util.setDocumentContentTo(doc, "resources/testreorder_1.xml");
         //model.sync();
-        Util.setDocumentContentTo(model.getBaseDocument(), "resources/testreorder_2.xml");
+        Util.setDocumentContentTo(doc, "resources/testreorder_2.xml");
         //model.sync();
-        Util.setDocumentContentTo(model.getBaseDocument(), "resources/testreorder_3.xml");
+        Util.setDocumentContentTo(doc, "resources/testreorder_3.xml");
         model.sync();
         assertEquals("Expect a2 is now first", 2, model.getRootComponent().getChildren(A.class).get(0).getIndex());
     }
@@ -762,8 +783,8 @@ public class AbstractModelTest extends TestCase {
         List<Difference> diffs = Util.diff("resources/test1.xml", "resources/noprolog.xml");
         assertEquals("should also include change in prolog", 1, diffs.size());
         
-        model = Util.loadModel("resources/test1.xml");
-        Util.setDocumentContentTo(model.getBaseDocument(), "resources/noprolog.xml");
+        defaultSetup();
+        Util.setDocumentContentTo(doc, "resources/noprolog.xml");
         model.sync();
         org.netbeans.modules.xml.xdm.nodes.Document doc = 
             (org.netbeans.modules.xml.xdm.nodes.Document) model.getDocument();
@@ -774,11 +795,11 @@ public class AbstractModelTest extends TestCase {
         List<Difference> diffs = Util.diff("resources/test1.xml", "resources/test1_changedProlog.xml");
         assertEquals("should also include change in prolog", 1, diffs.size());
 
-        model = Util.loadModel("resources/test1.xml");
+        defaultSetup();
         org.netbeans.modules.xml.xdm.nodes.Document oldDoc = 
             (org.netbeans.modules.xml.xdm.nodes.Document) model.getDocument();
         
-        Util.setDocumentContentTo(model.getBaseDocument(), "resources/test1_changedProlog.xml");
+        Util.setDocumentContentTo(doc, "resources/test1_changedProlog.xml");
         model.sync();
         
         org.netbeans.modules.xml.xdm.nodes.Document doc = 
@@ -792,11 +813,11 @@ public class AbstractModelTest extends TestCase {
         List<Difference> diffs = Util.diff("resources/test1.xml", "resources/test1_changedProlog2.xml");
         assertEquals("should also include change in prolog "+diffs, 9, diffs.size());
 
-        model = Util.loadModel("resources/test1.xml");
+        defaultSetup();
         org.netbeans.modules.xml.xdm.nodes.Document oldDoc = 
             (org.netbeans.modules.xml.xdm.nodes.Document) model.getDocument();
         
-        Util.setDocumentContentTo(model.getBaseDocument(), "resources/test1_changedProlog2.xml");
+        Util.setDocumentContentTo(doc, "resources/test1_changedProlog2.xml");
         model.sync();
         
         org.netbeans.modules.xml.xdm.nodes.Document doc = 
@@ -834,5 +855,58 @@ public class AbstractModelTest extends TestCase {
         model = Util.dumpAndReloadModel(model);
         D d = model.getRootComponent().getChild(D.class);
         assertNotNull(d.getChild(B.class));
+    }
+    
+    public void testFlushOnMutationFromSyncEvent() throws Exception {
+        defaultSetup();
+        model.addComponentListener(new Handler());
+        Util.setDocumentContentTo(doc, "resources/test1_2.xml");
+        model.sync();
+        D d = model.getRootComponent().getChild(D.class);
+        assertNotNull(d.getChild(B.class));
+        
+        Util.dumpToFile(doc, new File("c:/temp/test1.xml"));
+        model = Util.dumpAndReloadModel(model);
+        d = model.getRootComponent().getChild(D.class);
+        assertNotNull(d.getChild(B.class));
+    }
+
+    public void testUndoRedoOnMutationFromEvent() throws Exception {
+        defaultSetup();
+        model.addComponentListener(new Handler());
+        UndoManager um = new UndoManager();
+        model.addUndoableEditListener(um);
+
+        model.startTransaction();
+        model.getRootComponent().appendChild("test", new D(model, 2));
+        model.endTransaction();
+
+        Util.dumpToFile(doc, new File("c:/temp/test1-xam-mutation.xml"));
+        
+        um.undo();
+        D d = model.getRootComponent().getChild(D.class);
+        assertNull(d);
+        um.redo();
+        d = model.getRootComponent().getChild(D.class);
+        assertNotNull(d.getChild(B.class));
+        Util.dumpToFile(doc, new File("c:/temp/test1-xam-mutation-redo.xml"));
+    }
+
+    public void testUndoOnMutationFromSyncEvent() throws Exception {
+        defaultSetup();
+        model.addComponentListener(new Handler());
+        UndoManager um = new UndoManager();
+        model.addUndoableEditListener(um);
+
+        Util.setDocumentContentTo(doc, "resources/test1_2.xml");
+        model.sync();
+        D d = model.getRootComponent().getChild(D.class);
+        assertNotNull(d.getChild(B.class));
+        um.undo();
+        model.getAccess().flush(); // after fix for 83963 need manual flush after undo/redo
+
+        assertNull(model.getRootComponent().getChild(D.class));
+        model = Util.dumpAndReloadModel(model);
+        assertNull(model.getRootComponent().getChild(D.class));
     }
 }

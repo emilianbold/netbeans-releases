@@ -176,6 +176,10 @@ public class Util {
             m1.getDocument(), m2.getDocument());
     }
     
+    public static TestModel loadModel(Document doc) throws Exception {
+        return new TestModel(doc);
+    }
+    
     public static TestModel loadModel(String path) throws Exception {
         return new TestModel(getResourceAsDocument(path));
     }
@@ -184,8 +188,8 @@ public class Util {
         return new TestModel(loadDocument(f));
     }
     
-    public static TestModel dumpAndReloadModel(DocumentModel sm) throws Exception {
-        Document doc = (Document) ((AbstractDocumentModel)sm).getBaseDocument();
+    public static TestModel dumpAndReloadModel(TestModel sm) throws Exception {
+        Document doc = sm.getBaseDocument();
         File f = dumpToTempFile(doc);
         return loadModel(f);
     }

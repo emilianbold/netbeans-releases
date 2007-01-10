@@ -195,8 +195,12 @@ public class XDMAccess extends DocumentModelAccess {
         return -1;
     }
     
+    private boolean noMutations() {
+        return model.inSync() && ! model.startedFiringEvents() || model.inUndoRedo();
+    }
+    
     public void setAttribute(org.w3c.dom.Element element, String name, String value, NodeUpdater updater) {
-        if (model.inSync()) return;
+        if (noMutations()) return;
         if(element instanceof Node) {
             Element xdmElem = (Element)element;
             if(xdmElem.isInTree()) {
@@ -210,7 +214,7 @@ public class XDMAccess extends DocumentModelAccess {
     }
     
     public void removeAttribute(org.w3c.dom.Element element, String name, NodeUpdater updater) {
-        if (model.inSync()) return;
+        if (noMutations()) return;
         if(element instanceof Node) {
             Element xdmElem = (Element)element;
             if(xdmElem.isInTree()) {
@@ -224,7 +228,7 @@ public class XDMAccess extends DocumentModelAccess {
     }
     
     public void appendChild(org.w3c.dom.Node node, org.w3c.dom.Node newChild, NodeUpdater updater) {
-        if (model.inSync()) return;
+        if (noMutations()) return;
         if(node instanceof Node && newChild instanceof Node) {
             Node xdmNode = (Node)node;
             if (xdmNode.isInTree()) {
@@ -238,7 +242,7 @@ public class XDMAccess extends DocumentModelAccess {
     }
     
     public void insertBefore(org.w3c.dom.Node node, org.w3c.dom.Node newChild, org.w3c.dom.Node refChild, NodeUpdater updater) {
-        if (model.inSync()) return;
+        if (noMutations()) return;
         if (node instanceof Node && newChild instanceof Node && refChild instanceof Node) {
             Node xdmNode = (Node)node;
             if(xdmNode.isInTree()) {
@@ -252,7 +256,7 @@ public class XDMAccess extends DocumentModelAccess {
     }
     
     public void removeChild(org.w3c.dom.Node node, org.w3c.dom.Node child, NodeUpdater updater) {
-        if (model.inSync()) return;
+        if (noMutations()) return;
         if(node instanceof Node && child instanceof Node) {
             Node xdmNode = (Node)node;
             if(xdmNode.isInTree()) {
@@ -266,7 +270,7 @@ public class XDMAccess extends DocumentModelAccess {
     }
     
     public void removeChildren(org.w3c.dom.Node node, Collection<org.w3c.dom.Node> children, NodeUpdater updater) {
-        if (model.inSync()) return;
+        if (noMutations()) return;
         if(node instanceof Node) {
             ArrayList<Node> nodes = new ArrayList<Node>();
             for (org.w3c.dom.Node n : children) {
@@ -290,7 +294,7 @@ public class XDMAccess extends DocumentModelAccess {
     }
     
     public void replaceChild(org.w3c.dom.Node node, org.w3c.dom.Node child, org.w3c.dom.Node newChild, NodeUpdater updater) {
-        if (model.inSync()) return;
+        if (noMutations()) return;
         Node xdmNode = (Node)node;
         if(xdmNode.isInTree()) {
             updater.updateReference(xdmModel.replaceChild(xdmNode, (Node)child, (Node)newChild));
@@ -303,7 +307,7 @@ public class XDMAccess extends DocumentModelAccess {
      * Replace children content with single text node having string value.
      */
     public void setText(org.w3c.dom.Element element, String val, NodeUpdater updater) {
-        if (model.inSync()) return;
+        if (noMutations()) return;
         Element xdmElem = (Element)element;
         if(xdmElem.isInTree()) {
             updater.updateReference(xdmModel.setTextValue(xdmElem,val));
@@ -328,7 +332,7 @@ public class XDMAccess extends DocumentModelAccess {
      * Replace element children with result from parsing of given xml fragment text.
      */
     public void setXmlFragment(org.w3c.dom.Element element, String val, NodeUpdater updater) throws IOException {
-        if (model.inSync()) return;
+        if (noMutations()) return;
         Element xdmElem = (Element)element;
         if(xdmElem.isInTree()) {
             updater.updateReference(xdmModel.setXmlFragmentText(xdmElem, val));
@@ -338,7 +342,7 @@ public class XDMAccess extends DocumentModelAccess {
     }
     
     public void setPrefix(org.w3c.dom.Element element, String prefix) {
-        if (model.inSync()) return;
+        if (noMutations()) return;
         Element xdmElement = (Element)element;
         if (! xdmElement.isInTree()) {
             xdmElement.setPrefix(prefix);
