@@ -23,8 +23,8 @@ import java.awt.Insets;
 import java.awt.Color;
 import java.awt.Component;
 import javax.swing.JLabel;
+import javax.swing.UIManager;
 import javax.swing.border.AbstractBorder;
-
 
 /**
  *
@@ -32,8 +32,8 @@ import javax.swing.border.AbstractBorder;
  */
 public class LoweredBorder extends AbstractBorder {
 
-    private Color darker = new JLabel ().getBackground ().darker ().darker ();
-    private Color brighter = new JLabel ().getBackground ().brighter ().brighter ();
+    private Color darker = getLabelBackgroundColor().darker ().darker ();
+    private Color brighter = getLabelBackgroundColor().brighter ().brighter ();
 
     public void paintBorder (
         Component c,
@@ -58,5 +58,10 @@ public class LoweredBorder extends AbstractBorder {
 
     public boolean isBorderOpaque () { 
         return true; 
+    }
+    
+    private static Color getLabelBackgroundColor() {
+        Color retval = new JLabel ().getBackground ();
+        return (retval != null) ? retval : UIManager.getDefaults().getColor("Label.background");//NOI18N;
     }
 }
