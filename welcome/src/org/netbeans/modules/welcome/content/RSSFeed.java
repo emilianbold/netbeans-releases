@@ -227,6 +227,12 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
                         setContent( buildProxyPanel() );
                     }
                 });
+            } catch( IOException ioE ) {
+                SwingUtilities.invokeLater( new Runnable() {
+                    public void run() {
+                        setContent( buildProxyPanel() );
+                    }
+                });
             } catch( Exception e ) {
                 SwingUtilities.invokeLater( new Runnable() {
                     public void run() {

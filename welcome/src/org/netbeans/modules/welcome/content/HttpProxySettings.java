@@ -40,13 +40,6 @@ class HttpProxySettings {
 
     public static final String PROXY_SETTINGS = "ProxySettings"; // NOI18N
     
-    private static String[] proxyChangeEvents = { "useProxy" // NOI18N
-                ,"proxyType" // NOI18N
-                ,"userProxyHost" // NOI18N
-                ,"userProxyPort" // NOI18N
-                ,"userNonProxy" // NOI18N
-                };
-
     /** Creates a new instance of HttpProxySettings */
     private HttpProxySettings() {
         initProxyMethodsMaybe();
@@ -76,32 +69,10 @@ class HttpProxySettings {
         assert proxySettingsNode != null;
         proxySettingsNode.addPreferenceChangeListener (new PreferenceChangeListener (){
             public void preferenceChange (PreferenceChangeEvent evt) {
-                if (evt.getKey ().startsWith ("proxy")) {
+                if (evt.getKey ().startsWith ("proxy") || evt.getKey ().startsWith ("useProxy")) {
                     getDefault ().propertySupport.firePropertyChange (PROXY_SETTINGS, null, getDefault());
                 }
             }
         });
-    }
-
-    /** Gets proxy usage */
-    static int getProxyType () {
-        return proxySettingsNode.getInt ("proxyType", 1);
-    }
-
-    /** Gets Proxy Host */
-    static String getUserProxyHost() {
-        return proxySettingsNode.get ("proxyHttpHost", "");
-    }
-
-    /** Gets Proxy Port */
-    static String getUserProxyPort() {
-        return proxySettingsNode.get ("proxyHttpPort", "");
-   }
-
-    /** Sets the whole proxy configuration */
-    static void setProxyConfiguration (int proxyType, String host, String port) {
-        proxySettingsNode.putInt ("proxyType", proxyType);
-        proxySettingsNode.put ("proxyHttpHost", host);
-        proxySettingsNode.put ("proxyHttpPort", port);
     }
 }
