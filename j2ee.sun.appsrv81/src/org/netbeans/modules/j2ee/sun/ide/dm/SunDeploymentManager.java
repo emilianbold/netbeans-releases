@@ -510,20 +510,23 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
         
         try {
-            grabInnerDM(false);
-            TargetModuleID[] tm =  innerDM.getAvailableModules(modType, target);
-/*     	System.out.println("in getAvailableModules "+modType);
-         for(int i = 0; i < target.length; i++) {
-                System.out.println("Target is "+i+" "+target[i]);
-         }
-        for(int j = 0; j < tm.length; j++) {
-                System.out.println("TargetModuleID is "+j+" "+tm[j]);
-         }
- */
-            return tm;
+            try {
+                grabInnerDM(false);
+                TargetModuleID[] tm =  innerDM.getAvailableModules(modType, target);
+    /*     	System.out.println("in getAvailableModules "+modType);
+             for(int i = 0; i < target.length; i++) {
+                    System.out.println("Target is "+i+" "+target[i]);
+             }
+            for(int j = 0; j < tm.length; j++) {
+                    System.out.println("TargetModuleID is "+j+" "+tm[j]);
+             }
+     */
+                return tm;
+            } finally {
+                releaseInnerDM();
+            }
         } finally{
             Thread.currentThread().setContextClassLoader(origClassLoader);
-            releaseInnerDM();
         }
     }
     
@@ -557,12 +560,15 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
         try{
-            grabInnerDM(false);
-            TargetModuleID[] ttt= innerDM.getRunningModules(mType, target);
-            return ttt;
+            try {
+                grabInnerDM(false);
+                TargetModuleID[] ttt= innerDM.getRunningModules(mType, target);
+                return ttt;
+            } finally {
+                releaseInnerDM();            
+            }
         } finally{
             Thread.currentThread().setContextClassLoader(origClassLoader);
-            releaseInnerDM();
         }
         
     }
@@ -680,7 +686,9 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             //        innerPlan = new FileInputStream(f);
             grabInnerDM(false);
             ProgressObject  retVal = innerDM.redeploy(targetModuleID, archive, innerPlan);
-            retVal.addProgressListener(new ReleaseInnerDMPL(Thread.currentThread()));
+            if (null != retVal) {
+                retVal.addProgressListener(new ReleaseInnerDMPL(Thread.currentThread()));
+            }
             return retVal;
         } catch (IllegalStateException ise) {
             releaseInnerDM();
@@ -721,7 +729,9 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         try{
             grabInnerDM(false);
             ProgressObject retVal = innerDM.redeploy(targetModuleID, archive, null);
-            retVal.addProgressListener(new ReleaseInnerDMPL(Thread.currentThread()));
+            if (null != retVal) {
+                retVal.addProgressListener(new ReleaseInnerDMPL(Thread.currentThread()));
+            }
             return  retVal;
         } catch (IllegalStateException ise) {
             releaseInnerDM();
@@ -839,7 +849,9 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         try{
             grabInnerDM(false);
             retVal = innerDM.undeploy(targetModuleID);
-            retVal.addProgressListener(new ReleaseInnerDMPL(Thread.currentThread()));
+            if (null != retVal) {
+                retVal.addProgressListener(new ReleaseInnerDMPL(Thread.currentThread()));
+            }
             return retVal;
         }
         
