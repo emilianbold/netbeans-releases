@@ -259,7 +259,7 @@ public final class PropertyValue {
     }
 
     /**
-     * Returns non-array or enum value.
+     * Returns primitive or enum value (not component, not array).
      * @return the value
      */
     public Object getValue () {
