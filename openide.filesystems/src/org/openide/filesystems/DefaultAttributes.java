@@ -215,7 +215,7 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
             if ((Utilities.getOperatingSystem() == Utilities.OS_VMS) && (arr[0] != null) && (f != null)) {
                 if (arr[0].equalsIgnoreCase("_nbattrs.")) {
                     try {
-                        change.delete(f + "/" + arr[0]); // NOI18N
+                        deleteFile(f + "/" + arr[0]); // NOI18N
                     } catch (IOException ioe) {
                     }
 
@@ -225,7 +225,7 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
 
             if ((getFileName().equals(arr[0]) || ATTR_NAME_EXT_XML.equals(arr[0]) || ATTR_NAME_EXT.equals(arr[0]))) {
                 try {
-                    change.delete(f + "/" + arr[0]); // NOI18N
+                    deleteFile(f + "/" + arr[0]); // NOI18N
                 } catch (IOException iox) {
                 }
 
@@ -551,7 +551,7 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
             change.createData(fullName);
         } else {
             if (map.size() == 0) {
-                change.delete(fullName);
+                deleteFile(fullName);
 
                 return;
             }
@@ -572,11 +572,11 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
             }
 
             if (ioexc != null) {
-                this.change.delete(safeName);
+                deleteFile(safeName);
                 throw ioexc;
             } else {
                 try {
-                    this.change.delete(fullName);
+                    deleteFile(fullName);
                 } catch (IOException iex2) {
                     /** if delete fails, then also rename fails and exception will
                      * be fired
@@ -736,6 +736,23 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
 
         return fileName;
     }
+    
+    private void deleteFile(String name) throws IOException {
+        OutputStream os = null;
+        try {
+            this.info.lock(name);
+            //added because of mutual exclusion of streams (waits a while until stream is closed)
+            os = this.info.outputStream(name);
+            os.close(); os = null;
+            this.change.delete(name);
+        } finally {
+            if (os != null) {
+                os.close();
+            }            
+            this.info.unlock(name);
+        }
+    }
+    
 
     /** Table that hold mapping between files and attributes.
     * Hold mapping of type (String, Map (String, Object))
