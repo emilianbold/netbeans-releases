@@ -424,7 +424,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 			if (e.getPropertyName().equals(
 					SequenceContainer.PROPERTY_DEFAULT_SEQUENCE)) {
 				this.repaintLayerWithDecorations(s);
-			} else if (e.getPropertyName().equals(Layer.PROPERTY_NAME)) {
+			} else if (e.getPropertyName().equals(Layer.PROPERTY_LAYER_NAME)) {
 				// TODO
 			}
 		}

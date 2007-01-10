@@ -221,7 +221,7 @@ public class GlobalRepository implements PropertyChangeListener {
 		if (DEBUG) System.out.println("GlobalRepository propertyChange() event: " + evt);
 		if (evt.getSource() instanceof Layer) {
 			Layer layer = (Layer) evt.getSource();
-			if (evt.getPropertyName().equals(Layer.PROPERTY_NAME)) {
+			if (evt.getPropertyName().equals(Layer.PROPERTY_LAYER_NAME)) {
 				//layer name has changed re-key it in the layer table
 				this.layers.remove(evt.getOldValue());
 				this.layers.put(evt.getNewValue(), layer);

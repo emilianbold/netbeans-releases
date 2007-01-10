@@ -26,57 +26,93 @@ import org.netbeans.modules.vmd.game.GameController;
 import java.util.StringTokenizer;
 
 /**
- * @author David Kaspar
+ * @author David Kaspar, Karel Herink
  */
 // HINT - after making change, update GameCodeSupport too
 public final class GamePrimitiveDescriptor implements PrimitiveDescriptorFactory {
-
-    static final String TYPEID_STRING_TILES = "#TiledLayerTiles";
-
-    static final TilesPrimitiveDescriptor PRIMITIVE_DESCRIPTOR_TILES = new TilesPrimitiveDescriptor ();
-
-    private MidpPrimitiveDescriptor midp = new MidpPrimitiveDescriptor ();
-
-    public String getProjectType () {
-        return GameController.PROJECT_TYPE_GAME;
-    }
-
-    public PrimitiveDescriptor getDescriptorForTypeIDString (String string) {
-        if (TYPEID_STRING_TILES.equals (string))
-            return PRIMITIVE_DESCRIPTOR_TILES;
-        //TODO
-        return midp.getDescriptorForTypeIDString (string);
-    }
-
-    // HINT - describes serialization of the TiledLayer.tiles property
-    private static class TilesPrimitiveDescriptor implements PrimitiveDescriptor {
-
-        public String serialize (Object value) {
-            int[][] array = (int[][]) value;
-            StringBuffer serialized = new StringBuffer ();
-            int rows = array.length;
-            int cols = array.length > 0 ? array[0].length : 0;
-            serialized.append (rows).append (',').append (cols);
-            for (int[] row : array)
-                for (int cell : row)
-                    serialized.append (',').append (cell);
-            return serialized.toString ();
-        }
-
-        public Object deserialize (String serialized) {
-            StringTokenizer tokenizer = new StringTokenizer (serialized, ",");
-            int rows = Integer.parseInt (tokenizer.nextToken ());
-            int cols = Integer.parseInt (tokenizer.nextToken ());
-            int[][] array = new int[rows][cols];
-            for (int y = 0; y < rows; y ++)
-                for (int x = 0; x < cols; x ++)
-                    array[y][x] = Integer.parseInt (tokenizer.nextToken ());
-            return array;
-        }
-
-        public boolean isValidInstance (Object object) {
-            return object instanceof int[][];
-        }
-
-    }
+	
+	static final String TYPEID_STRING_TILES = "#TiledLayerTiles";
+	static final String TYPEID_STRING_FAMES = "#SequenceFrames";
+	
+	static final TilesPrimitiveDescriptor PRIMITIVE_DESCRIPTOR_TILES = new TilesPrimitiveDescriptor();
+	static final FramesPrimitiveDescriptor PRIMITIVE_DESCRIPTOR_FRAMES = new FramesPrimitiveDescriptor();
+	
+	private MidpPrimitiveDescriptor midp = new MidpPrimitiveDescriptor();
+	
+	public String getProjectType() {
+		return GameController.PROJECT_TYPE_GAME;
+	}
+	
+	public PrimitiveDescriptor getDescriptorForTypeIDString(String string) {
+		if (TYPEID_STRING_TILES.equals(string))
+			return PRIMITIVE_DESCRIPTOR_TILES;
+		if (TYPEID_STRING_FAMES.equals(string))
+			return PRIMITIVE_DESCRIPTOR_FRAMES;
+		
+		//TODO
+		return midp.getDescriptorForTypeIDString(string);
+	}
+	
+	
+	
+	private static class FramesPrimitiveDescriptor implements PrimitiveDescriptor {
+		
+		public String serialize(Object value) {
+			int[] array = (int[]) value;
+			StringBuffer serialized = new StringBuffer();
+			serialized.append(array.length).append(',');
+			for (int cell : array) {
+				serialized.append(cell).append(',');
+			}
+			return serialized.toString();
+		}
+		
+		public Object deserialize(String serialized) {
+			StringTokenizer tokenizer = new StringTokenizer(serialized, ",");
+			int length = Integer.parseInt(tokenizer.nextToken());
+			int[] array = new int[length];
+			for (int i = 0; i < length; i++) {
+				array[i] = Integer.parseInt(tokenizer.nextToken());
+			}
+			return array;
+		}
+		
+		public boolean isValidInstance(Object object) {
+			return object instanceof int[];
+		}
+		
+	}
+	
+	
+	// HINT - describes serialization of the TiledLayer.tiles property
+	private static class TilesPrimitiveDescriptor implements PrimitiveDescriptor {
+		
+		public String serialize(Object value) {
+			int[][] array = (int[][]) value;
+			StringBuffer serialized = new StringBuffer();
+			int rows = array.length;
+			int cols = array.length > 0 ? array[0].length : 0;
+			serialized.append(rows).append(',').append(cols);
+			for (int[] row : array)
+				for (int cell : row)
+					serialized.append(',').append(cell);
+				return serialized.toString();
+		}
+		
+		public Object deserialize(String serialized) {
+			StringTokenizer tokenizer = new StringTokenizer(serialized, ",");
+			int rows = Integer.parseInt(tokenizer.nextToken());
+			int cols = Integer.parseInt(tokenizer.nextToken());
+			int[][] array = new int[rows][cols];
+			for (int y = 0; y < rows; y ++)
+				for (int x = 0; x < cols; x ++)
+					array[y][x] = Integer.parseInt(tokenizer.nextToken());
+			return array;
+		}
+		
+		public boolean isValidInstance(Object object) {
+			return object instanceof int[][];
+		}
+		
+	}
 }

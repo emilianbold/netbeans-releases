@@ -62,21 +62,12 @@ public class Sprite extends Layer implements SequenceContainer {
 
 	//------SequenceContainer-------
 	
-	//implement our own - we don't want just Sequence, we want SpriteSequence
 	public Sequence createSequence(String name, int numberFrames) {
-		Sequence sequence = new SpriteSequence(name, this.getImageResource(), numberFrames);
-		//this registers the sequence in the list of all sequences available for this ImageResource
-		this.getImageResource().addSequence(sequence);
-		this.append(sequence);
-		return sequence;
+		return this.sequenceContainer.createSequence(name, numberFrames);
 	}
 	
 	public Sequence createSequence(String name, Sequence s) {
-		Sequence sequence = new SpriteSequence(name, s);
-		//this registers the sequence in the list of all sequences available for this ImageResource
-		this.getImageResource().addSequence(sequence);
-		this.append(sequence);
-		return sequence;
+		return this.sequenceContainer.createSequence(name, s);
 	}
 	
 	public boolean append(Sequence sequence) {

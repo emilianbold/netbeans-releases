@@ -16,19 +16,34 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+package org.netbeans.modules.vmd.game.model;
 
-package org.netbeans.modules.vmd.game;
 
-import org.netbeans.modules.vmd.api.io.DataEditorView;
-import org.netbeans.modules.vmd.api.io.DataEditorViewFactory;
-import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import org.netbeans.modules.vmd.api.model.*;
 
-public class GameEditorViewFactory implements DataEditorViewFactory {
-	
-	public DataEditorView createEditorView(DataObjectContext context) {
-		if (GameController.PROJECT_TYPE_GAME.equals(context.getProjectType()))
-			return new GameEditorView(context);
-		return null;
-	}
-	
+import java.util.List;
+
+/**
+ * @author David Kaspar
+ */
+public class GameRootCD extends ComponentDescriptor {
+
+    public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "#Root"); // NOI18N
+
+    public TypeDescriptor getTypeDescriptor() {
+        return new TypeDescriptor(null, TYPEID, true, false);
+    }
+
+    public VersionDescriptor getVersionDescriptor() {
+        return null;
+    }
+
+    public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
+        return null;
+    }
+
+    protected List<? extends Presenter> createPresenters() {
+        return null;
+    }
+
 }

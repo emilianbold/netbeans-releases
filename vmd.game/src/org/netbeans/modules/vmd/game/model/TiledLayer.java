@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.modules.vmd.game.editor.tiledlayer.TiledLayerEditor;
-import org.netbeans.modules.vmd.game.editor.tiledlayer.TiledLayerEditorComponent;
 
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;

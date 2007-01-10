@@ -60,10 +60,11 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 
 	private ArrayList<Layer> layers = new ArrayList<Layer>();
 	private HashMap<Layer, LayerInfo> layerInfos = new HashMap<Layer, LayerInfo>();
+	private String name;
+	private SceneLayerNavigator navigator;
+	
 	private Rectangle allLayersBounds = new Rectangle();
 	private SceneEditor editor;
-	private SceneLayerNavigator navigator;
-	private String name;
 
 	Scene(String name) {
 		editor = null;

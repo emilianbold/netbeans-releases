@@ -20,28 +20,35 @@ package org.netbeans.modules.vmd.game.integration.components;
 
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.game.model.SequenceCD;
 
 /**
- * @author David Kaspar
+ * @author David Kaspar, Karel Herink
  */
 public class GameTypes {
-
-    // TODO - merge MidpTypes and removed dependency on midp module
-
-    public static final TypeID TYPEID_DIMENSION = new TypeID (TypeID.Kind.PRIMITIVE, "#Dimension"); // NOI18N
-    public static final TypeID TYPEID_POINT = new TypeID (TypeID.Kind.PRIMITIVE, "#Point"); // NOI18N
-    public static final TypeID TYPEID_RECTANGLE = new TypeID (TypeID.Kind.PRIMITIVE, "#Rectangle"); // NOI18N
-
-//    public static final TypeID TYPEID_INT_ARRAY = MidpTypes.TYPEID_INT.getArrayType ();
-
-    public static final TypeID TYPEID_TILED_LAYER_TILES = new TypeID (TypeID.Kind.PRIMITIVE, GamePrimitiveDescriptor.TYPEID_STRING_TILES);
-
-    public static PropertyValue createTilesProperty (int[][] tiles) {
-        return PropertyValue.createValue (GamePrimitiveDescriptor.PRIMITIVE_DESCRIPTOR_TILES, TYPEID_TILED_LAYER_TILES, tiles);
-    }
-
-    public static int[][] getTiles (PropertyValue value) {
-        return (int[][]) value.getValue ();
-    }
-
+	
+	public static final TypeID TYPEID_DIMENSION = new TypeID(TypeID.Kind.PRIMITIVE, "#Dimension"); // NOI18N
+	public static final TypeID TYPEID_POINT = new TypeID(TypeID.Kind.PRIMITIVE, "#Point"); // NOI18N
+	public static final TypeID TYPEID_RECTANGLE = new TypeID(TypeID.Kind.PRIMITIVE, "#Rectangle"); // NOI18N
+	
+	public static final TypeID TYPEID_TILED_LAYER_TILES = new TypeID(TypeID.Kind.PRIMITIVE, GamePrimitiveDescriptor.TYPEID_STRING_TILES);
+	public static final TypeID TYPEID_SEQUENCE_FRAMES = new TypeID(TypeID.Kind.PRIMITIVE, GamePrimitiveDescriptor.TYPEID_STRING_FAMES);
+	
+	public static PropertyValue createTilesProperty(int[][] tiles) {
+		return PropertyValue.createValue(GamePrimitiveDescriptor.PRIMITIVE_DESCRIPTOR_TILES, TYPEID_TILED_LAYER_TILES, tiles);
+	}
+	
+	public static int[][] getTiles(PropertyValue value) {
+		return (int[][]) value.getValue();
+	}
+	
+	public static PropertyValue createFramesProperty(int[] frames) {
+		return PropertyValue.createValue(GamePrimitiveDescriptor.PRIMITIVE_DESCRIPTOR_FRAMES, TYPEID_SEQUENCE_FRAMES, frames);
+	}
+	
+	public static int[] getFrames(PropertyValue value) {
+		return (int[]) value.getValue();
+	}
+	
+	
 }

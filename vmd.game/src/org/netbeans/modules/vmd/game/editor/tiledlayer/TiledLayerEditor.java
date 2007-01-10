@@ -194,7 +194,7 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
 	
     public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getSource() == this.tiledLayer) {
-			if (evt.getPropertyName().equals(Layer.PROPERTY_NAME)) {
+			if (evt.getPropertyName().equals(Layer.PROPERTY_LAYER_NAME)) {
 				textFieldName.setText(this.tiledLayer.getName());
 			}
 		}

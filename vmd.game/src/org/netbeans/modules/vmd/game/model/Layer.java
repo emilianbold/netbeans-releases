@@ -37,9 +37,9 @@ import javax.swing.JComponent;
 
 public abstract class Layer implements Previewable, Editable, Transferable, CodeGenerator {
 	
-	public static final String ACTION_PROP_SCENE = "ACTION_PROP_SCENE";
+	public static final String ACTION_PROP_SCENE = "layer.action.prop.scene";
 	
-	public static final String PROPERTY_NAME = "layer.prop.name";
+	public static final String PROPERTY_LAYER_NAME = "layer.prop.name";
 	
 	protected PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 	
@@ -58,7 +58,7 @@ public abstract class Layer implements Previewable, Editable, Transferable, Code
 	public void setName(String name) {
 		String oldName = this.name;
 		this.name = name;
-		this.propertyChangeSupport.firePropertyChange(PROPERTY_NAME, oldName, name);
+		this.propertyChangeSupport.firePropertyChange(PROPERTY_LAYER_NAME, oldName, name);
 	}
 	
 	public ImageResource getImageResource() {
