@@ -19,7 +19,10 @@
 
 package org.netbeans.modules.web.debug.util;
 
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.net.*;
 import javax.swing.*;
 import javax.swing.text.*;
@@ -30,6 +33,7 @@ import org.openide.nodes.*;
 import org.openide.filesystems.*;
 import org.openide.text.*;
 import org.openide.cookies.*;
+import org.openide.util.Mutex;
 import org.openide.windows.TopComponent;
 
 import org.netbeans.modules.web.api.webmodule.*;
@@ -232,10 +236,13 @@ public class Utils {
      *
      * @return current editor component instance
      */
-    public static JEditorPane getCurrentEditor (EditorCookie e) {
-        JEditorPane[] op = e.getOpenedPanes ();
-        if ((op == null) || (op.length < 1)) return null;
-        return op [0];
+    public static JEditorPane getCurrentEditor (final EditorCookie e) {
+        return Mutex.EVENT.readAccess(new Mutex.Action<JEditorPane>() {
+            public JEditorPane run() {
+                JEditorPane[] op = e.getOpenedPanes();
+                return (op == null ? null : op[0]);
+            }
+        });
     }
         
     public static String getJavaIdentifier(StyledDocument doc, JEditorPane ep, int offset) {        
