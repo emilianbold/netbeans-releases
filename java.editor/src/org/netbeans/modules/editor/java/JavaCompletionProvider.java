@@ -3555,7 +3555,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     }
                     scope = tu.attributeTreeTo(block, scope, last);
                 } else {
-                    tu.attributeTree(block, scope);
+                    tu.attributeTreeTo(block, scope, block);
                 }
                 return new Env(offset, prefix, controller, path, sourcePositions, scope);
             } else if (grandParent != null && grandParent.getKind() == Tree.Kind.CLASS &&
