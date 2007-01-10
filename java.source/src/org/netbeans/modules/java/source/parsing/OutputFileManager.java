@@ -62,8 +62,8 @@ public class OutputFileManager extends CachingFileManager {
             else {
                 index = getActiveRoot (FileObjects.convertPackage2Folder(className));
             }
-            assert index >= 0 : "class: " + className +" sibling: " + sibling +" roots: " + dumpRoots(sourceRoots);
-            assert index < this.files.length;
+            assert index >= 0 : "class: " + className +" sibling: " + sibling +" srcRoots: " + dumpRoots(sourceRoots) + " cacheRoots: "  + dumpRoots(this.files);
+            assert index < this.files.length : "index "+ index +" class: " + className +" sibling: " + sibling +" srcRoots: " + dumpRoots(sourceRoots) + " cacheRoots: " + dumpRoots(this.files);
             File activeRoot = this.files[index];
             String baseName = className.replace('.', File.separatorChar);       //NOI18N
             String nameStr = baseName + '.' + FileObjects.SIG;
@@ -162,11 +162,22 @@ public class OutputFileManager extends CachingFileManager {
     }
     
     private static String dumpRoots (FileObject[] roots) {
-        StringBuilder builder = new StringBuilder ();
+        StringBuilder builder = new StringBuilder ("[");        //NOI18N
         for (FileObject root : roots) {
             builder.append(FileUtil.getFileDisplayName(root));
-            builder.append(", ");
+            builder.append(", ");                               //NOI18N
         }
+        builder.append("]");
+        return builder.toString();
+    }
+    
+    private static String dumpRoots (File[] roots) {
+        StringBuilder builder = new StringBuilder ("[");        //NOI18N
+        for (File root : roots) {
+            builder.append(root.getAbsolutePath());
+            builder.append(", ");                               //NOI18N
+        }
+        builder.append("]");
         return builder.toString();
     }
     
