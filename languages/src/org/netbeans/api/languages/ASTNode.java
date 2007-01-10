@@ -20,6 +20,7 @@
 package org.netbeans.api.languages;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -30,7 +31,7 @@ import java.util.Map;
  *
  * @author Jan Jancura
  */
-public abstract class ASTNode {
+public class ASTNode {
     
     public static ASTNode create (
         String      mimeType,
@@ -39,7 +40,7 @@ public abstract class ASTNode {
         List        children,
         int         offset
     ) {
-        return new ASTNodeImpl (mimeType, nt, rule, offset, children);
+        return new ASTNode (mimeType, nt, rule, offset, children);
     }
     
     public static ASTNode create (
@@ -48,24 +49,69 @@ public abstract class ASTNode {
         int         rule,
         int         offset
     ) {
-        return new ASTNodeImpl (mimeType, nt, rule, offset);
+        return new ASTNode (mimeType, nt, rule, offset, Collections.EMPTY_LIST);
     }
-        
-    public abstract String getMimeType ();
 
-    public abstract String getNT ();
     
-    public abstract int getRule ();
-    
-    public abstract ASTNode getParent ();
-    
-    public abstract List getChildren ();
+    private String      mimeType;
+    private String      nt;
+    private int         rule;
+    private List        children;
+    private ASTNode     parent;
+    private int         offset;
 
-    public abstract int getOffset ();
-    
-    public abstract void addToken (SToken t);
-    
-    public abstract void addNode (ASTNode n);
+    private ASTNode (
+        String      mimeType, 
+        String      nt, 
+        int         rule, 
+        int         offset,
+        List        children
+    ) {
+        this.mimeType = mimeType;
+        this.nt =       nt;
+        this.rule =     rule;
+        this.offset =   offset;
+        List l = new ArrayList ();
+        Iterator it = children.iterator ();
+        while (it.hasNext ()) {
+            Object o = it.next ();
+            if (o == null)
+                throw new NullPointerException ();
+            if (o instanceof SToken)
+                l.add (o);
+            else {
+                if (((ASTNode) o).parent != null)
+                    throw new IllegalArgumentException ();
+                ((ASTNode) o).parent = this;
+                l.add (o);
+            }
+        }
+        this.children = Collections.unmodifiableList (l);
+    }
+
+    public String getMimeType () {
+        return mimeType;
+    }
+
+    public String getNT () {
+        return nt;
+    }
+
+    public int getRule () {
+        return rule;
+    }
+
+    public ASTNode getParent () {
+        return parent;
+    }
+
+    public int getOffset () {
+        return offset;
+    }
+
+    public List getChildren () {
+        return children;
+    }
 
     private PTPath path;
     
@@ -302,87 +348,5 @@ public abstract class ASTNode {
                 sb.append ("\n    ").append (elem);
         }
         return sb.toString ();
-    }
-    
-    static class ASTNodeImpl extends ASTNode {
-
-        private String      mimeType;
-        private String      nt;
-        private int         rule;
-        private List        children;
-        private ASTNode     parent;
-        private int         offset;
-
-        ASTNodeImpl (
-            String      mimeType, 
-            String      nt, 
-            int         rule, 
-            int         offset
-        ) {
-            this.mimeType = mimeType;
-            this.nt =       nt;
-            this.rule =     rule;
-            this.offset =   offset;
-            children =      new ArrayList ();
-        }
-
-        ASTNodeImpl (
-            String      mimeType, 
-            String      nt, 
-            int         rule, 
-            int         offset,
-            List        children
-        ) {
-            this (mimeType, nt, rule, offset);
-            Iterator it = children.iterator ();
-            while (it.hasNext ()) {
-                Object o = it.next ();
-                if (o instanceof SToken)
-                    addToken ((SToken) o);
-                else
-                    addNode ((ASTNodeImpl) o);
-            }
-                
-            
-        }
-
-        public String getMimeType () {
-            return mimeType;
-        }
-
-        public String getNT () {
-            return nt;
-        }
-
-        public int getRule () {
-            return rule;
-        }
-
-        public ASTNode getParent () {
-            return parent;
-        }
-        
-        public int getOffset () {
-            return offset;
-        }
-        
-        public void addNode (ASTNode n) {
-            if (n == null)
-                throw new NullPointerException ();
-            if (((ASTNodeImpl) n).parent != null)
-                throw new IllegalArgumentException ();
-            ((ASTNodeImpl) n).parent = this;
-            children.add (n);
-        }
-        
-        public void addToken (SToken t) {
-            if (t == null)
-                throw new NullPointerException ();
-            children.add (t);
-        }
-
-        public List getChildren () {
-            return children;
-        }
     }
 }

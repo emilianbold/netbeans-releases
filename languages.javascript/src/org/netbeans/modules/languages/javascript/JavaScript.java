@@ -77,29 +77,33 @@ public class JavaScript {
     
     public static ASTNode parseRegularExpression (
         TokenInput input, 
-        Stack stack, 
-        ASTNode parent
+        Stack stack
     ) {
-        ASTNode nnode = ASTNode.create (
+        List children = new ArrayList ();
+        children.add (input.read ());
+        while (!input.eof () && !input.next (1).getIdentifier ().equals ("/")) {
+            if (input.next (1).getIdentifier ().equals ("\\"))
+                children.add (input.read ());
+            String s = input.next (1).getIdentifier ();
+            if (s.equals ("\n") || s.equals ("\r")) 
+                return ASTNode.create (
+                    input.next (1).getMimeType (), 
+                    "RegularExpression", 
+                    100, 
+                    input.next (1).getOffset ()
+                );
+            children.add (input.read ());
+        }
+        if (!input.eof () && input.next (1).getIdentifier ().equals ("/"))
+            children.add (input.read ());
+        if (input.next (1).getType ().equals ("js_identifier"))
+            children.add (input.read ());
+        return ASTNode.create (
             input.next (1).getMimeType (), 
             "RegularExpression", 
             100, 
             input.next (1).getOffset ()
         );
-        parent.addNode (nnode);
-        nnode.addToken (input.read ());
-        while (!input.eof () && !input.next (1).getIdentifier ().equals ("/")) {
-            if (input.next (1).getIdentifier ().equals ("\\"))
-                nnode.addToken (input.read ());
-            String s = input.next (1).getIdentifier ();
-            if (s.equals ("\n") || s.equals ("\r")) return nnode;
-            nnode.addToken (input.read ());
-        }
-        if (!input.eof () && input.next (1).getIdentifier ().equals ("/"))
-            nnode.addToken (input.read ());
-        if (input.next (1).getType ().equals ("js_identifier"))
-            nnode.addToken (input.read ());
-        return nnode;
     }
 
     public static Runnable hyperlink (SyntaxCookie cookie) {

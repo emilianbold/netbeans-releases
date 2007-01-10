@@ -154,9 +154,10 @@ public class LLSyntaxAnalyser {
                         stack.push (it);
                         stack.push (node);
                         it = Collections.EMPTY_LIST.iterator ();
-//                        node = (ASTNode) evaluator.evaluate (
-//                            new Object[] {input, stack, node}
-//                        );
+                        ASTNode nast = (ASTNode) evaluator.evaluate (
+                            new Object[] {input, stack}
+                        );
+                        node.addNode (nast);
                         //S ystem.out.println(input.getIndex () + ": >>Java " + nt + "&" + evaluator.getValue ());
                     } else {
                         if (node == null || it.hasNext () || !nt.equals (node.nt)) {
