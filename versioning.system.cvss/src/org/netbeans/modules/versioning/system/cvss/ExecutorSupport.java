@@ -374,7 +374,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, error);
                         report(NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Title"),
                                NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Prompt"),
-                               Arrays.asList(new Object [] { error.getMessage() }), NotifyDescriptor.ERROR_MESSAGE);
+                               Arrays.asList(new String [] { error.getMessage() }), NotifyDescriptor.ERROR_MESSAGE);
                     }
                     else if (!nonInteractive && retryConnection(error)) {
                         terminated = false;
@@ -434,8 +434,16 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
         }
     }
 
-    protected void report(String title, String prompt, List messages, int type) {
+    protected void report(String title, String prompt, List<String> messages, int type) {
         if (nonInteractive) return;
+        boolean emptyReport = true;
+        for (String message : messages) {
+            if (message != null && message.length() > 0) {
+                emptyReport = false;
+                break;
+            }
+        }
+        if (emptyReport) return;
         CommandReport report = new CommandReport(prompt, messages);
         JButton ok = new JButton(NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandReport_OK"));
         NotifyDescriptor descriptor = new NotifyDescriptor(
@@ -679,20 +687,6 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
             sets[idx++] = (File[]) bucket.toArray(new File[bucket.size()]);
         }
         return sets;
-    }
-
-    /**
-     * Displays notification to the user if some executors failed.
-     * 
-     * @param executors array of executors to check
-     */ 
-    public static void notifyError(ExecutorSupport[] executors) {
-        for (int i = 0; i < executors.length; i++) {
-            ExecutorSupport executor = executors[i];
-            if (executor.getFailure() != null) {
-                ErrorManager.getDefault().notify(executor.getFailure());
-            }
-        }
     }
 
     /**

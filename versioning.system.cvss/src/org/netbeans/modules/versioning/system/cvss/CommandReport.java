@@ -30,7 +30,7 @@ import javax.swing.JTextArea;
  *
  * @author Maros Sandor
  */
-public class CommandReport extends javax.swing.JPanel {
+class CommandReport extends javax.swing.JPanel {
 
     private final String text;
 
