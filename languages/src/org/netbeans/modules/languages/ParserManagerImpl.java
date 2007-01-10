@@ -20,6 +20,7 @@
 package org.netbeans.modules.languages;
 
 import java.lang.ref.WeakReference;
+import java.util.Map;
 import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManagerListener;
@@ -166,9 +167,12 @@ public class ParserManagerImpl extends ParserManager {
             String mimeType = (String) doc.getProperty ("mimeType");
             Language l = ((LanguagesManagerImpl) LanguagesManager.getDefault ()).
                 getLanguage (mimeType);
-            Evaluator e = (Evaluator) l.getProperty (mimeType, "processAST");
-            if (e != null && ast != null) 
-                return (ASTNode) e.evaluate (SyntaxCookie.create (doc, ast.getPath ()));
+            Map m = (Map) l.getProperty (mimeType, Language.AST);
+            if (m != null && ast != null) {
+                Evaluator e = (Evaluator) m.get ("process");
+                if (e != null) 
+                    return (ASTNode) e.evaluate (SyntaxCookie.create (doc, ast.getPath ()));
+            }
             return n;
         } catch (Exception ex) {
             ErrorManager.getDefault ().notify (ex);

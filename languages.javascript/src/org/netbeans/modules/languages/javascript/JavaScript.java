@@ -143,12 +143,12 @@ public class JavaScript {
             if (p.getNT ().equals ("AssignmentExpressionInitial") &&
                 p.getNode ("AssignmentOperator") != null
             ) {
-                return p.getNode ("ConditionalExpressionInitial").getAsText () + 
-                    " (" + n.getNode ("FormalParameterList").getAsText () + ")";
+                return ((ASTNode) p.getChildren ().get (0)).getAsText () + 
+                    " (" + getAsText (n.getNode ("FormalParameterList")) + ")";
             }
             if (p.getNT ().equals ("PropertyNameAndValue")) {
                 return p.getNode ("PropertyName").getAsText () + 
-                    " (" + n.getNode ("FormalParameterList").getAsText () + ")";
+                    " (" + getAsText (n.getNode ("FormalParameterList")) + ")";
             }
             p = p.getParent ();
         }
@@ -163,7 +163,7 @@ public class JavaScript {
             if (p.getNT ().equals ("AssignmentExpressionInitial") &&
                 p.getNode ("AssignmentOperator") != null
             ) {
-                return p.getNode ("ConditionalExpressionInitial").getAsText ();
+                return ((ASTNode) p.getChildren ().get (0)).getAsText ();
             }
             if (p.getNT ().equals ("PropertyNameAndValue")) {
                 return p.getNode ("PropertyName").getAsText ();
@@ -428,5 +428,10 @@ public class JavaScript {
             return w.length ();
         }
         return 0;
+    }
+    
+    private static String getAsText (ASTNode n) {
+        if (n == null) return "";
+        return n.getAsText ();
     }
 }

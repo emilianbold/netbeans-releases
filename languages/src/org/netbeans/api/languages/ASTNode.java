@@ -82,16 +82,13 @@ public abstract class ASTNode {
             List l = getChildren ();
             if (l.isEmpty ())
                 endOffset = getOffset ();
-            int i = l.size () - 1;
-            while (i >= 0) {
-                Object last = l.get (i);
+            else {
+                Object last = l.get (l.size () - 1);
                 if (last instanceof SToken)
                     endOffset = ((SToken) last).getOffset () + 
                         ((SToken) last).getIdentifier ().length ();
                 else
                     endOffset = ((ASTNode) last).getEndOffset ();
-                if (endOffset != -1) break;
-                i--;
             }
         }
         return endOffset;

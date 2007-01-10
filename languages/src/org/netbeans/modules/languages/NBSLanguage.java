@@ -22,8 +22,6 @@ package org.netbeans.modules.languages;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.SToken;
 import java.util.Arrays;
-import java.util.HashSet;
-import org.netbeans.modules.languages.Language.TokenType;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.modules.languages.parser.Parser;
@@ -70,209 +68,189 @@ public class NBSLanguage {
     
     private static Parser nbsParser;
     
-    static Parser getNBSParser () throws ParseException {
-        if (nbsParser == null) {
-            nbsParser = Parser.create (Arrays.asList (new TokenType[] {
-                Language.createTokenType (
-                    Parser.DEFAULT_STATE,
-                    Pattern.create (
-                        "'ACTION' |" +
-                        "'BRACE' |" +
-                        "'COLOR' |" +
-                        "'COMPLETE' |" +
-                        "'COMPLETION' |" +
-                        "'FOLD' |" +
-                        "'HYPERLINK' |" +
-                        "'IMPORT' |" +
-                        "'INDENT' |" +
-                        "'MARK' | " +
-                        "'NAVIGATOR' |" +
-                        "'PARSE' |" +
-                        "'PROPERTIES' |" +
-                        "'REFORMAT' |" +
-                        "'SKIP' |" +
-                        "'STORE' |" +
-                        "'TOKEN' |" +
-                        "'TOOLTIP'",
-                        NBS
-                    ),
-                    NBS,
-                    "keyword",
-                    Parser.DEFAULT_STATE,
-                    1,
-                    null
-                ),
-                Language.createTokenType (
-                    Parser.DEFAULT_STATE,
-                    Pattern.create (
-                        "['a'-'z' 'A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*",
-                        NBS
-                    ),
-                    NBS,
-                    "identifier",
-                    Parser.DEFAULT_STATE,
-                    2,
-                    null
-                ),
-                Language.createTokenType (
-                    Parser.DEFAULT_STATE,
-                    Pattern.create (
-                        "':' | '*' | '?' | '+' | '-' | '[' | ']' | '<' | " +
-                        "'>' | '^' | '|' | '{' | '}' | '(' | ')' | ',' | " +
-                        "'=' | ';' | '.' | '$'",
-                        NBS
-                    ),
-                    NBS,
-                    "operator",
-                    Parser.DEFAULT_STATE,
-                    3,
-                    null
-                ),
-                Language.createTokenType (
-                    Parser.DEFAULT_STATE,
-                    Pattern.create (
-                        "'\\\"' ([^'\\\"' '\\\\' '\\r' '\\n'] |" +
-                        "('\\\\' ['r' 'n' 't' '\\\\' '\\\'' '\\\"']) )* '\\\"'",
-                        NBS
-                    ),
-                    NBS,
-                    "string",
-                    Parser.DEFAULT_STATE,
-                    4,
-                    null
-                ),
-                Language.createTokenType (
-                    Parser.DEFAULT_STATE,
-                    Pattern.create (
-                        "'\\\'' ([^'\\\'' '\\\\' '\\r' '\\n'] |" +
-                        "('\\\\' ['r' 'n' 't' '\\\\' '\\\'' '\\\"']) )* '\\\''",
-                        NBS
-                    ),
-                    NBS,
-                    "string",
-                    Parser.DEFAULT_STATE,
-                    5,
-                    null
-                ),
-                Language.createTokenType (
-                    Parser.DEFAULT_STATE,
-                    Pattern.create ("'#' [^'\\n' '\\r']* ['\\n' '\\r']+", NBS),
-                    NBS,
-                    "comment",
-                    Parser.DEFAULT_STATE,
-                    6,
-                    null
-                ),
-                Language.createTokenType (
-                    Parser.DEFAULT_STATE,
-                    Pattern.create ("['\\n' '\\r' ' ' '\\t']+", NBS),
-                    NBS,
-                    "whitespace",
-                    Parser.DEFAULT_STATE,
-                    7,
-                    null
-                )
-            }));
-        }
-        return nbsParser;
+    static Language getNBSLanguage () throws ParseException {
+        Language l = new Language (NBS);
+        l.addToken (
+            Parser.DEFAULT_STATE, 
+            NBS,
+            "keyword",
+            Pattern.create (
+                "'ACTION' |" +
+                "'AST' |" +
+                "'BRACE' |" +
+                "'COLOR' |" +
+                "'COMPLETE' |" +
+                "'COMPLETION' |" +
+                "'FOLD' |" +
+                "'HYPERLINK' |" +
+                "'IMPORT' |" +
+                "'INDENT' |" +
+                "'MARK' | " +
+                "'NAVIGATOR' |" +
+                "'PARSE' |" +
+                "'PROPERTIES' |" +
+                "'REFORMAT' |" +
+                "'SKIP' |" +
+                "'STORE' |" +
+                "'TOKEN' |" +
+                "'TOOLTIP'",
+                NBS
+            ),
+            Parser.DEFAULT_STATE,
+            null
+        );
+        l.addToken (
+            Parser.DEFAULT_STATE, 
+            NBS,
+            "identifier",
+            Pattern.create (
+                "['a'-'z' 'A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*",
+                NBS
+            ),
+            Parser.DEFAULT_STATE,
+            null
+        );
+        l.addToken (
+            Parser.DEFAULT_STATE, 
+            NBS,
+            "operator",
+            Pattern.create (
+                "':' | '*' | '?' | '+' | '-' | '[' | ']' | '<' | " +
+                "'>' | '^' | '|' | '{' | '}' | '(' | ')' | ',' | " +
+                "'=' | ';' | '.' | '$'",
+                NBS
+            ),
+            Parser.DEFAULT_STATE,
+            null
+        );
+        l.addToken (
+            Parser.DEFAULT_STATE, 
+            NBS,
+            "string",
+            Pattern.create (
+                "'\\\"' ([^'\\\"' '\\\\' '\\r' '\\n'] |" +
+                "('\\\\' ['r' 'n' 't' '\\\\' '\\\'' '\\\"']) )* '\\\"'",
+                NBS
+            ),
+            Parser.DEFAULT_STATE,
+            null
+        );
+        l.addToken (
+            Parser.DEFAULT_STATE, 
+            NBS,
+            "string",
+            Pattern.create (
+                "'\\\'' ([^'\\\'' '\\\\' '\\r' '\\n'] |" +
+                "('\\\\' ['r' 'n' 't' '\\\\' '\\\'' '\\\"']) )* '\\\''",
+                NBS
+            ),
+            Parser.DEFAULT_STATE,
+            null
+        );
+        l.addToken (
+            Parser.DEFAULT_STATE, 
+            NBS,
+            "comment",
+            Pattern.create ("'#' [^'\\n' '\\r']* ['\\n' '\\r']+", NBS),
+            Parser.DEFAULT_STATE,
+            null
+        );
+        l.addToken (
+            Parser.DEFAULT_STATE, 
+            NBS,
+            "whitespace",
+            Pattern.create ("['\\n' '\\r' ' ' '\\t']+", NBS),
+            Parser.DEFAULT_STATE,
+            null
+        );
+        l.addRule (rule ("S", new Object[] {"token", "S"}));
+        l.addRule (rule ("S", new Object[] {"tokenState", "S"}));
+        l.addRule (rule ("S", new Object[] {"grammarRule", "S"}));
+        l.addRule (rule ("S", new Object[] {"command", "S"}));
+        l.addRule (rule ("S", new Object[] {}));
+        
+        l.addRule (rule ("tokenState", new Object[] {"state", "tokenState1"}));
+        l.addRule (rule ("tokenState1", new Object[] {COLON, "token"}));
+        l.addRule (rule ("tokenState1", new Object[] {BRACE, "tokenGroup"}));
+        l.addRule (rule ("token", new Object[] {KEYWORD_TOKEN, COLON, IDENTIFIER, "token2"}));
+        l.addRule (rule ("token2", new Object[] {COLON, PARENTHESIS, "regularExpression", PARENTHESIS2, "token3"}));
+        l.addRule (rule ("token2", new Object[] {BRACE, "properties", BRACE2}));
+        l.addRule (rule ("token3", new Object[] {COLON, "state"}));
+        l.addRule (rule ("token3", new Object[] {}));
+        l.addRule (rule ("state", new Object[] {LT, IDENTIFIER, GT}));
+        l.addRule (rule ("tokenGroup", new Object[] {"tokensInGroup", BRACE2}));
+        l.addRule (rule ("tokensInGroup", new Object[] {"token", "tokensInGroup"}));
+        l.addRule (rule ("tokensInGroup", new Object[] {}));
+        
+        l.addRule (rule ("regularExpression", new Object[] {"reChoice", "regularExpression1"}));
+        l.addRule (rule ("regularExpression1", new Object[] {OR, "reChoice", "regularExpression1"}));
+        l.addRule (rule ("regularExpression1", new Object[] {}));
+        l.addRule (rule ("reChoice", new Object[] {"rePart", "reChoice1"}));
+        l.addRule (rule ("reChoice1", new Object[] {"rePart", "reChoice1"}));
+        l.addRule (rule ("reChoice1", new Object[] {}));
+        l.addRule (rule ("rePart", new Object[] {STRING, "rePartOperatorOrMinus"}));
+        l.addRule (rule ("rePart", new Object[] {DOT, "rePartOperator"}));
+        l.addRule (rule ("rePart", new Object[] {"reClass", "rePartOperator"}));
+        l.addRule (rule ("rePart", new Object[] {PARENTHESIS, "regularExpression", PARENTHESIS2, "rePartOperator"}));
+        l.addRule (rule ("rePartOperator", new Object[] {}));
+        l.addRule (rule ("rePartOperator", new Object[] {PLUS}));
+        l.addRule (rule ("rePartOperator", new Object[] {QUESTION}));
+        l.addRule (rule ("rePartOperator", new Object[] {MULTIPLY}));
+        l.addRule (rule ("rePartOperatorOrMinus", new Object[] {MINUS, STRING}));
+        l.addRule (rule ("rePartOperatorOrMinus", new Object[] {"rePartOperator"}));
+        l.addRule (rule ("reClass", new Object[] {BRACKET, "reInClassNegation", "reInClass", BRACKET2}));
+        l.addRule (rule ("reInClassNegation", new Object[] {UPP}));
+        l.addRule (rule ("reInClassNegation", new Object[] {}));
+        l.addRule (rule ("reInClass", new Object[] {STRING, "reInClassMinus", "reInClass1"}));
+        l.addRule (rule ("reInClass1", new Object[] {STRING, "reInClassMinus", "reInClass1"}));
+        l.addRule (rule ("reInClass1", new Object[] {}));
+        l.addRule (rule ("reInClassMinus", new Object[] {MINUS, STRING}));
+        l.addRule (rule ("reInClassMinus", new Object[] {}));
+        
+        l.addRule (rule ("grammarRule", new Object[] {IDENTIFIER, EQUAL, "grRightSide", SEMICOLON}));
+        l.addRule (rule ("grRightSide", new Object[] {"grChoice", "grRightSide1"}));
+        l.addRule (rule ("grRightSide1", new Object[] {OR, "grChoice", "grRightSide1"}));
+        l.addRule (rule ("grRightSide1", new Object[] {}));
+        l.addRule (rule ("grChoice", new Object[] {"grPart", "grChoice"}));
+        l.addRule (rule ("grChoice", new Object[] {}));
+        l.addRule (rule ("grPart", new Object[] {IDENTIFIER, "grOperator"}));
+        l.addRule (rule ("grPart", new Object[] {"tokenDef", "grOperator"}));
+        l.addRule (rule ("grPart", new Object[] {STRING, "grOperator"}));
+        l.addRule (rule ("grPart", new Object[] {BRACKET, "grRightSide", BRACKET2}));
+        l.addRule (rule ("grPart", new Object[] {PARENTHESIS, "grRightSide", PARENTHESIS2, "grOperator"}));
+        l.addRule (rule ("grOperator", new Object[] {PLUS}));
+        l.addRule (rule ("grOperator", new Object[] {MULTIPLY}));
+        l.addRule (rule ("grOperator", new Object[] {QUESTION}));
+        l.addRule (rule ("grOperator", new Object[] {}));
+        l.addRule (rule ("tokenDef", new Object[] {LT, IDENTIFIER, "tokenDef1", GT}));
+        l.addRule (rule ("tokenDef1", new Object[] {COMMA, STRING}));
+        l.addRule (rule ("tokenDef1", new Object[] {}));
+        
+        l.addRule (rule ("command", new Object[] {KEYWORD, "command0"}));
+        l.addRule (rule ("command0", new Object[] {BRACE, "properties", BRACE2}));
+        l.addRule (rule ("command0", new Object[] {COLON, "class", "command1"}));
+        l.addRule (rule ("command0", new Object[] {"command2"}));
+        l.addRule (rule ("command1", new Object[] {BRACE, "properties", BRACE2}));
+        l.addRule (rule ("command1", new Object[] {COLON, "command2"}));
+        l.addRule (rule ("command1", new Object[] {}));
+        l.addRule (rule ("command2", new Object[] {"class"}));
+        l.addRule (rule ("command2", new Object[] {STRING}));
+        l.addRule (rule ("properties", new Object[] {"property", "properties"}));
+        l.addRule (rule ("properties", new Object[] {}));
+        l.addRule (rule ("property", new Object[] {IDENTIFIER, COLON, "propertyValue", SEMICOLON}));
+        l.addRule (rule ("propertyValue", new Object[] {STRING}));
+        l.addRule (rule ("propertyValue", new Object[] {"class"}));
+        l.addRule (rule ("propertyValue", new Object[] {PARENTHESIS, "regularExpression", PARENTHESIS2}));
+        
+        l.addRule (rule ("class", new Object[] {IDENTIFIER, "class1"}));
+        l.addRule (rule ("class1", new Object[] {DOT, IDENTIFIER, "class1"}));
+        l.addRule (rule ("class1", new Object[] {}));
+
+        l.addSkipTokenType ("whitespace");
+        l.addSkipTokenType ("comment");
+        return l;
     }
-    
-    private static LLSyntaxAnalyser nbsAnalyser;
-    
-    static LLSyntaxAnalyser getNBSAnalyser () throws ParseException {
-        if (nbsAnalyser == null)
-            nbsAnalyser = LLSyntaxAnalyser.create (
-                Arrays.asList (new LLSyntaxAnalyser.Rule[] {
-                    rule ("S", new Object[] {"token", "S"}),
-                    rule ("S", new Object[] {"tokenState", "S"}),
-                    rule ("S", new Object[] {"grammarRule", "S"}),
-                    rule ("S", new Object[] {"command", "S"}),
-                    rule ("S", new Object[] {}),
-                    
-                    rule ("tokenState", new Object[] {"state", "tokenState1"}),
-                    rule ("tokenState1", new Object[] {COLON, "token"}),
-                    rule ("tokenState1", new Object[] {BRACE, "tokenGroup"}),
-                    rule ("token", new Object[] {KEYWORD_TOKEN, COLON, IDENTIFIER, "token2"}),
-                    rule ("token2", new Object[] {COLON, PARENTHESIS, "regularExpression", PARENTHESIS2, "token3"}),
-                    rule ("token2", new Object[] {BRACE, "properties", BRACE2}),
-                    rule ("token3", new Object[] {COLON, "state"}),
-                    rule ("token3", new Object[] {}),
-                    rule ("state", new Object[] {LT, IDENTIFIER, GT}),
-                    rule ("tokenGroup", new Object[] {"tokensInGroup", BRACE2}),
-                    rule ("tokensInGroup", new Object[] {"token", "tokensInGroup"}),
-                    rule ("tokensInGroup", new Object[] {}),
-                    
-                    rule ("regularExpression", new Object[] {"reChoice", "regularExpression1"}),
-                    rule ("regularExpression1", new Object[] {OR, "reChoice", "regularExpression1"}),
-                    rule ("regularExpression1", new Object[] {}),
-                    rule ("reChoice", new Object[] {"rePart", "reChoice1"}),
-                    rule ("reChoice1", new Object[] {"rePart", "reChoice1"}),
-                    rule ("reChoice1", new Object[] {}),
-                    rule ("rePart", new Object[] {STRING, "rePartOperatorOrMinus"}),
-                    rule ("rePart", new Object[] {DOT, "rePartOperator"}),
-                    rule ("rePart", new Object[] {"reClass", "rePartOperator"}),
-                    rule ("rePart", new Object[] {PARENTHESIS, "regularExpression", PARENTHESIS2, "rePartOperator"}),
-                    rule ("rePartOperator", new Object[] {}),
-                    rule ("rePartOperator", new Object[] {PLUS}),
-                    rule ("rePartOperator", new Object[] {QUESTION}),
-                    rule ("rePartOperator", new Object[] {MULTIPLY}),
-                    rule ("rePartOperatorOrMinus", new Object[] {MINUS, STRING}),
-                    rule ("rePartOperatorOrMinus", new Object[] {"rePartOperator"}),
-                    rule ("reClass", new Object[] {BRACKET, "reInClassNegation", "reInClass", BRACKET2}),
-                    rule ("reInClassNegation", new Object[] {UPP}),
-                    rule ("reInClassNegation", new Object[] {}),
-                    rule ("reInClass", new Object[] {STRING, "reInClassMinus", "reInClass1"}),
-                    rule ("reInClass1", new Object[] {STRING, "reInClassMinus", "reInClass1"}),
-                    rule ("reInClass1", new Object[] {}),
-                    rule ("reInClassMinus", new Object[] {MINUS, STRING}),
-                    rule ("reInClassMinus", new Object[] {}),
-                    
-                    rule ("grammarRule", new Object[] {IDENTIFIER, EQUAL, "grRightSide", SEMICOLON}),
-                    rule ("grRightSide", new Object[] {"grChoice", "grRightSide1"}),
-                    rule ("grRightSide1", new Object[] {OR, "grChoice", "grRightSide1"}),
-                    rule ("grRightSide1", new Object[] {}),
-                    rule ("grChoice", new Object[] {"grPart", "grChoice"}),
-                    rule ("grChoice", new Object[] {}),
-                    rule ("grPart", new Object[] {IDENTIFIER, "grOperator"}),
-                    rule ("grPart", new Object[] {"tokenDef", "grOperator"}),
-                    rule ("grPart", new Object[] {STRING, "grOperator"}),
-                    rule ("grPart", new Object[] {BRACKET, "grRightSide", BRACKET2}),
-                    rule ("grPart", new Object[] {PARENTHESIS, "grRightSide", PARENTHESIS2, "grOperator"}),
-                    rule ("grOperator", new Object[] {PLUS}),
-                    rule ("grOperator", new Object[] {MULTIPLY}),
-                    rule ("grOperator", new Object[] {QUESTION}),
-                    rule ("grOperator", new Object[] {}),
-                    rule ("tokenDef", new Object[] {LT, IDENTIFIER, "tokenDef1", GT}),
-                    rule ("tokenDef1", new Object[] {COMMA, STRING}),
-                    rule ("tokenDef1", new Object[] {}),
-                    
-                    rule ("command", new Object[] {KEYWORD, "command0"}),
-                    rule ("command0", new Object[] {BRACE, "properties", BRACE2}),
-                    rule ("command0", new Object[] {COLON, "class", "command1"}),
-                    rule ("command0", new Object[] {"command2"}),
-                    rule ("command1", new Object[] {BRACE, "properties", BRACE2}),
-                    rule ("command1", new Object[] {COLON, "command2"}),
-                    rule ("command1", new Object[] {}),
-                    rule ("command2", new Object[] {"class"}),
-                    rule ("command2", new Object[] {STRING}),
-                    rule ("properties", new Object[] {"property", "properties"}),
-                    rule ("properties", new Object[] {}),
-                    rule ("property", new Object[] {IDENTIFIER, COLON, "propertyValue", SEMICOLON}),
-                    rule ("propertyValue", new Object[] {STRING}),
-                    rule ("propertyValue", new Object[] {"class"}),
-                    rule ("propertyValue", new Object[] {PARENTHESIS, "regularExpression", PARENTHESIS2}),
-                    
-                    rule ("class", new Object[] {IDENTIFIER, "class1"}),
-                    rule ("class1", new Object[] {DOT, IDENTIFIER, "class1"}),
-                    rule ("class1", new Object[] {}),
-                }),
-                new HashSet (Arrays.asList (new Object[] {
-                    "whitespace",
-                    "comment"
-                }))
-            );
-        return nbsAnalyser;
-    }
+
     
     private static LLSyntaxAnalyser.Rule rule (String nt, Object[] right) {
         return LLSyntaxAnalyser.Rule.create (

@@ -19,6 +19,7 @@
 
 TOKEN:keyword:( 
     "ACTION" |
+    "AST" | 
     "BRACE" |
     "COLOR" | 
     "COMPLETE" |  
@@ -131,7 +132,8 @@ tokenDef1 = ;
 command = <keyword> command0;
 command0 = "{" properties "}";
 command0 = ":" class command1;
-command0 = command2;
+command0 = class;
+command0 = <string>;
 command1 = "{" properties "}";
 command1 = ":" command2;
 command1 = ;

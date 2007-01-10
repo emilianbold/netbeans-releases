@@ -107,18 +107,19 @@ public class NBSLanguageReader {
     ) {
         CharInput input = new StringInput (s, fo.toString ());
         try {
-            Parser parser = NBSLanguage.getNBSParser ();
             Language language = new Language (mimeType);
-            Set skip = new HashSet ();
-            skip.add ("whitespace");
-            skip.add ("comment");
+            Language nbsLanguage = NBSLanguage.getNBSLanguage ();
             TokenInput tokenInput = TokenInput.create (
-                parser, 
+                nbsLanguage.getParser (), 
                 input, 
-                skip
+                nbsLanguage.getSkipTokenTypes ()
             );
-            LLSyntaxAnalyser analyser = NBSLanguage.getNBSAnalyser ();
-            ASTNode node = analyser.read (tokenInput, false);
+            ASTNode node = nbsLanguage.getAnalyser ().read (tokenInput, false);
+            if (node == null) 
+                System.out.println("Can not parse " + fo);
+            else
+            if (node.getChildren ().isEmpty ())
+                System.out.println("Can not parse " + fo + " " + node.getNT ());
             readBody (node, language);
             return language;
         } catch (ParseException ex) {
@@ -326,6 +327,13 @@ public class NBSLanguageReader {
                 l [0].add (new Evaluator[] {
                     name, performer, enabled
                 });
+        } else
+        if (Language.AST.equals (featureName)) {
+            if (identifier != null)
+                throw new ParseException ("Syntax error.");
+            if (!(feature instanceof Map))
+                throw new ParseException ("Syntax error.");
+            language.addProperty (featureName, feature);
         } else
         if (Language.BRACE.equals (featureName)) {
             if (identifier != null)

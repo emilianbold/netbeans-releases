@@ -43,6 +43,7 @@ public class Language {
 
     
     public static final String ACTION = "ACTION";
+    public static final String AST = "AST";
     public static final String BRACE = "BRACE";
     public static final String COLOR = "COLOR";
     public static final String COMPLETE = "COMPLETE";
@@ -68,6 +69,7 @@ public class Language {
     private String              mimeType;
     private LLSyntaxAnalyser    analyser = null;
     private Map                 analyserRules = new HashMap ();
+    private List                analyserRules2;
 
     
     /** Creates a new instance of Language */
@@ -104,7 +106,7 @@ public class Language {
         if (analyser != null) return analyser;
         synchronized (this) {
             if (analyser != null) return analyser;
-            analyser = LLSyntaxAnalyser.create (analyserRules, skipTokenTypes, getProperties (mimeType), this);
+            analyser = LLSyntaxAnalyser.create (this);
             return analyser;
         }
     }
@@ -195,6 +197,17 @@ public class Language {
             analyserRules.put (mimeType, r);
         }
         r.add (rule);
+    }
+    
+    public void addRule (LLSyntaxAnalyser.Rule rule) {
+        if (analyserRules2 == null) analyserRules2 = new ArrayList ();
+        analyserRules2.add (rule);
+    }
+    
+    public List getRules () {
+        if (analyserRules2 == null)
+            analyserRules2 = Petra.convert (analyserRules);
+        return analyserRules2;
     }
 
     private Map properties = new HashMap ();

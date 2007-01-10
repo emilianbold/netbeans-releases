@@ -57,6 +57,8 @@ public abstract class TokenInput {
 
     public abstract int getIndex ();
 
+    public abstract int getOffset ();
+
     public abstract SToken next (int index);
 
     public abstract boolean eof ();
@@ -143,6 +145,18 @@ public abstract class TokenInput {
             return index;
         }
 
+        public int getOffset () {
+            SToken t = null;
+            if (eof ()) {
+                if (getIndex () == 0) return 0;
+                t = ((SToken) tokens.get (tokens.size () - 1));
+                return t.getOffset () + t.getIdentifier ().length ();
+            } else {
+                t = (SToken) next (1);
+                return t.getOffset ();
+            }
+        }
+
         public SToken read () {
             SToken t = next (1);
             if (t != null) index++;
@@ -189,6 +203,18 @@ public abstract class TokenInput {
             return index;
         }
 
+        public int getOffset () {
+            SToken t = null;
+            if (eof ()) {
+                if (getIndex () == 0) return 0;
+                t = (SToken) array [array.length - 1];
+                return t.getOffset () + t.getIdentifier ().length ();
+            } else {
+                t = (SToken) next (1);
+                return t.getOffset ();
+            }
+        }
+        
         public boolean eof () {
             return index >= length;
         }
@@ -233,6 +259,18 @@ public abstract class TokenInput {
 
         public int getIndex () {
             return index;
+        }
+
+        public int getOffset () {
+            SToken t = null;
+            if (eof ()) {
+                if (getIndex () == 0) return 0;
+                t = ((SToken) list.get (list.size () - 1));
+                return t.getOffset () + t.getIdentifier ().length ();
+            } else {
+                t = (SToken) next (1);
+                return t.getOffset ();
+            }
         }
 
         public boolean eof () {

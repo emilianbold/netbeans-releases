@@ -283,6 +283,9 @@ RegularExpression = "/";
 
 PARSE:RegularExpression:org.netbeans.modules.languages.javascript.JavaScript.parseRegularExpression
 
+AST {
+    removeSimple:"!FunctionBody";
+}
 
 ########### colors #############################################################
 
