@@ -20,6 +20,8 @@
 package org.netbeans.modules.vmd.api.properties;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -55,11 +57,12 @@ public class PropertiesPresenterForwarder extends PropertiesPresenter {
         List<DesignPropertyDescriptor> descriptors = new ArrayList<DesignPropertyDescriptor>();
         DesignComponent component = getComponent().readProperty(propertyName).getComponent();
         
-        List<DesignPropertyDescriptor> presenterDescriptors;
-        for (PropertiesPresenter presenter : component.getPresenters(PropertiesPresenter.class)) {
-            presenterDescriptors = presenter.getDesignerPropertyDescriptors();
-            presenterDescriptors = filterDescriptors(presenterDescriptors);
-            descriptors.addAll(presenterDescriptors);
+        Collection<? extends PropertiesPresenter> propertiesPresenters  = component.getPresenters(PropertiesPresenter.class);
+        if (propertiesPresenters == null)
+            return Collections.EMPTY_LIST; 
+                
+        for (PropertiesPresenter presenter : propertiesPresenters) {
+            descriptors.addAll(filterDescriptors(presenter.getDesignerPropertyDescriptors()));
         }
         
         return descriptors;
