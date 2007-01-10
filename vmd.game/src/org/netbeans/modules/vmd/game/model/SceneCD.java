@@ -22,6 +22,7 @@ import java.util.Arrays;
 import org.netbeans.modules.vmd.api.model.*;
 
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.common.ValidatorPresenter;
 import org.netbeans.modules.vmd.game.integration.components.GameTypes;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 
@@ -54,7 +55,9 @@ public class SceneCD extends ComponentDescriptor {
     }
 
     protected List<? extends Presenter> createPresenters() {
-        return null;
+		return Arrays.asList(
+            new ValidatorPresenter().addValidChildrenTypeID(SceneItemCD.TYPEID)
+        );
     }
 
 }

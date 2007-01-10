@@ -54,7 +54,11 @@ public class Sequence implements Previewable, Editable, CodeGenerator {
 	private SequenceEditingPanel editor;
 		
 	private String name;
+	
+	//XXX david kaspar disagrees with this being here since a squence should
+	//always use the same image resource as it's SequenceContainer implementation
 	private ImageResource imageResource;
+	
 	private int frameWidth;
 	private int frameHeight;
 	private int frameMs;
