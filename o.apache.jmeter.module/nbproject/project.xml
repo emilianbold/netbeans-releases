@@ -22,14 +22,14 @@ Microsystems, Inc. All Rights Reserved.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.apache.jmeter.module</code-name-base>
-           <module-dependencies>
+            <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.modules.loadgenerator</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -98,7 +98,7 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <public-packages/>
-             <class-path-extension>
+            <class-path-extension>
                 <runtime-relative-path>jmeter/lib/bsf-2.3.0.jar</runtime-relative-path>
                 <binary-origin>release/modules/jmeter/lib/bsf-2.3.0.jar</binary-origin>
             </class-path-extension>
