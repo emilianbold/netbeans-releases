@@ -173,10 +173,6 @@ public abstract class EntityMember {
         memberName = name;
     }
     
-    void setMemberNameNoCheck(String name) {
-        memberName = name;
-    }
-    
     /**
      * Return full qualified type name to use for member declaration
      * @return type to use for member declaration

@@ -27,8 +27,6 @@ import org.netbeans.modules.dbschema.ForeignKeyElement;
 import org.netbeans.modules.dbschema.SchemaElement;
 import org.netbeans.modules.dbschema.TableElement;
 import org.netbeans.modules.dbschema.UniqueKeyElement;
-import org.netbeans.modules.j2ee.persistence.wizard.fromdb.PersistenceGenerator;
-import org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPHelper;
 
 /**
  * This class provides an algorithm to produce a set of cmp beans and relations
@@ -200,6 +198,9 @@ public class DbSchemaEjbGenerator {
         String roleACmr = EntityMember.makeRelationshipFieldName(roleBname, true);
         String roleBCmr = EntityMember.makeRelationshipFieldName(roleAname, true);
         
+        roleACmr = uniqueAlgorithm(getFieldNames(roleAHelper), roleACmr, null);
+        roleBCmr = uniqueAlgorithm(getFieldNames(roleBHelper), roleBCmr, null);
+        
         RelationshipRole roleA = new RelationshipRole(
                 roleAname,
                 roleAHelper.getClassName(),
@@ -329,9 +330,9 @@ public class DbSchemaEjbGenerator {
     private void generatePkField(ColumnElement column, boolean inPk, boolean pkField) {
         EntityMember m = EntityMember.create(column);
         m.setPrimaryKey(inPk, pkField);
-        List members =
-                getBean(column.getDeclaringTable().getName().getName()).getFields();
-        members.add(m);
+        EntityClass bean = getBean(column.getDeclaringTable().getName().getName());
+        m.setMemberName(uniqueAlgorithm(getFieldNames(bean), m.getMemberName(), null));
+        bean.getFields().add(m);
     }
     
     private void generateRelationship(ForeignKeyElement key) {
@@ -351,6 +352,7 @@ public class DbSchemaEjbGenerator {
         // create role B (it's the table which contains the foreign key)
         String roleBCmr = EntityMember.makeRelationshipFieldName(
                 roleAHelper.getClassName(), !oneToOne);
+        roleBCmr = uniqueAlgorithm(getFieldNames(roleBHelper), roleBCmr, null);
         RelationshipRole roleB = new RelationshipRole(
                 //TODO ask generator for default role name, do not assume it is EJB name
                 getRoleName(key, roleBHelper.getClassName()),
@@ -375,6 +377,8 @@ public class DbSchemaEjbGenerator {
             roleACmr = EntityMember.makeRelationshipFieldName(roleB.getRoleName(), false);
         }
         
+        roleACmr = uniqueAlgorithm(getFieldNames(roleAHelper), roleACmr, null);
+        
         RelationshipRole roleA = new RelationshipRole(
                 //TODO ask generator for default role name, do not assume it is EJB name
                 getRoleName(key, roleAHelper.getClassName()),
@@ -389,17 +393,7 @@ public class DbSchemaEjbGenerator {
         relation.setRelationName(roleA.getEntityName() + '-' + roleB.getEntityName()); // NOI18N
         relations.add(relation);
         
-        List list = getFieldNames(roleAHelper);
-        list.addAll(roleAHelper.getCMPMapping().getCmrFieldMapping().keySet());
-        roleACmr = uniqueAlgorithm(list, roleACmr, null);
-        
         roleAHelper.getCMPMapping().getCmrFieldMapping().put(roleACmr, localColumnNames(key));
-
-        list.clear();
-        list.addAll(getFieldNames(roleBHelper));
-        list.addAll(roleBHelper.getCMPMapping().getCmrFieldMapping().keySet());
-        roleBCmr = uniqueAlgorithm(list, roleBCmr, null);
-        
         roleBHelper.getCMPMapping().getCmrFieldMapping().put(roleBCmr, referencedColumnNames(key));
     }
     
@@ -435,34 +429,18 @@ public class DbSchemaEjbGenerator {
             EntityClass helperData = getBean(tableName);
             helperData.usePkField(pk!= null && pk.getColumns().length == 1);
         }
-        makeBeansUnique();
         makeRelationsUnique();
-    }
-    
-    /**
-     * This method will make the cmp-field name amd cmr-field name unique.
-     */
-    private EntityClass[] makeBeansUnique() {
-        EntityClass[] beans = getBeans();
-        
-        for (int i = 0; i < beans.length; i++) {
-            beans[i].makeMembersUnique(); // cmp-field names are unique
-            List l = getFieldNames(beans[i]);
-            
-            for (Iterator it=beans[i].getRoles().iterator();it.hasNext();) {
-                RelationshipRole r = (RelationshipRole) it.next();
-                String baseName = r.getFieldName();
-                r.setFieldName(uniqueAlgorithm(l, baseName, null));
-            }
-        }
-        return beans;
     }
     
     private List getFieldNames(EntityClass bean) {
         List result = new ArrayList();
         for (Iterator i = bean.getFields().iterator(); i.hasNext();) {
-            EntityMember mem = (EntityMember) i.next();
-            result.add(mem.getMemberName());
+            EntityMember member = (EntityMember)i.next();
+            result.add(member.getMemberName());
+        }
+        for (Iterator i = bean.getRoles().iterator(); i.hasNext();) {
+            RelationshipRole role = (RelationshipRole)i.next();
+            result.add(role.getFieldName());
         }
         return result;
     }

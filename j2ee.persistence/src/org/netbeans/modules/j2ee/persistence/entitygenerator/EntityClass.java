@@ -85,30 +85,6 @@ public class EntityClass {
                 "\ncmp-fields "+ cmpFields;  // NOI18N
     }
     
-    /**
-     * determine if field (either cmp or cmr) is unique within this bean.
-     */
-    public boolean isFieldUnique(String fieldName) {
-        // check cmp-fields
-        for (Iterator it = getFields().iterator(); it.hasNext();) {
-            EntityMember m = (EntityMember) it.next();
-            if (m.getMemberName().equals(fieldName)) {
-                return false;
-            }
-        }
-        
-        // check cmr-fields
-        for (Iterator it = getRoles().iterator(); it.hasNext();) {
-            RelationshipRole role = (RelationshipRole) it.next();
-            String f = role.getFieldName();
-            if (f != null && f.equals(fieldName)) {
-                return false;
-            }
-        }
-        
-        return true;
-    }
-    
     public FileObject getRootFolder() {
         return rootFolder;
     }
@@ -130,29 +106,6 @@ public class EntityClass {
         return rootFolder.getFileObject(relative);
     }
     
-    /**
-     * Make current set of entity member have unique columnNames. This will
-     * ensure that the primary key fields generated will successfully compile.
-     * This method should be invoked after the naming algorithm on database
-     * columns, which may result in conflicting member names. This will
-     * operate on all members, not mapped.
-     */
-    public void makeMembersUnique() {
-        List members = getFields();
-        Iterator memIt = members.iterator();
-        
-        Set memberNames = new TreeSet();
-        while (memIt.hasNext()) {
-            EntityMember em = (EntityMember) memIt.next();
-            String baseName = em.getMemberName();
-            int i = 1;
-            while (memberNames.contains(em.getMemberName())) {
-                em.setMemberName(baseName + "_" + String.valueOf(i++)); //NOI18N
-            }
-            memberNames.add(em.getMemberName());
-        }
-    }
-    
     public CMPMappingModel getCMPMapping() {
         mappingModel.getCMPFieldMapping().clear();
         Iterator fields = getFields().iterator();
@@ -164,7 +117,6 @@ public class EntityClass {
         }
         return mappingModel;
     }
-    
     
     public void usePkField(boolean usePkField) {
         this.usePkField = usePkField;
