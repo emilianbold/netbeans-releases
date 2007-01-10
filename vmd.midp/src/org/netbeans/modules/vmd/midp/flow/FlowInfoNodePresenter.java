@@ -99,6 +99,7 @@ public final class FlowInfoNodePresenter extends FlowNodePresenter {
             widget.setNodeImage (presenter.getIcon (InfoPresenter.IconType.COLOR_16x16));
             widget.setNodeName (presenter.getDisplayName (InfoPresenter.NameType.PRIMARY));
             widget.setNodeType (presenter.getDisplayName (InfoPresenter.NameType.SECONDARY));
+            scene.scheduleNodeDescriptorForOrdering (descriptor);
         }
 
         public void attachPinWidget (FlowNodeDescriptor descriptor, FlowScene scene, Widget pinWidget) {
