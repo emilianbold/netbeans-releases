@@ -18,28 +18,9 @@
  */
 package org.netbeans.api.java.source.gen;
 
-import com.sun.source.tree.BinaryTree;
 import java.io.File;
 import java.util.Collections;
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionStatementTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.ForLoopTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.IfTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.ParenthesizedTree;
-import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.TryTree;
-import com.sun.source.tree.TypeParameterTree;
-import com.sun.source.tree.UnaryTree;
-import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.*;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.CancellableTask;
@@ -75,6 +56,9 @@ public class BodyStatementTest extends GeneratorTest {
 //        suite.addTest(new BodyStatementTest("testAddMethodToAnnInTry"));
 //        suite.addTest(new BodyStatementTest("testReturnNotDoubled"));
 //        suite.addTest(new BodyStatementTest("testForNotRegen"));
+//        suite.addTest(new BodyStatementTest("testAssignLeft"));
+//        suite.addTest(new BodyStatementTest("testAssignRight"));
+//        suite.addTest(new BodyStatementTest("testAssignBoth"));
         return suite;
     }
     
@@ -532,7 +516,6 @@ public class BodyStatementTest extends GeneratorTest {
         assertEquals(golden, res);
     }
     
-    
     /**
      * Check 'for' body is not regenerated. (#91061)
      */
@@ -610,6 +593,143 @@ public class BodyStatementTest extends GeneratorTest {
         System.err.println(res);
         assertEquals(golden, res);
     }
+    
+    /**
+     * #92187: Test for left right side of assignment
+     */
+    public void testAssignLeft() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method() {\n" +
+            "        this.key = key;\n" +
+            "    }\n" +
+            "}\n");
+
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method() {\n" +
+            "        this.key2 = key;\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                ExpressionStatementTree est = (ExpressionStatementTree) method.getBody().getStatements().get(0);
+                AssignmentTree assignment = (AssignmentTree) est.getExpression();
+                MemberSelectTree mstCopy = make.setLabel((MemberSelectTree) assignment.getVariable(), "key2");
+                workingCopy.rewrite(assignment.getVariable(), mstCopy);
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * #92187: Test for right side of assignment
+     */
+    public void testAssignRight() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method() {\n" +
+            "        this.key = key;\n" +
+            "    }\n" +
+            "}\n");
+
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method() {\n" +
+            "        this.key = key2;\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                ExpressionStatementTree est = (ExpressionStatementTree) method.getBody().getStatements().get(0);
+                AssignmentTree assignment = (AssignmentTree) est.getExpression();
+                IdentifierTree copy = make.setLabel((IdentifierTree) assignment.getExpression(), "key2");
+                workingCopy.rewrite(assignment.getExpression(), copy);
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * #92187: Test for right side of assignment
+     */
+    public void testAssignBoth() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method() {\n" +
+            "        this.key = key;\n" +
+            "    }\n" +
+            "}\n");
+
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method() {\n" +
+            "        this.key2 = key2;\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                ExpressionStatementTree est = (ExpressionStatementTree) method.getBody().getStatements().get(0);
+                AssignmentTree assignment = (AssignmentTree) est.getExpression();
+                MemberSelectTree mstCopy = make.setLabel((MemberSelectTree) assignment.getVariable(), "key2");
+                workingCopy.rewrite(assignment.getVariable(), mstCopy);
+                IdentifierTree copy = make.setLabel((IdentifierTree) assignment.getExpression(), "key2");
+                workingCopy.rewrite(assignment.getExpression(), copy);
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
 
     // methods not used in this test.
     String getGoldenPckg() {
@@ -628,3 +748,25 @@ public class BodyStatementTest extends GeneratorTest {
     }
 
 }
+
+//public class NewMain {
+//    private Object key;
+//    private Object value;
+//     
+//    public NewMain(Object key, Object value) {
+//        this.key = key;
+//        this.value = value;
+//    }
+//
+//    public Object getKey() {
+//        return key;
+//    }
+//    
+//    public Object getValue() {
+//        return value;
+//    }
+//
+//    public String toString() {
+//        return "[" + key + "; " + value + "]";
+//    }
+//}
