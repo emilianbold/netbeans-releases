@@ -42,9 +42,9 @@ public final class PropertyDescriptor {
      * @param name the property name
      * @param type the property type id
      * @param defaultValue the default property value
-     * @param allowNull
-     * @param allowUserCode
-     * @param versionable
+     * @param allowNull the property allow null values
+     * @param allowUserCode the property allow user code values
+     * @param versionable the property version
      */
     public PropertyDescriptor (String name, TypeID type, PropertyValue defaultValue, boolean allowNull, boolean allowUserCode, Versionable versionable) {
         this (name, type, defaultValue, allowNull, allowUserCode, versionable, true, false);
