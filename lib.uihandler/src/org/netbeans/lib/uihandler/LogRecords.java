@@ -92,6 +92,7 @@ public final class LogRecords {
         f.setValidating(false);
         SAXParser p;
         try {
+            f.setFeature("http://apache.org/xml/features/continue-after-fatal-error", true); // NOI18N
             p = f.newSAXParser();
         } catch (ParserConfigurationException ex) {
             LOG.log(Level.SEVERE, null, ex);
