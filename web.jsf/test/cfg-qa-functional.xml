@@ -15,7 +15,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -25,11 +25,10 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
                <include name="org/netbeans/test/jsf/JsfFunctionalTest.class"/>
-               <include name="org/netbeans/test/jsf/JsfFunctionalTest.class/testCreateWebProjectWithJSF" expectedFail="Exception while scanning (#91098)"/>
                <include name="org/netbeans/test/jsf/JsfFunctionalTest.class/testManagedBeanDelete" expectedFail="Safe delete not yet implemented (#77310)"/>
                <include name="org/netbeans/test/jsf/JsfPagesFromEntityClassTest.class"/>
                <include name="org/netbeans/test/jsf/JsfPagesFromEntityClassTest.class/testCreateJSFPagesFromEntityClass" expectedFail="JSF Pages from Entity Class not yet implemented."/>
-               <!-- Add when 91415 fixed.
+               <!-- Add when 91417 fixed.
                <include name="**/CompletionTest.class"/>
                -->
             </patternset>

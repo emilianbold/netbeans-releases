@@ -25,7 +25,6 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
                <include name="**/*Test.class"/>
-               <include name="**/EndToEndTest.class/testSetupStrutsProject" expectedFail="Exception while scanning (#91098)"/>
             </patternset>
         </testset>
     </testbag>
