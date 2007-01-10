@@ -1177,7 +1177,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             private final List<File> toDo = new LinkedList<File> ();
 
             public It (File root) {
-                this.toDo.add (root);
+                this.toDo.addAll (java.util.Arrays.asList(root.listFiles()));
             }
 
             public boolean hasNext() {
