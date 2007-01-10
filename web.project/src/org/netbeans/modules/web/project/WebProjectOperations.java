@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -39,6 +39,7 @@ import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -83,6 +84,13 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
         FileObject confDir = project.getWebModule().getConfDir();
         if (confDir != null)
             files.add(confDir);
+        
+        File resourceDir = project.getWebModule().getEnterpriseResourceDirectory();
+        if (resourceDir != null) {
+            FileObject resourceFO = FileUtil.toFileObject(resourceDir);
+            if (resourceFO != null)
+                files.add(resourceFO);
+        }
         
         SourceRoots src = project.getSourceRoots();
         FileObject[] srcRoots = src.getRoots();
