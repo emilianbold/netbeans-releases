@@ -22,16 +22,17 @@ import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.FolderPositionControllerFactory;
 import org.netbeans.modules.vmd.api.model.*;
-import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
-import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
-import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
-import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
+import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
+import org.netbeans.modules.vmd.api.properties.PropertiesPresenterForwarder;
 import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
+import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
+import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
+import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.ArrayList;
-import org.netbeans.modules.vmd.api.properties.PropertiesPresenterForwarder;
 
 /**
  * @author David Kaspar
@@ -58,7 +59,7 @@ public final class EventHandlerCD extends ComponentDescriptor {
     }
 
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
-        MidpActionsSupport.addCommonActionsPresenters (presenters, false, false, false, true, true);
+        MidpActionsSupport.addCommonActionsPresenters (presenters, false, true, false, true, true);
         super.gatherPresenters (presenters);
     }
 
