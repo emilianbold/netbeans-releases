@@ -22,6 +22,7 @@ package org.netbeans.modules.editor.options;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Insets;
+import java.awt.event.InputEvent;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.lang.reflect.Field;
@@ -38,7 +39,6 @@ import javax.swing.text.JTextComponent;
 import java.awt.Toolkit;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
@@ -869,33 +869,6 @@ public class BaseOptions extends OptionSupport {
         }
         
         super.setSettingValue(SettingsNames.KEY_BINDING_LIST, list, KEY_BINDING_LIST_PROP);
-    }
-    
-    static Font toFont (AttributeSet s, Integer defSize) {
-        Object fontFamily = s.getAttribute (StyleConstants.FontFamily);
-        Object fontSize = s.getAttribute (StyleConstants.FontSize);
-        if (fontFamily == null){ 
-            return null;
-        }
-        
-        if (fontSize == null){
-            fontSize = defSize;
-        }
-        
-	int style = 0;
-        if (Boolean.TRUE.equals(s.getAttribute (StyleConstants.Bold))){
-	    style += Font.BOLD;
-        }
-        
-	if (Boolean.TRUE.equals(s.getAttribute (StyleConstants.Italic))){
-	    style += Font.ITALIC;
-        }
-        
-	return new Font (
-	    (String) fontFamily, 
-	    style,
-	    ((Integer) fontSize).intValue ()
-	);
     }
     
     private void updateKeybindingsFromNewOptionsDialogAttributes(){
