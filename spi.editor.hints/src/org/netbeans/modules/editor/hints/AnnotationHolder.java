@@ -287,18 +287,24 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener 
         });
     }
     
-    private synchronized void updateAnnotations(int startLine, int endLine) {
-        for (int cntr = startLine; cntr <= endLine; cntr++) {
-            List<ErrorDescription> errors = line2Errors.get(cntr);
-            
-            if (errors != null) {
-                for (ErrorDescription e : errors) {
-                    LazyFixList l = e.getFixes();
-                    
-                    if (l.probablyContainsFixes() && !l.isComputed())
-                        l.getFixes();
+    private void updateAnnotations(int startLine, int endLine) {
+        List<ErrorDescription> errorsToUpdate = new ArrayList<ErrorDescription>();
+        
+        synchronized (this) {
+            for (int cntr = startLine; cntr <= endLine; cntr++) {
+                List<ErrorDescription> errors = line2Errors.get(cntr);
+                
+                if (errors != null) {
+                    errorsToUpdate.addAll(errors);
                 }
             }
+        }
+        
+        for (ErrorDescription e : errorsToUpdate) {
+            LazyFixList l = e.getFixes();
+            
+            if (l.probablyContainsFixes() && !l.isComputed())
+                l.getFixes();
         }
     }
     
