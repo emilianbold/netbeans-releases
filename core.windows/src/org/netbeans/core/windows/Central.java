@@ -2210,11 +2210,6 @@ final class Central implements ControllerHandler {
                         slide( tc, modeImpl, guessSlideSide( tc ) );
                     }
                 }
-                //make sure that the same view is selected as before
-                TopComponent prevActiveTc = modeImpl.getPreviousSelectedTopComponent();
-                if( null != prevActiveTc ) {
-                    setModeSelectedTopComponent( modeImpl, prevActiveTc );
-                }
             } else if( modeImpl.getKind() == Constants.MODE_KIND_SLIDING ) {
                 List<TopComponent> views = getModeOpenedTopComponents( modeImpl );
                 Collections.reverse( views );
@@ -2224,6 +2219,21 @@ final class Central implements ControllerHandler {
                     if( viewStatus.shouldDock( tcID ) ) {
                         unSlide( tc, modeImpl );
                     }
+                }
+            }
+        }
+        
+        //now that all views are slided/restore make sure the right views are selected in each mode
+        for( Iterator<? extends Mode> i=modes.iterator(); i.hasNext(); ) {
+            ModeImpl modeImpl = (ModeImpl)i.next();
+            if( modeImpl.getState() == Constants.MODE_STATE_SEPARATED )
+                continue;
+            
+            if( modeImpl.getKind() == Constants.MODE_KIND_VIEW ) {
+                //make sure that the same view is selected as before
+                TopComponent prevActiveTc = modeImpl.getPreviousSelectedTopComponent();
+                if( null != prevActiveTc ) {
+                    setModeSelectedTopComponent( modeImpl, prevActiveTc );
                 }
             }
         }
