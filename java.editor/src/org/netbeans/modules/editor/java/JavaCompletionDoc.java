@@ -75,6 +75,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
     private static final String INHERIT_DOC_TAG = "@inheritDoc"; //NOI18N
     private static final String LINKPLAIN_TAG = "@linkplain"; //NOI18N
     private static final String CODE_TAG = "@code"; //NOI18N
+    private static final String DEPRECATED_TAG = "@deprecated"; //NOI18N
     
     public static final JavaCompletionDoc create(CompilationController controller, Element element) {
         return new JavaCompletionDoc(controller, element, null);
@@ -191,6 +192,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
             }
             sb.append("<p>"); //NOI18N
             if (doc.commentText().length() > 0) {
+                sb.append(getDeprecatedTag(eu, doc));
                 sb.append(inlineTags(eu, doc, doc.inlineTags()));
                 sb.append("</p><p>"); //NOI18N
                 sb.append(getTags(eu, doc));
@@ -489,6 +491,15 @@ public class JavaCompletionDoc implements CompletionDocumentation {
         int length = see.length();
         if (length > 0) {
             sb.append("<b>").append(NbBundle.getMessage(JavaCompletionDoc.class, "JCD-see")).append("</b><blockquote>").append(see.delete(length - 2, length)).append("</blockquote>"); //NOI18N
+        }
+        return sb;
+    }
+    
+    private CharSequence getDeprecatedTag(ElementUtilities eu, Doc doc) {
+        StringBuilder sb = new StringBuilder();
+        for (Tag tag : doc.tags()) {
+            if (DEPRECATED_TAG.equals(tag.kind()))
+                sb.append("<b>").append(NbBundle.getMessage(JavaCompletionDoc.class, "JCD-deprecated")).append("</b> <i>").append(tag.text()).append("</i></p><p>"); //NOI18N
         }
         return sb;
     }
