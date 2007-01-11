@@ -63,20 +63,6 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
         return customEditor;
     }
     
-    public boolean supportsCustomEditor() {
-        component.getDocument().getTransactionManager().readAccess(new Runnable() {
-            public void run() {
-                if (component.getDocument().getSelectedComponents().size() > 1) {
-                    supportsCustomEditor = false;
-                } else {
-                    supportsCustomEditor = true;
-                }
-            }
-        });
-        
-        return supportsCustomEditor;
-    }
-    
     public String getAsText() {
         PropertyValue value = (PropertyValue) super.getValue();
         if (value == null) {

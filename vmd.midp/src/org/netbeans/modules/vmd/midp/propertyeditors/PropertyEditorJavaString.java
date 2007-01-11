@@ -56,10 +56,6 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
         return customEditor;
     }
     
-    public boolean supportsCustomEditor() {
-        return MidpPropertyEditorSupport.singleSelectionEditAsTextOnly();
-    }
-    
     public String getAsText() {
         PropertyValue value = (PropertyValue) super.getValue();
         if (value == null) {

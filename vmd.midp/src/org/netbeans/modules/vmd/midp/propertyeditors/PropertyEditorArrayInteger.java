@@ -89,10 +89,6 @@ public class PropertyEditorArrayInteger extends GroupPropertyEditor implements E
     
    public boolean canEditAsText() {
         return true;
-    }
-    
-    public boolean canWrite() {
-        return MidpPropertyEditorSupport.singleSelectionEditAsTextOnly();
-    }
+   }
     
 }

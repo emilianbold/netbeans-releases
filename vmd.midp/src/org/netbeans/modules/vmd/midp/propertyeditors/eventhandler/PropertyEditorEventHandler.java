@@ -75,11 +75,7 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
     public static final PropertyEditorEventHandler createInstance() {
         return new PropertyEditorEventHandler();
     }
-    
-    public boolean supportsCustomEditor() {
-        return true;
-    }
-    
+   
     public Component getCustomEditor() {
         document.getTransactionManager().readAccess(new Runnable() {
             public void run() {
