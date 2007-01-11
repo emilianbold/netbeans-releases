@@ -1334,7 +1334,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 switch(ts.token().id()) {
                     case NEW:
                         if (queryType == COMPLETION_SMART_QUERY_TYPE) {
-                            Set<TypeMirror> smarts = getSmartTypes(env);
+                            Set<? extends TypeMirror> smarts = getSmartTypes(env);
                             if (smarts != null)
                                 for (TypeMirror smart : smarts) {
                                     if (smart.getKind() == TypeKind.DECLARED)
@@ -2001,7 +2001,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             final Types types = controller.getTypes();
             final TreeUtilities tu = controller.getTreeUtilities();
             final Scope scope = env.getScope();
-            Set<TypeMirror> smartTypes = null;
+            Set<? extends TypeMirror> smartTypes = null;
             if (queryType == COMPLETION_SMART_QUERY_TYPE) {
                 smartTypes = getSmartTypes(env);
                 if (smartTypes == null || smartTypes.isEmpty())
@@ -2040,7 +2040,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 (tu.isStaticContext(scope) || (env.getPath().getLeaf().getKind() == Tree.Kind.BLOCK && ((BlockTree)env.getPath().getLeaf()).isStatic()));
             final Collection<? extends Element> illegalForwardRefs = env.getForwardReferences();
             final ExecutableElement method = scope.getEnclosingMethod();
-            final Set<TypeMirror> finalSmartTypes = smartTypes;
+            final Set<? extends TypeMirror> finalSmartTypes = smartTypes;
             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
                     switch (e.getKind()) {
@@ -2080,7 +2080,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             final Types types = controller.getTypes();
             final TreeUtilities tu = controller.getTreeUtilities();
             final Scope scope = env.getScope();
-            Set<TypeMirror> smartTypes = null;
+            Set<? extends TypeMirror> smartTypes = null;
             if (queryType == COMPLETION_SMART_QUERY_TYPE) {
                 smartTypes = getSmartTypes(env);
                 if (smartTypes == null || smartTypes.isEmpty())
@@ -2120,7 +2120,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 (tu.isStaticContext(scope) || (env.getPath().getLeaf().getKind() == Tree.Kind.BLOCK && ((BlockTree)env.getPath().getLeaf()).isStatic()));
             final Collection<? extends Element> illegalForwardRefs = env.getForwardReferences();
             final ExecutableElement method = scope.getEnclosingMethod();
-            final Set<TypeMirror> finalSmartTypes = smartTypes;
+            final Set<? extends TypeMirror> finalSmartTypes = smartTypes;
             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
                     switch (e.getKind()) {
@@ -2184,7 +2184,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             final Types types = controller.getTypes();
             final TreeUtilities tu = controller.getTreeUtilities();
             final Scope scope = env.getScope();
-            Set<TypeMirror> smartTypes = null;
+            Set<? extends TypeMirror> smartTypes = null;
             if (queryType == COMPLETION_SMART_QUERY_TYPE) {
                 smartTypes = getSmartTypes(env);
                 if (smartTypes == null || smartTypes.isEmpty())
@@ -2195,7 +2195,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 (tu.isStaticContext(scope) || (env.getPath().getLeaf().getKind() == Tree.Kind.BLOCK && ((BlockTree)env.getPath().getLeaf()).isStatic()));
             final Collection<? extends Element> illegalForwardRefs = env.getForwardReferences();
             final ExecutableElement method = scope.getEnclosingMethod();
-            final Set<TypeMirror> finalSmartTypes = smartTypes;
+            final Set<? extends TypeMirror> finalSmartTypes = smartTypes;
             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
                     switch (e.getKind()) {
@@ -2231,7 +2231,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         }
         
         private void addMemberConstantsAndTypes(Env env, final TypeMirror type, final Element elem) throws IOException {
-            Set<TypeMirror> smartTypes = null;
+            Set<? extends TypeMirror> smartTypes = null;
             if (queryType == COMPLETION_SMART_QUERY_TYPE) {
                 smartTypes = getSmartTypes(env);
                 if (smartTypes == null || smartTypes.isEmpty())
@@ -2247,7 +2247,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             final boolean isStatic = elem != null && (elem.getKind().isClass() || elem.getKind().isInterface() || elem.getKind() == TYPE_PARAMETER);
             final boolean isSuperCall = elem != null && elem.getKind().isField() && elem.getSimpleName().contentEquals(SUPER_KEYWORD);
             final Scope scope = env.getScope();
-            final Set<TypeMirror> finalSmartTypes = smartTypes;
+            final Set<? extends TypeMirror> finalSmartTypes = smartTypes;
             TypeElement enclClass = scope.getEnclosingClass();
             final TypeMirror enclType = enclClass != null ? enclClass.asType() : null;
             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
@@ -2287,7 +2287,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         }
         
         private void addMembers(Env env, final TypeMirror type, final Element elem, final EnumSet<ElementKind> kinds, final DeclaredType baseType, final boolean inImport) throws IOException {
-            Set<TypeMirror> smartTypes = null;
+            Set<? extends TypeMirror> smartTypes = null;
             if (queryType == COMPLETION_SMART_QUERY_TYPE) {
                 smartTypes = getSmartTypes(env);
                 if (smartTypes == null || smartTypes.isEmpty())
@@ -2304,7 +2304,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             final boolean isStatic = elem != null && (elem.getKind().isClass() || elem.getKind().isInterface() || elem.getKind() == TYPE_PARAMETER);
             final boolean isSuperCall = elem != null && elem.getKind().isField() && elem.getSimpleName().contentEquals(SUPER_KEYWORD);
             final Scope scope = env.getScope();
-            final Set<TypeMirror> finalSmartTypes = smartTypes;
+            final Set<? extends TypeMirror> finalSmartTypes = smartTypes;
             final boolean[] ctorSeen = {false};
             TypeElement enclClass = scope.getEnclosingClass();
             final TypeMirror enclType = enclClass != null ? enclClass.asType() : null;
@@ -2399,7 +2399,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         }
         
         private void addPackageContent(Env env, PackageElement pe, EnumSet<ElementKind> kinds, DeclaredType baseType) throws IOException {
-            Set<TypeMirror> smartTypes = null;
+            Set<? extends TypeMirror> smartTypes = null;
             if (queryType == COMPLETION_SMART_QUERY_TYPE) {
                 smartTypes = getSmartTypes(env);
                 if (smartTypes == null || smartTypes.isEmpty())
@@ -2769,7 +2769,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             int offset = env.getOffset();
             String prefix = env.getPrefix();
             if (queryType == COMPLETION_SMART_QUERY_TYPE) {
-                Set<TypeMirror> smartTypes = getSmartTypes(env);
+                Set<? extends TypeMirror> smartTypes = getSmartTypes(env);
                 if (smartTypes != null && !smartTypes.isEmpty()) {
                     Set<String> kws = new HashSet<String>();
                     for (TypeMirror st : smartTypes) {
@@ -3049,7 +3049,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             return null;
         }
         
-        private boolean isOfSmartType(TypeMirror type, Set<TypeMirror> smartTypes, Types types) {
+        private boolean isOfSmartType(TypeMirror type, Set<? extends TypeMirror> smartTypes, Types types) {
             if (smartTypes == null || smartTypes.isEmpty())
                 return true;
             for (TypeMirror smartType : smartTypes)
@@ -3102,7 +3102,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             return false;
         }
         
-        private Set<TypeMirror> getSmartTypes(Env env) throws IOException {
+        private Set<? extends TypeMirror> getSmartTypes(Env env) throws IOException {
             int offset = env.getOffset();
             final CompilationController controller = env.getController();
             TreePath path = env.getPath();
@@ -3305,6 +3305,17 @@ public class JavaCompletionProvider implements CompletionProvider {
                             }
                             return null;
                         }
+                        return null;
+                    case NEW_ARRAY:
+                        NewArrayTree nat = (NewArrayTree)tree;
+                        sourcePositions = env.getSourcePositions();
+                        root = env.getRoot();
+                        int typeEndPos = (int)sourcePositions.getEndPosition(root, nat.getType());
+                        text = controller.getText().substring(typeEndPos, offset);
+                        if (text.indexOf('{') >= 0)
+                            return Collections.singleton(controller.getTrees().getTypeMirror(new TreePath(path, nat.getType())));
+                        if (text.trim().endsWith("[")) //NOI18N
+                            return Collections.singleton(controller.getTypes().getPrimitiveType(TypeKind.INT));
                         return null;
                     case ANNOTATION:
                         AnnotationTree ann = (AnnotationTree)tree;
