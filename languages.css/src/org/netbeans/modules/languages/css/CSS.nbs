@@ -76,7 +76,6 @@ TOKEN:css_string: (
 
 SKIP:css_comment
 SKIP:css_whitespace
-SKIP:css_error
 
 S = [charset] (import)* (ruleset | media | page)*;
 charset = "@charset"  <css_string> ";";

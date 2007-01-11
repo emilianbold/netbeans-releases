@@ -58,7 +58,8 @@ public class LLSyntaxAnalyser {
     
     private LLSyntaxAnalyser (Language language) {
         this.rules = language.getRules ();
-        this.skip = language.getSkipTokenTypes ();
+        this.skip = new HashSet (language.getSkipTokenTypes ());
+        this.skip.add ("error");
         this.language = language;
         initTracing ();
     }
@@ -80,10 +81,6 @@ public class LLSyntaxAnalyser {
     
     public ASTNode read (TokenInput input, boolean skipErrors) throws ParseException {
         cancel = false;
-        return read (input, false, skipErrors);
-    }
-    
-    private ASTNode read (TokenInput input, boolean embeded, boolean skipErrors) throws ParseException {
         if (rules.isEmpty () || input.eof ())
             return ASTNode.create (null, "Root", -1, 0);
         if (first == null) {
@@ -93,34 +90,38 @@ public class LLSyntaxAnalyser {
                 AnalyserAnalyser.printRules (rules, null);
             if (printFirst)
                 AnalyserAnalyser.printF (first, null);
+            AnalyserAnalyser.printUndefinedNTs (rules, null);
         }
-        AnalyserAnalyser.printUndefinedNTs (rules, null);
-        
+        return read (input, false, skipErrors);
+    }
+    
+    
+    // helper methods ..........................................................
+    
+    private ASTNode read (TokenInput input, boolean embeded, boolean skipErrors) throws ParseException {
         Stack stack = new Stack ();
         Node root = null, node = null;
         Iterator it = Collections.singleton ("S").iterator ();
         String mimeType = input.next (1).getMimeType ();
-        List initialWhitespaces = new ArrayList ();
-        while (!input.eof () && skip.contains (input.next (1).getType ()))
-            initialWhitespaces.add (input.read ());
+        int offset = input.getOffset ();
         do {
-            if (!input.eof () && input.next (1).getMimeType () != mimeType) {
-                if (embeded)
+            List initialWhitespaces = readWhitespaces (node, input, mimeType, embeded, skipErrors);
+//            S ystem.out.println(input.getIndex () + ":" + input.next (1));
+            if ((!input.eof ()) &&
+                input.next (1).getMimeType () != mimeType
+            ) {
+                if (node != null) 
                     return root.createASTNode ();
-                ASTNode n = read (input, true, skipErrors);
-                if (n != null) {// embeded language without grammer definition
-                    if (node == null) {
-                        root = node = new Node (mimeType, "Root", -1, 0);
-                        Iterator it2 = initialWhitespaces.iterator ();
-                        while (it2.hasNext ())
-                            node.addToken ((SToken) it2.next ());
-                    }
-                    node.addNode (n);
-                }
+                else
+                    return ASTNode.create (
+                        mimeType,
+                        "S",
+                        -1,
+                        initialWhitespaces,
+                        offset
+                    );
             }
             while (!it.hasNext ()) {
-//                if (node.getChildren ().size () == 0)
-//                    node.getParent ().
                 if (stack.empty ()) break;
                 node = (Node) stack.pop ();
                 it = (Iterator) stack.pop ();
@@ -135,7 +136,7 @@ public class LLSyntaxAnalyser {
                         throw new ParseException ("No rule for " + input.next (1) + " in " + input, root.createASTNode ());
                     if (input.eof ()) {
                         if (node == null)
-                            root = node = new Node (mimeType, "Root", -1, input.getOffset ());
+                            root = node = new Node (mimeType, "Root", -1, input.getOffset (), null);
                         createErrorNode (node, input.getOffset ());
                         //S ystem.out.println(input.getIndex () + ": unexpected eof " + nt);
                         return root.createASTNode ();
@@ -165,16 +166,13 @@ public class LLSyntaxAnalyser {
                                 stack.push (it);
                                 stack.push (node);
                             } else {
-                                Node nnode = new Node (mimeType, rule.getNT (), newRule, input.getOffset ());
+                                Node nnode = new Node (mimeType, rule.getNT (), newRule, input.getOffset (), initialWhitespaces);
                                 if (node != null) {
                                     node.addNode (nnode);
                                     stack.push (it);
                                     stack.push (node);
                                 } else {
                                     root = nnode;
-                                    Iterator it2 = initialWhitespaces.iterator ();
-                                    while (it2.hasNext ())
-                                        nnode.addToken ((SToken) it2.next ());
                                 }
                                 node = nnode;
                             }
@@ -201,15 +199,46 @@ public class LLSyntaxAnalyser {
                     node.addToken (input.read ());
                     //S ystem.out.println(input.getIndex () + ": token readed " + input.next (1));
                 }
-                while (!input.eof () && skip.contains (input.next (1).getType ()))
-                    node.addToken (input.read ());
             }
         } while (true);
         return root.createASTNode ();
     }
     
-    
-    // helper methods ..........................................................
+    private List readWhitespaces (
+        Node node, 
+        TokenInput input, 
+        String mimeType, 
+        boolean embeded, 
+        boolean skipErrors
+    ) throws ParseException {
+        List l = null;
+        while (!input.eof ()) {
+            Object result = null;
+            if (!input.next (1).getMimeType ().equals (mimeType)) {
+                if (embeded)
+                    break;
+                else
+                    result = read (input, true, skipErrors);
+            } else
+            if (mimeType.equals (input.next (1).getMimeType ()) && 
+                skip.contains (input.next (1).getType ())
+            ) {
+                result = input.read ();
+            } else
+            if (!first.containsKey (mimeType)) {
+                result = input.read ();
+            } else
+                break;
+            if (node != null)
+                node.addNode (result);
+            else {
+                if (l == null)
+                    l = new ArrayList ();
+                l.add (result);
+            }
+        }
+        return l;
+    }
     
     private Node createErrorNode (Node parentNode, int offset) {
         if (parentNode != null) {
@@ -225,7 +254,8 @@ public class LLSyntaxAnalyser {
             parentNode == null ? "?" : parentNode.mimeType, 
             "ERROR", 
             -2, 
-            offset
+            offset,
+            null
         );
         if (parentNode != null)
             parentNode.addNode (errorNode);
@@ -477,12 +507,14 @@ public class LLSyntaxAnalyser {
             String mimeType,
             String nt,
             int rule,
-            int offset
+            int offset,
+            List children
         ) {
             this.mimeType = mimeType;
             this.nt = nt;
             this.rule = rule;
             this.offset = offset;
+            this.children = children;
         }
         
         void addNode (Object n) {

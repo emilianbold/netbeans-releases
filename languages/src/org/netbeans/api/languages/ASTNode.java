@@ -72,18 +72,20 @@ public class ASTNode {
         this.rule =     rule;
         this.offset =   offset;
         List l = new ArrayList ();
-        Iterator it = children.iterator ();
-        while (it.hasNext ()) {
-            Object o = it.next ();
-            if (o == null)
-                throw new NullPointerException ();
-            if (o instanceof SToken)
-                l.add (o);
-            else {
-                if (((ASTNode) o).parent != null)
-                    throw new IllegalArgumentException ();
-                ((ASTNode) o).parent = this;
-                l.add (o);
+        if (children != null) {
+            Iterator it = children.iterator ();
+            while (it.hasNext ()) {
+                Object o = it.next ();
+                if (o == null)
+                    throw new NullPointerException ();
+                if (o instanceof SToken)
+                    l.add (o);
+                else {
+                    if (((ASTNode) o).parent != null)
+                        throw new IllegalArgumentException ();
+                    ((ASTNode) o).parent = this;
+                    l.add (o);
+                }
             }
         }
         this.children = Collections.unmodifiableList (l);
