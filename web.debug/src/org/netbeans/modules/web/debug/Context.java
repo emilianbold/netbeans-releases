@@ -41,7 +41,9 @@ public class Context {
     private static EditorContext getContext () {
         if (editorContext == null) {
             List l = DebuggerManager.getDebuggerManager().lookup(null, EditorContext.class);
-            editorContext = (EditorContext) l.get (0);
+            if (!l.isEmpty()) {
+                editorContext = (EditorContext) l.get (0);
+            }
         }
         return editorContext;
     }
