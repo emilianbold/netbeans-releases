@@ -20,7 +20,7 @@ package org.netbeans.api.java.source;
 
 import com.sun.source.tree.Tree;
 import org.apache.lucene.store.FSDirectory;
-import org.netbeans.jackpot.transform.Transformer;
+import org.netbeans.api.java.source.transform.Transformer;
 import org.netbeans.modules.java.source.ActivatedDocumentListener;
 
 /**

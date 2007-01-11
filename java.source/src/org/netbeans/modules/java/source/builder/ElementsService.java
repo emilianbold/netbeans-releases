@@ -26,7 +26,6 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.util.Name;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.*;
-import org.netbeans.jackpot.model.*;
 import com.sun.tools.javac.code.Scope;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -40,12 +39,11 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 
 import static javax.lang.model.element.ElementKind.*;
-import org.netbeans.jackpot.model.ElementUtilities;
 
 /**
  * Utility methods for working with Element instances.
  */
-public class ElementsService implements ElementUtilities {
+public class ElementsService {
     private com.sun.tools.javac.code.Types jctypes;
     private ASTService model;
     private Name.Table names;

@@ -23,7 +23,7 @@ import com.sun.source.tree.MethodTree;
 import java.io.File;
 import java.util.Collections;
 import org.netbeans.api.java.source.TestUtilities;
-import org.netbeans.jackpot.transform.Transformer;
+import org.netbeans.api.java.source.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
 
 /**

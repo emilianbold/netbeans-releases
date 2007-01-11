@@ -30,7 +30,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.jackpot.transform.Transformer;
+import org.netbeans.api.java.source.transform.Transformer;
 
 /**
  *

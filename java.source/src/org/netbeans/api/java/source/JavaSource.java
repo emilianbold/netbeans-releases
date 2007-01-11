@@ -84,12 +84,14 @@ import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.editor.Registry;
-import org.netbeans.jackpot.engine.CommandEnvironment;
+import org.netbeans.api.java.source.query.QueryEnvironment;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.builder.Scanner;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.JavadocEnv;
+import org.netbeans.modules.java.source.engine.ReattributionException;
+import org.netbeans.modules.java.source.engine.RootTree;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
@@ -839,6 +841,9 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 if (tree.endPositions != null) {
                     s.setEndPosTable(tree.sourcefile, tree.endPositions);
                 }
+                List<CompilationUnitTree> units = new ArrayList<CompilationUnitTree>();
+                units.add(tree);
+                s.setRoot(new RootTree(units));
                 assert !it.hasNext();
                 currentPhase = Phase.PARSED;
                 long end = System.currentTimeMillis();
@@ -890,6 +895,9 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         } catch (IOException ex) {
             dumpSource(currentInfo, ex);
             throw ex;
+        } catch (ReattributionException ex) {
+            dumpSource(currentInfo, ex);
+            throw new RuntimeException(ex);
         } catch (RuntimeException ex) {
             dumpSource(currentInfo, ex);
             throw ex;
@@ -1444,7 +1452,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         }
         
         @Override
-        public CommandEnvironment getCommandEnvironment(WorkingCopy copy) {
+        public QueryEnvironment getCommandEnvironment(WorkingCopy copy) {
             assert copy != null;
             return copy.getCommandEnvironment();
         }

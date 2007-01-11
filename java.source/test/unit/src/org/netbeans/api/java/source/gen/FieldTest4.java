@@ -29,7 +29,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Modifier;
 import junit.textui.TestRunner;
-import org.netbeans.jackpot.transform.Transformer;
+import org.netbeans.api.java.source.transform.Transformer;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileStateInvalidException;

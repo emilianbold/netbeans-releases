@@ -13,15 +13,14 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.source.builder;
 
 import org.netbeans.api.java.source.Comment;
-import org.netbeans.jackpot.model.CommentSet;
-import org.netbeans.jackpot.model.*;
-import org.netbeans.jackpot.query.Query;
+import org.netbeans.api.java.source.query.CommentSet;
+import org.netbeans.api.java.source.query.Query;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.List;
@@ -92,7 +91,7 @@ public class CommentSetImpl implements Cloneable, CommentSet {
      * Returns the first character position, which is either the initial
      * position of the first preceding comment, or NOPOS if there are no comments.
      *
-     * @see org.netbeans.jackpot.query.Query#NOPOS
+     * @see org.netbeans.api.java.source.query.Query#NOPOS
      */
     public int pos() {
         return precedingComments.size() > 0 ? 

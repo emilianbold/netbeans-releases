@@ -28,7 +28,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.jackpot.engine.CommandEnvironment;
+import org.netbeans.api.java.source.query.QueryEnvironment;
 import org.openide.ErrorManager;
 
 /**
@@ -66,11 +66,13 @@ public abstract class JavaSourceAccessor {
      */
     public abstract JavacTaskImpl getJavacTask (CompilationInfo compilationInfo);
     
-    /** Returns {@link CommandEnvironment} associated with the given {@link WorkingCopy}.
-     * @param copy {@link WorkingCopy} for which {@link CommandEnvironment} should be obtained
-     * @return {@link CommandEnvironment} associated with the given working copy
+    /**
+     * Returns {@link QueryEnvironment} associated with the given {@link WorkingCopy}.
+     * 
+     * @param copy {@link WorkingCopy} for which {@link QueryEnvironment} should be obtained
+     * @return {@link CQueryEnvironment associated with the given working copy
      */
-    public abstract CommandEnvironment getCommandEnvironment(WorkingCopy copy);
+    public abstract QueryEnvironment getCommandEnvironment(WorkingCopy copy);
     
     /**
      * Returns a cached compilation info when available or null
