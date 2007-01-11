@@ -152,7 +152,7 @@ public final class MethodModelSupport {
                     Collections.<TypeParameterTree>emptyList(),
                     paramsList,
                     throwsList,
-                    methodModel.getBody(),
+                    "{" + methodModel.getBody() + "}",
                     null
                     );
         }
