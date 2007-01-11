@@ -88,6 +88,7 @@ public class Installer extends ModuleInstall {
     static final Logger LOG = Logger.getLogger(Installer.class.getName());
     static final RequestProcessor RP = new RequestProcessor("UI Gestures"); // NOI18N
     
+    @Override
     public void restored() {
         File logFile = logFile();
         if (logFile != null && logFile.canRead()) {
@@ -134,7 +135,13 @@ public class Installer extends ModuleInstall {
         }
          */
     }
-    
+
+    @Override
+    public void uninstalled() {
+        close();
+    }
+
+    @Override
     public void close() {
         Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
         log.removeHandler(ui);
