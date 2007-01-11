@@ -99,9 +99,9 @@ public class FileWizardIterator implements TemplateWizard.Iterator {
                     public void run() {
                         try {
                             J2MEProjectGenerator.addMIDletProperty(p, h,
-                                    (String) wizardInstance.getProperty(MIDPTargetChooserPanel.MIDLET_NAME),
-                                    (String) wizardInstance.getProperty(MIDPTargetChooserPanel.MIDLET_CLASSNAME),
-                                    (String) wizardInstance.getProperty(MIDPTargetChooserPanel.MIDLET_ICON)
+                                    (String) wiz.getProperty(MIDPTargetChooserPanel.MIDLET_NAME),
+                                    (String) wiz.getProperty(MIDPTargetChooserPanel.MIDLET_CLASSNAME),
+                                    (String) wiz.getProperty(MIDPTargetChooserPanel.MIDLET_ICON)
                                     );
                             ProjectManager.getDefault().saveProject(p);
                         } catch (IOException e) {
