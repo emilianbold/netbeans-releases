@@ -334,11 +334,12 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
     }
 
     public void registerUI (FlowNodeDescriptor descriptor, FlowPresenter.FlowUIResolver resolver) {
+        assert resolver != null;
         nodeUIregistry.put (descriptor, resolver);
     }
 
     public void unregisterUI (FlowNodeDescriptor descriptor, FlowPresenter.FlowUIResolver resolver) {
-        FlowPresenter.FlowUIResolver resolver2 = nodeUIregistry.put (descriptor, null);
+        FlowPresenter.FlowUIResolver resolver2 = nodeUIregistry.remove (descriptor);
         assert resolver == resolver2;
     }
 
@@ -351,11 +352,12 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
     }
 
     public void registerUI (FlowPinDescriptor descriptor, FlowPresenter.FlowUIResolver resolver) {
+        assert resolver != null;
         pinUIregistry.put (descriptor, resolver);
     }
 
     public void unregisterUI (FlowPinDescriptor descriptor, FlowPresenter.FlowUIResolver resolver) {
-        FlowPresenter.FlowUIResolver resolver2 = pinUIregistry.put (descriptor, null);
+        FlowPresenter.FlowUIResolver resolver2 = pinUIregistry.remove (descriptor);
         assert resolver == resolver2;
     }
 
@@ -368,11 +370,12 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
     }
 
     public void registerUI (FlowEdgeDescriptor descriptor, FlowPresenter.FlowUIResolver resolver) {
+        assert resolver != null;
         edgeUIregistry.put (descriptor, resolver);
     }
 
     public void unregisterUI (FlowEdgeDescriptor descriptor, FlowPresenter.FlowUIResolver resolver) {
-        FlowPresenter.FlowUIResolver resolver2 = edgeUIregistry.put (descriptor, null);
+        FlowPresenter.FlowUIResolver resolver2 = edgeUIregistry.remove (descriptor);
         assert resolver == resolver2;
     }
 
@@ -385,11 +388,12 @@ public final class FlowScene extends GraphPinScene<FlowNodeDescriptor, FlowEdgeD
     }
 
     public void registerUI (FlowBadgeDescriptor descriptor, FlowPresenter.FlowUIResolver resolver) {
+        assert resolver != null;
         pinBadgeUIregistry.put (descriptor, resolver);
     }
 
     public void unregisterUI (FlowBadgeDescriptor descriptor, FlowPresenter.FlowUIResolver resolver) {
-        FlowPresenter.FlowUIResolver resolver2 = pinBadgeUIregistry.put (descriptor, null);
+        FlowPresenter.FlowUIResolver resolver2 = pinBadgeUIregistry.remove (descriptor);
         assert resolver == resolver2;
     }
 
