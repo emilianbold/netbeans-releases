@@ -587,7 +587,9 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
     private void onPasswordChange() {
         cancelPasswordUpdate();
         scrambledPassword = null;
-        valid();
+        if (validateCvsRoot()) {
+            valid();
+        }
     }
     
     private void setValid() {
@@ -601,7 +603,9 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
         if (pd != null) {
             proxyDescriptor = pd;
             userVisitedProxySettings = true;
-            valid();
+            if (validateCvsRoot()) {
+                valid();
+            }
         }
     }
     
