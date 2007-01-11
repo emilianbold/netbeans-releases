@@ -19,13 +19,25 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.wizards;
 
+import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
+import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.util.NbBundle;
+
+import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.util.*;
+
 /**
  * UI for remote CVS repository selection. Components
  * are dynamically hidden.
  *
  * @author  Petr Kuzel
  */
-final class RepositoryPanel extends javax.swing.JPanel {
+final class RepositoryPanel extends javax.swing.JPanel implements ActionListener {
 
     /** Creates new form ProxyPanel */
     public RepositoryPanel() {
@@ -39,162 +51,199 @@ final class RepositoryPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
-        setLayout(new java.awt.GridBagLayout());
+        setName(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0006")); // NOI18N
 
-        setName(org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0006"));
-        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("ACSD_RepositoryStep"));
-        org.openide.awt.Mnemonics.setLocalizedText(headerLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("BK0001"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(headerLabel, gridBagConstraints);
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(headerLabel, bundle.getString("BK0001")); // NOI18N
 
         rootsLabel.setLabelFor(rootComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(rootsLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0002"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 3);
-        add(rootsLabel, gridBagConstraints);
+        org.openide.awt.Mnemonics.setLocalizedText(rootsLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0002")); // NOI18N
 
-        jPanel3.setLayout(new java.awt.BorderLayout(6, 0));
-
-        rootComboBox.setEditable(true);
-        jPanel3.add(rootComboBox, java.awt.BorderLayout.CENTER);
-
-        org.openide.awt.Mnemonics.setLocalizedText(editButton, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1105"));
-        editButton.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_EditFields"));
-        jPanel3.add(editButton, java.awt.BorderLayout.EAST);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 0);
-        add(jPanel3, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(descLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK2018"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 3, 9, 0);
-        add(descLabel, gridBagConstraints);
+        org.openide.awt.Mnemonics.setLocalizedText(descLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK2018")); // NOI18N
 
         pPaswordLabel.setLabelFor(passwordTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(pPaswordLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0003"));
-        pPaswordLabel.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_PserverPassword"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 3);
-        add(pPaswordLabel, gridBagConstraints);
+        org.openide.awt.Mnemonics.setLocalizedText(pPaswordLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0003")); // NOI18N
+        pPaswordLabel.setToolTipText(bundle.getString("TT_PserverPassword")); // NOI18N
 
         passwordTextField.setColumns(12);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        add(passwordTextField, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 3, 0, 3);
-        add(jPanel2, gridBagConstraints);
 
         sshButtonGroup.add(internalSshRadioButton);
         internalSshRadioButton.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(internalSshRadioButton, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1100"));
-        internalSshRadioButton.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_UseInternalSSH"));
+        org.openide.awt.Mnemonics.setLocalizedText(internalSshRadioButton, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1100")); // NOI18N
+        internalSshRadioButton.setToolTipText(bundle.getString("TT_UseInternalSSH")); // NOI18N
         internalSshRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         internalSshRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 0);
-        add(internalSshRadioButton, gridBagConstraints);
 
         extPasswordLabel5.setLabelFor(extPasswordField);
-        org.openide.awt.Mnemonics.setLocalizedText(extPasswordLabel5, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1011"));
-        extPasswordLabel5.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_SSHPassword"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 3);
-        add(extPasswordLabel5, gridBagConstraints);
+        org.openide.awt.Mnemonics.setLocalizedText(extPasswordLabel5, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1011")); // NOI18N
+        extPasswordLabel5.setToolTipText(bundle.getString("TT_SSHPassword")); // NOI18N
 
         extPasswordField.setColumns(12);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        add(extPasswordField, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(extREmemberPasswordCheckBox, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1012"));
-        extREmemberPasswordCheckBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_RememberPassword"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 0);
-        add(extREmemberPasswordCheckBox, gridBagConstraints);
+        org.openide.awt.Mnemonics.setLocalizedText(extREmemberPasswordCheckBox, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1012")); // NOI18N
+        extREmemberPasswordCheckBox.setToolTipText(bundle.getString("TT_RememberPassword")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(proxyConfigurationButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("BK0005"));
-        proxyConfigurationButton.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_ProxyConfig"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 18, 0, 0);
-        add(proxyConfigurationButton, gridBagConstraints);
+        org.openide.awt.Mnemonics.setLocalizedText(proxyConfigurationButton, bundle.getString("BK0005")); // NOI18N
+        proxyConfigurationButton.setToolTipText(bundle.getString("TT_ProxyConfig")); // NOI18N
 
         sshButtonGroup.add(extSshRadioButton);
-        org.openide.awt.Mnemonics.setLocalizedText(extSshRadioButton, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1101"));
-        extSshRadioButton.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_UseExternal"));
+        org.openide.awt.Mnemonics.setLocalizedText(extSshRadioButton, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1101")); // NOI18N
+        extSshRadioButton.setToolTipText(bundle.getString("TT_UseExternal")); // NOI18N
         extSshRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         extSshRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 0);
-        add(extSshRadioButton, gridBagConstraints);
 
         extCommandLabel.setLabelFor(extCommandTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(extCommandLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1013"));
-        extCommandLabel.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("TT_ExternalCommand"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 3);
-        add(extCommandLabel, gridBagConstraints);
+        org.openide.awt.Mnemonics.setLocalizedText(extCommandLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1013")); // NOI18N
+        extCommandLabel.setToolTipText(bundle.getString("TT_ExternalCommand")); // NOI18N
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 0);
-        add(extCommandTextField, gridBagConstraints);
+        extCommandTextField.setMinimumSize(new java.awt.Dimension(80, 20));
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 10000.0;
-        add(jPanel1, gridBagConstraints);
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "LBL_RepositoryPanel_Command_Browse")); // NOI18N
+        browseButton.addActionListener(this);
 
+        rootComboBox.setEditable(true);
+        rootComboBox.setMinimumSize(new java.awt.Dimension(80, 20));
+
+        org.openide.awt.Mnemonics.setLocalizedText(editButton, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1105")); // NOI18N
+        editButton.setToolTipText(bundle.getString("TT_EditFields")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 415, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 111, Short.MAX_VALUE)
+        );
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(rootsLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(0, 0, 0)
+                        .add(rootComboBox, 0, 275, Short.MAX_VALUE)
+                        .add(4, 4, 4)
+                        .add(editButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 81, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(descLabel)))
+            .add(layout.createSequentialGroup()
+                .add(pPaswordLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(passwordTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 210, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            .add(internalSshRadioButton)
+            .add(extSshRadioButton)
+            .add(headerLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 308, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(layout.createSequentialGroup()
+                .add(17, 17, 17)
+                .add(extCommandLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(extCommandTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(browseButton))
+            .add(layout.createSequentialGroup()
+                .add(17, 17, 17)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(proxyConfigurationButton)
+                    .add(layout.createSequentialGroup()
+                        .add(extPasswordLabel5)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(extPasswordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 193, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(2, 2, 2)
+                        .add(extREmemberPasswordCheckBox))))
+            .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(headerLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(rootsLabel)
+                    .add(editButton)
+                    .add(rootComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(descLabel)
+                .add(15, 15, 15)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(pPaswordLabel)
+                    .add(passwordTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(internalSshRadioButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(extPasswordLabel5)
+                    .add(extPasswordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(extREmemberPasswordCheckBox))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(proxyConfigurationButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(extSshRadioButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(extCommandLabel)
+                    .add(browseButton)
+                    .add(extCommandTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RepositoryStep")); // NOI18N
     }
-    // </editor-fold>//GEN-END:initComponents
+
+    // Code for dispatching events from components to event handlers.
+
+    public void actionPerformed(java.awt.event.ActionEvent evt) {
+        if (evt.getSource() == browseButton) {
+            RepositoryPanel.this.browseButtonActionPerformed(evt);
+        }
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
+        File defaultDir = defaultWorkingDirectory();
+        JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(RepositoryPanel.class, "ACSD_BrowseCommand"), defaultDir);
+        fileChooser.setDialogTitle(NbBundle.getMessage(RepositoryPanel.class, "LBL_BrowseCommand_Title"));
+        fileChooser.setMultiSelectionEnabled(false);
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fileChooser.showDialog(this, NbBundle.getMessage(RepositoryPanel.class, "LBL_BrowseCommand_Approve"));
+        File f = fileChooser.getSelectedFile();
+        if (f != null) {
+            extCommandTextField.setText(f.getAbsolutePath());
+        }
+    }//GEN-LAST:event_browseButtonActionPerformed
     
+    private File defaultWorkingDirectory() {
+        File defaultDir = null;
+        String current = extCommandTextField.getText();
+        if (current != null && !(current.trim().equals(""))) {  // NOI18N
+            File currentFile = new File(current);
+            while (currentFile != null && currentFile.exists() == false) {
+                currentFile = currentFile.getParentFile();
+            }
+            if (currentFile != null) {
+                if (currentFile.isFile()) {
+                    defaultDir = currentFile.getParentFile();
+                } else {
+                    defaultDir = currentFile;
+                }
+            }
+        }
+
+        if (defaultDir == null) {
+            defaultDir = new File(System.getProperty("user.home"));  // NOI18N
+        }
+
+        return defaultDir;
+    }    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    final javax.swing.JButton browseButton = new javax.swing.JButton();
     final javax.swing.JLabel descLabel = new javax.swing.JLabel();
     final javax.swing.JButton editButton = new javax.swing.JButton();
     final javax.swing.JLabel extCommandLabel = new javax.swing.JLabel();
@@ -206,8 +255,6 @@ final class RepositoryPanel extends javax.swing.JPanel {
     final javax.swing.JLabel headerLabel = new javax.swing.JLabel();
     final javax.swing.JRadioButton internalSshRadioButton = new javax.swing.JRadioButton();
     final javax.swing.JPanel jPanel1 = new javax.swing.JPanel();
-    final javax.swing.JPanel jPanel2 = new javax.swing.JPanel();
-    final javax.swing.JPanel jPanel3 = new javax.swing.JPanel();
     final javax.swing.JLabel pPaswordLabel = new javax.swing.JLabel();
     final javax.swing.JPasswordField passwordTextField = new javax.swing.JPasswordField();
     final javax.swing.JButton proxyConfigurationButton = new javax.swing.JButton();

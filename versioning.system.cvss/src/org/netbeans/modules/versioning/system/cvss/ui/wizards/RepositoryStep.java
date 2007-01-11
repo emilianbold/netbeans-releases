@@ -511,12 +511,18 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
 
         repositoryPanel.extPasswordLabel5.setVisible(showExtFields);
         repositoryPanel.extPasswordField.setVisible(showExtFields);
+        repositoryPanel.extPasswordField.setEnabled(repositoryPanel.internalSshRadioButton.isSelected());
         repositoryPanel.extREmemberPasswordCheckBox.setVisible(showExtFields);
+        repositoryPanel.extREmemberPasswordCheckBox.setEnabled(repositoryPanel.internalSshRadioButton.isSelected());
 
         repositoryPanel.extCommandLabel.setVisible(showExtFields);
         repositoryPanel.extCommandTextField.setVisible(showExtFields);
+        repositoryPanel.extCommandTextField.setEnabled(repositoryPanel.extSshRadioButton.isSelected());
 
         repositoryPanel.proxyConfigurationButton.setVisible(showPserverFields || showExtFields);
+        repositoryPanel.proxyConfigurationButton.setEnabled(!repositoryPanel.extSshRadioButton.isSelected());
+        repositoryPanel.browseButton.setVisible(showExtFields);
+        repositoryPanel.browseButton.setEnabled(repositoryPanel.extSshRadioButton.isSelected());
     }
 
     /**
@@ -616,9 +622,11 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
         } else if (repositoryPanel.extSshRadioButton == e.getSource()) {
             setValid();
             validateCvsRoot();
+            updateVisibility();
         } else if (repositoryPanel.internalSshRadioButton == e.getSource()) {
             setValid();
             validateCvsRoot();
+            updateVisibility();
         } else {
             assert false : "Unexpected event source: " + e.getSource();  // NOI18N
         }
