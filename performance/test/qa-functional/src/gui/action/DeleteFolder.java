@@ -13,23 +13,20 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.action;
 
 import java.io.File;
-import java.io.PrintStream;
-import org.netbeans.jellytools.Bundle;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.MaximizeWindowAction;
 import org.netbeans.jellytools.actions.RestoreWindowAction;
-
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 
@@ -199,10 +196,4 @@ public class DeleteFolder extends org.netbeans.performance.test.utilities.Perfor
         System.setProperty("xtest.tmpdir", "/local_export/sources/nb_all/performance/test/qa-functional/data");
         junit.textui.TestRunner.run(new DeleteFolder("testDeleteFolderWith50JavaFiles"));
     }
-    
-    @Override
-    public PrintStream getLog() {
-        return System.out;
-    }
-    
 }
