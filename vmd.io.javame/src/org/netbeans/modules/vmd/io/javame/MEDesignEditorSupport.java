@@ -53,11 +53,11 @@ import java.io.*;
 public class MEDesignEditorSupport extends J2MEEditorSupport implements EditorCookie.Observable, OpenCookie, EditCookie, PrintCookie {
 
     private MEDesignDataObject dataObject;
-//    private Save saveCookie = new Save();
     private CloseOperationHandler closeHandler;
     private TopComponent mvtc;
 
     private MultiViewDescription[] descriptions;
+    private boolean useEditPriority;
 
     private GuardsEditor guardsEditor;
     private GuardedSectionsProvider sections;
@@ -101,57 +101,61 @@ public class MEDesignEditorSupport extends J2MEEditorSupport implements EditorCo
     }
 
     public void open() {
+        useEditPriority = false;
         super.open();
 
         TopComponent mvtc = this.mvtc;
         if (mvtc != null) {
             MultiViewHandler handler = MultiViews.findMultiViewHandler (mvtc);
-            int bestPriority = Integer.MIN_VALUE;
-            int bestIndex = -1;
-            int index = 0;
-            for (MultiViewDescription description : descriptions) {
-                DataEditorView dataEditorView = IOSupport.getDataEditorView (description);
-                int openPriority = dataEditorView.getOpenPriority ();
-                if (openPriority > bestPriority) {
-                    bestPriority = openPriority;
-                    bestIndex = index;
-                }
-                index ++;
+            int index = getIndex ();
+            if (index >= 0) {
+                MultiViewPerspective perspective = handler.getPerspectives ()[index];
+                handler.requestActive (perspective);
+                handler.requestVisible (perspective);
             }
-            MultiViewPerspective perspective = handler.getPerspectives ()[bestIndex];
-            handler.requestActive (perspective);
-            handler.requestVisible (perspective);
         }
     }
 
     public void edit() {
+        useEditPriority = true;
         super.edit();
 
         TopComponent mvtc = this.mvtc;
         if (mvtc != null) {
             MultiViewHandler handler = MultiViews.findMultiViewHandler (mvtc);
-            int bestPriority = Integer.MIN_VALUE;
-            int bestIndex = -1;
-            int index = 0;
-            for (MultiViewDescription description : descriptions) {
-                DataEditorView dataEditorView = IOSupport.getDataEditorView (description);
-                int editPriority = dataEditorView.getEditPriority ();
-                if (editPriority > bestPriority) {
-                    bestPriority = editPriority;
-                    bestIndex = index;
-                }
-                index ++;
+            int index = getIndex ();
+            if (index >= 0) {
+                MultiViewPerspective perspective = handler.getPerspectives ()[index];
+                handler.requestActive (perspective);
+                handler.requestVisible (perspective);
             }
-            MultiViewPerspective perspective = handler.getPerspectives ()[bestIndex];
-            handler.requestActive (perspective);
-            handler.requestVisible (perspective);
         }
+    }
+    
+    private int getIndex () {
+        MultiViewDescription[] descriptions = this.descriptions;
+        if (descriptions == null)
+            return -1;
+        int bestPriority = Integer.MIN_VALUE;
+        int bestIndex = -1;
+        int index = 0;
+        for (MultiViewDescription description : this.descriptions) {
+            DataEditorView dataEditorView = IOSupport.getDataEditorView (description);
+            int priority = useEditPriority ? dataEditorView.getEditPriority () : dataEditorView.getOpenPriority ();
+            if (priority > bestPriority) {
+                bestPriority = priority;
+                bestIndex = index;
+            }
+            index ++;
+        }
+        return bestIndex;
     }
 
     @Override
     protected Pane createPane() {
         descriptions = IOSupport.createEditorSupportPane (IOSupport.getDataObjectContext (dataObject));
-        return (CloneableEditorSupport.Pane) MultiViewFactory.createCloneableMultiView (descriptions, null, closeHandler);
+        int index = getIndex ();
+        return (CloneableEditorSupport.Pane) MultiViewFactory.createCloneableMultiView (descriptions, index >= 0 ? descriptions[index] : null, closeHandler);
 
 
     }
