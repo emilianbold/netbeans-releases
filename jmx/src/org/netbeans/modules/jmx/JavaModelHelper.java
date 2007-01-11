@@ -158,7 +158,7 @@ public class JavaModelHelper {
             TypeElement te = (TypeElement) el;
             
             if(te.getKind().equals(ElementKind.INTERFACE)) {
-                holder.setValue(false);
+                holder.setValue(null);
                 return null;
             }
             
