@@ -102,7 +102,7 @@ public final class DisplayCD extends ComponentDescriptor {
                 if (isPreviousScreenEventHandlerUsed ()) {
                     section.getWriter ().write ("Displayable __currentDisplayable = display.getCurrent ();\n"); // NOI18N
                     section.getWriter ().write ("if (__currentDisplayable != null  &&  nextDisplayable != null) {\n"); // NOI18N
-                    section.getWriter ().write ("__previousDisplayables.put (__currentDisplayable, nextDisplayable);\n"); // NOI18N
+                    section.getWriter ().write ("__previousDisplayables.put (nextDisplayable, __currentDisplayable);\n"); // NOI18N
                     section.getWriter ().write ("}\n"); // NOI18N
                 }
                 section.getWriter ().write ("if (alert == null) {\n"); // NOI18N
