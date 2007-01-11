@@ -63,6 +63,9 @@ public class BodyStatementTest extends GeneratorTest {
 //        suite.addTest(new BodyStatementTest("testPlusBinary"));
 //        suite.addTest(new BodyStatementTest("testRenameInWhile"));
 //        suite.addTest(new BodyStatementTest("testRenameInDoWhile"));
+//        suite.addTest(new BodyStatementTest("testRenameInForEach"));
+//        suite.addTest(new BodyStatementTest("testRenameInSyncro"));
+//        suite.addTest(new BodyStatementTest("testRenameInCatch"));
         return suite;
     }
     
@@ -937,6 +940,195 @@ public class BodyStatementTest extends GeneratorTest {
                 ExpressionStatementTree expr = (ExpressionStatementTree) ((BlockTree) doWhileLoop.getStatement()).getStatements().get(0);
                 UnaryTree unary = (UnaryTree) expr.getExpression();
                 workingCopy.rewrite(unary.getExpression(), make.setLabel(unary.getExpression(), "counter"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * #92187: Rename in for each
+     */
+    public void testRenameInForEach() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method() {\n" +
+            "        List l = new ArrayList();\n" +
+            "        for (Object o : l) {\n" +
+            "            o.toString();\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n");
+
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method() {\n" +
+            "        List list = new ArrayList();\n" +
+            "        for (Object object : list) {\n" +
+            "            object.toString();\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                VariableTree var = (VariableTree) method.getBody().getStatements().get(0);
+                workingCopy.rewrite(var, make.setLabel(var, "list"));
+                
+                EnhancedForLoopTree forEach = (EnhancedForLoopTree) method.getBody().getStatements().get(1);
+                var = forEach.getVariable();
+                workingCopy.rewrite(var, make.setLabel(var, "object"));
+                IdentifierTree ident = (IdentifierTree) forEach.getExpression();
+                workingCopy.rewrite(ident, make.setLabel(ident, "list"));
+                BlockTree body = (BlockTree) forEach.getStatement();
+                ExpressionStatementTree est = (ExpressionStatementTree) body.getStatements().get(0);
+                MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
+                MemberSelectTree mst = (MemberSelectTree) mit.getMethodSelect();
+                
+                workingCopy.rewrite(mst.getExpression(), make.setLabel(mst.getExpression(), "object"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    /**
+     * #92187: Test rename in synchronized
+     */
+    public void testRenameInSyncro() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method() {\n" +
+            "        Object lock = new Object();\n" +
+            "        \n" +
+            "        synchronized(lock) {\n" +
+            "            int a = 20;\n" +
+            "            lock.wait();\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method() {\n" +
+            "        Object zamek = new Object();\n" +
+            "        \n" +
+            "        synchronized(zamek) {\n" +
+            "            int a = 20;\n" +
+            "            zamek.wait();\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                VariableTree var = (VariableTree) method.getBody().getStatements().get(0);
+                workingCopy.rewrite(var, make.setLabel(var, "zamek"));
+                
+                SynchronizedTree syncro = (SynchronizedTree) method.getBody().getStatements().get(1);
+                ParenthesizedTree petecko = (ParenthesizedTree) syncro.getExpression();
+                IdentifierTree ident = (IdentifierTree) petecko.getExpression();
+                workingCopy.rewrite(ident, make.setLabel(ident, "zamek"));
+                BlockTree body = (BlockTree) syncro.getBlock();
+                ExpressionStatementTree est = (ExpressionStatementTree) body.getStatements().get(1);
+                MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
+                MemberSelectTree mst = (MemberSelectTree) mit.getMethodSelect();
+                
+                workingCopy.rewrite(mst.getExpression(), make.setLabel(mst.getExpression(), "zamek"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * #92187: Test rename in catch
+     */
+    public void testRenameInCatch() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method() {\n" +
+            "        Object zamek = new Object();\n" +
+            "        try {\n" +
+            "            zamek.wait();\n" +
+            "        } catch (InterruptedException ex) {\n" +
+            "            ex.printStackTrace();\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method() {\n" +
+            "        Object zamek = new Object();\n" +
+            "        try {\n" +
+            "            zamek.wait();\n" +
+            "        } catch (InterruptedException vyjimka) {\n" +
+            "            vyjimka.printStackTrace();\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                VariableTree var = (VariableTree) method.getBody().getStatements().get(0);
+                workingCopy.rewrite(var, make.setLabel(var, "zamek"));
+                TryTree tryTree = (TryTree) method.getBody().getStatements().get(1);
+                CatchTree ct = tryTree.getCatches().get(0);
+                workingCopy.rewrite(ct.getParameter(), make.setLabel(ct.getParameter(), "vyjimka"));
+                BlockTree body = (BlockTree) ct.getBlock();
+                ExpressionStatementTree est = (ExpressionStatementTree) body.getStatements().get(0);
+                MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
+                MemberSelectTree mst = (MemberSelectTree) mit.getMethodSelect();
+                workingCopy.rewrite(mst.getExpression(), make.setLabel(mst.getExpression(), "vyjimka"));
             }
             
             public void cancel() {
