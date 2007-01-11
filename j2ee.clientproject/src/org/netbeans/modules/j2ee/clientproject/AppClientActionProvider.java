@@ -223,12 +223,12 @@ class AppClientActionProvider implements ActionProvider {
             }
         };
         
-        if (this.bkgScanSensitiveActions.contains(command)) {
+//        if (this.bkgScanSensitiveActions.contains(command)) {
             //TODO: RETOUCHE waitScanFinished
 //            JMManager.getManager().invokeAfterScanFinished(action, NbBundle.getMessage(AppClientActionProvider.class,"ACTION_"+command)); //NOI18N
-        } else {
+//        } else {
             action.run();
-        }
+//        }
     }
     
     /**
