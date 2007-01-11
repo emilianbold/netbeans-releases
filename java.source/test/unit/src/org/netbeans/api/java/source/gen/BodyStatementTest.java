@@ -61,6 +61,8 @@ public class BodyStatementTest extends GeneratorTest {
 //        suite.addTest(new BodyStatementTest("testAssignBoth"));
 //        suite.addTest(new BodyStatementTest("testReturn"));
 //        suite.addTest(new BodyStatementTest("testPlusBinary"));
+//        suite.addTest(new BodyStatementTest("testRenameInWhile"));
+//        suite.addTest(new BodyStatementTest("testRenameInDoWhile"));
         return suite;
     }
     
@@ -823,6 +825,128 @@ public class BodyStatementTest extends GeneratorTest {
         System.err.println(res);
         assertEquals(golden, res);
     }
+    
+    /**
+     * #92187: Rename in while
+     */
+    public void testRenameInWhile() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method() {\n" +
+            "        int i = 0;\n" +
+            "        while (i < 10) {\n" +
+            "            i = i + 1;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n");
+
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method() {\n" +
+            "        int counter = 0;\n" +
+            "        while (counter < 10) {\n" +
+            "            counter = counter + 1;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                VariableTree var = (VariableTree) method.getBody().getStatements().get(0);
+                workingCopy.rewrite(var, make.setLabel(var, "counter"));
+                
+                WhileLoopTree whileLoop = (WhileLoopTree) method.getBody().getStatements().get(1);
+                ParenthesizedTree paren = (ParenthesizedTree) whileLoop.getCondition();
+                BinaryTree lessThan = (BinaryTree) paren.getExpression();
+                IdentifierTree left = (IdentifierTree) lessThan.getLeftOperand();
+                workingCopy.rewrite(left, make.setLabel(left, "counter"));
+                
+                ExpressionStatementTree expr = (ExpressionStatementTree) ((BlockTree) whileLoop.getStatement()).getStatements().get(0);
+                AssignmentTree assign = (AssignmentTree) expr.getExpression();
+                left = (IdentifierTree) assign.getVariable();
+                workingCopy.rewrite(left, make.setLabel(left, "counter"));
+                BinaryTree right = (BinaryTree) assign.getExpression();
+                left = (IdentifierTree) right.getLeftOperand();
+                workingCopy.rewrite(left, make.setLabel(left, "counter"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * #92187: Rename in do while
+     */
+    public void testRenameInDoWhile() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method() {\n" +
+            "        int i = 0;\n" +
+            "        do {\n" +
+            "            i++;\n" +
+            "        } while (i > 10);\n" +
+            "    }\n" +
+            "}\n");
+
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method() {\n" +
+            "        int counter = 0;\n" +
+            "        do {\n" +
+            "            counter++;\n" +
+            "        } while (counter > 10);\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                VariableTree var = (VariableTree) method.getBody().getStatements().get(0);
+                workingCopy.rewrite(var, make.setLabel(var, "counter"));
+                
+                DoWhileLoopTree doWhileLoop = (DoWhileLoopTree) method.getBody().getStatements().get(1);
+                ParenthesizedTree paren = (ParenthesizedTree) doWhileLoop.getCondition();
+                BinaryTree lessThan = (BinaryTree) paren.getExpression();
+                IdentifierTree left = (IdentifierTree) lessThan.getLeftOperand();
+                workingCopy.rewrite(left, make.setLabel(left, "counter"));
+                
+                ExpressionStatementTree expr = (ExpressionStatementTree) ((BlockTree) doWhileLoop.getStatement()).getStatements().get(0);
+                UnaryTree unary = (UnaryTree) expr.getExpression();
+                workingCopy.rewrite(unary.getExpression(), make.setLabel(unary.getExpression(), "counter"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
 
     // methods not used in this test.
     String getGoldenPckg() {
@@ -841,25 +965,3 @@ public class BodyStatementTest extends GeneratorTest {
     }
 
 }
-
-//public class NewMain {
-//    private Object key;
-//    private Object value;
-//     
-//    public NewMain(Object key, Object value) {
-//        this.key = key;
-//        this.value = value;
-//    }
-//
-//    public Object getKey() {
-//        return key;
-//    }
-//    
-//    public Object getValue() {
-//        return value;
-//    }
-//
-//    public String toString() {
-//        return "[" + key + "; " + value + "]";
-//    }
-//}
