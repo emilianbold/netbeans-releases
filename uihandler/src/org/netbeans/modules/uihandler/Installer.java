@@ -115,11 +115,11 @@ public class Installer extends ModuleInstall {
         log.addHandler(ui);
         Logger all = Logger.getLogger("");
         all.addHandler(handler);
-        
+       /* 
         if (Integer.getInteger("netbeans.exception.report.min.level", 0).intValue() < 1000) {
             System.setProperty("netbeans.exception.report.min.level", "1001");
         }
-        
+        */
         
         for (Activated a : Lookup.getDefault().lookupAll(Activated.class)) {
             a.activated(log);

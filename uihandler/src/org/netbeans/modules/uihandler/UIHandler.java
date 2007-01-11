@@ -64,7 +64,8 @@ public class UIHandler extends Handler implements Runnable {
         }
         
         SUPPORT.firePropertyChange(null, null, null);
-        
+
+        /*
         if (
             exceptionOnly &&
             record.getLevel().intValue() >= Level.WARNING.intValue() &&
@@ -72,6 +73,7 @@ public class UIHandler extends Handler implements Runnable {
         ) {
             Installer.RP.post(this);
         }
+         */
     }
 
     public void flush() {
