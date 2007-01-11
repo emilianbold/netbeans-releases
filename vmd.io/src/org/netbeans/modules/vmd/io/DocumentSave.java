@@ -27,6 +27,7 @@ import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileSystem;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NamedNodeMap;
@@ -59,6 +60,8 @@ public class DocumentSave {
 
     static final String VERSION_VALUE_1 = "1"; // NOI18N
 
+    static Object sync = new Object ();
+
     public static void save (DataObjectContext context, DesignDocument savingDocument) {
         Document xml = XMLUtil.createDocument (XML_ROOT_NODE, null, null, null);// TODO - NS, DTD
         Node xmlRootNode = xml.getFirstChild ();
@@ -80,7 +83,7 @@ public class DocumentSave {
         try {
             writeDocument (IOSupport.getDesignFile (context), xml);
         } catch (IOException e) {
-            ErrorManager.getDefault ().notify (e);
+            throw Debug.error (e);
         }
     }
 
@@ -145,22 +148,28 @@ public class DocumentSave {
         }
     }
 
-    private static void writeDocument (FileObject file, Document doc) throws IOException {
-        OutputStream os = null;
-        FileLock lock = null;
-        try {
-            lock = file.lock ();
-            os = file.getOutputStream (lock);
-            XMLUtil.write (doc, os, "UTF-8"); // NOI18N
-        } finally {
-            if (os != null)
-                try {
-                    os.close ();
-                } catch (IOException e) {
-                    ErrorManager.getDefault ().notify (e);
+    private static void writeDocument (final FileObject file, final Document doc) throws IOException {
+        synchronized (sync) {
+            file.getFileSystem ().runAtomicAction (new FileSystem.AtomicAction () {
+                public void run () throws IOException {
+                    OutputStream os = null;
+                    FileLock lock = null;
+                    try {
+                        lock = file.lock ();
+                        os = file.getOutputStream (lock);
+                        XMLUtil.write (doc, os, "UTF-8"); // NOI18N
+                    } finally {
+                        if (os != null)
+                            try {
+                                os.close ();
+                            } catch (IOException e) {
+                                ErrorManager.getDefault ().notify (e);
+                            }
+                        if (lock != null)
+                            lock.releaseLock ();
+                    }
                 }
-            if (lock != null)
-                lock.releaseLock ();
+            });
         }
     }
 

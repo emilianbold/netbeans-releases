@@ -24,6 +24,7 @@ import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.netbeans.modules.vmd.api.model.*;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.*;
 import org.xml.sax.ErrorHandler;
@@ -42,7 +43,12 @@ import java.util.*;
 public class DocumentLoad {
 
     public static boolean load (DataObjectContext context, DesignDocument loadingDocument) {
-        final Node rootNode = getRootNode (IOSupport.getDesignFile (context));
+        final Node rootNode;
+        try {
+            rootNode = getRootNode (IOSupport.getDesignFile (context));
+        } catch (IOException e) {
+            throw Debug.error (e);
+        }
 
         if (! DocumentSave.VERSION_VALUE_1.equals (getAttributeValue (rootNode, DocumentSave.VERSION_ATTR))) {
             Debug.warning ("Invalid version of VisualDesign");
@@ -210,21 +216,27 @@ public class DocumentLoad {
         }
     }
 
-    private static Node getRootNode (FileObject fileObject) {
-        Document document = null;
-        if (fileObject != null) {
-            FileLock lock = null;
-            try {
-                lock = fileObject.lock ();
-                document = getXMLDocument (fileObject.getInputStream ());
-            } catch (IOException e) {
-                throw Debug.error (e);
-            } finally {
-                if (lock != null)
-                    lock.releaseLock ();
-            }
+    private static Node getRootNode (final FileObject fileObject) throws IOException {
+        synchronized (DocumentSave.sync) {
+            final Node[] node = new Node[1];
+            fileObject.getFileSystem ().runAtomicAction (new FileSystem.AtomicAction() {
+                public void run () throws IOException {
+                    Document document = null;
+                    if (fileObject != null) {
+                        FileLock lock = null;
+                        try {
+                            lock = fileObject.lock ();
+                            document = getXMLDocument (fileObject.getInputStream ());
+                        } finally {
+                            if (lock != null)
+                                lock.releaseLock ();
+                        }
+                    }
+                    node[0] = document != null ? document.getFirstChild () : null;
+                }
+            });
+            return node[0];
         }
-        return document != null ? document.getFirstChild () : null;
     }
 
     private static Document getXMLDocument (InputStream is) throws IOException {
@@ -304,7 +316,12 @@ public class DocumentLoad {
     }
 
     public static String loadProjectType (DataObjectContext context) {
-        final Node rootNode = getRootNode (IOSupport.getDesignFile (context));
+        final Node rootNode;
+        try {
+            rootNode = getRootNode (IOSupport.getDesignFile (context));
+        } catch (IOException e) {
+            throw Debug.error (e);
+        }
         return getAttributeValue (rootNode, DocumentSave.PROP_PROJECT_TYPE);
     }
 
