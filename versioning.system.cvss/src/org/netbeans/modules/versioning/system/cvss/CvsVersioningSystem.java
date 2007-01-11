@@ -95,6 +95,7 @@ public class CvsVersioningSystem {
     private boolean     userIgnorePatternsReset;
     private long        userIgnorePatternsTimestamp;
 
+    private final Set<File> alreadyGeneratedFiles = new HashSet<File>(5);
 
     public static synchronized CvsVersioningSystem getInstance() {
         if (instance == null) {
@@ -294,6 +295,12 @@ public class CvsVersioningSystem {
             // BEWARE: In NetBeans VISIBILTY == SHARABILITY ... and we hide Locally Removed folders => we must not Ignore them by mistake
             if (CvsVisibilityQuery.isHiddenFolder(file)) {
                 return false;
+            }
+            // #90564: make sure that we only try to generate the .cvsignore file ONCE and if the user deletes it
+            // the file will NOT be re-generated. Do this only for auto-generated .cvsignore files.
+            File cvsIgnoreFile = new File(file.getParentFile(), FILENAME_CVSIGNORE);
+            if (file.exists() && !cvsIgnoreFile.exists()) {
+                if (!alreadyGeneratedFiles.add(cvsIgnoreFile)) return true;
             }
             try {
                 setIgnored(file);
