@@ -25,6 +25,7 @@ import javax.swing.event.ChangeListener;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
@@ -94,16 +95,20 @@ public class FileWizardIterator implements TemplateWizard.Iterator {
             final Project p = Templates.getProject(wizardInstance);
             final AntProjectHelper h = p.getLookup().lookup(AntProjectHelper.class);
             if (p instanceof J2MEProject  &&  h != null) {
-                J2MEProjectGenerator.addMIDletProperty(p, h,
-                        (String) wizardInstance.getProperty(MIDPTargetChooserPanel.MIDLET_NAME),
-                        (String) wizardInstance.getProperty(MIDPTargetChooserPanel.MIDLET_CLASSNAME),
-                        (String) wizardInstance.getProperty(MIDPTargetChooserPanel.MIDLET_ICON)
-                        );
-                try {
-                    ProjectManager.getDefault().saveProject(p);
-                } catch (IOException e) {
-                    e.printStackTrace(); // TODO
-                }
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            J2MEProjectGenerator.addMIDletProperty(p, h,
+                                    (String) wizardInstance.getProperty(MIDPTargetChooserPanel.MIDLET_NAME),
+                                    (String) wizardInstance.getProperty(MIDPTargetChooserPanel.MIDLET_CLASSNAME),
+                                    (String) wizardInstance.getProperty(MIDPTargetChooserPanel.MIDLET_ICON)
+                                    );
+                            ProjectManager.getDefault().saveProject(p);
+                        } catch (IOException e) {
+                            e.printStackTrace(); // TODO
+                        }
+                    }
+                });
             }
         }
         return java.util.Collections.singleton(obj);

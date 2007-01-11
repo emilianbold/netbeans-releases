@@ -172,6 +172,16 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
         final private NodeCache cache;
         final private HashMap<String,ChildLookup> keyMap = new HashMap<String,ChildLookup>();
         
+        private class CfgListener implements PropertyChangeListener, Runnable {
+            public void propertyChange(PropertyChangeEvent evt) {
+                RequestProcessor.getDefault().post(this);
+            }
+            
+            public void run() {
+                refreshResources();
+            }
+        }
+        
         LogicalViewChildren(J2MEProject proj)
         {
             project=proj;
@@ -179,11 +189,7 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
             keyMap.put("Sources",new SourcesViewProvider());
             keyMap.put("Resources",new ResViewProvider(cache));
             keyMap.put("Configurations",new LibResViewProvider(cache));
-            project.getConfigurationHelper().addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt)
-                {
-                    refreshResources();
-                }});
+            project.getConfigurationHelper().addPropertyChangeListener(new CfgListener());
             setKeys(getKeys());            
         }
         
