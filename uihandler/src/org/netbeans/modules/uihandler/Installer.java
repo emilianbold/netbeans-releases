@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.MalformedURLException;
+import java.net.NoRouteToHostException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
@@ -467,6 +468,10 @@ public class Installer extends ModuleInstall {
                     url = getClass().getResource("UnknownHostException.html");
                     continue;
                 } catch (UnknownHostException ex) {
+                    LOG.log(Level.INFO, url.toExternalForm(), ex);
+                    url = getClass().getResource("UnknownHostException.html");
+                    continue;
+                } catch (NoRouteToHostException ex) {
                     LOG.log(Level.INFO, url.toExternalForm(), ex);
                     url = getClass().getResource("UnknownHostException.html");
                     continue;
