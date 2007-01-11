@@ -61,6 +61,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public final class RepositoryStep extends AbstractStep implements WizardDescriptor.AsynchronousValidatingPanel, ActionListener, DocumentListener {
 
+    private static final String USE_INTERNAL_SSH = "repositoryStep.useInternalSSH";
     private static final String EXT_COMMAND = "repositoryStep.extCommand";
     private static final String RECENT_ROOTS = "repositoryStep.recentRoots";
 
@@ -175,6 +176,10 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
         textEditor.selectAll();
         textEditor.getDocument().addDocumentListener(this);
 
+        boolean useInternalSsh = CvsModuleConfig.getDefault().getPreferences().getBoolean(USE_INTERNAL_SSH, true);
+        repositoryPanel.internalSshRadioButton.setSelected(useInternalSsh);
+        repositoryPanel.extSshRadioButton.setSelected(!useInternalSsh);
+        
         String extCommand = CvsModuleConfig.getDefault().getPreferences().get(EXT_COMMAND, "");
         repositoryPanel.extCommandTextField.setText(extCommand);
 
@@ -398,13 +403,11 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
             storeProxySettings = internalSsh;
             CvsModuleConfig.ExtSettings extSettings = new CvsModuleConfig.ExtSettings();
             extSettings.extUseInternalSsh = internalSsh;
-            if (internalSsh) {
-                extSettings.extPassword = repositoryPanel.extPasswordField.getText();
-                extSettings.extRememberPassword = repositoryPanel.extREmemberPasswordCheckBox.isSelected();
-            } else {
-                extSettings.extCommand = repositoryPanel.extCommandTextField.getText();
-                CvsModuleConfig.getDefault().getPreferences().put(EXT_COMMAND, extSettings.extCommand);
-            }
+            extSettings.extPassword = repositoryPanel.extPasswordField.getText();
+            extSettings.extRememberPassword = repositoryPanel.extREmemberPasswordCheckBox.isSelected();
+            extSettings.extCommand = repositoryPanel.extCommandTextField.getText();
+            CvsModuleConfig.getDefault().getPreferences().putBoolean(USE_INTERNAL_SSH, internalSsh);
+            CvsModuleConfig.getDefault().getPreferences().put(EXT_COMMAND, extSettings.extCommand);
             CvsModuleConfig.getDefault().setExtSettingsFor(cvsRoot, extSettings);
         }
 
