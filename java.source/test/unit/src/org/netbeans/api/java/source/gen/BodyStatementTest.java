@@ -66,6 +66,9 @@ public class BodyStatementTest extends GeneratorTest {
 //        suite.addTest(new BodyStatementTest("testRenameInForEach"));
 //        suite.addTest(new BodyStatementTest("testRenameInSyncro"));
 //        suite.addTest(new BodyStatementTest("testRenameInCatch"));
+//        suite.addTest(new BodyStatementTest("testRenameInAssignOp"));
+//        suite.addTest(new BodyStatementTest("testRenameInArrayIndex"));
+//        suite.addTest(new BodyStatementTest("testRenameInTypeCast"));
         return suite;
     }
     
@@ -1139,7 +1142,185 @@ public class BodyStatementTest extends GeneratorTest {
         System.err.println(res);
         assertEquals(golden, res);
     }
+    
+    /**
+     * #92187: Test rename in assign op. bit or
+     * todo (#pf): extend test to replace right side and operator too!
+     */
+    public void testRenameInAssignOp() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method() {\n" +
+            "        int bits2 = 0;\n" +
+            "        bits2 |= 0x12;\n" +
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method() {\n" +
+            "        int bits = 0;\n" +
+            "        bits |= 0x12;\n" +
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
 
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                BlockTree block = method.getBody();
+                VariableTree var = (VariableTree) block.getStatements().get(0);
+                workingCopy.rewrite(var, make.setLabel(var, "bits"));
+                ExpressionStatementTree est = (ExpressionStatementTree) block.getStatements().get(1);
+                CompoundAssignmentTree cat = (CompoundAssignmentTree) est.getExpression();
+                IdentifierTree ident = (IdentifierTree) cat.getVariable();
+                workingCopy.rewrite(ident, make.setLabel(ident, "bits"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * #92187: Test rename in assign op. bit or
+     * both, var and index are renamed in this test.
+     * does not rename in new array
+     */
+    public void testRenameInArrayIndex() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method() {\n" +
+            "        int pos = 10;\n" +
+            "        int[] i = new int[10];\n" +
+            "        System.err.println(i[pos-1]);\n" +
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method() {\n" +
+            "        int position = 10;\n" +
+            "        int[] icko = new int[10];\n" +
+            "        System.err.println(icko[position-1]);\n" +
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                BlockTree block = method.getBody();
+                VariableTree var1 = (VariableTree) block.getStatements().get(0);
+                VariableTree var2 = (VariableTree) block.getStatements().get(1);
+                workingCopy.rewrite(var1, make.setLabel(var1, "position"));
+                workingCopy.rewrite(var2, make.setLabel(var2, "icko"));
+                ExpressionStatementTree est = (ExpressionStatementTree) block.getStatements().get(2);
+                MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
+                ArrayAccessTree aat = (ArrayAccessTree) mit.getArguments().get(0);
+                IdentifierTree ident = (IdentifierTree) aat.getExpression();
+                workingCopy.rewrite(ident, make.setLabel(ident, "icko"));
+                BinaryTree binary = (BinaryTree) aat.getIndex();
+                ident = (IdentifierTree) binary.getLeftOperand();
+                workingCopy.rewrite(ident, make.setLabel(ident, "position"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * #92187: Test rename in assign op. bit or
+     * both, var and index are renamed in this test.
+     * does not rename in new array
+     */
+    public void testRenameInTypeCast() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    static class Item {}\n" +
+            "    public Object method() {\n" +
+            "        Object o = null;\n" +
+            "        Item item = (Item) o;\n" +
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    static class It {}\n" +
+            "    public Object method() {\n" +
+            "        Object object = null;\n" +
+            "        It it = (It) object;\n" +
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                ClassTree clazzIn = (ClassTree) clazz.getMembers().get(1);
+                workingCopy.rewrite(clazzIn, make.setLabel(clazzIn, "It"));
+                MethodTree method = (MethodTree) clazz.getMembers().get(2);
+                BlockTree block = method.getBody();
+                VariableTree var1 = (VariableTree) block.getStatements().get(0);
+                VariableTree var2 = (VariableTree) block.getStatements().get(1);
+                workingCopy.rewrite(var1, make.setLabel(var1, "object"));
+                VariableTree var2copy = make.Variable(
+                        var2.getModifiers(),
+                        "it",
+                        make.Identifier("It"),
+                        var2.getInitializer());
+                workingCopy.rewrite(var2, var2copy);
+                TypeCastTree tct = (TypeCastTree) var2.getInitializer();
+                IdentifierTree ident = (IdentifierTree) tct.getType();
+                workingCopy.rewrite(ident, make.setLabel(ident, "It"));
+                ident = (IdentifierTree) tct.getExpression();
+                workingCopy.rewrite(ident, make.setLabel(ident, "object"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     // methods not used in this test.
     String getGoldenPckg() {
         return "";
