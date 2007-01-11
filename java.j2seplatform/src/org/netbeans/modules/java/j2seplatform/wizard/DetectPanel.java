@@ -330,16 +330,10 @@ public class DetectPanel extends javax.swing.JPanel {
     }
 
 
-    private static String getInitialName (Map m) {
-        String vmName = (String)m.get("java.vm.name");              //NOI18N
-        String vmVersion = (String)m.get("java.vm.version");        //NOI18N
-        StringBuffer result = new StringBuffer();
-        if (vmName != null)
-            result.append(vmName);
+    private static String getInitialName (Map m) {        
+        String vmVersion = (String)m.get("java.specification.version");        //NOI18N
+        StringBuilder result = new StringBuilder(NbBundle.getMessage(DetectPanel.class,"TXT_DetectPanel_Java"));        
         if (vmVersion != null) {
-            if (result.length()>0) {
-                result.append (" ");
-            }
             result.append (vmVersion);
         }
         return result.toString();
