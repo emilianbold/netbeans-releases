@@ -80,10 +80,7 @@ public class WsdlPort {
     }
     
     public void setSOAPVersion(String soapVersion) {
-        if (javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING.equals(soapVersion))
-            this.soapVersion=SOAP_VERSION_12;
-        else 
-            this.soapVersion=SOAP_VERSION_11;
+        this.soapVersion=soapVersion;
     }
     
     public String getStyle() {
