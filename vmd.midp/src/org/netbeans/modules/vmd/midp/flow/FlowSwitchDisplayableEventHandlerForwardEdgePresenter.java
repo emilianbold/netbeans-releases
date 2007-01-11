@@ -54,6 +54,10 @@ public final class FlowSwitchDisplayableEventHandlerForwardEdgePresenter extends
         return getComponent ();
     }
 
+    protected String getTargetPinID (DesignComponent target) {
+        return FlowIDSupport.createEventHandlerTargetForwardPinID (getComponent (), target);
+    }
+
     protected DesignComponent getRepresentedTargetComponent (DesignComponent target) {
         return getComponent ();
     }

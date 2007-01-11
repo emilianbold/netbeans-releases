@@ -43,6 +43,10 @@ public final class FlowIDSupport {
         return "eventHandlerTargetPin" + eventHandlerComponent.getComponentID () + "at" + targetComponent.getComponentID (); // NOI18N
     }
 
+    public static String createEventHandlerTargetForwardPinID (DesignComponent eventHandlerComponent, DesignComponent targetComponent) {
+        return "eventHandlerTargetForwardPin" + eventHandlerComponent.getComponentID () + "at" + targetComponent.getComponentID (); // NOI18N
+    }
+
     public static String createEventHandlerPinBadgeID (DesignComponent eventHandlerComponent) {
         return "eventHandlerPinBadge" + eventHandlerComponent.getComponentID (); // NOI18N
     }
