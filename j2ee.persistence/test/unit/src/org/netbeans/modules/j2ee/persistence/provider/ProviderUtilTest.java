@@ -138,7 +138,7 @@ public class ProviderUtilTest extends NbTestCase {
     
     
     public void testGetPUDataObject() throws Exception{
-        String invalidPersistenceXml = getDataDir().getAbsolutePath() + "/invalid_persistence.xml";
+        String invalidPersistenceXml = getDataDir().getAbsolutePath() + File.separator + "invalid_persistence.xml";
         FileObject invalidPersistenceFO = FileUtil.toFileObject(new File(invalidPersistenceXml));
         try{
             ProviderUtil.getPUDataObject(invalidPersistenceFO);
