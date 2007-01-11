@@ -20,6 +20,7 @@
 package org.netbeans.modules.project.uiapi;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.beans.PropertyChangeEvent;
@@ -107,20 +108,18 @@ public class CustomizerPane extends JPanel
 
         setLayout(new java.awt.GridBagLayout());
 
-        setPreferredSize(new java.awt.Dimension(750, 450));
         jLabel1.setLabelFor(categoryPanel);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CustomizerPane.class, "LBL_Customizer_Categories"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CustomizerPane.class, "LBL_Customizer_Categories")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(8, 11, 0, 0);
         add(jLabel1, gridBagConstraints);
 
-        categoryPanel.setLayout(new java.awt.GridBagLayout());
-
         categoryPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         categoryPanel.setMinimumSize(new java.awt.Dimension(220, 4));
         categoryPanel.setPreferredSize(new java.awt.Dimension(220, 4));
+        categoryPanel.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -129,7 +128,6 @@ public class CustomizerPane extends JPanel
         add(categoryPanel, gridBagConstraints);
 
         customizerPanel.setLayout(new java.awt.GridBagLayout());
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
@@ -138,9 +136,7 @@ public class CustomizerPane extends JPanel
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 8, 11);
         add(customizerPanel, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -153,6 +149,26 @@ public class CustomizerPane extends JPanel
     public void clearPanelComponentCache() {
         //should only happen when closign teh customizer..
         panelCache.clear();
+    }
+    
+    public Dimension getPreferredSize() {
+        if (isPreferredSizeSet()) {
+            return super.getPreferredSize();
+        }
+        Dimension dim = super.getPreferredSize();
+        if (dim == null) {
+            return new Dimension(750, 450);
+        }
+        if (dim.getWidth() < 750 || dim.getHeight() < 450) {
+            return new Dimension(750, 450);
+        }
+        if (dim.getWidth() > 850) {
+            dim.width = 850;
+        }
+        if (dim.getHeight() > 550) {
+            dim.height = 550;
+        }
+        return dim;
     }
     
     // HelpCtx.Provider implementation -----------------------------------------
