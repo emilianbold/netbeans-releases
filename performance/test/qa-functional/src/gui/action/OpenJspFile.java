@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,7 +25,6 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
 /**
  * Test of opening JSP file
@@ -59,7 +58,7 @@ public class OpenJspFile extends OpenFiles {
     
     public void testOpening20kBJSPFile(){
         WAIT_AFTER_OPEN = 7000;
-        setXMLEditorCaretFilteringOn();
+        setJSPEditorCaretFilteringOn();
         fileProject = "PerformanceTestWebApplication";
         fileName = "Test.jsp";
         menuItem = OPEN;
@@ -78,18 +77,6 @@ public class OpenJspFile extends OpenFiles {
     
     public ComponentOperator open(){
         new OpenAction().performPopup(this.openNode);
-//        JPopupMenuOperator popup =  this.openNode.callPopup();
-//        if (popup == null) {
-//            throw new Error("Cannot get context menu for node [" + WEB_PAGES + '|' +  fileName + "] in project [" + fileProject + "]");
-//        }
-//        log("------------------------- after popup invocation ------------");
-//        try {
-//            popup.pushMenu(this.menuItem);
-//        }
-//        catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
-//            throw new Error("Cannot push menu item "+this.menuItem+" of node [" + WEB_PAGES + '|' +  fileName + "] in project [" + fileProject + "]");
-//        }
-//        log("------------------------- after open ------------");
         return new EditorOperator(this.fileName);
     }
     

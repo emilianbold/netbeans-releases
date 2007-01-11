@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -51,7 +51,7 @@ public class OpenJspFileWithOpenedEditor extends OpenJspFile {
     
     public void testOpening20kBJSPFile(){
         WAIT_AFTER_OPEN = 3000;
-        setXMLEditorCaretFilteringOn();
+        setJSPEditorCaretFilteringOn();
         fileProject = "PerformanceTestWebApplication";
         fileName = "Test.jsp";
         menuItem = OPEN;

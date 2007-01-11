@@ -48,7 +48,7 @@ public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
     }
     
     public void openWebProject() {
-//TODO - tomcat is no more a part of the build        waitProjectOpenedScanFinished(System.getProperty("xtest.data")+"/PerformanceTestWebApplication");
+        waitProjectOpenedScanFinished(System.getProperty("xtest.data")+"/PerformanceTestWebApplication");
     }
     
     public void openFoldersProject() {
