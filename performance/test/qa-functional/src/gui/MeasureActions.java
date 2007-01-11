@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -50,8 +50,8 @@ public class MeasureActions  {
         suite.addTest(new OpenFilesWithOpenedEditor("testOpening20kBXmlFile", "Open Xml file (20kB) if Editor opened"));
         
         
-//TODO tomcat is no more part of the build        suite.addTest(new OpenJspFile("testOpening20kBJSPFile", "Open JSP file"));
-//TODO tomcat is no more part of the build        suite.addTest(new OpenJspFileWithOpenedEditor("testOpening20kBJSPFile", "Open JSP file if Editor opened"));
+        suite.addTest(new OpenJspFile("testOpening20kBJSPFile", "Open JSP file"));
+        suite.addTest(new OpenJspFileWithOpenedEditor("testOpening20kBJSPFile", "Open JSP file if Editor opened"));
         
         suite.addTest(new OpenFilesNoCloneableEditor("testOpening20kBPropertiesFile", "Open Properties file (20kB)"));
         suite.addTest(new OpenFilesNoCloneableEditorWithOpenedEditor("testOpening20kBPropertiesFile", "Open Properties file (20kB) if Editor opened"));
@@ -63,8 +63,11 @@ public class MeasureActions  {
         suite.addTest(new PageUpPageDownInEditor("measureTime", "Press Page Up in the editor", true));
         suite.addTest(new PageUpPageDownInEditor("measureTime", "Press Page Down in the editor", false));
         
-        //TODO rewrite for retouche     suite.addTest(new JavaCompletionInEditor("measureTime", "Invoke Code Completion dialog in Editor"));
-        suite.addTest(new TypingInEditor("measureTime", "Type a character in Editor"));
+        suite.addTest(new JavaCompletionInEditor("measureTime", "Invoke Code Completion dialog in Editor"));
+        
+        suite.addTest(new TypingInEditor("testJavaEditor", "Type a character in Java Editor"));
+        suite.addTest(new TypingInEditor("testTxtEditor", "Type a character in Txt Editor"));
+        suite.addTest(new TypingInEditor("testJspEditor", "Type a character in Jsp Editor"));
         
         
         suite.addTest(new CloseEditor("testClosing20kBJavaFile", "Close Java file (20kB)"));
@@ -89,7 +92,7 @@ public class MeasureActions  {
         
         suite.addTest(new CreateProject("testCreateJavaApplicationProject", "Create Java Application project"));
         suite.addTest(new CreateProject("testCreateJavaLibraryProject", "Create Java Library project"));
-//TODO tomcat is no more part of the build        suite.addTest(new CreateProject("testCreateWebApplicationProject", "Create Web Application project"));
+        suite.addTest(new CreateProject("testCreateWebApplicationProject", "Create Web Application project"));
         //TODO    suite.addTest(new CreateProject("testCreateJavaProjectWithExistingSources", "Create Java Project with Existing sources"));
         
         suite.addTest(new CreateNBProject("testCreateModuleProject", "Create Module Project"));
