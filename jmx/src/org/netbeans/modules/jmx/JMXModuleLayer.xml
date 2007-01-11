@@ -139,7 +139,8 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
-            <attr name="ExtendedStandardMBean.java/Agent.java" boolvalue="true" />
+            <attr name="ExtendedStandardMBean.java/Manager.java" boolvalue="true" />
+           <!-- <attr name="ExtendedStandardMBean.java/Agent.java" boolvalue="true" />
             <file name="Agent.java" url="resources/templates/Agent.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" 
@@ -156,7 +157,7 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
-            <attr name="Agent.java/Manager.java" boolvalue="true" />
+            <attr name="Agent.java/Manager.java" boolvalue="true" />-->           
             <file name="Manager.java" url="resources/templates/Manager.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" 
