@@ -24,12 +24,14 @@ import java.beans.PropertyEditorSupport;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 import java.util.List;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignEvent;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.InplaceEditor;
 import org.openide.explorer.propertysheet.InplaceEditor.Factory;
@@ -42,7 +44,7 @@ import org.openide.nodes.PropertySupport;
  */
 
 public abstract class DesignPropertyEditor extends PropertyEditorSupport implements ExPropertyEditor, Factory {
-
+    
     private List<String> propertyNames;
     private DesignComponent component;
     private Object tempValue;
@@ -97,6 +99,14 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
         });
         
         return isDefaultValue[0];
+    }
+    
+    public boolean supportsCustomEditor() {
+        Collection components = ActiveDocumentSupport.getDefault().getActiveComponents();
+        if (components != null && components.size() == 1)
+            return true;
+        
+        return false;
     }
     
     /**
@@ -245,12 +255,5 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
         });
         
         return propertyValue;
-    }    
-
-    public boolean supportsCustomEditor() {
-        boolean retValue;
-        
-        retValue = super.supportsCustomEditor();
-        return retValue;
     }
 }
