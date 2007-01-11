@@ -18,7 +18,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN"
-                            "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+"http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Projects">
         <!-- This customizer should be  located in existing Run category -->
@@ -54,51 +54,51 @@ Microsystems, Inc. All Rights Reserved.
             <file name="StandardMBean.java" url="resources/templates/StandardMBean.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" 
-                stringvalue="org.netbeans.modules.jmx.Bundle"/>
-                      
+                      stringvalue="org.netbeans.modules.jmx.Bundle"/>
+                
                 <attr name="SystemFileSystem.icon" 
-                urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/MBean.gif" />
-                      
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/MBean.gif" />
+                
                 <attr name="instantiatingIterator" 
-                methodvalue="org.netbeans.modules.jmx.mbeanwizard.StandardMBeanIterator.createStandardMBeanIterator"/>
-                      
+                      methodvalue="org.netbeans.modules.jmx.mbeanwizard.StandardMBeanIterator.createStandardMBeanIterator"/>
+                
                 <attr name="templateWizardURL" 
-                urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/StandardMBean.html"/>
-                                               
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/StandardMBean.html"/>
+                
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
             <attr name="StandardMBean.java/MXBean.java" boolvalue="true" />
-             <file name="MXBean.java" url="resources/templates/MXBean.java.template">
+            <file name="MXBean.java" url="resources/templates/MXBean.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" 
-                stringvalue="org.netbeans.modules.jmx.Bundle"/>
-                      
+                      stringvalue="org.netbeans.modules.jmx.Bundle"/>
+                
                 <attr name="SystemFileSystem.icon" 
-                urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/MBean.gif" />
-                      
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/MBean.gif" />
+                
                 <attr name="instantiatingIterator" 
-                methodvalue="org.netbeans.modules.jmx.mbeanwizard.MXBeanIterator.createMXBeanIterator"/>
-                      
+                      methodvalue="org.netbeans.modules.jmx.mbeanwizard.MXBeanIterator.createMXBeanIterator"/>
+                
                 <attr name="templateWizardURL" 
-                urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/MXBean.html"/>
-                                               
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/MXBean.html"/>
+                
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
             <attr name="MXBean.java/DynamicMBean.java" boolvalue="true" />
             <file name="DynamicMBean.java" url="resources/templates/DynamicMBean.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" 
-                stringvalue="org.netbeans.modules.jmx.Bundle"/>
-                      
+                      stringvalue="org.netbeans.modules.jmx.Bundle"/>
+                
                 <attr name="SystemFileSystem.icon" 
-                urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/MBean.gif" />
-                      
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/MBean.gif" />
+                
                 <attr name="instantiatingIterator" 
-                methodvalue="org.netbeans.modules.jmx.mbeanwizard.DynamicMBeanIterator.createDynamicMBeanIterator"/>
-                      
+                      methodvalue="org.netbeans.modules.jmx.mbeanwizard.DynamicMBeanIterator.createDynamicMBeanIterator"/>
+                
                 <attr name="templateWizardURL" 
-                urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/DynamicMBean.html"/>
-                                               
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/DynamicMBean.html"/>
+                
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
             
@@ -107,17 +107,17 @@ Microsystems, Inc. All Rights Reserved.
             <file name="FromExistingClass.java" url="resources/templates/ExtendedStandardMBean.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" 
-                stringvalue="org.netbeans.modules.jmx.Bundle"/>
-                      
+                      stringvalue="org.netbeans.modules.jmx.Bundle"/>
+                
                 <attr name="SystemFileSystem.icon" 
-                urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/MBean.gif" />
-                      
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/MBean.gif" />
+                
                 <attr name="instantiatingIterator" 
-                methodvalue="org.netbeans.modules.jmx.mbeanwizard.FromExistingClassMBeanIterator.createFromExistingClassMBeanIterator"/>
-                      
+                      methodvalue="org.netbeans.modules.jmx.mbeanwizard.FromExistingClassMBeanIterator.createFromExistingClassMBeanIterator"/>
+                
                 <attr name="templateWizardURL" 
-                urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/FromExistingClass.html"/>
-                                               
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/FromExistingClass.html"/>
+                
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
             
@@ -126,60 +126,60 @@ Microsystems, Inc. All Rights Reserved.
             <file name="ExtendedStandardMBean.java" url="resources/templates/ExtendedStandardMBean.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" 
-                stringvalue="org.netbeans.modules.jmx.Bundle"/>
-                      
+                      stringvalue="org.netbeans.modules.jmx.Bundle"/>
+                
                 <attr name="SystemFileSystem.icon" 
-                urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/MBean.gif" />
-                      
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/MBean.gif" />
+                
                 <attr name="instantiatingIterator" 
-                methodvalue="org.netbeans.modules.jmx.mbeanwizard.ExtendedStandardMBeanIterator.createExtendedStandardMBeanIterator"/>
-                      
+                      methodvalue="org.netbeans.modules.jmx.mbeanwizard.ExtendedStandardMBeanIterator.createExtendedStandardMBeanIterator"/>
+                
                 <attr name="templateWizardURL" 
-                urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/FromExistingClass.html"/>
-                                               
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/FromExistingClass.html"/>
+                
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
             <attr name="ExtendedStandardMBean.java/Agent.java" boolvalue="true" />
             <file name="Agent.java" url="resources/templates/Agent.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" 
-                stringvalue="org.netbeans.modules.jmx.Bundle"/>
-                      
+                      stringvalue="org.netbeans.modules.jmx.Bundle"/>
+                
                 <attr name="SystemFileSystem.icon" 
-                urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/Agent.gif" />
-                      
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/Agent.gif" />
+                
                 <attr name="instantiatingIterator" 
-                methodvalue="org.netbeans.modules.jmx.agentwizard.JMXAgentIterator.createAgentIterator"/>
-                      
+                      methodvalue="org.netbeans.modules.jmx.agentwizard.JMXAgentIterator.createAgentIterator"/>
+                
                 <attr name="templateWizardURL" 
-                urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/Agent.html"/>
-                                          
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/Agent.html"/>
+                
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
-             <attr name="Agent.java/Manager.java" boolvalue="true" />
+            <attr name="Agent.java/Manager.java" boolvalue="true" />
             <file name="Manager.java" url="resources/templates/Manager.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" 
-                stringvalue="org.netbeans.modules.jmx.Bundle"/>
-                      
+                      stringvalue="org.netbeans.modules.jmx.Bundle"/>
+                
                 <attr name="SystemFileSystem.icon" 
-                urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/Manager.gif" />
-                      
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/Manager.gif" />
+                
                 <attr name="instantiatingIterator" 
-                methodvalue="org.netbeans.modules.jmx.managerwizard.JMXManagerIterator.createManagerIterator"/>
-                      
+                      methodvalue="org.netbeans.modules.jmx.managerwizard.JMXManagerIterator.createManagerIterator"/>
+                
                 <attr name="templateWizardURL" 
-                urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/Manager.html"/>
-                                          
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/Manager.html"/>
+                
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
-             
+            
             <attr name="Manager.java/ManagementProperties.shadow" boolvalue="true" />
             <file name="ManagementProperties.shadow">
                 <attr name="originalFile" 
-                methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.enableManagementProperties"/> 
+                      methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.enableManagementProperties"/> 
                 <attr name="hidden"
-                boolvalue="true"/>
+                      boolvalue="true"/>
             </file>      
         </folder>      
     </folder> <!-- Templates -->
@@ -189,67 +189,67 @@ Microsystems, Inc. All Rights Reserved.
             <file name="management.properties" url="resources/templates/management.properties.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" 
-                stringvalue="org.netbeans.modules.jmx.Bundle"/>
-                      
+                      stringvalue="org.netbeans.modules.jmx.Bundle"/>
+                
                 <attr name="SystemFileSystem.icon" 
-                urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/Config.gif" />
-                      
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/Config.gif" />
+                
                 <attr name="instantiatingIterator" 
-                methodvalue="org.netbeans.modules.jmx.configwizard.JMXConfigWizardIterator.singleton"/>
-                      
+                      methodvalue="org.netbeans.modules.jmx.configwizard.JMXConfigWizardIterator.singleton"/>
+                
                 <attr name="templateWizardURL" 
-                urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/Config.html"/>
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/Config.html"/>
                 
                 <attr name="accessTemplate" 
-                urlvalue="nbres:/org/netbeans/modules/jmx/resources/templates/jmxremote.access.template"/> 
+                      urlvalue="nbres:/org/netbeans/modules/jmx/resources/templates/jmxremote.access.template"/> 
                 
                 <attr name="passwordTemplate" 
-                urlvalue="nbres:/org/netbeans/modules/jmx/resources/templates/jmxremote.password.template"/>
-                      
+                      urlvalue="nbres:/org/netbeans/modules/jmx/resources/templates/jmxremote.password.template"/>
+                
                 <attr name="aclTemplate" 
-                urlvalue="nbres:/org/netbeans/modules/jmx/resources/templates/snmp.acl.template"/>
-                      
+                      urlvalue="nbres:/org/netbeans/modules/jmx/resources/templates/snmp.acl.template"/>
+                
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
-             
+            
             <file name="MBeanInterface.java" url="resources/templates/MBeanInterface.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" 
-                stringvalue="org.netbeans.modules.jmx.Bundle"/>
+                      stringvalue="org.netbeans.modules.jmx.Bundle"/>
                 <attr name="hidden" boolvalue="true"/>
-                           
+                
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
             <file name="ExtendedStandardMBean.java" url="resources/templates/ExtendedStandardMBean.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" 
-                stringvalue="org.netbeans.modules.jmx.Bundle"/>
+                      stringvalue="org.netbeans.modules.jmx.Bundle"/>
                 <attr name="hidden" boolvalue="true"/>
-                           
+                
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
             <file name="DynamicSupportMBean.java" url="resources/templates/DynamicSupportMBean.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" 
-                stringvalue="org.netbeans.modules.jmx.Bundle"/>
+                      stringvalue="org.netbeans.modules.jmx.Bundle"/>
                 <attr name="hidden" boolvalue="true"/>
-                           
+                
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
             <file name="DynamicMBean.java" url="resources/templates/DynamicMBean.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" 
-                stringvalue="org.netbeans.modules.jmx.Bundle"/>
+                      stringvalue="org.netbeans.modules.jmx.Bundle"/>
                 <attr name="hidden" boolvalue="true"/>
-                           
+                
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file> 
             <file name="MBeanTest.java" url="resources/templates/MBeanTest.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" 
-                stringvalue="org.netbeans.modules.jmx.Bundle"/>
+                      stringvalue="org.netbeans.modules.jmx.Bundle"/>
                 <attr name="hidden" boolvalue="true"/>
-                           
+                
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>           
         </folder>  
@@ -286,28 +286,28 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Management">
             <file name="EnableMMAction.shadow">
                 <attr name="originalFile" 
-                methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.enableMM"/> 
+                      methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.enableMM"/> 
                 <attr name="hidden"
-                boolvalue="true"/>
+                      boolvalue="true"/>
             </file>      
             <attr name="EnableMMAction.shadow/DebugMMAction.shadow" boolvalue="true" />
             <file name="DebugMMAction.shadow">
                 <attr name="originalFile" 
-                methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.debugMM"/> 
+                      methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.debugMM"/> 
                 <attr name="hidden"
-                boolvalue="true"/>
+                      boolvalue="true"/>
             </file>   
             <file name="LaunchAction.shadow">
                 <attr name="originalFile" 
-                methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.launchJConsole"/> 
+                      methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.launchJConsole"/> 
                 <attr name="hidden"
-                boolvalue="true"/>
+                      boolvalue="true"/>
             </file>      
         </folder>
     </folder>
-     
+    
     <folder name="Menu"> <!-- Menu actions -->
-        <folder name="Management">
+        <!-- <folder name="Management">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jmx.actions.Bundle" />
             <file name="AddAttrAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.jmx.actions.AddAttrAction" />
@@ -335,7 +335,7 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         <attr name="Versioning/Management" boolvalue="true"/>
         <attr name="CVS/Management" boolvalue="true"/>
-        <attr name="Management/Tools" boolvalue="true" />
+        <attr name="Management/Tools" boolvalue="true" />-->
         <folder name="RunProject">       
             <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/jmx/resources/empty.gif"/>          
             <attr name="SeparatorRun.instance/jmxSeparator1.instance" boolvalue="true" />           
@@ -345,17 +345,17 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="jmxSeparator1.instance/EnableMMAction.shadow" boolvalue="true" />  
             <file name="EnableMMAction.shadow">
                 <attr name="originalFile" 
-                methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.enableMM"/> 
+                      methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.enableMM"/> 
                 <attr name="hidden"
-                boolvalue="true"/>
+                      boolvalue="true"/>
             </file>
             <attr name="EnableMMAction.shadow/DebugMMAction.shadow" boolvalue="true" />
             <file name="DebugMMAction.shadow">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jmx.runtime.Bundle" />
                 <attr name="originalFile" 
-                methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.debugMM"/> 
+                      methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.debugMM"/> 
                 <attr name="hidden"
-                boolvalue="true"/>
+                      boolvalue="true"/>
             </file>
             <attr name="DebugMMAction.shadow/jmxSeparator2.instance" boolvalue="true"/>    
             <file name="jmxSeparator2.instance">
@@ -365,9 +365,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="LaunchAction.shadow">            
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jmx.jconsole.Bundle" />
                 <attr name="originalFile" 
-                methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.launchJConsole"/> 
+                      methodvalue="org.netbeans.modules.jmx.FeaturesDeployer.launchJConsole"/> 
                 <attr name="hidden"
-                boolvalue="true"/>
+                      boolvalue="true"/>
             </file>
         </folder>  <!-- RunProject -->   
     </folder> <!-- Menu -->
@@ -382,20 +382,47 @@ Microsystems, Inc. All Rights Reserved.
         </folder> <!-- Java Help -->
     </folder> <!-- Services -->
   
-   <folder name="OptionsDialog">
+    <folder name="OptionsDialog">
         <folder name="Advanced">
             <file name="JConsole.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.jmx.jconsole.JConsoleOption"/>
             </file>
         </folder>
-   </folder>
-   <!-- <folder name="Editors">
+    </folder>
+    <folder name="Editors">
         <folder name="text">
             <folder name="x-java">
-                <folder name="Popup"><file name="RegisterMBeanAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.jmx.actions.RegisterMBeanAction" />
-            </file></folder>
+                <folder name="Popup">
+                    <attr name="generate-goto-popup/JMX" boolvalue="true" />
+                    <folder name="JMX">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jmx.actions.Bundle" />
+                        
+                        <file name="AddAttrAction.instance">
+                            <attr name="instanceClass" stringvalue="org.netbeans.modules.jmx.actions.AddAttrAction" />
+                        </file>
+                        <attr name="AddAttrAction.instance/AddOpAction.instance" boolvalue="true" />
+                        <file name="AddOpAction.instance">
+                            <attr name="instanceClass" stringvalue="org.netbeans.modules.jmx.actions.AddOpAction" />
+                        </file>
+                        <attr name="AddOpAction.instance/AddNotifAction.instance" boolvalue="true" />
+                        <file name="AddNotifAction.instance">
+                            <attr name="instanceClass" stringvalue="org.netbeans.modules.jmx.actions.AddNotifAction" />
+                        </file>
+                        <attr name="AddNotifAction.instance/AddRegisterIntfAction.instance" boolvalue="true" />
+                        <file name="AddRegisterIntfAction.instance">
+                            <attr name="instanceClass" stringvalue="org.netbeans.modules.jmx.actions.AddRegisterIntfAction" />
+                        </file>
+                        <attr name="AddRegisterIntfAction.instance/jmxMenuSeparator2.instance" boolvalue="true" />
+                        <file name="jmxMenuSeparator2.instance">
+                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        </file>
+                        <attr name="jmxMenuSeparator2.instance/RegisterMBeanAction.instance" boolvalue="true" />
+                        <file name="RegisterMBeanAction.instance">
+                            <attr name="instanceClass" stringvalue="org.netbeans.modules.jmx.actions.RegisterMBeanAction" />
+                        </file>
+                    </folder>
+                </folder>
             </folder>
         </folder>
-   </folder>-->
+    </folder>
 </filesystem>
