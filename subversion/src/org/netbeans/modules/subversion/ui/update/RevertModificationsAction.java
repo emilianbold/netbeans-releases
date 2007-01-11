@@ -93,7 +93,6 @@ public class RevertModificationsAction extends ContextAction {
             return;
         }
 
-        Set filesystems = new HashSet(2);
         File files[] = ctx.getFiles();
         File[][] split = Utils.splitFlatOthers(files);
         for (int c = 0; c<split.length; c++) {
@@ -118,12 +117,12 @@ public class RevertModificationsAction extends ContextAction {
                         client.merge(url, revisions.endRevision, url, revisions.startRevision, files[i], false, recursive);                        
                     }
                 } else {
-                    for (int i= 0; i<files.length; i++) {
-                        if(support.isCanceled()) {
-                            return;
-                        }
-                        client.revert(files[i], recursive);                        
+                    if(support.isCanceled()) {
+                        return;
                     }
+                    if(files.length > 0 ) {
+                        client.revert(files, recursive);                                               
+                    }                    
                 }
             } catch (SVNClientException ex) {
                 support.annotate(ex);
