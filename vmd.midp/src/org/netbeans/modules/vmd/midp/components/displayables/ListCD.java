@@ -98,7 +98,8 @@ public final class ListCD extends ComponentDescriptor {
         return new CodeSetterPresenter()
                 // TODO - clashing StringArray vs. String paremeter and ImageArray vs. Image parameter - both of then thinks that they are modified but only one of them should be
                 .addParameters(ListCode.createStringParameter(), ListCode.createImageParameter(), ListCode.createFontParameter())
-                .addParameters (ListCode.createSelectArrayParameter (), ListCode.createStringArrayParameter (), ListCode.createImageArrayParameter ())
+                .addParameters (ListCode.createSelectArrayParameter ())
+//                .addParameters (ListCode.createStringArrayParameter (), ListCode.createImageArrayParameter ())
                 .addParameters (ListCode.createSelectCommandParameter ())
                 .addParameters (ListCode.createListCommandParameter ())
                 .addParameters (ListCode.createListTypeParameter (), ListCode.createFitPolicyParameter ())
