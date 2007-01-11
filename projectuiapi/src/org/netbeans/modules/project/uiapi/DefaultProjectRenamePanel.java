@@ -301,6 +301,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
     public void showProgress() {
         projectFolder.setEnabled(false);
         projectName.setEnabled(false);
+        alsoRenameFolder.setEnabled(false);
         progress.setVisible(true);
         
         ((CardLayout) progress.getLayout()).last(progress);
