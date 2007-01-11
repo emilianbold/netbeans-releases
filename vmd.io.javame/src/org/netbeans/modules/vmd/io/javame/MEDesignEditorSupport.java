@@ -66,7 +66,6 @@ public class MEDesignEditorSupport extends J2MEEditorSupport implements EditorCo
         super(dataObject);
         this.dataObject = dataObject;
         closeHandler = new CloseHandler (dataObject);
-        setMIMEType("text/x-java"); // NOI18N
     }
 
     @Override
@@ -118,7 +117,7 @@ public class MEDesignEditorSupport extends J2MEEditorSupport implements EditorCo
 
     public void edit() {
         useEditPriority = true;
-        super.edit();
+        super.open();
 
         TopComponent mvtc = this.mvtc;
         if (mvtc != null) {
@@ -131,7 +130,7 @@ public class MEDesignEditorSupport extends J2MEEditorSupport implements EditorCo
             }
         }
     }
-    
+
     private int getIndex () {
         MultiViewDescription[] descriptions = this.descriptions;
         if (descriptions == null)
@@ -156,8 +155,6 @@ public class MEDesignEditorSupport extends J2MEEditorSupport implements EditorCo
         descriptions = IOSupport.createEditorSupportPane (IOSupport.getDataObjectContext (dataObject));
         int index = getIndex ();
         return (CloneableEditorSupport.Pane) MultiViewFactory.createCloneableMultiView (descriptions, index >= 0 ? descriptions[index] : null, closeHandler);
-
-
     }
 
     public void setMVTC(TopComponent mvtc) {
@@ -197,7 +194,7 @@ public class MEDesignEditorSupport extends J2MEEditorSupport implements EditorCo
         }
 
         if (sections != null) {
-            Reader reader = sections.createGuardedReader (stream, getEncoding ());;
+            Reader reader = sections.createGuardedReader (stream, getEncoding ());
             try {
                 kit.read (reader, doc, 0);
             } finally {
@@ -221,15 +218,6 @@ public class MEDesignEditorSupport extends J2MEEditorSupport implements EditorCo
             super.saveFromKitToStream (doc, kit, stream);
         }
     }
-
-//    private class Save implements SaveCookie {
-//
-//        public void save() throws IOException {
-//            saveDocument();
-//            getDataObject().setModified(false);
-//        }
-//
-//    }
 
     private static class CloseHandler implements CloseOperationHandler, Serializable {
 
