@@ -27,10 +27,13 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.spi.palette.PaletteController;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
+import org.openide.util.Utilities;
 
 /**
  * Palette settings to be remembered over IDE restarts.
@@ -65,10 +68,15 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
     private Model model;
     private PropertyChangeSupport propertySupport = new PropertyChangeSupport( this );
     
+    private String prefsName;
+    
     private static Logger ERR = Logger.getLogger("org.netbeans.modules.palette"); // NOI18N
     
     public DefaultSettings( Model model ) {
         this.model = model;
+        prefsName = constructPrefsFileName( model );
+        if( Utilities.isWindows() )
+            prefsName = prefsName.toLowerCase();
         model.addModelListener( this );
         Category[] categories = model.getCategories();
         for( int i=0; i<categories.length; i++ ) {
@@ -77,8 +85,19 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
         load();
     }
     
+    private String constructPrefsFileName( Model model ) {
+        DataFolder dof = (DataFolder)model.getRoot().lookup( DataFolder.class );
+        if( null != dof ) {
+            FileObject fo = dof.getPrimaryFile();
+            if( null != fo ) {
+                return fo.getPath();
+            }
+        }
+        return model.getName();
+    }
+    
     private Preferences getPreferences() {
-        return NbPreferences.forModule( DefaultSettings.class ).node( "CommonPaletteSettings" ).node( model.getName() ); //NOI18N
+        return NbPreferences.forModule( DefaultSettings.class ).node( "CommonPaletteSettings" ).node( prefsName ); //NOI18N
     }
 
     public void addPropertyChangeListener( PropertyChangeListener l ) {
