@@ -357,7 +357,7 @@ final class IconManager extends Object {
 
     /** Creates BufferedImage with Transparency.TRANSLUCENT */
     static final java.awt.image.BufferedImage createBufferedImage(int width, int height) {
-        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+        if (Utilities.isMac()) {
             return new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB_PRE);
         }
 

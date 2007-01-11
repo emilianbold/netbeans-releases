@@ -325,6 +325,14 @@ public final class Utilities {
         return (getOperatingSystem() & OS_WINDOWS_MASK) != 0;
     }
 
+    /** Test whether NetBeans is running on MacOS.
+     * @since 7.7
+    * @return <code>true</code> if Mac, <code>false</code> if some other manner of operating system
+    */
+    public static final boolean isMac() {
+        return (getOperatingSystem() & OS_MAC) != 0;
+    }
+
     /** Test whether NetBeans is running on some variant of Unix.
     * Linux is included as well as the commercial vendors.
     * @return <code>true</code> some sort of Unix, <code>false</code> if some other manner of operating system
@@ -1701,7 +1709,7 @@ widthcheck:  {
                         if (wildcard) {
                             needed |= Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 
-                            if ((getOperatingSystem() & OS_MAC) != 0) {
+                            if (isMac()) {
                                 if (!usableKeyOnMac(i.intValue(), needed)) {
                                     needed &= ~Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
                                     needed |= KeyEvent.CTRL_MASK;
@@ -1994,7 +2002,7 @@ widthcheck:  {
     }
 
     /** @return size of the screen. The size is modified for Windows OS
-     * - some pointes are subtracted to reflect a presence of the taskbar
+     * - some points are subtracted to reflect a presence of the taskbar
      *
      * @deprecated this method is almost useless in multiple monitor configuration
      *
@@ -2007,7 +2015,7 @@ widthcheck:  {
 
         if (isWindows() && !Boolean.getBoolean("netbeans.no.taskbar")) {
             screenSize.height -= TYPICAL_WINDOWS_TASKBAR_HEIGHT;
-        } else if ((getOperatingSystem() & OS_MAC) != 0) {
+        } else if (isMac()) {
             screenSize.height -= TYPICAL_MACOSX_MENU_HEIGHT;
         }
 
@@ -2803,7 +2811,7 @@ widthcheck:  {
         Image image = null;
 
         // First check for Mac because its part of the Unix_Mask
-        if (getOperatingSystem() == OS_MAC) {
+        if (isMac()) {
             image = loadImage("org/openide/util/progress-cursor-mac.gif"); //NOI18N
         } else if (isUnix()) {
             image = loadImage("org/openide/util/progress-cursor-motif.gif"); //NOI18N

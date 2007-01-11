@@ -27,6 +27,23 @@ Microsystems, Inc. All Rights Reserved.
 </apidefs>
 <changes>
 
+    <change id="Utilities.isMac">
+        <api name="util"/>
+        <summary>Added <code>Utilities.isMac()</code> method</summary>
+        <version major="7" minor="7"/>
+        <date day="11" month="1" year="2007"/>
+        <author login="rkubacki"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added a <code>Utilities.isMac()</code> method for checking 
+                if current platform is Mac.
+            </p>
+        </description>
+        <class package="org.openide.util" name="Utilities"/>
+        <issue number="61044"/>
+    </change>
+
     <change id="Parameters">
         <api name="util"/>
         <summary>Added <code>Parameters</code></summary>

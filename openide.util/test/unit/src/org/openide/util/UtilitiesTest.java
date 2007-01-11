@@ -97,6 +97,12 @@ public class UtilitiesTest extends TestCase {
         assertTrue ("Linux isUnix", Utilities.isUnix ());
     }
 
+    public void testWhatIsMac () {
+        System.setProperty ("os.name", "Mac OS X");
+        assertFalse ("Mac not isWindows", Utilities.isWindows ());
+        assertTrue ("Mac isMac", Utilities.isMac ());
+    }
+
     public void testWhatIsFreeBSD () {
         System.setProperty ("os.name", "freebsd");
         assertFalse ("freebsd is not isWindows", Utilities.isWindows ());
