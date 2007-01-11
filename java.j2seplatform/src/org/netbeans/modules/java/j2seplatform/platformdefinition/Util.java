@@ -158,7 +158,7 @@ public class Util {
                             new Object[] {f,extFolder}));
                         continue;
                     }
-                    if (Utilities.getOperatingSystem() == Utilities.OS_MAC && "._.DS_Store".equals(f.getName())) {  //NOI18N
+                    if (Utilities.isMac() && "._.DS_Store".equals(f.getName())) {  //NOI18N
                         //Ignore Apple temporary ._.DS_Store files in the lib/ext folder
                         continue;
                     }

@@ -79,13 +79,8 @@ public class NbEditorSettingsInitializer extends Settings.AbstractInitializer {
 	    //The hyperlinking should be enabled for the Command key on MAC OS X, for Ctrl on others:
             int activationMask;
             
-            if ((Utilities.getOperatingSystem() & Utilities.OS_MAC) != 0) {
-                activationMask = InputEvent.META_MASK;
-            } else {
-                activationMask = InputEvent.CTRL_DOWN_MASK;
-            }
-            
-            settingsMap.put(SettingsNames.HYPERLINK_ACTIVATION_MODIFIERS, new Integer(activationMask));
+            activationMask = Utilities.isMac()? InputEvent.META_MASK: InputEvent.CTRL_DOWN_MASK;
+            settingsMap.put(SettingsNames.HYPERLINK_ACTIVATION_MODIFIERS, Integer.valueOf(activationMask));
         }
 
         if (kitClass == NbEditorKit.class) {

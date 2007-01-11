@@ -846,7 +846,7 @@ public final class FileUtil extends Object {
      * @return true, if such name does not exists
      */
     private static boolean checkFreeName(FileObject fo, String name, String ext) {
-        if ((Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2)) || isMacOS()) {
+        if ((Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2)) || Utilities.isMac()) {
             // case-insensitive, do some special check
             Enumeration<? extends FileObject> en = fo.getChildren(false);
 
@@ -863,7 +863,7 @@ public final class FileUtil extends Object {
 
                 // same name + without extension => no
                 if (((ext == null) || (ext.trim().length() == 0)) && ((e == null) || (e.trim().length() == 0))) {
-                    return (fo.isVirtual()) ? true : false;
+                    return fo.isVirtual();
                 }
 
                 // one of there is witout extension => check next
@@ -873,7 +873,7 @@ public final class FileUtil extends Object {
 
                 if (ext.equalsIgnoreCase(e)) {
                     // same name + same extension => no
-                    return (fo.isVirtual()) ? true : false;
+                    return fo.isVirtual();
                 }
             }
 
@@ -887,7 +887,7 @@ public final class FileUtil extends Object {
                     return true;
                 }
 
-                return (fo.isVirtual()) ? true : false;
+                return fo.isVirtual();
             } else {
                 fo = fo.getFileObject(name, ext);
 
@@ -895,13 +895,9 @@ public final class FileUtil extends Object {
                     return true;
                 }
 
-                return (fo.isVirtual()) ? true : false;
+                return fo.isVirtual();
             }
         }
-    }
-
-    private static boolean isMacOS() {
-        return (Utilities.getOperatingSystem() & Utilities.OS_MAC) != 0;
     }
 
     // note: "sister" is preferred in English, please don't ask me why --jglick // NOI18N
@@ -1178,7 +1174,7 @@ public final class FileUtil extends Object {
 
         if ((Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2))) {
             retFile = normalizeFileOnWindows(file);
-        } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+        } else if (Utilities.isMac()) {
             retFile = normalizeFileOnMac(file);
         } else {
             retFile = normalizeFileOnUnixAlike(file);

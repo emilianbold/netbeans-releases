@@ -51,7 +51,7 @@ public class PlatformSettings {
         String folderName = getPreferences().get(PROP_PLATFORMS_FOLDER, null);
         if (folderName == null) {
             File f;
-            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            if (Utilities.isMac()) {
                 f = new File (APPLE_JAVAVM_FRAMEWORK_PATH);
             }
             else {

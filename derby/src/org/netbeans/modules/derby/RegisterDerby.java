@@ -39,8 +39,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 
 
 /**
@@ -174,7 +172,7 @@ public class RegisterDerby implements DatabaseRuntime {
             return;
         Properties derbyProps = new Properties();
         // fill it
-        if (Utilities.OS_MAC == Utilities.getOperatingSystem()) {
+        if (Utilities.isMac()) {
             derbyProps.setProperty("derby.storage.fileSyncTransactionLog", "true");
         }
 

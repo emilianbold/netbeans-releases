@@ -1490,7 +1490,7 @@ public abstract class TreeView extends JScrollPane {
             getInputMap().put(KeyStroke.getKeyStroke("PASTE"), "none"); // NOI18N
             getInputMap().put(KeyStroke.getKeyStroke("CUT"), "none"); // NOI18N
 
-            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            if (Utilities.isMac()) {
                 getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.META_MASK), "none"); // NOI18N
                 getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.META_MASK), "none"); // NOI18N
                 getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.META_MASK), "none"); // NOI18N

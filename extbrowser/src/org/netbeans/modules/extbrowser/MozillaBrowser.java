@@ -57,7 +57,7 @@ public class MozillaBrowser extends ExtWebBrowser {
             }
             return Boolean.TRUE;
         }
-        return (Utilities.isUnix() && Utilities.getOperatingSystem() != Utilities.OS_MAC) ? Boolean.FALSE : Boolean.TRUE;
+        return (Utilities.isUnix() && !Utilities.isMac()) ? Boolean.FALSE : Boolean.TRUE;
     }
     
     /** Getter for browser name
@@ -80,7 +80,7 @@ public class MozillaBrowser extends ExtWebBrowser {
 
         if (Utilities.isWindows()) {
             impl = new NbDdeBrowserImpl(this);
-        } else if (Utilities.isUnix() && Utilities.getOperatingSystem() != Utilities.OS_MAC) {
+        } else if (Utilities.isUnix() && !Utilities.isMac()) {
             impl = new UnixBrowserImpl(this);
         } else {
             throw new UnsupportedOperationException (NbBundle.getMessage (MozillaBrowser.class, "MSG_CannotUseBrowser"));

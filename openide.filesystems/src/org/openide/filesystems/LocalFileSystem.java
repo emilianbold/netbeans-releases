@@ -408,7 +408,7 @@ public class LocalFileSystem extends AbstractFileSystem {
         OutputStream retVal = new FileOutputStream(getFile(name));
 
         // workaround for #42624
-        if ((Utilities.getOperatingSystem() & Utilities.OS_MAC) != 0) {
+        if (Utilities.isMac()) {
             retVal = getOutputStreamForMac42624(retVal, name);
         }
 

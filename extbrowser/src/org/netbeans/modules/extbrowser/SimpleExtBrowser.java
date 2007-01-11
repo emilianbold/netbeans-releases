@@ -42,7 +42,7 @@ public class SimpleExtBrowser extends ExtWebBrowser {
      *          true in all other cases.
      */
     public static Boolean isHidden () {
-        return (Utilities.isWindows() || (Utilities.isUnix() && Utilities.getOperatingSystem() != Utilities.OS_MAC)) ? Boolean.TRUE : Boolean.FALSE;
+        return Boolean.valueOf(Utilities.isWindows() || (Utilities.isUnix() && !Utilities.isMac()));
     }
     
     /** Creates new SimpleExtBrowser */
@@ -55,7 +55,7 @@ public class SimpleExtBrowser extends ExtWebBrowser {
                 " {" + BrowserFormat.TAG_URL + "}", // NOI18N
                 NbBundle.getBundle(SimpleExtBrowser.class).getString("MSG_BrowserExecutorHint")
             );
-        } else if (Utilities.getOperatingSystem () == Utilities.OS_MAC) {
+        } else if (Utilities.isMac()) {
             browserExecutable = new NbProcessDescriptor(
                 "/usr/bin/open", // NOI18N
                 // {URL}

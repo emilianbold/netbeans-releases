@@ -362,7 +362,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
             return new NbProcessDescriptor (b, params);
 
         // Unix but not MacOSX
-        } else if (Utilities.isUnix() && (Utilities.getOperatingSystem() != Utilities.OS_MAC)) {
+        } else if (Utilities.isUnix() && !Utilities.isMac()) {
             
             // Linux -> Mozilla should be default
             if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
@@ -400,7 +400,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
             );
             
         // Mac OS
-        } else if (Utilities.getOperatingSystem () == Utilities.OS_MAC) {
+        } else if (Utilities.isMac()) {
             return new NbProcessDescriptor(
                 "/usr/bin/open", // NOI18N
                 // {URL}

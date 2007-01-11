@@ -87,7 +87,7 @@ public class NetscapeBrowser extends ExtWebBrowser implements PropertyChangeList
             return Boolean.TRUE;
         }
         
-        return (Utilities.isUnix() && Utilities.getOperatingSystem() != Utilities.OS_MAC) ? Boolean.FALSE : Boolean.TRUE;
+        return (Utilities.isUnix() && !Utilities.isMac()) ? Boolean.FALSE : Boolean.TRUE;
     }
 
     /** Getter for browser name
@@ -110,7 +110,7 @@ public class NetscapeBrowser extends ExtWebBrowser implements PropertyChangeList
 
         if (org.openide.util.Utilities.isWindows ()) {
             impl = new NbDdeBrowserImpl (this);
-        } else if (Utilities.isUnix() && Utilities.getOperatingSystem() != Utilities.OS_MAC) {
+        } else if (Utilities.isUnix() && !Utilities.isMac()) {
             impl = new UnixBrowserImpl(this);
         } else {
             throw new UnsupportedOperationException (NbBundle.getMessage (NetscapeBrowser.class, "MSG_CannotUseBrowser"));

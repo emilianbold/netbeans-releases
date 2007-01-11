@@ -105,8 +105,6 @@ public final class PatchedHtmlRenderer {
             '>', '<', '"', '&', 8216, 8217, 8220, 8221, 8211, 8212, 8800, 8804, 8805, //NOI18N
             169, 174, 8482, ' '
         };
-    private static final boolean IS_MAC = (Utilities.getOperatingSystem() & Utilities.OS_MAC) != 0;
-
     private PatchedHtmlRenderer() {
         //do nothing
     }
@@ -989,7 +987,7 @@ public final class PatchedHtmlRenderer {
     private static final Font deriveFont(Font f, int style) {
         //      return f.deriveFont(style);
         // see #49973 for details.
-        Font result = IS_MAC ? new Font(f.getName(), style, f.getSize()) : f.deriveFont(style);
+        Font result = Utilities.isMac() ? new Font(f.getName(), style, f.getSize()) : f.deriveFont(style);
 
         return result;
     }

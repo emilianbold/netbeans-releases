@@ -63,7 +63,7 @@ class J2SEInstallImpl extends org.netbeans.spi.java.platform.PlatformInstall {
         if (!dir.isFolder()) {
             return false;
         }
-        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+        if (Utilities.isMac()) {
             //For MacOS X only the version folder is interesting
             // all other places are links to it
             File f = FileUtil.toFile(dir);

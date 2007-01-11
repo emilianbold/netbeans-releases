@@ -1438,7 +1438,7 @@ public class BaseOptions extends OptionSupport {
 
             } else {
                 // fix of #31758
-                if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                if (Utilities.isMac()) {
                     // On OSX, default to true
                     return true;
                 } else {

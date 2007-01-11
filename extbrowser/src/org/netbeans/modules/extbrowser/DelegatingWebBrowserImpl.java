@@ -60,7 +60,7 @@ public class DelegatingWebBrowserImpl extends ExtBrowserImpl {
                 }
 
             // Unix (but not MacOSX) -> if Netscape or Mozilla, create Unix browser
-            } else if (Utilities.isUnix() && Utilities.getOperatingSystem() != Utilities.OS_MAC) {
+            } else if (Utilities.isUnix() && !Utilities.isMac()) {
                 if (pName.indexOf("MOZILLA") > -1 ||            // NOI18N
                     pName.indexOf("NETSCAPE") > -1 || 
                     pName.indexOf("FIREFOX") > -1) {           // NOI18N

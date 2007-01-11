@@ -366,7 +366,7 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
     }
     
     private static PopupFactory getPopupFactory() {
-        if ((Utilities.getOperatingSystem() & Utilities.OS_MAC) != 0 ) {
+        if (Utilities.isMac()) {
             
             // See ide/applemenu/src/org/netbeans/modules/applemenu/ApplePopupFactory
             // We have a custom PopupFactory that will consistently use 

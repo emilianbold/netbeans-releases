@@ -33,8 +33,6 @@ import org.openide.util.*;
 import org.openide.nodes.Node;
 import org.openide.filesystems.FileObject;
 
-import org.netbeans.modules.form.editors2.IconEditor;
-import org.netbeans.modules.form.editors2.BorderDesignSupport;
 import org.netbeans.modules.form.project.ClassPathUtils;
 
 /**
@@ -428,7 +426,7 @@ public class FormUtils
         }
         // Issue 49973
         if ((o.getClass() == TitledBorder.class)
-            && (Utilities.getOperatingSystem() == Utilities.OS_MAC)) {
+            && (Utilities.isMac())) {
             TitledBorder border = (TitledBorder)o;
             return new TitledBorder(
                 border.getBorder(),
