@@ -136,7 +136,7 @@ public final class AcceptLicense {
         } else {
             button.setText(text.substring(0, i) + text.substring(i + 1));
             
-            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            if (Utilities.isMac()) {
                 // there shall be no mnemonics on macosx.
                 //#55864
                 return;

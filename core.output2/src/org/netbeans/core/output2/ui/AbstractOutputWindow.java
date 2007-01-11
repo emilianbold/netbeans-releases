@@ -426,7 +426,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
         }
         
         public  Color getColor() {
-            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            if (Utilities.isMac()) {
                 Color c1 = UIManager.getColor("controlShadow");
                 Color c2 = UIManager.getColor("control");
                 return new Color((c1.getRed() + c2.getRed()) / 2,

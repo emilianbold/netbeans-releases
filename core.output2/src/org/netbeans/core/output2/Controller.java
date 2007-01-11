@@ -1250,7 +1250,7 @@ public class Controller { //XXX public only for debug access to logging code
          */
         private static KeyStroke getAcceleratorFor (String name) {
             String key = name + ".accel"; //NOI18N
-            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            if (Utilities.isMac()) {
                 key += ".mac"; //NOI18N
             }
             return Utilities.stringToKey(NbBundle.getMessage(Controller.class, key));

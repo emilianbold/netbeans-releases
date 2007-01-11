@@ -282,7 +282,7 @@ public class ToolbarTabDisplayerUI extends AbstractTabDisplayerUI {
             int w = DefaultTabLayoutModel.textWidth(s, getFont());
             result.width += w;
             // as we cannot get the button small enough using the margin and border...
-            if (Utilities.getOperatingSystem() != Utilities.OS_MAC) {
+            if (Utilities.isMac()) {
                 // #67128 the -3 heuristics seems to cripple the buttons on macosx. it looks ok otherwise.
                 result.height -= 3; 
             } 

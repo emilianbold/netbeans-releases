@@ -25,9 +25,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Iterator;
-import java.util.Locale;
-import java.util.Map;
-import java.util.MissingResourceException;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.Util;
@@ -203,7 +200,7 @@ public final class Main extends Object {
     if (jdkHome == null) {
         jdkHome = System.getProperty("java.home");  // NOI18N
 
-        if (Utilities.getOperatingSystem() != Utilities.OS_MAC) {
+        if (Utilities.isMac()) {
             jdkHome += File.separator + "..";  // NOI18N
         }
 
