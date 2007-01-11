@@ -75,6 +75,9 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
         StartLog.logProgress ("LoaderPool notified"); // NOI18N
         Splash.getInstance().increment(10);
 
+        // install java.net.ProxySelector
+        java.net.ProxySelector.setDefault (new NbProxySelector ());
+        
         //---------------------------------------------------------------------------------------------------------
         // initialize main window AFTER the setup wizard is finished
 
@@ -93,9 +96,6 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
 
         // install java.net.Authenticator
         java.net.Authenticator.setDefault (new NbAuthenticator ());
-        
-        // install java.net.ProxySelector
-        java.net.ProxySelector.setDefault (new NbProxySelector ());
         
         StartLog.logProgress ("Security managers installed"); // NOI18N
         Splash.getInstance().increment(1);
