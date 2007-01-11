@@ -548,14 +548,34 @@ public class CasualDiff {
         return localPointer;
     }
 
-    protected void diffDoLoop(JCDoWhileLoop oldT, JCDoWhileLoop newT) {
-        diffTree(oldT.body, newT.body);
-        diffTree(oldT.cond, newT.cond);
+    protected int diffDoLoop(JCDoWhileLoop oldT, JCDoWhileLoop newT, int[] bounds) {
+        int localPointer = bounds[0];
+        
+        int[] bodyBounds = getBounds(oldT.body);
+        copyTo(localPointer, bodyBounds[0], printer);
+        localPointer = diffTree(oldT.body, newT.body, bodyBounds);
+        
+        int[] condBounds = getBounds(oldT.cond);
+        copyTo(localPointer, condBounds[0], printer);
+        localPointer = diffTree(oldT.cond, newT.cond, condBounds);
+        copyTo(localPointer, bounds[1], printer);
+        
+        return bounds[1];
     }
 
-    protected void diffWhileLoop(JCWhileLoop oldT, JCWhileLoop newT) {
-        diffTree(oldT.cond, newT.cond);
-        diffTree(oldT.body, newT.body);
+    protected int diffWhileLoop(JCWhileLoop oldT, JCWhileLoop newT, int[] bounds) {
+        int localPointer = bounds[0];
+        // condition
+        int[] condPos = getBounds(oldT.cond);
+        copyTo(localPointer, condPos[0], printer);
+        localPointer = diffTree(oldT.cond, newT.cond, condPos);
+        // body
+        int[] bodyPos = getBounds(oldT.body);
+        copyTo(localPointer, bodyPos[0], printer);
+        localPointer = diffTree(oldT.body, newT.body, bodyPos);
+        
+        copyTo(localPointer, bounds[1], printer);
+        return bounds[1];
     }
 
     protected int diffForLoop(JCForLoop oldT, JCForLoop newT, int[] bounds) {
@@ -1723,10 +1743,10 @@ public class CasualDiff {
               retVal = diffBlock((JCBlock)oldT, (JCBlock)newT, elementBounds[0]);
               break;
           case JCTree.DOLOOP:
-              diffDoLoop((JCDoWhileLoop)oldT, (JCDoWhileLoop)newT);
+              retVal = diffDoLoop((JCDoWhileLoop)oldT, (JCDoWhileLoop)newT, elementBounds);
               break;
           case JCTree.WHILELOOP:
-              diffWhileLoop((JCWhileLoop)oldT, (JCWhileLoop)newT);
+              retVal = diffWhileLoop((JCWhileLoop)oldT, (JCWhileLoop)newT, elementBounds);
               break;
           case JCTree.FORLOOP:
               retVal = diffForLoop((JCForLoop)oldT, (JCForLoop)newT, elementBounds);
@@ -2072,7 +2092,15 @@ public class CasualDiff {
             append(Diff.modify(preceding, pos, t1, t2, tail, null));
         }
     }
+    
+    private int[] getBounds(JCTree tree) {
+        return new int[] { getOldPos(tree), endPos(tree) };
+    }
 
+    private void copyTo(int from, int to, VeryPretty printer) {
+        printer.print(origText.substring(from, to));
+    }
+    
     private static class Line {
         Line(String data, int start, int end) {
             this.start = start;
@@ -2298,4 +2326,5 @@ public class CasualDiff {
             System.out.println(ind + " '" + lines[lnum] + "'");
         }
     }
+    
 }
