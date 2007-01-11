@@ -104,7 +104,13 @@ public final class FileChangeSupport {
             FileObject oldCurrent = current;
             currentF = path;
             while (true) {
-                current = FileUtil.toFileObject(currentF);
+                try {
+                    current = FileUtil.toFileObject(currentF);
+                } catch (IllegalArgumentException x) {
+                    // #73526: was originally normalized, but now is not. E.g. file changed case.
+                    currentF = FileUtil.normalizeFile(currentF);
+                    current = FileUtil.toFileObject(currentF);
+                }
                 if (current != null) {
                     break;
                 }
