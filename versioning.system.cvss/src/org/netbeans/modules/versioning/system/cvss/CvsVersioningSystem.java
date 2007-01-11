@@ -707,16 +707,15 @@ public class CvsVersioningSystem {
             super(working);
         }
 
-        public Reader getText() {
-            try {
+        protected void getOriginalFiles(File destination, Set<File> files) throws Exception {
+            for (File file : files) {
                 // TODO: it is not easy to tell whether the file is not yet versioned OR some real error occurred   
-                File f = VersionsCache.getInstance().getRemoteFile(workingCopy, VersionsCache.REVISION_BASE, null, true);
-                if (f == null) return null;
-                String name = f.getName();
-                return createReader(f, name.substring(0, name.indexOf('#')));
-            } catch (Exception e) {
-                // no base
-                return null;
+                File original = VersionsCache.getInstance().getRemoteFile(file, VersionsCache.REVISION_BASE, null, true);
+                if (original == null) throw new IOException("Unable to get BASE revision of " + file);
+
+                File daoFile = new File(destination, file.getName());
+                org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(daoFile), new FileInputStream(original));
+                daoFile.deleteOnExit();
             }
         }
 

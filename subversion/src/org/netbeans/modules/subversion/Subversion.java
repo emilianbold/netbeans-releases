@@ -29,12 +29,8 @@ import org.openide.filesystems.FileUtil;
 import org.tigris.subversion.svnclientadapter.*;
 import org.openide.util.RequestProcessor;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Iterator;
+import java.io.*;
+import java.util.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
@@ -505,16 +501,15 @@ public class Subversion {
             super(working);
         }
 
-        public Reader getText() {
-            try {
-                File f = VersionsCache.getInstance().getFileRevision(workingCopy, Setup.REVISION_BASE);
-                if (f == null) return null;
-                String name = f.getName();
-                return createReader(f, name.substring(0, name.indexOf(".netbeans-base")));
-            } catch (IOException e) {
-                // ignore
+        protected void getOriginalFiles(File destination, Set<File> files) throws Exception {
+            for (File file : files) {
+                File original = VersionsCache.getInstance().getFileRevision(file, Setup.REVISION_BASE);
+                if (original == null) throw new IOException("Unable to get BASE revision of " + file);
+
+                File daoFile = new File(destination, file.getName());
+                org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(daoFile), new FileInputStream(original));
+                daoFile.deleteOnExit();
             }
-            return null;
         }
 
         public void versioningEvent(VersioningEvent event) {
