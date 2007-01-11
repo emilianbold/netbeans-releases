@@ -24,7 +24,6 @@ import java.awt.event.ActionListener;
 import javax.swing.DefaultComboBoxModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 
@@ -65,8 +64,6 @@ public class RADIOCustomizer extends javax.swing.JPanel {
         descriptor = new DialogDescriptor
                 (this, NbBundle.getMessage(RADIOCustomizer.class, "LBL_Customizer_InsertPrefix") + " " + displayName, true,
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
-                 DialogDescriptor.DEFAULT_ALIGN,
-                 new HelpCtx("RADIOCustomizer"), // NOI18N
                  new ActionListener() {
                      public void actionPerformed(ActionEvent e) {
                         if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {

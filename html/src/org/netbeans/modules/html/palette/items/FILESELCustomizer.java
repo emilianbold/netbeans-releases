@@ -23,7 +23,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 
@@ -60,8 +59,6 @@ public class FILESELCustomizer extends javax.swing.JPanel {
         descriptor = new DialogDescriptor
                 (this, NbBundle.getMessage(FILESELCustomizer.class, "LBL_Customizer_InsertPrefix") + " " + displayName, true,
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
-                 DialogDescriptor.DEFAULT_ALIGN,
-                 new HelpCtx("FILESELCustomizer"), // NOI18N
                  new ActionListener() {
                      public void actionPerformed(ActionEvent e) {
                         if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
