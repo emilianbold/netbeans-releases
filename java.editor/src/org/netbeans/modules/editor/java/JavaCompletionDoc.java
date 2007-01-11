@@ -74,6 +74,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
     private static final String SINCE_TAG = "@since"; //NOI18N
     private static final String INHERIT_DOC_TAG = "@inheritDoc"; //NOI18N
     private static final String LINKPLAIN_TAG = "@linkplain"; //NOI18N
+    private static final String CODE_TAG = "@code"; //NOI18N
     
     public static final JavaCompletionDoc create(CompilationController controller, Element element) {
         return new JavaCompletionDoc(controller, element, null);
@@ -526,6 +527,10 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                     if (cdoc != null)
                         sb.append(inlineTags(eu, cdoc, cdoc.inlineTags()));
                 }
+            } else if (CODE_TAG.equals(tag.kind())) {
+                sb.append("<code>"); //NOI18N
+                sb.append(tag.text());
+                sb.append("</code>"); //NOI18N
             } else {
                 sb.append(tag.text());
             }
