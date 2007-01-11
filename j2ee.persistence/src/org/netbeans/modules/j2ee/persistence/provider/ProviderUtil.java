@@ -614,6 +614,18 @@ public class ProviderUtil {
         return providerLibs;
     }
     
+    /**
+     * @return the first library in the IDE's libraries which contains
+     * a persistence provider.
+     */
+    public static Library getFirstProviderLibrary() {
+        List<Library> libraries = createLibraries();
+        if (libraries.size() > 0) {
+            return libraries.iterator().next();
+        }
+        return null;
+    }
+    
     private static String extractProvider(Library library) {
         for (int i = 0; i < PROVIDERS.length; i++) {
             if (org.netbeans.modules.j2ee.common.Util.containsClass(library, PROVIDERS[i].getProviderClass())){

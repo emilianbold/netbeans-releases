@@ -22,6 +22,8 @@ package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -29,6 +31,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -51,6 +54,8 @@ import org.openide.util.NbBundle;
  * @author Andrei Badea
  */
 public class EntityClassesPanel extends javax.swing.JPanel {
+
+    private final static Logger LOGGER = Logger.getLogger(EntityClassesPanel.class.getName());
 
     private JTextComponent packageComboBoxEditor;
 
@@ -205,8 +210,6 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             packageComboBox.setModel(model);
         }
     }
-
-
 
     private void updatePersistenceUnitButton() {
         String warning = " ";
@@ -504,6 +507,29 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             if (!SourceGroupSupport.isFolderWritable(sourceGroup, packageName)) {
                 setErrorMessage(NbBundle.getMessage(EntityClassesPanel.class, "ERR_JavaTargetChooser_UnwritablePackage")); //NOI18N
                 return false;
+            }
+
+            // issue 92192: need to check that we will have a persistence provider
+            // available to add to the classpath while generating entity classes (unless
+            // the classpath already contains one)
+            ClassPath classPath = null;
+            try {
+                FileObject packageFO = SourceGroupSupport.getFolderForPackage(sourceGroup, packageName, false);
+                if (packageFO == null) {
+                    packageFO = sourceGroup.getRootFolder();
+                }
+                classPath = ClassPath.getClassPath(packageFO, ClassPath.COMPILE);
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, null, e);
+            }
+            if (classPath != null) {
+                if (classPath.findResource("javax/persistence/EntityManager.class") == null && // NOI18N
+                        ProviderUtil.getProvidersFromLibraries().size() == 0) {
+                    setErrorMessage(NbBundle.getMessage(EntityClassesPanel.class, "ERR_NoJavaPersistenceAPI")); // NOI18N
+                    return false;
+                }
+            } else {
+                LOGGER.warning("Cannot get a classpath for package " + packageName + " in " + sourceGroup); // NOI18N
             }
 
             SelectedTables selectedTables = getTypedComponent().getSelectedTables();

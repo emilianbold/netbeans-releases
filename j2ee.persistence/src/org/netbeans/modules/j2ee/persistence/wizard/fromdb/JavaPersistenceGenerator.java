@@ -27,6 +27,7 @@ import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.Table;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -46,9 +47,10 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.common.source.GenerationUtils;
-import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.CMPMappingModel;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityClass;
@@ -58,10 +60,9 @@ import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlExcep
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
-import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 
 /**
@@ -194,10 +195,15 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             // now generate the fields and methods for each entity class
             // and its primary key class
 
+            Set<ClassPath> bootCPs = getAllClassPaths(generationPackageFOs, ClassPath.BOOT);
+            Set<ClassPath> compileCPs = getAllClassPaths(generationPackageFOs, ClassPath.COMPILE);
+            Set<ClassPath> sourceCPs = getAllClassPaths(generationPackageFOs, ClassPath.SOURCE);
+
+            ensureJPA(compileCPs);
             ClasspathInfo classpathInfo = ClasspathInfo.create(
-                    createUnionClassPath(generationPackageFOs, ClassPath.BOOT),
-                    createUnionClassPath(generationPackageFOs, ClassPath.COMPILE),
-                    createUnionClassPath(generationPackageFOs, ClassPath.SOURCE));
+                    createProxyClassPath(bootCPs),
+                    createProxyClassPath(compileCPs),
+                    createProxyClassPath(sourceCPs));
 
             for (int i = 0; i < genBeans.length; i++) {
                 final EntityClass entityClass = genBeans[i];
@@ -262,15 +268,55 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             return entityClassName + "PK"; // NOI18N
         }
 
-        private static ClassPath createUnionClassPath(Set<FileObject> fileObjects, String id) {
+        private static Set<ClassPath> getAllClassPaths(Set<FileObject> fileObjects, String id) {
             Set<ClassPath> classPaths = new HashSet<ClassPath>();
             for (FileObject fileObject : fileObjects) {
                 classPaths.add(ClassPath.getClassPath(fileObject, id));
             }
+            return classPaths;
+        }
+
+        private static ClassPath createProxyClassPath(Set<ClassPath> classPaths) {
             if (classPaths.size() == 1) {
                 return classPaths.iterator().next();
             }
             return ClassPathSupport.createProxyClassPath(classPaths.toArray(new ClassPath[classPaths.size()]));
+        }
+
+        private void ensureJPA(Set<ClassPath> classPaths) {
+            for (ClassPath classPath : classPaths) {
+                if (classPath.findResource("javax/persistence/Entity.class") != null) { // NOI18N
+                    return;
+                }
+            }
+            ClassPath jpaClassPath = findJPALibrary();
+            if (jpaClassPath != null) {
+                classPaths.add(jpaClassPath);
+                return;
+            }
+            throw new IllegalStateException("Cannot find a Java Persistence API library"); // NOI18N
+        }
+
+        private ClassPath findJPALibrary() {
+            Library library = ProviderUtil.getFirstProviderLibrary();
+            if (library == null) {
+                return null;
+            }
+            List<URL> urls = library.getContent("classpath"); // NOI18N
+            // workaround for issue 92237
+            List<URL> localURLs = new ArrayList(urls.size());
+            for (URL url : urls) {
+                FileObject fileObject = URLMapper.findFileObject(url);
+                if (fileObject == null) {
+                    continue;
+                }
+                URL localURL = URLMapper.findURL(fileObject, URLMapper.INTERNAL);
+                if (localURL == null) {
+                    continue;
+                }
+                localURLs.add(localURL);
+            }
+            return ClassPathSupport.createClassPath(localURLs.toArray(new URL[localURLs.size()]));
         }
 
         /**
