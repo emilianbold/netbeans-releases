@@ -137,7 +137,7 @@ public final class MainWindow extends JFrame {
 
                 JPanel statusLinePanel = new JPanel(new BorderLayout());
                 int magicConstant = 0;
-                if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                if (Utilities.isMac()) {
                     // on mac there is window resize component in the right most bottom area.
                     // it paints over our icons..
                     magicConstant = 12;

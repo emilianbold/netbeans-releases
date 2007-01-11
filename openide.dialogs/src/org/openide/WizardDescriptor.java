@@ -1309,7 +1309,7 @@ public class WizardDescriptor extends DialogDescriptor {
     }
 
     private static Font doDeriveFont(Font original, int style) {
-        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+        if (Utilities.isMac()) {
             // don't use deriveFont() - see #49973 for details
             return new Font(original.getName(), style, original.getSize());
         }

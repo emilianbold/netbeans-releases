@@ -140,7 +140,7 @@ public abstract class AbstractModeContainer implements ModeContainer {
         
         if (newFocusedW != null && newFocusedW.equals(oldFocusedW)) {
             // focus transfer inside one window, so requestFocusInWindow call is enough
-            if (Utilities.getOperatingSystem() != Utilities.OS_MAC) {
+            if (!Utilities.isMac()) {
                 selectedTopComponent.requestFocusInWindow();
             } else {
                 //#60235 - on macosx 1.5 there seems to be a bug with requesting focus.

@@ -248,8 +248,6 @@ public final class HtmlRenderer {
             '>', '<', '"', '&', 8216, 8217, 8220, 8221, 8211, 8212, 8800, 8804, 8805, //NOI18N
             169, 174, 8482, ' '
         };
-    private static final boolean IS_MAC = (Utilities.getOperatingSystem() & Utilities.OS_MAC) != 0;
-
     private HtmlRenderer() {
         //do nothing
     }
@@ -330,7 +328,7 @@ public final class HtmlRenderer {
         FontMetrics fm = g.getFontMetrics(f);
 //        Rectangle2D r = fm.getStringBounds(s, g);
         int wid;
-        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+        if (Utilities.isMac()) {
             // #54257 - on macosx + chinese/japanese fonts, the getStringBounds() method returns bad value
             wid = fm.stringWidth(s);
         } else {
@@ -359,7 +357,7 @@ public final class HtmlRenderer {
                     if( estCharsToPaint < chars.length )
                         Arrays.fill(chars, estCharsToPaint - 3, estCharsToPaint, '.'); //NOI18N
                     int  newWidth;
-                    if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                    if (Utilities.isMac()) {
                         // #54257 - on macosx + chinese/japanese fonts, the getStringBounds() method returns bad value
                         newWidth = fm.stringWidth(new String(chars, 0, estCharsToPaint));
                     } else {
@@ -920,7 +918,7 @@ public final class HtmlRenderer {
 
                 //Get the bounds of the substring we'll paint
                 Rectangle2D r = fm.getStringBounds(chars, pos, nextTag + 1, g);
-                if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                if (Utilities.isMac()) {
                     // #54257 - on macosx + chinese/japanese fonts, the getStringBounds() method returns bad value
                     r.setRect(r.getX(), r.getY(), (double)fm.stringWidth(new String(chars, pos, nextTag - pos + 1)), r.getHeight());
                 } 
@@ -991,7 +989,7 @@ public final class HtmlRenderer {
                             }
 
                             r = fm.getStringBounds(chars, pos, pos + length, g);
-                            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                            if (Utilities.isMac()) {
                                 // #54257 - on macosx + chinese/japanese fonts, the getStringBounds() method returns bad value
                                 r.setRect(r.getX(), r.getY(), (double)fm.stringWidth(new String(chars, pos, length)), r.getHeight());
                             } 
@@ -1039,7 +1037,7 @@ public final class HtmlRenderer {
                                 if (boundsChanged) {
                                     //recalculate the width we will add
                                     r = fm.getStringBounds(chars, pos, nextTag + 1, g);
-                                    if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                                    if (Utilities.isMac()) {
                                         // #54257 - on macosx + chinese/japanese fonts, the getStringBounds() method returns bad value
                                         r.setRect(r.getX(), r.getY(), (double)fm.stringWidth(new String(chars, pos, nextTag - pos + 1)), r.getHeight());
                                     } 
@@ -1227,7 +1225,7 @@ public final class HtmlRenderer {
     private static final Font deriveFont(Font f, int style) {
         //      return f.deriveFont(style);
         // see #49973 for details.
-        Font result = IS_MAC ? new Font(f.getName(), style, f.getSize()) : f.deriveFont(style);
+        Font result = Utilities.isMac() ? new Font(f.getName(), style, f.getSize()) : f.deriveFont(style);
 
         return result;
     }

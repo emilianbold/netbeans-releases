@@ -112,11 +112,11 @@ public abstract class Constants {
     public static final boolean SWITCH_START_IN_SEPARATE_MODE = "sdi".equals(System.getProperty("netbeans.windows")); // NOI18N
 
     //Issue 39166, OS-X will display a strange gray rectangle while dragging - they
-    //really require an image to be suppled.  Leaving this off for other platforms pending
+    //really require an image to be supplied.  Leaving this off for other platforms pending
     //HIE approval and performance impact evaluation - probably safe for Windows, probably
     //a big performance hit on Linux.  Appears that XP L&F will not display images even if
     //supplied.
-    public static final boolean SWITCH_USE_DRAG_IMAGES = Boolean.getBoolean("netbeans.winsys.dragimage") || Utilities.getOperatingSystem() == Utilities.OS_MAC;
+    public static final boolean SWITCH_USE_DRAG_IMAGES = Boolean.getBoolean("netbeans.winsys.dragimage") || Utilities.isMac();
    
     /** Allowing complete removal of toolbars. */
     public static final boolean NO_TOOLBARS = Boolean.getBoolean("netbeans.winsys.no_toolbars"); // NOI18N

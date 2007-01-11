@@ -237,7 +237,7 @@ implements ExPropertyEditor {
             ButtonGroup bg = new ButtonGroup();
             Font bold;
             Font plain;
-            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            if (Utilities.isMac()) {
                 // don't use deriveFont() - see #49973 for details
                 bold = new Font(getFont().getName(), Font.BOLD, getFont().getSize());
                 //For default metal L&F where labels are by default bold

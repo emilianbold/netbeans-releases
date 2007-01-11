@@ -140,7 +140,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
         
         FontMetrics fm = g.getFontMetrics (paintFont);
         if (fm.getHeight() > rectangle.height) {
-            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            if (Utilities.isMac()) {
                 // don't use deriveFont() - see #49973 for details
                 paintFont = new Font(paintFont.getName(), paintFont.getStyle(), 12);
             } else {
@@ -190,7 +190,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
                 fonts = GraphicsEnvironment.getLocalGraphicsEnvironment ().getAvailableFontFamilyNames();
             } catch (RuntimeException e) {
                 fonts = new String[0]; //NOI18N
-                if (org.openide.util.Utilities.getOperatingSystem() == org.openide.util.Utilities.OS_MAC) {
+                if (org.openide.util.Utilities.isMac()) {
                     String msg = NbBundle.getMessage(FontEditor.class, "MSG_AppleBug"); //NOI18N
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
                 } else {

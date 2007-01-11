@@ -423,7 +423,7 @@ public class ProductInformationPanel extends JPanel {
         Font font = label.getFont();
         if(style != 0) {
             // don't use deriveFont() - see #49973 for details
-            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            if (Utilities.isMac()) {
                 font = new Font(label.getFont().getName(), Font.BOLD, label.getFont().getSize());
             } else {
                 font = label.getFont().deriveFont(Font.BOLD);

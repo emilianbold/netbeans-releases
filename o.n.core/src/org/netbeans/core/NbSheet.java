@@ -422,7 +422,7 @@ public final class NbSheet extends TopComponent {
 
     protected void componentDeactivated() {
         super.componentDeactivated();
-        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+        if (Utilities.isMac()) {
             propertySheet.firePropertyChange("MACOSX", true, false);
         }
     }

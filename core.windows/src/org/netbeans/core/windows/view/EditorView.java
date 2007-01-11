@@ -91,7 +91,7 @@ public class EditorView extends ViewElement {
         if (editorArea != null) {
             panel.setBorder(null);
         } else {
-            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            if (Utilities.isMac()) {
                //#64701 on macosx the nb.scrollpane.border draws ugly line on top
                 panel.setBorder(BorderFactory.createEmptyBorder());
             } else {
