@@ -413,6 +413,10 @@ public abstract class StringUtils {
         return new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", Locale.US).format(date);
     }
     
+    public static String asPath(Class clazz) {
+        return clazz.getPackage().getName().replace('.', '/');
+    }
+    
     // parsing //////////////////////////////////////////////////////////////////////
     public static Locale parseLocale(String string) {
         String[] parts = string.split("_");

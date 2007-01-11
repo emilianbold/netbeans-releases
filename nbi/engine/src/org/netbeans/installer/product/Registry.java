@@ -105,7 +105,7 @@ public class Registry {
             "nbi.product.local.registry.stub";
     
     public static final String DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI =
-            "resource:" + Installer.DATA_DIRECTORY + "bundled-product-registry.xml";
+            "resource:" + Installer.DATA_DIRECTORY + "/bundled-product-registry.xml";
     
     public static final String BUNDLED_PRODUCT_REGISTRY_URI_PROPERTY =
             "nbi.product.bundled.registry.uri";

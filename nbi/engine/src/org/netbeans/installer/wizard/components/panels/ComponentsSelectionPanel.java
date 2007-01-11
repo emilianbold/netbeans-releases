@@ -200,8 +200,6 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         }
         
         protected void initialize() {
-            super.initialize();
-            
             messagePane.setContentType(
                     component.getProperty(MESSAGE_CONTENT_TYPE_PROPERTY));
             messagePane.setText(
@@ -213,7 +211,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             updateDescription();
             updateSizes();
             
-            updateErrorMessage();
+            super.initialize();
         }
         
         protected String validateInput() {

@@ -253,7 +253,7 @@ public final class Product extends RegistryNode {
         // check for cancel status
         if (progress.isCanceled()) return;
         
-        // custom configuration phase //////////////////////////////////////////
+        // custom configuration phase ///////////////////////////////////////////////
         installationPhase = InstallationPhase.CUSTOM_LOGIC;
         
         totalProgress.setTitle("Configuring " + getDisplayName());
@@ -265,15 +265,17 @@ public final class Product extends RegistryNode {
         // check for cancel status
         if (progress.isCanceled()) return;
         
-        // finalization phase //////////////////////////////////////////////////
+        // finalization phase ///////////////////////////////////////////////////////
         installationPhase = InstallationPhase.FINALIZATION;
         
         // register the component in the system install manager
-        try {
-            progress.setDetail("Registering in the system package manager");
-            SystemUtils.addComponentToSystemInstallManager(this);
-        } catch (NativeException e) {
-            addInstallationWarning(e);
+        if (configurationLogic.registerInSystem()) {
+            try {
+                progress.setDetail("Registering in the system package manager");
+                SystemUtils.addComponentToSystemInstallManager(this);
+            } catch (NativeException e) {
+                addInstallationWarning(e);
+            }
         }
         
         // save the installed files list
@@ -320,10 +322,12 @@ public final class Product extends RegistryNode {
                     ErrorManager.notify(ErrorLevel.WARNING, "Cannot delete installed files list", e);
                 }
                 
-                try {
-                    SystemUtils.removeComponentFromSystemInstallManager(this);
-                } catch (NativeException e) {
-                    ErrorManager.notify(ErrorLevel.WARNING, "Cannot remove component from system registry", e);
+                if (configurationLogic.registerInSystem()) {
+                    try {
+                        SystemUtils.removeComponentFromSystemInstallManager(this);
+                    } catch (NativeException e) {
+                        ErrorManager.notify(ErrorLevel.WARNING, "Cannot remove component from system registry", e);
+                    }
                 }
                 
             case CUSTOM_LOGIC:
@@ -414,10 +418,12 @@ public final class Product extends RegistryNode {
         }
         
         // remove the component from the native install manager
-        try {
-            SystemUtils.removeComponentFromSystemInstallManager(this);
-        } catch (NativeException e) {
-            addUninstallationWarning(new UninstallationException("Cannot remove component from the native install manager", e));
+        if (configurationLogic.registerInSystem()) {
+            try {
+                SystemUtils.removeComponentFromSystemInstallManager(this);
+            } catch (NativeException e) {
+                addUninstallationWarning(new UninstallationException("Cannot remove component from the native install manager", e));
+            }
         }
         
         // remove the files list
@@ -514,7 +520,7 @@ public final class Product extends RegistryNode {
             classLoader = new NbiClassLoader(configurationLogicUris);
             
             configurationLogic = (ProductConfigurationLogic) classLoader.loadClass(classname).newInstance();
-            configurationLogic.setProductComponent(this);
+            configurationLogic.setProduct(this);
             
             return configurationLogic;
         } catch (IOException e) {
@@ -776,68 +782,73 @@ public final class Product extends RegistryNode {
     protected Element saveToDom(Element element) throws FinalizationException {
         super.saveToDom(element);
         
-        Document document = element.getOwnerDocument();
+        final Document document = element.getOwnerDocument();
         
         element.setAttribute("version", getVersion().toString());
         element.setAttribute("platform", StringUtils.asString(getSupportedPlatforms(), " "));
         element.setAttribute("status", getStatus().toString());
         
-        Element configurationLogicNode = document.createElement("configuration-logic");
+        final Element logicNode = document.createElement("configuration-logic");
         for (ExtendedURI uri: configurationLogicUris) {
-            Element node = document.createElement("file");
+            final Element node = document.createElement("file");
             node.setAttribute("size", Long.toString(uri.getSize()));
             node.setAttribute("md5", uri.getMd5());
             
-            Element defaultUriNode = document.createElement("default-uri");
+            final Element uriNode = document.createElement("default-uri");
             if (uri.getLocal() != null) {
-                defaultUriNode.setTextContent(uri.getLocal().toString());
+                uriNode.setTextContent(uri.getLocal().toString());
             } else {
-                defaultUriNode.setTextContent(uri.getRemote().toString());
+                uriNode.setTextContent(uri.getRemote().toString());
             }
-            node.appendChild(defaultUriNode);
+            node.appendChild(uriNode);
             
-            configurationLogicNode.appendChild(node);
+            logicNode.appendChild(node);
         }
-        element.appendChild(configurationLogicNode);
+        element.appendChild(logicNode);
         
-        Element installationDataNode = document.createElement("installation-data");
+        final Element dataNode = document.createElement("installation-data");
         for (ExtendedURI uri: installationDataUris) {
-            Element node = document.createElement("file");
+            final Element node = document.createElement("file");
             node.setAttribute("size", Long.toString(uri.getSize()));
             node.setAttribute("md5", uri.getMd5());
             
-            Element defaultUriNode = document.createElement("default-uri");
+            final Element uriNode = document.createElement("default-uri");
             if (uri.getLocal() != null) {
-                defaultUriNode.setTextContent(uri.getLocal().toString());
+                uriNode.setTextContent(uri.getLocal().toString());
             } else {
-                defaultUriNode.setTextContent(uri.getRemote().toString());
+                uriNode.setTextContent(uri.getRemote().toString());
             }
-            node.appendChild(defaultUriNode);
+            node.appendChild(uriNode);
             
-            installationDataNode.appendChild(node);
+            dataNode.appendChild(node);
         }
-        element.appendChild(installationDataNode);
+        element.appendChild(dataNode);
         
-        Element requirementsNode = document.createElement("requirements");
+        final Element requirementsNode = document.createElement("requirements");
         
-        Element diskSpaceNode = document.createElement("disk-space");
+        final Element diskSpaceNode = document.createElement("disk-space");
         diskSpaceNode.setTextContent(Long.toString(getRequiredDiskSpace()));
         requirementsNode.appendChild(diskSpaceNode);
         
         element.appendChild(requirementsNode);
         
         if (getRawDependencies().size() > 0) {
-            Element dependenciesNode = document.createElement("dependencies");
+            final Element dependenciesNode = document.createElement("dependencies");
             
             for (Dependency dependency: getRawDependencies()) {
-
-                Element dependencyNode = document.createElement(dependency.getType().toString());
+                Element dependencyNode =
+                        document.createElement(dependency.getType().toString());
                 
-                dependencyNode.setAttribute("uid", dependency.getUid());
-                dependencyNode.setAttribute("version-lower", dependency.getLower().toString());
-                dependencyNode.setAttribute("version-upper", dependency.getUpper().toString());
+                dependencyNode.setAttribute("uid",
+                        dependency.getUid());
+                dependencyNode.setAttribute("version-lower",
+                        dependency.getLower().toString());
+                dependencyNode.setAttribute("version-upper",
+                        dependency.getUpper().toString());
+                
                 if (dependency.getDesired() != null) {
-                    dependencyNode.setAttribute("version-desired", dependency.getDesired().toString());
+                    dependencyNode.setAttribute("version-desired",
+                            dependency.getDesired().toString());
                 }
                 
                 dependenciesNode.appendChild(dependencyNode);

@@ -39,10 +39,12 @@ import org.netbeans.installer.wizard.components.WizardAction.WizardActionUi;
 public class DownloadConfigurationLogicAction extends WizardAction {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    private static final Class CLS = DownloadConfigurationLogicAction.class;
-    
     public static final String DEFAULT_TITLE = 
-            ResourceUtils.getString(CLS, "DCLA.dialog.title");
+            ResourceUtils.getString(DownloadConfigurationLogicAction.class, 
+            "DCLA.title"); // NOI18N
+    public static final String DEFAULT_DESCRIPTION = 
+            ResourceUtils.getString(DownloadConfigurationLogicAction.class, 
+            "DCLA.title"); // NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
@@ -51,6 +53,7 @@ public class DownloadConfigurationLogicAction extends WizardAction {
     
     public DownloadConfigurationLogicAction() {
         setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
+        setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
     }
     
     public boolean canExecuteForward() {

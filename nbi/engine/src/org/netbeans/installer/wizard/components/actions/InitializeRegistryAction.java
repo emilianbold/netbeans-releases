@@ -38,10 +38,10 @@ public class InitializeRegistryAction extends WizardAction {
     // Constants
     public static final String DEFAULT_TITLE = ResourceUtils.getString(
             InitializeRegistryAction.class, 
-            "IRA.title");
+            "IRA.title"); // NOI18N
     public static final String DEFAULT_DESCRIPTION = ResourceUtils.getString(
             InitializeRegistryAction.class, 
-            "IRA.description");
+            "IRA.description"); // NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
@@ -52,9 +52,9 @@ public class InitializeRegistryAction extends WizardAction {
     
     public void execute() {
         try {
-            Progress progress = new Progress();
+            final Progress progress = new Progress();
             
-            ((WizardActionUi) getWizardUi()).setProgress(progress);
+            getWizardUi().setProgress(progress);
             Registry.getInstance().initializeRegistry(progress);
         } catch (InitializationException e) {
             ErrorManager.notify(ErrorLevel.CRITICAL, "Cannot init registry", e);

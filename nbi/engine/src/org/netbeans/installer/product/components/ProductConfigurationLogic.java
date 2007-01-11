@@ -24,8 +24,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.installer.product.*;
 import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
@@ -39,28 +39,31 @@ import org.netbeans.installer.wizard.components.WizardComponent;
 // Inner Classes
 
 public abstract class ProductConfigurationLogic {
-    private Product productComponent;
-                    
+    private Product product;
+    
+    // abstract /////////////////////////////////////////////////////////////////////
     public abstract void install(final Progress progress) throws InstallationException;
     
     public abstract void uninstall(final Progress progress) throws UninstallationException;
     
     public abstract List<WizardComponent> getWizardComponents();
     
-    public Product getProduct() {
-        return productComponent;
+    // product getter/setter ////////////////////////////////////////////////////////
+    public final Product getProduct() {
+        return product;
     }
     
-    public void setProductComponent(final Product productComponent) {
-        this.productComponent = productComponent;
+    public final void setProduct(final Product product) {
+        this.product = product;
     }
     
+    // product properties ///////////////////////////////////////////////////////////
     public final String getProperty(String name) {
         return getProperty(name, true);
     }
     
     public final String getProperty(String name, boolean parse) {
-        String value = productComponent.getProperty(name);
+        final String value = product.getProperty(name);
         
         if (parse) {
             return value != null ? parseString(value) : null;
@@ -69,13 +72,14 @@ public abstract class ProductConfigurationLogic {
         }
     }
     
-    public void setProperty(final String name, final String value) {
-        productComponent.setProperty(name, value);
+    public final void setProperty(final String name, final String value) {
+        product.setProperty(name, value);
     }
     
-    // various documentation getters ////////////////////////////////////////////
+    // various documentation getters - to be overriden //////////////////////////////
     public Text getLicense() {
-        String text = parseString("$R{" + getClass().getPackage().getName().replace('.', '/') + "/license.txt}");
+        final String text = parseString(
+                "$R{" + StringUtils.asPath(getClass()) + "/license.txt}");
         
         return new Text(text, ContentType.PLAIN_TEXT);
     }
@@ -96,28 +100,33 @@ public abstract class ProductConfigurationLogic {
         return null;
     }
     
-    // helper methods for SystemUtils and ResourceUtils /////////////////////////
-    public String parseString(String string) {
-        return SystemUtils.parseString(string, productComponent.getClassLoader());
+    // system integration probes ////////////////////////////////////////////////////
+    public boolean registerInSystem() {
+        return true;
     }
     
-    public File parsePath(String path) {
-        return SystemUtils.parsePath(path, productComponent.getClassLoader());
+    // helper methods for SystemUtils and ResourceUtils /////////////////////////////
+    public final String parseString(String string) {
+        return SystemUtils.parseString(string, product.getClassLoader());
     }
     
-    public String getString(String key) {
+    public final File parsePath(String path) {
+        return SystemUtils.parsePath(path, product.getClassLoader());
+    }
+    
+    public final String getString(String key) {
         return ResourceUtils.getString(getClass(), key);
     }
     
-    public String getString(String baseName, String key) {
-        return ResourceUtils.getString(baseName, key, productComponent.getClassLoader());
+    public final String getString(String baseName, String key) {
+        return ResourceUtils.getString(baseName, key, product.getClassLoader());
     }
     
-    public String getString(String baseName, String key, Object... arguments) {
-        return ResourceUtils.getString(baseName, key, productComponent.getClassLoader(), arguments);
+    public final String getString(String baseName, String key, Object... arguments) {
+        return ResourceUtils.getString(baseName, key, product.getClassLoader(), arguments);
     }
     
-    public InputStream getResource(String path) {
-        return ResourceUtils.getResource(path, productComponent.getClassLoader());
+    public final InputStream getResource(String path) {
+        return ResourceUtils.getResource(path, product.getClassLoader());
     }
 }

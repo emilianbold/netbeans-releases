@@ -104,9 +104,9 @@ public class Installer {
             "Main-Class: org.netbeans.installer.Installer" + SystemUtils.getLineSeparator() +
             "Class-Path: " + SystemUtils.getLineSeparator();
     
-    public static final String DATA_DIRECTORY = "data/";
+    public static final String DATA_DIRECTORY = "data";
     
-    public static final String ENGINE_JAR_CONTENT_LIST = DATA_DIRECTORY + "engine.list";
+    public static final String ENGINE_JAR_CONTENT_LIST = DATA_DIRECTORY + "/engine.list";
     
     /** Errorcode to be used at normal exit */
     public static final int NORMAL_ERRORCODE = 0;
@@ -569,7 +569,7 @@ public class Installer {
             
             for(int i=0;i<entries.size();i++) {
                 String name = entries.get(i);
-                if(name.length()>0 && !name.startsWith(DATA_DIRECTORY)) {
+                if(name.length() > 0 && !name.startsWith(DATA_DIRECTORY)) {
                     jos.putNextEntry(new JarEntry(name));
                     if(!name.endsWith("/")) {
                         StreamUtils.transferData(ResourceUtils.getResource(name), jos);
@@ -577,10 +577,10 @@ public class Installer {
                 }
             }
             
-            jos.putNextEntry(new JarEntry(DATA_DIRECTORY));
+            jos.putNextEntry(new JarEntry(DATA_DIRECTORY + "/"));
             
             
-            jos.putNextEntry(new JarEntry(DATA_DIRECTORY + "bundled-product-registry.xml"));
+            jos.putNextEntry(new JarEntry(DATA_DIRECTORY + "/bundled-product-registry.xml"));
             
             Document doc = Registry.getInstance().getEmptyRegistryDocument();
             Registry.getInstance().saveRegistryDocument(doc,jos);

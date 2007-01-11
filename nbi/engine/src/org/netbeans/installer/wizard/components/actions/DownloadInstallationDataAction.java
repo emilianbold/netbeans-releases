@@ -41,7 +41,10 @@ public class DownloadInstallationDataAction extends WizardAction {
     // Constants
     public static final String DEFAULT_TITLE = 
             ResourceUtils.getString(DownloadInstallationDataAction.class, 
-            "DIDA.dialog.title");
+            "DIDA.title"); // NOI18N
+    public static final String DEFAULT_DESCRIPTION = 
+            ResourceUtils.getString(DownloadInstallationDataAction.class, 
+            "DIDA.description"); // NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
@@ -50,6 +53,7 @@ public class DownloadInstallationDataAction extends WizardAction {
     
     public DownloadInstallationDataAction() {
         setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
+        setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
     }
     
     public void execute() {

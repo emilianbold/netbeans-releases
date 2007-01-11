@@ -70,39 +70,39 @@ public final class SystemUtils {
     }
     
     public static String parseString(String string, ClassLoader loader) {
-        String parsedString = string;
+        String parsed = string;
         
         // N for Name
         try {
-            parsedString = parsedString.replaceAll("(?<!\\\\)\\$N\\{install\\}", StringUtils.escapeRegExp(getDefaultApplicationsLocation().getAbsolutePath()));
+            parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{install\\}", StringUtils.escapeRegExp(getDefaultApplicationsLocation().getAbsolutePath()));
         } catch (NativeException e) {
-            ErrorManager.notify(ErrorLevel.ERROR, "Cannot obtain default applications location", e);
+            ErrorManager.notifyError("Cannot obtain default applications location", e);
         }
         
-        parsedString = parsedString.replaceAll("(?<!\\\\)\\$N\\{home\\}", StringUtils.escapeRegExp(getUserHomeDirectory().getAbsolutePath()));
-        parsedString = parsedString.replaceAll("(?<!\\\\)\\$N\\{temp\\}", StringUtils.escapeRegExp(getTempDirectory().getAbsolutePath()));
-        parsedString = parsedString.replaceAll("(?<!\\\\)\\$N\\{current\\}", StringUtils.escapeRegExp(getCurrentDirectory().getAbsolutePath()));
+        parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{home\\}", StringUtils.escapeRegExp(getUserHomeDirectory().getAbsolutePath()));
+        parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{temp\\}", StringUtils.escapeRegExp(getTempDirectory().getAbsolutePath()));
+        parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{current\\}", StringUtils.escapeRegExp(getCurrentDirectory().getAbsolutePath()));
         
         Matcher matcher;
         
         // P for Properties
-        matcher = Pattern.compile("(?<!\\\\)\\$P\\{(.*?), (.*?)(?:, (.*?))?\\}").matcher(parsedString);
+        matcher = Pattern.compile("(?<!\\\\)\\$P\\{(.*?), (.*?)(?:, (.*?))?\\}").matcher(parsed);
         while (matcher.find()) {
             String basename        = matcher.group(1);
             String key             = matcher.group(2);
             String argumentsString = matcher.group(3);
             
             if (argumentsString == null) {
-                parsedString = parsedString.replace(matcher.group(), ResourceUtils.getString(basename, key, loader));
+                parsed = parsed.replace(matcher.group(), ResourceUtils.getString(basename, key, loader));
             } else {
                 Object[] arguments = (Object[]) argumentsString.split(", ?");
                 
-                parsedString = parsedString.replace(matcher.group(), ResourceUtils.getString(basename, key, loader, arguments));
+                parsed = parsed.replace(matcher.group(), ResourceUtils.getString(basename, key, loader, arguments));
             }
         }
         
         // F for Field
-        matcher = Pattern.compile("(?<!\\\\)\\$F\\{((?:[a-zA-Z_][a-zA-Z_0-9]*\\.)+[a-zA-Z_][a-zA-Z_0-9]*)\\.([a-zA-Z_][a-zA-Z_0-9]*)\\}").matcher(parsedString);
+        matcher = Pattern.compile("(?<!\\\\)\\$F\\{((?:[a-zA-Z_][a-zA-Z_0-9]*\\.)+[a-zA-Z_][a-zA-Z_0-9]*)\\.([a-zA-Z_][a-zA-Z_0-9]*)\\}").matcher(parsed);
         while (matcher.find()) {
             String classname = matcher.group(1);
             String fieldname = matcher.group(2);
@@ -112,23 +112,23 @@ public final class SystemUtils {
                 if (object != null) {
                     String value = object.toString();
                     
-                    parsedString = parsedString.replace(matcher.group(), value);
+                    parsed = parsed.replace(matcher.group(), value);
                 }
             } catch (IllegalArgumentException e) {
-                ErrorManager.notify(ErrorLevel.DEBUG, "Cannot parse pattern: " + matcher.group(), e);
+                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
             } catch (SecurityException e) {
-                ErrorManager.notify(ErrorLevel.DEBUG, "Cannot parse pattern: " + matcher.group(), e);
+                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
             } catch (ClassNotFoundException e) {
-                ErrorManager.notify(ErrorLevel.DEBUG, "Cannot parse pattern: " + matcher.group(), e);
+                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
             } catch (IllegalAccessException e) {
-                ErrorManager.notify(ErrorLevel.DEBUG, "Cannot parse pattern: " + matcher.group(), e);
+                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
             } catch (NoSuchFieldException e) {
-                ErrorManager.notify(ErrorLevel.DEBUG, "Cannot parse pattern: " + matcher.group(), e);
+                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
             }
         }
         
         // M for Method
-        matcher = Pattern.compile("(?<!\\\\)\\$M\\{((?:[a-zA-Z_][a-zA-Z_0-9]*\\.)+[a-zA-Z_][a-zA-Z_0-9]*)\\.([a-zA-Z_][a-zA-Z_0-9]*)\\(\\)\\}").matcher(parsedString);
+        matcher = Pattern.compile("(?<!\\\\)\\$M\\{((?:[a-zA-Z_][a-zA-Z_0-9]*\\.)+[a-zA-Z_][a-zA-Z_0-9]*)\\.([a-zA-Z_][a-zA-Z_0-9]*)\\(\\)\\}").matcher(parsed);
         while (matcher.find()) {
             String classname = matcher.group(1);
             String methodname = matcher.group(2);
@@ -141,50 +141,72 @@ public final class SystemUtils {
                     if (object != null) {
                         String value = object.toString();
                         
-                        parsedString = parsedString.replace(matcher.group(), value);
+                        parsed = parsed.replace(matcher.group(), value);
                     }
                 }
             } catch (IllegalArgumentException e) {
-                ErrorManager.notify(ErrorLevel.DEBUG, "Cannot parse pattern: " + matcher.group(), e);
+                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
             } catch (SecurityException e) {
-                ErrorManager.notify(ErrorLevel.DEBUG, "Cannot parse pattern: " + matcher.group(), e);
+                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
             } catch (ClassNotFoundException e) {
-                ErrorManager.notify(ErrorLevel.DEBUG, "Cannot parse pattern: " + matcher.group(), e);
+                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
             } catch (IllegalAccessException e) {
-                ErrorManager.notify(ErrorLevel.DEBUG, "Cannot parse pattern: " + matcher.group(), e);
+                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
             } catch (NoSuchMethodException e) {
-                ErrorManager.notify(ErrorLevel.DEBUG, "Cannot parse pattern: " + matcher.group(), e);
+                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
             } catch (InvocationTargetException e) {
-                ErrorManager.notify(ErrorLevel.DEBUG, "Cannot parse pattern: " + matcher.group(), e);
+                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
             }
         }
         
         // R for Resource
-        matcher = Pattern.compile("(?<!\\\\)\\$R\\{(.*?)\\}").matcher(parsedString);
+        matcher = Pattern.compile("(?<!\\\\)\\$R\\{(.*?)\\}").matcher(parsed);
         while (matcher.find()) {
             String path = matcher.group(1);
             
             InputStream inputStream = null;
             try {
                 inputStream  = ResourceUtils.getResource(path, loader);
-                parsedString = parsedString.replace(matcher.group(), StringUtils.readStream(inputStream));
+                parsed = parsed.replace(matcher.group(), StringUtils.readStream(inputStream));
             } catch (IOException e) {
-                ErrorManager.notify(ErrorLevel.DEBUG, "Cannot parse pattern: " + matcher.group(), e);
+                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
             } finally {
                 if (inputStream != null) {
                     try {
                         inputStream.close();
                     } catch (IOException e) {
-                        ErrorManager.notify(ErrorLevel.DEBUG, "Cannot close input stream after reading resource: " + matcher.group(), e);
+                        ErrorManager.notifyDebug("Cannot close input stream after reading resource: " + matcher.group(), e);
                     }
                 }
             }
         }
         
-        parsedString.replace("\\$", "$");
-        parsedString.replace("\\\\", "\\");
+        // S for System Property
+        matcher = Pattern.compile("(?<!\\\\)\\$S\\{(.*?)\\}").matcher(parsed);
+        while (matcher.find()) {
+            String name = matcher.group(1);
+            String value = System.getProperty(name);
+            
+            parsed = parsed.replace(matcher.group(), value);
+        }
         
-        return parsedString;
+        // E for Environment Variable
+        matcher = Pattern.compile("(?<!\\\\)\\$E\\{(.*?)\\}").matcher(parsed);
+        while (matcher.find()) {
+            try {
+                String name = matcher.group(1);
+                String value = getEnvironmentVariable(name);
+                
+                parsed = parsed.replace(matcher.group(), value);
+            } catch (NativeException e) {
+                ErrorManager.notifyDebug("Cannot parse pattern: " + matcher.group(), e);
+            }
+        }
+        
+        parsed.replace("\\$", "$");
+        parsed.replace("\\\\", "\\");
+        
+        return parsed;
     }
     
     public static File parsePath(String string) {
@@ -192,12 +214,25 @@ public final class SystemUtils {
     }
     
     public static File parsePath(String path, ClassLoader loader) {
-        String parsedString = parseString(path, loader);
+        final String separator = getFileSeparator();
         
-        parsedString = parsedString.replace("\\", getFileSeparator());
-        parsedString = parsedString.replace("/", getFileSeparator());
+        String parsed = parseString(path, loader);
         
-        return new File(parsedString).getAbsoluteFile();
+        parsed = parsed.replace("\\", separator);
+        parsed = parsed.replace("/", separator);
+        
+        try {
+            if (parsed.contains(separator + ".." + separator) ||
+                    parsed.contains(separator + "." + separator) ||
+                    parsed.endsWith(separator + "..") ||
+                    parsed.endsWith(separator + ".")) {
+                return new File(parsed).getCanonicalFile();
+            }
+        } catch (IOException e) {
+            ErrorManager.notifyDebug("Could not get the cannonical path", e);
+        }
+        
+        return new File(parsed).getAbsoluteFile();
     }
     
     public static File getUserHomeDirectory() {
@@ -325,7 +360,7 @@ public final class SystemUtils {
             try {
                 Thread.sleep(DELAY);
             }  catch (InterruptedException e) {
-                ErrorManager.notify(ErrorLevel.DEBUG, e);
+                ErrorManager.notifyDebug("Interrupted", e);
             }
         }
         
@@ -361,7 +396,7 @@ public final class SystemUtils {
                 try {
                     socket.close();
                 } catch (IOException e) {
-                    ErrorManager.notify(ErrorLevel.ERROR, "Could not close server socket on port " + port, e);
+                    ErrorManager.notifyError("Could not close server socket on port " + port, e);
                 }
             }
         }
@@ -503,6 +538,7 @@ public final class SystemUtils {
         return currentPlatform;
     }
     
+    // platforms probes /////////////////////////////////////////////////////////////
     public static boolean isWindows() {
         return getCurrentPlatform() == Platform.WINDOWS;
     }
@@ -512,6 +548,7 @@ public final class SystemUtils {
                 (getCurrentPlatform() == Platform.MACOS_X_PPC);
     }
     
+    // miscellanea //////////////////////////////////////////////////////////////////
     public static boolean intersects(List<? extends Object> list1, List<? extends Object> list2) {
         for (int i = 0; i < list1.size(); i++) {
             for (int j = 0; j < list2.size(); j++) {

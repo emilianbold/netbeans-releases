@@ -76,7 +76,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         currentUi = wizardUi.getSwingUi(this);
         
         // update the frame title
-        String title = "NetBeans IDE installer";
+        String title = "NetBeans IDE Setup";
         if (currentUi.hasTitle()) {
             title += " - " + currentUi.getTitle();
         }

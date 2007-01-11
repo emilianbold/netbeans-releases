@@ -35,14 +35,16 @@ import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.components.WizardAction;
-import org.netbeans.installer.wizard.components.actions.CompositeWizardAction.CompositeWizardActionUi;
 
 public class InstallAction extends WizardAction {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final String DEFAULT_TITLE = 
             ResourceUtils.getString(InstallAction.class, 
-            "IA.dialog.title");
+            "IA.title"); // NOI18N
+    public static final String DEFAULT_DESCRIPTION = 
+            ResourceUtils.getString(InstallAction.class, 
+            "IA.description"); // NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
@@ -51,6 +53,7 @@ public class InstallAction extends WizardAction {
     
     public InstallAction() {
         setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
+        setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
     }
     
     public boolean canExecuteForward() {

@@ -160,8 +160,6 @@ public class DestinationPanel extends ErrorMessagePanel {
         }
         
         protected void initialize() {
-            super.initialize();
-            
             destinationLabel.setText(
                     component.getProperty(DESTINATION_LABEL_TEXT_PROPERTY));
             destinationButton.setText(
@@ -177,6 +175,8 @@ public class DestinationPanel extends ErrorMessagePanel {
             }
             
             destinationField.setText(component.parsePath(destination).getPath());
+            
+            super.initialize();
         }
         
         protected void saveInput() {

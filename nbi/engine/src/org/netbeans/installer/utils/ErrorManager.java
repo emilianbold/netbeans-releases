@@ -23,6 +23,9 @@ package org.netbeans.installer.utils;
 import javax.swing.JOptionPane;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.utils.helper.ErrorLevel;
+import static org.netbeans.installer.utils.helper.ErrorLevel.DEBUG;
+import static org.netbeans.installer.utils.helper.ErrorLevel.MESSAGE;
+import static org.netbeans.installer.utils.helper.ErrorLevel.WARNING;
 import static org.netbeans.installer.utils.helper.ErrorLevel.CRITICAL;
 import static org.netbeans.installer.utils.helper.ErrorLevel.ERROR;
 
@@ -33,12 +36,28 @@ import static org.netbeans.installer.utils.helper.ErrorLevel.ERROR;
 public class ErrorManager {
     /////////////////////////////////////////////////////////////////////////////////
     // Static
-    public static synchronized void notify(String message) {
-        notify(ErrorLevel.MESSAGE, message);
+    public static synchronized void notifyDebug(String message) {
+        notify(DEBUG, message);
     }
     
-    public static synchronized void notify(int level, String message) {
-        notify(level, message, null);
+    public static synchronized void notifyDebug(String message, Throwable e) {
+        notify(DEBUG, message, e);
+    }
+    
+    public static synchronized void notify(String message) {
+        notify(MESSAGE, message);
+    }
+    
+    public static synchronized void notify(String message, Throwable e) {
+        notify(MESSAGE, message, e);
+    }
+    
+    public static synchronized void notifyWarning(String message) {
+        notify(WARNING, message);
+    }
+    
+    public static synchronized void notifyWarning(String message, Throwable e) {
+        notify(WARNING, message, e);
     }
     
     public static synchronized void notifyError(String message) {
@@ -53,8 +72,12 @@ public class ErrorManager {
         notify(CRITICAL, message);
     }
     
-    public static synchronized void notify(Throwable exception) {
-        notify(ErrorLevel.ERROR, exception);
+    public static synchronized void notifyCritical(String message, Throwable e) {
+        notify(CRITICAL, message, e);
+    }
+    
+    public static synchronized void notify(int level, String message) {
+        notify(level, message, null);
     }
     
     public static synchronized void notify(int level, Throwable exception) {

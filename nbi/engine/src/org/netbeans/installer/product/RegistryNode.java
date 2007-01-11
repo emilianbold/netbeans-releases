@@ -241,12 +241,13 @@ public abstract class RegistryNode implements PropertyContainer {
     
     // node <-> dom /////////////////////////////////////////////////////////////////
     public Element saveToDom(Document document, RegistryFilter filter) throws FinalizationException {
-        if (filter.accept(this) || hasChildren(filter)) {
+        final boolean hasChilren = hasChildren(filter);
+        
+        if (filter.accept(this) || hasChilren) {
             Element element = saveToDom(document.createElement(getTagName()));
             
-            Element components = saveChildrenToDom(document, filter);
-            if (components != null) {
-                element.appendChild(components);
+            if (hasChilren) {
+                element.appendChild(saveChildrenToDom(document, filter));
             }
             
             return element;
@@ -256,19 +257,17 @@ public abstract class RegistryNode implements PropertyContainer {
     }
     
     public Element saveChildrenToDom(Document document, RegistryFilter filter) throws FinalizationException {
+        Element components = document.createElement("components");
+        
         if (children.size() > 0) {
-            Element components = document.createElement("components");
-            
             for (RegistryNode child: children) {
                 if (filter.accept(child) || child.hasChildren(filter)) {
                     components.appendChild(child.saveToDom(document, filter));
                 }
             }
-            
-            return components;
         }
         
-        return null;
+        return components;
     }
     
     protected String getTagName() {

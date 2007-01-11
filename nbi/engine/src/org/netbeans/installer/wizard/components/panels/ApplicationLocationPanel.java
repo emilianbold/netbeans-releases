@@ -240,16 +240,58 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
             
             listReplacement = new NbiPanel();
             
-            add(locationLabel, new GridBagConstraints(0, 1, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(7, 11, 0, 11), 0, 0));
-            add(locationField, new GridBagConstraints(0, 2, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(4, 11, 0, 4), 0, 0));
-            add(locationButton, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(4, 0, 0, 11), 0, 0));
-            add(listLabel, new GridBagConstraints(0, 3, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(11, 11, 0, 11), 0, 0));
-            add(list, new GridBagConstraints(0, 4, 2, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(4, 11, 0, 11), 0, 0));
-            add(listReplacement, new GridBagConstraints(0, 5, 2, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(4, 11, 0, 11), 0, 0));
-            
             fileChooser = new JFileChooser();
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             fileChooser.setMultiSelectionEnabled(false);
+            
+            add(locationLabel, new GridBagConstraints(
+                    0, 1,                             // x, y
+                    2, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.LINE_START,    // anchor
+                    GridBagConstraints.HORIZONTAL,    // fill
+                    new Insets(7, 11, 0, 11),         // padding
+                    0, 0));                           // padx, pady - ???
+            add(locationField, new GridBagConstraints(
+                    0, 2,                             // x, y
+                    1, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.LINE_START,    // anchor
+                    GridBagConstraints.HORIZONTAL,    // fill
+                    new Insets(4, 11, 0, 4),          // padding
+                    0, 0));                           // padx, pady - ???
+            add(locationButton, new GridBagConstraints(
+                    1, 2,                             // x, y
+                    1, 1,                             // width, height
+                    0.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.LINE_START,    // anchor
+                    GridBagConstraints.NONE,          // fill
+                    new Insets(4, 0, 0, 11),          // padding
+                    0, 0));                           // padx, pady - ???
+            add(listLabel, new GridBagConstraints(
+                    0, 3,                             // x, y
+                    2, 1,                             // width, height
+                    1.0, 0.0,                         // weight-x, weight-y
+                    GridBagConstraints.LINE_START,    // anchor
+                    GridBagConstraints.HORIZONTAL,    // fill
+                    new Insets(11, 11, 0, 11),        // padding
+                    0, 0));                           // padx, pady - ???
+            add(list, new GridBagConstraints(
+                    0, 4,                             // x, y
+                    2, 1,                             // width, height
+                    1.0, 1.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(4, 11, 0, 11),         // padding
+                    0, 0));                           // padx, pady - ???
+            add(listReplacement, new GridBagConstraints(
+                    0, 5,                             // x, y
+                    2, 1,                             // width, height
+                    1.0, 1.0,                         // weight-x, weight-y
+                    GridBagConstraints.CENTER,        // anchor
+                    GridBagConstraints.BOTH,          // fill
+                    new Insets(4, 11, 0, 11),         // padding
+                    0, 0));                           // padx, pady - ???
         }
         
         private void browseButtonPressed() {

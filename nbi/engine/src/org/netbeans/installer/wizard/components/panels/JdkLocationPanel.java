@@ -32,7 +32,7 @@ import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JDKUtils;
 import org.netbeans.installer.utils.helper.Version;
-import org.netbeans.installer.wizard.components.actions.SearchForJdkAction;
+import org.netbeans.installer.wizard.components.actions.SearchForJavaAction;
 
 /**
  *
@@ -99,12 +99,14 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             minimumVersion = new Version(getProperty(MINIMUM_JDK_VERSION_PROPERTY));
             maximumVersion = new Version(getProperty(MAXIMUM_JDK_VERSION_PROPERTY));
             
-            for (int i = 0; i < SearchForJdkAction.jdkLocations.size(); i++) {
-                File    location = SearchForJdkAction.jdkLocations.get(i);
-                String  label    = SearchForJdkAction.jdkLabels.get(i);
+            for (int i = 0; i < SearchForJavaAction.javaLocations.size(); i++) {
+                File    location = SearchForJavaAction.javaLocations.get(i);
+                String  label    = SearchForJavaAction.javaLabels.get(i);
                 Version version  = JDKUtils.getVersion(location);
                 
-                if (!version.olderThan(minimumVersion) && !version.newerThan(maximumVersion)) {
+                if (JDKUtils.isJdk(location) && 
+                        !version.olderThan(minimumVersion) && 
+                        !version.newerThan(maximumVersion)) {
                     jdkLocations.add(location);
                     jdkLabels.add(label);
                 }

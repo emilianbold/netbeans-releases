@@ -24,6 +24,8 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
@@ -133,6 +135,8 @@ public class ErrorMessagePanel extends WizardPanel {
         }
         
         protected void initialize() {
+            updateErrorMessage();
+            
             if (validatingThread == null) {
                 validatingThread = new ValidatingThread(this);
                 validatingThread.start();
@@ -142,17 +146,25 @@ public class ErrorMessagePanel extends WizardPanel {
         }
         
         protected void updateErrorMessage() {
-            String errorMessage = validateInput();
+            String errorMessage;
             
-            if (errorMessage != null) {
-                errorLabel.setIcon(errorIcon);
-                errorLabel.setText(errorMessage);
-                container.getNextButton().setEnabled(false);
-            } else {
-                errorLabel.setIcon(emptyIcon);
-                errorLabel.setText(" ");
-                container.getNextButton().setEnabled(true);
+            try {
+                errorMessage = validateInput();
+                
+                if (errorMessage == null) {
+                    errorLabel.setIcon(emptyIcon);
+                    errorLabel.setText(" ");
+                    container.getNextButton().setEnabled(true);
+                    return;
+                }
+            } catch (Exception e) {
+                ErrorManager.notifyDebug("Failed to verify input", e);
+                errorMessage = "Unknown error: " + e.getMessage();
             }
+            
+            errorLabel.setIcon(errorIcon);
+            errorLabel.setText(errorMessage);
+            container.getNextButton().setEnabled(false);
         }
         
         private void initComponents() {
@@ -170,7 +182,7 @@ public class ErrorMessagePanel extends WizardPanel {
         
         /////////////////////////////////////////////////////////////////////////////
         // Inner Classes
-        private static class ValidatingThread extends Thread {
+        protected static class ValidatingThread extends Thread {
             /////////////////////////////////////////////////////////////////////////
             // Constants
             public static final long VALIDATION_DELAY = 1000;
@@ -204,6 +216,28 @@ public class ErrorMessagePanel extends WizardPanel {
             
             public void play() {
                 paused = false;
+            }
+        }
+        
+        protected static class ValidatingDocumentListener implements DocumentListener {
+            /////////////////////////////////////////////////////////////////////////
+            // Instance
+            private ErrorMessagePanelSwingUi swingUi;
+            
+            public ValidatingDocumentListener(ErrorMessagePanelSwingUi swingUi) {
+                this.swingUi = swingUi;
+            }
+            
+            public void insertUpdate(DocumentEvent event) {
+                swingUi.updateErrorMessage();
+            }
+            
+            public void removeUpdate(DocumentEvent event) {
+                swingUi.updateErrorMessage();
+            }
+            
+            public void changedUpdate(DocumentEvent event) {
+                swingUi.updateErrorMessage();
             }
         }
     }

@@ -163,6 +163,9 @@ public class Version {
     }
     
     public String toJdkStyle() {
-        return "" + major + "." + minor + "." + micro + (update != 0 ? "_" + (update < 10 ? "0" + update : update) : "");
+        return "" + major + 
+                "." + minor + 
+                "." + micro + 
+                (update != 0 ? "_" + (update < 10 ? "0" + update : update) : "");
     }
 }

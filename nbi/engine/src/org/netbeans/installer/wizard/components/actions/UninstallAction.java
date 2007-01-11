@@ -38,7 +38,10 @@ public class UninstallAction extends WizardAction {
     // Constants
     public static final String DEFAULT_TITLE = 
             ResourceUtils.getString(UninstallAction.class, 
-            "UA.dialog.title");
+            "UA.title"); // NOI18N
+    public static final String DEFAULT_DESCRIPTION = 
+            ResourceUtils.getString(UninstallAction.class, 
+            "UA.description"); // NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
@@ -47,6 +50,7 @@ public class UninstallAction extends WizardAction {
     
     public UninstallAction() {
         setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
+        setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
     }
     
     public void execute() {
