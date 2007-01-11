@@ -22,7 +22,6 @@ package org.netbeans.modules.websvc.api.jaxws.wsdlmodel;
 import com.sun.tools.ws.processor.model.Operation;
 import com.sun.tools.ws.processor.model.Port;
 import com.sun.tools.ws.wsdl.document.soap.SOAPStyle;
-import com.sun.xml.ws.api.SOAPVersion;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +36,8 @@ public class WsdlPort {
     public static final String SOAP_VERSION_12="http://www.w3.org/2003/05/soap/bindings/HTTP/"; //NOI18N
     
     private Port port;
+    private String soapVersion = SOAP_VERSION_11;
+    
     /** Creates a new instance of WsdlPort */
     WsdlPort(Port port) {
         this.port=port;
@@ -75,16 +76,14 @@ public class WsdlPort {
     }
     
     public String getSOAPVersion() {
-        SOAPVersion soapVersion = port.getSOAPVersion();
-        if (SOAPVersion.SOAP_12.equals(soapVersion)) return SOAP_VERSION_12;
-        else return SOAP_VERSION_11;
+        return soapVersion;
     }
     
     public void setSOAPVersion(String soapVersion) {
         if (javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING.equals(soapVersion))
-            port.setSOAPVersion(SOAPVersion.SOAP_12);
+            this.soapVersion=SOAP_VERSION_12;
         else 
-            port.setSOAPVersion(SOAPVersion.SOAP_11);
+            this.soapVersion=SOAP_VERSION_11;
     }
     
     public String getStyle() {
