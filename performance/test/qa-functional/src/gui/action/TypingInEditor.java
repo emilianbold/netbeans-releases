@@ -13,15 +13,13 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.action;
 
-import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.options.BaseOptions;
-import org.netbeans.modules.java.editor.options.JavaOptions;
 
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
@@ -31,6 +29,8 @@ import org.netbeans.jellytools.actions.OpenAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
+import org.netbeans.junit.NbTestSuite;
+
 /**
  * Test of typing in opened source editor.
  *
@@ -39,80 +39,77 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 public class TypingInEditor extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private EditorOperator editorOperator;
-    private int fontSize;
-    private int parsingErrors;
+    
+    private int fontSize, caretBlinkRate;
+    private String fileName;
+    private int caretPositionX, caretPositionY;
+    
+    private Class kitClass,optionsClass;
+    
+    Node fileToBeOpened;
     
     /** Creates a new instance of TypingInEditor */
     public TypingInEditor(String testName) {
         super(testName);
-        /*
-        expectedTime = UI_RESPONSE;
-        expectedTime = 10;
-        WAIT_AFTER_OPEN = 0;
-        WAIT_AFTER_PREPARE = 0;
-        WAIT_AFTER_CLOSE = 0;
-        repeat = 100;
-         */
+        HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations
     }
     
     /** Creates a new instance of TypingInEditor */
     public TypingInEditor(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        /*
-        expectedTime = UI_RESPONSE;
-        expectedTime = 10;
-        repeat = 100;
-        WAIT_AFTER_OPEN = 0;
-        WAIT_AFTER_PREPARE = 0;
-        WAIT_AFTER_CLOSE = 0;
-         */
+        HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations
     }
     
-    protected void turnOff() {
-        // set large font size
-        Class kitClass = JavaKit.class;
-        BaseOptions options = BaseOptions.getOptions(kitClass);
-        if (options instanceof JavaOptions) {
-            fontSize = ((JavaOptions)options).getFontSize();
-            ((JavaOptions)options).setFontSize(20);
-        }
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new TypingInEditor("testJavaEditor", "Type a character in Java Editor"));
+        suite.addTest(new TypingInEditor("testTxtEditor", "Type a character in Txt Editor"));
+        suite.addTest(new TypingInEditor("testJspEditor", "Type a character in Jsp Editor"));
+        return suite;
     }
     
-    protected void turnBack() {
-        // set back the original font size
-        Class kitClass = JavaKit.class;
-        BaseOptions options = BaseOptions.getOptions(kitClass);
-        if (options instanceof JavaOptions) {
-            ((JavaOptions)options).setFontSize(fontSize);
-        }
+    public void testTxtEditor() {
+        fileName = "textfile.txt";
+        caretPositionX = 2;
+        caretPositionY = 1;
+        kitClass = org.netbeans.modules.editor.plain.PlainKit.class;
+        optionsClass = org.netbeans.modules.editor.plain.options.PlainOptions.class;
+        fileToBeOpened = new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|" + fileName);
+        doMeasurement();
     }
     
+    public void testJavaEditor() {
+        fileName = "Main.java";
+        caretPositionX = 38;
+        caretPositionY = 19;
+        kitClass = org.netbeans.modules.editor.java.JavaKit.class;
+        optionsClass = org.netbeans.modules.java.editor.options.JavaOptions.class;
+        fileToBeOpened = new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|" + fileName);
+        doMeasurement();
+    }
+   
+    public void testJspEditor() {
+        fileName = "Test.jsp";
+        caretPositionX = 6;
+        caretPositionY = 9;
+        kitClass = org.netbeans.modules.web.core.syntax.JSPKit.class;
+        optionsClass = org.netbeans.modules.web.core.syntax.settings.JSPOptions.class;
+        fileToBeOpened = new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestWebApplication"),gui.Utilities.WEB_PAGES + '|' + fileName);
+        doMeasurement();
+    }
+   
     public void initialize() {
-        /*
-        javax.swing.text.Caret thecaret = editorOperator.txtEditorPane().getCaret();
-        if (thecaret instanceof BaseCaret)
-        {
-            BaseCaret thebasecaret = (BaseCaret) thecaret;
-            setAreaToFilter (thebasecaret.x-20, thebasecaret.y-20, thebasecaret.width+40, thebasecaret.height+40);
-        }
-         */
-        repaintManager().setOnlyEditor(true);
-        setJavaEditorCaretFilteringOn();
-        
         // open a java file in the editor
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main.java"));
-        editorOperator = EditorWindowOperator.getEditor("Main.java");
+        new OpenAction().performAPI(fileToBeOpened);
+        editorOperator = EditorWindowOperator.getEditor(fileName);
         
         //wait painting pf folds in the editor
         waitNoEvent(2000);
         
         // go to the right place
-        editorOperator.setCaretPosition(38,19);
-        // make the file modified
-        //new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_ENTER)).perform(editorOperator);
+        editorOperator.setCaretPosition(caretPositionX,caretPositionY);
         
-        turnOff();
-        
+        setEditorForMeasuringOn();
     }
     
     public void prepare() {
@@ -128,15 +125,45 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
         // do nothing
     }
     
+    
     public void shutdown() {
-        turnBack();
-        repaintManager().setOnlyEditor(false);
-        repaintManager().setRegionFilter(null);
+        setEditorForMeasuringOff();
         editorOperator.closeDiscard();
         super.shutdown();
     }
+
+    private void setEditorForMeasuringOn(){
+        // measure only paint events from QuietEditorPane
+        repaintManager().setOnlyEditor(true);
+        
+        // set large font size for Editor
+        BaseOptions options = BaseOptions.getOptions(kitClass);
+        if (options.getClass().isInstance(optionsClass)) {
+            fontSize = options.getFontSize();
+            options.setFontSize(20);
+        }
+        
+        caretBlinkRate = options.getCaretBlinkRate();
+        //disable caret blinkering
+        options.setCaretBlinkRate(0);
+    }
+    
+    private void setEditorForMeasuringOff(){
+        // measure only paint events from QuietEditorPane
+        repaintManager().setRegionFilter(null);
+        
+        // set back the original font size for Editor
+        BaseOptions options = BaseOptions.getOptions(kitClass);
+        if (options.getClass().isInstance(optionsClass)) {
+            options.setFontSize(fontSize);
+        }
+        
+        // set back the original blink rate
+        options.setCaretBlinkRate(caretBlinkRate);
+    }
     
     public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new TypingInEditor("measureTime", "Type a character in Editor"));
+        repeat = 3;
+        junit.textui.TestRunner.run(new TypingInEditor("testJspEditor", "Type a character in Jsp Editor"));
     }
 }
