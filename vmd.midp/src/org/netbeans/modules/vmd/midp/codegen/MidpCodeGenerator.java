@@ -21,6 +21,7 @@ package org.netbeans.modules.vmd.midp.codegen;
 import org.netbeans.modules.vmd.api.codegen.JavaCodeGenerator;
 import org.netbeans.modules.vmd.api.io.CodeGenerator;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import org.netbeans.modules.vmd.api.io.providers.DataObjectInterface;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
@@ -52,8 +53,10 @@ public class MidpCodeGenerator implements CodeGenerator {
         if (MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (context.getProjectType ())) {
 //            System.out.println ("MidpCodeGenerator.updateCodeFromModel");
             DataObject dataObject = context.getDataObject ();
-            StyledDocument styledDocument = IOSupport.getDataObjectInteface (dataObject).getEditorDocument ();
+            DataObjectInterface dataObjectInteface = IOSupport.getDataObjectInteface (dataObject);
+            StyledDocument styledDocument = dataObjectInteface.getEditorDocument ();
             JavaCodeGenerator.getDefault ().generateCode (styledDocument, document);
+            dataObjectInteface.discardAllEditorSupportEdits ();
         }
     }
 

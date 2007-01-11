@@ -30,6 +30,8 @@ public interface DataObjectInterface {
 
     FileObject getDesignFile ();
 
+    void discardAllEditorSupportEdits ();
+
     void notifyEditorSupportModified ();
 
     void setMVTC (TopComponent multiViewTopComponent);

@@ -73,6 +73,10 @@ public final class MEDesignDataObject extends J2MEDataObject implements DataObje
         return designFile;
     }
 
+    public void discardAllEditorSupportEdits () {
+        editorSupport.discardAllEdits ();
+    }
+
     public void notifyEditorSupportModified () {
         editorSupport.notifyModified ();
     }

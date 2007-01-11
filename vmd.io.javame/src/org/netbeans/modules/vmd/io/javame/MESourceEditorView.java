@@ -51,7 +51,6 @@ public final class MESourceEditorView implements DataEditorView {
         MEDesignEditorSupport sup = (MEDesignEditorSupport) context.getCloneableEditorSupport ();
         editor = new CloneableEditor (sup);
         sup.initializeCloneableEditor (editor);
-
     }
 
     public DataObjectContext getContext () {

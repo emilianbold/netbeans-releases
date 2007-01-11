@@ -41,6 +41,7 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.text.CloneableEditor;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
+import org.openide.awt.UndoRedo;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
@@ -62,6 +63,7 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
 
     private GuardsEditor guardsEditor;
     private GuardedSectionsProvider sections;
+    private UndoRedo.Manager undoRedoManager;
 
     public MEDesignEditorSupport(MEDesignDataObject dataObject) {
         super(dataObject);
@@ -100,6 +102,7 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
         IOSupport.notifyDataObjectClosed (dataObject);
     }
 
+    @Override
     public void open() {
         useEditPriority = false;
         super.open();
@@ -108,7 +111,7 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
         if (mvtc != null) {
             MultiViewHandler handler = MultiViews.findMultiViewHandler (mvtc);
             int index = getIndex ();
-            if (index >MIDP: ListCD - removed unused parameters= 0) {
+            if (index >= 0) {
                 MultiViewPerspective perspective = handler.getPerspectives ()[index];
                 handler.requestActive (perspective);
                 handler.requestVisible (perspective);
@@ -116,6 +119,7 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
         }
     }
 
+    @Override
     public void edit() {
         useEditPriority = true;
         super.open();
@@ -151,6 +155,7 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
         return bestIndex;
     }
 
+    @Override
     public void initializeCloneableEditor (CloneableEditor editor) {
         super.initializeCloneableEditor (editor);
     }
@@ -167,6 +172,7 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
         updateDisplayName ();
     }
 
+    @Override
     protected CloneableTopComponent createCloneableTopComponent() {
         CloneableTopComponent tc = super.createCloneableTopComponent();
         this.mvtc = tc;
@@ -185,6 +191,16 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
                 tc.setToolTipText(dataObject.getPrimaryFile().getPath());
             }
         });
+    }
+
+    @Override
+    protected UndoRedo.Manager createUndoRedoManager () {
+        undoRedoManager = super.createUndoRedoManager ();
+        return undoRedoManager;
+    }
+
+    void discardAllEdits () {
+        undoRedoManager.discardAllEdits ();
     }
 
     @Override
