@@ -35,6 +35,6 @@ public class ConstructorTest {
         
         public InnerClass1(boolean a) {
         }
-        
+
     }
 }
