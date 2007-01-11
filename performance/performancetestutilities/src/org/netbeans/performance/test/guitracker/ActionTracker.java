@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -32,18 +32,21 @@ import java.awt.event.InvocationEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+
 import java.util.Date;
 import java.util.LinkedList;
-import java.util.ListIterator;
-import java.util.Stack;
+
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JWindow;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -639,11 +642,11 @@ public class ActionTracker {
             case TRACK_MOUSE_MOVED:   cname = "user_action"; break;
             case TRACK_KEY_PRESS:     cname = "user_action"; break;
             case TRACK_KEY_RELEASE:   cname = "user_action"; break;
-            case TRACK_FRAME_SHOW:    cname = "application_message"; break;
+            case TRACK_FRAME_SHOW:    cname = "paint"; break;
             case TRACK_FRAME_HIDE:    cname = "application_message"; break;
-            case TRACK_DIALOG_SHOW:   cname = "application_message"; break;
+            case TRACK_DIALOG_SHOW:   cname = "paint"; break;
             case TRACK_DIALOG_HIDE:   cname = "application_message"; break;
-            case TRACK_COMPONENT_SHOW:cname = "application_message"; break;
+            case TRACK_COMPONENT_SHOW:cname = "paint"; break;
             case TRACK_COMPONENT_HIDE:cname = "application_message"; break;
             case TRACK_INVOCATION:    cname = "application_message"; break;
             case TRACK_UNKNOWN:       cname = "unknown"; break;
@@ -706,12 +709,12 @@ public class ActionTracker {
             
         // find the relative path to "work"
         while(file != null && !file.getName().equalsIgnoreCase("work")) {
-            pathToXsl.append(".."+File.separator);
+            pathToXsl.append("../");
             file = file.getParentFile();
         }
         
         // move up over "testbag_XX" folder
-        pathToXsl.append(".."+File.separator);
+        pathToXsl.append("../");
         
         // add ActionTracker.xsl 
         pathToXsl.append("ActionTracker.xsl");

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,15 +28,18 @@ import javax.swing.RepaintManager;
  * @author  Tim Boudreau, rkubacki@netbeans.org, mmirilovic@netbeans.org
  */
 public class LoggingRepaintManager extends RepaintManager {
-
+    
     private static final long MAX_TIMEOUT = 60*1000L;
-
+    
     private ActionTracker tr;
-
+    
     private RepaintManager orig = null;
-
+    
     private long lastPaint = 0L;
-
+    
+    private boolean hasDirtyMatches = false;
+    private RegionFilter regionFilter;
+    
     /** Creates a new instance of LoggingRepaintManager */
     public LoggingRepaintManager(ActionTracker tr) {
         this.tr = tr;
@@ -105,10 +108,6 @@ public class LoggingRepaintManager extends RepaintManager {
         }
     }
     
-    private boolean hasValidateMatches = false;
-    private boolean hasDirtyMatches = false;
-    private RegionFilter regionFilter;
-    
     /**
      * Log the action when region is add to dirty regions.
      *
@@ -142,34 +141,34 @@ public class LoggingRepaintManager extends RepaintManager {
     
     private static final RegionFilter EXPLORER_FILTER =
             new RegionFilter() {
-
-                public boolean accept(JComponent c) {
-                    Class clz = null;
-
-                    for (clz = c.getClass(); clz != null; clz = clz.getSuperclass()) {
-                        if (clz.getPackage().getName().equals("org.openide.explorer.view")) {
-                            return true;
-                        }
-                    }
-                    return false;
+        
+        public boolean accept(JComponent c) {
+            Class clz = null;
+            
+            for (clz = c.getClass(); clz != null; clz = clz.getSuperclass()) {
+                if (clz.getPackage().getName().equals("org.openide.explorer.view")) {
+                    return true;
                 }
-
-                public String getFilterName() {
-                    return "Accept paints from package: org.openide.explorer.view";
-                }
-            };
+            }
+            return false;
+        }
+        
+        public String getFilterName() {
+            return "Accept paints from package: org.openide.explorer.view";
+        }
+    };
     
     private static final RegionFilter EDITOR_FILTER =
             new RegionFilter() {
-
-                public boolean accept(JComponent c) {
-                    return c.getClass().getName().equals("org.openide.text.QuietEditorPane");
-                }
-
-                public String getFilterName() {
-                    return "Accept paints from org.openide.text.QuietEditorPane";
-                }
-            };
+        
+        public boolean accept(JComponent c) {
+            return c.getClass().getName().equals("org.openide.text.QuietEditorPane");
+        }
+        
+        public String getFilterName() {
+            return "Accept paints from org.openide.text.QuietEditorPane";
+        }
+    };
     
     public void  setRegionFilter(RegionFilter filter) {
         if(filter != null)

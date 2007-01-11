@@ -117,6 +117,14 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
     /** Measure from last MOUSE event, you can define your own , by default it's MOUSE_RELEASE */
     protected int track_mouse_event = ActionTracker.TRACK_MOUSE_RELEASE;
+    
+    /** Define start event - measured time will start by this event */
+    protected int MY_START_EVENT = MY_EVENT_NOT_AVAILABLE;
+    
+    /** Define end event - measured time will end by this event */
+    protected int MY_END_EVENT = MY_EVENT_NOT_AVAILABLE;
+    
+    protected static final int MY_EVENT_NOT_AVAILABLE = -10;
 
     /** tracker for UI activities */
     private static ActionTracker tr;
@@ -724,8 +732,8 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
 
     /**
-     * This method returns meaasured time, it goes through all logged data by
-     * guitracker (LoggingEventQueue and LoggingRepaintManager).
+     * This method returns meaasured time, it goes through all data logged 
+     * by guitracker (LoggingEventQueue and LoggingRepaintManager).
      * The measured time is the difference between :
      * <ul>
      *     <li> last START or
@@ -748,16 +756,26 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         
         for (ActionTracker.Tuple tuple : tr.getCurrentEvents()) {
             int code = tuple.getCode();
-            if (code == ActionTracker.TRACK_START
-                    // it could be ActionTracker.TRACK_MOUSE_RELEASE (by default) or ActionTracker.TRACK_MOUSE_PRESS or ActionTracker.TRACK_MOUSE_MOVE
-                    || code == track_mouse_event
-                    || code == ActionTracker.TRACK_KEY_PRESS) {
+            
+            // start 
+            if (code == MY_START_EVENT) {
                 start = tuple;
-            } else if (code == ActionTracker.TRACK_PAINT
+            } else if(MY_START_EVENT == MY_EVENT_NOT_AVAILABLE && 
+                    ( code == ActionTracker.TRACK_START
+                    || code == track_mouse_event  // it could be ActionTracker.TRACK_MOUSE_RELEASE (by default) or ActionTracker.TRACK_MOUSE_PRESS or ActionTracker.TRACK_MOUSE_MOVE
+                    || code == ActionTracker.TRACK_KEY_PRESS
+                    )) {
+                start = tuple;
+                
+            //end 
+            } else if (code == MY_END_EVENT) {
+                end = tuple;
+            } else if (MY_END_EVENT == MY_EVENT_NOT_AVAILABLE && 
+                    ( code == ActionTracker.TRACK_PAINT
                     || code == ActionTracker.TRACK_FRAME_SHOW
                     || code == ActionTracker.TRACK_DIALOG_SHOW
                     || code == ActionTracker.TRACK_COMPONENT_SHOW
-                    ) {
+                    )) {
                 end = tuple;
             }
         }
