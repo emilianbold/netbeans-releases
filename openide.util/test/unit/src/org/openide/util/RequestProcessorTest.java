@@ -123,7 +123,7 @@ public class RequestProcessorTest extends NbTestCase {
         // schedule (1hour) and cancel immediatelly
         new RequestProcessor(getName()).post(r, 3600*1000).cancel();
         
-        WeakReference wr = new WeakReference(r);
+        WeakReference<Runnable> wr = new WeakReference<Runnable>(r);
         r = null;
         assertGC("runnable should be collected", wr);
     }
@@ -379,14 +379,14 @@ public class RequestProcessorTest extends NbTestCase {
     /** Test of finalize method, of class org.openide.util.RequestProcessor. */
     public void testFinalize() throws Exception {
         RequestProcessor rp = new RequestProcessor ("toGarbageCollect");
-        Reference ref = new WeakReference (rp);
-        Reference task;
+        Reference<RequestProcessor> ref = new WeakReference<RequestProcessor> (rp);
+        Reference<Task> task;
         
         final Object lock = new Object ();
         
         
         synchronized (lock) {
-            task = new WeakReference (rp.post (new Runnable () {
+            task = new WeakReference<Task> (rp.post (new Runnable () {
                 public void run () {
                     synchronized (lock) {
                         lock.notify ();
@@ -1244,7 +1244,7 @@ class R extends Object implements Runnable {
     }
     
     private static void doGc (int count, Reference toClear) {
-        java.util.ArrayList l = new java.util.ArrayList (count);
+        java.util.ArrayList<byte[]> l = new java.util.ArrayList<byte[]> (count);
         while (count-- > 0) {
             if (toClear != null && toClear.get () == null) break;
             
