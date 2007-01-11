@@ -329,7 +329,7 @@ public final class CheckoutAction extends SystemAction {
             ContextAwareAction action = (ContextAwareAction) CommonProjectActions.setAsMainProjectAction();
             Lookup ctx = Lookups.singleton(p);
             Action ctxAction = action.createContextAwareInstance(ctx);
-            ctxAction.actionPerformed(null);
+            ctxAction.actionPerformed(new ActionEvent(this, 0, ""));    // NOI18N
             ProjectUtilities.selectAndExpandProject(p);
         }
     }
