@@ -28,6 +28,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
 import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
@@ -43,6 +44,7 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
     private boolean supportsCustomEditor;
     private final CustomEditor customEditor;
     private DesignComponent component;
+    private boolean canWrite;
     
     private PropertyEditorInstanceName() {
         supportsCustomEditor = true;
@@ -113,6 +115,20 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
     
     public boolean supportsDefaultValue() {
         return false;
+    }
+
+    public boolean canWrite() {
+        final DesignDocument document = component.getDocument();
+        document.getTransactionManager().readAccess(new Runnable() {
+            public void run() {
+                if (document.getSelectedComponents().size() > 1)
+                    canWrite = false;
+                else
+                    canWrite = true;
+            }
+        });
+        
+        return canWrite;
     }
     
     private final class CustomEditor extends JPanel {
