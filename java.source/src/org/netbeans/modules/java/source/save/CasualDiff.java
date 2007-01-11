@@ -729,19 +729,37 @@ public class CasualDiff {
 
     protected int diffReturn(JCReturn oldT, JCReturn newT, int[] bounds) {
         int[] exprBounds = new int[] { getOldPos(oldT), endPos(oldT) };
-        printer.print(origText.substring(bounds[0], exprBounds[0]));
+        copyTo(bounds[0], exprBounds[0], printer);
         int localPointer = diffTree(oldT.expr, newT.expr, exprBounds);
-        printer.print(origText.substring(localPointer, bounds[1]));
+        copyTo(localPointer, bounds[1], printer);
+        
         return bounds[1];
     }
 
-    protected void diffThrow(JCThrow oldT, JCThrow newT) {
-        diffTree(oldT.expr, newT.expr);
+    protected int diffThrow(JCThrow oldT, JCThrow newT, int[] bounds) {
+        int localPointer = bounds[0];
+        // expr
+        int[] exprBounds = getBounds(oldT.expr);
+        copyTo(localPointer, exprBounds[0], printer);
+        localPointer = diffTree(oldT.expr, newT.expr, exprBounds);
+        copyTo(localPointer, bounds[1], printer);
+        
+        return bounds[1];
     }
 
-    protected void diffAssert(JCAssert oldT, JCAssert newT) {
-        diffTree(oldT.cond, newT.cond);
-        diffTree(oldT.detail, newT.detail);
+    protected int diffAssert(JCAssert oldT, JCAssert newT, int[] bounds) {
+        int localPointer = bounds[0];
+        // cond
+        int[] condBounds = getBounds(oldT.cond);
+        copyTo(localPointer, condBounds[0], printer);
+        localPointer = diffTree(oldT.cond, newT.cond, condBounds);
+        // detail
+        int[] detailBounds = getBounds(oldT.detail);
+        copyTo(localPointer, detailBounds[0], printer);
+        localPointer = diffTree(oldT.detail, newT.detail, detailBounds);
+        copyTo(localPointer, bounds[1], printer);
+        
+        return bounds[1];
     }
 
     protected int diffApply(JCMethodInvocation oldT, JCMethodInvocation newT, int[] bounds) {
@@ -1865,10 +1883,10 @@ public class CasualDiff {
               retVal = diffReturn((JCReturn)oldT, (JCReturn)newT, elementBounds);
               break;
           case JCTree.THROW:
-              diffThrow((JCThrow)oldT, (JCThrow)newT);
+              retVal = diffThrow((JCThrow)oldT, (JCThrow)newT,elementBounds);
               break;
           case JCTree.ASSERT:
-              diffAssert((JCAssert)oldT, (JCAssert)newT);
+              retVal = diffAssert((JCAssert)oldT, (JCAssert)newT, elementBounds);
               break;
           case JCTree.APPLY:
               retVal = diffApply((JCMethodInvocation)oldT, (JCMethodInvocation)newT, elementBounds);

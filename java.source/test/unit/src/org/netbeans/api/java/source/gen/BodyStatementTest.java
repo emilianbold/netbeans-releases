@@ -69,6 +69,8 @@ public class BodyStatementTest extends GeneratorTest {
 //        suite.addTest(new BodyStatementTest("testRenameInAssignOp"));
 //        suite.addTest(new BodyStatementTest("testRenameInArrayIndex"));
 //        suite.addTest(new BodyStatementTest("testRenameInTypeCast"));
+         suite.addTest(new BodyStatementTest("testRenameInAssert"));
+         suite.addTest(new BodyStatementTest("testRenameInThrowSt"));
         return suite;
     }
     
@@ -1257,9 +1259,7 @@ public class BodyStatementTest extends GeneratorTest {
     }
     
     /**
-     * #92187: Test rename in assign op. bit or
-     * both, var and index are renamed in this test.
-     * does not rename in new array
+     * #92187: Test rename in type cast
      */
     public void testRenameInTypeCast() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
@@ -1310,6 +1310,104 @@ public class BodyStatementTest extends GeneratorTest {
                 workingCopy.rewrite(ident, make.setLabel(ident, "It"));
                 ident = (IdentifierTree) tct.getExpression();
                 workingCopy.rewrite(ident, make.setLabel(ident, "object"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * #92187: Test rename in assert
+     */
+    public void testRenameInAssert() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method(int a) {\n" +
+            "        assert a == 12 : a;\n" +
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method(int ada) {\n" +
+            "        assert ada == 12 : ada;\n" +
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                VariableTree vtecko = method.getParameters().get(0);
+                workingCopy.rewrite(vtecko, make.setLabel(vtecko, "ada"));
+                BlockTree block = method.getBody();
+                AssertTree ass = (AssertTree) block.getStatements().get(0);
+                BinaryTree cond = (BinaryTree) ass.getCondition();
+                IdentifierTree ident = (IdentifierTree) cond.getLeftOperand();
+                workingCopy.rewrite(ident, make.setLabel(ident, "ada"));
+                ident = (IdentifierTree) ass.getDetail();
+                workingCopy.rewrite(ident, make.setLabel(ident, "ada"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * #92187: Test rename in throw statement
+     */
+    public void testRenameInThrowSt() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method() {\n" +
+            "        throw new NullPointerException();\n" +
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method() {\n" +
+            "        throw new EnpeEcko();\n" +
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                BlockTree block = method.getBody();
+                ThrowTree ttecko = (ThrowTree) block.getStatements().get(0);
+                NewClassTree nct = (NewClassTree) ttecko.getExpression();
+                IdentifierTree ident = (IdentifierTree) nct.getIdentifier();
+                workingCopy.rewrite(ident, make.setLabel(ident, "EnpeEcko"));
             }
             
             public void cancel() {
