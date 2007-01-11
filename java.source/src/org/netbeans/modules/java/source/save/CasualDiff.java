@@ -678,10 +678,23 @@ public class CasualDiff {
         return bounds[1];
     }
 
-    protected void diffConditional(JCConditional oldT, JCConditional newT) {
-        diffTree(oldT.cond, newT.cond);
-        diffTree(oldT.truepart, newT.truepart);
-        diffTree(oldT.falsepart, newT.falsepart);
+    protected int diffConditional(JCConditional oldT, JCConditional newT, int[] bounds) {
+        int localPointer = bounds[0];
+        // cond
+        int[] condBounds = getBounds(oldT.cond);
+        copyTo(localPointer, condBounds[0], printer);
+        localPointer = diffTree(oldT.cond, newT.cond, condBounds);
+        // true
+        int[] trueBounds = getBounds(oldT.truepart);
+        copyTo(localPointer, trueBounds[0], printer);
+        localPointer = diffTree(oldT.truepart, newT.truepart, trueBounds);
+        // false
+        int[] falseBounds = getBounds(oldT.falsepart);
+        copyTo(localPointer, falseBounds[0], printer);
+        localPointer = diffTree(oldT.falsepart, newT.falsepart, falseBounds);
+        copyTo(localPointer, bounds[1], printer);
+        
+        return bounds[1];
     }
 
     protected int diffIf(JCIf oldT, JCIf newT, int[] bounds) {
@@ -1865,7 +1878,7 @@ public class CasualDiff {
               retVal = diffCatch((JCCatch)oldT, (JCCatch)newT, elementBounds);
               break;
           case JCTree.CONDEXPR:
-              diffConditional((JCConditional)oldT, (JCConditional)newT);
+              retVal = diffConditional((JCConditional)oldT, (JCConditional)newT, elementBounds);
               break;
           case JCTree.IF:
               retVal = diffIf((JCIf)oldT, (JCIf)newT, elementBounds);

@@ -69,8 +69,10 @@ public class BodyStatementTest extends GeneratorTest {
 //        suite.addTest(new BodyStatementTest("testRenameInAssignOp"));
 //        suite.addTest(new BodyStatementTest("testRenameInArrayIndex"));
 //        suite.addTest(new BodyStatementTest("testRenameInTypeCast"));
-         suite.addTest(new BodyStatementTest("testRenameInAssert"));
-         suite.addTest(new BodyStatementTest("testRenameInThrowSt"));
+//        suite.addTest(new BodyStatementTest("testRenameInAssert"));
+//        suite.addTest(new BodyStatementTest("testRenameInThrowSt"));
+//        suite.addTest(new BodyStatementTest("testRenameInThrowSt"));
+//        suite.addTest(new BodyStatementTest("testRenameInConditional"));
         return suite;
     }
     
@@ -1408,6 +1410,62 @@ public class BodyStatementTest extends GeneratorTest {
                 NewClassTree nct = (NewClassTree) ttecko.getExpression();
                 IdentifierTree ident = (IdentifierTree) nct.getIdentifier();
                 workingCopy.rewrite(ident, make.setLabel(ident, "EnpeEcko"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * #92187: Test rename in conditional
+     */
+    public void testRenameInConditional() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method(int ada) {\n" +
+            "        int result = ada == 10 ? ada++ : --ada;\n" +
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method(int alda) {\n" +
+            "        int result = alda == 10 ? alda++ : --alda;\n" +
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                VariableTree vtecko = method.getParameters().get(0);
+                workingCopy.rewrite(vtecko, make.setLabel(vtecko, "alda"));
+                BlockTree block = method.getBody();
+                VariableTree var = (VariableTree) block.getStatements().get(0);
+                ConditionalExpressionTree cet = (ConditionalExpressionTree) var.getInitializer();
+                BinaryTree cond = (BinaryTree) cet.getCondition();
+                IdentifierTree ident = (IdentifierTree) cond.getLeftOperand();
+                workingCopy.rewrite(ident, make.setLabel(ident, "alda"));
+                UnaryTree truePart = (UnaryTree) cet.getTrueExpression();
+                ident = (IdentifierTree) truePart.getExpression();
+                workingCopy.rewrite(ident, make.setLabel(ident, "alda"));
+                UnaryTree falsePart = (UnaryTree) cet.getFalseExpression();
+                ident = (IdentifierTree) falsePart.getExpression();
+                workingCopy.rewrite(ident, make.setLabel(ident, "alda"));
             }
             
             public void cancel() {
