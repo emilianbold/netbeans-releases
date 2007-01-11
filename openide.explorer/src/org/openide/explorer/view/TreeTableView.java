@@ -484,7 +484,16 @@ public class TreeTableView extends BeanTreeView {
                                 treeTable.clearSelection();
                             } else {
                                 int selRow = treeTable.rowAtPoint( mevt.getPoint() );
-                                tree.setSelectionRow( selRow );
+                                boolean isAlreadySelected = false;
+                                int[] currentSelection = tree.getSelectionRows();
+                                for( int i=0; null != currentSelection && i<currentSelection.length; i++ ) {
+                                    if( selRow == currentSelection[i] ) {
+                                        isAlreadySelected = true;
+                                        break;
+                                    }
+                                }
+                                if( !isAlreadySelected )
+                                    tree.setSelectionRow( selRow );
                             }
 
                             createPopup(mevt);
