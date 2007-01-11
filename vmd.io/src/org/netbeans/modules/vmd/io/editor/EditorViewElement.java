@@ -28,6 +28,7 @@ import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
 import javax.swing.*;
@@ -72,7 +73,7 @@ public class EditorViewElement implements MultiViewElement, Serializable {
         if (topComponent == null) {
             JComponent visualRepresentation = view.getVisualRepresentation ();
             if (visualRepresentation != null)
-                topComponent = new EditorTopComponent (context, visualRepresentation);
+                topComponent = new EditorTopComponent (context, lookup, visualRepresentation);
         }
         return topComponent;
     }
@@ -86,7 +87,8 @@ public class EditorViewElement implements MultiViewElement, Serializable {
     }
 
     public Lookup getLookup () {
-        return lookup;
+        getVisualRepresentation ();
+        return topComponent.getLookup ();
     }
 
     public void componentOpened () {

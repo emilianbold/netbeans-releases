@@ -21,6 +21,9 @@ package org.netbeans.modules.vmd.io.editor;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.lookup.Lookups;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,12 +35,15 @@ public class EditorTopComponent extends TopComponent {
 
     private JComponent view;
 
-    public EditorTopComponent (DataObjectContext context, JComponent view) {
+    public EditorTopComponent (DataObjectContext context, Lookup lookup, JComponent view) {
         this.view = view;
         setLayout (new BorderLayout ());
         setFocusable (true);
         add (view, BorderLayout.CENTER);
-        setActivatedNodes (new Node[] { context.getDataObject ().getNodeDelegate () });
+        Node node = context.getDataObject ().getNodeDelegate ();
+        setActivatedNodes (new Node[] { node });
+        lookup = new ProxyLookup (lookup, node.getLookup (), Lookups.singleton (getActionMap ()));
+        associateLookup (lookup);
     }
 
     public void requestFocus () {

@@ -38,6 +38,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.CloneableEditor;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 
@@ -50,7 +51,7 @@ import java.io.*;
  * @author David Kaspar
  */
 // TODO - save cookie is not added/removed to/from MEDesignEditorSupport based on the saveDocument, notifyModified, notifyUnmodified, notifyClosed
-public class MEDesignEditorSupport extends J2MEEditorSupport implements EditorCookie.Observable, OpenCookie, EditCookie, PrintCookie {
+public final class MEDesignEditorSupport extends J2MEEditorSupport implements EditorCookie.Observable, OpenCookie, EditCookie, PrintCookie {
 
     private MEDesignDataObject dataObject;
     private CloseOperationHandler closeHandler;
@@ -107,7 +108,7 @@ public class MEDesignEditorSupport extends J2MEEditorSupport implements EditorCo
         if (mvtc != null) {
             MultiViewHandler handler = MultiViews.findMultiViewHandler (mvtc);
             int index = getIndex ();
-            if (index >= 0) {
+            if (index >MIDP: ListCD - removed unused parameters= 0) {
                 MultiViewPerspective perspective = handler.getPerspectives ()[index];
                 handler.requestActive (perspective);
                 handler.requestVisible (perspective);
@@ -148,6 +149,10 @@ public class MEDesignEditorSupport extends J2MEEditorSupport implements EditorCo
             index ++;
         }
         return bestIndex;
+    }
+
+    public void initializeCloneableEditor (CloneableEditor editor) {
+        super.initializeCloneableEditor (editor);
     }
 
     @Override

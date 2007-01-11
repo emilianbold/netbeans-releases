@@ -31,7 +31,7 @@ import java.awt.*;
 /**
  * @author David Kaspar
  */
-public class MEDesignNode extends FilterNode {
+public final class MEDesignNode extends FilterNode {
 
     private static final Image image = Utilities.loadImage ("org/netbeans/modules/vmd/io/resources/design.gif"); // NOI18N
 

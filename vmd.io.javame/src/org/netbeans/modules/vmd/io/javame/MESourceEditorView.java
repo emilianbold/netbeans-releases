@@ -21,8 +21,8 @@ package org.netbeans.modules.vmd.io.javame;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.openide.awt.UndoRedo;
-import org.openide.text.NbDocument;
 import org.openide.text.CloneableEditor;
+import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
 
 import javax.swing.*;
@@ -36,7 +36,7 @@ public final class MESourceEditorView implements DataEditorView {
 
     private static final long serialVersionUID = -1;
 
-    private static final String VIEW_ID = "source"; // NOI18N
+    static final String VIEW_ID = "source"; // NOI18N
 
     private DataObjectContext context;
     private transient CloneableEditor editor;
@@ -48,7 +48,10 @@ public final class MESourceEditorView implements DataEditorView {
     }
 
     private void init () {
-        editor = new CloneableEditor (context.getCloneableEditorSupport());
+        MEDesignEditorSupport sup = (MEDesignEditorSupport) context.getCloneableEditorSupport ();
+        editor = new CloneableEditor (sup);
+        sup.initializeCloneableEditor (editor);
+
     }
 
     public DataObjectContext getContext () {
