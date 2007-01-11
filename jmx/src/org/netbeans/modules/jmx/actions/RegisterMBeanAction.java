@@ -18,6 +18,11 @@
  */
 
 package org.netbeans.modules.jmx.actions;
+import java.io.StringWriter;
+import java.io.Writer;
+import javax.swing.JEditorPane;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.filesystems.FileObject;
@@ -25,6 +30,7 @@ import org.openide.loaders.DataObject;
 import org.netbeans.modules.jmx.*;
 import org.netbeans.modules.jmx.actions.dialog.RegisterMBeanPanel;
 import org.openide.cookies.EditorCookie;
+import org.openide.text.IndentEngine;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
@@ -50,26 +56,22 @@ public class RegisterMBeanAction extends NodeAction {
         // just replanning test generation to RequestProcessor
     }
     
-    protected boolean enable(Node[] nodes) {
-        return true;
-        /*
-        if (nodes.length == 0) return false;
-        dob = (DataObject) nodes[0].getLookup().lookup(DataObject.class);
-        if(dob == null) return false;
-        
-        FileObject fo = dob.getPrimaryFile();
-        if(fo == null)
-            return false;
-        
-        JavaSource foClass = JavaModelHelper.getSource(fo);
-        if (foClass == null) return false;
-        try {
-            return JavaModelHelper.isGeneratedAgent(foClass);
-        }catch(IOException ex) {
-            ex.printStackTrace();
+    protected boolean enable(Node[] activatedNodes) {
+        boolean result = false;
+        if (activatedNodes != null && activatedNodes.length == 1 && activatedNodes[0] != null) {
+            if (2 != getTargetSourceType(activatedNodes[0]))
+                return true;
         }
-        return false;
-         */
+        return result;
+    }
+    private int getTargetSourceType(Node node) {
+        EditorCookie cookie = (EditorCookie)node.getCookie(EditorCookie.class);
+        if (cookie!=null && "text/x-jsp".equals(cookie.getDocument().getProperty("mimeType"))) { //NOI18N
+            return 0;
+        } else if (cookie!=null && "text/x-java".equals(cookie.getDocument().getProperty("mimeType"))) { //NOI18N
+            return 1;
+        }
+        return 2;
     }
     
     protected void performAction(Node[] nodes) {
@@ -80,22 +82,45 @@ public class RegisterMBeanAction extends NodeAction {
             if (!cfg.configure()) {
                 return;
             }
-            
+            DataObject dob = cfg.getDataObject();
+            EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
+            JEditorPane pane = ec.getOpenedPanes()[0];
+            int pos = pane.getCaretPosition();
+            Document document = pane.getDocument();
+            IndentEngine eng = IndentEngine.find(document);
+            StringWriter textWriter = new StringWriter();
+            Writer indentWriter = eng.createWriter(document, pos, textWriter);
+            String methodCall = null;
             if (cfg.standardMBeanSelected()) {
-                JavaModelHelper.generateStdMBeanRegistration(cfg.getAgentJavaSource(),
+                /*JavaModelHelper.generateStdMBeanRegistration(cfg.getAgentJavaSource(),
                         cfg.getMBeanObjectName(),
                         cfg.getInterfaceName(),
                         cfg.getConstructor());
+                 */ 
             } else {
-                JavaModelHelper.generateMBeanRegistration(cfg.getAgentJavaSource(),
+               methodCall = 
+                       "java.lang.management.ManagementFactory.getPlatformMBeanServer().\n"
+                       + "registerMBean(new " + cfg.getConstructor() + ",\n"
+                       + " new ObjectName(\""+cfg.getMBeanObjectName()+"\"));";
+                       
+                       
+                /*JavaModelHelper.generateMBeanRegistration(cfg.getAgentJavaSource(),
                         cfg.getMBeanObjectName(),
                         cfg.getConstructor());
-                //EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
-                //ec.open();
+                 */
+                
             }
-            DataObject dob = cfg.getDataObject();
-            EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
-            ec.open();
+            
+            indentWriter.write(methodCall);
+            indentWriter.close();
+            String textToInsert = textWriter.toString();
+            
+            try {
+                document.insertString(pos, textToInsert, null);
+            } catch (BadLocationException badLoc) {
+                document.insertString(pos + 1, textToInsert, null);
+            }
+            
         } catch (Exception e) {
             e.printStackTrace();
         }

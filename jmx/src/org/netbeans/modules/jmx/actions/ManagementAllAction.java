@@ -61,10 +61,10 @@ public class ManagementAllAction extends NodeAction implements Presenter.Menu, P
                 SystemAction.get(AddAttrAction.class),
                 SystemAction.get(AddOpAction.class),
                 SystemAction.get(AddNotifAction.class),
-                SystemAction.get(AddRegisterIntfAction.class),
-                null,
-                SystemAction.get(RegisterMBeanAction.class)
-            };
+                SystemAction.get(AddRegisterIntfAction.class)};
+                //null,
+                //SystemAction.get(RegisterMBeanAction.class)
+            //};
 
     public JMenuItem getMenuPresenter () {
         JMenu menu = new LazyMenu (getName ());
