@@ -279,7 +279,8 @@ public final class DefaultProjectOperationsImplementation {
         
         showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Move_Project_Caption"), "Move_Button", null, false, new Executor() { // NOI18N
             public void execute() throws Exception {
-                String nueName = panel.getNewName();
+                String nueFolderName = panel.getProjectFolderName();
+                String nueProjectName = panel.getNewName();
                 File newTarget = FileUtil.normalizeFile(panel.getNewDirectory());
                 
                 FileObject newTargetFO = FileUtil.toFileObject(newTarget);
@@ -288,7 +289,7 @@ public final class DefaultProjectOperationsImplementation {
                 }
                 
 
-                doMoveProject(handle, project, nueName, newTargetFO, "ERR_Cannot_Move");
+                doMoveProject(handle, project, nueFolderName, nueProjectName, newTargetFO, "ERR_Cannot_Move");
             }
         });
     }
@@ -310,7 +311,7 @@ public final class DefaultProjectOperationsImplementation {
                 
                 if (panel.getRenameProjectFolder()) {
 
-                    doMoveProject(handle, project, nueName, project.getProjectDirectory().getParent(), "ERR_Cannot_Rename");
+                    doMoveProject(handle, project, nueName, nueName, project.getProjectDirectory().getParent(), "ERR_Cannot_Rename");
                 } else {
                     boolean originalOK = true;
                     Project main    = OpenProjects.getDefault().getMainProject();
@@ -382,7 +383,7 @@ public final class DefaultProjectOperationsImplementation {
         });
     }
     
-    /*package private for tests*/ static void doMoveProject(ProgressHandle handle, Project project, String nueName, FileObject newTarget, String errorKey) throws Exception {
+    /*package private for tests*/ static void doMoveProject(ProgressHandle handle, Project project, String nueFolderName, String nueProjectName, FileObject newTarget, String errorKey) throws Exception {
         boolean originalOK = true;
         Project main    = OpenProjects.getDefault().getMainProject();
         boolean wasMain = main != null && project.getProjectDirectory().equals(main.getProjectDirectory());
@@ -406,7 +407,7 @@ public final class DefaultProjectOperationsImplementation {
             
             double workPerFileAndOperation = (totalWork * (1.0 - 2 * NOTIFY_WORK - FIND_PROJECT_WORK) / toMoveList.size()) / 2;
             
-            target = newTarget.createFolder(nueName);
+            target = newTarget.createFolder(nueFolderName);
 
             for (FileObject toCopy : toMoveList) {
                 doCopy(project, toCopy, target);
@@ -446,7 +447,7 @@ public final class DefaultProjectOperationsImplementation {
             
             assert nue != null;
             
-            ProjectOperations.notifyMoved(project, nue, FileUtil.toFile(project.getProjectDirectory()), nueName);
+            ProjectOperations.notifyMoved(project, nue, FileUtil.toFile(project.getProjectDirectory()), nueProjectName);
             
             handle.progress((int) (currentWorkDone += totalWork * NOTIFY_WORK));
             
@@ -636,6 +637,10 @@ public final class DefaultProjectOperationsImplementation {
     }
     
     static String computeError(File location, String projectNameText, boolean pureRename) {
+        return computeError(location, projectNameText, null, pureRename);
+    }
+    
+    static String computeError(File location, String projectNameText, String projectFolderText, boolean pureRename) {
         File parent = location;
         if (!location.exists()) {
             //if some dirs in teh chain are not created, consider it ok.
@@ -656,7 +661,12 @@ public final class DefaultProjectOperationsImplementation {
             return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Project_Name_Must_Entered");
         }
         
-        File projectFolderFile = new File(location, projectNameText);
+        File projectFolderFile = null;
+        if (projectFolderText == null) {
+            projectFolderFile = new File(location, projectNameText);
+        } else {
+            projectFolderFile = new File(projectFolderText);
+        }
         
         if (projectFolderFile.exists() && !pureRename) {
             return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Project_Folder_Exists");

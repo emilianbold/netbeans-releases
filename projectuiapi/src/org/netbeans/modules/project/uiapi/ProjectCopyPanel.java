@@ -303,9 +303,9 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         projectLocation.setText(parentFile.getAbsolutePath());
         
         if (isMove) {
-            projectName.setText(project.getProjectDirectory().getNameExt());
+            projectName.setText(ProjectUtils.getInformation(project).getName());
         } else {
-            projectName.setText(computeValidProjectName(parentFile.getAbsolutePath(), project.getProjectDirectory().getNameExt()));
+            projectName.setText(computeValidProjectName(parentFile.getAbsolutePath(), ProjectUtils.getInformation(project).getName()));
         }
         
         updateProjectFolder();
@@ -330,6 +330,10 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         return projectName.getText();
     }
     
+    public String getProjectFolderName() {
+        return project.getProjectDirectory().getNameExt();
+    }
+    
     public File getNewDirectory() {
         return new File(projectLocation.getText());
     }
@@ -350,8 +354,12 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
     
     private void updateProjectFolder() {
         File location = new File(projectLocation.getText());
-        File projectFolderFile = new File(location, projectName.getText());
-        
+        File projectFolderFile = location;
+        if (isMove) {
+            projectFolderFile = new File(location, project.getProjectDirectory().getNameExt());
+        } else {
+            projectFolderFile = new File(location, projectName.getText());
+        }
         projectFolder.setText(projectFolderFile.getAbsolutePath());
     }
     
@@ -390,8 +398,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
     
     private String computeError() {
         File location = new File(projectLocation.getText());
-        
-        return DefaultProjectOperationsImplementation.computeError(location, projectName.getText(), false);
+        return DefaultProjectOperationsImplementation.computeError(location, projectName.getText(), projectFolder.getText(), false);
     }
     
     public void showProgress() {

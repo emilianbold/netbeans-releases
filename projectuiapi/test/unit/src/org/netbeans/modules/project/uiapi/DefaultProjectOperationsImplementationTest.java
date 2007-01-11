@@ -295,7 +295,7 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         File       oldProjectFile = FileUtil.toFile(oldProject);
         FileObject newTarget = oldProject.getParent();
         
-        DefaultProjectOperationsImplementation.doMoveProject(handle, prj, "projMove", newTarget, "ERR_Cannot_Move");
+        DefaultProjectOperationsImplementation.doMoveProject(handle, prj, "projMove","projMove", newTarget, "ERR_Cannot_Move");
         
         File newProject = new File(FileUtil.toFile(newTarget), "projMove");
         
@@ -319,7 +319,7 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         File       oldProjectFile = FileUtil.toFile(oldProject);
         FileObject newTarget = oldProject.getParent();
         
-        DefaultProjectOperationsImplementation.doMoveProject(handle, prj, "projMove", newTarget, "ERR_Cannot_Move");
+        DefaultProjectOperationsImplementation.doMoveProject(handle, prj, "projMove", "projMove", newTarget, "ERR_Cannot_Move");
         
         File newProject = new File(FileUtil.toFile(newTarget), "projMove");
         
@@ -346,7 +346,7 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         File       oldProjectFile = FileUtil.toFile(oldProject);
         FileObject newTarget      = oldProject.getParent();
         
-        DefaultProjectOperationsImplementation.doMoveProject(handle, prj, "projMove", newTarget, "ERR_Cannot_Move");
+        DefaultProjectOperationsImplementation.doMoveProject(handle, prj, "projMove", "projMove", newTarget, "ERR_Cannot_Move");
         
         File newProject = new File(FileUtil.toFile(newTarget), "projMove");
         
@@ -363,14 +363,14 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
     public void testMainProjectFlagMovedForMainProject() throws Exception {
         OpenProjects.getDefault().open(new Project[] {prj}, false);
         OpenProjects.getDefault().setMainProject(prj);
-        
+        assertEquals(prj, OpenProjects.getDefault().getMainProject());
         ProgressHandle handle = ProgressHandleFactory.createHandle("test-handle");
         handle.start(DefaultProjectOperationsImplementation.MAX_WORK);
         FileObject oldProject = prj.getProjectDirectory();
         File       oldProjectFile = FileUtil.toFile(oldProject);
         FileObject newTarget = oldProject.getParent();
         
-        DefaultProjectOperationsImplementation.doMoveProject(handle, prj, "projMove", newTarget, "ERR_Cannot_Move");
+        DefaultProjectOperationsImplementation.doMoveProject(handle, prj, "projMove", "projMove", newTarget, "ERR_Cannot_Move");
         
         Project newProject = ProjectManager.getDefault().findProject(newTarget.getFileObject("projMove"));
         
@@ -390,7 +390,7 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         File       oldProjectFile = FileUtil.toFile(oldProject);
         FileObject newTarget = oldProject.getParent();
         
-        DefaultProjectOperationsImplementation.doMoveProject(handle, prj, "projMove", newTarget, "ERR_Cannot_Move");
+        DefaultProjectOperationsImplementation.doMoveProject(handle, prj, "projMove", "projMove", newTarget, "ERR_Cannot_Move");
         
         Project newProject = ProjectManager.getDefault().findProject(newTarget.getFileObject("projMove"));
         
