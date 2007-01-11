@@ -246,4 +246,11 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
         
         return propertyValue;
     }    
+
+    public boolean supportsCustomEditor() {
+        boolean retValue;
+        
+        retValue = super.supportsCustomEditor();
+        return retValue;
+    }
 }
