@@ -101,6 +101,11 @@ public class Model {
         for(Iterator i = mimeTypes.iterator(); i.hasNext(); ) {
             String mimeType = (String) i.next();
             BaseOptions baseOptions = (BaseOptions) MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(BaseOptions.class);
+            
+            if (baseOptions == null) {
+                continue;
+            }
+            
             Map m = baseOptions.getCodeFoldingProps ();
             m.put (
                 SettingsNames.CODE_FOLDING_ENABLE,
@@ -145,6 +150,10 @@ public class Model {
             String mimeType = (String) i.next();
             BaseOptions baseOptions = (BaseOptions) MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(BaseOptions.class);
 
+            if (baseOptions == null) {
+                continue;
+            }
+            
             try {
                 Method method = baseOptions.getClass ().getMethod (
                     "setPairCharactersCompletion",

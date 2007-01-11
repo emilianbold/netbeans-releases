@@ -246,6 +246,11 @@ class IndentationModel {
         for(Iterator i = mimeTypes.iterator(); i.hasNext(); ) {
             String mimeType = (String) i.next();
             BaseOptions baseOptions = (BaseOptions) MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(BaseOptions.class);
+            
+            if (baseOptions == null) {
+                continue;
+            }
+            
             IndentEngine indentEngine = baseOptions.getIndentEngine ();
             try {
                 // HACK
