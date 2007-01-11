@@ -1005,8 +1005,12 @@ public class CasualDiff {
                 printer.print(newT.toString());
             }
         }
-        printer.print(origText.substring(lastPrinted, endPos(oldT)));
-        return endPos(oldT);
+        if (endPos(oldT) > 0) {
+            printer.print(origText.substring(lastPrinted, endPos(oldT)));
+            return endPos(oldT);
+        } else {
+            return lastPrinted;
+        }
     }
     
     protected void diffLetExpr(LetExpr oldT, LetExpr newT) {

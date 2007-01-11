@@ -75,6 +75,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/api/java/source/gen/AddCastTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/BodyStatementTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/TwoModificationsTest.class"/>
+                <include name="org/netbeans/api/java/source/gen/ModifiersTest.class"/>
                 
                 <!--
                 Makes many operation on field declaration.
