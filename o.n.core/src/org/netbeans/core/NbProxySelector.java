@@ -126,9 +126,9 @@ public final class NbProxySelector extends ProxySelector {
     
     // XXX Copy current ProxySettings to System properties http.proxyHost, https.proxyHost, ...
     // several modules listenes on these properties and propagates it futher
-    class ProxySettingsListener implements PreferenceChangeListener {
+    private class ProxySettingsListener implements PreferenceChangeListener {
         public void preferenceChange(PreferenceChangeEvent evt) {
-            if (evt.getKey ().startsWith ("proxy")) {
+            if (evt.getKey ().startsWith ("proxy") || evt.getKey ().startsWith ("useProxy")) {
                 copySettingsToSystem ();
             }
         }

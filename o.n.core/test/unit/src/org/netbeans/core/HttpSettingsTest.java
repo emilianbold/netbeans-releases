@@ -19,7 +19,10 @@
 
 package org.netbeans.core;
 
+import java.lang.reflect.Field;
 import java.net.ProxySelector;
+import java.util.logging.Logger;
+import java.util.prefs.AbstractPreferences;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -34,7 +37,7 @@ import org.openide.util.NbPreferences;
  * @see http://www.netbeans.org/issues/show_bug.cgi?id=51641
  */
 public class HttpSettingsTest extends NbTestCase {
-    volatile boolean isWaiting = false;
+    private final Object sync = getEventQueueSync ();
     private static String SYSTEM_PROXY_HOST = "system.cache.org";
     private static String SYSTEM_PROXY_PORT = "777";
     private static String USER_PROXY_HOST = "my.webcache";
@@ -43,6 +46,7 @@ public class HttpSettingsTest extends NbTestCase {
     private Preferences proxyPreferences;
     private static String SILLY_USER_PROXY_HOST = "http://my.webcache";
     private static String SILLY_SYSTEM_PROXY_HOST = "http://system.cache.org";
+    private static String MY_NON_PROXY_HOSTS = "myhost.mydomain.net";
     
     private static String NETBEANS_ORG = "*.netbeans.org";
     private static String OTHER_ORG = "*.other.org";
@@ -61,6 +65,10 @@ public class HttpSettingsTest extends NbTestCase {
         super.run (result);
     }
     
+    protected int timeOut () {
+        return 20 * 1000;
+    }
+    
     protected void setUp () throws Exception {
         super.setUp ();
         System.setProperty ("http.nonProxyHosts", NETBEANS_ORG + ',' + NETBEANS_ORG);
@@ -68,42 +76,67 @@ public class HttpSettingsTest extends NbTestCase {
         proxyPreferences  = NbPreferences.root ().node ("/org/netbeans/core");
         proxyPreferences.addPreferenceChangeListener (new PreferenceChangeListener() {
             public void preferenceChange(PreferenceChangeEvent arg0) {
-                isWaiting = false;
+                synchronized (sync) {
+                    sync.notifyAll ();
+                }
             }
         });
         System.setProperty ("netbeans.system_http_proxy", SYSTEM_PROXY_HOST + ":" + SYSTEM_PROXY_PORT);
         System.setProperty ("netbeans.system_http_non_proxy_hosts", "*.other.org");
-        proxyPreferences.put ("proxyHttpHost", USER_PROXY_HOST);
-        isWaiting = true;
-        proxyPreferences.put ("proxyHttpPort", USER_PROXY_PORT);
-        while (isWaiting);
-        isWaiting = true;
+        synchronized (sync) {
+            if (! USER_PROXY_HOST.equals (proxyPreferences.get ("proxyHttpHost", ""))) {
+                proxyPreferences.put ("proxyHttpHost", USER_PROXY_HOST);
+                sync.wait (10000);
+            }
+        }
+        synchronized (sync) {
+            if (! USER_PROXY_PORT.equals (proxyPreferences.get ("proxyHttpPort", ""))) {
+                proxyPreferences.put ("proxyHttpPort", USER_PROXY_PORT);
+                sync.wait (10000);
+            }
+        }
     }
     
     private void sillySetUp () throws Exception {
-        isWaiting = true;
         System.setProperty ("netbeans.system_http_proxy", SILLY_SYSTEM_PROXY_HOST + ":" + SYSTEM_PROXY_PORT);
-        proxyPreferences.put ("proxyHttpHost", SILLY_USER_PROXY_HOST);
+        synchronized (sync) {
+            if (! SILLY_USER_PROXY_HOST.equals (proxyPreferences.get ("proxyHttpHost", ""))) {
+                proxyPreferences.put ("proxyHttpHost", SILLY_USER_PROXY_HOST);
+                sync.wait (10000);
+            }
+        }
         proxyPreferences.put ("proxyHttpPort", USER_PROXY_PORT);
-        while (isWaiting);
-        isWaiting = true;
+        synchronized (sync) {
+            if (! USER_PROXY_PORT.equals (proxyPreferences.get ("proxyHttpPort", ""))) {
+                proxyPreferences.put ("proxyHttpPort", USER_PROXY_PORT);
+                sync.wait (10000);
+            }
+        }
     }
     
-    public void testDirectConnection () {
+    public void testDirectConnection () throws InterruptedException {
         System.setProperty ("http.proxyHost", "");
         System.setProperty ("http.proxyPort", "");
-        proxyPreferences.putInt ("proxyType", ProxySettings.DIRECT_CONNECTION);
-        while (isWaiting);
+        synchronized (sync) {
+            if (ProxySettings.DIRECT_CONNECTION != (proxyPreferences.getInt ("proxyType", -1))) {
+                proxyPreferences.putInt ("proxyType", ProxySettings.DIRECT_CONNECTION);
+                sync.wait ();
+            }
+        }
         assertEquals ("Proxy type DIRECT_CONNECTION.", ProxySettings.DIRECT_CONNECTION, ProxySettings.getProxyType ());
         assertEquals ("No Proxy Host set.", "", System.getProperty ("http.proxyHost"));
         assertEquals ("No Proxy Port set.", "", System.getProperty ("http.proxyPort"));
     }
     
-    public void testAutoDetectProxy () {
+    public void testAutoDetectProxy () throws InterruptedException {
         System.setProperty ("http.proxyHost", "");
         System.setProperty ("http.proxyPort", "");
-        proxyPreferences.putInt("proxyType", ProxySettings.AUTO_DETECT_PROXY);
-        while (isWaiting);
+        synchronized (sync) {
+            if (ProxySettings.AUTO_DETECT_PROXY != (proxyPreferences.getInt ("proxyType", -1))) {
+                proxyPreferences.putInt ("proxyType", ProxySettings.AUTO_DETECT_PROXY);
+                sync.wait ();
+            }
+        }
         assertEquals("Proxy type AUTO_DETECT_PROXY.",
                      ProxySettings.AUTO_DETECT_PROXY,
                      ProxySettings.getProxyType());
@@ -113,9 +146,13 @@ public class HttpSettingsTest extends NbTestCase {
                      System.getProperty("http.proxyPort"));
     }
     
-    public void testManualSetProxy () {
-        proxyPreferences.putInt ("proxyType", ProxySettings.MANUAL_SET_PROXY);
-        while (isWaiting);
+    public void testManualSetProxy () throws InterruptedException {
+        synchronized (sync) {
+            if (ProxySettings.MANUAL_SET_PROXY != (proxyPreferences.getInt ("proxyType", -1))) {
+                proxyPreferences.putInt ("proxyType", ProxySettings.MANUAL_SET_PROXY);
+                sync.wait ();
+            }
+        }
         assertEquals ("Proxy type MANUAL_SET_PROXY.", ProxySettings.MANUAL_SET_PROXY, ProxySettings.getProxyType ());
         assertEquals ("Manual Set Proxy Host from ProxySettings: ", USER_PROXY_HOST, ProxySettings.getHttpHost ());
         assertEquals ("Manual Set Proxy Port from ProxySettings: ", USER_PROXY_PORT, ProxySettings.getHttpPort ());
@@ -127,64 +164,96 @@ public class HttpSettingsTest extends NbTestCase {
         assertTrue (NETBEANS_ORG + " in one of Non-Proxy hosts.", ProxySettings.getNonProxyHosts ().indexOf (NETBEANS_ORG) != -1);
     }
     
-    public void testNonProxy () {
+    public void testNonProxy () throws InterruptedException {
         assertEquals ("The ProxySettings takes as same value as System properties in initial.", System.getProperty ("http.nonProxyHosts"), ProxySettings.getNonProxyHosts ());
         
         // change value in ProxySettings
-        isWaiting = true;
-        proxyPreferences.putInt ("proxyType", ProxySettings.MANUAL_SET_PROXY);
-        proxyPreferences.put (ProxySettings.NOT_PROXY_HOSTS, "myhost.mydomain.net");
-        while (isWaiting);
+        synchronized (sync) {
+            if (ProxySettings.MANUAL_SET_PROXY != (proxyPreferences.getInt ("proxyType", -1))) {
+                proxyPreferences.putInt ("proxyType", ProxySettings.MANUAL_SET_PROXY);
+                sync.wait ();
+            }
+        }
+        synchronized (sync) {
+            if (! MY_NON_PROXY_HOSTS.equals (proxyPreferences.get ("proxyNonProxyHosts", ""))) {
+                proxyPreferences.put ("proxyNonProxyHosts", MY_NON_PROXY_HOSTS);
+                sync.wait ();
+            }
+        }
         assertEquals ("ProxySettings returns new value.", "myhost.mydomain.net", ProxySettings.getNonProxyHosts ());
         assertEquals ("System property http.nonProxyHosts was changed as well.", ProxySettings.getNonProxyHosts (), System.getProperty ("http.nonProxyHosts"));
         
         // switch proxy type to DIRECT_CONNECTION
-        isWaiting = true;
         System.setProperty ("http.nonProxyHosts", "");
-        proxyPreferences.putInt ("proxyType", ProxySettings.DIRECT_CONNECTION);
-        while (isWaiting);
+        synchronized (sync) {
+            if (ProxySettings.DIRECT_CONNECTION != (proxyPreferences.getInt ("proxyType", -1))) {
+                proxyPreferences.putInt ("proxyType", ProxySettings.DIRECT_CONNECTION);
+                sync.wait ();
+            }
+        }
         assertFalse ("ProxySettings doesn't return new value if DIRECT_CONNECTION set.", "myhost.mydomain.net".equals (System.getProperty ("http.nonProxyHosts")));
         
         // switch proxy type back to MANUAL_SET_PROXY
-        isWaiting = true;
-        proxyPreferences.putInt ("proxyType", ProxySettings.MANUAL_SET_PROXY);
-        while (isWaiting);
+        synchronized (sync) {
+            if (ProxySettings.MANUAL_SET_PROXY != (proxyPreferences.getInt ("proxyType", -1))) {
+                proxyPreferences.putInt ("proxyType", ProxySettings.MANUAL_SET_PROXY);
+                sync.wait ();
+            }
+        }
         assertEquals ("ProxySettings again returns new value.", "myhost.mydomain.net", ProxySettings.getNonProxyHosts ());
         assertEquals ("System property http.nonProxyHosts was changed as well.", ProxySettings.getNonProxyHosts (), System.getProperty ("http.nonProxyHosts"));
         
         // switch proxy type to AUTO_DETECT_PROXY
-        isWaiting = true;
-        proxyPreferences.putInt ("proxyType", ProxySettings.AUTO_DETECT_PROXY);
-        while (isWaiting);
+        synchronized (sync) {
+            if (ProxySettings.AUTO_DETECT_PROXY != (proxyPreferences.getInt ("proxyType", -1))) {
+                proxyPreferences.putInt ("proxyType", ProxySettings.AUTO_DETECT_PROXY);
+                sync.wait ();
+            }
+        }
         assertFalse ("ProxySettings doesn't return new value if AUTO_DETECT_PROXY set.", "myhost.mydomain.net".equals (System.getProperty ("http.nonProxyHosts")));
                 
         // switch proxy type back to MANUAL_SET_PROXY
-        isWaiting = true;
-        proxyPreferences.putInt ("proxyType", ProxySettings.MANUAL_SET_PROXY);
-        while (isWaiting);
+        synchronized (sync) {
+            if (ProxySettings.MANUAL_SET_PROXY != (proxyPreferences.getInt ("proxyType", -1))) {
+                proxyPreferences.putInt ("proxyType", ProxySettings.MANUAL_SET_PROXY);
+                sync.wait ();
+            }
+        }
         assertEquals ("ProxySettings again returns new value.", "myhost.mydomain.net", ProxySettings.getNonProxyHosts ());
         assertEquals ("System property http.nonProxyHosts was changed as well.", ProxySettings.getNonProxyHosts (), System.getProperty ("http.nonProxyHosts"));
     }
     
-    public void testAvoidDuplicateNonProxySetting () {
-        proxyPreferences.putInt ("proxyType", ProxySettings.AUTO_DETECT_PROXY);
-        while (isWaiting);
+    public void testAvoidDuplicateNonProxySetting () throws InterruptedException {
+        synchronized (sync) {
+            if (ProxySettings.AUTO_DETECT_PROXY != (proxyPreferences.getInt ("proxyType", -1))) {
+                proxyPreferences.putInt ("proxyType", ProxySettings.AUTO_DETECT_PROXY);
+                sync.wait ();
+            }
+        }
         assertTrue (NETBEANS_ORG + " is among Non-proxy hosts detect from OS.", ProxySettings.SystemProxySettings.getNonProxyHosts ().indexOf (NETBEANS_ORG) != -1);
         assertFalse (NETBEANS_ORG + " is in Non-Proxy hosts only once.", ProxySettings.SystemProxySettings.getNonProxyHosts ().indexOf (NETBEANS_ORG) < ProxySettings.getNonProxyHosts ().lastIndexOf (NETBEANS_ORG));
         assertEquals ("System property http.nonProxyHosts was changed as well.", ProxySettings.SystemProxySettings.getNonProxyHosts (), System.getProperty ("http.nonProxyHosts"));
     }
     
-    public void testReadNonProxySettingFromSystem () {
-        proxyPreferences.putInt ("proxyType", ProxySettings.AUTO_DETECT_PROXY);
-        while (isWaiting);
+    public void testReadNonProxySettingFromSystem () throws InterruptedException {
+        synchronized (sync) {
+            if (ProxySettings.AUTO_DETECT_PROXY != (proxyPreferences.getInt ("proxyType", -1))) {
+                proxyPreferences.putInt ("proxyType", ProxySettings.AUTO_DETECT_PROXY);
+                sync.wait ();
+            }
+        }
         assertTrue (OTHER_ORG + " is among Non-proxy hosts detect from OS.", ProxySettings.SystemProxySettings.getNonProxyHosts ().indexOf (OTHER_ORG) != -1);
         assertEquals ("System property http.nonProxyHosts was changed as well.", ProxySettings.SystemProxySettings.getNonProxyHosts (), System.getProperty ("http.nonProxyHosts"));
     }
     
     public void testSillySetManualProxy () throws Exception {
         sillySetUp ();
-        proxyPreferences.putInt ("proxyType", ProxySettings.MANUAL_SET_PROXY);
-        while (isWaiting);
+        synchronized (sync) {
+            if (ProxySettings.MANUAL_SET_PROXY != (proxyPreferences.getInt ("proxyType", -1))) {
+                proxyPreferences.putInt ("proxyType", ProxySettings.MANUAL_SET_PROXY);
+                sync.wait ();
+            }
+        }
         assertEquals ("Proxy type MANUAL_SET_PROXY.", ProxySettings.MANUAL_SET_PROXY, ProxySettings.getProxyType ());
         assertEquals ("Manual Set Proxy Host from ProxySettings: ", SILLY_USER_PROXY_HOST, ProxySettings.getHttpHost ());
         assertEquals ("Manual Set Proxy Port from ProxySettings: ", USER_PROXY_PORT, ProxySettings.getHttpPort ());
@@ -194,10 +263,26 @@ public class HttpSettingsTest extends NbTestCase {
     
     public void testAutoDetectSillySetProxy () throws Exception {
         sillySetUp ();
-        proxyPreferences.putInt ("proxyType", ProxySettings.AUTO_DETECT_PROXY);
-        while (isWaiting);
+        synchronized (sync) {
+            if (ProxySettings.AUTO_DETECT_PROXY != (proxyPreferences.getInt ("proxyType", -1))) {
+                proxyPreferences.putInt ("proxyType", ProxySettings.AUTO_DETECT_PROXY);
+                sync.wait ();
+            }
+        }
         assertEquals ("Proxy type AUTO_DETECT_PROXY.", ProxySettings.AUTO_DETECT_PROXY, ProxySettings.getProxyType ());
         assertEquals ("System Proxy Host: ", SYSTEM_PROXY_HOST, System.getProperty ("http.proxyHost"));
         assertEquals ("System Proxy Port: ", SYSTEM_PROXY_PORT, System.getProperty ("http.proxyPort"));
     }    
+    
+    private Object getEventQueueSync() {
+        try {
+            Field f = AbstractPreferences.class.getDeclaredField("eventQueue");
+            f.setAccessible(true);
+            return f.get(null);
+            
+        } catch (Exception ex) {
+            Logger.getLogger("global").log(java.util.logging.Level.SEVERE,ex.getMessage(), ex);
+        }
+        return null;
+    }
 }
