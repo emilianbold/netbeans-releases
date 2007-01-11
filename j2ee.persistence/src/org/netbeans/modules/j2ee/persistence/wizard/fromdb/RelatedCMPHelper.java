@@ -225,7 +225,7 @@ public class RelatedCMPHelper {
         String packageName = getPackageName();
 
         for (Table table : selectedTables.getTables()) {
-            genTables.addTable(table.getName(), rootFolder, getPackageName(), selectedTables.getClassName(table));
+            genTables.addTable(table.getName(), rootFolder, packageName, selectedTables.getClassName(table));
         }
 
         // add the (possibly related) disabled tables, so that the relationships are created correctly
