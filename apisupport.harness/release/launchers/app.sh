@@ -68,7 +68,7 @@ readClusters() {
     fi
   done
 }
-clusters=`cat "$progdir/../etc/$APPNAME".clusters | readClusters`
+clusters=`(cat "$progdir/../etc/$APPNAME".clusters; echo) | readClusters`
 
 if [ ! -z "$extraclusters" ] ; then
     clusters="$clusters:$extraclusters"
