@@ -13,31 +13,34 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.loaders;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.CloseCookie;
+import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
-
-import org.openide.filesystems.*;
+import org.openide.cookies.OpenCookie;
+import org.openide.cookies.PrintCookie;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
-import org.openide.util.ContextAwareAction;
-import org.openide.util.actions.SystemAction;
+import org.openide.util.Exceptions;
 
 /** An implementation of a data object which consumes file objects not recognized by any other loaders.
-*
-* @author Ian Formanek
 */
-final class DefaultDataObject extends MultiDataObject 
-implements org.openide.cookies.OpenCookie {
+final class DefaultDataObject extends MultiDataObject implements OpenCookie {
     static final long serialVersionUID =-4936309935667095746L;
     
     /** generated Serialized Version UID */
@@ -127,12 +130,12 @@ implements org.openide.cookies.OpenCookie {
     /** Either opens the in text editor or asks user questions.
      */
     public void open() {
-        EditorCookie ic = (EditorCookie)getCookie (EditorCookie.class);
+        EditorCookie ic = getCookie(EditorCookie.class);
         if (ic != null) {
             ic.open();
         } else {
             // ask a query 
-            java.util.ArrayList<Object> options = new java.util.ArrayList<Object> ();
+            List<Object> options = new ArrayList<Object>();
             options.add (NotifyDescriptor.OK_OPTION);
             options.add (NotifyDescriptor.CANCEL_OPTION);
             NotifyDescriptor nd = new NotifyDescriptor (
@@ -147,7 +150,7 @@ implements org.openide.cookies.OpenCookie {
                 return;
             }
             
-            EditorCookie c = (EditorCookie)getCookie (EditorCookie.class, true);
+            EditorCookie c = getCookie(EditorCookie.class, true);
             c.open ();
         }
     }
@@ -162,7 +165,7 @@ implements org.openide.cookies.OpenCookie {
      * @param force if true, there are no checks for content of the file
      */
     final <T extends Node.Cookie> T getCookie(Class<T> c, boolean force) {
-        if (c == org.openide.cookies.OpenCookie.class) {
+        if (c == OpenCookie.class) {
             return c.cast(this);
         }
 
@@ -172,13 +175,13 @@ implements org.openide.cookies.OpenCookie {
         }
             
         if (
-            c.isAssignableFrom(org.openide.cookies.EditCookie.class)
+            c.isAssignableFrom(EditCookie.class)
             ||
-            c.isAssignableFrom(org.openide.cookies.EditorCookie.Observable.class)
+            c.isAssignableFrom(EditorCookie.Observable.class)
             ||
-            c.isAssignableFrom (org.openide.cookies.PrintCookie.class)
+            c.isAssignableFrom(PrintCookie.class)
             ||
-            c.isAssignableFrom (org.openide.cookies.CloseCookie.class)
+            c.isAssignableFrom(CloseCookie.class)
             ||
             c == DefaultES.class
         ) {
@@ -202,11 +205,10 @@ implements org.openide.cookies.OpenCookie {
                 DefaultES support = new DefaultES (
                     this, getPrimaryEntry(), getCookieSet ()
                 );
-                getCookieSet().add ((Node.Cookie)support);
+                getCookieSet().add(support);
                 return getCookieSet ().getCookie(c);
             } catch (IOException ex) {
-                // XXX
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             }
         }
         return null;
