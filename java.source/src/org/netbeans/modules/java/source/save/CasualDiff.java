@@ -594,10 +594,23 @@ public class CasualDiff {
         return bounds[1];
     }
     
-    protected void diffForeachLoop(JCEnhancedForLoop oldT, JCEnhancedForLoop newT) {
-        diffTree(oldT.var, newT.var);
-        diffTree(oldT.expr, newT.expr);
-        diffTree(oldT.body, newT.body);
+    protected int diffForeachLoop(JCEnhancedForLoop oldT, JCEnhancedForLoop newT, int[] bounds) {
+        int localPointer = bounds[0];
+        // variable
+        int[] varBounds = getBounds(oldT.var);
+        copyTo(localPointer, varBounds[0], printer);
+        localPointer = diffTree(oldT.var, newT.var, varBounds);
+        // expression
+        int[] exprBounds = getBounds(oldT.expr);
+        copyTo(localPointer, exprBounds[0], printer);
+        localPointer = diffTree(oldT.expr, newT.expr, exprBounds);
+        // body
+        int[] bodyBounds = getBounds(oldT.body);
+        copyTo(localPointer, bodyBounds[0], printer);
+        localPointer = diffTree(oldT.body, newT.body, bodyBounds);
+        copyTo(localPointer, bounds[1], printer);
+        
+        return bounds[1];
     }
 
     protected void diffLabelled(JCLabeledStatement oldT, JCLabeledStatement newT) {
@@ -617,25 +630,52 @@ public class CasualDiff {
         diffList(oldT.stats, newT.stats, LineInsertionType.BEFORE, endPos(oldT) + 1); // after colon
     }
 
-    protected void diffSynchronized(JCSynchronized oldT, JCSynchronized newT) {
-        diffTree(oldT.lock, newT.lock);
-        diffTree(oldT.body, newT.body);
+    protected int diffSynchronized(JCSynchronized oldT, JCSynchronized newT, int[] bounds) {
+        int localPointer = bounds[0];
+        // lock
+        int[] lockBounds = getBounds(oldT.lock);
+        copyTo(localPointer, lockBounds[0], printer);
+        localPointer = diffTree(oldT.lock, newT.lock, lockBounds);
+        // body
+        int[] bodyBounds = getBounds(oldT.body);
+        copyTo(localPointer, bodyBounds[0], printer);
+        localPointer = diffTree(oldT.body, newT.body, bodyBounds);
+        copyTo(localPointer, bounds[1], printer);
+        
+        return bounds[1];
     }
 
     protected int diffTry(JCTry oldT, JCTry newT, int[] bounds) {
         int localPointer = bounds[0];
-        int[] bodyPos = new int[] { getOldPos(oldT.body), endPos(oldT.body) };
-        printer.print(origText.substring(localPointer, bodyPos[0]));
+        int[] bodyPos = getBounds(oldT.body);
+        copyTo(localPointer, bodyPos[0], printer);
         localPointer = diffTree(oldT.body, newT.body, bodyPos);
-        diffList(oldT.catchers, newT.catchers, LineInsertionType.BEFORE, oldT.body.endpos + 1);
-        diffTree(oldT.finalizer, newT.finalizer);
-        printer.print(origText.substring(localPointer, bounds[1]));
+        int pos = oldT.catchers.head != null ? getOldPos(oldT.catchers.head) : oldT.body.endpos + 1;
+        copyTo(localPointer, pos, printer);
+        localPointer = diffList(oldT.catchers, newT.catchers, LineInsertionType.BEFORE, pos);
+        if (oldT.finalizer != null) {
+            int[] finalBounds = getBounds(oldT.finalizer);
+            copyTo(localPointer, finalBounds[0], printer);
+            localPointer = diffTree(oldT.finalizer, newT.finalizer, finalBounds);
+        }
+        copyTo(localPointer, bounds[1], printer);
+        
         return bounds[1];
     }
 
-    protected void diffCatch(JCCatch oldT, JCCatch newT) {
-        diffTree(oldT.param, newT.param);
-        diffTree(oldT.body, newT.body);
+    protected int diffCatch(JCCatch oldT, JCCatch newT, int[] bounds) {
+        int localPointer = bounds[0];
+        // param
+        int[] paramBounds = getBounds(oldT.param);
+        copyTo(localPointer, paramBounds[0], printer);
+        localPointer = diffTree(oldT.param, newT.param, paramBounds);
+        // body
+        int[] bodyBounds = getBounds(oldT.body);
+        copyTo(localPointer, bodyBounds[0], printer);
+        localPointer = diffTree(oldT.body, newT.body, bodyBounds);
+        copyTo(localPointer, bounds[1], printer);
+        
+        return bounds[1];
     }
 
     protected void diffConditional(JCConditional oldT, JCConditional newT) {
@@ -1752,7 +1792,7 @@ public class CasualDiff {
               retVal = diffForLoop((JCForLoop)oldT, (JCForLoop)newT, elementBounds);
               break;
           case JCTree.FOREACHLOOP:
-              diffForeachLoop((JCEnhancedForLoop)oldT, (JCEnhancedForLoop)newT);
+              retVal = diffForeachLoop((JCEnhancedForLoop)oldT, (JCEnhancedForLoop)newT, elementBounds);
               break;
           case JCTree.LABELLED:
               diffLabelled((JCLabeledStatement)oldT, (JCLabeledStatement)newT);
@@ -1764,13 +1804,13 @@ public class CasualDiff {
               diffCase((JCCase)oldT, (JCCase)newT);
               break;
           case JCTree.SYNCHRONIZED:
-              diffSynchronized((JCSynchronized)oldT, (JCSynchronized)newT);
+              retVal = diffSynchronized((JCSynchronized)oldT, (JCSynchronized)newT, elementBounds);
               break;
           case JCTree.TRY:
               retVal = diffTry((JCTry)oldT, (JCTry)newT, elementBounds);
               break;
           case JCTree.CATCH:
-              diffCatch((JCCatch)oldT, (JCCatch)newT);
+              retVal = diffCatch((JCCatch)oldT, (JCCatch)newT, elementBounds);
               break;
           case JCTree.CONDEXPR:
               diffConditional((JCConditional)oldT, (JCConditional)newT);
