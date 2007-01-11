@@ -102,18 +102,19 @@ implements PropertyChangeListener {
         try {
             int x = Integer.parseInt (xField.getText ());
             int y = Integer.parseInt (yField.getText ());
-            if ((x < 0) || (y < 0)) {
-                IllegalStateException ise = new IllegalStateException();
-                UIExceptions.annotateUser(ise, null,
-                                         NbBundle.getMessage(PointCustomEditor.class,
-                                                             "CTL_NegativeSize"),
-                                         null, null);
-                throw ise;
-            }
-            if ( dimensionMode )
+            if ( dimensionMode ) {
+                if ((x < 0) || (y < 0)) {
+                    IllegalStateException ise = new IllegalStateException();
+                    UIExceptions.annotateUser(ise, null,
+                                             NbBundle.getMessage(PointCustomEditor.class,
+                                                                 "CTL_NegativeSize"),
+                                             null, null);
+                    throw ise;
+                }
                 return new Dimension (x, y);
-            else
+            } else {
                 return new Point (x, y);
+            }
         } catch (NumberFormatException e) {
             IllegalStateException ise = new IllegalStateException();
             UIExceptions.annotateUser(ise, null,
