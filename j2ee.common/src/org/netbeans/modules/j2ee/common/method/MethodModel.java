@@ -56,7 +56,7 @@ public final class MethodModel {
      * @param returnType name of return type as written in source code,
      * for non-primitive types fully-qualfied name must be used,
      * must contain at least one non-whitespace character
-     * @param body string representation of body, can be empty string
+     * @param body string representation of body, can be null
      * @param parameters list of method parameters, can be empty
      * @param exceptions list of exceptions represented by fully-qualified names of exceptions, can be empty
      * @param modifiers list of modifiers of method, can be empty
@@ -68,7 +68,6 @@ public final class MethodModel {
     public static MethodModel create(String name, String returnType, String body, List<Variable> parameters, List<String> exceptions, Set<Modifier> modifiers) {
         Parameters.javaIdentifier("name", name);
         Parameters.notWhitespace("returnType", returnType);
-        Parameters.notNull("body", body);
         Parameters.notNull("parameters", parameters);
         Parameters.notNull("exceptions", exceptions);
         Parameters.notNull("modifiers", modifiers);

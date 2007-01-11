@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.j2ee.common.method;
 
+import com.sun.source.tree.BlockTree;
 import javax.lang.model.type.ArrayType;
 import org.netbeans.api.java.source.CompilationController;
 import com.sun.source.tree.ExpressionTree;
@@ -130,16 +131,32 @@ public final class MethodModelSupport {
             TypeElement element = workingCopy.getElements().getTypeElement(exceptionName);
             throwsList.add(treeMaker.QualIdent(element));
         }
-        return treeMaker.Method(
-                treeMaker.Modifiers(methodModel.getModifiers()),
-                methodModel.getName(),
-                getTypeTree(workingCopy, methodModel.getReturnType()),
-                Collections.<TypeParameterTree>emptyList(),
-                paramsList,
-                throwsList,
-                methodModel.getBody(),
-                null
-                );
+        MethodTree result;
+        String body = methodModel.getBody();
+        if (body == null || "".equals(body.trim())) {
+            result = treeMaker.Method(
+                    treeMaker.Modifiers(methodModel.getModifiers()),
+                    methodModel.getName(),
+                    getTypeTree(workingCopy, methodModel.getReturnType()),
+                    Collections.<TypeParameterTree>emptyList(),
+                    paramsList,
+                    throwsList,
+                    (BlockTree) null,
+                    null
+                    );
+        } else {
+            result = treeMaker.Method(
+                    treeMaker.Modifiers(methodModel.getModifiers()),
+                    methodModel.getName(),
+                    getTypeTree(workingCopy, methodModel.getReturnType()),
+                    Collections.<TypeParameterTree>emptyList(),
+                    paramsList,
+                    throwsList,
+                    methodModel.getBody(),
+                    null
+                    );
+        }
+        return result;
     }
     
     /**
