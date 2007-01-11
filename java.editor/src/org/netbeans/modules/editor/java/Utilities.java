@@ -146,7 +146,7 @@ public class Utilities {
     }
     
     public static CharSequence getElementName(Element el, boolean fqn) {
-        if (el == null)
+        if (el == null || el.asType().getKind() == TypeKind.NONE)
             return ""; //NOI18N
         return new ElementNameVisitor().visit(el, fqn);
     }

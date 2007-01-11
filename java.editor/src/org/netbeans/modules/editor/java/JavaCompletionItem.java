@@ -89,7 +89,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         if (tm.getKind().isPrimitive())
             return new KeywordItem(tm.toString(), dim, null, substitutionOffset);
-        if (tm.getKind() == TypeKind.DECLARED) {
+        if (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ERROR) {
             DeclaredType dt = (DeclaredType)tm;
             TypeElement elem = (TypeElement)dt.asElement();
             switch (elem.getKind()) {
@@ -573,8 +573,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
             int cnt = 1;
             sb.append("${PAR"); //NOI18N
             sb.append(cnt++);
-            sb.append(" type=\""); //NOI18N
-            sb.append(elem.getQualifiedName());
+            if (type.getKind() != TypeKind.ERROR) {
+                sb.append(" type=\""); //NOI18N
+                sb.append(elem.getQualifiedName());
+            } else {
+                sb.append(" default=\""); //NOI18N
+                sb.append(elem.getQualifiedName());
+            }
             sb.append("\" editable=false}"); //NOI18N
             Iterator<? extends TypeMirror> tas = type.getTypeArguments().iterator();
             if (tas.hasNext()) {
