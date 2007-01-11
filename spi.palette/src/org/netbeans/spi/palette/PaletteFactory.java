@@ -19,7 +19,6 @@
 
 package org.netbeans.spi.palette;
 
-import java.awt.Component;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,8 +27,6 @@ import org.netbeans.modules.palette.DefaultSettings;
 import org.netbeans.modules.palette.Model;
 import org.netbeans.modules.palette.RootNode;
 import org.netbeans.modules.palette.Settings;
-import org.netbeans.modules.palette.PaletteSwitch;
-import org.netbeans.modules.palette.ui.PalettePanel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;

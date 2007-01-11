@@ -282,7 +282,10 @@ public final class PaletteUtils {
     }
     
     public static PaletteItem getSelectedItem() {
-        Lookup lkp = getPalette().getSelectedItem();
+        PaletteController palette = getPalette();
+        if( null == palette )
+            return null;
+        Lookup lkp = palette.getSelectedItem();
         
         return (PaletteItem)lkp.lookup( PaletteItem.class );
     }
