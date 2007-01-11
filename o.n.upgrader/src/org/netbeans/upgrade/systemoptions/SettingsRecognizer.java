@@ -73,12 +73,12 @@ public class SettingsRecognizer  extends org.xml.sax.helpers.DefaultHandler {
     //private static final String VERSION = "1.0"; // NOI18N
     
     private boolean header;
-    private Stack stack;
+    private Stack<String> stack;
     
     private String version;
     private String instanceClass;
     private String instanceMethod;
-    private Set instanceOf = new HashSet();
+    private Set<String> instanceOf = new HashSet<String>();
     
     private byte[] serialdata;
     private CharArrayWriter chaos = null;
@@ -160,7 +160,7 @@ public class SettingsRecognizer  extends org.xml.sax.helpers.DefaultHandler {
     
     public void characters(char[] values, int start, int length) throws SAXException {
         if (header) return;
-        String element = (String) stack.peek();
+        String element = stack.peek();
         if (ELM_SERIALDATA.equals(element)) {
             // [PENDING] should be optimized to do not read all chars to memory
             if (chaos == null) chaos = new CharArrayWriter(length);
@@ -226,7 +226,7 @@ public class SettingsRecognizer  extends org.xml.sax.helpers.DefaultHandler {
     
     public void endElement(String uri, String localName, String qName) throws SAXException {
         //if (header) return;
-        String element = (String) stack.pop();
+        String element = stack.pop();
         if (ELM_SERIALDATA.equals(element)) {
             if (chaos != null) {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream(chaos.size() >> 1);
@@ -294,9 +294,9 @@ public class SettingsRecognizer  extends org.xml.sax.helpers.DefaultHandler {
                 inst = createFromMethod(instanceClass, instanceMethod);
             } else {
                 // use default constructor
-                Class clazz = instanceClass();
+                Class<?> clazz = instanceClass();
                 if (SharedClassObject.class.isAssignableFrom(clazz)) {
-                    inst = SharedClassObject.findObject(clazz, false);
+                    inst = SharedClassObject.findObject(clazz.asSubclass(SharedClassObject.class), false);
                     if (null != inst) {
                         // instance already exists -> reset it to defaults
                         try {
@@ -307,7 +307,7 @@ public class SettingsRecognizer  extends org.xml.sax.helpers.DefaultHandler {
                             ErrorManager.getDefault().notify(e);
                         }
                     } else {
-                        inst = SharedClassObject.findObject(clazz, true);
+                        inst = SharedClassObject.findObject(clazz.asSubclass(SharedClassObject.class), true);
                     }
                 } else {
                     try {
@@ -365,16 +365,16 @@ public class SettingsRecognizer  extends org.xml.sax.helpers.DefaultHandler {
             targetMethod = srcMethod;
         }
         
-        Class clazz = loadClass(targetClass);
+        Class<?> clazz = loadClass(targetClass);
         
         try {
             Object instance;
             try {
                 Method method = clazz.getMethod(targetMethod, new Class[]{FileObject.class});
                 method.setAccessible(true);
-                instance = method.invoke(null, new FileObject[] {source});
+                instance = method.invoke(null, source);
             } catch (NoSuchMethodException ex) {
-                Method method = clazz.getMethod(targetMethod, null);
+                Method method = clazz.getMethod(targetMethod);
                 method.setAccessible(true);
                 instance = method.invoke(null, new Object[0]);
             }
@@ -479,7 +479,7 @@ public class SettingsRecognizer  extends org.xml.sax.helpers.DefaultHandler {
                 } else {
                     in = new BufferedInputStream(source.getInputStream());
                 }
-                Set iofs = quickParse(new BufferedInputStream(in));
+                Set<String> iofs = quickParse(new BufferedInputStream(in));
                 if (iofs != null) {
                     instanceOf = iofs;
                     return;
@@ -490,7 +490,7 @@ public class SettingsRecognizer  extends org.xml.sax.helpers.DefaultHandler {
         } finally {
             if (in != null) in.close();
         }
-        stack = new Stack();
+        stack = new Stack<String>();
         try {
             in = source.getInputStream();
             XMLReader reader = org.openide.xml.XMLUtil.createXMLReader();
@@ -524,7 +524,7 @@ public class SettingsRecognizer  extends org.xml.sax.helpers.DefaultHandler {
     
     /** Parse setting from source. */
     public void parse(Reader source) throws IOException {
-        stack = new Stack();
+        stack = new Stack<String>();
         
         try {
             XMLReader reader = org.openide.xml.XMLUtil.createXMLReader();
@@ -567,8 +567,8 @@ public class SettingsRecognizer  extends org.xml.sax.helpers.DefaultHandler {
      * you have to use a real parser.
      * @see "#36718"
      */
-    private Set quickParse(InputStream is) throws IOException {
-        Set iofs = new HashSet();   // <String>
+    private Set<String> quickParse(InputStream is) throws IOException {
+        Set<String> iofs = new HashSet<String>();   // <String>
         
         if (!expect(is, MODULE_SETTINGS_INTRO)) {
             err.log("Could not read intro "+source); // NOI18N

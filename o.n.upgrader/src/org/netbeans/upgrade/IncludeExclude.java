@@ -23,6 +23,7 @@ import java.io.*;
 import java.util.*;
 import java.util.jar.*;
 import java.util.regex.*;
+import org.openide.util.Union2;
 
 
 
@@ -33,7 +34,7 @@ import java.util.regex.*;
 final class IncludeExclude extends AbstractSet {
     /** List<Boolean and Pattern>
      */
-    private ArrayList patterns = new ArrayList ();
+    private List<Union2<Boolean, Pattern>> patterns = new ArrayList<Union2<Boolean, Pattern>> ();
 
     private IncludeExclude () {
     }
@@ -70,8 +71,8 @@ final class IncludeExclude extends AbstractSet {
             
             Pattern p = Pattern.compile (line);
             
-            set.patterns.add (plus);
-            set.patterns.add (p);
+            set.patterns.add (Union2.<Boolean,Pattern>createFirst(plus));
+            set.patterns.add (Union2.<Boolean,Pattern>createSecond(p));
         }
         
         return set; 
@@ -91,10 +92,10 @@ final class IncludeExclude extends AbstractSet {
         
         boolean yes = false;
         
-        Iterator it = patterns.iterator ();
+        Iterator<Union2<Boolean,Pattern>> it = patterns.iterator ();
         while (it.hasNext ()) {
-            Boolean include = (Boolean)it.next ();
-            Pattern p = (Pattern)it.next ();
+            Boolean include = it.next ().first();
+            Pattern p = it.next ().second();
             
             Matcher m = p.matcher (s);
             if (m.matches ()) {

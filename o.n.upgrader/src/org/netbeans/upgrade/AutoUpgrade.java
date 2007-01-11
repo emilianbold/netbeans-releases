@@ -230,86 +230,6 @@ public final class AutoUpgrade {
         
         Copy.copyDeep (old.getRoot (), mine.getRoot (), includeExclude);
         
-/*
-        // convert shortcuts ...................................................
-        
-        // copy Shortcuts to Keymaps/NetBeans
-        FileObject shortcuts = old.getRoot ().getFileObject ("Shortcuts"); //NOI18N
-        if (shortcuts != null) {
-            FileObject root = mine.getRoot ();
-            FileObject keymaps = root.getFileObject ("Keymaps"); //NOI18N
-            if (keymaps == null)
-                keymaps = root.createFolder ("Keymaps"); //NOI18N
-            FileObject nb = keymaps.getFileObject ("NetBeans");
-            if (nb == null)
-                nb = keymaps.createFolder ("NetBeans"); //NOI18N
-            copy (shortcuts, nb);
-        }
-        
-        // convert editor font & colors ........................................
-        
-        // load default NetBeans coloring scheme
-        // mimeTypeToColoring: Map (
-        //     String (resourceName starting in Editors) > 
-        //     Map (
-        //         String (attribute name like "java-comment") > 
-        //         SimpleAttributeSet))
-        Map mimeTypeToColoring = new HashMap ();
-        addColoring (mimeTypeToColoring, "NetBeans41/defaultColoring.xml");
-        addColoring (mimeTypeToColoring, "NetBeans41/editorColoring.xml");
-        addColoring (mimeTypeToColoring, "text/plain/NetBeans41/coloring.xml");
-        addColoring (mimeTypeToColoring, "text/css/NetBeans41/coloring.xml");
-        addColoring (mimeTypeToColoring, "text/html/NetBeans41/coloring.xml");
-        addColoring (mimeTypeToColoring, "text/x-java/NetBeans41/coloring.xml");
-        addColoring (mimeTypeToColoring, "text/x-jsp/NetBeans41/coloring.xml");
-        addColoring (mimeTypeToColoring, "text/xml/NetBeans41/coloring.xml");
-        addColoring (mimeTypeToColoring, "text/x-properties/NetBeans41/coloring.xml");
-        addColoring (mimeTypeToColoring, "application/xml-dtd/NetBeans41/coloring.xml");
-        
-        // get all old coloring files
-        FileObject editors = old.getRoot ().getFileObject ("Editors"); //NOI18N
-        if (editors == null) return;
-        List coloringFiles = getFiles (editors, 2, "fontsColors", "xml");
-        
-        // List => Map (String (mimeType) > List (AttributeSet))
-        Iterator it = coloringFiles.iterator ();
-        while (it.hasNext ()) {
-            FileObject fo = (FileObject) it.next ();
-            String name = fo.getPath ();
-            name = name.substring (
-                "Editors/".length (), // beginIndex
-                name.length () - 
-                    "/fontColors.xml".length () - 1 // endIndex
-            );
-            Map coloring = ColoringStorage.loadColorings (
-                fo.getInputStream (),
-                fo.getPath ()
-            );
-            mergeColorings (
-                mimeTypeToColoring,
-                name + "/NetBeans41/coloring.xml",
-                coloring
-            );
-            if (name.equals ("text/x-java")) {
-                initializeAllLanguages (mimeTypeToColoring, coloring);
-                initializeHighlightings (mimeTypeToColoring, coloring);
-            }
-        }
-
-        // save colorings
-        it = mimeTypeToColoring.keySet ().iterator ();
-        while (it.hasNext ()) {
-            String name = (String) it.next ();
-            FileObject fo = FileUtil.createData 
-                (mine.getRoot (), "Editors/" + name);
-            Map colorings = (Map) mimeTypeToColoring.get (name);
-            ColoringStorage.saveColorings (fo, colorings.values ());
-        }
-        
-        // set current coloring to NetBeans41
-        FileObject newEditors = mine.getRoot ().getFileObject ("Editors");
-        newEditors.setAttribute ("currentFontColorProfile", "NetBeans41");
-*/
     }
 
     static MultiFileSystem createLayeredSystem(final LocalFileSystem lfs, final XMLFileSystem xmlfs) {
@@ -325,48 +245,6 @@ public final class AutoUpgrade {
         return old;
     }
 
-    /**
-     * Loads coloring defaults for given name and adds it to given map.
-     */
-    private static void addColoring (Map m, String name) {
-        InputStream is = AutoUpgrade.class.getResourceAsStream ( 
-            "/org/netbeans/upgrade/resources/" + name);
-        m.put (name, ColoringStorage.loadColorings (is, name));
-    }
-    
-    private static void mergeColorings (Map m, String name, Map coloring) {
-        Map defaults = (Map) m.get (name);
-        if (defaults == null) return;
-        Iterator it = coloring.keySet ().iterator ();
-        while (it.hasNext ()) {
-            String attributeName = (String) it.next ();
-            mergeAttributes (defaults, attributeName, coloring, attributeName);
-        }
-    }
-    
-    private static void initializeAllLanguages (Map m, Map javaColoring) {
-        Map a = (Map) m.get ("NetBeans41/defaultColoring.xml");
-        mergeAttributes (a, "default", javaColoring, "default");
-        mergeAttributes (a, "char", javaColoring, "java-char-literal");
-        mergeAttributes (a, "comment", javaColoring, "java-block-comment");
-        mergeAttributes (a, "error", javaColoring, "java-errors");
-        mergeAttributes (a, "identifier", javaColoring, "java-identifier");
-        mergeAttributes (a, "keyword", javaColoring, "java-keywords");
-        mergeAttributes (a, "number", javaColoring, "java-numeric-literals");
-        mergeAttributes (a, "operator", javaColoring, "java-operators");
-        mergeAttributes (a, "string", javaColoring, "java-string-literal");
-        mergeAttributes (a, "whitespace", javaColoring, "java-whitespace");
-    }
-    
-    private static void initializeHighlightings (Map m, Map javaColoring) {
-        Map a = (Map) m.get ("NetBeans41/editorColoring.xml");
-        Iterator it = a.keySet ().iterator ();
-        while (it.hasNext ()) {
-            String attributeName = (String) it.next ();
-            mergeAttributes (a, attributeName, javaColoring, attributeName);
-        }
-    }
-    
     private static void mergeAttributes (Map m1, String n1, Map m2, String n2) {
         SimpleAttributeSet a1 = (SimpleAttributeSet) m1.get (n1);
         SimpleAttributeSet a2 = (SimpleAttributeSet) m2.get (n2);
@@ -375,7 +253,7 @@ public final class AutoUpgrade {
         a1.addAttribute (StyleConstants.NameAttribute, n1);
     }
     
-    private static List getFiles (
+    private static List<FileObject> getFiles (
         FileObject      folder,
         int             depth,
         String          fileName,
@@ -383,13 +261,13 @@ public final class AutoUpgrade {
     ) {
         if (depth == 0) {
             FileObject result = folder.getFileObject (fileName, extension);
-            if (result == null) return Collections.EMPTY_LIST;
+            if (result == null) return Collections.emptyList();
             return Collections.singletonList (result);
         }
-        Enumeration en = folder.getChildren (false);
-        List result = new ArrayList ();
+        Enumeration<? extends FileObject> en = folder.getChildren (false);
+        List<FileObject> result = new ArrayList<FileObject> ();
         while (en.hasMoreElements ()) {
-            FileObject fo = (FileObject) en.nextElement ();
+            FileObject fo = en.nextElement ();
             if (!fo.isFolder ()) continue;
             result.addAll (getFiles (fo, depth - 1, fileName, extension));
         }

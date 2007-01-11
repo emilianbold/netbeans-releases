@@ -66,7 +66,7 @@ class ColoringStorage {
     }    
 
     private static class ColoringsReader extends XMLStorage.Handler {
-        private Map colorings = new HashMap ();
+        private Map<String, SimpleAttributeSet> colorings = new HashMap<String, SimpleAttributeSet> ();
         private SimpleAttributeSet last;
         
         Object getResult () {

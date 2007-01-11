@@ -25,8 +25,8 @@ import java.util.Map;
 
 abstract class PropertyProcessor  {
     private String className;
-    private static Map results;
-    private static Map clsname2Delegate = new HashMap();/*<String c, PropertyProcessor>**/
+    private static Map<String, String> results;
+    private static Map<String, PropertyProcessor> clsname2Delegate = new HashMap<String, PropertyProcessor>();
     
     static {
         //To extend behaviour of this class then regisetr your own implementation
@@ -75,8 +75,8 @@ abstract class PropertyProcessor  {
         this.className = className;
     }
     
-    static Map processProperty(String propertyName, Object value, boolean types) {
-        results = new HashMap();
+    static Map<String, String> processProperty(String propertyName, Object value, boolean types) {
+        results = new HashMap<String, String>();
         PropertyProcessor p = (types) ? TYPES : findDelegate(value);
         if (p == null) {
             p = DEFAULT;

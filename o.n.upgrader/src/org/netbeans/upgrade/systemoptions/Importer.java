@@ -35,9 +35,9 @@ public class Importer {
     }
     
     public static void doImport() throws IOException  {
-        Set files = getImportFiles(loadImportFilesDefinition());
-        for (Iterator it = parse(files).iterator(); it.hasNext();) {
-            saveResult((DefaultResult)it.next());
+        Set<FileObject> files = getImportFiles(loadImportFilesDefinition());
+        for (Iterator<DefaultResult> it = parse(files).iterator(); it.hasNext();) {
+            saveResult(it.next());
         }
         for (Iterator it = files.iterator(); it.hasNext();) {
             FileObject fo = (FileObject) it.next();
@@ -63,10 +63,9 @@ public class Importer {
         }
     }
     
-    private static Set parse(final Set files) {
-        Set retval = new HashSet();
-        for (Iterator it = files.iterator(); it.hasNext();) {
-            FileObject f = (FileObject) it.next();
+    private static Set<DefaultResult> parse(final Set<FileObject> files) {
+        Set<DefaultResult> retval = new HashSet<DefaultResult>();
+        for (FileObject f: files) {
             try {
                 retval.add(SystemOptionsParser.parse(f, false));
             } catch (ClassNotFoundException ex) {
@@ -90,8 +89,8 @@ public class Importer {
         return props;
     }
 
-    private static Set getImportFiles(final Properties props) {
-        Set fileobjects = new HashSet();        
+    private static Set<FileObject> getImportFiles(final Properties props) {
+        Set<FileObject> fileobjects = new HashSet<FileObject>();        
         for (Iterator it = props.keySet().iterator(); it.hasNext();) {
             String path = (String) it.next();
             FileObject f = getRootOfSystemFileSystem().getFileObject(path);

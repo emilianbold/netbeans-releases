@@ -32,8 +32,8 @@ public class JUnitContentProcessor extends ContentProcessor{
         super(systemOptionInstanceName);
     }
     
-    protected Result parseContent(final Iterator it, boolean types) {
-        Map properties = new HashMap();
+    protected Result parseContent(final Iterator<Object> it, boolean types) {
+        Map<String, String> properties = new HashMap<String, String>();
         assert it.hasNext();
         Object o = it.next();
         assert o.getClass().equals(SerParser.ObjectWrapper.class);
@@ -43,7 +43,7 @@ public class JUnitContentProcessor extends ContentProcessor{
         assert it.hasNext();
         o = it.next();           
         assert o.getClass().equals(String.class);        
-        properties.put("fileSystem", ((types)?"java.lang.String": o));//NOI18N
+        properties.put("fileSystem", ((types)?"java.lang.String": (String)o));//NOI18N
         o = it.next();           
         assert o.getClass().equals(SerParser.ObjectWrapper.class);
         ow = (SerParser.ObjectWrapper)o;        
@@ -101,10 +101,10 @@ public class JUnitContentProcessor extends ContentProcessor{
         properties.put("generateMainMethod", ((types)?Utils.getClassNameFromObject(ow): Utils.valueFromObjectWrapper(ow)));//NOI18N
         o = it.next();           
         assert o.getClass().equals(String.class);        
-        properties.put("generateMainMethodBody", ((types)?"java.lang.String": o));//NOI18N
+        properties.put("generateMainMethodBody", ((types)?"java.lang.String": (String)o));//NOI18N
         o = it.next();           
         assert o.getClass().equals(String.class);        
-        properties.put("rootSuiteClassName", ((types)?"java.lang.String": o));//NOI18N
+        properties.put("rootSuiteClassName", ((types)?"java.lang.String": (String)o));//NOI18N
         o = it.next();           
         assert o.getClass().equals(SerParser.ObjectWrapper.class);
         ow = (SerParser.ObjectWrapper)o;        

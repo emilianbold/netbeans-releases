@@ -21,6 +21,7 @@ package org.netbeans.upgrade;
 
 import java.awt.Dialog;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
@@ -94,6 +95,6 @@ final class AutoUpgradePanel extends JPanel {
     // End of variables declaration//GEN-END:variables
 
     private static final ResourceBundle bundle = NbBundle.getBundle(AutoUpgradePanel.class);
-    private ArrayList changeListeners = new ArrayList(1);
+    private List<ChangeListener> changeListeners = new ArrayList<ChangeListener>(1);
     
 }

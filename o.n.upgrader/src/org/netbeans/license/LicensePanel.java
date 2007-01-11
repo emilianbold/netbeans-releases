@@ -30,7 +30,6 @@ import org.openide.util.NbBundle;
  *
  * @author  Marek Slama
  */
-
 final class LicensePanel extends javax.swing.JPanel {
 
     /** Creates new form LicensePanel */

@@ -521,7 +521,7 @@ final class Copy extends Object {
 
         public void deleteAttributes (String name) {
         }
-        public Enumeration attributes (String name) {
+        public Enumeration<String> attributes (String name) {
             return org.openide.util.Enumerations.empty ();
         }
         public void renameAttributes (String oldName, String newName) {

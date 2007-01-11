@@ -21,14 +21,11 @@ package org.netbeans.upgrade.systemoptions;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import org.netbeans.upgrade.systemoptions.SerParser.NameValue;
-import org.netbeans.upgrade.systemoptions.SerParser.ObjectWrapper;
 
 
 class ContentProcessor  {
-    private static Map clsname2Delegate = new HashMap();/*<String c, ContentProcessor>**/
+    private static Map<String, ContentProcessor> clsname2Delegate = new HashMap<String, ContentProcessor>();
     protected String systemOptionInstanceName;
     
     static {
@@ -46,14 +43,14 @@ class ContentProcessor  {
         this.systemOptionInstanceName = systemOptionInstanceName;
     }
             
-    protected Result parseContent(final Iterator it, boolean types) {
-        Map m;
+    protected Result parseContent(final Iterator<Object> it, boolean types) {
+        Map<String, String> m;
         Result result = null;
         try {
-            m = parseProperties(it);
-            assert m != null;
+            Map<String, Object> props = parseProperties(it);
+            assert props != null;
             //debugInfo("before: ", m);                        
-            m = processProperties(m, types);
+            m = processProperties(props, types);
             //assert debugInfo("after: ", m);
             result = new DefaultResult(systemOptionInstanceName, m);
         } catch (IllegalStateException isx) {
@@ -62,27 +59,27 @@ class ContentProcessor  {
         return result;        
     }
     
-    static Result parseContent(String systemOptionInstanceName, boolean types, final Iterator it) {
-        ContentProcessor cp = (ContentProcessor)clsname2Delegate.get(systemOptionInstanceName);
+    static Result parseContent(String systemOptionInstanceName, boolean types, final Iterator<Object> it) {
+        ContentProcessor cp = clsname2Delegate.get(systemOptionInstanceName);
         if (cp == null) {
             cp = new ContentProcessor(systemOptionInstanceName);
         }
         return cp.parseContent(it, types);
     }
     
-    private final Map processProperties(final Map properties, boolean types) {
-        Map allProps = new HashMap();
-        for (Iterator it = properties.entrySet().iterator(); it.hasNext();) {
-            Map.Entry entry = (Map.Entry) it.next();
-            String name = (String)entry.getKey();
+    private final Map<String, String> processProperties(final Map<String, Object> properties, boolean types) {
+        Map<String, String> allProps = new HashMap<String, String>();
+        for (Iterator<Map.Entry<String, Object>> it = properties.entrySet().iterator(); it.hasNext();) {
+            Map.Entry<String, Object> entry = it.next();
+            String name = entry.getKey();
             Object value = entry.getValue();
             allProps.putAll(PropertyProcessor.processProperty(name, value, types));
         }
         return allProps;
     }
     
-    private final  Map parseProperties(final Iterator it) {
-        Map properties = new HashMap();
+    private final  Map<String, Object> parseProperties(final Iterator<Object> it) { // sequences String, Object, SerParser.ObjectWrapper
+        Map<String, Object> properties = new HashMap<String, Object>();
         for (; it.hasNext();) {
             Object name = it.next();
             if ("null".equals(name) || name == null) {
@@ -95,7 +92,7 @@ class ContentProcessor  {
                     throw new IllegalStateException(name.toString());
                 }
                 Object value = it.next();
-                properties.put(name, value);
+                properties.put((String)name, value);
                 Object propertyRead = it.next();
                 if (!(propertyRead instanceof SerParser.ObjectWrapper )) {
                     throw new IllegalStateException(propertyRead.getClass().getName());

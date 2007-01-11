@@ -20,10 +20,7 @@
 package org.netbeans.upgrade.systemoptions;
 
 import java.io.*;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.openide.filesystems.FileObject;
 
@@ -59,7 +56,7 @@ public class SystemOptionsParser  {
         }
     }
     
-    private Result processContent(final Iterator it, final boolean reachedWriteReplace) {
+    private Result processContent(final Iterator<Object> it, final boolean reachedWriteReplace) {
         for (; it.hasNext();) {
             Object elem = it.next();
             if (!reachedWriteReplace && elem instanceof SerParser.ObjectWrapper) {

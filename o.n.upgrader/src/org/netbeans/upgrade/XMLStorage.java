@@ -44,10 +44,10 @@ import org.xml.sax.helpers.DefaultHandler;
 
 public class XMLStorage {
 
-    private static final Map colorToName = new HashMap ();
-    private static final Map nameToColor = new HashMap ();
-    private static final Map nameToFontStyle = new HashMap ();
-    private static final Map fontStyleToName = new HashMap ();
+    private static final Map<Color,String> colorToName = new HashMap<Color,String> ();
+    private static final Map<String, Color> nameToColor = new HashMap<String, Color> ();
+    private static final Map<String, Integer> nameToFontStyle = new HashMap<String, Integer> ();
+    private static final Map<Integer, String> fontStyleToName = new HashMap<Integer, String> ();
     static {
         colorToName.put (Color.black, "black");
         nameToColor.put ("black", Color.black);
@@ -76,14 +76,14 @@ public class XMLStorage {
         colorToName.put (Color.yellow, "yellow");
         nameToColor.put ("yellow", Color.yellow);
         
-        nameToFontStyle.put ("plain", new Integer (Font.PLAIN));
-        fontStyleToName.put (new Integer (Font.PLAIN), "plain");
-        nameToFontStyle.put ("bold", new Integer (Font.BOLD));
-        fontStyleToName.put (new Integer (Font.BOLD), "bold");
-        nameToFontStyle.put ("italic", new Integer (Font.ITALIC));
-        fontStyleToName.put (new Integer (Font.ITALIC), "italic");
-        nameToFontStyle.put ("bold+italic", new Integer (Font.BOLD + Font.ITALIC));
-        fontStyleToName.put (new Integer (Font.BOLD + Font.ITALIC), "bold+italic");
+        nameToFontStyle.put ("plain", Integer.valueOf (Font.PLAIN));
+        fontStyleToName.put (Integer.valueOf (Font.PLAIN), "plain");
+        nameToFontStyle.put ("bold", Integer.valueOf (Font.BOLD));
+        fontStyleToName.put (Integer.valueOf (Font.BOLD), "bold");
+        nameToFontStyle.put ("italic", Integer.valueOf (Font.ITALIC));
+        fontStyleToName.put (Integer.valueOf (Font.ITALIC), "italic");
+        nameToFontStyle.put ("bold+italic", Integer.valueOf (Font.BOLD + Font.ITALIC));
+        fontStyleToName.put (Integer.valueOf (Font.BOLD + Font.ITALIC), "bold+italic");
     }
     
     static String colorToString (Color color) {
@@ -241,8 +241,8 @@ public class XMLStorage {
     }
     
     static class Attribs {
-        private List names = new ArrayList ();
-        private List values = new ArrayList ();
+        private List<String> names = new ArrayList<String> ();
+        private List<String> values = new ArrayList<String> ();
         private boolean oneLine;
         
         Attribs (boolean oneLine) {
