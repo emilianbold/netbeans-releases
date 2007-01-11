@@ -3107,13 +3107,21 @@ public class JavaCompletionProvider implements CompletionProvider {
             final CompilationController controller = env.getController();
             TreePath path = env.getPath();
             Tree lastTree = null;
+            int dim = 0;
             while(path != null) {
                 Tree tree = path.getLeaf();
                 switch(tree.getKind()) {
                     case VARIABLE:
-                        return Collections.singleton(controller.getTrees().getTypeMirror(new TreePath(path, ((VariableTree)tree).getType())));
+                        TypeMirror type = controller.getTrees().getTypeMirror(new TreePath(path, ((VariableTree)tree).getType()));
+                        while(dim-- > 0) {
+                            if (type.getKind() == TypeKind.ARRAY)
+                                type = ((ArrayType)type).getComponentType();
+                            else
+                                return null;
+                        }
+                        return Collections.singleton(type);
                     case ASSIGNMENT:
-                        TypeMirror type = controller.getTrees().getTypeMirror(new TreePath(path, ((AssignmentTree)tree).getVariable()));
+                        type = controller.getTrees().getTypeMirror(new TreePath(path, ((AssignmentTree)tree).getVariable()));
                         TreePath parentPath = path.getParentPath();
                         if (parentPath != null && parentPath.getLeaf().getKind() == Tree.Kind.ANNOTATION && type.getKind() == TypeKind.EXECUTABLE)
                             type = ((ExecutableType)type).getReturnType();
@@ -3308,12 +3316,25 @@ public class JavaCompletionProvider implements CompletionProvider {
                         return null;
                     case NEW_ARRAY:
                         NewArrayTree nat = (NewArrayTree)tree;
+                        Tree arrayType = nat.getType();
+                        if (arrayType == null) {
+                            dim++;
+                            break;
+                        }
                         sourcePositions = env.getSourcePositions();
                         root = env.getRoot();
-                        int typeEndPos = (int)sourcePositions.getEndPosition(root, nat.getType());
+                        int typeEndPos = (int)sourcePositions.getEndPosition(root, arrayType);
                         text = controller.getText().substring(typeEndPos, offset);
-                        if (text.indexOf('{') >= 0)
-                            return Collections.singleton(controller.getTrees().getTypeMirror(new TreePath(path, nat.getType())));
+                        if (text.indexOf('{') >= 0) {
+                            type = controller.getTrees().getTypeMirror(new TreePath(path, arrayType));
+                            while(dim-- > 0) {
+                                if (type.getKind() == TypeKind.ARRAY)
+                                    type = ((ArrayType)type).getComponentType();
+                                else
+                                    return null;
+                            }
+                            return Collections.singleton(type);
+                        }
                         if (text.trim().endsWith("[")) //NOI18N
                             return Collections.singleton(controller.getTypes().getPrimitiveType(TypeKind.INT));
                         return null;
