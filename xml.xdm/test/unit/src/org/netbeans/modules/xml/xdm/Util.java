@@ -48,6 +48,22 @@ public class Util {
         return loadDocument(in);
     }
     
+    public static String getResourceAsString(String path) throws Exception {
+        InputStream in = Util.class.getResourceAsStream(path);
+        BufferedReader br = new BufferedReader(new InputStreamReader(in,"UTF-8"));
+        StringBuffer sbuf = new StringBuffer();
+        try {
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                sbuf.append(line);
+                sbuf.append(System.getProperty("line.separator"));
+            }
+        } finally {
+            br.close();
+        }
+        return sbuf.toString();
+    }
+    
     public static org.netbeans.modules.xml.xdm.nodes.Document loadXdmDocument(String resourcePath) throws Exception {
         XDMModel model = loadXDMModel(resourcePath);
         return model.getDocument();

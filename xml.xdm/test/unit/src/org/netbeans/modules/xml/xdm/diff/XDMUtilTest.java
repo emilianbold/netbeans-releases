@@ -6,14 +6,13 @@
  */
 
 package org.netbeans.modules.xml.xdm.diff;
-import java.util.ArrayList;
 import java.util.List;
 import junit.framework.*;
+import org.netbeans.modules.xml.xdm.Util;
 import org.netbeans.modules.xml.xdm.diff.Change.AttributeChange;
 import org.netbeans.modules.xml.xdm.diff.Change.AttributeDiff;
 import org.netbeans.modules.xml.xdm.nodes.Attribute;
 import org.netbeans.modules.xml.xdm.nodes.Node;
-import org.netbeans.modules.xml.xdm.visitor.PositionFinderVisitor;
 
 /**
  *
@@ -380,6 +379,12 @@ public class XDMUtilTest extends TestCase {
             if(attr != null)
                 assertEquals("new attr change begin: ", 28, XDMUtil.findPosition(attr));
         }
+    }
+    
+    public void FIXME_testCompareWithDiffInLeafNodes() throws Exception {
+        String s1 = Util.getResourceAsString("resources/testdiff1_0.xml");
+        String s2 = Util.getResourceAsString("resources/testdiff1_1.xml");
+        assertEquals(1, new XDMUtil().compareXML(s1, s1, XDMUtil.ComparisonCriteria.EQUAL).size());
     }
     
     public List<Difference> compareXML(String xml1, String xml2,
