@@ -77,7 +77,7 @@ public class TextGraphics2D extends Graphics2D {
             buf.deleteCharAt(start);
         }
         str = buf.toString();
-        // remove '...' ussually rendered when the left epression is too long 
+        // remove '...' ussually rendered when the left epression is too long
         str = str.replaceAll("[.]{3} ?", "");
         return str;
     }
@@ -286,7 +286,9 @@ public class TextGraphics2D extends Graphics2D {
     
     public FontRenderContext getFontRenderContext() {
         if (dummy == null) return null;
-        return ((Graphics2D) dummy.getGraphics()).getFontRenderContext();
+        Graphics2D graphics = (Graphics2D) dummy.getGraphics();
+        if (graphics == null) return null;
+        return graphics.getFontRenderContext();
     }
     
     public Paint getPaint() {
