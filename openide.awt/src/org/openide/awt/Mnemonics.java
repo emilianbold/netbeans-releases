@@ -21,10 +21,9 @@
 package org.openide.awt;
 
 import org.openide.util.Utilities;
-
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-
+import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.JLabel;
 
@@ -84,9 +83,16 @@ public final class Mnemonics extends Object {
                     setMnemonicIndex(item, i);
                 } else {
                     // it's non-latin, getting the latin correspondance
-                    int latinCode = getLatinKeycode(ch);
-                    setMnemonic(item, latinCode);
-                    setMnemonicIndex(item, i);
+                    try {
+                        int latinCode = getLatinKeycode(ch);
+                        setMnemonic(item, latinCode);
+                        setMnemonicIndex(item, i);
+                    } catch (MissingResourceException e) {
+                        Logger.getAnonymousLogger().info("Mapping from a non-Latin character '"+ch+ 
+                                "' not found in a localized (branded) version of "+
+                                "openide/awt/src/org/openide/awt/Mnemonics.properties - "+
+                                "mnemonic cannot be assigned in "+text);
+                    }
                 }
             }
         }
@@ -190,23 +196,15 @@ public final class Mnemonics extends Object {
      *         or the appropriate VK_*** code (if there's no latin character
      *         "under" the non-Latin one
      */
-    private static int getLatinKeycode(char localeChar) {
-        try {
-            // associated should be a latin character, arabic digit 
-            // or an integer (KeyEvent.VK_***)
-            String str = getBundle().getString("MNEMONIC_" + localeChar); // NOI18N
+    private static int getLatinKeycode(char localeChar) throws MissingResourceException {
+        // associated should be a latin character, arabic digit 
+        // or an integer (KeyEvent.VK_***)
+        String str = getBundle().getString("MNEMONIC_" + localeChar); // NOI18N
 
-            if (str.length() == 1) {
-                return str.charAt(0);
-            } else {
-                return Integer.parseInt(str);
-            }
-        } catch (MissingResourceException x) {
-            // correspondence not found, it IS an error,
-            // but we eat it, and return the character itself
-            x.printStackTrace();
-
-            return localeChar;
+        if (str.length() == 1) {
+            return str.charAt(0);
+        } else {
+            return Integer.parseInt(str);
         }
     }
 
