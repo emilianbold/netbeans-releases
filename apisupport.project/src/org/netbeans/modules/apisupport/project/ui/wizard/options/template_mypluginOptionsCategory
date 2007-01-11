@@ -14,11 +14,11 @@ public final class @@OptionsCategory_CLASS_NAME@@ extends OptionsCategory {
     }
 
     public String getCategoryName() {
-        return NbBundle.getMessage(@@OptionsCategory_CLASS_NAME@@.class, "OptionsCategory_Name");
+        return NbBundle.getMessage(@@OptionsCategory_CLASS_NAME@@.class, "@@OptionsCategory_Name@@");
     }
 
     public String getTitle() {
-        return NbBundle.getMessage(@@OptionsCategory_CLASS_NAME@@.class, "OptionsCategory_Title");
+        return NbBundle.getMessage(@@OptionsCategory_CLASS_NAME@@.class, "@@OptionsCategory_Title@@");
     }
 
     public OptionsPanelController create() {

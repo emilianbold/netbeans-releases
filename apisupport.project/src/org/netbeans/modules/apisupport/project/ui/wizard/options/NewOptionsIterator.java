@@ -84,25 +84,29 @@ final class NewOptionsIterator extends BasicWizardIterator {
         
         private static final int WARNING_INCORRECT_ICON_SIZE = -1;
         
+        private static final String[] CATEGORY_BUNDLE_KEYS = new String[] {
+            "@@OptionsCategory_Title@@", // NOI18N
+            "@@OptionsCategory_Name@@", // NOI18N
+        };
+        
+        private static final String[] ADVANCED_BUNDLE_KEYS = new String[] {
+            "@@AdvancedOption_DisplayName@@", // NOI18N
+            "@@AdvancedOption_Tooltip@@" // NOI18N
+        };
+        
         private static final String[] TOKENS = new String[] {
             "@@PACKAGE_NAME@@", // NOI18N
             "@@AdvancedOption_CLASS_NAME@@", // NOI18N
             "@@OptionsCategory_CLASS_NAME@@", // NOI18N
             "@@Panel_CLASS_NAME@@", // NOI18N
             "@@OptionsPanelController_CLASS_NAME@@", // NOI18N
-            "@@ICON_PATH@@" // NOI18N
+            "@@ICON_PATH@@", // NOI18N
+            ADVANCED_BUNDLE_KEYS[0],
+            ADVANCED_BUNDLE_KEYS[1],
+            CATEGORY_BUNDLE_KEYS[0],
+            CATEGORY_BUNDLE_KEYS[1]
         };
-        
-        private static final String[] CATEGORY_BUNDLE_KEYS = new String[] {
-            "OptionsCategory_Title", // NOI18N
-            "OptionsCategory_Name", // NOI18N
-        };
-        
-        private static final String[] ADVANCED_BUNDLE_KEYS = new String[] {
-            "AdvancedOption_DisplayName", // NOI18N
-            "AdvancedOption_Tooltip" // NOI18N
-        };
-        
+                
         private static final String FORM_TEMPLATE_SUFFIXES[] = new String[]{"Panel"}; // NOI18N
         private static final String[] JAVA_TEMPLATE_SUFFIXES = new String[] {
             "AdvancedOption",//NOI18N
@@ -192,20 +196,23 @@ final class NewOptionsIterator extends BasicWizardIterator {
                 return getOptionsPanelControllerClassName();
             } else if ("@@ICON_PATH@@".equals(key)) {// NOI18N
                 return addCreateIconOperation(new CreatedModifiedFiles(getProject()), getIconPath());
-            } else {
+            } else if (key.startsWith("@@") && key.endsWith("@@")) {// NOI18N
+                return key.substring(2, key.length()-2)+"_"+getClassNamePrefix();
+            }else {
                 throw new AssertionError(key);
             }
+            
         }
         
         
         private String getBundleValue(String key) {
-            if ("OptionsCategory_Title".equals(key)) {// NOI18N
+            if (key.startsWith("OptionsCategory_Title")) {// NOI18N
                 return getTitle();
-            } else if ("OptionsCategory_Name".equals(key)) {// NOI18N
+            } else if (key.startsWith("OptionsCategory_Name")) {// NOI18N
                 return getCategoryName();
-            } else if ("AdvancedOption_DisplayName".equals(key)) {// NOI18N
+            } else if (key.startsWith("AdvancedOption_DisplayName")) {// NOI18N
                 return getDisplayName();
-            } else if ("AdvancedOption_Tooltip".equals(key)) {// NOI18N
+            } else if (key.startsWith("AdvancedOption_Tooltip")) {// NOI18N
                 return getTooltip();
             } else {
                 throw new AssertionError(key);
@@ -366,8 +373,12 @@ final class NewOptionsIterator extends BasicWizardIterator {
         private void generateBundleKeys() {
             String[] bundleKeys = (isAdvanced()) ? ADVANCED_BUNDLE_KEYS : CATEGORY_BUNDLE_KEYS;
             for (int i = 0; i < bundleKeys.length; i++) {
-                files.add(files.bundleKey(getDefaultPackagePath("Bundle.properties"),// NOI18N
-                        bundleKeys[i],getBundleValue(bundleKeys[i])));
+                String key = bundleKeys[i];
+                if (key.startsWith("@@") && key.endsWith("@@")) {//NOI18N
+                    key = getReplacement(key);
+                } 
+                String value = getBundleValue(key);
+                files.add(files.bundleKey(getDefaultPackagePath("Bundle.properties"),key,value));// NOI18N                        
             }
         }
         
