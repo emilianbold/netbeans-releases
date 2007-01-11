@@ -63,7 +63,7 @@ public final class Mnemonics extends Object {
         } else {
             setText(item, text.substring(0, i) + text.substring(i + 1));
             //#67807 no mnemonics on macosx
-            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            if (Utilities.isMac()) {
                 setMnemonic(item, 0);
             } else {
                 char ch = text.charAt(i + 1);
@@ -88,7 +88,7 @@ public final class Mnemonics extends Object {
                         setMnemonic(item, latinCode);
                         setMnemonicIndex(item, i);
                     } catch (MissingResourceException e) {
-                        Logger.getAnonymousLogger().info("Mapping from a non-Latin character '"+ch+ 
+                        Logger.getLogger(Mnemonics.class.getName()).info("Mapping from a non-Latin character '"+ch+ 
                                 "' not found in a localized (branded) version of "+
                                 "openide/awt/src/org/openide/awt/Mnemonics.properties - "+
                                 "mnemonic cannot be assigned in "+text);
@@ -243,7 +243,7 @@ public final class Mnemonics extends Object {
      * @param mnem Mnemonic char to set, latin [a-z,A-Z], digit [0-9], or any VK_ code
      */
     private static void setMnemonic(Object item, int mnem) {
-        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+        if (Utilities.isMac()) {
             // there shall be no mnemonics on macosx.
             //#55864
             return;
