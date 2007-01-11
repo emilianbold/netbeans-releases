@@ -19,10 +19,24 @@
 
 package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 
+import java.util.Arrays;
+import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import javax.lang.model.element.Modifier;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.method.MethodModel;
+import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.common.source.GenerationUtils;
+import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.netbeans.modules.j2ee.dd.api.ejb.AssemblyDescriptor;
 import org.netbeans.modules.j2ee.dd.api.ejb.ContainerTransaction;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
@@ -66,6 +80,8 @@ public class EntityGenerator {
     private final String remoteHomeName;
     private final String localName;
     private final String localHomeName;
+    
+    private final String packageNameWithDot;
 
     public static EntityGenerator create(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
             boolean isCMP, String primaryKeyClassName) {
@@ -86,6 +102,7 @@ public class EntityGenerator {
         this.remoteHomeName = ejbNameOptions.getEntityRemoteHomePrefix() + wizardTargetName + ejbNameOptions.getEntityRemoteHomeSuffix();
         this.localName = ejbNameOptions.getEntityLocalPrefix() + wizardTargetName + ejbNameOptions.getEntityLocalSuffix();
         this.localHomeName = ejbNameOptions.getEntityLocalHomePrefix() + wizardTargetName + ejbNameOptions.getEntityLocalHomeSuffix();
+        this.packageNameWithDot = EjbGenerationUtil.getSelectedPackageName(pkg) + ".";
     }
 
     public FileObject generate() throws IOException {
@@ -111,26 +128,48 @@ public class EntityGenerator {
     
     private FileObject generateBmpClasses() throws IOException {
         FileObject ejbClassFO = GenerationUtils.createClass(BMP_EJBCLASS,  pkg, ejbClassName, null);
+        createAndAddMethod(ejbClassFO, bmpFindByPrimaryKeyImpl());
         if (hasRemote) {
             GenerationUtils.createClass(BMP_REMOTE,  pkg, remoteName, null);
-            GenerationUtils.createClass(BMP_REMOTEHOME, pkg, remoteHomeName, null);
+            FileObject remoteHomeFO = GenerationUtils.createClass(BMP_REMOTEHOME, pkg, remoteHomeName, null);
+            createAndAddMethod(remoteHomeFO, findByPrimaryKeyRemoteHome());
         }
         if (hasLocal) {
             GenerationUtils.createClass(BMP_LOCAL, pkg, localName, null);
-            GenerationUtils.createClass(BMP_LOCALHOME, pkg, localHomeName, null);
+            FileObject localHomeFO = GenerationUtils.createClass(BMP_LOCALHOME, pkg, localHomeName, null);
+            createAndAddMethod(localHomeFO, findByPrimaryKeyLocalHome());
         }
         return ejbClassFO;
     }
 
     private FileObject generateCmpClasses() throws IOException {
         FileObject ejbClassFO = GenerationUtils.createClass(CMP_EJBCLASS,  pkg, ejbClassName, null);
+        MethodModel[] methods = new MethodModel[] {
+            cmpGetKeyImpl(),
+            cmpSetKeyImpl(),
+            cmpEjbCreateImpl(),
+            cmpEjbPostCreateImpl()
+        };
+        createAndAddMethods(ejbClassFO, Arrays.asList(methods));
         if (hasRemote) {
-            GenerationUtils.createClass(CMP_REMOTE,  pkg, remoteName, null);
-            GenerationUtils.createClass(CMP_REMOTEHOME, pkg, remoteHomeName, null);
+            FileObject remoteFO = GenerationUtils.createClass(CMP_REMOTE,  pkg, remoteName, null);
+            FileObject remoteHomeFO = GenerationUtils.createClass(CMP_REMOTEHOME, pkg, remoteHomeName, null);
+            createAndAddMethod(remoteFO, cmpGetKeyRemote());
+            methods = new MethodModel[] {
+                findByPrimaryKeyRemoteHome(),
+                cmpCreateRemoteHome()
+            };
+            createAndAddMethods(remoteHomeFO, Arrays.asList(methods));
         }
         if (hasLocal) {
-            GenerationUtils.createClass(CMP_LOCAL, pkg, localName, null);
-            GenerationUtils.createClass(CMP_LOCALHOME, pkg, localHomeName, null);
+            FileObject localFO = GenerationUtils.createClass(CMP_LOCAL, pkg, localName, null);
+            FileObject localHomeFO = GenerationUtils.createClass(CMP_LOCALHOME, pkg, localHomeName, null);
+            createAndAddMethod(localFO, cmpGetKeyLocal());
+            methods = new MethodModel[] {
+                findByPrimaryKeyLocalHome(),
+                cmpCreateLocalHome()
+            };
+            createAndAddMethods(localHomeFO, Arrays.asList(methods));
         }
         return ejbClassFO;
     }
@@ -145,17 +184,17 @@ public class EntityGenerator {
         }
         Entity entity = enterpriseBeans.newEntity();
         entity.setEjbName(ejbName);
-        entity.setEjbClass(ejbClassName);
+        entity.setEjbClass(packageNameWithDot + ejbClassName);
         entity.setPrimKeyClass(primaryKeyClassName);
         entity.setReentrant(false);
         entity.setDisplayName(ejbName); // TODO: add "EB" suffix?
         if (hasRemote) {
-            entity.setRemote(remoteName);
-            entity.setHome(remoteHomeName);
+            entity.setRemote(packageNameWithDot + remoteName);
+            entity.setHome(packageNameWithDot + remoteHomeName);
         }
         if (hasLocal) {
-            entity.setLocal(localName);
-            entity.setLocalHome(localHomeName);
+            entity.setLocal(packageNameWithDot + localName);
+            entity.setLocalHome(packageNameWithDot + localHomeName);
         }
         enterpriseBeans.addEntity(entity);
         // add transaction requirements
@@ -172,6 +211,175 @@ public class EntityGenerator {
         containerTransaction.addMethod(method);
         assemblyDescriptor.addContainerTransaction(containerTransaction);
         ejbJar.write(ejbModule.getDeploymentDescriptor());
+    }
+
+    private void createAndAddMethod(FileObject fileObject, final MethodModel method) throws IOException {
+        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                // called from wizard, there is only one class in file, so it's ok to call this
+                ClassTree classTree = SourceUtils.newInstance(workingCopy).getClassTree();
+                MethodTree implMethodTree = MethodModelSupport.createMethodTree(workingCopy, method);
+                ClassTree modifiedClassTree = workingCopy.getTreeMaker().addClassMember(classTree, implMethodTree);
+                workingCopy.rewrite(classTree, modifiedClassTree);
+            }
+        }).commit();
+    }
+    
+    private void createAndAddMethods(FileObject fileObject, final List<MethodModel> methods) throws IOException {
+        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                // called from wizard, there is only one class in file, so it's ok to call this
+                ClassTree classTree = SourceUtils.newInstance(workingCopy).getClassTree();
+                ClassTree newClassTree = classTree;
+                for (MethodModel method : methods) {
+                    MethodTree implMethodTree = MethodModelSupport.createMethodTree(workingCopy, method);
+                    newClassTree = workingCopy.getTreeMaker().addClassMember(newClassTree, implMethodTree);
+                }
+                workingCopy.rewrite(classTree, newClassTree);
+            }
+        }).commit();
+    }
+    
+    private MethodModel bmpFindByPrimaryKeyImpl() {
+        return MethodModel.create(
+                "ejbFindByPrimaryKey", // NOI18N
+                primaryKeyClassName,
+                "{" +
+                "// See EJB 2.0 and EJB 2.1 section 12.2.5\n" +
+                "// TODO add code to locate aKey from persistent storage\n" +
+                "// throw javax.ejb.ObjectNotFoundException if aKey is not in\n" +
+                "// persistent storage.\n" +
+                " return null;" + 
+                "}",
+                Collections.singletonList(MethodModel.Variable.create(primaryKeyClassName, "key")),
+                Collections.singletonList("javax.ejb.FinderException"), // NOI18N
+                Collections.singleton(Modifier.PUBLIC)
+                );
+    }
+    
+    private MethodModel findByPrimaryKeyLocalHome() {
+        return MethodModel.create(
+                "findByPrimaryKey",
+                packageNameWithDot + localName,
+                null,
+                Collections.singletonList(MethodModel.Variable.create(primaryKeyClassName, "key")),
+                Collections.singletonList("javax.ejb.FinderException"), // NOI18N
+                Collections.<Modifier>emptySet()
+                );
+    }
+    
+    private MethodModel findByPrimaryKeyRemoteHome() {
+        String[] exceptions = new String[] { "javax.ejb.FinderException", "java.rmi.RemoteException" };
+        return MethodModel.create(
+                "findByPrimaryKey",
+                packageNameWithDot + remoteName,
+                null,
+                Collections.singletonList(MethodModel.Variable.create(primaryKeyClassName, "key")),
+                Arrays.asList(exceptions),
+                Collections.<Modifier>emptySet()
+                );
+    }
+
+    private MethodModel cmpGetKeyImpl() {
+        Modifier[] modifiers = new Modifier[] {Modifier.PUBLIC, Modifier.ABSTRACT};
+        return MethodModel.create(
+                "getKey",
+                primaryKeyClassName,
+                null,
+                Collections.<MethodModel.Variable>emptyList(),
+                Collections.<String>emptyList(),
+                new HashSet(Arrays.asList(modifiers))
+                );
+    }
+    
+    private MethodModel cmpSetKeyImpl() {
+        Modifier[] modifiers = new Modifier[] {Modifier.PUBLIC, Modifier.ABSTRACT};
+        return MethodModel.create(
+                "setKey",
+                "void",
+                null,
+                Collections.singletonList(MethodModel.Variable.create(primaryKeyClassName, "key")),
+                Collections.<String>emptyList(),
+                new HashSet(Arrays.asList(modifiers))
+                );
+    }
+
+    private MethodModel cmpEjbCreateImpl() {
+        return MethodModel.create(
+                "ejbCreate",
+                primaryKeyClassName,
+                "{" +
+                "if (key == null) {\n" +
+                "    throw new CreateException(\"The field \\\"key\\\" must not be null\");\n" +
+                "}\n\n" +
+                "// TODO add additional validation code, throw CreateException if data is not valid\n" +
+                "setKey(key);\n\n" +
+                "return null;" + 
+                "}",
+                Collections.singletonList(MethodModel.Variable.create(primaryKeyClassName, "key")),
+                Collections.singletonList("javax.ejb.CreateException"), // NOI18N
+                Collections.singleton(Modifier.PUBLIC)
+                );
+    }
+    
+    private MethodModel cmpEjbPostCreateImpl() {
+        return MethodModel.create(
+                "ejbPostCreate",
+                "void",
+                "{" +
+                "// TODO populate relationships here if appropriate" +
+                "}",
+                Collections.singletonList(MethodModel.Variable.create(primaryKeyClassName, "key")),
+                Collections.<String>emptyList(),
+                Collections.singleton(Modifier.PUBLIC)
+                );
+    }
+    
+    private MethodModel cmpGetKeyLocal() {
+        return MethodModel.create(
+                "getKey",
+                primaryKeyClassName,
+                null,
+                Collections.<MethodModel.Variable>emptyList(),
+                Collections.<String>emptyList(),
+                Collections.<Modifier>emptySet()
+                );
+    }
+
+    private MethodModel cmpCreateLocalHome() {
+        return MethodModel.create(
+                "create",
+                packageNameWithDot + localName,
+                null,
+                Collections.singletonList(MethodModel.Variable.create(primaryKeyClassName, "key")),
+                Collections.singletonList("javax.ejb.CreateException"), // NOI18N
+                Collections.<Modifier>emptySet()
+                );
+    }
+    
+    private MethodModel cmpGetKeyRemote() {
+        return MethodModel.create(
+                "getKey",
+                primaryKeyClassName,
+                null,
+                Collections.<MethodModel.Variable>emptyList(),
+                Collections.singletonList("java.rmi.RemoteException"), // NOI18N
+                Collections.<Modifier>emptySet()
+                );
+    }
+
+    private MethodModel cmpCreateRemoteHome() {
+        String[] exceptions = new String[] { "javax.ejb.CreateException", "java.rmi.RemoteException" };
+        return MethodModel.create(
+                "create",
+                packageNameWithDot + remoteName,
+                null,
+                Collections.singletonList(MethodModel.Variable.create(primaryKeyClassName, "key")),
+                Arrays.asList(exceptions),
+                Collections.<Modifier>emptySet()
+                );
     }
     
 }

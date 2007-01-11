@@ -19,8 +19,4 @@ import javax.ejb.FinderException;
  */
 public interface __NAME__ extends EJBHome {
     
-/*
-    __REMOTE_INTERFACE__ findByPrimaryKey(__PRIMARY_KEY__ key)  throws FinderException, RemoteException;
-*/
-    
 }

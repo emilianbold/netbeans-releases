@@ -18,8 +18,4 @@ import javax.ejb.FinderException;
  */
 public interface __NAME__ extends EJBLocalHome {
     
-/*
-    __LOCAL_INTERFACE__ findByPrimaryKey(__PRIMARY_KEY__ key) throws FinderException;
-*/
-    
 }

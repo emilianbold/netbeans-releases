@@ -21,8 +21,6 @@ public class __NAME__ implements EntityBean {
 
     private EntityContext context;
     
-    // <editor-fold defaultstate="collapsed" desc="EJB infrastructure methods. Click the + sign on the left to edit the code.">
-   
     // TODO Add code to acquire and use other enterprise resources (DataSource, JMS, enterprise beans, Web services)
     // TODO Add business methods
     // TODO Add create methods
@@ -76,17 +74,4 @@ public class __NAME__ implements EntityBean {
         // TODO add code to persist data
     }
     
-    // </editor-fold>
-    
-/*
-    /**
-     * See EJB 2.0 and EJB 2.1 section 12.2.5
-     */
-    public __PRIMARY_KEY__ ejbFindByPrimaryKey(Long aKey) throws FinderException {
-        // TODO add code to locate aKey from persistent storage
-        // throw javax.ejb.ObjectNotFoundException if aKey is not in
-        // persistent storage.
-    }
-*/
-
 }

@@ -32,7 +32,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.EjbGenerationUtil;
+import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -83,7 +83,7 @@ public final class ServiceLocatorWizard implements WizardDescriptor.Instantiatin
         FileObject template = Templates.getTemplate(wiz);
         DataObject dTemplate = DataObject.find( template );                
         DataObject dobj = dTemplate.createFromTemplate( df, clsName);
-        String pkgName = EjbGenerationUtil.getSelectedPackageName(pkg, project);
+        String pkgName = EjbGenerationUtil.getSelectedPackageName(pkg);
         String fullName = (pkgName.length()>0?pkgName+'.':"")+clsName;
         EnterpriseReferenceContainer erc = (EnterpriseReferenceContainer)
                 project.getLookup().lookup(EnterpriseReferenceContainer.class);

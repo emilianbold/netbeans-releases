@@ -15,8 +15,4 @@ import javax.ejb.EJBObject;
  */
 public interface __NAME__ extends EJBObject {
     
-/*
-    __PRIMARY_KEY__ getKey() throws RemoteException;
-*/
-
 }

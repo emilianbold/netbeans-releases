@@ -22,23 +22,11 @@ package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
@@ -157,50 +145,50 @@ public class SessionGeneratorTest extends TestBase {
     }
     
     private void checkEjbClass21(final FileObject ejbClass, final String name, final Session session) throws IOException {
-        runUserActionTask(ejbClass, new AbstractTask<CompilationController>() {
+        Util.runUserActionTask(ejbClass, new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 final String VOID = "void";
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                 TypeElement clazz = sourceUtils.getTypeElement();
                 assertTrue(clazz.getSimpleName().contentEquals(ejbNames.getSessionEjbClassPrefix() + name + ejbNames.getSessionEjbClassSuffix()));
-                assertDirectlyImplements(controller, clazz, new String[] {"javax.ejb.SessionBean"});
-                assertTrue(contains(controller, clazz, MethodModel.create(
+                assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.SessionBean"}));
+                assertTrue(Util.contains(controller, clazz, MethodModel.create(
                             "setSessionContext", VOID, "", 
                             Collections.singletonList(MethodModel.Variable.create("javax.ejb.SessionContext", "aContext")), 
                             Collections.<String>emptyList(), 
                             Collections.singleton(Modifier.PUBLIC)
                             )));
-                assertTrue(contains(controller, clazz, MethodModel.create(
+                assertTrue(Util.contains(controller, clazz, MethodModel.create(
                             "ejbActivate", VOID, "", 
                             Collections.<MethodModel.Variable>emptyList(), 
                             Collections.<String>emptyList(), 
                             Collections.singleton(Modifier.PUBLIC)
                             )));
-                assertTrue(contains(controller, clazz, MethodModel.create(
+                assertTrue(Util.contains(controller, clazz, MethodModel.create(
                             "ejbPassivate", VOID, "", 
                             Collections.<MethodModel.Variable>emptyList(), 
                             Collections.<String>emptyList(), 
                             Collections.singleton(Modifier.PUBLIC)
                             )));
-                assertTrue(contains(controller, clazz, MethodModel.create(
+                assertTrue(Util.contains(controller, clazz, MethodModel.create(
                             "ejbRemove", VOID, "", 
                             Collections.<MethodModel.Variable>emptyList(), 
                             Collections.<String>emptyList(), 
                             Collections.singleton(Modifier.PUBLIC)
                             )));
-                assertTrue(contains(controller, clazz, MethodModel.Variable.create("javax.ejb.SessionContext", "context")));
+                assertTrue(Util.contains(controller, clazz, MethodModel.Variable.create("javax.ejb.SessionContext", "context")));
                 assertTrue(clazz.getQualifiedName().contentEquals(session.getEjbClass()));
             }
         });
     }
     
     private void checkRemote21(final FileObject remote, final String name, final Session session) throws IOException {
-        runUserActionTask(remote, new AbstractTask<CompilationController>() {
+        Util.runUserActionTask(remote, new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                 TypeElement clazz = sourceUtils.getTypeElement();
                 assertTrue(clazz.getSimpleName().contentEquals(ejbNames.getSessionRemotePrefix() + name + ejbNames.getSessionRemoteSuffix()));
-                assertDirectlyImplements(controller, clazz, new String[] {"javax.ejb.EJBObject"});
+                assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.EJBObject"}));
                 assertTrue(clazz.getEnclosedElements().isEmpty());
                 assertTrue(clazz.getQualifiedName().contentEquals(session.getRemote()));
             }
@@ -208,12 +196,12 @@ public class SessionGeneratorTest extends TestBase {
     }
     
     private void checkRemoteHome21(final FileObject remote, final String name, final Session session) throws IOException {
-        runUserActionTask(remote, new AbstractTask<CompilationController>() {
+        Util.runUserActionTask(remote, new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                 TypeElement clazz = sourceUtils.getTypeElement();
                 assertTrue(clazz.getSimpleName().contentEquals(ejbNames.getSessionRemoteHomePrefix() + name + ejbNames.getSessionRemoteHomeSuffix()));
-                assertDirectlyImplements(controller, clazz, new String[] {"javax.ejb.EJBHome"});
+                assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.EJBHome"}));
                 assertTrue(clazz.getEnclosedElements().isEmpty());
                 assertTrue(clazz.getQualifiedName().contentEquals(session.getHome()));
             }
@@ -221,12 +209,12 @@ public class SessionGeneratorTest extends TestBase {
     }
     
     private void checkLocal21(final FileObject remote, final String name, final Session session) throws IOException {
-        runUserActionTask(remote, new AbstractTask<CompilationController>() {
+        Util.runUserActionTask(remote, new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                 TypeElement clazz = sourceUtils.getTypeElement();
                 assertTrue(clazz.getSimpleName().contentEquals(ejbNames.getSessionLocalPrefix() + name + ejbNames.getSessionLocalSuffix()));
-                assertDirectlyImplements(controller, clazz, new String[] {"javax.ejb.EJBLocalObject"});
+                assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.EJBLocalObject"}));
                 assertTrue(clazz.getEnclosedElements().isEmpty());
                 assertTrue(clazz.getQualifiedName().contentEquals(session.getLocal()));
             }
@@ -234,92 +222,16 @@ public class SessionGeneratorTest extends TestBase {
     }
     
     private void checkLocalHome21(final FileObject remote, final String name, final Session session) throws IOException {
-        runUserActionTask(remote, new AbstractTask<CompilationController>() {
+        Util.runUserActionTask(remote, new AbstractTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
                 TypeElement clazz = sourceUtils.getTypeElement();
                 assertTrue(clazz.getSimpleName().contentEquals(ejbNames.getSessionLocalHomePrefix() + name + ejbNames.getSessionLocalHomeSuffix()));
-                assertDirectlyImplements(controller, clazz, new String[] {"javax.ejb.EJBLocalHome"});
+                assertTrue(Util.directlyImplements(controller, clazz, new String[] {"javax.ejb.EJBLocalHome"}));
                 assertTrue(clazz.getEnclosedElements().isEmpty());
                 assertTrue(clazz.getQualifiedName().contentEquals(session.getLocalHome()));
             }
         });
-    }
-    
-    private static void assertDirectlyImplements(CompilationController controller, TypeElement typeElement, String[] interfaces) {
-        List<? extends TypeMirror> foundInterfaces = typeElement.getInterfaces();
-        assertTrue("Superclass or interface not found? Probably not on classpath?", foundInterfaces.size() == interfaces.length);
-        for (TypeMirror typeMirror : foundInterfaces) {
-            TypeElement element = (TypeElement) controller.getTypes().asElement(typeMirror);
-            assertTrue(containsName(interfaces, element.getQualifiedName()));
-        }
-    }
-    
-    private static boolean contains(CompilationController controller, TypeElement typeElement, MethodModel methodModel) {
-        for (ExecutableElement executableElement : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
-            if (MethodModelSupport.isSameMethod(controller, executableElement, methodModel)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    private static boolean contains(CompilationController controller, TypeElement typeElement, MethodModel.Variable field) {
-        for (VariableElement variableElement : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
-            if (getTypeName(controller, variableElement.asType()).equals(field.getType()) &&
-                    variableElement.getSimpleName().contentEquals(field.getName())) {
-                return true;
-            }
-        }
-        
-        return false;
-    }
-    
-    private static boolean containsName(String[] stringNames, Name name) {
-        for (String stringName : stringNames) {
-            if (name.contentEquals(stringName)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    private static void runUserActionTask(FileObject javaFile, CancellableTask<CompilationController> taskToTest) throws IOException {
-        JavaSource javaSource = JavaSource.forFileObject(javaFile);
-        javaSource.runUserActionTask(taskToTest, true);
-    }
-    
-    // see #90968
-    private static String getTypeName(CompilationController controller, TypeMirror typeMirror) {
-        TypeKind typeKind = typeMirror.getKind();
-        switch (typeKind) {
-            case BOOLEAN : return "boolean"; // NOI18N
-            case BYTE : return "byte"; // NOI18N
-            case CHAR : return "char"; // NOI18N
-            case DOUBLE : return "double"; // NOI18N
-            case FLOAT : return "float"; // NOI18N
-            case INT : return "int"; // NOI18N
-            case LONG : return "long"; // NOI18N
-            case SHORT : return "short"; // NOI18N
-            case VOID : return "void"; // NOI18N
-            case DECLARED : 
-                Element element = controller.getTypes().asElement(typeMirror);
-                return ((TypeElement) element).getQualifiedName().toString();
-            case ARRAY : 
-                ArrayType arrayType = (ArrayType) typeMirror;
-                Element componentTypeElement = controller.getTypes().asElement(arrayType.getComponentType());
-                return ((TypeElement) componentTypeElement).getQualifiedName().toString() + "[]";
-            case ERROR :
-            case EXECUTABLE :
-            case NONE :
-            case NULL :
-            case OTHER :
-            case PACKAGE :
-            case TYPEVAR :
-            case WILDCARD :
-                break;
-        }
-        return null;
     }
 
 }

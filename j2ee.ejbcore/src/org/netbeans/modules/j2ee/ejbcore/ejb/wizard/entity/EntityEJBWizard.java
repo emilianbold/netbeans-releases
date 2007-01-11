@@ -30,6 +30,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
@@ -73,7 +74,7 @@ public final class EntityEJBWizard implements WizardDescriptor.InstantiatingIter
 
     }
 
-    public Set instantiate () throws IOException {
+    public Set instantiate () {
         boolean isCMP = ejbPanel.isCMP();
         EntityGenerator entityGenerator = EntityGenerator.create(
                 Templates.getTargetName(wiz), 
@@ -83,7 +84,12 @@ public final class EntityEJBWizard implements WizardDescriptor.InstantiatingIter
                 isCMP, 
                 ejbPanel.getPrimaryKeyClassName()
                 );
-        FileObject result = entityGenerator.generate();
+        FileObject result = null;
+        try {
+            result = entityGenerator.generate();
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
         return result == null ? Collections.<FileObject>emptySet() : Collections.singleton(result);
     }
 

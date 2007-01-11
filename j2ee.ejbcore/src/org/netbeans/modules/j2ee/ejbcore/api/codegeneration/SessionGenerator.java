@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 
+import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
 import java.io.IOException;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
@@ -162,8 +163,7 @@ public final class SessionGenerator {
         session = beans.newSession();
         session.setEjbName(ejbName);
         session.setDisplayName(ejbName); // TODO: add SB suffix?
-        Project project = FileOwnerQuery.getOwner(pkg);
-        String packageNameWithDot = EjbGenerationUtil.getSelectedPackageName(pkg, project) + ".";
+        String packageNameWithDot = EjbGenerationUtil.getSelectedPackageName(pkg) + ".";
         session.setEjbClass(packageNameWithDot + ejbClassName);
 
         if (hasRemote) {

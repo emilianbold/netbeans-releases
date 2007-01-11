@@ -17,8 +17,4 @@ import javax.ejb.EJBLocalObject;
  */
 public interface __NAME__ extends EJBLocalObject {
 
-/*
-    __PRIMARY_KEY__ Long getKey();
-*/
-    
 }

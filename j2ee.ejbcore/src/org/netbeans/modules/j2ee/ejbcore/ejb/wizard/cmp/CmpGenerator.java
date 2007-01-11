@@ -26,7 +26,7 @@ import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.EjbGenerationUtil;
+import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

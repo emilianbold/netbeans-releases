@@ -85,7 +85,10 @@ public class EntityNode extends AbstractNode implements OpenCookie{
         if (controller.getBeanDo() != null) {
             content.add(controller.getBeanDo());
         }
-        content.add(controller.createEjbReference());
+        EjbReference ejbReference = controller.createEjbReference();
+        if (ejbReference != null) {
+            content.add(controller.createEjbReference());
+        }
     }
     
     private void setDisplayName() {

@@ -22,7 +22,7 @@ package org.netbeans.modules.j2ee.ejbcore.patterns;
 import java.io.IOException;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmrField;
-import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.EjbGenerationUtil;
+import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -78,7 +78,7 @@ public class DTOGenerator {
         String pkgName;
         this.dtoHelp = dtoHelp;
         if(pkg != null) {
-            pkgName = EjbGenerationUtil.getSelectedPackageName(pkg, dtoHelp.getProject());
+            pkgName = EjbGenerationUtil.getSelectedPackageName(pkg);
         } else {
             pkgName = dtoHelp.getPackage();
             pkg = EjbGenerationUtil.getPackageFileObject(dtoHelp.getSourceGroup(),pkgName, dtoHelp.getProject());
