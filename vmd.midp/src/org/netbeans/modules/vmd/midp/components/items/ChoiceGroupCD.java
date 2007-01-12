@@ -78,7 +78,7 @@ public class ChoiceGroupCD extends ComponentDescriptor {
                     .addProperty("Type", PropertyEditorComboBox.createInstance(ChoiceCD.getChoiceGroupTypes(), TYPEID), PROP_CHOICE_TYPE)
                     .addProperty("Fit Policy", "Sets the application's preferred policy for fitting Choice element contents to the available screen space.",
 //                        true, PropertyEditorComboBox.createInstance(ChoiceCD.getListTypes(), TYPEID, Bundle.getMessage("LBL_STRING_NONE")), null, PROP_FIT_POLICY); //NOI18N
-                        true, PropertyEditorComboBox.createInstance(ChoiceCD.getListTypes(), TYPEID), null, PROP_FIT_POLICY);
+                        true, PropertyEditorComboBox.createInstance(ChoiceCD.getFitPolicyValues(), TYPEID), null, PROP_FIT_POLICY);
     }
     
     private static Presenter createSetterPresenter() {
