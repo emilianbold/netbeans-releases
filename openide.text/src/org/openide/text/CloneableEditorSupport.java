@@ -833,7 +833,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      */
     public JEditorPane[] getOpenedPanes() {
         // expected in AWT only
-        assert SwingUtilities.isEventDispatchThread() : "AWT"; // NOI18N
+        assert SwingUtilities.isEventDispatchThread(); // NOI18N
 
         LinkedList<JEditorPane> ll = new LinkedList<JEditorPane>();
         Enumeration en = allEditors.getComponents();
