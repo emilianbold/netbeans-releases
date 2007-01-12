@@ -25,6 +25,8 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.VariableTree;
 import java.io.File;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
@@ -50,6 +52,7 @@ public class ModifiersTest extends GeneratorTest {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(ModifiersTest.class);
 //        suite.addTest(new ModifiersTest("testChangeToFinalLocVar"));
+//        suite.addTest(new ModifiersTest("testAddClassAbstract"));
         return suite;
     }
     
@@ -89,6 +92,48 @@ public class ModifiersTest extends GeneratorTest {
                 VariableTree vt = (VariableTree) block.getStatements().get(0);
                 ModifiersTree mods = vt.getModifiers();
                 workingCopy.rewrite(mods, make.Modifiers(Collections.<Modifier>singleton(Modifier.FINAL)));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * Update top-level class modifiers.
+     */
+    public void testAddClassAbstract() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package hierbas.del.litoral;\n\n" +
+                "import java.io.*;\n\n" +
+                "public class Test {\n" +
+                "    public abstract void taragui();\n" +
+                "}\n"
+                );
+        String golden =
+                "package hierbas.del.litoral;\n\n" +
+                "import java.io.*;\n\n" +
+                "public abstract class Test {\n" +
+                "    public abstract void taragui();\n" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                
+                // finally, find the correct body and rewrite it.
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                ModifiersTree mods = clazz.getModifiers();
+                Set<Modifier> s = new HashSet<Modifier>(mods.getFlags());
+                s.add(Modifier.ABSTRACT);
+                workingCopy.rewrite(mods, make.Modifiers(s));
             }
             
             public void cancel() {
