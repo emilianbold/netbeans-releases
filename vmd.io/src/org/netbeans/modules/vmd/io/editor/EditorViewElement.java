@@ -28,13 +28,12 @@ import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
 import javax.swing.*;
-import java.util.ArrayList;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  * @author David Kaspar
@@ -73,7 +72,7 @@ public class EditorViewElement implements MultiViewElement, Serializable {
         if (topComponent == null) {
             JComponent visualRepresentation = view.getVisualRepresentation ();
             if (visualRepresentation != null)
-                topComponent = new EditorTopComponent (context, lookup, visualRepresentation);
+                topComponent = kind == DataEditorView.Kind.CODE ? new CodeEditorTopComponent (context, lookup, visualRepresentation) : new EditorTopComponent (context, lookup, visualRepresentation);
         }
         return topComponent;
     }
