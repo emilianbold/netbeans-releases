@@ -60,7 +60,7 @@ public class HttpMonitorWindow extends org.netbeans.performance.test.utilities.P
     
     public ComponentOperator open() {
         // invoke Window / HTTP Monitor from the main menu
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu(MENU,"|");
         return new TopComponentOperator(TITLE);
     }
     
@@ -69,4 +69,10 @@ public class HttpMonitorWindow extends org.netbeans.performance.test.utilities.P
         new TopComponentOperator(TITLE).close();
     }
     
+    /** Test could be executed internaly in IDE without XTest
+     * @param args arguments from command line
+     */
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(new HttpMonitorWindow("measureTime"));
+    }
 }

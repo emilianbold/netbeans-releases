@@ -22,10 +22,9 @@ package gui.window;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.modules.javacvs.VersioningOperator;
+
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.Operator;
-import org.netbeans.jemmy.operators.Operator.StringComparator;
 
 /**
  * Test opening Versioning Tab.
@@ -60,14 +59,8 @@ public class VersioningWindow extends org.netbeans.performance.test.utilities.Pe
     
     public ComponentOperator open() {
         // invoke Versioning from the main menu
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
-        
-        // the name of the window varies depends on opened projects - so we need to change the way we are looking for the window by name
-        StringComparator oldComparator = MainWindowOperator.getDefault().getComparator();
-        MainWindowOperator.getDefault().setComparator(new Operator.DefaultStringComparator(false, false));
-        VersioningOperator vo =  new VersioningOperator();
-        MainWindowOperator.getDefault().setComparator(oldComparator);
-        return vo;
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu(MENU,"|");
+        return new VersioningOperator();
     }
     
     public void close() {
@@ -81,5 +74,5 @@ public class VersioningWindow extends org.netbeans.performance.test.utilities.Pe
     public static void main(String[] args) {
         junit.textui.TestRunner.run(new VersioningWindow("measureTime"));
     }
-    
+ 
 }

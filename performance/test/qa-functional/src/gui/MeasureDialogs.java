@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -49,7 +49,10 @@ public class MeasureDialogs  {
         suite.addTest(new OpenFileDialog("measureTime", "Open File dialog open"));
  
         suite.addTest(new UpdateCenter("measureTime", "Update Center wizard open"));
-        suite.addTest(new ProxyConfiguration("measureTime", "Proxy Configuration open"));
+        
+        // need to be after Options - since NB 6.0 we open first panel of Options dialog instead of separate Proxy Configuration dialog,
+        //    also after Update Center - because the Proxy dialog is invoked from Update Center wizard
+        suite.addTest(new ProxyConfiguration("measureTime", "Proxy Configuration open")); 
         
         suite.addTest(new FavoritesWindow("measureTime", "Favorites window open"));
         //remove from test run for NB4.1        suite.addTest(new FilesWindow("measureTime", "Files window open"));
@@ -81,7 +84,7 @@ public class MeasureDialogs  {
         suite.addTest(new NewBreakpointDialog("measureTime", "New Breakpoint dialog open"));
         suite.addTest(new NewWatchDialog("measureTime", "New Watch dialog open"));
 
-//TODO failing after retouche integration        suite.addTest(new JavadocIndexSearch("measureTime", "Javadoc Index Search open"));
+        suite.addTest(new JavadocIndexSearch("measureTime", "Javadoc Index Search open"));
         
         suite.addTest(new JavaPlatformManager("measureTime", "Java Platform Manager open"));
         suite.addTest(new LibrariesManager("measureTime", "Libraries Manager open"));
@@ -95,15 +98,15 @@ public class MeasureDialogs  {
         suite.addTest(new FindInSourceEditor("measureTime", "Find in Source Editor dialog open"));
         suite.addTest(new InternationalizeDialog("measureTime", "Internationalize dialog open"));
         
-//TODO        suite.addTest(new DocumentsDialog("measureTime", "Documents dialog open"));
-        
         suite.addTest(new AddServerInstanceDialog("measureTime", "Add Server Instance dialog open"));
         
-//TODO failing after retouche integration        suite.addTest(new CreateTestsDialog("measureTime", "Create Tests dialog open"));
+        suite.addTest(new CreateTestsDialog("measureTime", "Create Tests dialog open"));
         
 //TODO failing after retouche integration        suite.addTest(new RefactorFindUsagesDialog("measureTime", "Refactor find usages dialog open"));
 //TODO failing after retouche integration        suite.addTest(new RefactorRenameDialog("measureTime", "Refactor rename dialog open"));
 //TODO hard to indentify end of the action        suite.addTest(new RefactorMoveClassDialog("measureTime", "Refactor move class dialog open"));
+        
+//TODO        suite.addTest(new DocumentsDialog("measureTime", "Documents dialog open"));
         
         return suite;
     }

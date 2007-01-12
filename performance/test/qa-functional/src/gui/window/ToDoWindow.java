@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -59,13 +59,19 @@ public class ToDoWindow extends org.netbeans.performance.test.utilities.Performa
     
     public ComponentOperator open() {
         // invoke Window / To Do from the main menu
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu(MENU,"|");
         return new TopComponentOperator(TITLE);
     }
     
     public void close() {
-        // close the tab
-        new TopComponentOperator("To Do").close();
+        if(testedComponentOperator!=null && testedComponentOperator.isShowing())
+            ((TopComponentOperator)testedComponentOperator).close();
     }
     
+    /** Test could be executed internaly in IDE without XTest
+     * @param args arguments from command line
+     */
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(new ToDoWindow("measureTime"));
+    }
 }

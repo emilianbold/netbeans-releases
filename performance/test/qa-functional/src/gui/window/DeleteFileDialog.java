@@ -67,7 +67,8 @@ public class DeleteFileDialog extends org.netbeans.performance.test.utilities.Pe
     }
 
     public void close() {
-        ((NbDialogOperator)testedComponentOperator).no();
+        if(testedComponentOperator!=null && testedComponentOperator.isShowing())
+            ((NbDialogOperator)testedComponentOperator).no();
     }
     
     
