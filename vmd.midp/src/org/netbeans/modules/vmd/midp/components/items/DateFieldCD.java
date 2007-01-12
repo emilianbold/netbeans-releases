@@ -90,10 +90,11 @@ public class DateFieldCD extends ComponentDescriptor {
 
     private static Presenter createSetterPresenter() {
         return new CodeSetterPresenter()
-                .addParameters(MidpParameter.create(PROP_DATE, PROP_TIME_ZONE))
-                .addParameters (new DateTimeInputModeParameter ())
-                .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).addParameters(ItemCD.PROP_LABEL, DateTimeInputModeParameter.PARAM_INPUT_MODE))
-                .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).addParameters(ItemCD.PROP_LABEL, DateTimeInputModeParameter.PARAM_INPUT_MODE, PROP_TIME_ZONE))
+                .addParameters(MidpParameter.create(PROP_DATE))
+                .addParameters (new TimeZoneParameter ())
+                .addParameters (new InputModeParameter ())
+                .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).addParameters(ItemCD.PROP_LABEL, InputModeParameter.PARAM_INPUT_MODE))
+                .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).addParameters(ItemCD.PROP_LABEL, InputModeParameter.PARAM_INPUT_MODE, TimeZoneParameter.PARAM_TIME_ZONE))
                 .addSetters(MidpSetter.createSetter("setDate", MidpVersionable.MIDP).addParameters(PROP_DATE))
                 .addSetters(MidpSetter.createSetter("setInputMode", MidpVersionable.MIDP).addParameters(PROP_INPUT_MODE));
     }
@@ -118,11 +119,11 @@ public class DateFieldCD extends ComponentDescriptor {
         return inputModeValues;
     }
 
-    private static class DateTimeInputModeParameter extends MidpParameter {
+    private static class InputModeParameter extends MidpParameter {
 
         public static final String PARAM_INPUT_MODE = "inputMode"; // NOI18N
 
-        public DateTimeInputModeParameter () {
+        public InputModeParameter () {
             super (PARAM_INPUT_MODE);
         }
 
@@ -145,6 +146,25 @@ public class DateFieldCD extends ComponentDescriptor {
                 }
             }
             super.generateParameterCode (component, section, index);
+        }
+
+    }
+
+    private static class TimeZoneParameter extends MidpParameter {
+
+        public static final String PARAM_TIME_ZONE = "timeZone"; // NOI18N
+
+        public TimeZoneParameter () {
+            super (PROP_TIME_ZONE);
+        }
+
+        public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
+            PropertyValue propertyValue = component.readProperty (PROP_TIME_ZONE);
+            if (propertyValue.getKind () == PropertyValue.Kind.VALUE) {
+                String value = MidpTypes.getString (propertyValue);
+                section.getWriter ().write ("TimeZone.getTimeZone (" + value + ")");
+            } else
+                super.generateParameterCode (component, section, index);
         }
 
     }

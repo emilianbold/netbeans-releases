@@ -191,6 +191,8 @@ public final class FontCD extends ComponentDescriptor {
                     break;
                 case VALUE_KIND_CUSTOM:
 
+                    writer.write ("Font.getFont (");
+
                     propertyValue = component.readProperty (PROP_FACE);
                     if (propertyValue.getKind () == PropertyValue.Kind.VALUE) {
                         switch (MidpTypes.getInteger (propertyValue)) {
