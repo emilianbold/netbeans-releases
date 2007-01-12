@@ -233,7 +233,9 @@ public class J2MEProjectGenerator {
                                 if (name.endsWith(".java")) {
                                     name=name.substring(0,name.length()-5);
                                 }
-                                createHelloMIDlet.add(template.createFromTemplate(helloFolder));
+                                DataObject fromTemplate = template.createFromTemplate (helloFolder);
+                                fromTemplate = DataObject.find (fromTemplate.getPrimaryFile ());
+                                createHelloMIDlet.add(fromTemplate);
                                 addMIDletProperty(project, helper, name, hello != src ? "hello."+name : name, ""); // NOI18N
                             }
                         }
