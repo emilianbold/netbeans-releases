@@ -111,13 +111,13 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         //ugly but I didn't find a better way how to do it
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         TableColumn column = table.getColumnModel().getColumn(0);
-        column.setMinWidth(190);
-        column.setWidth(190);
+        column.setMinWidth(230);
+        column.setWidth(230);
         column.setMinWidth(75);
        
         column = table.getColumnModel().getColumn(1);
-        column.setMinWidth(190);
-        column.setWidth(190);
+        column.setMinWidth(220);
+        column.setWidth(220);
         column.setMinWidth(75);
     }
     

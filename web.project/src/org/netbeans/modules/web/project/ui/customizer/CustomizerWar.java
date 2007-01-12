@@ -83,12 +83,12 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider {
         //ugly but I didn't find a better way how to do it
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         TableColumn column = table.getColumnModel().getColumn(0);
-        column.setMinWidth(179);
-        column.setWidth(179);
+        column.setMinWidth(240);
+        column.setWidth(240);
         column.setMinWidth(75);
         column = table.getColumnModel().getColumn(1);
-        column.setMinWidth(178);
-        column.setWidth(178);
+        column.setMinWidth(187);
+        column.setWidth(187);
         column.setMinWidth(75);
     }
     

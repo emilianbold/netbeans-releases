@@ -97,8 +97,8 @@ public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPan
         column.setWidth(230);
         column.setMinWidth(75);
         column = table.getColumnModel().getColumn(1);
-        column.setMinWidth(135);
-        column.setWidth(135);
+        column.setMinWidth(126);
+        column.setWidth(126);
         column.setMinWidth(28);
     }
     
