@@ -38,6 +38,7 @@ import org.netbeans.modules.apisupport.project.suite.BrandingSupport;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectType;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 import org.w3c.dom.Element;
 
 /**
@@ -70,6 +71,7 @@ public class BasicBrandingModel {
     /** representation of bundle keys depending on app.title */
     private BrandingSupport.BundleKey productInformation = null;
     private BrandingSupport.BundleKey mainWindowTitle = null;
+    private BrandingSupport.BundleKey splashWindowTitle = null;    
     private BrandingSupport.BundleKey mainWindowTitleNoProject = null;
     private BrandingSupport.BundleKey currentVersion = null;
     
@@ -154,6 +156,12 @@ public class BasicBrandingModel {
             if (mainWindowTitle != null) {
                 mainWindowTitle.setValue(title + " {0}"); //NOI18N
             }
+            if (splashWindowTitle != null) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(NbBundle.getMessage(BasicBrandingModel.class, "LBL_splash_window_title_prefix"));//NOI18N
+                sb.append(" ").append(title);//NOI18N
+                splashWindowTitle.setValue(sb.toString());//NOI18N
+            }
             if (mainWindowTitleNoProject != null) {
                 mainWindowTitleNoProject.setValue(title + " {0}"); //NOI18N
             }
@@ -193,6 +201,7 @@ public class BasicBrandingModel {
         if (brandingEnabled) {
             getBranding().brandBundleKey(productInformation);
             getBranding().brandBundleKey(mainWindowTitle);
+            getBranding().brandBundleKey(splashWindowTitle);
             getBranding().brandBundleKey(mainWindowTitleNoProject);
             getBranding().brandBundleKey(currentVersion);
             
@@ -302,6 +311,11 @@ public class BasicBrandingModel {
                 "org.netbeans.core.windows",//NOI18N
                 "org/netbeans/core/windows/view/ui/Bundle.properties", // NOI18N
                 "CTL_MainWindow_Title");//NOI18N
+
+        splashWindowTitle = getBranding().getBundleKey(
+                "org.netbeans.core.startup",//NOI18N
+                "org/netbeans/core/startup/Bundle.properties",//NOI18N
+                "LBL_splash_window_title");//NOI18N                
         
         mainWindowTitleNoProject = getBranding().getBundleKey(
                 "org.netbeans.core.windows",//NOI18N
