@@ -78,7 +78,7 @@ public final class SwitchCaseEventSourceCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter ()
                 .addPropertiesCategory (PropertiesCategories.CATEGORY_PROPERTIES)
                 .addPropertiesCategory (PropertiesCategories.CATEGORY_CODE_PROPERTIES)
-                    .addProperty ("Switch Case Option", PropertyEditorJavaString.createInstance(), PROP_OPTION);
+                    .addProperty ("Switch Case Option", PropertyEditorJavaString.createInstance(TYPEID), PROP_OPTION);
     }
     
     protected void gatherPresenters(ArrayList<Presenter> presenters) {

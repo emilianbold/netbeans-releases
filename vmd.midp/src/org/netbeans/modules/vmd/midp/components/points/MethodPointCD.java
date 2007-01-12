@@ -70,7 +70,7 @@ public class MethodPointCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter ()
                 .addPropertiesCategory (PropertiesCategories.CATEGORY_PROPERTIES)
                 .addPropertiesCategory (PropertiesCategories.CATEGORY_CODE_PROPERTIES)
-                    .addProperty ("Method Name", PropertyEditorInstanceName.createInstance(), PROP_METHOD_NAME);
+                    .addProperty ("Method Name", PropertyEditorInstanceName.createInstance(TYPEID), PROP_METHOD_NAME);
     }
 
     protected List<? extends Presenter> createPresenters () {

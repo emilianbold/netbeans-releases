@@ -84,7 +84,7 @@ public class SwitchPointCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter ()
                 .addPropertiesCategory (PropertiesCategories.CATEGORY_PROPERTIES)
                 .addPropertiesCategory (PropertiesCategories.CATEGORY_CODE_PROPERTIES)
-                    .addProperty ("Switch Operand", PropertyEditorJavaString.createInstance(), PROP_OPERAND);
+                    .addProperty ("Switch Operand", PropertyEditorJavaString.createInstance(TYPEID), PROP_OPERAND);
     }
 
     

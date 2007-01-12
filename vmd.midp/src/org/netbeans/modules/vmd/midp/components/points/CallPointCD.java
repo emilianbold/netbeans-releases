@@ -71,7 +71,7 @@ public class CallPointCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter ()
                 .addPropertiesCategory (PropertiesCategories.CATEGORY_PROPERTIES)
                 .addPropertiesCategory (PropertiesCategories.CATEGORY_CODE_PROPERTIES)
-                    .addProperty ("Call Code", PropertyEditorJavaString.createInstance(), PROP_ACCESS_CODE);
+                    .addProperty ("Call Code", PropertyEditorJavaString.createInstance(TYPEID), PROP_ACCESS_CODE);
     }
 
     protected void gatherPresenters (ArrayList<Presenter> presenters) {

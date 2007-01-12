@@ -73,7 +73,7 @@ public class IfPointCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter ()
                 .addPropertiesCategory (PropertiesCategories.CATEGORY_PROPERTIES)
                 .addPropertiesCategory (PropertiesCategories.CATEGORY_CODE_PROPERTIES)
-                    .addProperty ("Condition Code", PropertyEditorJavaString.createInstance(), PROP_CONDITION);
+                    .addProperty ("Condition Code", PropertyEditorJavaString.createInstance(TYPEID), PROP_CONDITION);
     }
 
     protected void gatherPresenters (ArrayList<Presenter> presenters) {

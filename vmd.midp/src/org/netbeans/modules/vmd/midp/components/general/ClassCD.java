@@ -70,7 +70,7 @@ public final class ClassCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
             .addPropertiesCategory(PropertiesCategories.CATEGORY_CODE_PROPERTIES)
-                .addProperty("Instance Name", PropertyEditorInstanceName.createInstance(), PROP_INSTANCE_NAME)
+                .addProperty("Instance Name", PropertyEditorInstanceName.createInstance(TYPEID), PROP_INSTANCE_NAME)
                 .addProperty("Is Lazy Initialized", Boolean.class, PROP_LAZY_INIT);
     }
 

@@ -30,8 +30,10 @@ import javax.swing.JTextField;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
 import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
+import org.netbeans.modules.vmd.midp.components.points.MethodPointCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorUserCode;
 
 /**
@@ -41,18 +43,18 @@ import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorUser
  */
 public final class PropertyEditorInstanceName extends DesignPropertyEditor {
     
-    private boolean supportsCustomEditor;
+    private TypeID typeID;
     private final CustomEditor customEditor;
     private DesignComponent component;
     private boolean canWrite;
     
-    private PropertyEditorInstanceName() {
-        supportsCustomEditor = true;
+    private PropertyEditorInstanceName(TypeID typeID) {
+        this.typeID = typeID;
         customEditor = new CustomEditor();
     }
     
-    public static final DesignPropertyEditor createInstance() {
-        return new PropertyEditorInstanceName();
+    public static final DesignPropertyEditor createInstance(TypeID typeID) {
+        return new PropertyEditorInstanceName(typeID);
     }
     
     public Component getCustomEditor() {
@@ -117,6 +119,17 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
         return canWrite;
     }
     
+    public String getCustomEditorTitle() {
+        return getLabelName();
+    }
+    
+    private String getLabelName() {
+        if (typeID.equals(MethodPointCD.TYPEID)) {
+            return "Method Name";
+        }
+        return "Instance Name";
+    }
+    
     private final class CustomEditor extends JPanel {
         private JTextField textField;
         
@@ -127,27 +140,36 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
         private void initComponents() {
             setLayout(new GridBagLayout());
             GridBagConstraints constraints = new GridBagConstraints();
-            JLabel label = new JLabel("Instance name:");
-            constraints.insets = new Insets(12, 12, 12, 6);
+            JLabel label = new JLabel(getLabelName() + ':');
+            constraints.insets = new Insets(12, 12, 6, 12);
             constraints.anchor = GridBagConstraints.NORTHWEST;
             constraints.gridx = 0;
             constraints.gridy = 0;
             constraints.weightx = 0.0;
             constraints.weighty = 0.0;
-            constraints.fill = GridBagConstraints.BOTH;
+            constraints.fill = GridBagConstraints.NONE;
             add(label, constraints);
             
             textField = new JTextField();
-            constraints.insets = new Insets(12, 6, 12, 12);
+            constraints.insets = new Insets(0, 12, 12, 12);
             constraints.anchor = GridBagConstraints.NORTHWEST;
-            constraints.gridx = 1;
-            constraints.gridy = 0;
+            constraints.gridx = 0;
+            constraints.gridy = 1;
             constraints.weightx = 1.0;
             constraints.weighty = 0.0;
-            constraints.fill = GridBagConstraints.BOTH;
+            constraints.fill = GridBagConstraints.HORIZONTAL;
             add(textField, constraints);
             
-            setPreferredSize(new Dimension(300, 40));
+            JPanel spacer = new JPanel();
+            constraints.insets = new Insets(0, 0, 0, 0);
+            constraints.anchor = GridBagConstraints.NORTHWEST;
+            constraints.gridx = 0;
+            constraints.gridy = 2;
+            constraints.weightx = 1.0;
+            constraints.weighty = 1.0;
+            constraints.fill = GridBagConstraints.BOTH;
+            add(spacer, constraints);
+            setPreferredSize(new Dimension(300, 64));
         }
         
         public void setText(String text) {

@@ -87,6 +87,7 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
             .addPropertiesCategory (PropertiesCategories.CATEGORY_PROPERTIES)
             .addProperty ("String", PropertyEditorString.createInstance (), PROP_STRING)
             .addProperty ("Image", PropertyEditorResourcesComboBox.createImagePropertyEditor (), PROP_IMAGE)
+            .addProperty("Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_FONT)
             .addProperty ("Selected", PropertyEditorBooleanUC.createInstance(), PROP_SELECTED);
     }
 
