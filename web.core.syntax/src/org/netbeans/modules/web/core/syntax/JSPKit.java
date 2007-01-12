@@ -19,6 +19,9 @@
 
 package org.netbeans.modules.web.core.syntax;
 
+
+import java.util.Map;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
 import org.netbeans.modules.web.core.syntax.deprecated.ELDrawLayerFactory;
 import org.netbeans.modules.web.core.syntax.formatting.JspFormatter;
@@ -46,6 +49,8 @@ import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.lexer.editorbridge.LexerEditorKit;
 import org.netbeans.modules.web.core.syntax.folding.JspFoldTypes;
+import org.netbeans.spi.jsp.lexer.JspParseData;
+import org.netbeans.spi.lexer.TokenHierarchyControl;
 import org.openide.ErrorManager;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
@@ -65,6 +70,7 @@ import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.jsp.lexer.JspTokenId;
+import org.netbeans.api.lexer.InputAttributes;
 
 /**
  * Editor kit implementation for JSP content type
@@ -105,6 +111,11 @@ public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
     
     /** Creates a new instance of the syntax coloring parser */
     public Syntax createSyntax(Document doc) {
+        //TODO - place the coloring listener initialization to
+        //more appropriate place. The createSyntax method is likely
+        //going to be removed.
+        initLexerColoringListener(doc);
+        
         DataObject dobj = NbEditorUtilities.getDataObject(doc);
         FileObject fobj = (dobj != null) ? dobj.getPrimaryFile() : null;
         
@@ -129,24 +140,52 @@ public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
     
     protected Action[] createActions() {
         Action[] javaActions = new Action[] {
-//            new JspJavaGenerateGotoPopupAction(),
-//                    new JavaKit.JavaJMIGotoSourceAction(),
-//                    new JavaKit.JavaJMIGotoDeclarationAction(),
-//                    new JavaKit.JavaGotoSuperImplementation(),
+            //            new JspJavaGenerateGotoPopupAction(),
+            //                    new JavaKit.JavaJMIGotoSourceAction(),
+            //                    new JavaKit.JavaJMIGotoDeclarationAction(),
+            //                    new JavaKit.JavaGotoSuperImplementation(),
             // the jsp editor has own action for switching beetween matching blocks
             new MatchBraceAction(ExtKit.matchBraceAction, false),
-                    new MatchBraceAction(ExtKit.selectionMatchBraceAction, true),
-                    new JspGenerateFoldPopupAction(),
-                    new CollapseAllCommentsFolds(),
-                    new ExpandAllCommentsFolds(),
-                    new CollapseAllScriptingFolds(),
-                    new ExpandAllScriptingFolds(),
-                    new JspInsertBreakAction(),
-                    new JspDefaultKeyTypedAction(),
-                    new JspDeleteCharAction(deletePrevCharAction, false),
+            new MatchBraceAction(ExtKit.selectionMatchBraceAction, true),
+            new JspGenerateFoldPopupAction(),
+            new CollapseAllCommentsFolds(),
+            new ExpandAllCommentsFolds(),
+            new CollapseAllScriptingFolds(),
+            new ExpandAllScriptingFolds(),
+            new JspInsertBreakAction(),
+            new JspDefaultKeyTypedAction(),
+            new JspDeleteCharAction(deletePrevCharAction, false),
         };
         
         return TextAction.augmentList(super.createActions(), javaActions);
+    }
+    
+    private static class LexerColoringListener implements PropertyChangeListener {
+        
+        private Document doc;
+        private JSPColoringData data;
+        private JspParseData jspParseData;
+        
+        private LexerColoringListener(Document doc, JSPColoringData data, JspParseData jspParseData) {
+            this.doc = doc;
+            this.data = data; //hold ref to JSPColoringData so LCL is not GC'ed
+            this.jspParseData = jspParseData;
+        }
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (JSPColoringData.PROP_COLORING_CHANGE.equals(evt.getPropertyName())) {
+                recolor();
+            }
+        }
+        private void recolor() {
+            jspParseData.updateParseData((Map<String,String>)data.getPrefixMapper(), data.isELIgnored(), data.isXMLSyntax());
+
+            TokenHierarchyControl thc = (TokenHierarchyControl)doc.getProperty(TokenHierarchyControl.class);            
+            if(thc != null) {
+                thc.rebuild();
+            }
+        }
+        
     }
     
     private static class ColoringListener implements PropertyChangeListener {
@@ -173,6 +212,7 @@ public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
         }
         
         public void propertyChange(PropertyChangeEvent evt) {
+            //            System.out.println("**************** PCHL - propertyChange()");
             if (syntax == null)
                 return;
             if (syntax.listenerReference != this) {
@@ -255,6 +295,30 @@ public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
         doc.addLayer(new ELDrawLayerFactory.ELLayer(),
                 ELDrawLayerFactory.EL_LAYER_VISIBILITY);
         doc.addDocumentListener(new ELDrawLayerFactory.LParenWatcher());
+    }
+    
+    private void initLexerColoringListener(Document doc) {
+        DataObject dobj = NbEditorUtilities.getDataObject(doc);
+        FileObject fobj = (dobj != null) ? dobj.getPrimaryFile() : null;
+        JSPColoringData data = JspUtils.getJSPColoringData(doc, fobj);
+        
+        if(data == null) {
+            return ;
+        }
+        
+        JspParseData jspParseData = new JspParseData();
+        jspParseData.updateParseData((Map<String,String>)data.getPrefixMapper(), data.isELIgnored(), data.isXMLSyntax());
+        PropertyChangeListener lexerColoringListener = new LexerColoringListener(doc, data, jspParseData);
+        
+        data.addPropertyChangeListener(WeakListeners.propertyChange(lexerColoringListener, data));
+        //reference LCL from document to prevent LCL to be GC'ed
+        doc.putProperty(LexerColoringListener.class, lexerColoringListener);
+        
+        //add an instance of InputAttributes to the document property,
+        //lexer will use it to read coloring information
+        InputAttributes inputAttributes = new InputAttributes();
+        inputAttributes.setValue(JspTokenId.language(), JspParseData.class, jspParseData, false);
+        doc.putProperty(InputAttributes.class, inputAttributes);
     }
     
     public Formatter createFormatter() {
@@ -404,30 +468,30 @@ public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
         }
     }
     
-//    private static TokenContextPath getTokenContextPath(Caret caret, Document doc){
-//        if (doc instanceof BaseDocument){
-//            int dotPos = caret.getDot();
-//            ExtSyntaxSupport sup = (ExtSyntaxSupport)((BaseDocument)doc).getSyntaxSupport();
-//            if (dotPos>0){
-//                try{
-//                    TokenItem token = sup.getTokenChain(dotPos-1, dotPos);
-//                    if (token != null){
-//                        return token.getTokenContextPath();
-//                    }
-//                }catch(BadLocationException ble){
-//                    ErrorManager.getDefault().notify(ErrorManager.WARNING, ble);
-//                }
-//            }
-//        }
-//        return null;
-//    }
+    //    private static TokenContextPath getTokenContextPath(Caret caret, Document doc){
+    //        if (doc instanceof BaseDocument){
+    //            int dotPos = caret.getDot();
+    //            ExtSyntaxSupport sup = (ExtSyntaxSupport)((BaseDocument)doc).getSyntaxSupport();
+    //            if (dotPos>0){
+    //                try{
+    //                    TokenItem token = sup.getTokenChain(dotPos-1, dotPos);
+    //                    if (token != null){
+    //                        return token.getTokenContextPath();
+    //                    }
+    //                }catch(BadLocationException ble){
+    //                    ErrorManager.getDefault().notify(ErrorManager.WARNING, ble);
+    //                }
+    //            }
+    //        }
+    //        return null;
+    //    }
     
     public static class JspInsertBreakAction extends InsertBreakAction {
         public void actionPerformed(ActionEvent e, JTextComponent target) {
             if (target!=null){
                 TokenSequence javaTokenSequence = JspSyntaxSupport.tokenSequence(
-                        TokenHierarchy.get(target.getDocument()), 
-                        JavaTokenId.language(), 
+                        TokenHierarchy.get(target.getDocument()),
+                        JavaTokenId.language(),
                         target.getCaret().getDot() - 1);
                 
                 if (javaTokenSequence != null){
@@ -449,8 +513,8 @@ public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
         public void actionPerformed(ActionEvent e, JTextComponent target) {
             if (target!=null){
                 TokenSequence javaTokenSequence = JspSyntaxSupport.tokenSequence(
-                        TokenHierarchy.get(target.getDocument()), 
-                        JavaTokenId.language(), 
+                        TokenHierarchy.get(target.getDocument()),
+                        JavaTokenId.language(),
                         target.getCaret().getDot() - 1);
                 
                 if (javaTokenSequence != null){
@@ -477,8 +541,8 @@ public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
         public void actionPerformed(ActionEvent e, JTextComponent target) {
             if (target!=null){
                 TokenSequence javaTokenSequence = JspSyntaxSupport.tokenSequence(
-                        TokenHierarchy.get(target.getDocument()), 
-                        JavaTokenId.language(), 
+                        TokenHierarchy.get(target.getDocument()),
+                        JavaTokenId.language(),
                         target.getCaret().getDot() - 1);
                 
                 if (javaTokenSequence != null){
@@ -496,39 +560,39 @@ public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
         }
     }
     
-//    public static class JspJavaGenerateGotoPopupAction extends JavaKit.JavaGenerateGoToPopupAction {
-//
-//        protected void addAction(JTextComponent target, JMenu menu,
-//                String actionName) {
-//            BaseKit kit = Utilities.getKit(target);
-//            if (kit == null) return;
-//            Action a = kit.getActionByName(actionName);
-//            if (a!=null){
-//                //test context only for context-aware actions
-//                if(ExtKit.gotoSourceAction.equals(actionName) ||
-//                        ExtKit.gotoDeclarationAction.equals(actionName) ||
-//                        ExtKit.gotoSuperImplementationAction.equals(actionName))
-//                    a.setEnabled(isJavaContext(target));
-//
-//                addAction(target, menu, a);
-//            } else { // action-name is null, add the separator
-//                menu.addSeparator();
-//            }
-//        }
-//
-//        private boolean isJavaContext(JTextComponent target) {
-//            JspSyntaxSupport sup = (JspSyntaxSupport)Utilities.getSyntaxSupport(target);
-//            int carretOffset = target.getCaret().getDot();
-//            try {
-//                TokenItem tok = sup.getTokenChain(carretOffset, carretOffset + 1);
-//                return tok.getTokenContextPath().contains(JavaTokenContext.contextPath);
-//            }catch(BadLocationException e) {
-//                //do nothing
-//                return true;
-//            }
-//        }
-//
-//    }
+    //    public static class JspJavaGenerateGotoPopupAction extends JavaKit.JavaGenerateGoToPopupAction {
+    //
+    //        protected void addAction(JTextComponent target, JMenu menu,
+    //                String actionName) {
+    //            BaseKit kit = Utilities.getKit(target);
+    //            if (kit == null) return;
+    //            Action a = kit.getActionByName(actionName);
+    //            if (a!=null){
+    //                //test context only for context-aware actions
+    //                if(ExtKit.gotoSourceAction.equals(actionName) ||
+    //                        ExtKit.gotoDeclarationAction.equals(actionName) ||
+    //                        ExtKit.gotoSuperImplementationAction.equals(actionName))
+    //                    a.setEnabled(isJavaContext(target));
+    //
+    //                addAction(target, menu, a);
+    //            } else { // action-name is null, add the separator
+    //                menu.addSeparator();
+    //            }
+    //        }
+    //
+    //        private boolean isJavaContext(JTextComponent target) {
+    //            JspSyntaxSupport sup = (JspSyntaxSupport)Utilities.getSyntaxSupport(target);
+    //            int carretOffset = target.getCaret().getDot();
+    //            try {
+    //                TokenItem tok = sup.getTokenChain(carretOffset, carretOffset + 1);
+    //                return tok.getTokenContextPath().contains(JavaTokenContext.contextPath);
+    //            }catch(BadLocationException e) {
+    //                //do nothing
+    //                return true;
+    //            }
+    //        }
+    //
+    //    }
     
     public class JspEditorDocument extends NbEditorDocument {
         public JspEditorDocument(Class kitClass) {

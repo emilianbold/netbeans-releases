@@ -83,6 +83,9 @@ Microsystems, Inc. All Rights Reserved.
             </test-dependencies>
             <public-packages>
                 <package>org.netbeans.api.jsp.lexer</package>
+                <!-- I need the SPI to be friend to the web/jspsyntax only, but currently
+                     it looks like it is not possible to have public and friend APIs alongside -->
+                <package>org.netbeans.spi.jsp.lexer</package>
             </public-packages>
         </data>
     </configuration>
