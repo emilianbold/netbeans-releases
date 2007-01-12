@@ -25,6 +25,7 @@ import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
+import org.netbeans.modules.vmd.midp.codegen.MidpCodeSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
@@ -155,14 +156,15 @@ public class DateFieldCD extends ComponentDescriptor {
         public static final String PARAM_TIME_ZONE = "timeZone"; // NOI18N
 
         public TimeZoneParameter () {
-            super (PROP_TIME_ZONE);
+            super (PARAM_TIME_ZONE);
         }
 
         public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
             PropertyValue propertyValue = component.readProperty (PROP_TIME_ZONE);
             if (propertyValue.getKind () == PropertyValue.Kind.VALUE) {
-                String value = MidpTypes.getString (propertyValue);
-                section.getWriter ().write ("TimeZone.getTimeZone (" + value + ")");
+                section.getWriter ().write ("TimeZone.getTimeZone ("); // NOI18N
+                MidpCodeSupport.generateCodeForPropertyValue (section.getWriter (), propertyValue);
+                section.getWriter ().write (")"); // NOI18N
             } else
                 super.generateParameterCode (component, section, index);
         }
