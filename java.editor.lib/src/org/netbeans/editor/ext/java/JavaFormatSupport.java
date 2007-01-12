@@ -618,7 +618,7 @@ public class JavaFormatSupport extends ExtFormatSupport {
                 case JavaTokenContext.DEFAULT_ID:
                     TokenItem swss = findSwitch(token);
                     if (swss != null) {
-                        indent = getTokenIndent(swss) + getShiftWidth();
+                        indent = getTokenIndent(swss);
                     }
                     break;
 
