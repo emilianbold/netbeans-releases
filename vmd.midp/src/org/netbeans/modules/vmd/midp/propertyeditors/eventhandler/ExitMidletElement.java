@@ -80,6 +80,10 @@ public class ExitMidletElement implements PropertyEditorEventHandlerElement {
         return false;
     }
     
+    public boolean isVerticallyResizable() {
+        return false;
+    }
+
     public void updateModel(List<DesignComponent> components, int modelType) {
     }
     

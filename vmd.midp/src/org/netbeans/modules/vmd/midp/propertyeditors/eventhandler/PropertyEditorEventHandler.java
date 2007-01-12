@@ -75,7 +75,7 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
     public static final PropertyEditorEventHandler createInstance() {
         return new PropertyEditorEventHandler();
     }
-   
+    
     public Component getCustomEditor() {
         document.getTransactionManager().readAccess(new Runnable() {
             public void run() {
@@ -164,7 +164,6 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
             setLayout(new GridBagLayout());
             ButtonGroup buttonGroup = new ButtonGroup();
             GridBagConstraints constraints = new GridBagConstraints();
-            int gridy = 0;
             boolean wasSelected = false;
             for (PropertyEditorEventHandlerElement element : elements) {
                 JRadioButton rb = element.getRadioButton();
@@ -176,21 +175,21 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
                 
                 constraints.insets = new Insets(12, 12, 6, 12);
                 constraints.anchor = GridBagConstraints.NORTHWEST;
-                constraints.gridx = 0;
-                constraints.gridy = gridy++;
-                constraints.weightx = 0.0;
+                constraints.gridx = GridBagConstraints.REMAINDER;
+                constraints.gridy = GridBagConstraints.RELATIVE;
+                constraints.weightx = 1.0;
                 constraints.weighty = 0.0;
-                constraints.fill = GridBagConstraints.BOTH;
+                constraints.fill = GridBagConstraints.HORIZONTAL;
                 add(rb, constraints);
                 
                 Component component = element.getComponent();
                 if (component != null) {
-                    constraints.insets = new Insets(0, 12, 12, 12);
+                    constraints.insets = new Insets(0, 32, 12, 12);
                     constraints.anchor = GridBagConstraints.NORTHWEST;
-                    constraints.gridx = 0;
-                    constraints.gridy = gridy++;
+                    constraints.gridx = GridBagConstraints.REMAINDER;
+                    constraints.gridy = GridBagConstraints.RELATIVE;
                     constraints.weightx = 1.0;
-                    constraints.weighty = 1.0;
+                    constraints.weighty = element.isVerticallyResizable() ? 1.0 : 0.0;
                     constraints.fill = GridBagConstraints.BOTH;
                     add(component, constraints);
                 }
@@ -201,14 +200,24 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
             doNothingRadioButton.setSelected(!wasSelected);
             buttonGroup.add(doNothingRadioButton);
             
-            constraints.insets = new Insets(0, 12, 6, 12);
+            constraints.insets = new Insets(12, 12, 6, 12);
             constraints.anchor = GridBagConstraints.NORTHWEST;
-            constraints.gridx = 0;
-            constraints.gridy = gridy++;
-            constraints.weightx = 0.0;
+            constraints.gridx = GridBagConstraints.REMAINDER;
+            constraints.gridy = GridBagConstraints.RELATIVE;
+            constraints.weightx = 1.0;
             constraints.weighty = 0.0;
-            constraints.fill = GridBagConstraints.BOTH;
+            constraints.fill = GridBagConstraints.HORIZONTAL;
             add(doNothingRadioButton, constraints);
+            
+            JPanel spacer = new JPanel();
+            constraints.insets = new Insets(0, 0, 0, 0);
+            constraints.anchor = GridBagConstraints.NORTHWEST;
+            constraints.gridx = GridBagConstraints.REMAINDER;
+            constraints.gridy = GridBagConstraints.RELATIVE;
+            constraints.weightx = 1.0;
+            constraints.weighty = 1.0;
+            constraints.fill = GridBagConstraints.BOTH;
+            add(spacer, constraints);
         }
         
         public void updateModels(List<DesignComponent> components, int modelType, PropertyValue value) {

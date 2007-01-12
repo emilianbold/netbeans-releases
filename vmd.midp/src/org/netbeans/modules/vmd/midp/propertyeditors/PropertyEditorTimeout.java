@@ -48,7 +48,7 @@ import org.openide.util.NbBundle;
 public final class PropertyEditorTimeout extends PropertyEditorUserCode implements PropertyEditorElement {
     
     private static final String FOREVER_TEXT = NbBundle.getMessage(PropertyEditorTimeout.class, "LBL_TIMEOUTPE_FOREVER_TXT"); // NOI18N
-    private static final String FOREVER_NUM_TEXT = String.valueOf(AlertCD.FOREVER_VALUE.getPrimitiveValue ());
+    private static final String FOREVER_NUM_TEXT = String.valueOf(AlertCD.FOREVER_VALUE.getPrimitiveValue());
     
     private CustomEditor customEditor;
     private JRadioButton radioButton;
@@ -84,14 +84,18 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
         return true;
     }
     
+    public boolean isVerticallyResizable() {
+        return false;
+    }
+    
     public String getAsText() {
         String superText = super.getAsText();
         if (superText != null) {
             return superText;
         }
         
-        Object valueValue = ((PropertyValue) super.getValue()).getPrimitiveValue ();
-        Object foreverValueValue = AlertCD.FOREVER_VALUE.getPrimitiveValue ();
+        Object valueValue = ((PropertyValue) super.getValue()).getPrimitiveValue();
+        Object foreverValueValue = AlertCD.FOREVER_VALUE.getPrimitiveValue();
         if (foreverValueValue.equals(valueValue)) {
             return FOREVER_TEXT;
         }
@@ -109,11 +113,11 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
     public void setPropertyValue(PropertyValue value) {
         if (isCurrentValueANull() || value == null) {
             customEditor.unsetForever(true);
-        } else if (AlertCD.FOREVER_VALUE.getPrimitiveValue ().equals(value.getPrimitiveValue ())) {
+        } else if (AlertCD.FOREVER_VALUE.getPrimitiveValue().equals(value.getPrimitiveValue())) {
             customEditor.setForever(true);
         } else {
             customEditor.unsetForever(true);
-            customEditor.setText(String.valueOf(value.getPrimitiveValue ()));
+            customEditor.setText(String.valueOf(value.getPrimitiveValue()));
         }
         radioButton.setSelected(!isCurrentValueAUserCodeType());
     }
@@ -147,8 +151,8 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
             if (value == null) {
                 return false;
             }
-            Object foreverValueValue = AlertCD.FOREVER_VALUE.getPrimitiveValue ();
-            return !foreverValueValue.equals(value.getPrimitiveValue ());
+            Object foreverValueValue = AlertCD.FOREVER_VALUE.getPrimitiveValue();
+            return !foreverValueValue.equals(value.getPrimitiveValue());
         }
         return false;
     }
@@ -218,7 +222,7 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
         
         public void changedUpdate(DocumentEvent evt) {
         }
-
+        
         private void checkText() {
             String text = textField.getText();
             if (text.length() > 0) {

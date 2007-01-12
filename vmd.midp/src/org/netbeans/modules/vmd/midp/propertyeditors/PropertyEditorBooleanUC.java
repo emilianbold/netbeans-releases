@@ -77,8 +77,12 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         return radioButton;
     }
     
-    public boolean isInitiallySelected() {
+    public boolean isVerticallyResizable() {
         return true;
+    }
+
+    public boolean isInitiallySelected() {
+        return false;
     }
     
     public String getAsText() {

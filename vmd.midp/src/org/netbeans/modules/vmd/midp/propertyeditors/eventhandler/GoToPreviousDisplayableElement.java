@@ -69,6 +69,10 @@ public class GoToPreviousDisplayableElement implements PropertyEditorEventHandle
         return false;
     }
     
+    public boolean isVerticallyResizable() {
+        return false;
+    }
+
     public void updateModel(List<DesignComponent> components, int modelType) {
     }
 

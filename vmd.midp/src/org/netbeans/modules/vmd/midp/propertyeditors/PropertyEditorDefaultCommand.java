@@ -99,6 +99,10 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
         return true;
     }
     
+    public boolean isVerticallyResizable() {
+        return false;
+    }
+
     public String getAsText() {
         if (isCurrentValueAUserCodeType()) {
             return USER_CODE_TEXT;

@@ -86,6 +86,10 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
         return true;
     }
     
+    public boolean isVerticallyResizable() {
+        return false;
+    }
+
     public String getAsText() {
         String superText = super.getAsText();
         if (superText != null) {

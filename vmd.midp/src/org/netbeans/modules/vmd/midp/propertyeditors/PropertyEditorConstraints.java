@@ -85,6 +85,10 @@ public class PropertyEditorConstraints extends PropertyEditorUserCode implements
         return true;
     }
     
+    public boolean isVerticallyResizable() {
+        return true;
+    }
+
     public String getAsText() {
         String superText = super.getAsText();
         if (superText != null) {

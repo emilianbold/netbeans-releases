@@ -69,14 +69,18 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode implements Pr
         return true;
     }
     
+    public boolean isVerticallyResizable() {
+        return false;
+    }
+    
     public String getAsText() {
         String superText = super.getAsText();
         if (superText != null) {
             return superText;
         }
-
+        
         PropertyValue value = (PropertyValue) super.getValue();
-        return (String) value.getPrimitiveValue ();
+        return (String) value.getPrimitiveValue();
     }
     
     public void setText(String text) {
@@ -86,12 +90,12 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode implements Pr
     public String getText() {
         return null;
     }
-
+    
     public void setPropertyValue(PropertyValue value) {
         if (isCurrentValueANull() || value == null) {
             customEditor.setText("");
         } else {
-            customEditor.setText((String) value.getPrimitiveValue ());
+            customEditor.setText((String) value.getPrimitiveValue());
         }
         radioButton.setSelected(!isCurrentValueAUserCodeType());
     }

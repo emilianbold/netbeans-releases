@@ -82,6 +82,10 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         return false;
     }
     
+    public boolean isVerticallyResizable() {
+        return false;
+    }
+
     public String getAsText() {
         String superText = super.getAsText();
         if (superText != null) {

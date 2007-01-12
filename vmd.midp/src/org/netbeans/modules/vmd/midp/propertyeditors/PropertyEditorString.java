@@ -19,13 +19,11 @@
 
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
-import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -88,7 +86,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     }
     
     public JComponent getComponent() {
-        return customEditor;
+        return customEditor.getComponent();
     }
     
     public JRadioButton getRadioButton() {
@@ -99,6 +97,10 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         return true;
     }
     
+    public boolean isVerticallyResizable() {
+        return true;
+    }
+
     public String getAsText() {
         String superText = super.getAsText();
         if (superText != null) {
@@ -163,20 +165,23 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         }
     }
     
-    private class CustomEditor extends JPanel {
+    private class CustomEditor {
         private JEditorPane editorPane;
+        private JScrollPane scrollPane;
         
         public CustomEditor() {
             initComponents();
         }
         
         private void initComponents() {
-            setLayout(new BorderLayout());
             editorPane = new JEditorPane();
-            editorPane.setPreferredSize(new Dimension(400, 100));
-            JScrollPane scrollPane = new JScrollPane();
+            scrollPane = new JScrollPane();
             scrollPane.setViewportView(editorPane);
-            add(scrollPane, BorderLayout.CENTER);
+            scrollPane.setPreferredSize(new Dimension(400, 100));
+        }
+        
+        public JComponent getComponent() {
+            return scrollPane;
         }
         
         public void setText(String text) {

@@ -85,6 +85,10 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
         return true;
     }
     
+    public boolean isVerticallyResizable() {
+        return true;
+    }
+
     public String getAsText() {
         String superText = super.getAsText();
         if (superText != null) {

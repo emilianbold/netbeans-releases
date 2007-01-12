@@ -66,6 +66,10 @@ public class SwitchToDisplayableElement extends JPanel implements PropertyEditor
         return false;
     }
     
+    public boolean isVerticallyResizable() {
+        return false;
+    }
+
     public void createEventHandler(DesignComponent eventSource) {
         if (!radioButton.isSelected()) {
             return;
@@ -181,23 +185,19 @@ public class SwitchToDisplayableElement extends JPanel implements PropertyEditor
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(displayablesComboBox, 0, 280, Short.MAX_VALUE)
-                    .add(throwAlertCheckBox)
-                    .add(alertsComboBox, 0, 280, Short.MAX_VALUE))
+                .add(throwAlertCheckBox)
                 .addContainerGap())
+            .add(alertsComboBox, 0, 300, Short.MAX_VALUE)
+            .add(displayablesComboBox, 0, 300, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(displayablesComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(throwAlertCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(alertsComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(alertsComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
     

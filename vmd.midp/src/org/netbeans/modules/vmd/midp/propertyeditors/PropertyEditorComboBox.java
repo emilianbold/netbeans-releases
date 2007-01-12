@@ -119,6 +119,10 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
         return true;
     }
     
+    public boolean isVerticallyResizable() {
+        return false;
+    }
+
     public String getAsText() {
         String superText = super.getAsText();
         if (superText != null) {
