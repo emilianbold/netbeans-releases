@@ -35,6 +35,7 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
+import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -79,7 +80,7 @@ public final class SessionEJBWizard implements WizardDescriptor.InstantiatingIte
         Utils.mergeSteps(wiz, panels, null);
     }
 
-    public Set instantiate () throws IOException {
+    public Set instantiate () {
         FileObject pkg = Templates.getTargetFolder(wiz);
         EjbJar ejbModule = EjbJar.getEjbJar(pkg);
         // TODO: UI - add checkbox for Java EE 5 to create also EJB 2.1 style EJBs
@@ -94,7 +95,12 @@ public final class SessionEJBWizard implements WizardDescriptor.InstantiatingIte
                 true, // TODO: UI - add checkbox for creation of business interface
                 !isSimplified // TODO: UI - add checkbox for option XML (not annotation) usage
                 );
-        FileObject result = sessionGenerator.generate();
+        FileObject result = null;
+        try {
+            result = sessionGenerator.generate();
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
         return result == null ? Collections.<FileObject>emptySet() : Collections.singleton(result);
     }
 

@@ -19,14 +19,18 @@
 
 package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 
+import com.sun.source.tree.ClassTree;
 import org.netbeans.modules.j2ee.ejbcore.EjbGenerationUtil;
 import java.io.IOException;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.source.AbstractTask;
 import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.j2ee.dd.api.ejb.AssemblyDescriptor;
 import org.netbeans.modules.j2ee.dd.api.ejb.ContainerTransaction;
@@ -68,6 +72,8 @@ public final class SessionGenerator {
     private final String remoteHomeName;
     private final String localName;
     private final String localHomeName;
+    
+    private final String packageNameWithDot;
 
     public static SessionGenerator create(String wizardTargetName, FileObject pkg, boolean hasRemote, boolean hasLocal, 
             boolean isStateful, boolean isSimplified, boolean hasBusinessInterface, boolean isXmlBased) {
@@ -90,6 +96,7 @@ public final class SessionGenerator {
         this.remoteHomeName = ejbNameOptions.getSessionRemoteHomePrefix() + wizardTargetName + ejbNameOptions.getSessionRemoteHomeSuffix();
         this.localName = ejbNameOptions.getSessionLocalPrefix() + wizardTargetName + ejbNameOptions.getSessionLocalSuffix();
         this.localHomeName = ejbNameOptions.getSessionLocalHomePrefix() + wizardTargetName + ejbNameOptions.getSessionLocalHomeSuffix();
+        this.packageNameWithDot = EjbGenerationUtil.getSelectedPackageName(pkg) + ".";
     }
     
     public FileObject generate() throws IOException {
@@ -148,6 +155,22 @@ public final class SessionGenerator {
         if (hasLocal) {
             GenerationUtils.createClass(EJB30_LOCAL, pkg, localName, null);
         }
+        JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
+        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(JavaSource.Phase.RESOLVED);
+                GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy);
+                ClassTree classTree = generationUtils.getClassTree();
+                ClassTree newClassTree = classTree;
+                if (hasRemote) {
+                    newClassTree = generationUtils.addImplementsClause(newClassTree, packageNameWithDot + remoteName);
+                }
+                if (hasLocal) {
+                    newClassTree = generationUtils.addImplementsClause(newClassTree, packageNameWithDot + localName);
+                }
+                workingCopy.rewrite(classTree, newClassTree);
+            }
+        }).commit();
         return ejbClassFO;
     }
 
@@ -163,7 +186,6 @@ public final class SessionGenerator {
         session = beans.newSession();
         session.setEjbName(ejbName);
         session.setDisplayName(ejbName); // TODO: add SB suffix?
-        String packageNameWithDot = EjbGenerationUtil.getSelectedPackageName(pkg) + ".";
         session.setEjbClass(packageNameWithDot + ejbClassName);
 
         if (hasRemote) {
