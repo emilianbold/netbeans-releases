@@ -38,7 +38,7 @@ class StringPropertyProcessor extends PropertyProcessor {
         } else if ("userNonProxy".equals(propertyName)) {//NOI18N 
             addProperty("proxyNonProxyHosts", value.toString());
         } else {
-            addProperty(propertyName, value.toString());
+            addProperty(propertyName, value == SerParser.NULL ? null : value.toString());
         }
     }
 }

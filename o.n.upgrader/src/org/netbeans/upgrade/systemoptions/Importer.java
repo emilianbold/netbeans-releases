@@ -56,7 +56,10 @@ public class Importer {
         Properties props = ps.load();
         String[] propertyNames = result.getPropertyNames();
         for (int i = 0; i < propertyNames.length; i++) {
-            props.put(propertyNames[i], result.getProperty(propertyNames[i]));
+            String val = result.getProperty(propertyNames[i]);
+            if (val != null) {
+                props.put(propertyNames[i], val);
+            }
         }
         if (props.size() > 0) {
             ps.save(props);
