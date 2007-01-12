@@ -665,15 +665,21 @@ public class CasualDiff {
         copyTo(localPointer, bodyPos[0]);
         localPointer = diffTree(oldT.body, newT.body, bodyPos);
         int pos = oldT.catchers.head != null ? getOldPos(oldT.catchers.head) : oldT.body.endpos + 1;
-        copyTo(localPointer, pos);
-        localPointer = diffList(oldT.catchers, newT.catchers, LineInsertionType.BEFORE, pos);
+        VeryPretty locPrint = new VeryPretty(context);
+        int[] retPos = diffList(oldT.catchers, newT.catchers, pos, EstimatorFactory.members(), Measure.DEFAULT, locPrint);
+        if (localPointer < retPos[0]) {
+            copyTo(localPointer, retPos[0]);
+        }
+        printer.print(locPrint.toString());
+        localPointer = oldT.catchers.head != null ? endPos(oldT.catchers) : pos;
         if (oldT.finalizer != null) {
             int[] finalBounds = getBounds(oldT.finalizer);
             copyTo(localPointer, finalBounds[0]);
             localPointer = diffTree(oldT.finalizer, newT.finalizer, finalBounds);
+            copyTo(localPointer, bounds[1]);
+        } else if (retPos[1] < bounds[1]) {
+            copyTo(localPointer, bounds[1]);
         }
-        copyTo(localPointer, bounds[1]);
-        
         return bounds[1];
     }
 
