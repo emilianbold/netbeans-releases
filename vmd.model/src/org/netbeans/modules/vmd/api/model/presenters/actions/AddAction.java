@@ -49,7 +49,7 @@ import org.openide.util.actions.Presenter;
  * @author Karol Harezlak
  */
 
-public final class AddAction extends AbstractAction  implements ActionContext, Presenter.Menu, Presenter.Popup  {
+public final class AddAction extends AbstractAction  implements ActionContext , Presenter.Popup  {
     
     public static final String DISPLAY_NAME = NbBundle.getMessage(AddAction.class, "Name_AddAction"); //NOI18N
     
@@ -112,10 +112,6 @@ public final class AddAction extends AbstractAction  implements ActionContext, P
         }
         
         return menu;
-    }
-    
-    public JMenuItem getMenuPresenter() {
-        return getMenu();
     }
     
     public boolean isEnabled() {
