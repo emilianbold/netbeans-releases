@@ -98,59 +98,54 @@ public final class ColorModel {
     // annotations .............................................................
     
     public Collection /*<Category>*/ getAnnotations (String profile) {
-        Iterator it = AnnotationTypes.getTypes ().getAnnotationTypeNames ();
         Collection annotations = new ArrayList ();
-        while (it.hasNext ()) {
+        for(Iterator it = AnnotationTypes.getTypes().getAnnotationTypeNames(); it.hasNext(); ) {
             String name = (String) it.next ();
-            AnnotationType annotationType = AnnotationTypes.getTypes ().
-                getType (name);
-            if (!annotationType.isVisible ()) continue;
+            
+            AnnotationType annotationType = AnnotationTypes.getTypes().getType(name);
+            if (!annotationType.isVisible()) {
+                continue;
+            }
 
+            String description = annotationType.getDescription();
+            if (description == null) {
+                continue;
+            }
+
+            SimpleAttributeSet category = new SimpleAttributeSet();
+            category.addAttribute(EditorStyleConstants.DisplayName, description);
+            category.addAttribute(StyleConstants.NameAttribute, description);
+            
             URL iconURL = annotationType.getGlyph ();
             Image image = null;
             if (iconURL.getProtocol ().equals ("nbresloc")) { // NOI18N
-                image = org.openide.util.Utilities.loadImage 
-                    (iconURL.getPath ().substring (1));
-            } else
+                image = org.openide.util.Utilities.loadImage(iconURL.getPath().substring(1));
+            } else {
                 image = Toolkit.getDefaultToolkit ().getImage (iconURL);
+            }
+            if (image != null) {
+                category.addAttribute("icon", new ImageIcon(image)); //NOI18N
+            }
+            
+            Color bgColor = annotationType.getHighlight();
+            if (annotationType.isUseHighlightColor() && bgColor != null) {
+                category.addAttribute(StyleConstants.Background, bgColor);
+            }
+            
+            Color fgColor = annotationType.getForegroundColor();
+            if (!annotationType.isInheritForegroundColor() && fgColor != null) {
+                category.addAttribute(StyleConstants.Foreground, fgColor);
+            }
 
-            SimpleAttributeSet category = new SimpleAttributeSet ();
-            String description = annotationType.getDescription ();
-            if (description == null) continue;
-            category.addAttribute (
-                EditorStyleConstants.DisplayName,
-                description
-            );
-            category.addAttribute (
-                StyleConstants.NameAttribute,
-                annotationType.getDescription ()
-            );
-            if (image != null)
-                category.addAttribute (
-                    "icon",
-                    new ImageIcon (image)
-                );
-            if (annotationType.isUseHighlightColor ())
-                category.addAttribute (
-                    StyleConstants.Background,
-                    annotationType.getHighlight ()
-                );
-            if (!annotationType.isInheritForegroundColor ())
-                category.addAttribute (
-                    StyleConstants.Foreground,
-                    annotationType.getForegroundColor ()
-                );
-            if (annotationType.isUseWaveUnderlineColor ())
-                category.addAttribute (
-                    EditorStyleConstants.WaveUnderlineColor,
-                    annotationType.getWaveUnderlineColor ()
-                );
-            category.addAttribute (
-                "annotationType",
-                annotationType
-            );
-            annotations.add (category);
+            Color underColor = annotationType.getWaveUnderlineColor();
+            if (annotationType.isUseWaveUnderlineColor() && underColor != null) {
+                category.addAttribute(EditorStyleConstants.WaveUnderlineColor, underColor);
+            }
+            
+            category.addAttribute("annotationType", annotationType); //NOI18N
+            annotations.add(category);
 	}
+        
 	return annotations;
     }
     
