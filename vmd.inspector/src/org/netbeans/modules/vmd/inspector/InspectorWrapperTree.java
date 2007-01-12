@@ -46,6 +46,7 @@ import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.openide.util.WeakSet;
 import org.openide.util.datatransfer.NewType;
 
@@ -78,6 +79,9 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener, Acti
         updateChangedDescriptors(createdComponents, affectedComponents);
 //        System.out.println("Start");
         long start = System.currentTimeMillis();
+        document = ActiveDocumentSupport.getDefault().getActiveDocument();
+        if (document == null)
+            return;
         dive(InspectorFolderPath.createInspectorPath().add(rootFolderWrapper.getFolder()), rootFolderWrapper);
         updateViewChildren(rootFolderWrapper);
         long stop = System.currentTimeMillis();
