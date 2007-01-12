@@ -19,10 +19,16 @@
 
 package org.netbeans.modules.vmd.midp.propertyeditors.timezone;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorElement;
@@ -34,43 +40,21 @@ import org.openide.util.NbBundle;
  *
  * @author Anton Chechel
  */
-public class PropertyEditorTimeZone extends PropertyEditorUserCode implements PropertyEditorElement {
-    private TimeZoneEditorPanel customEditor;
-    private JRadioButton radioButton;
+public class PropertyEditorTimeZone extends PropertyEditorUserCode {
+    
+    private List<PropertyEditorElement> elements;
     
     private PropertyEditorTimeZone() {
         super();
-        initComponents();
         
-        Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
-        elements.add(this);
+        elements = new ArrayList<PropertyEditorElement>(2);
+        elements.add(new PredefinedEditor());
+        elements.add(new CustomEditor());
         initElements(elements);
     }
     
     public static final PropertyEditorTimeZone createInstance() {
         return new PropertyEditorTimeZone();
-    }
-    
-    private void initComponents() {
-        radioButton = new JRadioButton();
-        Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorTimeZone.class, "LBL_VALUE")); // NOI18N
-        customEditor = new TimeZoneEditorPanel();
-    }
-    
-    public JComponent getComponent() {
-        return customEditor;
-    }
-    
-    public JRadioButton getRadioButton() {
-        return radioButton;
-    }
-    
-    public boolean isInitiallySelected() {
-        return true;
-    }
-    
-    public boolean isVerticallyResizable() {
-        return false;
     }
     
     public String getAsText() {
@@ -83,23 +67,6 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode implements Pr
         return (String) value.getPrimitiveValue();
     }
     
-    public void setText(String text) {
-        saveValue(text);
-    }
-    
-    public String getText() {
-        return null;
-    }
-    
-    public void setPropertyValue(PropertyValue value) {
-        if (isCurrentValueANull() || value == null) {
-            customEditor.setText("");
-        } else {
-            customEditor.setText((String) value.getPrimitiveValue());
-        }
-        radioButton.setSelected(!isCurrentValueAUserCodeType());
-    }
-    
     private void saveValue(String text) {
         if (text.length() > 0) {
             super.setValue(MidpTypes.createStringValue(text));
@@ -107,8 +74,120 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode implements Pr
     }
     
     public void customEditorOKButtonPressed() {
-        if (radioButton.isSelected()) {
-            saveValue(customEditor.getText());
+        for (PropertyEditorElement element : elements) {
+            if (element.getRadioButton().isSelected()) {
+                saveValue(element.getText());
+                break;
+            }
+        }
+    }
+    
+    private final class PredefinedEditor implements PropertyEditorElement, ActionListener {
+        private JRadioButton radioButton;
+        private TimeZoneComboboxModel model;
+        private JComboBox combobox;
+        
+        public PredefinedEditor() {
+            radioButton = new JRadioButton();
+            Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorTimeZone.class, "LBL_PREDEFINED")); // NOI18N
+            model = new TimeZoneComboboxModel();
+            combobox = new JComboBox(model);
+            combobox.addActionListener(this);
+        }
+        
+        public void setPropertyValue(PropertyValue value) {
+            if (!isCurrentValueANull() && value != null) {
+                String timeZone;
+                for (int i = 0; i < model.getSize(); i++) {
+                    timeZone = (String) model.getElementAt(i);
+                    if (timeZone.equals((String) value.getPrimitiveValue())) {
+                        model.setSelectedItem(timeZone);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        public void setText(String text) {
+            saveValue(text);
+        }
+        
+        public String getText() {
+            return (String) combobox.getSelectedItem();
+        }
+        
+        public JComponent getComponent() {
+            return combobox;
+        }
+        
+        public JRadioButton getRadioButton() {
+            return radioButton;
+        }
+        
+        public boolean isInitiallySelected() {
+            return false;
+        }
+        
+        public boolean isVerticallyResizable() {
+            return false;
+        }
+        
+        public void actionPerformed(ActionEvent evt) {
+            radioButton.setSelected(true);
+        }
+    }
+    
+    private final class CustomEditor implements PropertyEditorElement, DocumentListener {
+        private JRadioButton radioButton;
+        private JTextField textField;
+        
+        public CustomEditor() {
+            radioButton = new JRadioButton();
+            Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorTimeZone.class, "LBL_CUSTOM")); // NOI18N
+            textField = new JTextField();
+            textField.getDocument().addDocumentListener(this);
+        }
+        
+        public void setPropertyValue(PropertyValue value) {
+            if (!isCurrentValueANull() && value != null) {
+                textField.setText((String) value.getPrimitiveValue());
+            }
+        }
+        
+        public void setText(String text) {
+            saveValue(text);
+        }
+        
+        public String getText() {
+            return textField.getText();
+        }
+        
+        public JComponent getComponent() {
+            return textField;
+        }
+        
+        public JRadioButton getRadioButton() {
+            return radioButton;
+        }
+        
+        public boolean isInitiallySelected() {
+            return true;
+        }
+        
+        public boolean isVerticallyResizable() {
+            return false;
+        }
+        
+        public void insertUpdate(DocumentEvent evt) {
+            radioButton.setSelected(true);
+        }
+        
+        public void removeUpdate(DocumentEvent evt) {
+            radioButton.setSelected(true);
+        }
+        
+        public void changedUpdate(DocumentEvent evt) {
+            radioButton.setSelected(true);
         }
     }
 }
