@@ -20,7 +20,6 @@ package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.VariableTree;
@@ -108,6 +107,4 @@ public class ModifiersTest extends GeneratorTest {
     String getSourcePckg() {
         return "";
     }
-    
-    
 }
