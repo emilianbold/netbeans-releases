@@ -27,19 +27,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
-import junit.framework.AssertionFailedError;
+import java.util.logging.Logger;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.openide.ErrorManager;
 
 public class ChildrenKeysTest extends NbTestCase {
     private CharSequence err;
+    private Logger LOG;
     
     public ChildrenKeysTest(java.lang.String testName) {
         super(testName);
@@ -53,9 +52,17 @@ public class ChildrenKeysTest extends NbTestCase {
         //return new ChildrenKeysTest("testGetNodesFromTwoThreads57769WhenBlockingAtRightPlaces");
         return new NbTestSuite(ChildrenKeysTest.class);
     }
+    
+    @Override
+    protected Level logLevel() {
+        return Level.INFO;
+    }
+
+    
 
     protected void setUp () throws Exception {
         err = Log.enable("", Level.ALL);
+        LOG = Logger.getLogger("test." + getName());
     }    
 
     public void testGetNodesFromTwoThreads57769() throws Exception {
@@ -65,7 +72,10 @@ public class ChildrenKeysTest extends NbTestCase {
         final int[] count = new int[1];
         Children children= new Children.Keys() {
             protected Node[] createNodes(Object key) {
-                who.add(new Exception("Creating: " + count[0] + " for key: " + key));
+                StringWriter msg = new StringWriter();
+                msg.write("Creating: " + count[0] + " for key: " + key + "\n");
+                new Exception().printStackTrace(new PrintWriter(msg));
+                LOG.log(Level.INFO, msg.toString());
                 count[0]++;
                 AbstractNode n = new AbstractNode(Children.LEAF);
                 n.setName(key.toString());
