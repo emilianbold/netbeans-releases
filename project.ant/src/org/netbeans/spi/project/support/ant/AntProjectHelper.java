@@ -485,7 +485,9 @@ public final class AntProjectHelper {
     private void modifying(String path) {
         assert ProjectManager.mutex().isWriteAccess();
         state.markModified();
-        modifiedMetadataPaths.add(path);
+        synchronized (modifiedMetadataPaths) {
+            modifiedMetadataPaths.add(path);
+        }
         fireChange(path, true);
     }
     
@@ -515,7 +517,9 @@ public final class AntProjectHelper {
         assert ProjectManager.mutex().isWriteAccess();
         state.markModified();
         // To make sure projectXmlSaved is called:
-        modifiedMetadataPaths.add(PROJECT_XML_PATH);
+        synchronized (modifiedMetadataPaths) {
+            modifiedMetadataPaths.add(PROJECT_XML_PATH);
+        }
     }
     
     /**
