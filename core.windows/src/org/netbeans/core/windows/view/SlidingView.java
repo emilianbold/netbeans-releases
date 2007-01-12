@@ -27,7 +27,6 @@ import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.netbeans.core.windows.view.ui.slides.SlideBarContainer;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 
 /**
@@ -64,8 +63,6 @@ public class SlidingView extends ModeView {
 
     public Rectangle getSlideBounds() {
         Rectangle res = slideBounds;
-//        res.height = 0;
-//        res.width = 0;
         
         TopComponent tc = getSelectedTopComponent();
         //check if the slided-in TopComponent has a custom size defined
