@@ -405,6 +405,8 @@ public final class DesktopImpl {
         public void layoutContainer(Container parent) {
             Dimension size = parent.getSize();
             desktop.setBounds(0, 0, size.width, size.height);
+            desktop.invalidate();
+            desktop.validate();
             // keep right bounds of slide in progress 
             if ((curSlideIn != null) && curSlideIn.getComponent().isVisible()) {
                 String side = curSlideIn.getSide();
@@ -418,7 +420,7 @@ public final class DesktopImpl {
                     Rectangle splitRootRect = viewComponent.getBounds();
 
                     if (Constants.LEFT.equals(side)) {
-                        result.height = size.height;
+                        result.height = splitRootRect.height;
                         if (lastSize != null && !lastSize.equals(size)) {
                             int wid = curView.getSlideBounds().width;
                             if (wid > (size.width - viewRect.width)) {
@@ -429,7 +431,7 @@ public final class DesktopImpl {
                             }
                         }
                     } else if (Constants.RIGHT.equals(side)) {
-                        result.height = size.height;
+                        result.height = splitRootRect.height;
                         if (lastSize != null && !lastSize.equals(size)) {
                             int avail = size.width - Math.max(viewRect.width, viewPrefSize.width);
                             int wid = curView.getSlideBounds().width;
@@ -442,7 +444,7 @@ public final class DesktopImpl {
                             }
                         }
                     } else if (Constants.BOTTOM.equals(side)) {
-                        result.width = size.width;
+                        result.width = splitRootRect.width;
                         if (lastSize != null && !lastSize.equals(size)) {
                             int avail = size.height - Math.max(viewRect.height, viewPrefSize.height);
                             int hei = viewRect.height;

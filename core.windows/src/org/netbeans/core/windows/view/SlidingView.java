@@ -64,8 +64,8 @@ public class SlidingView extends ModeView {
 
     public Rectangle getSlideBounds() {
         Rectangle res = slideBounds;
-        res.height = 0;
-        res.width = 0;
+//        res.height = 0;
+//        res.width = 0;
         
         TopComponent tc = getSelectedTopComponent();
         //check if the slided-in TopComponent has a custom size defined
