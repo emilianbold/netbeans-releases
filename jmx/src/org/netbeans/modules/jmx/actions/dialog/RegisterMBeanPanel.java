@@ -132,7 +132,8 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
      */
     public String getConstructor() {
         String construct = (String) constructorComboBox.getSelectedItem();
-        if (bundle.getString("LBL_StandardMBeanDefaultConstructor").equals(construct)) // NOI18N
+        if (bundle.getString("LBL_StandardMBeanDefaultConstructor").equals(construct) ||
+            bundle.getString("LBL_ConstructorNotGenerated").equals(construct)) // NOI18N
             return null;
         else
             return construct;
@@ -143,7 +144,8 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
      */
     public ExecutableElement getExecutableConstructor() {
         String construct = (String) constructorComboBox.getSelectedItem();
-        if (bundle.getString("LBL_StandardMBeanDefaultConstructor").equals(construct)) // NOI18N
+        if (bundle.getString("LBL_StandardMBeanDefaultConstructor").equals(construct)||
+            bundle.getString("LBL_ConstructorNotGenerated").equals(construct)) // NOI18N
             return null;
         else
             return constructorsMap.get(construct);
@@ -178,6 +180,8 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
                 bundle.getString("LBL_MBean_Class")); // NOI18N
         Mnemonics.setLocalizedText(classNameLabel,
                 bundle.getString("LBL_Class")); // NOI18N
+        Mnemonics.setLocalizedText(isMXBean,
+                bundle.getString("LBL_IsMXBean")); // NOI18N
         Mnemonics.setLocalizedText(objectNameLabel,
                 bundle.getString("LBL_ObjectName")); // NOI18N
         addedInfosLabel.setText(bundle.getString("LBL_RegistMbean_AddedInfos")); // NOI18N
@@ -224,12 +228,17 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         interfaceComboBox.getAccessibleContext().setAccessibleDescription(
                 bundle.getString("ACCESS_REGISTER_STDMBEAN_INTERFACE_DESCRIPTION")); // NOI18N
         
+        
         getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
     }
     
     private boolean isAcceptable() {
         return ((standardMBeanSelected() && isExistingClass && isValid) ||
                 (!standardMBeanSelected() && isMBean && isValid));
+    }
+    
+    public boolean isMXBean() {
+        return isMXBean.isSelected();
     }
     
     public DataObject getDataObject() {
@@ -326,6 +335,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         // update state of StandardMBean use case
         classNameLabel.setEnabled(standardMBean);
         classNameTextField.setEnabled(standardMBean);
+        isMXBean.setEnabled(standardMBean);
         browseButton.setEnabled(standardMBean);
         interfaceLabel.setEnabled(standardMBean);
         interfaceComboBox.setEnabled(standardMBean);
@@ -448,6 +458,8 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
                 for (int i = 0; i < constructors.length; i++) {
                     constructorComboBox.addItem(constructors[i]);
                 }
+                constructorComboBox.addItem(
+                        bundle.getString("LBL_ConstructorNotGenerated")); // NOI18N
                 //select first row
                 constructorComboBox.setSelectedItem(0); // NOI18N
             } else if (JavaModelHelper.hasOnlyDefaultConstruct(mbeanClass)) {
@@ -496,6 +508,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         mbeanBrowseButton = new javax.swing.JButton();
         chooseLabel = new javax.swing.JLabel();
         addedInfosLabel = new javax.swing.JLabel();
+        isMXBean = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -504,7 +517,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         objectNameLabel.setLabelFor(objectNameTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         northPanel.add(objectNameLabel, gridBagConstraints);
@@ -512,7 +525,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         objectNameTextField.setName("objectNameTextField");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -520,13 +533,13 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         northPanel.add(objectNameTextField, gridBagConstraints);
 
-        stateLabel.setForeground(java.awt.SystemColor.activeCaption);
+        stateLabel.setForeground(new java.awt.Color(0, 0, 128));
         stateLabel.setMinimumSize(new java.awt.Dimension(0, 20));
         stateLabel.setName("stateLabel");
         stateLabel.setPreferredSize(new java.awt.Dimension(150, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -569,7 +582,6 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
                 userMBeanRadioButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -586,7 +598,6 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
                 stabdardMBeanRadioButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -620,7 +631,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         constructorLabel.setLabelFor(constructorComboBox);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         northPanel.add(constructorLabel, gridBagConstraints);
@@ -628,7 +639,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         constructorComboBox.setName("constructorComboBox");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -663,7 +674,6 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
                 mbeanBrowseButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
@@ -690,7 +700,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         addedInfosLabel.setPreferredSize(new java.awt.Dimension(150, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -698,11 +708,19 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(24, 12, 0, 12);
         northPanel.add(addedInfosLabel, gridBagConstraints);
 
-        add(northPanel, java.awt.BorderLayout.NORTH);
+        isMXBean.setText("jCheckBox1");
+        isMXBean.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        isMXBean.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 34, 0, 11);
+        northPanel.add(isMXBean, gridBagConstraints);
 
-    }
-    // </editor-fold>                        
-//GEN-END:initComponents
+        add(northPanel, java.awt.BorderLayout.NORTH);
+    }// </editor-fold>//GEN-END:initComponents
     private void mbeanBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mbeanBrowseButtonActionPerformed
 // TODO add your handling code here:
     }//GEN-LAST:event_mbeanBrowseButtonActionPerformed
@@ -727,6 +745,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
     private javax.swing.JLabel constructorLabel;
     private javax.swing.JComboBox interfaceComboBox;
     private javax.swing.JLabel interfaceLabel;
+    private javax.swing.JCheckBox isMXBean;
     private javax.swing.JButton mbeanBrowseButton;
     private javax.swing.JLabel mbeanClassLabel;
     private javax.swing.JTextField mbeanClassTextField;
@@ -737,8 +756,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
     private javax.swing.JRadioButton standardMBeanRadioButton;
     private javax.swing.JLabel stateLabel;
     private javax.swing.JRadioButton userMBeanRadioButton;
-    // End of variables declaration                   
-//GEN-END:variables
+    // End of variables declaration//GEN-END:variables
     public void itemStateChanged(ItemEvent e) {
         String newMBeanClass = (String) mbeanClassTextField.getText();
         updateState(newMBeanClass);

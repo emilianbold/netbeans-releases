@@ -50,11 +50,13 @@ public class RegisterMBeanAction extends NodeAction {
             "// TODO handle exception\n" + // NOI18N
             "}"; // NOI18N
     private static final String REGISTRATION_1 = TRY + "ManagementFactory.getPlatformMBeanServer().\n"; // NOI18N
-    private static final String REGISTRATION_2 = "registerMBean(new "; // NOI18N
+    private static final String REGISTRATION_2 = "registerMBean("; // NOI18N
     private static final String REGISTRATION_3 = ",\nnew ObjectName(\"{0}\"));";// NOI18N
     private static final String REGISTRATION_4 = CATCH;
-    private static final String CONSTRUCTOR_COMMENTS = "// TODO Replace {0} Constructor parameters with valid values\n";
-    private static final String REFERENCE_COMMENTS = "// TODO provide a {0} reference to StandardMBean Constructor\n";
+    private static final String CONSTRUCTOR_COMMENTS = "// TODO Replace {0} Constructor parameters with valid values\n";// NOI18N
+    private static final String REFERENCE_COMMENTS = "// TODO provide a {0} reference to StandardMBean constructor\n";// NOI18N
+    private static final String MBEAN_COMMENTS = "// TODO provide a {0} reference to registerMBean\n";// NOI18N
+
     /**
      * Creates a new instance of AddAttrAction
      */
@@ -112,10 +114,18 @@ public class RegisterMBeanAction extends NodeAction {
                     methodCall.append(ctrFormat.format(arg));
                 }
             } else {
-                MessageFormat refFormat =
-                    new MessageFormat(REFERENCE_COMMENTS);
+                if(cfg.standardMBeanSelected()) {
+                    MessageFormat refFormat =
+                            new MessageFormat(REFERENCE_COMMENTS);
                     Object[] arg = {WizardHelpers.getClassName(className)};
                     methodCall.append(refFormat.format(arg));
+                }else {
+                    MessageFormat mbeanFormat =
+                            new MessageFormat(MBEAN_COMMENTS);
+                    Object[] arg = {WizardHelpers.getClassName(className)};
+                    methodCall.append(mbeanFormat.format(arg));
+                }
+                
             }
             
             methodCall.append(REGISTRATION_2);
@@ -130,11 +140,17 @@ public class RegisterMBeanAction extends NodeAction {
                     itf = WizardHelpers.getClassName(itf);
                     itf = itf + ".class";
                 }
-                methodCall.append("StandardMBean(" // NOI18N
+                methodCall.append("new StandardMBean(" // NOI18N
                        + (ctr == null ? null : "new " + ctr) + ",\n"
-                       + itf +")");// NOI18N
+                       + itf);
+                
+                if(cfg.isMXBean())
+                    methodCall.append(", true");
+                
+                methodCall.append(")");// NOI18N
             } else {
-                methodCall.append(cfg.getConstructor());
+                
+                methodCall.append((ctr == null ? null : "new " + ctr));
             }
             
             MessageFormat objNameFormat =
