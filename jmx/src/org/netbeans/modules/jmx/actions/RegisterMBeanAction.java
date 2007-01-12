@@ -44,10 +44,10 @@ public class RegisterMBeanAction extends NodeAction {
     
     private FileObject fo;
     private DataObject dob;
-    private static String TRY = "try {\n";
-    private static String CATCH = "\n}catch(Exception ex) {\n"+
-            "// Handle registration Exception\n" +
-            "}";
+    private static String TRY = "try { // Register MBean in Platform MBeanServer\n";// NOI18N
+    private static String CATCH = "\n}catch(Exception ex) {\n"+// NOI18N
+            "// TODO handle exception\n" +// NOI18N
+            "}";// NOI18N
     /**
      * Creates a new instance of AddAttrAction
      */
@@ -91,14 +91,14 @@ public class RegisterMBeanAction extends NodeAction {
             
             // First handle Imports
             List<String> imports = new ArrayList<String>();
-            imports.add("java.lang.management.ManagementFactory");
-            imports.add("javax.management.ObjectName");
+            imports.add("java.lang.management.ManagementFactory");// NOI18N
+            imports.add("javax.management.ObjectName");// NOI18N
             if(cfg.getConstructor() != null) {
                 imports.add(cfg.getClassName());
             }
             String ctr = cfg.getConstructor();
             if (cfg.standardMBeanSelected()) {
-                imports.add("javax.management.StandardMBean");
+                imports.add("javax.management.StandardMBean");// NOI18N
                 String itf = cfg.getInterfaceName();
                 if(itf != null) {
                     imports.add(itf);
@@ -108,18 +108,18 @@ public class RegisterMBeanAction extends NodeAction {
                 }
                 
                 methodCall = TRY + 
-                       "ManagementFactory.getPlatformMBeanServer().\n"
-                       + "registerMBean(new StandardMBean("
-                       + (ctr == null ? null : "new " + ctr) + ",\n"
-                       +itf +"),\n"
-                       + " new ObjectName(\""+cfg.getMBeanObjectName()+"\"));"
+                       "ManagementFactory.getPlatformMBeanServer().\n"// NOI18N
+                       + "registerMBean(new StandardMBean("// NOI18N
+                       + (ctr == null ? null : "new " + ctr) + ",\n"// NOI18N
+                       +itf +"),\n"// NOI18N
+                       + " new ObjectName(\""+cfg.getMBeanObjectName()+"\"));"// NOI18N
                        + CATCH;
                 
             } else {
                methodCall = TRY + 
-                       "ManagementFactory.getPlatformMBeanServer().\n"
-                       + "registerMBean(new " + cfg.getConstructor() + ",\n"
-                       + " new ObjectName(\""+cfg.getMBeanObjectName()+"\"));"
+                       "ManagementFactory.getPlatformMBeanServer().\n"// NOI18N
+                       + "registerMBean(new " + cfg.getConstructor() + ",\n"// NOI18N
+                       + " new ObjectName(\""+cfg.getMBeanObjectName()+"\"));"// NOI18N
                        +CATCH;
             }
             
