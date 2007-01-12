@@ -191,7 +191,7 @@ public class JavaCompletionDoc implements CompletionDocumentation {
                 sb.append(getClassHeader(eu, (ClassDoc)doc));
             }
             sb.append("<p>"); //NOI18N
-            if (doc.commentText().length() > 0) {
+            if (doc.commentText().length() > 0 || doc.tags().length > 0) {
                 sb.append(getDeprecatedTag(eu, doc));
                 sb.append(inlineTags(eu, doc, doc.inlineTags()));
                 sb.append("</p><p>"); //NOI18N
