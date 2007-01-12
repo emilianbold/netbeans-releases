@@ -774,7 +774,7 @@ public class CasualDiff {
     }
 
     protected int diffReturn(JCReturn oldT, JCReturn newT, int[] bounds) {
-        int[] exprBounds = new int[] { getOldPos(oldT), endPos(oldT) };
+        int[] exprBounds = getBounds(oldT.expr);
         copyTo(bounds[0], exprBounds[0], printer);
         int localPointer = diffTree(oldT.expr, newT.expr, exprBounds);
         copyTo(localPointer, bounds[1], printer);
