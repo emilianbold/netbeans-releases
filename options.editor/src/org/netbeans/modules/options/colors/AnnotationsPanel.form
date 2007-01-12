@@ -3,6 +3,7 @@
 <Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -14,19 +15,19 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="cpCategories" max="32767" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Component id="cpCategories" pref="212" max="32767" attributes="0"/>
+                      <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="lWaveUnderlined" min="-2" max="-2" attributes="0"/>
-                          <Component id="lbackground" min="-2" max="-2" attributes="0"/>
+                          <Component id="lbackground" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="lWaveUnderlined" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="lForeground" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="cbForeground" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="cbBackground" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="cbWaveUnderlined" alignment="1" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="cbForeground" alignment="1" pref="71" max="32767" attributes="1"/>
+                          <Component id="cbBackground" alignment="1" pref="71" max="32767" attributes="1"/>
+                          <Component id="cbWaveUnderlined" alignment="1" pref="71" max="32767" attributes="1"/>
                       </Group>
                   </Group>
                   <Component id="lCategory" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -42,7 +43,7 @@
               <Component id="lCategory" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="lForeground" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="cbForeground" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -58,7 +59,7 @@
                           <Component id="cbWaveUnderlined" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <Component id="cpCategories" alignment="0" pref="258" max="32767" attributes="0"/>
+                  <Component id="cpCategories" pref="258" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
