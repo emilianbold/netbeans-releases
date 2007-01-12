@@ -18,6 +18,23 @@ public class VisualDesign {
 
     //GEN-LINE:|methods|0|
 
+    private void initialize() {//GEN-LINE:|0-initialize|0|0-preInitialize
+        // write pre-initialize user code here
+//GEN-LINE:|0-initialize|1|0-postInitialize
+        // write post-initialize user code here
+    }//GEN-LINE:|0-initialize|2|
+
+    public void switchDisplayable(Alert alert, Displayable nextDisplayable) {//GEN-LINE:|2-switchDisplayable|0|2-preSwitch
+        // write pre-switch user code here
+        Display display = getDisplay();//GEN-BEGIN:|2-switchDisplayable|1|2-postSwitch
+        if (alert == null) {
+            display.setCurrent(nextDisplayable);
+        } else {
+            display.setCurrent(alert, nextDisplayable);
+        }//GEN-END:|2-switchDisplayable|1|2-postSwitch
+        // write post-switch user code here
+    }//GEN-LINE:|2-switchDisplayable|2|
+
     public Display getDisplay () {
         return Display.getDisplay(midlet);
     }
