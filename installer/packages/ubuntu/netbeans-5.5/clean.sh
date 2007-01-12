@@ -1,0 +1,1 @@
+fakeroot debian/rules clean

@@ -1,0 +1,126 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+# This file was originally written by Joey Hess and Craig Small.
+# As a special exception, when this file is copied by dh-make into a
+# dh-make output file, you may use that output file without restriction.
+# This special exception was added by Craig Small in version 0.37 of dh-make.
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+
+export SHELL = /bin/bash
+
+#SOURCE_TARBALL = $(CURDIR)/upstream/netbeans-5_5-ide_sources.tar.gz
+#SOURCE_TARBALL_URL = http://us2.mirror.netbeans.org/download/5_5/fcs/200610171010/netbeans-5_5-ide_sources.tar.gz
+BUILD_TARBALL = $(CURDIR)/netbeans-5.5.tar.gz
+#BUILD_TARBALL_URL = http://us2.mirror.netbeans.org/download/5_5/fcs/200610171010/netbeans-5_5.tar.gz
+
+SOURCE_ROOT = $(DEBIAN_TMP)/netbeans-src
+BUILD = $(SOURCE_ROOT)/nbbuild/netbeans
+
+NBROOT = /usr/share/netbeans
+DEBIAN_TMP = $(CURDIR)/debian/tmp
+
+configure: configure-stamp
+configure-stamp:
+	dh_testdir
+	touch configure-stamp
+
+#$(BUILD_TARBALL):
+#	wget -O $(BUILD_TARBALL) $(BUILD_TARBALL_URL)
+
+unpack-build-tarball: $(BUILD_TARBALL)
+	dh_testdir
+	mkdir -p $(BUILD)
+	tar xzf $(BUILD_TARBALL) -C $(BUILD)/..
+
+#$(SOURCE_TARBALL):
+#	wget -O $(SOURCE_TARBALL) $(SOURCE_TARBALL_URL)
+
+#compile: $(SOURCE_TARBALL)
+#	dh_testdir
+#	mkdir -p $(DEBIAN_TMP)
+#	tar xvzf $(SOURCE_TARBALL) -C $(DEBIAN_TMP)
+#	(unset JAVA_HOME ; ANT_OPTS="-Xmx196m" /usr/bin/ant -f $(SOURCE_ROOT)/nbbuild/build.xml build-nozip)
+	# delete junk
+#	rm -f $(BUILD)/*.built $(BUILD)/build_info $(BUILD)/bin/*.exe $(BUILD)/bin/*.cmd
+
+build: build-stamp
+build-stamp: configure-stamp unpack-build-tarball
+	touch $@
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp configure-stamp
+
+	# Add here commands to clean up after the build process.
+	rm -rf $(DEBIAN_TMP)
+
+	dh_clean 
+
+install: build
+	dh_testdir
+	dh_testroot
+
+	# platform
+	mkdir -p $(CURDIR)/debian/netbeans-platform$(NBROOT)
+	cp -r $(BUILD)/platform6 $(CURDIR)/debian/netbeans-platform$(NBROOT)/
+	mkdir -p $(CURDIR)/debian/netbeans-platform/usr/share/doc/netbeans-platform/
+	mv $(CURDIR)/debian/netbeans-platform$(NBROOT)/platform6/*.txt $(CURDIR)/debian/netbeans-platform/usr/share/doc/netbeans-platform/
+	#for x in `find $(CURDIR)/debian/netbeans-platform/$(NBROOT) -name \*.jar` ; do \
+	#	echo "Packing $$x" ; \
+	#	pack200 --no-gzip $$x.pack $$x ; \
+	#	rm $$x ; \
+	#done
+
+	# IDE
+	mkdir -p $(CURDIR)/debian/netbeans$(NBROOT)
+	cp -r $(BUILD)/* $(CURDIR)/debian/netbeans$(NBROOT)/
+	rm -r $(CURDIR)/debian/netbeans$(NBROOT)/platform6
+	mkdir -p $(CURDIR)/debian/netbeans/usr/share/doc/netbeans/
+	mv $(CURDIR)/debian/netbeans$(NBROOT)/*.txt $(CURDIR)/debian/netbeans/usr/share/doc/netbeans/
+	mv $(CURDIR)/debian/netbeans$(NBROOT)/*.html $(CURDIR)/debian/netbeans/usr/share/doc/netbeans/	
+	mv $(CURDIR)/debian/netbeans$(NBROOT)/*.css $(CURDIR)/debian/netbeans/usr/share/doc/netbeans/
+
+	mkdir -p $(CURDIR)/debian/netbeans/usr/share/applications
+	cp $(CURDIR)/debian/extra/netbeans.desktop $(CURDIR)/debian/netbeans/usr/share/applications/netbeans.desktop
+
+	mkdir -p $(CURDIR)/debian/netbeans/usr/bin
+	ln -sf $(NBROOT)/bin/netbeans $(CURDIR)/debian/netbeans/usr/bin/netbeans
+
+	# replace bundled jars with links to jars from packages
+	#cat $(CURDIR)/debian/extra/links.txt | while read FROM TO; do \
+	#    if [ -a $(CURDIR)/debian/netbeans$(NBROOT)/$$TO ] ; then  \
+	#	rm -r $(CURDIR)/debian/netbeans$(NBROOT)/$$TO; \
+	#        ln -sf $$FROM $(CURDIR)/debian/netbeans$(NBROOT)/$$TO; \
+	#    fi \
+	#done
+
+	#for x in `find $(CURDIR)/debian/netbeans$(NBROOT) -name \*.jar` ; do \
+	#	echo "Packing $$x" ; \
+	#	pack200 --no-gzip $$x.pack $$x ; \
+	#	rm $$x ; \
+	#done
+
+# Build architecture-independent files here.
+binary-indep: build install
+	dh_testdir
+	dh_testroot
+	dh_installdocs
+	dh_installmenu
+	dh_installman
+	dh_installchangelogs
+	dh_compress
+	dh_installdeb
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+# Build architecture-dependent files here.
+binary-arch: build install
+# nothing to do here
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install configure
