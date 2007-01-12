@@ -108,6 +108,8 @@ public class MBeanPanel extends javax.swing.JPanel
                      bundle.getString("LBL_mbean_description"));//NOI18N
         Mnemonics.setLocalizedText(classSelectionJLabel,
                      bundle.getString("LBL_class_selection"));//NOI18N
+        Mnemonics.setLocalizedText(isMXBean,bundle.getString("LBL_IsMXBean"));//NOI18N
+       
         // Provide a name in the title bar.
         setName(bundle.getString("LBL_Standard_Panel"));// NOI18N
         
@@ -123,6 +125,8 @@ public class MBeanPanel extends javax.swing.JPanel
        
         classSelectionJTextField.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_FROM_JAVA_CLASS_VALUE"));// NOI18N
         classSelectionJTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_FROM_JAVA_CLASS_VALUE_DESCRIPTION"));// NOI18N
+        isMXBean.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_IS_MXBEAN"));// NOI18N
+        isMXBean.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_IS_MXBEAN_DESCRIPTION"));// NOI18N
     }
     
     public void setProject(Project project) {
@@ -146,6 +150,7 @@ public class MBeanPanel extends javax.swing.JPanel
         classSelectionJLabel = new javax.swing.JLabel();
         classSelectionJTextField = new javax.swing.JTextField();
         browseButton = new javax.swing.JButton();
+        isMXBean = new javax.swing.JCheckBox();
 
         mbeanDescriptionJTextField.setName("mbeanDescriptionJTextField");
 
@@ -165,23 +170,30 @@ public class MBeanPanel extends javax.swing.JPanel
         browseButton.setText("jButton1");
         browseButton.setName("browseButton");
 
+        isMXBean.setText("isMXBean");
+        isMXBean.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        isMXBean.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(generatedFileJLabel)
-                    .add(mbeanDecriptionJLabel)
-                    .add(classSelectionJLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(mbeanDescriptionJTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(classSelectionJTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(generatedFileJLabel)
+                            .add(mbeanDecriptionJLabel)
+                            .add(classSelectionJLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(browseButton))
-                    .add(generatedFileJTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(mbeanDescriptionJTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
+                                .add(classSelectionJTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(browseButton))
+                            .add(generatedFileJTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)))
+                    .add(isMXBean))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -200,7 +212,9 @@ public class MBeanPanel extends javax.swing.JPanel
                     .add(classSelectionJLabel)
                     .add(classSelectionJTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(browseButton))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(isMXBean)
+                .addContainerGap(42, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
   
@@ -210,6 +224,7 @@ public class MBeanPanel extends javax.swing.JPanel
     private javax.swing.JTextField classSelectionJTextField;
     private javax.swing.JLabel generatedFileJLabel;
     private javax.swing.JTextField generatedFileJTextField;
+    private javax.swing.JCheckBox isMXBean;
     private javax.swing.JLabel mbeanDecriptionJLabel;
     private javax.swing.JTextField mbeanDescriptionJTextField;
     private javax.swing.ButtonGroup mbeanTypeButtonGroup;
@@ -539,10 +554,12 @@ public class MBeanPanel extends javax.swing.JPanel
                 getPanel().classSelectionJLabel.setVisible(true);
                 getPanel().classSelectionJTextField.setVisible(true);
                 getPanel().browseButton.setVisible(true);
+                getPanel().isMXBean.setVisible(true);
             } else {
                 getPanel().classSelectionJLabel.setVisible(false);
                 getPanel().classSelectionJTextField.setVisible(false);
                 getPanel().browseButton.setVisible(false);
+                getPanel().isMXBean.setVisible(false);
             }
             
             String desc = (String) 
@@ -600,6 +617,8 @@ public class MBeanPanel extends javax.swing.JPanel
            
             wiz.putProperty (WizardConstants.PROP_MBEAN_EXISTING_CLASS, 
                         getExistingClass());
+            wiz.putProperty (WizardConstants.PROP_MBEAN_EXISTING_CLASS_IS_MXBEAN, 
+                        getPanel().isMXBean.isSelected());
              
             wiz.putProperty (WizardConstants.PROP_MBEAN_TYPE, 
                         mbeanType);

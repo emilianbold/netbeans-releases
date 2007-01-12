@@ -227,7 +227,10 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
                 bundle.getString("ACCESS_REGISTER_STDMBEAN_INTERFACE")); // NOI18N
         interfaceComboBox.getAccessibleContext().setAccessibleDescription(
                 bundle.getString("ACCESS_REGISTER_STDMBEAN_INTERFACE_DESCRIPTION")); // NOI18N
-        
+        isMXBean.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_IS_MXBEAN")); // NOI18N
+        isMXBean.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_IS_MXBEAN_DESCRIPTION")); // NOI18N
         
         getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
     }

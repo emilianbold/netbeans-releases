@@ -100,7 +100,9 @@ public class Translator {
         JavaSource wrappedClass = (JavaSource) 
             wiz.getProperty(WizardConstants.PROP_MBEAN_EXISTING_CLASS);
         mbean.setWrapppedClass((wrappedClass != null));
-        
+        Boolean isExistingClassMXBean = (Boolean) 
+            wiz.getProperty(WizardConstants.PROP_MBEAN_EXISTING_CLASS_IS_MXBEAN);
+        mbean.setWrapppedClassIsMXBean(isExistingClassMXBean);
         if (wrappedClass != null) {
             String className = JavaModelHelper.getFullClassName(wrappedClass);
             mbean.setWrappedClassName(className);

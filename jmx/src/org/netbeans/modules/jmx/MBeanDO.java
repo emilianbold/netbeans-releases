@@ -47,6 +47,7 @@ public class MBeanDO {
     private boolean keepPreRegistRef = false;
     private boolean genBroadcastDeleg = false;
     private boolean genSeqNumber = false;
+    private boolean isWrapppedClassMXBean;
     
     private DataFolder folder;
     private DataObject template;
@@ -195,8 +196,14 @@ public class MBeanDO {
     public boolean isWrapppedClass() {
         return isWrapppedClass;
     }
-
     public void setWrapppedClass(boolean isWrapppedClass) {
         this.isWrapppedClass = isWrapppedClass;
     }
+    public void setWrapppedClassIsMXBean(boolean isWrapppedClassMXBean) {
+        this.isWrapppedClassMXBean = isWrapppedClassMXBean;
+    }
+    public boolean isWrapppedClassMXBean() {
+        return isWrapppedClassMXBean;
+    }
+        
 }

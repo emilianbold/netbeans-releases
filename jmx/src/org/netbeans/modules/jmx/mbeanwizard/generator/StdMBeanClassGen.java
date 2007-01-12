@@ -69,6 +69,7 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
         // The template file is linked to MBean Type         
         mbeanDObj = dTemplate.createFromTemplate( 
                     mbeanFolder, mbeanName );
+        
         FileObject mbeanFile = mbeanDObj.getPrimaryFile();            
         JavaSource mbeanClass = JavaModelHelper.getSource(mbeanFile);
 

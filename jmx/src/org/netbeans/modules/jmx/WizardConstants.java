@@ -37,6 +37,7 @@ public class WizardConstants
     
     // properties to see if mbean wrapps existing ressource
     public static final String PROP_MBEAN_EXISTING_CLASS = "wizdata.mbeanExistingClass"; // NOI18N
+    public static final String PROP_MBEAN_EXISTING_CLASS_IS_MXBEAN = "wizdata.mbeanExistingClass.ismxbean"; // NOI18N
             
     // agent default location in the wizard map
     public static final String PROP_AGENT_NAME          = "wizdata.agentName"; // NOI18N

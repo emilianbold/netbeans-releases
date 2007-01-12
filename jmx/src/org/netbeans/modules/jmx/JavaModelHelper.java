@@ -2110,17 +2110,23 @@ public class JavaModelHelper {
                         "theRef", t, null); // NOI18N
                 List<VariableTree> params = new ArrayList<VariableTree>(1);
                 params.add(p);
+                    
                 Set<Modifier> modifiers2 = new HashSet<Modifier>(1);
                 modifiers2.add(Modifier.PUBLIC);
                 List<ExpressionTree> exceptions = new ArrayList<ExpressionTree>(1);
-                exceptions.add(maker.Identifier("NotCompliantMBeanException"));
+                exceptions.add(maker.Identifier("NotCompliantMBeanException"));// NOI18N
+                StringBuffer body = new StringBuffer();
+                body.append("{super(" + mbean.getName() + WizardConstants.MBEAN_ITF_SUFFIX + ".class");// NOI18N
+                if(mbean.isWrapppedClassMXBean())
+                    body.append(", true");// NOI18N
+                body.append(");\n");
+                 body.append("this.theRef = theRef;}");   
                 MethodTree newConstructor =
                         maker.Constructor(maker.Modifiers(modifiers2),
                         Collections.EMPTY_LIST,
                         params,
                         exceptions,
-                        "{super(" + mbean.getName() + WizardConstants.MBEAN_ITF_SUFFIX + ".class);\n" + // NOI18N
-                        "this.theRef = theRef;}");
+                        body.toString());
                 copy = maker.insertClassMember(copy, 1, newConstructor);
             }
             

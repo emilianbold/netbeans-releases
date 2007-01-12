@@ -19,21 +19,26 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="generatedFileJLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="mbeanDecriptionJLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="classSelectionJLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="mbeanDescriptionJTextField" pref="440" max="32767" attributes="1"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="classSelectionJTextField" pref="353" max="32767" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="generatedFileJLabel" min="-2" max="-2" attributes="0"/>
+                          <Component id="mbeanDecriptionJLabel" min="-2" max="-2" attributes="0"/>
+                          <Component id="classSelectionJLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="browseButton" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="mbeanDescriptionJTextField" pref="440" max="32767" attributes="1"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="classSelectionJTextField" pref="353" max="32767" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Component id="browseButton" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Component id="generatedFileJTextField" alignment="0" pref="440" max="32767" attributes="1"/>
+                      </Group>
                   </Group>
-                  <Component id="generatedFileJTextField" alignment="0" pref="440" max="32767" attributes="1"/>
+                  <Component id="isMXBean" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -56,7 +61,9 @@
                   <Component id="classSelectionJTextField" alignment="3" min="-2" pref="27" max="-2" attributes="0"/>
                   <Component id="browseButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="isMXBean" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="42" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -101,6 +108,19 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="jButton1"/>
         <Property name="name" type="java.lang.String" value="browseButton"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="isMXBean">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="isMXBean"/>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+          </Border>
+        </Property>
+        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+          <Insets value="[0, 0, 0, 0]"/>
+        </Property>
       </Properties>
     </Component>
   </SubComponents>
