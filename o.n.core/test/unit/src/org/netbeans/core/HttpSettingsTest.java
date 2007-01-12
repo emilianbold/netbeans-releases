@@ -98,6 +98,13 @@ public class HttpSettingsTest extends NbTestCase {
     }
     
     private void sillySetUp () throws Exception {
+        synchronized (sync) {
+            if (ProxySettings.DIRECT_CONNECTION != (proxyPreferences.getInt ("proxyType", -1))) {
+                proxyPreferences.putInt ("proxyType", ProxySettings.DIRECT_CONNECTION);
+                sync.wait ();
+            }
+        }
+        
         System.setProperty ("netbeans.system_http_proxy", SILLY_SYSTEM_PROXY_HOST + ":" + SYSTEM_PROXY_PORT);
         synchronized (sync) {
             if (! SILLY_USER_PROXY_HOST.equals (proxyPreferences.get ("proxyHttpHost", ""))) {
@@ -124,8 +131,8 @@ public class HttpSettingsTest extends NbTestCase {
             }
         }
         assertEquals ("Proxy type DIRECT_CONNECTION.", ProxySettings.DIRECT_CONNECTION, ProxySettings.getProxyType ());
-        assertEquals ("No Proxy Host set.", "", System.getProperty ("http.proxyHost"));
-        assertEquals ("No Proxy Port set.", "", System.getProperty ("http.proxyPort"));
+        assertEquals ("No Proxy Host set.", null, System.getProperty ("http.proxyHost"));
+        assertEquals ("No Proxy Port set.", null, System.getProperty ("http.proxyPort"));
     }
     
     public void testAutoDetectProxy () throws InterruptedException {
@@ -184,14 +191,14 @@ public class HttpSettingsTest extends NbTestCase {
         assertEquals ("System property http.nonProxyHosts was changed as well.", ProxySettings.getNonProxyHosts (), System.getProperty ("http.nonProxyHosts"));
         
         // switch proxy type to DIRECT_CONNECTION
-        System.setProperty ("http.nonProxyHosts", "");
+        //System.setProperty ("http.nonProxyHosts", "");
         synchronized (sync) {
             if (ProxySettings.DIRECT_CONNECTION != (proxyPreferences.getInt ("proxyType", -1))) {
                 proxyPreferences.putInt ("proxyType", ProxySettings.DIRECT_CONNECTION);
                 sync.wait ();
             }
         }
-        assertFalse ("ProxySettings doesn't return new value if DIRECT_CONNECTION set.", "myhost.mydomain.net".equals (System.getProperty ("http.nonProxyHosts")));
+        assertEquals ("System.getProperty() doesn't return new value if DIRECT_CONNECTION set.", null, System.getProperty ("http.nonProxyHosts"));
         
         // switch proxy type back to MANUAL_SET_PROXY
         synchronized (sync) {
@@ -270,6 +277,8 @@ public class HttpSettingsTest extends NbTestCase {
             }
         }
         assertEquals ("Proxy type AUTO_DETECT_PROXY.", ProxySettings.AUTO_DETECT_PROXY, ProxySettings.getProxyType ());
+        assertEquals ("Auto Detected Proxy Host from ProxySettings: ", SILLY_SYSTEM_PROXY_HOST, ProxySettings.SystemProxySettings.getHttpHost ());
+        assertEquals ("Auto Detected Proxy Port from ProxySettings: ", SYSTEM_PROXY_PORT, ProxySettings.SystemProxySettings.getHttpPort ());
         assertEquals ("System Proxy Host: ", SYSTEM_PROXY_HOST, System.getProperty ("http.proxyHost"));
         assertEquals ("System Proxy Port: ", SYSTEM_PROXY_PORT, System.getProperty ("http.proxyPort"));
     }    
