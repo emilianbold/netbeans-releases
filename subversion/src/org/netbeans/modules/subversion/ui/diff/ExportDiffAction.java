@@ -97,17 +97,12 @@ public class ExportDiffAction extends ContextAction {
         File[] files = getModifiedFiles(ctx, enabledForStatus);         
         if(files.length < 1) {
             return false;
-        }
-  
+        }  
         TopComponent activated = TopComponent.getRegistry().getActivated();
         if (activated instanceof DiffSetupSource) {
             return true;
         }
-        boolean b1 = super.enable(nodes);
-        System.out.println("super.enable(nodes) " + b1);
-        boolean b2 = Lookup.getDefault().lookup(DiffProvider.class) != null;
-        System.out.println("Lookup.getDefault().lookup(DiffProvider.class) != null " + b2);
-        return b1 && b2;                
+        return super.enable(nodes) && Lookup.getDefault().lookup(DiffProvider.class) != null;                
     }
 
     protected void performContextAction(final Node[] nodes) {
