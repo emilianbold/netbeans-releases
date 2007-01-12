@@ -554,7 +554,8 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             String filename = getPrimaryFile().getPath();
             if (createdIDOs.contains(filename)) return null;
 
-            supe = getCookieFromEP(clazz);
+            Object res = getCookieFromEP(clazz);
+            supe = res instanceof Node.Cookie ? clazz.cast(res) : null;
             if (InstanceCookie.class.isAssignableFrom(clazz)) return supe;
         }
         if (supe == null) supe = super.getCookie(clazz);

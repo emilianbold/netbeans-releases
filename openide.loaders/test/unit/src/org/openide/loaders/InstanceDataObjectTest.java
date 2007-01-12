@@ -27,6 +27,7 @@ import java.beans.beancontext.BeanContextChildSupport;
 import java.io.*;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.logging.Level;
 import javax.swing.JButton;
 import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.InstanceCookie;
@@ -49,6 +50,13 @@ public class InstanceDataObjectTest extends NbTestCase {
     public InstanceDataObjectTest(String name) {
         super (name);
     }
+    
+    @Override
+    protected Level logLevel() {
+        return Level.INFO;
+    }
+
+    
     
     protected void setUp () throws Exception {
         // initialize module layers
@@ -513,6 +521,23 @@ public class InstanceDataObjectTest extends NbTestCase {
         assertEquals(InstanceDataObject.remove(folder, null, "javax.swing.JButton"), false);
     }
 
+    @SuppressWarnings("unchecked")
+    public void testClassCastIssue91694() throws Exception {
+        FileObject fo = lfs.findResource("/testFindInstance");
+        assertNotNull("missing folder /testFindInstance", fo);
+        DataFolder folder = DataFolder.findFolder(fo);
+        assertNotNull("cannot find DataFolder /testFindInstance", folder);
+
+        JButton b = new JButton();
+        
+        
+        InstanceDataObject ido = InstanceDataObject.create(folder, "MyButtonek", b, null);
+        
+        Class c = Object.class;
+        Object res = ido.getCookie(c);
+        assertNotNull("Some object found", res);
+        assertEquals("This finds InstanceDataObject", InstanceDataObject.class, res.getClass());
+    }
     
     public void testWhenAFileInToolsOptionsIsRevertedTheSettingIsUpdatedIssue20962 () throws Exception {
         TestUtilHid.destroyLocalFileSystem (getName() + "2");
