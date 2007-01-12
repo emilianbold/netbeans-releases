@@ -432,9 +432,9 @@ public class CasualDiff {
         }
         if (oldT.restype != null) { // means constructor, skip return type gen.
             int[] restypeBounds = getBounds(oldT.restype);
-            copyTo(localPointer, restypeBounds[0], printer);
+            copyTo(localPointer, restypeBounds[0]);
             localPointer = diffTree(oldT.restype, newT.restype, restypeBounds);
-            copyTo(localPointer, localPointer = restypeBounds[1], printer);
+            copyTo(localPointer, localPointer = restypeBounds[1]);
         }
         int posHint;
         if (oldT.typarams.isEmpty()) {
@@ -557,13 +557,13 @@ public class CasualDiff {
         int localPointer = bounds[0];
         
         int[] bodyBounds = getBounds(oldT.body);
-        copyTo(localPointer, bodyBounds[0], printer);
+        copyTo(localPointer, bodyBounds[0]);
         localPointer = diffTree(oldT.body, newT.body, bodyBounds);
         
         int[] condBounds = getBounds(oldT.cond);
-        copyTo(localPointer, condBounds[0], printer);
+        copyTo(localPointer, condBounds[0]);
         localPointer = diffTree(oldT.cond, newT.cond, condBounds);
-        copyTo(localPointer, bounds[1], printer);
+        copyTo(localPointer, bounds[1]);
         
         return bounds[1];
     }
@@ -572,14 +572,14 @@ public class CasualDiff {
         int localPointer = bounds[0];
         // condition
         int[] condPos = getBounds(oldT.cond);
-        copyTo(localPointer, condPos[0], printer);
+        copyTo(localPointer, condPos[0]);
         localPointer = diffTree(oldT.cond, newT.cond, condPos);
         // body
         int[] bodyPos = getBounds(oldT.body);
-        copyTo(localPointer, bodyPos[0], printer);
+        copyTo(localPointer, bodyPos[0]);
         localPointer = diffTree(oldT.body, newT.body, bodyPos);
         
-        copyTo(localPointer, bounds[1], printer);
+        copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
 
@@ -587,15 +587,15 @@ public class CasualDiff {
         int localPointer = bounds[0];
         int initListHint = oldT.cond != null ? oldT.cond.pos - 1 : Query.NOPOS;
         int stepListHint = oldT.cond != null ? endPos(oldT.cond) + 1 : Query.NOPOS;
-        printer.print(origText.substring(bounds[0], getOldPos(oldT.init.head)));
+        copyTo(bounds[0], getOldPos(oldT.init.head));
         localPointer = diffList(oldT.init, newT.init, LineInsertionType.NONE, initListHint);
-        printer.print(origText.substring(localPointer, getOldPos(oldT.cond)));
-        localPointer = diffTree(oldT.cond, newT.cond, new int[] { getOldPos(oldT.cond), endPos(oldT.cond) });
-        printer.print(origText.substring(localPointer, getOldPos(oldT.step.head)));
+        copyTo(localPointer, getOldPos(oldT.cond));
+        localPointer = diffTree(oldT.cond, newT.cond, getBounds(oldT.cond));
+        copyTo(localPointer, getOldPos(oldT.step.head));
         localPointer = diffList(oldT.step, newT.step, LineInsertionType.NONE, stepListHint);
-        printer.print(origText.substring(localPointer, getOldPos(oldT.body)));
-        localPointer = diffTree(oldT.body, newT.body, new int[] { getOldPos(oldT.body), endPos(oldT.body) });
-        printer.print(origText.substring(localPointer, bounds[1]));
+        copyTo(localPointer, getOldPos(oldT.body));
+        localPointer = diffTree(oldT.body, newT.body, getBounds(oldT.body));
+        copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
     
@@ -603,17 +603,17 @@ public class CasualDiff {
         int localPointer = bounds[0];
         // variable
         int[] varBounds = getBounds(oldT.var);
-        copyTo(localPointer, varBounds[0], printer);
+        copyTo(localPointer, varBounds[0]);
         localPointer = diffTree(oldT.var, newT.var, varBounds);
         // expression
         int[] exprBounds = getBounds(oldT.expr);
-        copyTo(localPointer, exprBounds[0], printer);
+        copyTo(localPointer, exprBounds[0]);
         localPointer = diffTree(oldT.expr, newT.expr, exprBounds);
         // body
         int[] bodyBounds = getBounds(oldT.body);
-        copyTo(localPointer, bodyBounds[0], printer);
+        copyTo(localPointer, bodyBounds[0]);
         localPointer = diffTree(oldT.body, newT.body, bodyBounds);
-        copyTo(localPointer, bounds[1], printer);
+        copyTo(localPointer, bounds[1]);
         
         return bounds[1];
     }
@@ -621,14 +621,14 @@ public class CasualDiff {
     protected int diffLabelled(JCLabeledStatement oldT, JCLabeledStatement newT, int[] bounds) {
         int localPointer = bounds[0];
         if (nameChanged(oldT.label, newT.label)) {
-            copyTo(localPointer, localPointer = getOldPos(oldT), printer);
+            copyTo(localPointer, localPointer = getOldPos(oldT));
             printer.print(newT.label);
             localPointer += oldT.label.length();
         }
         int[] bodyBounds = getBounds(oldT.body);
-        copyTo(localPointer, bodyBounds[0], printer);
+        copyTo(localPointer, bodyBounds[0]);
         localPointer = diffTree(oldT.body, newT.body, bodyBounds);
-        copyTo(localPointer, bounds[1], printer);
+        copyTo(localPointer, bounds[1]);
         
         return bounds[1];
     }
@@ -648,13 +648,13 @@ public class CasualDiff {
         int localPointer = bounds[0];
         // lock
         int[] lockBounds = getBounds(oldT.lock);
-        copyTo(localPointer, lockBounds[0], printer);
+        copyTo(localPointer, lockBounds[0]);
         localPointer = diffTree(oldT.lock, newT.lock, lockBounds);
         // body
         int[] bodyBounds = getBounds(oldT.body);
-        copyTo(localPointer, bodyBounds[0], printer);
+        copyTo(localPointer, bodyBounds[0]);
         localPointer = diffTree(oldT.body, newT.body, bodyBounds);
-        copyTo(localPointer, bounds[1], printer);
+        copyTo(localPointer, bounds[1]);
         
         return bounds[1];
     }
@@ -662,17 +662,17 @@ public class CasualDiff {
     protected int diffTry(JCTry oldT, JCTry newT, int[] bounds) {
         int localPointer = bounds[0];
         int[] bodyPos = getBounds(oldT.body);
-        copyTo(localPointer, bodyPos[0], printer);
+        copyTo(localPointer, bodyPos[0]);
         localPointer = diffTree(oldT.body, newT.body, bodyPos);
         int pos = oldT.catchers.head != null ? getOldPos(oldT.catchers.head) : oldT.body.endpos + 1;
-        copyTo(localPointer, pos, printer);
+        copyTo(localPointer, pos);
         localPointer = diffList(oldT.catchers, newT.catchers, LineInsertionType.BEFORE, pos);
         if (oldT.finalizer != null) {
             int[] finalBounds = getBounds(oldT.finalizer);
-            copyTo(localPointer, finalBounds[0], printer);
+            copyTo(localPointer, finalBounds[0]);
             localPointer = diffTree(oldT.finalizer, newT.finalizer, finalBounds);
         }
-        copyTo(localPointer, bounds[1], printer);
+        copyTo(localPointer, bounds[1]);
         
         return bounds[1];
     }
@@ -681,13 +681,13 @@ public class CasualDiff {
         int localPointer = bounds[0];
         // param
         int[] paramBounds = getBounds(oldT.param);
-        copyTo(localPointer, paramBounds[0], printer);
+        copyTo(localPointer, paramBounds[0]);
         localPointer = diffTree(oldT.param, newT.param, paramBounds);
         // body
         int[] bodyBounds = getBounds(oldT.body);
-        copyTo(localPointer, bodyBounds[0], printer);
+        copyTo(localPointer, bodyBounds[0]);
         localPointer = diffTree(oldT.body, newT.body, bodyBounds);
-        copyTo(localPointer, bounds[1], printer);
+        copyTo(localPointer, bounds[1]);
         
         return bounds[1];
     }
@@ -696,17 +696,17 @@ public class CasualDiff {
         int localPointer = bounds[0];
         // cond
         int[] condBounds = getBounds(oldT.cond);
-        copyTo(localPointer, condBounds[0], printer);
+        copyTo(localPointer, condBounds[0]);
         localPointer = diffTree(oldT.cond, newT.cond, condBounds);
         // true
         int[] trueBounds = getBounds(oldT.truepart);
-        copyTo(localPointer, trueBounds[0], printer);
+        copyTo(localPointer, trueBounds[0]);
         localPointer = diffTree(oldT.truepart, newT.truepart, trueBounds);
         // false
         int[] falseBounds = getBounds(oldT.falsepart);
-        copyTo(localPointer, falseBounds[0], printer);
+        copyTo(localPointer, falseBounds[0]);
         localPointer = diffTree(oldT.falsepart, newT.falsepart, falseBounds);
-        copyTo(localPointer, bounds[1], printer);
+        copyTo(localPointer, bounds[1]);
         
         return bounds[1];
     }
@@ -718,66 +718,66 @@ public class CasualDiff {
             // mark the whole if statement to be reformatted, which Commit will refine.
             append(Diff.modify(oldT, getOldPos(oldT), newT));
         } else {
-            int[] condPos = new int[] { getOldPos(oldT.cond), endPos(oldT.cond) };
-            printer.print(origText.substring(localPointer, condPos[0]));
-            localPointer = diffTree(oldT.cond, newT.cond, condPos);
-            int[] part = new int[] { getOldPos(oldT.thenpart), endPos(oldT.thenpart) };
-            printer.print(origText.substring(localPointer, part[0]));
-            localPointer = diffTree(oldT.thenpart, newT.thenpart, part);
+            int[] condBounds = getBounds(oldT.cond);
+            copyTo(localPointer, condBounds[0]);
+            localPointer = diffTree(oldT.cond, newT.cond, condBounds);
+            int[] thenpartBounds = getBounds(oldT.thenpart);
+            copyTo(localPointer, thenpartBounds[0]);
+            localPointer = diffTree(oldT.thenpart, newT.thenpart, thenpartBounds);
             if (oldT.elsepart != null) {
-                part = new int[] { getOldPos(oldT.elsepart), endPos(oldT.elsepart) };
-                printer.print(origText.substring(localPointer, part[0]));
-                localPointer = diffTree(oldT.elsepart, newT.elsepart, part);
+                thenpartBounds = new int[] { getOldPos(oldT.elsepart), endPos(oldT.elsepart) };
+                copyTo(localPointer, thenpartBounds[0]);
+                localPointer = diffTree(oldT.elsepart, newT.elsepart, thenpartBounds);
             }
         }
-        printer.print(origText.substring(localPointer, bounds[1]));
+        copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
 
     protected int diffExec(JCExpressionStatement oldT, JCExpressionStatement newT, int[] bounds) {
         int localPointer = getOldPos(oldT);
-        printer.print(origText.substring(bounds[0], localPointer));
+        copyTo(bounds[0], localPointer);
         localPointer = diffTree(oldT.expr, newT.expr, bounds);
-        printer.print(origText.substring(localPointer, bounds[1]));
+        copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
 
     protected int diffBreak(JCBreak oldT, JCBreak newT, int[] bounds) {
         int localPointer = bounds[0];
         if (nameChanged(oldT.label, newT.label)) {
-            copyTo(localPointer, localPointer = getOldPos(oldT), printer);
+            copyTo(localPointer, localPointer = getOldPos(oldT));
             printer.print("break ");
             printer.print(newT.label);
             localPointer += 6 + oldT.label.length();
         }
 //        int[] targetBounds = getBounds(oldT.target);
-//        copyTo(localPointer, targetBounds[0], printer);
+//        copyTo(localPointer, targetBounds[0]);
 //        localPointer = diffTree(oldT.target, newT.target, targetBounds);
-        copyTo(localPointer, bounds[1], printer);
+        copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
         
     protected int diffContinue(JCContinue oldT, JCContinue newT, int[] bounds) {
         int localPointer = bounds[0];
         if (nameChanged(oldT.label, newT.label)) {
-            copyTo(localPointer, localPointer = getOldPos(oldT), printer);
+            copyTo(localPointer, localPointer = getOldPos(oldT));
             printer.print("continue ");
             printer.print(newT.label);
             localPointer += 9 + oldT.label.length();
         }
 //        int[] targetBounds = getBounds(oldT.target);
-//        copyTo(localPointer, targetBounds[0], printer);
+//        copyTo(localPointer, targetBounds[0]);
 //        localPointer = diffTree(oldT.target, newT.target, targetBounds);
-        copyTo(localPointer, bounds[1], printer);
+        copyTo(localPointer, bounds[1]);
         
         return bounds[1];
     }
 
     protected int diffReturn(JCReturn oldT, JCReturn newT, int[] bounds) {
         int[] exprBounds = getBounds(oldT.expr);
-        copyTo(bounds[0], exprBounds[0], printer);
+        copyTo(bounds[0], exprBounds[0]);
         int localPointer = diffTree(oldT.expr, newT.expr, exprBounds);
-        copyTo(localPointer, bounds[1], printer);
+        copyTo(localPointer, bounds[1]);
         
         return bounds[1];
     }
@@ -786,9 +786,9 @@ public class CasualDiff {
         int localPointer = bounds[0];
         // expr
         int[] exprBounds = getBounds(oldT.expr);
-        copyTo(localPointer, exprBounds[0], printer);
+        copyTo(localPointer, exprBounds[0]);
         localPointer = diffTree(oldT.expr, newT.expr, exprBounds);
-        copyTo(localPointer, bounds[1], printer);
+        copyTo(localPointer, bounds[1]);
         
         return bounds[1];
     }
@@ -797,13 +797,13 @@ public class CasualDiff {
         int localPointer = bounds[0];
         // cond
         int[] condBounds = getBounds(oldT.cond);
-        copyTo(localPointer, condBounds[0], printer);
+        copyTo(localPointer, condBounds[0]);
         localPointer = diffTree(oldT.cond, newT.cond, condBounds);
         // detail
         int[] detailBounds = getBounds(oldT.detail);
-        copyTo(localPointer, detailBounds[0], printer);
+        copyTo(localPointer, detailBounds[0]);
         localPointer = diffTree(oldT.detail, newT.detail, detailBounds);
-        copyTo(localPointer, bounds[1], printer);
+        copyTo(localPointer, bounds[1]);
         
         return bounds[1];
     }
@@ -826,12 +826,12 @@ public class CasualDiff {
         localPointer = diffParameterList(oldT.args, newT.args, localPointer);
         // let diffClassDef() method notified that anonymous class is printed.
         if (oldT.def != null) {
-            printer.print(origText.substring(localPointer, getOldPos(oldT.def)));
+            copyTo(localPointer, getOldPos(oldT.def));
             anonClass = true; 
-            localPointer = diffTree(oldT.def, newT.def, new int[] { getOldPos(oldT.def), endPos(oldT.def)});
+            localPointer = diffTree(oldT.def, newT.def, getBounds(oldT.def));
             anonClass = false;
         }
-        printer.print(origText.substring(localPointer, bounds[1]));
+        copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
 
@@ -843,8 +843,8 @@ public class CasualDiff {
 
     protected int diffParens(JCParens oldT, JCParens newT, int[] bounds) {
         int localPointer = bounds[0];
-        printer.print(origText.substring(localPointer, getOldPos(oldT.expr)));
-        localPointer = diffTree(oldT.expr, newT.expr, new int[] { getOldPos(oldT.expr), endPos(oldT.expr) });
+        copyTo(localPointer, getOldPos(oldT.expr));
+        localPointer = diffTree(oldT.expr, newT.expr, getBounds(oldT.expr));
         return localPointer;
     }
 
@@ -852,14 +852,14 @@ public class CasualDiff {
         int localPointer = bounds[0];
         // lhs
         int[] lhsBounds = getBounds(oldT.lhs);
-        copyTo(localPointer, lhsBounds[0], printer);
+        copyTo(localPointer, lhsBounds[0]);
         localPointer = diffTree(oldT.lhs, newT.lhs, lhsBounds);
         // rhs
         int[] rhsBounds = getBounds(oldT.rhs);
-        copyTo(localPointer, rhsBounds[0], printer);
+        copyTo(localPointer, rhsBounds[0]);
         localPointer = diffTree(oldT.rhs, newT.rhs, rhsBounds);
         
-        copyTo(localPointer, bounds[1], printer);
+        copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
 
@@ -867,11 +867,11 @@ public class CasualDiff {
         int localPointer = bounds[0];
         // lhs
         int[] lhsBounds = getBounds(oldT.lhs);
-        copyTo(localPointer, lhsBounds[0], printer);
+        copyTo(localPointer, lhsBounds[0]);
         localPointer = diffTree(oldT.lhs, newT.lhs, lhsBounds);
         // rhs
         int[] rhsBounds = getBounds(oldT.rhs);
-        copyTo(localPointer, rhsBounds[0], printer);
+        copyTo(localPointer, rhsBounds[0]);
         localPointer = diffTree(oldT.rhs, newT.rhs, rhsBounds);
         
         // todo (#pf): bugy behaviour, should be rewrriten. Perhaps nobody uses
@@ -879,18 +879,18 @@ public class CasualDiff {
         if (oldT.tag != newT.tag)
             append(Diff.name(oldT.pos, operatorName(oldT.tag), operatorName(newT.tag)));
         
-        copyTo(localPointer, bounds[1], printer);
+        copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
 
     protected int diffUnary(JCUnary oldT, JCUnary newT, int[] bounds) {
         int localPointer = bounds[0];
-        int[] argBounds = new int[] { getOldPos(oldT.arg), endPos(oldT.arg) };
-        printer.print(origText.substring(localPointer, argBounds[0]));
+        int[] argBounds = getBounds(oldT.arg);
+        copyTo(localPointer, argBounds[0]);
         localPointer = diffTree(oldT.arg, newT.arg, argBounds);
         if (oldT.tag != newT.tag)
             append(Diff.name(oldT.pos, operatorName(oldT.tag), operatorName(newT.tag)));
-        printer.print(origText.substring(localPointer, bounds[1]));
+        copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
 
@@ -899,12 +899,12 @@ public class CasualDiff {
         localPointer = diffTree(oldT.lhs, newT.lhs, new int[] { localPointer, endPos(oldT.lhs) });
         int rhs = getOldPos(oldT.rhs);
         if (localPointer < rhs) {
-            printer.print(origText.substring(localPointer, rhs));
+            copyTo(localPointer, rhs);
         }
         localPointer = diffTree(oldT.rhs, newT.rhs, new int[] { rhs, endPos(oldT.rhs) });
         if (oldT.tag != newT.tag)
             append(Diff.name(oldT.pos, operatorName(oldT.tag), operatorName(newT.tag)));
-        printer.print(origText.substring(localPointer, bounds[1]));
+        copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
     
@@ -917,13 +917,13 @@ public class CasualDiff {
         int localPointer = bounds[0];
         // indexed
         int[] clazzBounds = getBounds(oldT.clazz);
-        copyTo(localPointer, clazzBounds[0], printer);
+        copyTo(localPointer, clazzBounds[0]);
         localPointer = diffTree(oldT.clazz, newT.clazz, clazzBounds);
         // expression
         int[] exprBounds = getBounds(oldT.expr);
-        copyTo(localPointer, exprBounds[0], printer);
+        copyTo(localPointer, exprBounds[0]);
         localPointer = diffTree(oldT.expr, newT.expr, exprBounds);
-        copyTo(localPointer, bounds[1], printer);
+        copyTo(localPointer, bounds[1]);
         
         return bounds[1];
     }
@@ -937,23 +937,23 @@ public class CasualDiff {
         int localPointer = bounds[0];
         // indexed
         int[] indexedBounds = getBounds(oldT.indexed);
-        copyTo(localPointer, indexedBounds[0], printer);
+        copyTo(localPointer, indexedBounds[0]);
         localPointer = diffTree(oldT.indexed, newT.indexed, indexedBounds);
         // index
         int[] indexBounds = getBounds(oldT.index);
-        copyTo(localPointer, indexBounds[0], printer);
+        copyTo(localPointer, indexBounds[0]);
         localPointer = diffTree(oldT.index, newT.index, indexBounds);
-        copyTo(localPointer, bounds[1], printer);
+        copyTo(localPointer, bounds[1]);
         
         return bounds[1];
     }
 
     protected int diffSelect(JCFieldAccess oldT, JCFieldAccess newT, int[] bounds) {
         int localPointer = bounds[0];
-        printer.print(origText.substring(localPointer, getOldPos(oldT.selected)));
-        localPointer = diffTree(oldT.selected, newT.selected, new int[] { getOldPos(oldT.selected), endPos(oldT.selected) });
+        copyTo(localPointer, getOldPos(oldT.selected));
+        localPointer = diffTree(oldT.selected, newT.selected, getBounds(oldT.selected));
         if (nameChanged(oldT.name, newT.name)) {
-            printer.print(origText.substring(localPointer, endPos(oldT.selected)));
+            copyTo(localPointer, endPos(oldT.selected));
             printer.print(".");
             printer.print(newT.name);
             localPointer = endPos(oldT.selected) + 1 +oldT.name.length();
@@ -963,7 +963,7 @@ public class CasualDiff {
 
     protected int diffIdent(JCIdent oldT, JCIdent newT, int lastPrinted) {
         if (nameChanged(oldT.name, newT.name)) {
-            printer.print(origText.substring(lastPrinted, getOldPos(oldT)));
+            copyTo(lastPrinted, getOldPos(oldT));
             printer.print(newT.name);
             return endPos(oldT);
         }
@@ -1017,16 +1017,16 @@ public class CasualDiff {
             return lastPrinted;
         }
         int oldPos = oldT.pos != Position.NOPOS ? getOldPos(oldT) : getOldPos(parent);
-        printer.print(origText.substring(lastPrinted, lastPrinted = oldPos));
+        copyTo(lastPrinted, lastPrinted = oldPos);
         int result = endPos(oldT.annotations);
         if (listsMatch(oldT.annotations, newT.annotations)) {
             if (result > 0) {
-                printer.print(origText.substring(lastPrinted, lastPrinted = result));
+                copyTo(lastPrinted, lastPrinted = result);
             }
         } else {
             printer.printAnnotations(newT.annotations);
             if (result > 0) {
-                printer.print(origText.substring(lastPrinted, lastPrinted = result));
+                copyTo(lastPrinted, lastPrinted = result);
             }
         }
         if (oldT.flags != newT.flags) {
@@ -1039,7 +1039,7 @@ public class CasualDiff {
             }
         }
         if (endPos(oldT) > 0) {
-            printer.print(origText.substring(lastPrinted, endPos(oldT)));
+            copyTo(lastPrinted, endPos(oldT));
             return endPos(oldT);
         } else {
             return lastPrinted;
@@ -2239,7 +2239,7 @@ public class CasualDiff {
         return new int[] { getOldPos(tree), endPos(tree) };
     }
 
-    private void copyTo(int from, int to, VeryPretty printer) {
+    private void copyTo(int from, int to) {
         printer.print(origText.substring(from, to));
     }
     
