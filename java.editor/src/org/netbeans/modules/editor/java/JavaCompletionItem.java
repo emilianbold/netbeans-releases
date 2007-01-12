@@ -1323,7 +1323,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         public int getSortPriority() {
-            return 400;
+            return 650;
         }
         
         public CharSequence getSortText() {
@@ -1410,12 +1410,21 @@ public abstract class JavaCompletionItem implements CompletionItem {
             offset += len;
             len = 0;
             BaseDocument doc = (BaseDocument)c.getDocument();
+            TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset);
             boolean isAbstract = elem.getEnclosingElement().getModifiers().contains(Modifier.ABSTRACT);
+            if (sequence != null) {
+                sequence.movePrevious();
+                if (sequence.token().id() == JavaTokenId.THIS || sequence.token().id() == JavaTokenId.SUPER) {
+                    isAbstract = false;
+                    if (toAdd == null)
+                        toAdd = ";"; //NOI18N
+                }
+                sequence.moveNext();
+            }
             String add = isAbstract ? "() {}" : "()"; //NOI18N
             if (toAdd != null && !add.startsWith(toAdd))
-                add += toAdd;            
+                add += toAdd;   
             String text = ""; //NOI18N
-            TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset);
             if (sequence == null) {
                 text += add;
                 add = null;
@@ -1550,7 +1559,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         public int getSortPriority() {
-            return 400;
+            return 650;
         }
 
         public CharSequence getSortText() {
@@ -1564,13 +1573,22 @@ public abstract class JavaCompletionItem implements CompletionItem {
         protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
             offset += len;
             len = 0;
+            TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset);
             boolean isAbstract = elem.getModifiers().contains(Modifier.ABSTRACT);
+            if (sequence != null) {
+                sequence.movePrevious();
+                if (sequence.token().id() == JavaTokenId.THIS || sequence.token().id() == JavaTokenId.SUPER) {
+                    isAbstract = false;
+                    if (toAdd == null)
+                        toAdd = ";"; //NOI18N
+                }
+                sequence.moveNext();
+            }
             String add = isAbstract ? "() {}" : "()"; //NOI18N
             if (toAdd != null && !add.startsWith(toAdd))
                 add += toAdd;
             BaseDocument doc = (BaseDocument)c.getDocument();
             String text = ""; //NOI18N
-            TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset);
             if (sequence == null) {
                 text += add;
                 add = null;
