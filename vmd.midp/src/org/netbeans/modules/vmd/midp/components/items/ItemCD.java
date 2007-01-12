@@ -121,7 +121,7 @@ public class ItemCD extends ComponentDescriptor {
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
                     .addProperty("Label", PropertyEditorString.createInstance(), PROP_LABEL)
                     .addProperty("Default Command", PropertyEditorDefaultCommand.createInstance(), PROP_DEFAULT_COMMAND)
-                    .addProperty("Layout", PropertyEditorLayout.createInstance(), new ItemLayoutBC(), PROP_LAYOUT)
+                    .addProperty("Layout", PropertyEditorLayout.createInstance(), PROP_LAYOUT)
                     .addProperty("Preferred Size", PropertyEditorArrayInteger.create(), PROP_PREFERRED_WIDTH, PROP_PREFERRED_HEIGHT);
     }
 
