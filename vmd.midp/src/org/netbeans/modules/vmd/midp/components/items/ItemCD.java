@@ -27,6 +27,8 @@ import org.netbeans.modules.vmd.api.inspector.common.ArrayPropertyOrderingContro
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.common.AbstractAcceptPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
+import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
+import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
@@ -37,6 +39,7 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.categories.CommandsCategoryCD;
 import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
+import org.netbeans.modules.vmd.midp.components.displayables.FormCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.components.general.RootCode;
 import org.netbeans.modules.vmd.midp.components.listeners.ItemCommandListenerCD;
@@ -46,7 +49,6 @@ import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.*;
 
 import java.util.*;
-import org.netbeans.modules.vmd.midp.components.displayables.FormCD;
 
 /**
  *
@@ -171,7 +173,14 @@ public class ItemCD extends ComponentDescriptor {
                 // delete
                 DeleteDependencyPresenter.createDependentOnParentComponentPresenter (),
                 DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_ITEM_COMMAND_LISTENER),
-                DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_DEFAULT_COMMAND)
+                DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_DEFAULT_COMMAND),
+                new DeletePresenter() {
+                    protected void delete () {
+                        DesignComponent component = getComponent ();
+                        DesignComponent form = component.getParentComponent ();
+                        ArraySupport.remove (form, FormCD.PROP_ITEMS, component);
+                    }
+                }
         );
     }
 
@@ -199,7 +208,7 @@ public class ItemCD extends ComponentDescriptor {
         }
 
     }
-    
+
      private List<InspectorOrderingController> createOrderingArrayController() {
         return Collections.<InspectorOrderingController>singletonList(new ArrayPropertyOrderingController(PROP_COMMANDS, 0, ItemCommandEventSourceCD.TYPEID));
     }
