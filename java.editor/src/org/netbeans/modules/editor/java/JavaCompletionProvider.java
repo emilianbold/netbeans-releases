@@ -774,6 +774,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                     localResult(env);
                     addValueKeywords(env);                    
                 }
+            } else {
+                insideExpression(env, new TreePath(path, init));
             }
         }
         
@@ -1643,6 +1645,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                             addValueKeywords(env);
                         }
                     }
+                } else {
+                    insideExpression(env, new TreePath(path, expr));
                 }
             }
         }
@@ -1874,6 +1878,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                 if(env.getSourcePositions().getEndPosition(env.getRoot(), et) > offset ||
                     ((TypeCastTree)et).getExpression().getKind() == Tree.Kind.IDENTIFIER)
                     exp = ((TypeCastTree)et).getType();
+            } else if (et.getKind() == Tree.Kind.ASSIGNMENT) {
+                Tree t = ((AssignmentTree)et).getExpression();
+                if (t.getKind() == Tree.Kind.PARENTHESIZED && env.getSourcePositions().getEndPosition(env.getRoot(), t) < offset)
+                    exp = ((ParenthesizedTree)t).getExpression();
             }
             if (exp != null) {
                 exPath = new TreePath(exPath, exp);
