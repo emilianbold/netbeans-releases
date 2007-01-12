@@ -464,7 +464,7 @@ public final class ProjectXMLManager {
             assert (TEST_TYPE_NAME.equals(nameNode.getLocalName()))  : "name node should be first child, but was:"+nameNode.getLocalName() + 
                     "or" + nameNode.getNodeName(); //NOI18N
 //equals
-            if(nameNode.getTextContent() == testType) {
+            if(nameNode.getTextContent().equals(testType)) {
                 testTypeEl = tt;
             }
         }
