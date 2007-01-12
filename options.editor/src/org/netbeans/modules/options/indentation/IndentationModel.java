@@ -20,6 +20,8 @@
 package org.netbeans.modules.options.indentation;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -242,6 +244,7 @@ class IndentationModel {
         Object parameterValue,
         Class parameterType
     ) {
+        HashSet mimeTypeBoundEngines = new HashSet();
         Set mimeTypes = EditorSettings.getDefault().getMimeTypes();
         for(Iterator i = mimeTypes.iterator(); i.hasNext(); ) {
             String mimeType = (String) i.next();
@@ -252,6 +255,8 @@ class IndentationModel {
             }
             
             IndentEngine indentEngine = baseOptions.getIndentEngine ();
+            mimeTypeBoundEngines.add(indentEngine);
+            
             try {
                 // HACK
                 if (baseOptions.getClass ().getName ().equals ("org.netbeans.modules.java.editor.options.JavaOptions") &&
@@ -278,6 +283,25 @@ class IndentationModel {
                 );
                 method.invoke (indentEngine, new Object [] {parameterValue});
             } catch (Exception ex) {
+            }
+        }
+        
+        // There can be other engines that are not currently hooked up with
+        // and BaseOptions/mime-type.
+        
+        Collection allEngines = Lookup.getDefault().lookupAll(IndentEngine.class);
+        for (Iterator it = allEngines.iterator(); it.hasNext(); ) {
+            IndentEngine indentEngine = (IndentEngine) it.next();
+            if (!mimeTypeBoundEngines.contains(indentEngine)) {
+                try {
+                    Method method = indentEngine.getClass().getMethod(
+                        parameterName,
+                        new Class [] { parameterType }
+                    );
+                    method.invoke(indentEngine, new Object [] { parameterValue });
+                } catch (Exception e) {
+                    // ignore
+                }
             }
         }
     }
