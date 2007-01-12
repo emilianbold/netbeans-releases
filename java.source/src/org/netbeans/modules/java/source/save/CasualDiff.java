@@ -430,7 +430,12 @@ public class CasualDiff {
                 localPointer = getOldPos(oldT.restype);
             }
         }
-        diffTree(oldT.restype, newT.restype);
+        if (oldT.restype != null) { // means constructor, skip return type gen.
+            int[] restypeBounds = getBounds(oldT.restype);
+            copyTo(localPointer, restypeBounds[0], printer);
+            localPointer = diffTree(oldT.restype, newT.restype, restypeBounds);
+            copyTo(localPointer, localPointer = restypeBounds[1], printer);
+        }
         int posHint;
         if (oldT.typarams.isEmpty()) {
             posHint = oldT.restype != null ? oldT.restype.getStartPosition() : oldT.getStartPosition();
