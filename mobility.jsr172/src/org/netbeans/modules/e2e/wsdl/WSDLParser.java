@@ -181,7 +181,8 @@ public class WSDLParser {
                 }
                 // soap:binding
                 if( localName.equals( SOAPConstants.BINDING.getLocalPart()) && state.peek().equals( BINDING )) {
-                    soapBinding = new SOAPBindingImpl( attributes.getValue( "transport" ), attributes.getValue( "style" ));
+                    String style = attributes.getValue( "style" ) != null ? attributes.getValue( "style" ) : SOAPConstants.STYLE_DOCUMENT;
+                    soapBinding = new SOAPBindingImpl( attributes.getValue( "transport" ), style);
                     return;
                 }
                 // soap:operation
@@ -189,7 +190,8 @@ public class WSDLParser {
                     soapOperation = new SOAPOperationImpl();
                     // TODO: validation
                     soapOperation.setSoapActionURI( attributes.getValue( "soapAction" ));
-                    soapOperation.setStyle( attributes.getValue( "style" ));
+                    String style = attributes.getValue( "style" ) != null ? attributes.getValue( "style" ) : soapBinding.getStyle();
+                    soapOperation.setStyle( style );
                     
                     return;
                 }

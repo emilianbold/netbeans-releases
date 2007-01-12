@@ -120,22 +120,26 @@ class WSDLValidator {
                 }
 
                 BindingInput bindingInput = bindingOperation.getBindingInput();
-                for( ExtensibilityElement bindingInputEE : bindingInput.getExtensibilityElements()) {
-                    if( SOAPConstants.BODY.equals( bindingInputEE.getElementType())) {
-                        SOAPBody soapBody = (SOAPBody) bindingInputEE;
-                        System.err.println("body - use = " + soapBody.getUse());
-                        if( !SOAPConstants.USE_LITERAL.equals( soapBody.getUse())) {
-                            addMessage( ErrorLevel.FATAL, "0002", bindingOperation.getName(), "input" );
+                if (bindingInput != null) {//it is not notification operation
+                    for( ExtensibilityElement bindingInputEE : bindingInput.getExtensibilityElements()) {
+                        if( SOAPConstants.BODY.equals( bindingInputEE.getElementType())) {
+                            SOAPBody soapBody = (SOAPBody) bindingInputEE;
+                            System.err.println("body - use = " + soapBody.getUse());
+                            if( !SOAPConstants.USE_LITERAL.equals( soapBody.getUse())) {
+                                addMessage( ErrorLevel.FATAL, "0002", bindingOperation.getName(), "input" );
+                            }
                         }
                     }
                 }
                 BindingOutput bindingOutput = bindingOperation.getBindingOutput();                                            
-                for( ExtensibilityElement bindingOutputEE : bindingOutput.getExtensibilityElements()) {
-                    if( SOAPConstants.BODY.equals( bindingOutputEE.getElementType())) {
-                        SOAPBody soapBody = (SOAPBody) bindingOutputEE;
-                        System.err.println("body - use = " + soapBody.getUse());
-                        if( !SOAPConstants.USE_LITERAL.equals( soapBody.getUse())) {
-                            addMessage( ErrorLevel.FATAL, "0002", bindingOperation.getName(), "output" );
+                if (bindingOutput != null) {//it is not one way operation
+                    for( ExtensibilityElement bindingOutputEE : bindingOutput.getExtensibilityElements()) {
+                        if( SOAPConstants.BODY.equals( bindingOutputEE.getElementType())) {
+                            SOAPBody soapBody = (SOAPBody) bindingOutputEE;
+                            System.err.println("body - use = " + soapBody.getUse());
+                            if( !SOAPConstants.USE_LITERAL.equals( soapBody.getUse())) {
+                                addMessage( ErrorLevel.FATAL, "0002", bindingOperation.getName(), "output" );
+                            }
                         }
                     }
                 }
