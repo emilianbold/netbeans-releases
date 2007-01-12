@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The contents of this file are subject to the terms of the Common Development
 and Distribution License (the License). You may not use this file except in
@@ -14,13 +14,11 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <!-- XML Layer for core-ide -->
-
 <filesystem>
 
     <folder name="Actions">
@@ -31,58 +29,61 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Services">
         <folder name="IndentEngine">
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/indentEngines.gif" />
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/indentEngines.gif"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
             <attr name="helpID" stringvalue="org.netbeans.core.services.IndentEngines"/>
+        </folder>
+        <folder name="MIMEResolver">
+            <file name="plain-text-resolver.xml" url="plain-text-resolver.xml"/>
         </folder>
     </folder>
     
     <folder name="Templates">
         <folder name="Services">
             <folder name="IndentEngine">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/indentEngines.gif" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/indentEngines.gif"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
             </folder>
         </folder>
     </folder>
     
-    <folder name="Menu" >
-        <folder name="Edit" >
-            <file name="Separator3.instance_hidden"  />
-            <file name="org-netbeans-core-actions-JumpNextAction.shadow_hidden" />
-            <file name="org-netbeans-core-actions-JumpPrevAction.shadow_hidden" />
+    <folder name="Menu">
+        <folder name="Edit">
+            <file name="Separator3.instance_hidden"/>
+            <file name="org-netbeans-core-actions-JumpNextAction.shadow_hidden"/>
+            <file name="org-netbeans-core-actions-JumpPrevAction.shadow_hidden"/>
         </folder>
         
-        <folder name="GoTo" >
-            <attr name="SeparatorAfterBookmarks.instance/org-netbeans-core-actions-JumpNextAction.shadow" boolvalue="true" />
-            <file name="org-netbeans-core-actions-JumpNextAction.shadow" >
-                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpNextAction.instance" />
+        <folder name="GoTo">
+            <attr name="SeparatorAfterBookmarks.instance/org-netbeans-core-actions-JumpNextAction.shadow" boolvalue="true"/>
+            <file name="org-netbeans-core-actions-JumpNextAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpNextAction.instance"/>
             </file>
-            <attr name="org-netbeans-core-actions-JumpNextAction.shadow/org-netbeans-core-actions-JumpPrevAction.shadow" boolvalue="true" />
+            <attr name="org-netbeans-core-actions-JumpNextAction.shadow/org-netbeans-core-actions-JumpPrevAction.shadow" boolvalue="true"/>
             
-            <file name="org-netbeans-core-actions-JumpPrevAction.shadow" >
-                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpPrevAction.instance" />
+            <file name="org-netbeans-core-actions-JumpPrevAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpPrevAction.instance"/>
             </file>
-            <attr name="org-netbeans-core-actions-JumpPrevAction.shadow/SeparatorBeforeSelectIn.instance" boolvalue="true" />
+            <attr name="org-netbeans-core-actions-JumpPrevAction.shadow/SeparatorBeforeSelectIn.instance" boolvalue="true"/>
         </folder>
     </folder>
     
     <folder name="UI">
     <!-- settings categories UI presentation -->
         <folder name="Services">
-            <attr name="helpID" stringvalue="org.netbeans.core.ControlPanelNode" />
+            <attr name="helpID" stringvalue="org.netbeans.core.ControlPanelNode"/>
             
             <folder name="IDEConfiguration"> <!-- PENDING rename to somethink like APP Settings or so -->
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
 
                 <folder name="LookAndFeel"> 
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
                 </folder>
                 
             </folder>        
             
             <folder name="Editing">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
                 <file name="IndentationEngines.shadow">
                         <attr name="originalFile" stringvalue="Services/IndentEngine"/>
                 </file>
@@ -91,8 +92,8 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         
         <folder name="Runtime">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/environment.gif" />
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/environment.gif"/>
         </folder> <!-- Runtime -->
         
     </folder>
@@ -111,7 +112,7 @@ Microsystems, Inc. All Rights Reserved.
         <file name="Standard.xml" url="Standard.xml">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
         </file>
-        <attr name="Standard.xml/Debugging.xml" boolvalue="true" />
+        <attr name="Standard.xml/Debugging.xml" boolvalue="true"/>
         <file name="Debugging.xml" url="Debugging.xml">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
         </file>
