@@ -101,9 +101,9 @@ launchNbexec() {
         fi
     done | head -n 1`
     if [ "${founduserdir}" = "yes" ]; then
-        sh "$nbexec" "$@"
+        exec sh "$nbexec" "$@"
     else
-        sh "$nbexec" --userdir "${userdir}" "$@"
+        exec sh "$nbexec" --userdir "${userdir}" "$@"
     fi
 }
 

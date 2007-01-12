@@ -78,7 +78,7 @@ nbexec=`echo "$progdir"/../platform*/lib/nbexec`
 
 case "`uname`" in
     Darwin*)
-        sh "$nbexec" \
+        exec sh "$nbexec" \
             --jdkhome "$jdkhome" \
             -J-Dcom.apple.mrj.application.apple.menu.about.name="$APPNAME" \
             -J-Xdock:name="$APPNAME" \
@@ -89,7 +89,7 @@ case "`uname`" in
             $args
         ;;
     *)
-        sh "$nbexec" \
+        exec sh "$nbexec" \
             --jdkhome "$jdkhome" \
             --branding "$APPNAME" \
             --clusters "$clusters" \
