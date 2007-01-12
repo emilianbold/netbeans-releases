@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Enumeration;
+import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.JTextComponent;
 import java.awt.Toolkit;
@@ -125,6 +126,8 @@ import org.openide.util.WeakListeners;
  * @version 1.1
  */
 public class BaseOptions extends OptionSupport {
+
+    private static final Logger LOG = Logger.getLogger(BaseOptions.class.getName());
     
     /** Latest version of the options. It must be increased
      * manually when new patch is added to the options.
@@ -1736,7 +1739,10 @@ public class BaseOptions extends OptionSupport {
      *  @param useRequestProcessorForSaving if true settings will be saved in RequestProcessor thread.
      */
     private void updateSettings(Class processor, Map settings, boolean useRequestProcessorForSaving){
-        if (usesNewOptionsDialog() && processor == FontsColorsMIMEProcessor.class){
+        if (usesNewOptionsDialog() && (
+            processor == FontsColorsMIMEProcessor.class ||
+            processor == KeyBindingsMIMEProcessor.class
+        )) {
             return;
         }
         MIMEOptionFile fileX;
@@ -1764,7 +1770,7 @@ public class BaseOptions extends OptionSupport {
             }
             
         } else {
-            System.err.println("!!!!!!!!!!!!!!!!!!!!!!!!"+processor.toString()+" type file haven't been found in folder:"+mimeFolder.getDataFolder()); //TEMP
+            LOG.info("A settings file for " + processor + " does not exist in " + mimeFolder.getDataFolder()); //NOI18N
         }
     }
     
