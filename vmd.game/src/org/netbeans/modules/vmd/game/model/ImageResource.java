@@ -46,34 +46,43 @@ public class ImageResource implements CodeGenerator {
 	
 	private StaticTile[][] staticTileGrid;
 	
-	/*<Integer, AnimatedTile>*/
-	private Map animatedTiles = new HashMap();
+	
+	private Map<Integer, AnimatedTile> animatedTiles = new HashMap<Integer, AnimatedTile>();
 	private int animatedTileIndexKey = -1;
 	
 	private List<Sequence> sequences = new ArrayList();
 	
 	private StaticTile emptyTile;
+
+	private static HashMap imgSoftReferences = new HashMap();	
 	
-	private static HashMap imgResourceMap = new HashMap();
-	private static HashMap imgSoftReferences = new HashMap();
-	
-	
-	public static ImageResource getImageResource(URL imageURL, int cellWidth, int cellHeight) {
-		ImageResource imgResource = (ImageResource) imgResourceMap.get(imageURL);
-		if (imgResource == null) {
-			imgResource = new ImageResource(imageURL, cellWidth, cellHeight);
-			imgResourceMap.put(imageURL, imgResource);
-			
-			if (DEBUG) {
-				System.out.println("Added " + imageURL + ". ImgResourceMap now contains:");
-				for (Iterator iter = imgResourceMap.keySet().iterator(); iter.hasNext();) {
-					URL url = (URL) iter.next();
-					System.out.println("\t" + url);
-				}
-			}//end DEBUG
-			
+	private static BufferedImage softenImage(URL imageURL) {
+		BufferedImage img = null;
+		//if (DEBUG) System.out.println("URL : " + imageURL);
+		//if (DEBUG) System.out.println("imgSoftReferences: "  + imgSoftReferences);
+		SoftReference softie = (SoftReference) imgSoftReferences.get(imageURL);
+		if (softie != null)
+			img = (BufferedImage) (softie).get();
+		if (img == null) {
+			if (DEBUG) System.out.println(">>>>> " + imageURL + " NOT available - reloading");
+			img = ImageUtils.loadImage(imageURL);
+			imgSoftReferences.put(imageURL, new SoftReference(img));
 		}
-		return imgResource;
+		return img;
+	}
+	
+	/**
+	 * Only called from GlobalRepository.getImageResource()
+	 */
+	ImageResource(URL imageURL, int cellWidth, int cellHeight) {
+		this.imageURL = imageURL;
+		this.cellWidth = cellWidth;
+		this.cellHeight = cellHeight;
+		this.emptyTile = createEmptyTile(cellWidth, cellHeight);
+		BufferedImage img = this.softenImage(imageURL);
+		int rows = img.getHeight(null) / cellHeight;
+		int cols = img.getWidth(null) / cellWidth;
+		this.initStaticTileGrid(rows, cols);
 	}
 	
 	public void addImageResourceListener(ImageResourceListener l) {
@@ -271,17 +280,6 @@ public class ImageResource implements CodeGenerator {
 	}
 	
 	
-	private ImageResource(URL imageURL, int cellWidth, int cellHeight) {
-		this.imageURL = imageURL;
-		this.cellWidth = cellWidth;
-		this.cellHeight = cellHeight;
-		this.emptyTile = createEmptyTile(cellWidth, cellHeight);
-		BufferedImage img = this.softenImage(imageURL);
-		int rows = img.getHeight(null) / cellHeight;
-		int cols = img.getWidth(null) / cellWidth;
-		this.initStaticTileGrid(rows, cols);
-	}
-	
 	private void initStaticTileGrid(int rows, int cols) {
 		this.staticTileGrid = new StaticTile[rows][cols];
 		int index = 1;
@@ -311,22 +309,7 @@ public class ImageResource implements CodeGenerator {
 			a.paint(g, x, y);
 		}
 	}
-	
-	private BufferedImage softenImage(URL imageURL) {
-		BufferedImage img = null;
-		//if (DEBUG) System.out.println("URL : " + imageURL);
-		//if (DEBUG) System.out.println("imgSoftReferences: "  + imgSoftReferences);
-		SoftReference softie = (SoftReference) this.imgSoftReferences.get(imageURL);
-		if (softie != null)
-			img = (BufferedImage) (softie).get();
-		if (img == null) {
-			if (DEBUG) System.out.println(">>>>> " + this.toString() + " NOT available - reloading");
-			img = ImageUtils.loadImage(this.imageURL);
-			this.imgSoftReferences.put(imageURL, new SoftReference(img));
-		}
-		return img;
-	}
-	
+		
 	public String toString() {
 		return "ImageResource: " + this.imageURL + " " + this.cellWidth + "x" + this.cellHeight;
 	}

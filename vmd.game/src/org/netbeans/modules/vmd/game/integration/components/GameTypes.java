@@ -38,7 +38,7 @@ public class GameTypes {
 	}
 
 	public static int[][] getTiles(PropertyValue value) {
-		return (int[][]) value.getPrimitiveValue ();
+		return (int[][]) value.getPrimitiveValue();
 	}
 
 	public static PropertyValue createFramesProperty(int[] frames) {
@@ -46,7 +46,7 @@ public class GameTypes {
 	}
 
 	public static int[] getFrames(PropertyValue value) {
-		return (int[]) value.getPrimitiveValue ();
+		return (int[]) value.getPrimitiveValue();
 	}
 
 

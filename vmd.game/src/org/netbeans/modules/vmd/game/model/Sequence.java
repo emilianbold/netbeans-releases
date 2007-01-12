@@ -229,11 +229,11 @@ public class Sequence implements Previewable, Editable, CodeGenerator {
 	}
 
     public int getWidth() {
-		return this.getFrame(0).getWidth();
+		return this.imageResource.getCellWidth();
     }
 
     public int getHeight() {
-		return this.getFrame(0).getHeight();
+		return this.imageResource.getCellHeight();
     }
 	
 	public JComponent getPreview() {

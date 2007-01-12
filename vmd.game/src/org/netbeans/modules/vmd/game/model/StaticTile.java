@@ -19,8 +19,6 @@
 package org.netbeans.modules.vmd.game.model;
 
 import java.awt.Graphics2D;
-import java.awt.Image;
-import java.net.URL;
 
 import javax.swing.JComponent;
 import org.netbeans.modules.vmd.game.preview.StaticTilePreview;
@@ -28,7 +26,7 @@ import org.netbeans.modules.vmd.game.preview.StaticTilePreview;
 public class StaticTile extends Tile {
 
 
-	public StaticTile(ImageResource imageResource, int index) {
+	StaticTile(ImageResource imageResource, int index) {
 		super(imageResource, index);
 	}
 

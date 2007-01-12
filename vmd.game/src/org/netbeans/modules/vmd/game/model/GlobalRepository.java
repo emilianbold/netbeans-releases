@@ -18,32 +18,31 @@
  */
 package org.netbeans.modules.vmd.game.model;
 
-import java.awt.Graphics2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.PrintStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.JComponent;
+import java.util.Map;
 import javax.swing.event.EventListenerList;
 
 public class GlobalRepository implements PropertyChangeListener {
+
+	private static GlobalRepository instance;
 
 	public static final boolean DEBUG = false;
 	
 	EventListenerList listenerList = new EventListenerList();
 	
-	private HashMap layers = new HashMap();
-	private ArrayList tiledLayers = new ArrayList();
-	private ArrayList sprites = new ArrayList();
-	
-	private ArrayList scenes = new ArrayList();
-	
-	private static GlobalRepository instance;
+	private HashMap<String, Layer> layers = new HashMap<String, Layer>();
+	private ArrayList<TiledLayer> tiledLayers = new ArrayList<TiledLayer>();
+	private ArrayList<Sprite> sprites = new ArrayList<Sprite>();
+	private ArrayList scenes = new ArrayList();	
+	private static Map<String, ImageResource> imgResourceMap = new HashMap<String, ImageResource>();	
 	
 	
 	private GlobalRepository() {
@@ -59,6 +58,50 @@ public class GlobalRepository implements PropertyChangeListener {
 	public void removeGlobalRepositoryListener(GlobalRepositoryListener l) {
 		this.listenerList.remove(GlobalRepositoryListener.class, l);
 	}
+	
+	/**
+	 * Removes all layers, scenes
+	 */
+	public void removeAllComponents() {
+		this.removeAllScenes();
+		this.removeAllLayers();
+		this.imgResourceMap.clear();
+	}
+	
+	private void removeAllScenes() {
+		Collection<Scene> tmp = new ArrayList<Scene>();
+		tmp.addAll(this.scenes);
+		for (Scene scene : tmp) {
+			this.removeScene(scene);
+		}
+	}
+	
+	private void removeAllLayers() {
+	    List<Layer> tmp = new ArrayList<Layer>();
+	    tmp.addAll(this.layers.values());
+	    for (Layer layer : tmp) {
+			this.removeLayer(layer);
+	    }
+	}
+	
+	public static ImageResource getImageResource(URL imageURL, int cellWidth, int cellHeight) {
+		ImageResource imgResource = imgResourceMap.get(imageURL.toString() + "_" + cellWidth + "_" + cellHeight);
+		if (imgResource == null) {
+			imgResource = new ImageResource(imageURL, cellWidth, cellHeight);
+			imgResourceMap.put(imageURL.toString() + "_" + cellWidth + "_" + cellHeight, imgResource);
+			
+			if (DEBUG) {
+				System.out.println("Added " + imageURL + ". ImgResourceMap now contains:");
+				for (Iterator iter = imgResourceMap.keySet().iterator(); iter.hasNext();) {
+					URL url = (URL) iter.next();
+					System.out.println("\t" + url);
+				}
+			}//end DEBUG
+			
+		}
+		return imgResource;
+	}
+
 	
 	boolean addTiledLayer(TiledLayer layer) {
 		if (!this.addLayer(layer))
@@ -224,7 +267,7 @@ public class GlobalRepository implements PropertyChangeListener {
 			if (evt.getPropertyName().equals(Layer.PROPERTY_LAYER_NAME)) {
 				//layer name has changed re-key it in the layer table
 				this.layers.remove(evt.getOldValue());
-				this.layers.put(evt.getNewValue(), layer);
+				this.layers.put((String) evt.getNewValue(), layer);
 			}
 		}
 	}

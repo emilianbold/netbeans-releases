@@ -27,7 +27,6 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
 
-import org.netbeans.modules.vmd.game.model.GameDesign;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.Layer;
 import org.netbeans.modules.vmd.game.model.Scene;
@@ -37,10 +36,7 @@ import org.netbeans.modules.vmd.game.model.TiledLayer;
 public class GameDesignTreeNodeRenderer implements TreeCellRenderer {
 
 	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-		if (value instanceof GameDesign) {
-			return new GameDesignNodeRenderer().getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
-		}
-		else if (value instanceof Scene) {
+		if (value instanceof Scene) {
 			return new SceneNodeRenderer().getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
 		}
 		else if (value instanceof TiledLayer) {
@@ -62,15 +58,6 @@ public class GameDesignTreeNodeRenderer implements TreeCellRenderer {
 			GlobalRepository gr = (GlobalRepository) value;
 			DefaultTreeCellRenderer r = (DefaultTreeCellRenderer) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 			r.setText("[Global repository]");
-			return r;
-		}	
-	}
-	
-	private class GameDesignNodeRenderer extends DefaultTreeCellRenderer {
-		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-			GameDesign gd = (GameDesign) value;
-			DefaultTreeCellRenderer r = (DefaultTreeCellRenderer) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-			r.setText("[Game design]");
 			return r;
 		}	
 	}

@@ -895,7 +895,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 						}
 						newTile = imgRes.createAnimatedTile(indexes);
 					} else {
-						newTile = new StaticTile(imgRes, tiles.get(0).getIndex());
+						newTile = imgRes.getTile(tiles.get(0).getIndex());
 					}
 					Position cell = TiledLayerEditorComponent.this.getCellAtPoint(dropPoint);
 					if (TiledLayerEditorComponent.this.cellsSelected.contains(cell)) {

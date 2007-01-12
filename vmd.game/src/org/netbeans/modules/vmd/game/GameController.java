@@ -23,9 +23,14 @@ import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.DesignDocumentAwareness;
 import org.netbeans.modules.vmd.api.io.IOUtils;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
-
 import javax.swing.*;
 import java.awt.*;
+import java.util.Collection;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.game.model.GlobalRepository;
+import org.netbeans.modules.vmd.game.model.SceneCD;
+import org.netbeans.modules.vmd.game.view.main.MainView;
 
 /**
  *
@@ -37,41 +42,55 @@ public class GameController implements DesignDocumentAwareness {
 
 	private DataObjectContext context;
 	private JComponent loadingPanel;
-	private JPanel visual;
+	private JComponent visual;
 	
-	private DesignDocument designDocument;
-	private JComponent view;
+	private DesignDocument document;
 	
 	
 	/** Creates a new instance of GameController */
 	public GameController(DataObjectContext context) {
 		this.context = context;
 		this.loadingPanel = IOUtils.createLoadingPanel();
-		this.visual = new JPanel(new BorderLayout());
+		this.visual = this.loadingPanel;
 		this.context.addDesignDocumentAwareness(this);
 	}
 	
 	public JComponent getVisualRepresentation() {
-		return visual;
+		return this.visual;
 	}
 	
 	public void setDesignDocument(final DesignDocument designDocument) {
-		IOUtils.runInAWTNoBlocking(new Runnable() {
+        this.document = designDocument;
+		if (this.document == null) {
+			this.visual = this.loadingPanel;
+			return;
+		}
+		this.document.getTransactionManager().readAccess(new Runnable() {
 			public void run() {
-				GameController.this.designDocument = designDocument;
-
-				GameAccessController accessController = designDocument != null ? designDocument.getListenerManager ().getAccessController (GameAccessController.class) : null;
-				view = accessController != null ? accessController.createView() : null;
-
-				visual.removeAll();
-
-				if (view != null) {
-					visual.add(view, BorderLayout.CENTER);
-				} else
-					visual.add(loadingPanel, BorderLayout.CENTER);
-
+				//clean my internal model - remove all scenes, layers, and image resources
+				//GlobalRepository.getInstance().removeAllComponents();
+				
+				GameController.this.visual = MainView.getInstance().getRootComponent();
+				
+				//add all components in the document
+				DesignComponent root = designDocument.getRootComponent();
+				Collection<DesignComponent> children = root.getComponents();
+				
+				//do this recursively - to start at the bottom of the hierarchy
+				
+				//for (DesignComponent designComponent : children) {
+				//	GameController.this.modelComponent(designComponent);
+				//}
 			}
 		});
+		
+	}
+	
+	private void modelComponent(DesignComponent designComponent) {
+		TypeID typeId = designComponent.getType();
+		if (typeId == SceneCD.TYPEID) {
+			//load scene
+		}
 	}
 	
 }

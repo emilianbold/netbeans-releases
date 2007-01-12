@@ -57,9 +57,9 @@ public class SceneItemCD extends ComponentDescriptor {
 
 	protected List<? extends Presenter> createPresenters() {
 		return Arrays.asList (
-            new ValidatorPresenter () {
-                protected void checkCustomValidity () {
-                    assert getComponent ().readProperty (PROPERTY_LAYER).getKind () != PropertyValue.Kind.NULL;
+            new ValidatorPresenter() {
+                protected void checkCustomValidity() {
+                    assert getComponent().readProperty(PROPERTY_LAYER).getKind() != PropertyValue.Kind.NULL;
                 }
             }
         );

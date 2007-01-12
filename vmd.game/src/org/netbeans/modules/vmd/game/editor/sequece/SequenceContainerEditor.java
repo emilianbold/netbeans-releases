@@ -26,9 +26,7 @@ import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -41,7 +39,7 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.Scrollable;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.vmd.game.model.GameDesign;
+import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.Scene;
 import org.netbeans.modules.vmd.game.model.Sequence;
@@ -258,38 +256,40 @@ public class SequenceContainerEditor extends JPanel implements SequenceEditingPa
 	}
 	
 	public static void main(String args[]) {
-		Scene scene = GameDesign.getInstance().createScene("scene1");
+		Scene scene = GlobalRepository.getInstance().createScene("scene1");
 		
 		URL urlRock = MainView.class.getResource("res/color_tiles.png");
-		Sprite rock = scene.createSprite("rock2", ImageResource.getImageResource(urlRock, 20, 20), 5);
+		ImageResource imgRock = GlobalRepository.getImageResource(urlRock, 20, 20);
+
+		Sprite rock = scene.createSprite("rock2", imgRock, 5);
 		Sequence def = rock.getDefaultSequence();
-		def.setFrame(new StaticTile(ImageResource.getImageResource(urlRock, 20, 20), 1), 0);
-		def.setFrame(new StaticTile(ImageResource.getImageResource(urlRock, 20, 20), 3), 1);
-		def.setFrame(new StaticTile(ImageResource.getImageResource(urlRock, 20, 20), 5), 2);
-		def.setFrame(new StaticTile(ImageResource.getImageResource(urlRock, 20, 20), 7), 3);
-		def.setFrame(new StaticTile(ImageResource.getImageResource(urlRock, 20, 20), 9), 4);
+		def.setFrame((StaticTile) imgRock.getTile(1), 0);
+		def.setFrame((StaticTile) imgRock.getTile(3), 1);
+		def.setFrame((StaticTile) imgRock.getTile(5), 2);
+		def.setFrame((StaticTile) imgRock.getTile(7), 3);
+		def.setFrame((StaticTile) imgRock.getTile(9), 4);
 		def.setName("Slow");
 
 		Sequence fast = rock.createSequence("Fast", 5);
-		fast.setFrame(new StaticTile(ImageResource.getImageResource(urlRock, 20, 20), 1), 0);
-		fast.setFrame(new StaticTile(ImageResource.getImageResource(urlRock, 20, 20), 3), 1);
-		fast.setFrame(new StaticTile(ImageResource.getImageResource(urlRock, 20, 20), 5), 2);
-		fast.setFrame(new StaticTile(ImageResource.getImageResource(urlRock, 20, 20), 7), 3);
-		fast.setFrame(new StaticTile(ImageResource.getImageResource(urlRock, 20, 20), 9), 4);
+		fast.setFrame((StaticTile) imgRock.getTile(1), 0);
+		fast.setFrame((StaticTile) imgRock.getTile(3), 1);
+		fast.setFrame((StaticTile) imgRock.getTile(5), 2);
+		fast.setFrame((StaticTile) imgRock.getTile(7), 3);
+		fast.setFrame((StaticTile) imgRock.getTile(9), 4);
 		fast.setFrameMs(50);
 		
 		Sequence medium = rock.createSequence("Medium", 3);
-		medium.setFrame(new StaticTile(ImageResource.getImageResource(urlRock, 20, 20), 1), 0);
-		medium.setFrame(new StaticTile(ImageResource.getImageResource(urlRock, 20, 20), 5), 1);
-		medium.setFrame(new StaticTile(ImageResource.getImageResource(urlRock, 20, 20), 9), 2);
+		medium.setFrame((StaticTile) imgRock.getTile(1), 0);
+		medium.setFrame((StaticTile) imgRock.getTile(5), 1);
+		medium.setFrame((StaticTile) imgRock.getTile(9), 2);
 		medium.setFrameMs(120);
 		
 		Sequence back = rock.createSequence("Back", 5);
-		back.setFrame(new StaticTile(ImageResource.getImageResource(urlRock, 20, 20), 1), 4);
-		back.setFrame(new StaticTile(ImageResource.getImageResource(urlRock, 20, 20), 3), 3);
-		back.setFrame(new StaticTile(ImageResource.getImageResource(urlRock, 20, 20), 5), 2);
-		back.setFrame(new StaticTile(ImageResource.getImageResource(urlRock, 20, 20), 7), 1);
-		back.setFrame(new StaticTile(ImageResource.getImageResource(urlRock, 20, 20), 9), 0);
+		back.setFrame((StaticTile) imgRock.getTile(1), 4);
+		back.setFrame((StaticTile) imgRock.getTile(3), 3);
+		back.setFrame((StaticTile) imgRock.getTile(5), 2);
+		back.setFrame((StaticTile) imgRock.getTile(7), 1);
+		back.setFrame((StaticTile) imgRock.getTile(9), 0);
 		back.setFrameMs(120);		
 		
 		JFrame f = new JFrame("TEST");

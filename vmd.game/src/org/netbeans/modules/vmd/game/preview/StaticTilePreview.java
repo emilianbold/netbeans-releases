@@ -18,23 +18,11 @@
  */
 
 package org.netbeans.modules.vmd.game.preview;
-import java.awt.Dimension;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.net.URL;
-import javax.swing.JFrame;
-import javax.swing.JScrollPane;
-import org.netbeans.modules.vmd.game.model.GameDesign;
-import org.netbeans.modules.vmd.game.model.ImageResource;
-import org.netbeans.modules.vmd.game.model.Scene;
+
 import org.netbeans.modules.vmd.game.model.StaticTile;
 import org.netbeans.modules.vmd.game.view.ImagePreviewComponent;
 
-/**
- *
- * @author  kaja
- */
-import org.netbeans.modules.vmd.game.view.main.MainView;
+
 public class StaticTilePreview extends javax.swing.JPanel {
 	
 	private StaticTile staticTile;

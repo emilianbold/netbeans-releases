@@ -29,10 +29,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.net.URL;
-
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import org.netbeans.modules.vmd.game.model.GameDesign;
+import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.Previewable;
 import org.netbeans.modules.vmd.game.model.Scene;
@@ -113,16 +112,17 @@ public class ImagePreviewComponent extends JComponent {
 			}
 		});
 
-		Scene scene = GameDesign.getInstance().createScene("scene1");
+		Scene scene = GlobalRepository.getInstance().createScene("scene1");
 		
 		URL urlRock = MainView.class.getResource("res/color_tiles.png");
-		Sprite rock = scene.createSprite("rock2", ImageResource.getImageResource(urlRock, 20, 20), 5);
+		Sprite rock = scene.createSprite("rock2", GlobalRepository.getImageResource(urlRock, 20, 20), 5);
 		Sequence def = rock.getDefaultSequence();
-		def.setFrame(new StaticTile(ImageResource.getImageResource(urlRock, 20, 20), 1), 0);
-		def.setFrame(new StaticTile(ImageResource.getImageResource(urlRock, 20, 20), 3), 1);
-		def.setFrame(new StaticTile(ImageResource.getImageResource(urlRock, 20, 20), 5), 2);
-		def.setFrame(new StaticTile(ImageResource.getImageResource(urlRock, 20, 20), 7), 3);
-		def.setFrame(new StaticTile(ImageResource.getImageResource(urlRock, 20, 20), 9), 4);
+		ImageResource imgRock = GlobalRepository.getImageResource(urlRock, 20, 20);
+		def.setFrame((StaticTile) imgRock.getTile(1), 0);
+		def.setFrame((StaticTile) imgRock.getTile(3), 1);
+		def.setFrame((StaticTile) imgRock.getTile(5), 2);
+		def.setFrame((StaticTile) imgRock.getTile(7), 3);
+		def.setFrame((StaticTile) imgRock.getTile(9), 4);
 		def.setName("Slow");
 		
 		imgPreview.setPreviewable(rock);

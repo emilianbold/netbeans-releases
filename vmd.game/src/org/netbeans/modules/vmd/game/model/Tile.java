@@ -18,10 +18,6 @@
  */
 package org.netbeans.modules.vmd.game.model;
 
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.io.IOException;
 
 
 public abstract class Tile implements Previewable, Comparable {
@@ -33,7 +29,7 @@ public abstract class Tile implements Previewable, Comparable {
 	private int index;
 
 	//TODO : change the constructor to take (ImageResourceURL, width, height, index)
-	public Tile(ImageResource imageResource, int index) {
+	Tile(ImageResource imageResource, int index) {
 		this.imageResource = imageResource;
 		this.index = index;
 	}

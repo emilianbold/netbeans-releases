@@ -522,7 +522,6 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			GameDesign.getInstance().removeScene(Scene.this);
 			GlobalRepository.getInstance().removeScene(Scene.this);
 		}
 	}
