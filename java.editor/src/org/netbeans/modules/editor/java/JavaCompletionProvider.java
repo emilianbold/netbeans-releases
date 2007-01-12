@@ -3128,7 +3128,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                         return Collections.singleton(type);
                     case RETURN:
                         TreePath methodPath = Utilities.getPathElementOfKind(Tree.Kind.METHOD, path);
-                        return methodPath != null ? Collections.singleton(controller.getTrees().getTypeMirror(new TreePath(methodPath, ((MethodTree)methodPath.getLeaf()).getReturnType()))) : null;
+                        Tree retTree = methodPath != null ? ((MethodTree)methodPath.getLeaf()).getReturnType() : null;
+                        return retTree != null ? Collections.singleton(controller.getTrees().getTypeMirror(new TreePath(methodPath, retTree))) : null;
                     case THROW:
                         methodPath = Utilities.getPathElementOfKind(Tree.Kind.METHOD, path);
                         if (methodPath == null)
