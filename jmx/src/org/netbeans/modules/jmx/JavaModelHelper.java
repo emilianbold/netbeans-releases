@@ -2071,9 +2071,10 @@ public class JavaModelHelper {
                 "for (int i = 0; i < params.length; i++)\n" + // NOI18N
                 "    signature[i] = params[i].getType();\n"; // NOI18N
         
-        private static String METADATA_WARNING_COMMENT =
-                "Next are the methods to compute MBeanInfo.\nYou shouldn't update these methods."; // NOI18N
-        
+        private static String METADATA_UPDATE_COMMENT =
+                " Override customization hook:\n" + 
+                " You can supply a customized description for MBeanInfo.getDescription()";
+                
         private final WorkingCopy w;
         private final MBeanDO mbean;
         public UpdateExtendedStandardMBeanTemplateTransformer(WorkingCopy w, MBeanDO mbean) {
@@ -2145,7 +2146,7 @@ public class JavaModelHelper {
                     null // default value - not applicable here, used by annotations
                     );
             
-            Comment c = Comment.create(METADATA_WARNING_COMMENT);
+            Comment c = Comment.create(Style.JAVADOC, -2, -2, -2, METADATA_UPDATE_COMMENT);
             maker.addComment(methodDescrMBeanInfo, c, true);
             
             copy = maker.addClassMember(copy, methodDescrMBeanInfo);
@@ -2167,6 +2168,8 @@ public class JavaModelHelper {
                     "{String description = null;\n" + getAttDescCode(mbean) + "\nreturn description;}", // NOI18N
                     null // default value - not applicable here, used by annotations
                     );
+            c = Comment.create(Style.JAVADOC, -2, -2, -2, METADATA_UPDATE_COMMENT);
+            maker.addComment(methodDescrAttributeInfo, c, true);
             copy = maker.addClassMember(copy, methodDescrAttributeInfo);
             
             // Add protected String getDescription(MBeanOperationInfo op, MBeanParameterInfo param,int sequence)
@@ -2193,6 +2196,8 @@ public class JavaModelHelper {
                     "{"+ getParamDescCode(mbean, true) + "\nreturn null;}", // NOI18N
                     null // default value - not applicable here, used by annotations
                     );
+            c = Comment.create(Style.JAVADOC, -2, -2, -2, METADATA_UPDATE_COMMENT);
+            maker.addComment(methodDescrOperationParamInfo, c, true);
             copy = maker.addClassMember(copy, methodDescrOperationParamInfo);
             
             // Add protected String getParameterName(MBeanOperationInfo op, MBeanParameterInfo param, int sequence)
@@ -2207,6 +2212,8 @@ public class JavaModelHelper {
                     "{"+getParamDescCode(mbean,false) + "\nreturn null;}", // NOI18N
                     null // default value - not applicable here, used by annotations
                     );
+            c = Comment.create(Style.JAVADOC, -2, -2, -2, METADATA_UPDATE_COMMENT);
+            maker.addComment(methodParamName, c, true);
             copy = maker.addClassMember(copy, methodParamName);
             
             // Add getDescription(MBeanOperationInfo)
@@ -2224,6 +2231,8 @@ public class JavaModelHelper {
                     "{String description = null;\n" + getOpDescCode(mbean) + "\nreturn description;}", // NOI18N
                     null // default value - not applicable here, used by annotations
                     );
+            c = Comment.create(Style.JAVADOC, -2, -2, -2, METADATA_UPDATE_COMMENT);
+            maker.addComment(methodDescrOperationInfo, c, true);
             copy = maker.addClassMember(copy, methodDescrOperationInfo);
             
             w.rewrite(clazz, copy); 
