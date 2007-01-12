@@ -28,11 +28,23 @@ import java.util.Map;
 
 
 /**
- *
+ * Represents one AST node.
+ * 
  * @author Jan Jancura
  */
 public class ASTNode {
-    
+   
+    /**
+     * Creates new ASTNode.
+     * 
+     * @param mimeType   MIME type
+     * @param nt         right side of grammar rule
+     * @param rule       rule id
+     * @param children   list of tokens (SToken) and subnodes (ASTNode)
+     * @param offset     start offset of this AST node
+     * 
+     * @return           returns new instance of AST node
+     */
     public static ASTNode create (
         String      mimeType,
         String      nt,
@@ -43,6 +55,16 @@ public class ASTNode {
         return new ASTNode (mimeType, nt, rule, offset, children);
     }
     
+    /**
+     * Creates new ASTNode.
+     * 
+     * @param mimeType   MIME type
+     * @param nt         right side of grammar rule
+     * @param rule       rule id
+     * @param offset     start offset of this AST node
+     * 
+     * @return           returns new instance of AST node
+     */
     public static ASTNode create (
         String      mimeType,
         String      nt,
@@ -91,32 +113,67 @@ public class ASTNode {
         this.children = Collections.unmodifiableList (l);
     }
 
+    /**
+     * Returns MIME type of this node.
+     * 
+     * @return MIME type of this node
+     */
     public String getMimeType () {
         return mimeType;
     }
 
+    /**
+     * Returns the name of non terminal.
+     * 
+     * @return name of non terminal
+     */
     public String getNT () {
         return nt;
     }
 
+    /**
+     * Returns id of rule that has created this node.
+     * 
+     * @return id of rule that has created this node
+     */
     public int getRule () {
         return rule;
     }
 
+    /**
+     * Returns parent node of this node.
+     * 
+     * @return parent node of this node
+     */
     public ASTNode getParent () {
         return parent;
     }
 
+    /**
+     * Returns offset of this node.
+     * 
+     * @return offset of this node
+     */
     public int getOffset () {
         return offset;
     }
 
+    /**
+     * Returns list of all subnodes (ASTNode) and tokens (SToken).
+     * 
+     * @return list of all subnodes (ASTNode) and tokens (SToken)
+     */
     public List getChildren () {
         return children;
     }
 
     private PTPath path;
     
+    /**
+     * Returns path to this node from root node.
+     * 
+     * @return path to this node from root node
+     */
     public PTPath getPath () {
         if (path == null) {
             path = PTPath.create (getParent (), this);
@@ -125,6 +182,13 @@ public class ASTNode {
     }
     
     private int endOffset = -1;
+    
+    /**
+     * Returns end offset of this node. Tt is the offset that is not part 
+     * of this node.
+     * 
+     * @return end offset of this node
+     */
     public int getEndOffset () {
         if (endOffset < 0) {
             List l = getChildren ();
@@ -142,26 +206,38 @@ public class ASTNode {
         return endOffset;
     }
     
+    /**
+     * Returns length of this node (end offset - start offset).
+     * 
+     * @return length of this node (end offset - start offset)
+     */
     public int getLength () {
-        int length = getEndOffset () - getOffset ();
-        if (length < 0) {
-            System.out.println("ASTNode invalid length offset=" + getOffset () + " endOffset=" + getEndOffset ());
-            return 0;
-        }
-        return length;
+        return getEndOffset () - getOffset ();
     }
     
-    public int findIndex (ASTNode n) {
-        return getChildren ().indexOf (n);
+    /**
+     * Returns index of given node inside this node or -1.
+     * 
+     * @param node node
+     * @return index of given token inside this node or -1
+     */
+    public int findIndex (ASTNode node) {
+        return getChildren ().indexOf (node);
     }
     
-    public int findIndex (SToken t) {
+    /**
+     * Returns index of given token inside this node or -1.
+     * 
+     * @param token token
+     * @return index of given token inside this node or -1
+     */
+    public int findIndex (SToken token) {
         List children = getChildren ();
         int i, k = children.size ();
         for (i = 0; i < k; i++) {
             Object o = children.get (i);
             if (o instanceof SToken) {
-                if (t.isCompatible ((SToken) o)) return i;
+                if (token.isCompatible ((SToken) o)) return i;
             }
         }
         return -1;
@@ -171,8 +247,10 @@ public class ASTNode {
     /**
      * Finds path to the first token defined by type and identifier.
      *
-     * @param type          a type of token or null.
-     * @param identifier    a value of token or null.
+     * @param type          a type of token or null
+     * @param identifier    a value of token or null
+     * 
+     * @return path to the first token defined by type and identifier
      */
     public List findToken (String type, String identifier) {
         Iterator it = getChildren ().iterator ();
@@ -195,6 +273,13 @@ public class ASTNode {
         return null;
     }
     
+    /**
+     * Returns path from this node to the token on given offset.
+     * 
+     * @param offset offset
+     * 
+     * @return path from this node to the token on given offset
+     */
     public PTPath findPath (int offset) {
         if (offset < getOffset ()) return null;
         if (offset > getEndOffset ()) return null;
@@ -217,6 +302,16 @@ public class ASTNode {
         return null;
     }
     
+    /**
+     * Returns top-most subnode of this node on given offset with given 
+     * non terminal name.
+     * 
+     * @param nt        name of non terminal
+     * @param offset    offset of node
+     * 
+     * @return MIME     top-most subnode of this node on given offset 
+     *                  with given non terminal name
+     */
     public ASTNode findNode (String nt, int offset) {
         if (nt.equals (getNT ())) return this;
         Iterator it = getChildren ().iterator ();
@@ -232,47 +327,56 @@ public class ASTNode {
         }
         return null;
     }
-    
-    public SToken getTokenName (String name) {
-        ASTNode node = this;
-        int i = name.lastIndexOf ('.');
-        if (i >= 0)
-            node = getNode (name.substring (0, i));
-        if (node == null) return null;
-        Object o = node.getChild ("token-name-" + name.substring (i + 1));
-        if (o == null) return null;
-        if (!(o instanceof SToken)) return null;
-        return (SToken) o;
-    }
 
-    public String getTokenTypeIdentifier (String name) {
-        SToken token = getTokenType (name);
+    /**
+     * Returns identifier of some subtoken with given type.
+     * 
+     * @param type type of subtoken to be returned
+     * 
+     * @return identifier of some subtoken with given type
+     */
+    public String getTokenTypeIdentifier (String type) {
+        SToken token = getTokenType (type);
         if (token == null) return null;
         return token.getIdentifier ();
     }
     
-    public SToken getTokenType (String name) {
+    /**
+     * Returns some subtoken with given type.
+     * 
+     * @param type type of subtoken to be returned
+     * 
+     * @return some subtoken with given type
+     */
+    public SToken getTokenType (String type) {
         ASTNode node = this;
-        int i = name.lastIndexOf ('.');
+        int i = type.lastIndexOf ('.');
         if (i >= 0)
-            node = getNode (name.substring (0, i));
+            node = getNode (type.substring (0, i));
         if (node == null) return null;
-        Object o = node.getChild ("token-type-" + name.substring (i + 1));
+        Object o = node.getChild ("token-type-" + type.substring (i + 1));
         if (o == null) return null;
         if (!(o instanceof SToken)) return null;
         return (SToken) o;
     }
     
-    public ASTNode getNode (String name) {
+    /**
+     * Returns child node of this node with given path ("foo.goo.boo").
+     * 
+     * @param path "foo.goo.boo" like path to some subnode
+     * 
+     * @return child node of this node with given path
+     */
+    public ASTNode getNode (String path) {
         ASTNode node = this;
-        int s = 0, e = name.indexOf ('.');
+        int s = 0, e = path.indexOf ('.');
         while (e >= 0) {
-            node = (ASTNode) node.getChild ("node-" + name.substring (s, e));
+            node = (ASTNode) node.getChild ("node-" + path.substring (s, e));
             if (node == null) return null;
             s = e + 1;
-            e = name.indexOf ('.', s);
+            e = path.indexOf ('.', s);
         }
-        return (ASTNode) node.getChild ("node-" + name.substring (s));
+        return (ASTNode) node.getChild ("node-" + path.substring (s));
     }
     
     private Map nameToChild = null;
@@ -297,6 +401,11 @@ public class ASTNode {
         return nameToChild.get (name);
     }
 
+    /**
+     * Returns parent node of this node with given non terminal.
+     * 
+     * @return parent node of this node with given non terminal
+     */
     public ASTNode getParent (String nt) {
         ASTNode p = getParent ();
         while (p != null && !p.getNT ().equals (nt))
@@ -304,6 +413,11 @@ public class ASTNode {
         return p;
     }
     
+    /**
+     * Returns text representation of this node.
+     * 
+     * @return text representation of this node
+     */
     public String print () {
         return print ("");
     }
@@ -324,6 +438,11 @@ public class ASTNode {
         return sb.toString ();
     }
     
+    /**
+     * Returns text content of this node.
+     * 
+     * @return text content of this node
+     */
     public String getAsText () {
         StringBuilder sb = new StringBuilder ();
         Iterator it = getChildren ().iterator ();
@@ -337,6 +456,11 @@ public class ASTNode {
         return sb.toString ();
     }
     
+    /**
+     * Returns string representation of this object.
+     * 
+     * @return string representation of this object
+     */
     public String toString () {
         StringBuilder sb = new StringBuilder ();
         sb.append ("ASTNode ").append (getNT ()).append (' ').
