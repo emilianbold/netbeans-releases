@@ -21,6 +21,7 @@ package org.netbeans.api.java.source.gen;
 import java.io.File;
 import java.util.Collections;
 import com.sun.source.tree.*;
+import java.io.IOException;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.CancellableTask;
@@ -71,8 +72,10 @@ public class BodyStatementTest extends GeneratorTest {
 //        suite.addTest(new BodyStatementTest("testRenameInTypeCast"));
 //        suite.addTest(new BodyStatementTest("testRenameInAssert"));
 //        suite.addTest(new BodyStatementTest("testRenameInThrowSt"));
-//        suite.addTest(new BodyStatementTest("testRenameInThrowSt"));
 //        suite.addTest(new BodyStatementTest("testRenameInConditional"));
+//        suite.addTest(new BodyStatementTest("testRenameInLabelled"));
+//        suite.addTest(new BodyStatementTest("testRenameInContinue"));
+//        suite.addTest(new BodyStatementTest("testRenameInBreak"));
         return suite;
     }
     
@@ -1466,6 +1469,104 @@ public class BodyStatementTest extends GeneratorTest {
                 UnaryTree falsePart = (UnaryTree) cet.getFalseExpression();
                 ident = (IdentifierTree) falsePart.getExpression();
                 workingCopy.rewrite(ident, make.setLabel(ident, "alda"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    /**
+     * #92187: Test rename in labelled
+     */
+    public void testRenameInLabelled() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, "package personal;\n\npublic class Test {\n    public Object method() {\n        cycle_start: for (int i = 0; i < 10; i++) {\n        }\n    }\n}\n");
+        String golden = "package personal;\n\npublic class Test {\n    public Object method() {\n        zacatek_smycky: for (int i = 0; i < 10; i++) {\n        }\n    }\n}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree)clazz.getMembers().get(1);
+                BlockTree block = method.getBody();
+                LabeledStatementTree lst = (LabeledStatementTree)block.getStatements().get(0);
+                workingCopy.rewrite(lst, make.setLabel(lst, "zacatek_smycky"));
+            }
+            
+            public void cancel() {
+            }
+            
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * #92187: Test rename in continue
+     */
+    public void testRenameInContinue()
+            throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, "package personal;\n\npublic class Test {\n    public Object method() {\n        cycle_start: for (int i = 0; i < 10; i++) {\n            continue cycle_start;\n        }\n    }\n}\n");
+        String golden = "package personal;\n\npublic class Test {\n    public Object method() {\n        zacatek_smycky: for (int i = 0; i < 10; i++) {\n            continue zacatek_smycky;\n        }\n    }\n}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree)clazz.getMembers().get(1);
+                BlockTree block = method.getBody();
+                LabeledStatementTree lst = (LabeledStatementTree)block.getStatements().get(0);
+                workingCopy.rewrite(lst, make.setLabel(lst, "zacatek_smycky"));
+                ForLoopTree flt = (ForLoopTree)lst.getStatement();
+                BlockTree forTree = (BlockTree)flt.getStatement();
+                ContinueTree ct = (ContinueTree)forTree.getStatements().get(0);
+                workingCopy.rewrite(ct, make.setLabel(ct, "zacatek_smycky"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    /**
+     * #92187: Test rename in break
+     */
+    public void testRenameInBreak() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, "package personal;\n\npublic class Test {\n    public Object method() {\n        cycle_start: for (int i = 0; i < 10; i++) {\n            break cycle_start;\n        }\n    }\n}\n");
+        String golden = "package personal;\n\npublic class Test {\n    public Object method() {\n        zacatek_smycky: for (int i = 0; i < 10; i++) {\n            break zacatek_smycky;\n        }\n    }\n}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy)
+                    throws IOException {
+                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree)clazz.getMembers().get(1);
+                BlockTree block = method.getBody();
+                LabeledStatementTree lst = (LabeledStatementTree)block.getStatements().get(0);
+                workingCopy.rewrite(lst, make.setLabel(lst, "zacatek_smycky"));
+                ForLoopTree flt = (ForLoopTree)lst.getStatement();
+                BlockTree forTree = (BlockTree)flt.getStatement();
+                BreakTree bt = (BreakTree)forTree.getStatements().get(0);
+                workingCopy.rewrite(bt, make.setLabel(bt, "zacatek_smycky"));
             }
             
             public void cancel() {

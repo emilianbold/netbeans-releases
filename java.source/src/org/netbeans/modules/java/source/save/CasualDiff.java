@@ -613,10 +613,19 @@ public class CasualDiff {
         return bounds[1];
     }
 
-    protected void diffLabelled(JCLabeledStatement oldT, JCLabeledStatement newT) {
-        if (nameChanged(oldT.label, newT.label))
-            append(Diff.name(oldT.pos, oldT.label, newT.label));
-        diffTree(oldT.body, newT.body);
+    protected int diffLabelled(JCLabeledStatement oldT, JCLabeledStatement newT, int[] bounds) {
+        int localPointer = bounds[0];
+        if (nameChanged(oldT.label, newT.label)) {
+            copyTo(localPointer, localPointer = getOldPos(oldT), printer);
+            printer.print(newT.label);
+            localPointer += oldT.label.length();
+        }
+        int[] bodyBounds = getBounds(oldT.body);
+        copyTo(localPointer, bodyBounds[0], printer);
+        localPointer = diffTree(oldT.body, newT.body, bodyBounds);
+        copyTo(localPointer, bounds[1], printer);
+        
+        return bounds[1];
     }
 
     protected void diffSwitch(JCSwitch oldT, JCSwitch newT) {
@@ -728,16 +737,35 @@ public class CasualDiff {
         return bounds[1];
     }
 
-    protected void diffBreak(JCBreak oldT, JCBreak newT) {
-        if (nameChanged(oldT.label, newT.label))
-            append(Diff.name(oldT.pos, oldT.label, newT.label));
-        diffTree(oldT.target, newT.target);
+    protected int diffBreak(JCBreak oldT, JCBreak newT, int[] bounds) {
+        int localPointer = bounds[0];
+        if (nameChanged(oldT.label, newT.label)) {
+            copyTo(localPointer, localPointer = getOldPos(oldT), printer);
+            printer.print("break ");
+            printer.print(newT.label);
+            localPointer += 6 + oldT.label.length();
+        }
+//        int[] targetBounds = getBounds(oldT.target);
+//        copyTo(localPointer, targetBounds[0], printer);
+//        localPointer = diffTree(oldT.target, newT.target, targetBounds);
+        copyTo(localPointer, bounds[1], printer);
+        return bounds[1];
     }
-
-    protected void diffContinue(JCContinue oldT, JCContinue newT) {
-        if (nameChanged(oldT.label, newT.label))
-            append(Diff.name(oldT.pos, oldT.label, newT.label));
-        diffTree(oldT.target, newT.target);
+        
+    protected int diffContinue(JCContinue oldT, JCContinue newT, int[] bounds) {
+        int localPointer = bounds[0];
+        if (nameChanged(oldT.label, newT.label)) {
+            copyTo(localPointer, localPointer = getOldPos(oldT), printer);
+            printer.print("continue ");
+            printer.print(newT.label);
+            localPointer += 9 + oldT.label.length();
+        }
+//        int[] targetBounds = getBounds(oldT.target);
+//        copyTo(localPointer, targetBounds[0], printer);
+//        localPointer = diffTree(oldT.target, newT.target, targetBounds);
+        copyTo(localPointer, bounds[1], printer);
+        
+        return bounds[1];
     }
 
     protected int diffReturn(JCReturn oldT, JCReturn newT, int[] bounds) {
@@ -1864,7 +1892,7 @@ public class CasualDiff {
               retVal = diffForeachLoop((JCEnhancedForLoop)oldT, (JCEnhancedForLoop)newT, elementBounds);
               break;
           case JCTree.LABELLED:
-              diffLabelled((JCLabeledStatement)oldT, (JCLabeledStatement)newT);
+              retVal = diffLabelled((JCLabeledStatement)oldT, (JCLabeledStatement)newT, elementBounds);
               break;
           case JCTree.SWITCH:
               diffSwitch((JCSwitch)oldT, (JCSwitch)newT);
@@ -1891,10 +1919,10 @@ public class CasualDiff {
               retVal = diffExec((JCExpressionStatement)oldT, (JCExpressionStatement)newT, elementBounds);
               break;
           case JCTree.BREAK:
-              diffBreak((JCBreak)oldT, (JCBreak)newT);
+              retVal = diffBreak((JCBreak)oldT, (JCBreak)newT, elementBounds);
               break;
           case JCTree.CONTINUE:
-              diffContinue((JCContinue)oldT, (JCContinue)newT);
+              retVal = diffContinue((JCContinue)oldT, (JCContinue)newT, elementBounds);
               break;
           case JCTree.RETURN:
               retVal = diffReturn((JCReturn)oldT, (JCReturn)newT, elementBounds);
