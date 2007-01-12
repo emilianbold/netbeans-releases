@@ -304,7 +304,7 @@ public final class SerParser implements ObjectStreamConstants {
         public ClassDesc classdesc;
         public List<Object> data; // <Union2<NameValue,Object>>
         public String toString() {
-            return "Object[class=" + classdesc.name + ",data=" + data + "]"; // NOI18N
+            return "Object[class=" + classdesc.name + ",data=<omitted>]"; // NOI18N
         }
     }
     

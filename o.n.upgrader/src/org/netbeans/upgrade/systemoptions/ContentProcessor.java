@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,7 +22,8 @@ package org.netbeans.upgrade.systemoptions;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 class ContentProcessor  {
     private static Map<String, ContentProcessor> clsname2Delegate = new HashMap<String, ContentProcessor>();
@@ -54,7 +55,7 @@ class ContentProcessor  {
             //assert debugInfo("after: ", m);
             result = new DefaultResult(systemOptionInstanceName, m);
         } catch (IllegalStateException isx) {
-            System.out.println(systemOptionInstanceName+" not parsed: " + isx.getMessage());//NOI18N
+            Logger.getLogger(ContentProcessor.class.getName()).log(Level.WARNING, systemOptionInstanceName + " not parsed", isx);
         }
         return result;        
     }
