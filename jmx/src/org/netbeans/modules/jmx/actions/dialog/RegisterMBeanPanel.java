@@ -137,6 +137,17 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         else
             return construct;
     }
+    /**
+     * Returns the current user defined constructor signature.
+     * @return <CODE>String</CODE> signature of choosed constructor
+     */
+    public ExecutableElement getExecutableConstructor() {
+        String construct = (String) constructorComboBox.getSelectedItem();
+        if (bundle.getString("LBL_StandardMBeanDefaultConstructor").equals(construct)) // NOI18N
+            return null;
+        else
+            return constructorsMap.get(construct);
+    }
     
     /**
      * Creates new form RegisterMBeanPanel.

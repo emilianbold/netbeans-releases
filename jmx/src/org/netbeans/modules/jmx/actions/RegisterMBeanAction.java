@@ -20,6 +20,7 @@
 package org.netbeans.modules.jmx.actions;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JEditorPane;
@@ -38,16 +39,22 @@ import org.openide.util.actions.NodeAction;
 
 /**
  * Action used to add MBean registration code to an existing JMX Agent.
- * @author tl156378
+ * @author jfdenise
  */
 public class RegisterMBeanAction extends NodeAction {
     
     private FileObject fo;
     private DataObject dob;
-    private static String TRY = "try { // Register MBean in Platform MBeanServer\n";// NOI18N
-    private static String CATCH = "\n}catch(Exception ex) {\n"+// NOI18N
-            "// TODO handle exception\n" +// NOI18N
-            "}";// NOI18N
+    private static String TRY = "try { // Register MBean in Platform MBeanServer\n"; // NOI18N
+    private static String CATCH = "\n}catch(Exception ex) {\n"+ // NOI18N
+            "// TODO handle exception\n" + // NOI18N
+            "}"; // NOI18N
+    private static final String REGISTRATION_1 = TRY + "ManagementFactory.getPlatformMBeanServer().\n"; // NOI18N
+    private static final String REGISTRATION_2 = "registerMBean(new "; // NOI18N
+    private static final String REGISTRATION_3 = ",\nnew ObjectName(\"{0}\"));";// NOI18N
+    private static final String REGISTRATION_4 = CATCH;
+    private static final String CONSTRUCTOR_COMMENTS = "// TODO Replace {0} Constructor parameters with valid values\n";
+    private static final String REFERENCE_COMMENTS = "// TODO provide a {0} reference to StandardMBean Constructor\n";
     /**
      * Creates a new instance of AddAttrAction
      */
@@ -87,15 +94,32 @@ public class RegisterMBeanAction extends NodeAction {
             if (!cfg.configure()) {
                 return;
             }
-            String methodCall = null;
+            StringBuffer methodCall = new StringBuffer();
+            
+            methodCall.append(REGISTRATION_1);
             
             // First handle Imports
             List<String> imports = new ArrayList<String>();
             imports.add("java.lang.management.ManagementFactory");// NOI18N
             imports.add("javax.management.ObjectName");// NOI18N
+            String className = cfg.getClassName();
             if(cfg.getConstructor() != null) {
-                imports.add(cfg.getClassName());
+                imports.add(className);
+                if(cfg.getExecutableConstructor().getParameters().size() > 0) {
+                    MessageFormat ctrFormat =
+                    new MessageFormat(CONSTRUCTOR_COMMENTS);
+                    Object[] arg = {WizardHelpers.getClassName(className)};
+                    methodCall.append(ctrFormat.format(arg));
+                }
+            } else {
+                MessageFormat refFormat =
+                    new MessageFormat(REFERENCE_COMMENTS);
+                    Object[] arg = {WizardHelpers.getClassName(className)};
+                    methodCall.append(refFormat.format(arg));
             }
+            
+            methodCall.append(REGISTRATION_2);
+            
             String ctr = cfg.getConstructor();
             if (cfg.standardMBeanSelected()) {
                 imports.add("javax.management.StandardMBean");// NOI18N
@@ -106,22 +130,19 @@ public class RegisterMBeanAction extends NodeAction {
                     itf = WizardHelpers.getClassName(itf);
                     itf = itf + ".class";
                 }
-                
-                methodCall = TRY + 
-                       "ManagementFactory.getPlatformMBeanServer().\n"// NOI18N
-                       + "registerMBean(new StandardMBean("// NOI18N
-                       + (ctr == null ? null : "new " + ctr) + ",\n"// NOI18N
-                       +itf +"),\n"// NOI18N
-                       + " new ObjectName(\""+cfg.getMBeanObjectName()+"\"));"// NOI18N
-                       + CATCH;
-                
+                methodCall.append("StandardMBean(" // NOI18N
+                       + (ctr == null ? null : "new " + ctr) + ",\n"
+                       + itf +")");// NOI18N
             } else {
-               methodCall = TRY + 
-                       "ManagementFactory.getPlatformMBeanServer().\n"// NOI18N
-                       + "registerMBean(new " + cfg.getConstructor() + ",\n"// NOI18N
-                       + " new ObjectName(\""+cfg.getMBeanObjectName()+"\"));"// NOI18N
-                       +CATCH;
+                methodCall.append(cfg.getConstructor());
             }
+            
+            MessageFormat objNameFormat =
+                    new MessageFormat(REGISTRATION_3);
+            Object[] arg = {cfg.getMBeanObjectName()};
+            methodCall.append(objNameFormat.format(arg));
+            
+            methodCall.append(REGISTRATION_4);
             
             // Add imports
             JavaModelHelper.addImports(imports, cfg.getAgentJavaSource());
@@ -136,9 +157,7 @@ public class RegisterMBeanAction extends NodeAction {
             StringWriter textWriter = new StringWriter();
             Writer indentWriter = eng.createWriter(document, pos, textWriter);
             
-            
-            
-            indentWriter.write(methodCall);
+            indentWriter.write(methodCall.toString());
             indentWriter.close();
             String textToInsert = textWriter.toString();
             
