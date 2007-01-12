@@ -1771,7 +1771,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         public CharSequence getInsertPrefix() {
-            return memberElem.getSimpleName();
+            return type.asElement().getSimpleName() + "." + memberElem.getSimpleName(); //NOI18N
         }
 
         public CompletionTask createDocumentationTask() {

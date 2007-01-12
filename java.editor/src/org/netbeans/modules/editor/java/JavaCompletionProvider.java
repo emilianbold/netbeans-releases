@@ -1605,8 +1605,14 @@ public class JavaCompletionProvider implements CompletionProvider {
                 if (last != null) {
                     String text = env.getController().getText().substring(lastPos, offset).trim();
                     if (",".equals(text)) { //NOI18N
-                        localResult(env);
-                        addValueKeywords(env);
+                        TreePath parentPath = path.getParentPath();
+                        TreePath gparentPath = parentPath.getParentPath();
+                        if (parentPath.getLeaf().getKind() == Tree.Kind.ANNOTATION || gparentPath.getLeaf().getKind() == Tree.Kind.ANNOTATION) {
+                            addLocalConstantsAndTypes(env);
+                        } else {
+                            localResult(env);
+                            addValueKeywords(env);
+                        }
                     }
                     return;
                 }
@@ -1615,8 +1621,14 @@ public class JavaCompletionProvider implements CompletionProvider {
             switch (ts.token().id()) {
                 case LBRACKET:
                 case LBRACE:
-                    localResult(env);
-                    addValueKeywords(env);
+                    TreePath parentPath = path.getParentPath();
+                    TreePath gparentPath = parentPath.getParentPath();
+                    if (parentPath.getLeaf().getKind() == Tree.Kind.ANNOTATION || gparentPath.getLeaf().getKind() == Tree.Kind.ANNOTATION) {
+                        addLocalConstantsAndTypes(env);
+                    } else {
+                        localResult(env);
+                        addValueKeywords(env);
+                    }
                     break;
                 case RBRACKET:
                     if (nat.getDimensions().size() > 0)
@@ -2025,7 +2037,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             public boolean accept(Element e, TypeMirror t) {
                                 return (e.getKind() == ENUM_CONSTANT || e.getKind() == FIELD && ((VariableElement)e).getConstantValue() != null) &&
                                         (!isStatic || e.getModifiers().contains(STATIC)) &&
-                                        Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
+                                        Utilities.startsWith(e.getEnclosingElement().getSimpleName() + "." + e.getSimpleName(), prefix) &&
                                         tu.isAccessible(scope, e, t) &&
                                         types.isAssignable(((VariableElement)e).asType(), type);
                             }
@@ -3131,8 +3143,17 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case ASSIGNMENT:
                         type = controller.getTrees().getTypeMirror(new TreePath(path, ((AssignmentTree)tree).getVariable()));
                         TreePath parentPath = path.getParentPath();
-                        if (parentPath != null && parentPath.getLeaf().getKind() == Tree.Kind.ANNOTATION && type.getKind() == TypeKind.EXECUTABLE)
+                        if (parentPath != null && parentPath.getLeaf().getKind() == Tree.Kind.ANNOTATION && type.getKind() == TypeKind.EXECUTABLE) {
                             type = ((ExecutableType)type).getReturnType();
+                            while(dim-- > 0) {
+                                if (type.getKind() == TypeKind.ARRAY)
+                                    type = ((ArrayType)type).getComponentType();
+                                else
+                                    return null;
+                            }
+                            if (type.getKind() == TypeKind.ARRAY)
+                                type = ((ArrayType)type).getComponentType();
+                        }
                         return Collections.singleton(type);
                     case RETURN:
                         TreePath methodPath = Utilities.getPathElementOfKind(Tree.Kind.METHOD, path);
@@ -3349,14 +3370,21 @@ public class JavaCompletionProvider implements CompletionProvider {
                         return null;
                     case ANNOTATION:
                         AnnotationTree ann = (AnnotationTree)tree;
-                        if (ann.getArguments().isEmpty()) {
-                            root = env.getRoot();
-                            text = controller.getText().substring((int)env.getSourcePositions().getEndPosition(root, ann.getAnnotationType()), offset).trim();
-                            if ("(".equals(text)) { //NOI18N
-                                TypeElement el = (TypeElement)controller.getTrees().getElement(new TreePath(path, ann.getAnnotationType()));
-                                for (Element ee : el.getEnclosedElements()) {
-                                    if (ee.getKind() == METHOD && "value".contentEquals(ee.getSimpleName()))
-                                        return Collections.singleton(((ExecutableElement)ee).getReturnType());
+                        text = controller.getText().substring((int)env.getSourcePositions().getEndPosition(env.getRoot(), ann.getAnnotationType()), offset).trim();
+                        if ("(".equals(text) || text.endsWith("{") || text.endsWith(",")) { //NOI18N
+                            TypeElement el = (TypeElement)controller.getTrees().getElement(new TreePath(path, ann.getAnnotationType()));
+                            for (Element ee : el.getEnclosedElements()) {
+                                if (ee.getKind() == METHOD && "value".contentEquals(ee.getSimpleName())) {
+                                    type = ((ExecutableElement)ee).getReturnType();
+                                    while(dim-- > 0) {
+                                        if (type.getKind() == TypeKind.ARRAY)
+                                            type = ((ArrayType)type).getComponentType();
+                                        else
+                                            return null;
+                                    }
+                                    if (type.getKind() == TypeKind.ARRAY)
+                                        type = ((ArrayType)type).getComponentType();
+                                    return Collections.singleton(type);
                                 }
                             }
                         }
