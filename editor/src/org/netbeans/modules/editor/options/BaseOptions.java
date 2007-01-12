@@ -1860,6 +1860,6 @@ public class BaseOptions extends OptionSupport {
                 }
             }
         }
-        return KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.SHIFT_MASK);
+        return KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
     }
 }
