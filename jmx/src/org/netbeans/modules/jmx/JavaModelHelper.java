@@ -27,6 +27,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.ImportTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePathScanner;
 import java.io.IOException;
@@ -2589,6 +2590,33 @@ public class JavaModelHelper {
             }
         }, true);
         return (String[]) value.getValue();
+    }
+    
+    public static void addImports(final List<String> imports, JavaSource clazz) throws IOException {
+        if(imports == null || imports.size() == 0) return;
+        clazz.runModificationTask(new CancellableTask<WorkingCopy>() {
+            public void cancel() {}
+            public void run(WorkingCopy w) throws IOException {
+                w.toPhase(Phase.ELEMENTS_RESOLVED);
+                // XXX REVISIT
+                TreeMaker make = w.getTreeMaker();
+                CompilationUnitTree cut = w.getCompilationUnit();
+                List<? extends ImportTree> currentImports = cut.getImports();
+
+                for(ImportTree current : currentImports) {
+                    String toAdd = current.getQualifiedIdentifier().toString();
+                    if(imports.contains(toAdd))
+                        imports.remove(toAdd);
+                }
+                CompilationUnitTree copy =cut;
+                for(String imp : imports) {
+                    copy = make.addCompUnitImport(
+                            copy,
+                            make.Import(make.Identifier(imp), false));
+                }
+                w.rewrite(cut, copy);
+            }
+        }).commit();
     }
     
     /**

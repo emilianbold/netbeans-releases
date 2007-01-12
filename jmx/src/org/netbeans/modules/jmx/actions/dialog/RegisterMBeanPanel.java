@@ -108,7 +108,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         if (standardMBeanRadioButton.isSelected())
             return classNameTextField.getText();
         else
-            return WizardConstants.NULL;
+            return mbeanClassTextField.getText();
     }
     
     /**

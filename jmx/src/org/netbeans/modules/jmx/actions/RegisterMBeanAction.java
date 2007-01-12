@@ -20,6 +20,8 @@
 package org.netbeans.modules.jmx.actions;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -42,7 +44,10 @@ public class RegisterMBeanAction extends NodeAction {
     
     private FileObject fo;
     private DataObject dob;
-    
+    private static String TRY = "try {\n";
+    private static String CATCH = "\n}catch(Exception ex) {\n"+
+            "// Handle registration Exception\n" +
+            "}";
     /**
      * Creates a new instance of AddAttrAction
      */
@@ -82,6 +87,46 @@ public class RegisterMBeanAction extends NodeAction {
             if (!cfg.configure()) {
                 return;
             }
+            String methodCall = null;
+            
+            // First handle Imports
+            List<String> imports = new ArrayList<String>();
+            imports.add("java.lang.management.ManagementFactory");
+            imports.add("javax.management.ObjectName");
+            if(cfg.getConstructor() != null) {
+                imports.add(cfg.getClassName());
+            }
+            String ctr = cfg.getConstructor();
+            if (cfg.standardMBeanSelected()) {
+                imports.add("javax.management.StandardMBean");
+                String itf = cfg.getInterfaceName();
+                if(itf != null) {
+                    imports.add(itf);
+                    // Remove package name
+                    itf = WizardHelpers.getClassName(itf);
+                    itf = itf + ".class";
+                }
+                
+                methodCall = TRY + 
+                       "ManagementFactory.getPlatformMBeanServer().\n"
+                       + "registerMBean(new StandardMBean("
+                       + (ctr == null ? null : "new " + ctr) + ",\n"
+                       +itf +"),\n"
+                       + " new ObjectName(\""+cfg.getMBeanObjectName()+"\"));"
+                       + CATCH;
+                
+            } else {
+               methodCall = TRY + 
+                       "ManagementFactory.getPlatformMBeanServer().\n"
+                       + "registerMBean(new " + cfg.getConstructor() + ",\n"
+                       + " new ObjectName(\""+cfg.getMBeanObjectName()+"\"));"
+                       +CATCH;
+            }
+            
+            // Add imports
+            JavaModelHelper.addImports(imports, cfg.getAgentJavaSource());
+            
+            // Generate code
             DataObject dob = cfg.getDataObject();
             EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
             JEditorPane pane = ec.getOpenedPanes()[0];
@@ -90,26 +135,8 @@ public class RegisterMBeanAction extends NodeAction {
             IndentEngine eng = IndentEngine.find(document);
             StringWriter textWriter = new StringWriter();
             Writer indentWriter = eng.createWriter(document, pos, textWriter);
-            String methodCall = null;
-            if (cfg.standardMBeanSelected()) {
-                /*JavaModelHelper.generateStdMBeanRegistration(cfg.getAgentJavaSource(),
-                        cfg.getMBeanObjectName(),
-                        cfg.getInterfaceName(),
-                        cfg.getConstructor());
-                 */ 
-            } else {
-               methodCall = 
-                       "java.lang.management.ManagementFactory.getPlatformMBeanServer().\n"
-                       + "registerMBean(new " + cfg.getConstructor() + ",\n"
-                       + " new ObjectName(\""+cfg.getMBeanObjectName()+"\"));";
-                       
-                       
-                /*JavaModelHelper.generateMBeanRegistration(cfg.getAgentJavaSource(),
-                        cfg.getMBeanObjectName(),
-                        cfg.getConstructor());
-                 */
-                
-            }
+            
+            
             
             indentWriter.write(methodCall);
             indentWriter.close();
