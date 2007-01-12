@@ -25,7 +25,7 @@ import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaComponentReference;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNodeFactory;
+//import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNodeFactory;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.nodes.Children;
@@ -86,13 +86,15 @@ public class MessagePartNode extends BpelNode<Part> {
                                 new ArrayList<Class<? extends SchemaComponent>>();
                         filters.add(GlobalType.class);
                         filters.add(GlobalElement.class);
-                        //
+                        //                                        
+                        /*
                         CategorizedSchemaNodeFactory nodeFactory =
                                 new CategorizedSchemaNodeFactory(
                                 (SchemaModel)element.getModel(), filters, myLookup);
                         Node elementTypeNode = nodeFactory.createNode(element);
-                        //
+                        //                                          
                         return new Node[] {elementTypeNode};
+                        */
                     }
                 }
             }

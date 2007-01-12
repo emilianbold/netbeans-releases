@@ -34,6 +34,13 @@ import org.netbeans.modules.bpel.debugger.BpelDebuggerImpl;
 public class BDIDebugger implements BPELDebugger {
     private BpelDebuggerImpl mDebugger;
     
+    public void setVirtualBPELEngine(org.netbeans.modules.bpel.debuggerbdi.rmi.api.VirtualBPELEngine virtualbpelengine) {}
+    public void processInstanceDied(org.netbeans.modules.bpel.debuggerbdi.rmi.api.BPELProcessInstanceRef bpelprocessinstanceref) {}
+    public void processInstanceStarted(org.netbeans.modules.bpel.debuggerbdi.rmi.api.BPELProcessInstanceRef bpelprocessinstanceref) {}
+    public void processRemoved(org.netbeans.modules.bpel.debuggerbdi.rmi.api.BPELProcessRef bpelprocessref) {}
+    public void processAdded(org.netbeans.modules.bpel.debuggerbdi.rmi.api.BPELProcessRef bpelprocessref) {}
+    public org.netbeans.modules.bpel.debuggerbdi.rmi.api.DebugFrame enterFrame(String s, String s1, String s2, String s3, String s4) {return null;}
+
     /** Creates a new instance of BDIDebugger */
     public BDIDebugger(BpelDebuggerImpl debugger) {
         mDebugger = debugger;

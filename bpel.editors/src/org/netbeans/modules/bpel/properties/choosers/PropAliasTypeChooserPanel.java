@@ -51,8 +51,8 @@ import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaComponentReference;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.modules.xml.schema.ui.nodes.SchemaComponentNode;
-import org.netbeans.modules.xml.schema.ui.nodes.schema.GlobalElementNode;
+//import org.netbeans.modules.xml.schema.ui.nodes.SchemaComponentNode;
+//import org.netbeans.modules.xml.schema.ui.nodes.schema.GlobalElementNode;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -69,8 +69,8 @@ import org.netbeans.modules.bpel.properties.editors.controls.Reusable;
 import org.netbeans.modules.bpel.properties.editors.controls.valid.Validator;
 import org.netbeans.modules.bpel.properties.editors.nodes.factory.PropertyAliasTypeChooserNodeFactory;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
-import org.netbeans.modules.xml.schema.ui.nodes.schema.GlobalComplexTypeNode;
-import org.netbeans.modules.xml.schema.ui.nodes.schema.GlobalSimpleTypeNode;
+//import org.netbeans.modules.xml.schema.ui.nodes.schema.GlobalComplexTypeNode;
+//import org.netbeans.modules.xml.schema.ui.nodes.schema.GlobalSimpleTypeNode;
 import org.openide.util.NbBundle;
 
 /**
@@ -230,6 +230,7 @@ public class PropAliasTypeChooserPanel extends AbstractTreeChooserPanel
     
     public TypeContainer getSelectedType() {
         Node selectedNode = getSelectedNode();
+        /*
         if (selectedNode instanceof SchemaComponentNode) {
             SchemaComponentReference<? extends SchemaComponent> schemaCompRef =
                     ((SchemaComponentNode)selectedNode).getReference();
@@ -241,7 +242,7 @@ public class PropAliasTypeChooserPanel extends AbstractTreeChooserPanel
                     return new TypeContainer((GlobalType)schemaComp);
                 }
             }
-        } else if (selectedNode instanceof MessageTypeNode) {
+        } else */if (selectedNode instanceof MessageTypeNode) {
             Message message = ((MessageTypeNode)selectedNode).getReference();
             return new TypeContainer(message);
         } else if (selectedNode instanceof MessagePartNode) {
@@ -474,9 +475,9 @@ public class PropAliasTypeChooserPanel extends AbstractTreeChooserPanel
                     ((MessageTypeNode)selectedNode).getReference();
             queryContent = ResolverUtility.getDisplayName(message);
             
-        } else if (selectedNode instanceof GlobalElementNode ||
+        } /*else if (selectedNode instanceof GlobalElementNode ||
                 selectedNode instanceof GlobalSimpleTypeNode ||
-                selectedNode instanceof GlobalComplexTypeNode ) 
+                selectedNode instanceof GlobalComplexTypeNode) 
         {
             SchemaComponentReference<SchemaComponent> schemaCompRef =
                     ((SchemaComponentNode)selectedNode).getReference();
@@ -486,7 +487,8 @@ public class PropAliasTypeChooserPanel extends AbstractTreeChooserPanel
                     queryContent = ResolverUtility.getDisplayName(schemaComp);
                 }
             }
-        } else if (selectedNode instanceof WsdlFileNode) {
+        } */
+        else if (selectedNode instanceof WsdlFileNode) {
             
             WSDLModel wsdlModel =
                     ((WsdlFileNode)selectedNode).getReference();

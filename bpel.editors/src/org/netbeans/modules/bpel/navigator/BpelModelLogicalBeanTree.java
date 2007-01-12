@@ -295,21 +295,21 @@ public class BpelModelLogicalBeanTree
      * Adds the undo/redo manager to the schema model as an undoable
      * edit listener, so it receives the edits onto the queue.
      */
-    private void addUndoManager() {
+    private void addUndoManager() {             /*
         ((BPELDataEditorSupport) myContextLookup
                 .lookup(BPELDataEditorSupport.class))
-                .addUndoManager(MultiviewId.NAVIGATOR);
+                .addUndoManager(MultiviewId.NAVIGATOR);*/
     }
     
     /**
      * Removes the undo/redo manager undoable edit listener from the
      * schema model, to stop receiving undoable edits.
      */
-    private void removeUndoManager() {
+    private void removeUndoManager() {          /*
         ((BPELDataEditorSupport) myContextLookup
                 .lookup(BPELDataEditorSupport.class))
                 .removeUndoManager(MultiviewId.NAVIGATOR);
-
+                                                  */
     }
 }
 

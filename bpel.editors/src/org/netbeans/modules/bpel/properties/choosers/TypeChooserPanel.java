@@ -49,8 +49,8 @@ import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaComponentReference;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.modules.xml.schema.ui.nodes.SchemaComponentNode;
-import org.netbeans.modules.xml.schema.ui.nodes.schema.GlobalElementNode;
+//import org.netbeans.modules.xml.schema.ui.nodes.SchemaComponentNode;
+//import org.netbeans.modules.xml.schema.ui.nodes.schema.GlobalElementNode;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.explorer.view.BeanTreeView;
@@ -66,8 +66,8 @@ import org.netbeans.modules.bpel.properties.editors.controls.Reusable;
 import org.netbeans.modules.bpel.properties.editors.controls.valid.Validator;
 import org.netbeans.modules.bpel.properties.editors.nodes.factory.TypeChooserNodeFactory;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
-import org.netbeans.modules.xml.schema.ui.nodes.schema.GlobalComplexTypeNode;
-import org.netbeans.modules.xml.schema.ui.nodes.schema.GlobalSimpleTypeNode;
+//import org.netbeans.modules.xml.schema.ui.nodes.schema.GlobalComplexTypeNode;
+//import org.netbeans.modules.xml.schema.ui.nodes.schema.GlobalSimpleTypeNode;
 import org.openide.util.NbBundle;
 
 /**
@@ -156,7 +156,8 @@ public class TypeChooserPanel extends AbstractTreeChooserPanel
                             ((MessageTypeNode)selectedNode).getReference();
                     text = ResolverUtility.getDisplayName(message);
                     fldTypeName.setText(text);
-                } else if (selectedNode instanceof GlobalElementNode ||
+                } 
+                /*else if (selectedNode instanceof GlobalElementNode ||
                         selectedNode instanceof GlobalSimpleTypeNode ||
                         selectedNode instanceof GlobalComplexTypeNode ) {
                     SchemaComponentReference<SchemaComponent> schemaCompRef =
@@ -168,7 +169,8 @@ public class TypeChooserPanel extends AbstractTreeChooserPanel
                             fldTypeName.setText(text);
                         }
                     }
-                } else if (selectedNode instanceof WsdlFileNode) {
+                } */
+                else if (selectedNode instanceof WsdlFileNode) {
                     WSDLModel wsdlModel =
                             ((WsdlFileNode)selectedNode).getReference();
                     FileObject wsdlFo = (FileObject)wsdlModel.getModelSource().
@@ -301,6 +303,7 @@ public class TypeChooserPanel extends AbstractTreeChooserPanel
     
     public TypeContainer getSelectedType() {
         Node selectedNode = getSelectedNode();
+        /*
         if (selectedNode instanceof SchemaComponentNode) {
             SchemaComponentReference<? extends SchemaComponent> schemaCompRef =
                     ((SchemaComponentNode)selectedNode).getReference();
@@ -312,7 +315,8 @@ public class TypeChooserPanel extends AbstractTreeChooserPanel
                     return new TypeContainer((GlobalType)schemaComp);
                 }
             }
-        } else if (selectedNode instanceof MessageTypeNode) {
+        } else */
+        if (selectedNode instanceof MessageTypeNode) {
             Message message = ((MessageTypeNode)selectedNode).getReference();
             return new TypeContainer(message);
         } else if (selectedNode instanceof PrimitiveTypeNode) {
@@ -394,6 +398,7 @@ public class TypeChooserPanel extends AbstractTreeChooserPanel
                 //
                 NodeUtils.SearchVisitor visitor = new NodeUtils.SearchVisitor() {
                     public boolean accept(Node node) {
+                    /*
                         if (node instanceof SchemaComponentNode) {
                             SchemaComponentReference scRef =
                                     ((SchemaComponentNode)node).getReference();
@@ -403,19 +408,21 @@ public class TypeChooserPanel extends AbstractTreeChooserPanel
                                     return true;
                                 }
                             }
-                        }
+                        }*/
                         //
                         return false;
                     }
                     
                     public boolean drillDeeper(Node node) {
+                    /*
                         if (node instanceof GlobalElementNode ||
                                 node instanceof GlobalSimpleTypeNode ||
                                 node instanceof GlobalComplexTypeNode) {
                             return false;
                         } else {
                             return true;
-                        }
+                        }*/
+                            return true;
                     }
                 };
                 Node soughtNode = NodeUtils.findFirstNode(
@@ -437,7 +444,7 @@ public class TypeChooserPanel extends AbstractTreeChooserPanel
                 }
                 //
                 NodeUtils.SearchVisitor visitor = new NodeUtils.SearchVisitor() {
-                    public boolean accept(Node node) {
+                    public boolean accept(Node node) {/*
                         if (node instanceof SchemaComponentNode) {
                             SchemaComponentReference scRef =
                                     ((SchemaComponentNode)node).getReference();
@@ -447,7 +454,7 @@ public class TypeChooserPanel extends AbstractTreeChooserPanel
                                     return true;
                                 }
                             }
-                        } else if (node instanceof PrimitiveTypeNode) {
+                        } else */if (node instanceof PrimitiveTypeNode) {
                             GlobalSimpleType gsType =
                                     ((PrimitiveTypeNode)node).getReference();
                             if (gsType != null && gsType.equals(type)) {
@@ -459,6 +466,7 @@ public class TypeChooserPanel extends AbstractTreeChooserPanel
                     }
                     
                     public boolean drillDeeper(Node node) {
+                    /*
                         if (node instanceof GlobalElementNode ||
                                 node instanceof GlobalSimpleTypeNode ||
                                 node instanceof GlobalComplexTypeNode) {
@@ -466,6 +474,8 @@ public class TypeChooserPanel extends AbstractTreeChooserPanel
                         } else {
                             return true;
                         }
+                        */
+                            return true;
                     }
                 };
                 Node soughtNode = NodeUtils.findFirstNode(

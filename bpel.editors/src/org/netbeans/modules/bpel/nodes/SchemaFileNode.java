@@ -28,7 +28,7 @@ import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNodeFactory;
+//import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNodeFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -104,6 +104,7 @@ public class SchemaFileNode extends BpelNode<SchemaModel> {
                 ArrayList<Class<? extends SchemaComponent>> filters =
                         new ArrayList<Class<? extends SchemaComponent>>();
                 filters.add(GlobalElement.class);
+                /*
                 CategorizedSchemaNodeFactory nodeFactory =
                         new CategorizedSchemaNodeFactory(
                         schemaModel, filters, myLookup);
@@ -112,7 +113,7 @@ public class SchemaFileNode extends BpelNode<SchemaModel> {
                     Node newNode = nodeFactory.createNode(element);
                     nodesList.add(newNode);
                 }
-                //
+                //*/
                 return nodesList.toArray(new Node[nodesList.size()]);
             }
             return null;

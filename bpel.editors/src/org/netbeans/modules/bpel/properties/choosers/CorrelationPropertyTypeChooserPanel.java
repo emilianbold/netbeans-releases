@@ -21,6 +21,7 @@ package org.netbeans.modules.bpel.properties.choosers;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
+import org.openide.filesystems.FileObject;
 import java.beans.PropertyChangeListener;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.modules.bpel.design.nodes.NodeFactory;
@@ -43,8 +44,8 @@ import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaComponentReference;
-import org.netbeans.modules.xml.schema.ui.nodes.SchemaComponentNode;
-import org.netbeans.modules.xml.schema.ui.nodes.schema.GlobalElementNode;
+//import org.netbeans.modules.xml.schema.ui.nodes.SchemaComponentNode;
+//import org.netbeans.modules.xml.schema.ui.nodes.schema.GlobalElementNode;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -56,8 +57,8 @@ import org.netbeans.modules.bpel.properties.editors.controls.NodesTreeParams;
 import org.netbeans.modules.bpel.properties.editors.controls.Reusable;
 import org.netbeans.modules.bpel.properties.editors.controls.valid.Validator;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
-import org.netbeans.modules.xml.schema.ui.nodes.schema.GlobalComplexTypeNode;
-import org.netbeans.modules.xml.schema.ui.nodes.schema.GlobalSimpleTypeNode;
+//import org.netbeans.modules.xml.schema.ui.nodes.schema.GlobalComplexTypeNode;
+//import org.netbeans.modules.xml.schema.ui.nodes.schema.GlobalSimpleTypeNode;
 import org.openide.util.NbBundle;
 
 /**
@@ -124,12 +125,13 @@ public class CorrelationPropertyTypeChooserPanel extends AbstractTreeChooserPane
                 Node selectedNode = getSelectedNode();
                 //
                 String text;
-               /* if (selectedNode instanceof MessageTypeNode) {
+                /*
+                if (selectedNode instanceof MessageTypeNode) {
                     Message message =
                             ((MessageTypeNode)selectedNode).getReference();
                     text = ResolverUtility.getDisplayName(message);
 //                    fldTypeName.setText(text);
-                } else */if (selectedNode instanceof GlobalElementNode ||
+                } else if (selectedNode instanceof GlobalElementNode ||
                         selectedNode instanceof GlobalSimpleTypeNode ||
                         selectedNode instanceof GlobalComplexTypeNode ) {
                     SchemaComponentReference<SchemaComponent> schemaCompRef =
@@ -141,7 +143,7 @@ public class CorrelationPropertyTypeChooserPanel extends AbstractTreeChooserPane
                             fldTypeName.setText(text);
                         }
                     }
-                } /*else if (selectedNode instanceof WsdlFileNode) {
+                } else if (selectedNode instanceof WsdlFileNode) {
                     WSDLModel wsdlModel =
                             ((WsdlFileNode)selectedNode).getReference();
                     FileObject wsdlFo = (FileObject)wsdlModel.getModelSource().
@@ -165,14 +167,14 @@ public class CorrelationPropertyTypeChooserPanel extends AbstractTreeChooserPane
                                 importInfo, "");
                         fldTypeName.setText(messageText);
                     }
-                } else if (selectedNode instanceof SchemaFileNode) {
+                }else if (selectedNode instanceof SchemaFileNode) {
                     SchemaModel schemaModel =
                             ((SchemaFileNode)selectedNode).getReference();
                     FileObject wsdlFo = (FileObject)schemaModel.getModelSource().
                             getLookup().lookup(FileObject.class);
                     text = wsdlFo.getPath();
                     fldTypeName.setText(text);
-                }*/ else if (selectedNode instanceof PrimitiveTypeNode) {
+                } else */if (selectedNode instanceof PrimitiveTypeNode) {
                     GlobalSimpleType gSimpleType =
                             ((PrimitiveTypeNode)selectedNode).getReference();
                     if (gSimpleType != null) {
@@ -267,6 +269,7 @@ public class CorrelationPropertyTypeChooserPanel extends AbstractTreeChooserPane
     
     public TypeContainer getSelectedType() {
         Node selectedNode = getSelectedNode();
+/*
         if (selectedNode instanceof SchemaComponentNode) {
             SchemaComponentReference<? extends SchemaComponent> schemaCompRef =
                     ((SchemaComponentNode)selectedNode).getReference();
@@ -278,10 +281,10 @@ public class CorrelationPropertyTypeChooserPanel extends AbstractTreeChooserPane
                     return new TypeContainer((GlobalType)schemaComp);
                 }
             }
-        }/* else if (selectedNode instanceof MessageTypeNode) {
+        } else if (selectedNode instanceof MessageTypeNode) {
             Message message = ((MessageTypeNode)selectedNode).getReference();
             return new TypeContainer(message);
-        }*/ else if (selectedNode instanceof PrimitiveTypeNode) {
+        } else */if (selectedNode instanceof PrimitiveTypeNode) {
             GlobalSimpleType gsType = ((PrimitiveTypeNode)selectedNode).getReference();
             return new TypeContainer(gsType);
         }
@@ -360,6 +363,7 @@ public class CorrelationPropertyTypeChooserPanel extends AbstractTreeChooserPane
                 //
                 NodeUtils.SearchVisitor visitor = new NodeUtils.SearchVisitor() {
                     public boolean accept(Node node) {
+                    /*
                         if (node instanceof SchemaComponentNode) {
                             SchemaComponentReference scRef =
                                     ((SchemaComponentNode)node).getReference();
@@ -369,19 +373,20 @@ public class CorrelationPropertyTypeChooserPanel extends AbstractTreeChooserPane
                                     return true;
                                 }
                             }
-                        }
+                        }*/
                         //
                         return false;
                     }
                     
                     public boolean drillDeeper(Node node) {
-                        if (node instanceof GlobalElementNode ||
-                                node instanceof GlobalSimpleTypeNode ||
-                                node instanceof GlobalComplexTypeNode) {
-                            return false;
-                        } else {
+//                        if (node instanceof GlobalElementNode ||
+//                                node instanceof GlobalSimpleTypeNode ||
+//                                node instanceof GlobalComplexTypeNode) {
+//                            return false;
+//                        } else {
+//                            return true;
+//                        }
                             return true;
-                        }
                     }
                 };
                 Node soughtNode = NodeUtils.findFirstNode(
@@ -404,6 +409,7 @@ public class CorrelationPropertyTypeChooserPanel extends AbstractTreeChooserPane
                 //
                 NodeUtils.SearchVisitor visitor = new NodeUtils.SearchVisitor() {
                     public boolean accept(Node node) {
+                    /*
                         if (node instanceof SchemaComponentNode) {
                             SchemaComponentReference scRef =
                                     ((SchemaComponentNode)node).getReference();
@@ -419,12 +425,13 @@ public class CorrelationPropertyTypeChooserPanel extends AbstractTreeChooserPane
                             if (gsType != null && gsType.equals(type)) {
                                 return true;
                             }
-                        }
+                        } */
                         //
                         return false;
                     }
                     
                     public boolean drillDeeper(Node node) {
+                    /*
                         if (node instanceof GlobalElementNode ||
                                 node instanceof GlobalSimpleTypeNode ||
                                 node instanceof GlobalComplexTypeNode) {
@@ -432,6 +439,8 @@ public class CorrelationPropertyTypeChooserPanel extends AbstractTreeChooserPane
                         } else {
                             return true;
                         }
+                        */
+                            return true;
                     }
                 };
                 Node soughtNode = NodeUtils.findFirstNode(

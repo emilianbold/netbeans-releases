@@ -56,7 +56,7 @@ import org.netbeans.modules.bpel.properties.PropertyType;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNodeFactory;
+//import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNodeFactory;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.openide.nodes.Children;
@@ -372,6 +372,7 @@ public class VariableNode extends BpelNode<VariableDeclaration>
                         if (typeRef != null) {
                             GlobalElement element = typeRef.get();
                             SchemaModel schemaModel = (SchemaModel)element.getModel();
+                            /*
                             if (element != null) {
                                 CategorizedSchemaNodeFactory nodeFactory =
                                         new CategorizedSchemaNodeFactory(
@@ -385,7 +386,7 @@ public class VariableNode extends BpelNode<VariableDeclaration>
                                         getNode(), elementTypeNode)) {
                                     return new Node[] {elementTypeNode};
                                 }
-                            }
+                            } */
                         }
                         break;
                     }

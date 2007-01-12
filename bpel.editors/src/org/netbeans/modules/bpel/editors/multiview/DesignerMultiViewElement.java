@@ -566,8 +566,8 @@ public class DesignerMultiViewElement extends TopComponent
      * edit listener, so it receives the edits onto the queue.
      */
     private void addUndoManager() {
-        myDataObject.getEditorSupport().addUndoManager( 
-                MultiviewId.ORCH_DESIGNER );
+//        myDataObject.getEditorSupport().addUndoManager( 
+//                MultiviewId.ORCH_DESIGNER );
     }
 
     /**
@@ -575,8 +575,8 @@ public class DesignerMultiViewElement extends TopComponent
      * bpel model, to stop receiving undoable edits.
      */
     private void removeUndoManager() {
-        myDataObject.getEditorSupport().removeUndoManager( 
-                MultiviewId.ORCH_DESIGNER );
+//        myDataObject.getEditorSupport().removeUndoManager( 
+//                MultiviewId.ORCH_DESIGNER );
     }
     
     private BpelModel getBpelModel() {

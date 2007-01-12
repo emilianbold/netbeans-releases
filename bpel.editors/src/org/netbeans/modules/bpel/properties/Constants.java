@@ -31,9 +31,9 @@ import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
-import org.netbeans.modules.xml.schema.ui.nodes.schema.GlobalComplexTypeNode;
-import org.netbeans.modules.xml.schema.ui.nodes.schema.GlobalElementNode;
-import org.netbeans.modules.xml.schema.ui.nodes.schema.GlobalSimpleTypeNode;
+//import org.netbeans.modules.xml.schema.ui.nodes.schema.GlobalComplexTypeNode;
+//import org.netbeans.modules.xml.schema.ui.nodes.schema.GlobalElementNode;
+//import org.netbeans.modules.xml.schema.ui.nodes.schema.GlobalSimpleTypeNode;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.openide.nodes.FilterNode;
@@ -271,12 +271,12 @@ public interface Constants {
                         nodeClasses.add(MessagePartNode.class);
                         break;
                     case GLOBAL_ELEMENT:
-                        nodeClasses.add(GlobalElementNode.class);
+//                        nodeClasses.add(GlobalElementNode.class);
                         break;
                     case GLOBAL_TYPE:
                         // nodeClasses.add(PrimitiveSimpleTypesNode.class);
-                        nodeClasses.add(GlobalSimpleTypeNode.class);
-                        nodeClasses.add(GlobalComplexTypeNode.class);
+//                        nodeClasses.add(GlobalSimpleTypeNode.class);
+//                        nodeClasses.add(GlobalComplexTypeNode.class);
                         break;
                     case PRIMITIVE_TYPE:
                         nodeClasses.add(PrimitiveTypeNode.class);

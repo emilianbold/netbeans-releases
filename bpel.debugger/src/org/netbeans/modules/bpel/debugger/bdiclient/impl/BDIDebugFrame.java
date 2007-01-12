@@ -39,6 +39,8 @@ import org.netbeans.modules.bpel.debugger.bdiclient.BreakPosition;
  */
 public class BDIDebugFrame implements DebugFrame {
     
+    public void onActivityComplete(String s, String s1, int i, String s2) {}
+
     private ProcessInstanceImpl mProcessInstance;
     private String mId;
     

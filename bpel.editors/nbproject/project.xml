@@ -321,6 +321,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.bpel.search</friend>
+                <friend>org.netbeans.modules.bpel.xpath</friend>
                 <package>org.netbeans.modules.bpel.design</package>
                 <package>org.netbeans.modules.bpel.design.decoration</package>
                 <package>org.netbeans.modules.bpel.design.model</package>

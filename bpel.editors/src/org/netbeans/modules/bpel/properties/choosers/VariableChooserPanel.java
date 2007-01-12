@@ -61,7 +61,7 @@ import org.netbeans.modules.bpel.properties.editors.controls.valid.BpelDialogDis
 import org.netbeans.modules.bpel.properties.editors.controls.valid.NodeEditorDescriptor;
 import org.netbeans.modules.bpel.properties.editors.controls.valid.Validator;
 import org.netbeans.modules.bpel.properties.editors.nodes.factory.VariableChooserNodeFactory;
-import org.netbeans.modules.xml.schema.ui.nodes.SchemaComponentNode;
+//import org.netbeans.modules.xml.schema.ui.nodes.SchemaComponentNode;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -464,9 +464,9 @@ public class VariableChooserPanel extends AbstractTreeChooserPanel
                             if (node instanceof VariableNode) {
                                 return false;
                             }
-                            if (node instanceof SchemaComponentNode) {
-                                return false;
-                            }
+//                            if (node instanceof SchemaComponentNode) {
+//                                return false;
+//                            }
                             return true;
                         }
                     };

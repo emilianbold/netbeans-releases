@@ -43,7 +43,7 @@ import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaComponentReference;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
-import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNodeFactory;
+//import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNodeFactory;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
@@ -217,6 +217,7 @@ public class TypeChooserNodeFactory implements NodeFactory {
                 //
                 StereotypeFilter stFilter = (StereotypeFilter)lookup.
                         lookup(StereotypeFilter.class);
+                        /*
                 CategorizedSchemaNodeFactory csFactory = null;
                 if (stFilter == null) {
                     csFactory = new CategorizedSchemaNodeFactory(
@@ -229,6 +230,7 @@ public class TypeChooserNodeFactory implements NodeFactory {
                             schemaModel, childTypes, lookup);
                 }
                 children = csFactory.createChildren(schemaRef);
+                */
             }
         }
         //
