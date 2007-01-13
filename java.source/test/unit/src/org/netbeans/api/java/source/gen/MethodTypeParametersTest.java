@@ -18,12 +18,16 @@
  */
 package org.netbeans.api.java.source.gen;
 
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.*;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.JavaSource;
+import static org.netbeans.api.java.source.JavaSource.*;
 import org.netbeans.api.java.source.TestUtilities;
-import org.netbeans.api.java.source.transform.Transformer;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -71,22 +75,31 @@ public class MethodTypeParametersTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
-                        MethodTree copy = make.addMethodTypeParameter(
-                            node, make.TypeParameter("T", Collections.<ExpressionTree>emptyList())
-                        );
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                    MethodTree copy = make.addMethodTypeParameter(
+                        method, make.TypeParameter("T", Collections.<ExpressionTree>emptyList())
+                    );
+                    workingCopy.rewrite(method, copy);
                 }
             }
-        );
+            
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -108,25 +121,35 @@ public class MethodTypeParametersTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
-                        MethodTree copy = make.addMethodTypeParameter(
-                            node, make.TypeParameter("T", Collections.<ExpressionTree>emptyList())
-                        );
-                        copy = make.addMethodTypeParameter(
-                            copy, make.TypeParameter("N", Collections.<ExpressionTree>emptyList())
-                        );
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                    MethodTree copy = make.addMethodTypeParameter(
+                        method, make.TypeParameter("T", Collections.<ExpressionTree>emptyList())
+                    );
+                    copy = make.addMethodTypeParameter(
+                        copy, make.TypeParameter("N", Collections.<ExpressionTree>emptyList())
+                    );
+                    workingCopy.rewrite(method, copy);
                 }
             }
-        );
+            
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -148,22 +171,31 @@ public class MethodTypeParametersTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
-                        MethodTree copy = make.removeMethodTypeParameter(node, 0);
-                        copy = make.removeMethodTypeParameter(copy, 0);
-                        copy = make.removeMethodTypeParameter(copy, 0);
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                    MethodTree copy = make.removeMethodTypeParameter(method, 0);
+                    copy = make.removeMethodTypeParameter(copy, 0);
+                    copy = make.removeMethodTypeParameter(copy, 0);
+                    workingCopy.rewrite(method, copy);
                 }
             }
-        );
+            
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -186,22 +218,31 @@ public class MethodTypeParametersTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
-                        MethodTree copy = make.addMethodTypeParameter(
-                            node, make.TypeParameter("M", Collections.<ExpressionTree>emptyList())
-                        );
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                    MethodTree copy = make.addMethodTypeParameter(
+                        method, make.TypeParameter("M", Collections.<ExpressionTree>emptyList())
+                    );
+                    workingCopy.rewrite(method, copy);
                 }
             }
-        );
+            
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -223,22 +264,31 @@ public class MethodTypeParametersTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
-                        MethodTree copy = make.insertMethodTypeParameter(
-                            node, 0, make.TypeParameter("E", Collections.<ExpressionTree>emptyList())
-                        );
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                    MethodTree copy = make.insertMethodTypeParameter(
+                        method, 0, make.TypeParameter("E", Collections.<ExpressionTree>emptyList())
+                    );
+                    workingCopy.rewrite(method, copy);
                 }
             }
-        );
+            
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -260,20 +310,29 @@ public class MethodTypeParametersTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
-                        MethodTree copy = make.removeMethodTypeParameter(node, 1);
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                    MethodTree copy = make.removeMethodTypeParameter(method, 1);
+                    workingCopy.rewrite(method, copy);
                 }
             }
-        );
+            
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -295,20 +354,29 @@ public class MethodTypeParametersTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
-                        MethodTree copy = make.removeMethodTypeParameter(node, 0);
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                    MethodTree copy = make.removeMethodTypeParameter(method, 0);
+                    workingCopy.rewrite(method, copy);
                 }
             }
-        );
+            
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -330,20 +398,29 @@ public class MethodTypeParametersTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
-                        MethodTree copy = make.removeMethodTypeParameter(node, 2);
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                    MethodTree copy = make.removeMethodTypeParameter(method, 2);
+                    workingCopy.rewrite(method, copy);
                 }
             }
-        );
+            
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
@@ -365,20 +442,29 @@ public class MethodTypeParametersTest extends GeneratorTestMDRCompat {
             "    }\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-            
-                public Void visitMethod(MethodTree node, Object p) {
-                    super.visitMethod(node, p);
-                    if ("taragui".contentEquals(node.getName())) {
-                        MethodTree copy = make.removeMethodTypeParameter(node, 0);
-                        changes.rewrite(node, copy);
-                    }
-                    return null;
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                    MethodTree copy = make.removeMethodTypeParameter(method, 0);
+                    workingCopy.rewrite(method, copy);
                 }
             }
-        );
+            
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
 
