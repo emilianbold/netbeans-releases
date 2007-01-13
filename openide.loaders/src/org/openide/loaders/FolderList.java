@@ -93,7 +93,7 @@ implements FileChangeListener, DataObject.Container {
 
     /** Primary files in this folder. Maps (FileObject, Reference (DataObject))
     */
-    transient private HashMap<FileObject, Reference<DataObject>> primaryFiles = null;
+    transient private Map<FileObject, Reference<DataObject>> primaryFiles = null;
 
     /** order of primary files (FileObject) */
     transient private List<FileObject> order;
@@ -567,7 +567,7 @@ implements FileChangeListener, DataObject.Container {
             try {
                 return Utilities.topologicalSort(l, constraints);
             } catch (TopologicalSortException ex) {
-                List<DataObject> corrected = ex.partialSort();
+                List<DataObject> corrected = NbCollections.checkedListByCopy(ex.partialSort(), DataObject.class, true);
                 if (err.isLoggable(Level.WARNING)) {
                     err.warning("Note: folder " + folder + " cannot be consistently sorted due to ordering conflicts."); // NOI18N
                     err.log(Level.WARNING, null, ex);
@@ -635,10 +635,10 @@ implements FileChangeListener, DataObject.Container {
                 }
                 try {
                     obj = DataObject.find(fo);
-                    ref = new java.lang.ref.SoftReference<DataObject>(obj);
+                    ref = new SoftReference<DataObject>(obj);
                     map.put(fo, ref);
                 }
-                catch (org.openide.loaders.DataObjectNotFoundException ex) {
+                catch (DataObjectNotFoundException ex) {
                     Logger.getLogger(FolderList.class.getName()).log(Level.WARNING, null, ex);
                 }
             }
@@ -694,9 +694,9 @@ implements FileChangeListener, DataObject.Container {
         List<DataObject> res = new ArrayList<DataObject> ();
 
         // map of current objects (FileObject, DataObject)
-        final HashMap<FileObject, Reference<DataObject>> remove = primaryFiles == null ?
+        final Map<FileObject, Reference<DataObject>> remove = primaryFiles == null ?
                                new HashMap<FileObject, Reference<DataObject>> () : 
-                               (HashMap<FileObject, Reference<DataObject>>)primaryFiles.clone ();
+                               new HashMap<FileObject,Reference<DataObject>>(primaryFiles);
 
         // list of new objects to add
         final List<DataObject> add = new ArrayList<DataObject> ();
