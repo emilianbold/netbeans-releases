@@ -20,7 +20,6 @@
 package org.netbeans.modules.editor.structure.api;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -119,7 +118,7 @@ public final class DocumentModel {
     private RequestProcessor requestProcessor;
     private RequestProcessor.Task task;
     
-    private TreeSet elements = new TreeSet(ELEMENTS_COMPARATOR);
+    private TreeSet<DocumentElement> elements = new TreeSet<DocumentElement>(ELEMENTS_COMPARATOR);
     
     //stores a default root element
     private DocumentElement rootElement;
@@ -134,8 +133,8 @@ public final class DocumentModel {
     //when the elements are resorted.
     boolean documentDirty = true;
     
-    private Hashtable childrenCache = null;
-    private Hashtable parentsCache = null;
+    private Hashtable<DocumentElement, List<DocumentElement>> childrenCache = null;
+    private Hashtable<DocumentElement, DocumentElement> parentsCache = null;
     
     //model synchronization
     private int numReaders = 0;
@@ -144,20 +143,20 @@ public final class DocumentModel {
     private Thread currReader = null;
     
     //stores DocumentModel listeners
-    private HashSet dmListeners = new HashSet();
+    private HashSet<DocumentModelListener> dmListeners = new HashSet<DocumentModelListener>();
     private static final int ELEMENT_ADDED = 1;
     private static final int ELEMENT_REMOVED = 2;
     private static final int ELEMENT_CHANGED = 3;
     private static final int ELEMENT_ATTRS_CHANGED = 4;
     
-    private static Map locks = new WeakHashMap();
+    private static Map<Document, Object> locks = new WeakHashMap<Document, Object>();
     
     DocumentModel(Document doc, DocumentModelProvider provider) throws DocumentModelException {
         this.doc = (BaseDocument)doc; //type changed in DocumentModel.getDocumentModel(document);
         this.provider = provider;
         
-        this.childrenCache = new Hashtable();
-        this.parentsCache = new Hashtable();
+        this.childrenCache = new Hashtable<DocumentElement, List<DocumentElement>>();
+        this.parentsCache = new Hashtable<DocumentElement, DocumentElement>();
         
         //init RP & RP task
         requestProcessor = new RequestProcessor(DocumentModel.class.getName());
@@ -193,8 +192,9 @@ public final class DocumentModel {
             if(!(doc instanceof BaseDocument))
                 throw new ClassCastException("Currently it is necessary to pass org.netbeans.editor.BaseDocument instance into the DocumentModel.getDocumentProvider(j.s.t.Document) method.");
             //first test if the document has already associated a document model
-            WeakReference modelWR = (WeakReference)doc.getProperty(DocumentModel.class);
-            DocumentModel cachedInstance = modelWR == null ? null : (DocumentModel)modelWR.get();
+            @SuppressWarnings("unchecked")
+            WeakReference<DocumentModel> modelWR = (WeakReference<DocumentModel>)doc.getProperty(DocumentModel.class);
+            DocumentModel cachedInstance = modelWR == null ? null : modelWR.get();
             if(cachedInstance != null) {
 //            System.out.println("[document model] got from weak reference stored in editor document property");
                 return cachedInstance;
@@ -210,7 +210,7 @@ public final class DocumentModel {
                     if(provider != null) {
                         DocumentModel model = new DocumentModel(doc, provider);
                         //and put it as a document property
-                        doc.putProperty(DocumentModel.class, new WeakReference(model));
+                        doc.putProperty(DocumentModel.class, new WeakReference<DocumentModel>(model));
 //                    System.out.println("[document model] created a new instance");
                         return model;
                     } else
@@ -347,7 +347,7 @@ public final class DocumentModel {
         MODEL_UPDATE_TIMEOUT = timeout;
     }
     
-    private synchronized TreeSet getElementsSet() {
+    private synchronized TreeSet<DocumentElement> getElementsSet() {
         if(documentDirty) resortAndMarkEmptyElements();
         return elements;
     }
@@ -375,10 +375,10 @@ public final class DocumentModel {
         }
     }
     
-    List getDocumentElements(int startOffset) throws BadLocationException {
+    List<DocumentElement> getDocumentElements(int startOffset) throws BadLocationException {
         readLock();
         try {
-            ArrayList found = new ArrayList();
+            ArrayList<DocumentElement> found = new ArrayList<DocumentElement>();
             Iterator itr = getElementsSet().iterator();
             while(itr.hasNext()) {
                 DocumentElement de = (DocumentElement)itr.next();
@@ -494,11 +494,9 @@ public final class DocumentModel {
         try {
             doc.readLock();
             try {
-                ArrayList list = new ArrayList(elements);
+                ArrayList<DocumentElement> list = new ArrayList<DocumentElement>(elements);
                 elements.clear();
-                Iterator i = list.iterator();
-                while(i.hasNext()) {
-                    DocumentElement de = (DocumentElement)i.next();
+                for (DocumentElement de: list) {
                     if(isEmpty(de)) de.setElementIsEmptyState(true);
                     elements.add(de);
                 }
@@ -531,9 +529,9 @@ public final class DocumentModel {
     }
     
     
-    List /*<DocumentElement>*/ getChildren(DocumentElement de) {
+    List<DocumentElement> getChildren(DocumentElement de) {
         //try to use cached children if available
-        List cachedChildren = getCachedChildren(de);
+        List<DocumentElement> cachedChildren = getCachedChildren(de);
         if(cachedChildren != null) return cachedChildren;
         
         readLock();
@@ -542,23 +540,24 @@ public final class DocumentModel {
             //but the element is not held in the document structure elements list
             if(!getElementsSet().contains(de)) {
                 if(debug) System.out.println("Warning: DocumentModel.getChildren(...) called for " + de + " which has already been removed!");
-                return Collections.EMPTY_LIST; //do not cache
+                return Collections.emptyList(); //do not cache
             }
             
             //there is a problem with empty elements - if an element is removed its boundaries
             //are the some and the standart getParent/getChildren algorith fails.
             //the root element can be empty however it has to return children (also empty)
-            if(!de.isRootElement() && de.isEmpty()) return Collections.EMPTY_LIST;
+            if(!de.isRootElement() && de.isEmpty()) return Collections.emptyList();
             
             //if the root element is empty the rest of elements is also empty and
             //has to be returned as children
             if(de.isRootElement() && de.isEmpty()) {
-                ArrayList al = new ArrayList((Collection)getElementsSet().clone());
+                ArrayList<DocumentElement> al = 
+                        new ArrayList<DocumentElement>((Collection)getElementsSet().clone());
                 al.remove(de); //remove the root itself
                 return al;
             }
             
-            ArrayList children = new ArrayList();
+            ArrayList<DocumentElement> children = new ArrayList<DocumentElement>();
             //get all elements with startOffset >= de.getStartOffset()
             SortedSet tail = getElementsSet().tailSet(de);
             //List tail = tailList(elements, de);
@@ -573,7 +572,7 @@ public final class DocumentModel {
                 //the next element must be the first child if its startOffset < the given element endOffset
                 DocumentElement firstChild = (DocumentElement)pchi.next();
                 children.add(firstChild);
-                if(!isDescendantOf(de, firstChild)) return cacheChildrenList(de, Collections.EMPTY_LIST);
+                if(!isDescendantOf(de, firstChild)) return cacheChildrenList(de, Collections.<DocumentElement>emptyList());
                 else {
                     //the element is a child
                     //check the other elements - find first element which has startOffset > firstChild.endOffset
@@ -605,23 +604,23 @@ public final class DocumentModel {
             DocumentModelUtils.dumpElementStructure(getRootElement());
             e.printStackTrace();
             //do not cache in case of error
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         } finally {
             readUnlock();
         }
     }
     
-    private List/*<DocumentElement>*/ getCachedChildren(DocumentElement de) {
-        return (List)childrenCache.get(de);
+    private List<DocumentElement> getCachedChildren(DocumentElement de) {
+        return childrenCache.get(de);
     }
     
-    private List/*<DocumentElement>*/ cacheChildrenList(DocumentElement de, List/*<DocumentElement>*/ children) {
+    private List<DocumentElement> cacheChildrenList(DocumentElement de, List<DocumentElement> children) {
         childrenCache.put(de, children);
         return children;
     }
     
     private void clearChildrenCache() {
-        childrenCache = new Hashtable();
+        childrenCache = new Hashtable<DocumentElement, List<DocumentElement>>();
     }
     
     DocumentElement getParent(DocumentElement de) {
@@ -639,12 +638,12 @@ public final class DocumentModel {
             if(de.isRootElement()) return null;
             
             //get all elements with startOffset <= de.getStartOffset()
-            SortedSet head = getElementsSet().headSet(de);
+            SortedSet<DocumentElement> head = getElementsSet().headSet(de);
             //List head = headList(elements, de);
             
             if(head.isEmpty()) return null; //this should happen only for root element
             
-            DocumentElement[] headarr = (DocumentElement[])head.toArray(new DocumentElement[]{});
+            DocumentElement[] headarr = head.toArray(new DocumentElement[]{});
             //scan the elements in reversed order
             for(int i = headarr.length - 1; i >= 0; i--) {
                 DocumentElement el = headarr[i];
@@ -662,8 +661,8 @@ public final class DocumentModel {
         }
     }
     
-    private DocumentElement/*<DocumentElement>*/ getCachedParent(DocumentElement de) {
-        return (DocumentElement)parentsCache.get(de);
+    private DocumentElement getCachedParent(DocumentElement de) {
+        return parentsCache.get(de);
     }
     
     private DocumentElement cacheParent(DocumentElement de, DocumentElement parent) {
@@ -672,11 +671,11 @@ public final class DocumentModel {
     }
     
     private void clearParentsCache() {
-        parentsCache = new Hashtable();
+        parentsCache = new Hashtable<DocumentElement, DocumentElement>();
     }
     
     private void generateParentsCache() {
-        Stack<DocumentElement> path = new Stack();
+        Stack<DocumentElement> path = new Stack<DocumentElement>();
         for(DocumentElement de : (Set<DocumentElement>)getElementsSet()) {
             if(path.empty()) {
                 path.push(de); //ROOT element
@@ -709,9 +708,7 @@ public final class DocumentModel {
     
     
     private void fireDocumentModelEvent(DocumentElement de, int type) {
-        Iterator listeners = dmListeners.iterator();
-        while(listeners.hasNext()) {
-            DocumentModelListener cl = (DocumentModelListener)listeners.next();
+        for (DocumentModelListener cl: dmListeners) {
             switch(type) {
                 case ELEMENT_ADDED: cl.documentElementAdded(de);break;
                 case ELEMENT_REMOVED: cl.documentElementRemoved(de);break;
@@ -814,7 +811,7 @@ public final class DocumentModel {
      */
     public final class DocumentModelModificationTransaction {
         
-        private ArrayList/*<DocumentModelModification>*/ modifications = new ArrayList();
+        private ArrayList<DocumentModelModification> modifications = new ArrayList<DocumentModelModification>();
         private boolean transactionCancelled = false;
         private boolean init;
         
@@ -921,10 +918,10 @@ public final class DocumentModel {
                 //first remove all elements
                 long r = System.currentTimeMillis();
                 if(debug) System.out.println("\n# commiting REMOVEs");
-                Iterator mods = modifications.iterator();
+                Iterator<DocumentModelModification> mods = modifications.iterator();
                 int removes = 0;
                 while(mods.hasNext()) {
-                    DocumentModelModification dmm = (DocumentModelModification)mods.next();
+                    DocumentModelModification dmm = mods.next();
                     if(dmm.type == DocumentModelModification.ELEMENT_REMOVED) {
                         removeDE(dmm.de);
                         removes++;
@@ -941,18 +938,18 @@ public final class DocumentModel {
                 //it is better to add the elements from roots to leafs
                 if(debug) System.out.println("\n# commiting ADDs");
                 mods = modifications.iterator();
-                TreeSet sortedAdds = new TreeSet(ELEMENTS_COMPARATOR);
+                TreeSet<DocumentElement> sortedAdds = new TreeSet<DocumentElement>(ELEMENTS_COMPARATOR);
                 while(mods.hasNext()) {
-                    DocumentModelModification dmm = (DocumentModelModification)mods.next();
+                    DocumentModelModification dmm = mods.next();
                     if(dmm.type == DocumentModelModification.ELEMENT_ADD) sortedAdds.add(dmm.de);
                 }
                 
-                ArrayList reallyAdded = new ArrayList(sortedAdds.size());
+                ArrayList<DocumentElement> reallyAdded = new ArrayList<DocumentElement>(sortedAdds.size());
                 
                 int addsNum = sortedAdds.size();
-                Iterator addsIterator = sortedAdds.iterator();
+                Iterator<DocumentElement> addsIterator = sortedAdds.iterator();
                 while(addsIterator.hasNext()) {
-                    DocumentElement de = (DocumentElement)addsIterator.next();
+                    DocumentElement de = addsIterator.next();
                     if(addDE(de)) {
                         reallyAdded.add(de);
                     }
@@ -964,9 +961,7 @@ public final class DocumentModel {
                 if(!init) { //do not fire events during model init
                     generateParentsCache();
                     //fire add events for really added elements
-                    Iterator rai = reallyAdded.iterator();
-                    while(rai.hasNext()) {
-                        DocumentElement de = (DocumentElement)rai.next();
+                    for (DocumentElement de: reallyAdded) {
                         fireElementAddedEvent(de);
                     }
                 }
@@ -977,14 +972,14 @@ public final class DocumentModel {
                 if(debug) System.out.println("\n# commiting text UPDATESs");
                 mods = modifications.iterator();
                 while(mods.hasNext()) {
-                    DocumentModelModification dmm = (DocumentModelModification)mods.next();
+                    DocumentModelModification dmm = mods.next();
                     if(dmm.type == DocumentModelModification.ELEMENT_CHANGED) updateDEText(dmm.de);
                 }
                 
                 if(debug) System.out.println("\n# commiting attribs UPDATESs");
                 mods = modifications.iterator();
                 while(mods.hasNext()) {
-                    DocumentModelModification dmm = (DocumentModelModification)mods.next();
+                    DocumentModelModification dmm = mods.next();
                     if(dmm.type == DocumentModelModification.ELEMENT_ATTRS_CHANGED) updateDEAttrs(dmm.de, dmm.attrs);
                 }
                 
@@ -1145,11 +1140,8 @@ public final class DocumentModel {
     
     //compares elements according to their start offsets
     //XXX - design - this comparator should be defined in DocumentElement class in the compareTo method!!!!
-    private static final Comparator ELEMENTS_COMPARATOR = new Comparator() {
-        public int compare(Object o1, Object o2) {
-            DocumentElement de1 = (DocumentElement)o1;
-            DocumentElement de2 = (DocumentElement)o2;
-            
+    private static final Comparator<DocumentElement> ELEMENTS_COMPARATOR = new Comparator<DocumentElement>() {
+        public int compare(DocumentElement de1, DocumentElement de2) {
             //fastly handle root element comparing
             if(de1.isRootElement() && !de2.isRootElement()) return -1;
             if(!de1.isRootElement() && de2.isRootElement()) return +1;
@@ -1197,7 +1189,7 @@ public final class DocumentModel {
     
     private final class DocumentChangesWatcher implements DocumentListener {
         
-        private ArrayList documentChanges = new ArrayList();
+        private ArrayList<DocumentChange> documentChanges = new ArrayList<DocumentChange>();
         
         public void changedUpdate(javax.swing.event.DocumentEvent documentEvent) {
             //no need to handle document attributes changes
@@ -1241,8 +1233,8 @@ public final class DocumentModel {
         }
         
         public DocumentChange[] getDocumentChanges() {
-            List changes = (List)documentChanges.clone();
-            return (DocumentChange[])changes.toArray(new DocumentChange[]{});
+            List<DocumentChange> changes = (List<DocumentChange>)documentChanges.clone();
+            return changes.toArray(new DocumentChange[]{});
         }
         
         public void clearChanges() {

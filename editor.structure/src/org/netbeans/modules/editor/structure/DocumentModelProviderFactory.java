@@ -41,7 +41,7 @@ public class DocumentModelProviderFactory {
     
     static final String FOLDER_NAME = "DocumentModel"; //NOI18N
     
-    private Map mime2provider;
+    private Map<String, DocumentModelProvider> mime2provider;
     
     private static DocumentModelProviderFactory defaultProvider = null;
     
@@ -53,17 +53,18 @@ public class DocumentModelProviderFactory {
     }
     
     private DocumentModelProviderFactory() {
-        mime2provider = new WeakHashMap();
+        mime2provider = new WeakHashMap<String, DocumentModelProvider>();
     }
     
     /* returns a DocumentModelFactory according to the layer */
     public DocumentModelProvider getDocumentModelProvider(String mimeType) {
         DocumentModelProvider provider = null; // result
         if(mimeType != null) {
-            provider = (DocumentModelProvider)mime2provider.get(mimeType);
+            provider = mime2provider.get(mimeType);
             if (provider == null) { // not cached yet
                 MimeLookup mimeLookup = MimeLookup.getMimeLookup(mimeType);
-                Collection providers = mimeLookup.lookup(new Lookup.Template(DocumentModelProvider.class)).allInstances();
+                Collection<? extends DocumentModelProvider> providers = 
+                        mimeLookup.lookup(new Lookup.Template<DocumentModelProvider>(DocumentModelProvider.class)).allInstances();
                 if(providers.size() > 1)
                     ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Only one DocumentModelProvider can be registered for one mimetype!");
                 

@@ -27,11 +27,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.Element;
 import javax.swing.text.Position;
 
 
@@ -74,7 +72,7 @@ public final class DocumentElement {
     private static final int ELEMENT_EMPTY_FALSE = 2;
     
     //stores DocumentElement listeners
-    private HashSet deListeners = new HashSet();
+    private HashSet<DocumentElementListener> deListeners = new HashSet<DocumentElementListener>();
     
     DocumentElement(String name, String type, Map attrsMap,
             int startOffset, int endOffset, DocumentModel model) throws BadLocationException {
@@ -261,7 +259,7 @@ public final class DocumentElement {
     }
     
     /** @return a list of the element's children */
-    public List/*<DocumentElement>*/ getChildren() {
+    public List<DocumentElement> getChildren() {
         return model.getChildren(this);
     }
     
@@ -299,9 +297,7 @@ public final class DocumentElement {
     }
     
     private void fireDocumentElementEvent(DocumentElementEvent dee) {
-        Iterator cListeners = deListeners.iterator();
-        while(cListeners.hasNext()) {
-            DocumentElementListener cl = (DocumentElementListener)cListeners.next();
+        for (DocumentElementListener cl: deListeners) {
             switch(dee.getType()) {
                 case DocumentElementEvent.CHILD_ADDED: cl.elementAdded(dee);break;
                 case DocumentElementEvent.CHILD_REMOVED: cl.elementRemoved(dee);break;
@@ -406,7 +402,7 @@ public final class DocumentElement {
             return attrs.get(key);
         }
         
-        public Enumeration getAttributeNames() {
+        public Enumeration<?> getAttributeNames() {
             return Collections.enumeration(attrs.keySet());
         }
         

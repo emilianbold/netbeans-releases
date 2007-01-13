@@ -36,7 +36,7 @@ public final class DocumentModelUtils {
 
     /** Returns and element starting on the specified position with specied name and type.
      * If any of these conditions is not true (there isn't any element on the offset, or
-     * there is an element, but the name or the type doń't match) it returns null.
+     * there is an element, but the name or the type does't match) it returns null.
      *
      * @param startOffset - offset of the searched element
      * @param name - name of the element
@@ -59,8 +59,8 @@ public final class DocumentModelUtils {
      * @return list of document elements descendants or empty list if there isn't any descendant.
      */
     
-    public static List/*<DocumentElement>*/ getDescendants(DocumentElement de) {
-        ArrayList desc = new ArrayList();
+    public static List<DocumentElement> getDescendants(DocumentElement de) {
+        ArrayList<DocumentElement> desc = new ArrayList<DocumentElement>();
         Iterator children = de.getChildren().iterator();
         while(children.hasNext()) {
             DocumentElement child = (DocumentElement)children.next();

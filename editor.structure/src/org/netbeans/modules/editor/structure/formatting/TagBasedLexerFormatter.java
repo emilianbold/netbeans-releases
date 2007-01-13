@@ -32,6 +32,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -72,12 +73,12 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter  {
         return true;
     }
     
-    protected int getIndentForTagParameter(TokenHierarchy tokenHierarchy, int tagOffset) throws BadLocationException{
+    protected int getIndentForTagParameter(TokenHierarchy<?> tokenHierarchy, int tagOffset) throws BadLocationException{
         BaseDocument doc = (BaseDocument) tokenHierarchy.mutableInputSource();
         int tagStartLine = Utilities.getLineOffset(doc, tagOffset);
-        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+        TokenSequence<? extends TokenId> tokenSequence = tokenHierarchy.tokenSequence();
         tokenSequence.move(tagOffset);
-        Token token;
+        Token<? extends TokenId> token;
         int tokenOffset;
         
         /*
