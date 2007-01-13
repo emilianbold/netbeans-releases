@@ -40,21 +40,21 @@ public class SequenceCD extends ComponentDescriptor {
 		return new TypeDescriptor(null, TYPEID, true, true);
 	}
 	
-	public VersionDescriptor getVersionDescriptor() {
-		return null;
-	}
-	
 	public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
 		return Arrays.asList(
 			new PropertyDescriptor(PROPERTY_IMAGE_RESOURCE, ImageResourceCD.TYPEID,
 				PropertyValue.createNull(), false, false, Versionable.FOREVER),
 			new PropertyDescriptor(PROPERTY_NAME, MidpTypes.TYPEID_JAVA_LANG_STRING,
 				PropertyValue.createNull(), false, false, Versionable.FOREVER),
-			new PropertyDescriptor(PROPERTY_FRAME_MS, MidpTypes.TYPEID_LONG,
+			new PropertyDescriptor(PROPERTY_FRAME_MS, MidpTypes.TYPEID_INT,
 				PropertyValue.createNull(), false, false, Versionable.FOREVER),
 			new PropertyDescriptor(PROPERTY_FRAMES, GameTypes.TYPEID_SEQUENCE_FRAMES,
 				PropertyValue.createNull(), false, false, Versionable.FOREVER)
 		);
+	}
+	
+	public VersionDescriptor getVersionDescriptor() {
+		return null;
 	}
 	
 	protected List<? extends Presenter> createPresenters() {

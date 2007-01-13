@@ -17,7 +17,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.vmd.game.model;
-import java.awt.Dimension;
+
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;

@@ -153,20 +153,16 @@ public interface SequenceContainer extends Editable {
 		
 		//------SequenceContainer-------
 		public Sequence createSequence(String name, int numberFrames) {
-			Sequence sequence = new Sequence(name, this.imageResource, numberFrames);
-			//this registers the sequence in the list of all sequences available for this ImageResource
-			this.imageResource.addSequence(sequence);
+			Sequence sequence = this.imageResource.createSequence(name, numberFrames);
 			this.append(sequence);
 			return sequence;
 		}
 		
 		public Sequence createSequence(String name, Sequence sequence) {
-			Sequence newSequence = new Sequence(name, sequence);
-			this.imageResource.addSequence(sequence);
-			this.append(sequence);
+			Sequence newSequence = this.imageResource.createSequence(name, sequence);
+			this.append(newSequence);
 			return newSequence;
 		}
-
 		
 		public boolean append(Sequence sequence) {
 			if (DEBUG) System.out.println(this + " append " + sequence);

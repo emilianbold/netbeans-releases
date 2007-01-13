@@ -30,7 +30,6 @@ import java.util.HashSet;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-
 import javax.swing.JComponent;
 import javax.swing.event.EventListenerList;
 import org.netbeans.modules.vmd.game.dialog.RenameSequenceDialog;
@@ -63,6 +62,10 @@ public class Sequence implements Previewable, Editable, CodeGenerator {
 	private int frameHeight;
 	private int frameMs;
 	private ArrayList<StaticTile> frames;
+	
+    Sequence(String name, ImageResource imageResource) {
+		this(name, imageResource, 1);
+    }
 	
 	Sequence(String name, ImageResource imageResource, int numberFrames) {
 		this.name = name;

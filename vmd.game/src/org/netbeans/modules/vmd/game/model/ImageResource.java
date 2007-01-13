@@ -92,11 +92,23 @@ public class ImageResource implements CodeGenerator {
 		this.listenerList.remove(ImageResourceListener.class, l);
 	}
 	
-	public void addSequence(Sequence sequence) {
+	public Sequence createSequence(String name) {
+		return this.createSequence(name, 1);
+	}
+	public Sequence createSequence(String name, int numberFrames) {
+		Sequence sequence = new Sequence(name, this, numberFrames);
 		this.sequences.add(sequence);
 		this.fireSequenceAdded(sequence);
+		return sequence;
 	}
 	
+	public Sequence createSequence(String name, Sequence sequence) {
+		Sequence newSequence = new Sequence(name, sequence);
+		this.sequences.add(newSequence);
+		this.fireSequenceAdded(newSequence);
+		return newSequence;
+	}	
+
 	public Sequence getSequenceByName(String name) {
 		for (Sequence sequence : this.sequences) {
 			if (sequence.getName().equals(name))
@@ -113,6 +125,8 @@ public class ImageResource implements CodeGenerator {
 			}
 		}
 	}
+	
+	
 	
 	public void removeSequence(Sequence sequence) {
 		this.sequences.remove(sequence);

@@ -23,7 +23,6 @@ import org.netbeans.modules.vmd.api.model.*;
 
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.common.ValidatorPresenter;
-import org.netbeans.modules.vmd.game.integration.components.GameTypes;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 
 /**

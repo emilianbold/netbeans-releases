@@ -28,9 +28,10 @@ public class AnimatedTileCD extends ComponentDescriptor {
 	public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.modules.vmd.game.model.AnimatedTile"); // NOI18N
 	
 			
-	private static final String PROP_IMAGE_RESOURCE = "animatedtilecd.prop.imageresource"; // NOI18N
-	private static final String PROP_DEFAULT_SEQUENCE = "animatedtilecd.prop.defaultsequence"; // NOI18N
-	private static final String PROP_SEQUENCES = "animatedtilecd.prop.sequences"; // NOI18N
+	public static final String PROPERTY_NAME = "animatedtilecd.prop.name";
+	public static final String PROP_IMAGE_RESOURCE = "animatedtilecd.prop.imageresource"; // NOI18N
+	public static final String PROP_DEFAULT_SEQUENCE = "animatedtilecd.prop.defaultsequence"; // NOI18N
+	public static final String PROP_SEQUENCES = "animatedtilecd.prop.sequences"; // NOI18N
 	
 	public TypeDescriptor getTypeDescriptor() {
 		return new TypeDescriptor(null, TYPEID, true, false);

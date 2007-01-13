@@ -42,14 +42,15 @@ public class TiledLayerCD extends ComponentDescriptor {
 	}
 	
 	public void postInitialize(DesignComponent component) {
-// TODO - remove - temporary - post-init
-//		int[][] tiles = new int[10][10];
-//		for (int y = 0; y < 500; y ++) {
-//			for (int x = 0; x < 500; x ++) {
-//				tiles[y][x] = (x + y) * 64;
-//			}
-//		}
-//		component.writeProperty(PROPERTY_TILES, GameTypes.createTilesProperty(tiles));
+/* TODO - remove - temporary - post-init
+		int[][] tiles = new int[10][10];
+		for (int y = 0; y < 500; y ++) {
+			for (int x = 0; x < 500; x ++) {
+				tiles[y][x] = (x + y) * 64;
+			}
+		}
+		component.writeProperty(PROPERTY_TILES, GameTypes.createTilesProperty(tiles));
+ */ 
 	}
 	
 	public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
