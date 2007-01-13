@@ -775,7 +775,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         super.show();
     }
     
-    @Override
+    @Override @Deprecated
     public void show() {
         //Bugfix #29993: Call show() asynchronously for non modal dialogs.
         if (isModal()) {

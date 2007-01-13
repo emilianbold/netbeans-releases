@@ -970,7 +970,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
          * @param type the class type we want to check
          * @return true if this cookie can produce object of given type
          */
-        public boolean instanceOf(Class type) {
+        public boolean instanceOf(Class<?> type) {
             if (cookie instanceof InstanceCookie.Of) {
                 InstanceCookie.Of of = (InstanceCookie.Of)cookie;
                 return of.instanceOf (type);

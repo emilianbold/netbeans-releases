@@ -121,8 +121,8 @@ class FolderComparator extends DataFolder.SortMode {
 
     /** for sorting data objects by their classes */
     private int compareClass (DataObject obj1, DataObject obj2) {
-        Class c1 = obj1.getClass ();
-        Class c2 = obj2.getClass ();
+        Class<?> c1 = obj1.getClass ();
+        Class<?> c2 = obj2.getClass ();
 
         if (c1 == c2) {
             return compareNames(obj1, obj2);
@@ -134,7 +134,7 @@ class FolderComparator extends DataFolder.SortMode {
 
         // PENDING, very very slow
         while (loaders.hasMoreElements ()) {
-            Class clazz = ((DataLoader) (loaders.nextElement ())).getRepresentationClass ();
+            Class<? extends DataObject> clazz = ((DataLoader) (loaders.nextElement ())).getRepresentationClass ();
 
             // Sometimes people give generic DataObject as representation class.
             // It is not always avoidable: see e.g. org.netbeans.core.windows.layers.WSLoader.

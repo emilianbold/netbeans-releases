@@ -43,14 +43,17 @@ import org.openide.windows.*;
 * @author Jaroslav Tulach
 * @deprecated Use DataEditorSupport instead
 */
+@Deprecated
 public class EditorSupport extends OpenSupport
 implements EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie {
     /** Common name for editor mode.
      * @deprecated Use {@link org.openide.text.CloneableEditorSupport#EDITOR_MODE} instead.
      */
+    @Deprecated
     public static final String EDITOR_MODE = CloneableEditorSupport.EDITOR_MODE;
 
     /** @deprecated no longer used */
+    @Deprecated
     protected String modifiedAppendix = " *"; // NOI18N
     
     /** The flag saying if we should listen to the document modifications */
@@ -282,6 +285,7 @@ implements EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie {
 
     /** @deprecated has no effect
     */
+    @Deprecated
     public void setActions (SystemAction[] actions) {
     }
 

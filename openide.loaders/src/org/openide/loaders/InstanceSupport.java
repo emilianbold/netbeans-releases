@@ -188,10 +188,10 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
                 nbis.close();
                 return o;
             } else {
-                Class c = instanceClass ();
+                Class<?> c = instanceClass ();
                 if (SharedClassObject.class.isAssignableFrom (c)) {
                     // special support
-                    return SharedClassObject.findObject (c, true);
+                    return SharedClassObject.findObject (c.asSubclass(SharedClassObject.class), true);
                 } else {
                     // create new instance
                     return c.newInstance();
@@ -219,6 +219,7 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
     *             code.) Better to directly parse the bytecode, using e.g. the classfile module,
     *             which is immune to this class of errors.
     */
+    @Deprecated
     public boolean isApplet () {
         if (applet != null) return applet.booleanValue ();
         boolean b = instanceOf (java.applet.Applet.class);
@@ -235,6 +236,7 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
     *             code.) Better to directly parse the bytecode, using e.g. the classfile module,
     *             which is immune to this class of errors.
     */
+    @Deprecated
     public boolean isExecutable () {
         try {
             Method main = instanceClass ().getDeclaredMethod ("main", new Class[] { // NOI18N
@@ -261,6 +263,7 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
     *             code.) Better to directly parse the bytecode, using e.g. the classfile module,
     *             which is immune to this class of errors.
     */
+    @Deprecated
     public boolean isJavaBean () {
         if (bean != null) return bean.booleanValue ();
         
@@ -323,6 +326,7 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
     *             code.) Better to directly parse the bytecode, using e.g. the classfile module,
     *             which is immune to this class of errors.
     */
+    @Deprecated
     public boolean isInterface () {
         try {
             return instanceClass ().isInterface ();
@@ -360,6 +364,7 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
      *
      * @deprecated use org.openide.util.HelpCtx.findHelp (Object)
     */
+    @Deprecated
     public static HelpCtx findHelp (InstanceCookie instance) {
         try {
             Class clazz = instance.instanceClass();

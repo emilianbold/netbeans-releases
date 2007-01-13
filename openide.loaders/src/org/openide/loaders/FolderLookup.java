@@ -388,7 +388,7 @@ public class FolderLookup extends FolderInstance {
     private static final class ICItem extends AbstractLookup.Pair {
         static final long serialVersionUID = 10L;
         
-        static final ThreadLocal DANGEROUS = new ThreadLocal ();
+        static final ThreadLocal<ICItem> DANGEROUS = new ThreadLocal<ICItem> ();
 
         /** error manager for ICItem */
         private static final Logger ERR = Logger.getLogger(ICItem.class.getName());
@@ -419,7 +419,7 @@ public class FolderLookup extends FolderInstance {
         public void init () {
             if (ic != null) return;
 
-            Object prev = DANGEROUS.get ();
+            ICItem prev = DANGEROUS.get ();
             try {
                 DANGEROUS.set (this);
                 if (obj == null) {

@@ -677,7 +677,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     * @param type the type to create
     * @return true or false
     */
-    public boolean instanceOf (Class type) {
+    public boolean instanceOf (Class<?> type) {
         InstanceCookie.Of delegateIC = delegateIC ();
         if (delegateIC == null) return type.isAssignableFrom(this.getClass());
         return delegateIC.instanceOf (type);
@@ -1058,7 +1058,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     private static final class Ser extends InstanceSupport
     implements Runnable {
         /** the reference to the bean, so it is created just once when used */
-        private Reference bean = new SoftReference(null);
+        private Reference<Object> bean = new SoftReference<Object>(null);
         /** last time the bean was read from a file */
         private long saveTime;
 
@@ -1193,7 +1193,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             }
 
             // remember the created value
-            bean = new SoftReference(o);
+            bean = new SoftReference<Object>(o);
             return o;
         }
 
@@ -1270,44 +1270,6 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             }
             // means no cache exists
             return null;
-        }
-
-        /** Converts type to string.
-        * @param type
-        * @param sb string buffer to store
-        * @param done already added class Set(String)
-        * @return true if something was added to the buffer
-        */
-        private static boolean collectType (
-            Class type, StringBuffer sb, HashSet added
-        ) {
-            if (type == null) {
-                // can be null for interfaces
-                return false;
-            }
-
-            String typeName = type.getName ();
-            if (added.contains (typeName)) {
-                return false;
-            }
-
-            added.add (typeName);
-
-            // add superclasses
-            if (collectType (type.getSuperclass (), sb, added)) {
-                sb.append (',');
-            }
-
-            // add superinterfaces
-            Class[] impls = type.getInterfaces ();
-            for (int i = 0; i < impls.length; i++) {
-                if (collectType (impls[i], sb, added)) {
-                    sb.append (',');
-                }
-            }
-
-            sb.append (typeName);
-            return true;
         }
 
         final void setCustomClassLoader(ClassLoader cl) {
@@ -1623,8 +1585,8 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             return fo == null? null: fo.getAttribute(attrName);
         }
 
-        public Enumeration getAttributes() {
-            return fo == null? Enumerations.empty(): fo.getAttributes();
+        public Enumeration<String> getAttributes() {
+            return fo == null? Enumerations.<String>empty(): fo.getAttributes();
         }
 
         public FileObject[] getChildren() {

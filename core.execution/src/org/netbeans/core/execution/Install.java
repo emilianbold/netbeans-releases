@@ -339,7 +339,7 @@ public class Install extends ModuleInstall {
     /** Gets pending (running) tasks. Used as keys
      * for pending dialog root node children. Currently it gets pending
      * actions only. */
-    static Collection getPendingTasks() {
+    static Collection<?> getPendingTasks() {
 
         ArrayList<Object> pendingTasks = new ArrayList<Object>( 10 ); // Action | ExecutorTask | InternalHandle
         // XXX no access to running actions at the moment
@@ -389,7 +389,8 @@ public class Install extends ModuleInstall {
     
     /** Children showing pending tasks. */
     /* non private because of tests - was private before */
-    static class PendingChildren extends Children.Keys implements ExecutionListener, ListDataListener {
+    static class PendingChildren extends Children.Keys<Object /* Action|ExecutorTask|InternalHandle*/> 
+            implements ExecutionListener, ListDataListener {
         
         /** Listens on changes of sources from getting the tasks from.
          * Currently on module actions only. */
@@ -454,7 +455,7 @@ public class Install extends ModuleInstall {
         
         /** Implements superclass abstract method. */
         protected void removeNotify() {
-            setKeys(Collections.EMPTY_SET);
+            setKeys(Collections.emptySet());
             super.removeNotify();
             ExecutionEngine ee = ExecutionEngine.getExecutionEngine();
             if (ee != null) {

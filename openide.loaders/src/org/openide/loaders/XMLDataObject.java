@@ -67,9 +67,11 @@ public class XMLDataObject extends MultiDataObject {
    /** Public ID of xmlinfo dtd. 
     * @deprecated replaced with Lookup
     */
+    @Deprecated
     public static final String XMLINFO_DTD_PUBLIC_ID_FORTE = "-//Forte for Java//DTD xmlinfo//EN"; // NOI18N
     /** @deprecated replaced with Lookup
      */
+    @Deprecated
     public static final String XMLINFO_DTD_PUBLIC_ID = "-//NetBeans IDE//DTD xmlinfo//EN"; // NOI18N
 
     /** Mime type of XML documents. */
@@ -91,6 +93,7 @@ public class XMLDataObject extends MultiDataObject {
     /** property name of info property 
      * @deprecated info is not supported anymore. Replaced with lookup.
      */
+    @Deprecated
     public static final String PROP_INFO = "info"; // NOI18N
 
     /** Default XML parser error handler */
@@ -102,7 +105,7 @@ public class XMLDataObject extends MultiDataObject {
     private static XMLEntityResolverChain chainingEntityResolver;
     
     /** map of DTD publicID => Info. */
-    private static HashMap infos = new HashMap();
+    private static HashMap<String, Info> infos = new HashMap<String, Info>();
     // the lock can be seamlesly shared by all instances
     private static Object emgrLock = new Object ();
     
@@ -126,6 +129,7 @@ public class XMLDataObject extends MultiDataObject {
     /** @deprecated EditorCookie provided by subclass support 
      * need to prevail build in cookies.
      */
+    @Deprecated
     private EditorCookie editor = null;
 
     /** 
@@ -163,7 +167,7 @@ public class XMLDataObject extends MultiDataObject {
         // It completely prevails over this factory :-)
         
         CookieSet.Factory factory = new CookieSet.Factory() {
-            public Node.Cookie createCookie(Class klass) {
+            public <T extends Node.Cookie> T createCookie(Class<T> klass) {
                 if (klass.isAssignableFrom(EditorCookie.class)
                    || klass.isAssignableFrom(OpenCookie.class) 
                    || klass.isAssignableFrom(CloseCookie.class) 
@@ -172,7 +176,7 @@ public class XMLDataObject extends MultiDataObject {
                     if (editor == null) editor = createEditorCookie();  // the first pass
                     if (editor == null) return null;                    //??? gc unfriendly
 
-                    return klass.isAssignableFrom(editor.getClass()) ? editor : null;
+                    return klass.isAssignableFrom(editor.getClass()) ? (T)editor : null;
                 } else {
                     return null;
                 }
@@ -224,6 +228,7 @@ public class XMLDataObject extends MultiDataObject {
     * @param res resource for the icon
     * @deprecated it is better to listen on properties
     */
+    @Deprecated
     protected void updateIconBase (String res) {
         //??? we could add default behaviour, taking status into account
     }
@@ -325,6 +330,7 @@ public class XMLDataObject extends MultiDataObject {
      *
      * @deprecated CookieSet factory should be used by subclasses instead.
      */
+    @Deprecated
     protected EditorCookie createEditorCookie () {
         return new XMLEditorSupport (this);
     }
@@ -435,12 +441,14 @@ public class XMLDataObject extends MultiDataObject {
     /** @deprecated not used anymore
      * @return null
      */
+    @Deprecated
     public final Info getInfo () {
         return null;
     }
 
     /** @deprecated does not do anything useful
      */
+    @Deprecated
     public final synchronized void setInfo (Info ii) throws IOException {
     }
 
@@ -479,6 +487,7 @@ public class XMLDataObject extends MultiDataObject {
     * @deprecated Use {@link XMLUtil#parse(InputSource, boolean, boolean, ErrorHandler, EntityResolver) XMLUtil} instead
     * setting null error handler and validation to false.
     */
+    @Deprecated
     public static Document parse (URL url) throws IOException, SAXException {
         return parse (url, errorHandler, false);
     }
@@ -492,6 +501,7 @@ public class XMLDataObject extends MultiDataObject {
     * @deprecated Use {@link XMLUtil#parse(InputSource, boolean, boolean, ErrorHandler, EntityResolver) XMLUtil} instead
     * setting null handler.
     */
+    @Deprecated
     public static Document parse (URL url, boolean validate) throws IOException, SAXException {
         return parse (url, errorHandler, validate);
     }
@@ -505,6 +515,7 @@ public class XMLDataObject extends MultiDataObject {
     * @deprecated Use {@link XMLUtil#parse(InputSource, boolean, boolean, ErrorHandler, EntityResolver) XMLUtil} instead
     * setting validation to false.
     */
+    @Deprecated
     public static Document parse (URL url, ErrorHandler eh) throws IOException, SAXException {
         return parse (url, eh, false);
     }
@@ -523,6 +534,7 @@ public class XMLDataObject extends MultiDataObject {
     * @return org.w3c.dom.Document
     * @deprecated Use {@link XMLUtil#parse(InputSource, boolean, boolean, ErrorHandler, EntityResolver) XMLUtil} instead.     
     */
+    @Deprecated
     public static Document parse (URL url, ErrorHandler eh, boolean validate) throws IOException, SAXException {
         
         DocumentBuilder builder = XMLDataObjectImpl.makeBuilder(validate);
@@ -543,6 +555,7 @@ public class XMLDataObject extends MultiDataObject {
      * SAX 2.0 you can wrap returned XMLReader into XMLReaderAdapter
      * that implements Parser.
      */
+    @Deprecated
     public static Parser createParser () {
         return createParser (false);
     }
@@ -583,6 +596,7 @@ public class XMLDataObject extends MultiDataObject {
      * Document doc = builder.parse(in);
      * </pre>
      */
+    @Deprecated
     public static Document createDocument() {
         
         deprecated();
@@ -607,6 +621,7 @@ public class XMLDataObject extends MultiDataObject {
      * may be in direct conflict with encoding
      * declared in document. Replaced with {@link XMLUtil#write(Document, OutputStream, String) Util}.
      */
+    @Deprecated
     public static void write (Document doc, Writer writer) throws IOException {
 
         deprecated();
@@ -658,6 +673,7 @@ public class XMLDataObject extends MultiDataObject {
      * @param enc - XML defined encoding name (i.e. IANA defined, one of UTF-8, UNICODE, ASCII).
      * @deprecated Moved to {@link XMLUtil#write(Document, OutputStream, String) XMLUtil}.
      */
+    @Deprecated
     public static void write(Document doc, OutputStream out, String enc) throws IOException {
         XMLUtil.write(doc, out, enc);
     }
@@ -668,6 +684,7 @@ public class XMLDataObject extends MultiDataObject {
      * @deprecated Deprecated as it was a workaround method. Replace
      * with <code>new InputSource(url.toExternalForm())</code>.
      */
+    @Deprecated
     public static InputSource createInputSource(URL url) throws IOException {                
         return new InputSource(url.toExternalForm());
     }
@@ -689,6 +706,7 @@ public class XMLDataObject extends MultiDataObject {
      *             Use {@link EntityCatalog} and {@link XMLUtil}
      *             instead.
      */
+    @Deprecated
     public static void registerCatalogEntry (String publicId, String uri) {
         
         if (publicId == null) 
@@ -721,6 +739,7 @@ public class XMLDataObject extends MultiDataObject {
      *             Use {@link EntityCatalog} and {@link XMLUtil}
      *             instead.
      */
+    @Deprecated
     public static void registerCatalogEntry (String publicId, String resourceName, ClassLoader loader) {
         if (publicId == null) 
             throw new IllegalArgumentException("null public ID is not allowed."); //NOI18N
@@ -743,6 +762,7 @@ public class XMLDataObject extends MultiDataObject {
      *
      * @return true if successfully added
      */
+    @Deprecated
     public static final boolean addEntityResolver(EntityResolver resolver) {
         // return false; Is is deprecated :-)
         return getChainingEntityResolver().addEntityResolver(resolver);
@@ -758,6 +778,7 @@ public class XMLDataObject extends MultiDataObject {
      * @param resolver non null resolver to be removed
      * @return removed resolver instance or null if not present
      */    
+    @Deprecated
     public static final EntityResolver removeEntityResolver(EntityResolver resolver) {
         return getChainingEntityResolver().removeEntityResolver(resolver);
     }
@@ -790,6 +811,7 @@ public class XMLDataObject extends MultiDataObject {
      * @deprecated Register an {@link Environment} via lookup, see
      * {@link XMLDataObject some details}.
      */    
+    @Deprecated
     public static void registerInfo (String publicId, Info info) {  //!!! to be replaced by lookup
         synchronized (infos) {
             if (info == null) {
@@ -808,6 +830,7 @@ public class XMLDataObject extends MultiDataObject {
      *
      * @deprecated Register via lookup
     */
+    @Deprecated
     public static Info getRegisteredInfo(String publicId) {  //!!! to be replaced by lookup
         synchronized (infos) {
             Info ret = (Info) infos.get(publicId);
@@ -971,7 +994,7 @@ public class XMLDataObject extends MultiDataObject {
         /** result used for this lookup */
         private Lookup.Result result;
         
-        private ThreadLocal QUERY = new ThreadLocal ();
+        private ThreadLocal<Class<?>> QUERY = new ThreadLocal<Class<?>> ();
         
         InfoParser() {}
         
@@ -1010,7 +1033,7 @@ public class XMLDataObject extends MultiDataObject {
                 };
             }
             
-            Object previous = QUERY.get ();
+            Class<?> previous = QUERY.get ();
             try {
                 QUERY.set (clazz);
                 if (ERR.isLoggable(Level.FINE)) ERR.fine("Will do query for class: " + clazz + " for " + XMLDataObject.this); // NOI18N
@@ -1511,6 +1534,7 @@ public class XMLDataObject extends MultiDataObject {
     *
     * @deprecated use lookup
     */
+    @Deprecated
     public static interface Processor extends Node.Cookie {
         /** When the XMLDataObject creates new instance of the processor,
         * it uses this method to attach the processor to the data object.
@@ -1524,20 +1548,20 @@ public class XMLDataObject extends MultiDataObject {
     /** @deprecated use Lookup
      * Representation of xmlinfo file holding container of Processors.
      */
+    @Deprecated
     public static final class Info implements Cloneable {
-        List processors;
+        List<Class<?>> processors;
         String iconBase;
 
         /** Create info */
         public Info () {
-            processors = new ArrayList ();
+            processors = new ArrayList<Class<?>> ();
             iconBase = null;
         }
 
         public Object clone () {
             Info ii = new Info();
-            for (Iterator it = processors.iterator(); it.hasNext();) {
-                Class proc = (Class)it.next();
+            for (Class<?> proc: processors) {
                 ii.processors.add (proc);
             }
             ii.iconBase = iconBase;
@@ -1633,10 +1657,10 @@ public class XMLDataObject extends MultiDataObject {
         public InfoLkp (XMLDataObject obj, Info info) {
             this.info = info;
             
-            Iterator it = info.processorClasses ();
-            ArrayList arr = new ArrayList (info.processors.size ());
+            Iterator<Class<?>> it = info.processorClasses ();
+            ArrayList<InfoPair> arr = new ArrayList<InfoPair> (info.processors.size ());
             while (it.hasNext ()) {
-                Class c = (Class)it.next ();
+                Class<?> c = it.next ();
                 arr.add (new InfoPair (obj, c));
             }
             
@@ -1649,12 +1673,12 @@ public class XMLDataObject extends MultiDataObject {
          */
         private static final class InfoPair extends AbstractLookup.Pair {
             /** the class to use or null if object has already been created */
-            private Class clazz;
+            private Class<?> clazz;
             /** XMLDataObject associated or object created */
             private Object obj;
             
             /** For use by subclasses. */
-            protected InfoPair (XMLDataObject obj, Class c) {
+            protected InfoPair (XMLDataObject obj, Class<?> c) {
                 this.obj = obj;
                 this.clazz = c;
             }
@@ -1663,7 +1687,7 @@ public class XMLDataObject extends MultiDataObject {
             * of class c.
             */
             protected boolean instanceOf (Class c) {
-                Class temp = clazz;
+                Class<?> temp = clazz;
                 if (temp == null) {
                     return c.isInstance (obj);
                 } else {
@@ -1827,7 +1851,7 @@ public class XMLDataObject extends MultiDataObject {
             return ic.instanceName ();
         }
 
-        public Class instanceClass ()
+        public Class<?> instanceClass ()
         throws java.io.IOException, ClassNotFoundException {
             return ic.instanceClass ();
         }
@@ -1871,7 +1895,7 @@ public class XMLDataObject extends MultiDataObject {
      */
     private final class DelDoc implements InvocationHandler {
         
-        private Reference/*<Document>*/ xmlDocument;
+        private Reference<Document> xmlDocument;
         private final Document proxyDocument;
         
         DelDoc() {
@@ -1887,9 +1911,9 @@ public class XMLDataObject extends MultiDataObject {
         */
         private final Document getDocumentImpl (boolean force) {
             synchronized (this) {
-                Object doc = xmlDocument == null ? null : xmlDocument.get ();
-                if (doc instanceof Document) {
-                    return (Document)doc;
+                Document doc = xmlDocument == null ? null : xmlDocument.get ();
+                if (doc != null) {
+                    return doc;
                 }
                 
                 if (!force) {
@@ -1899,7 +1923,7 @@ public class XMLDataObject extends MultiDataObject {
                 status = STATUS_OK;
                 try {
                     Document d = parsePrimaryFile ();
-                    xmlDocument = new SoftReference (d);
+                    xmlDocument = new SoftReference<Document> (d);
                     return d;
                 } catch (SAXException e) {
                     ERR.log(Level.WARNING, null, e);
@@ -1910,7 +1934,7 @@ public class XMLDataObject extends MultiDataObject {
                 status = STATUS_ERROR;
                 Document d = XMLUtil.createDocument("brokenDocument", null, null, null); // NOI18N
                 
-                xmlDocument = new SoftReference (d);
+                xmlDocument = new SoftReference<Document> (d);
                 
                 // fire property change, because the document is errornous
                 firePropertyChange (PROP_DOCUMENT, null, null);

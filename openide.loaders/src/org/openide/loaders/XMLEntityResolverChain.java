@@ -38,7 +38,7 @@ final class XMLEntityResolverChain implements EntityResolver {
     /**
      * Chain of resolvers contaning all EntityResolvers registred by a user.
      */
-    private final List resolverChain = new ArrayList(3);
+    private final List<EntityResolver> resolverChain = new ArrayList<EntityResolver>(3);
     
     
     /** Creates new EntityResolverChain instance */

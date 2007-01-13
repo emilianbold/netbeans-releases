@@ -125,7 +125,7 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
     }
 
     private static ProxyLookup createProxyLookup(final Lookup lookup, final Set<FileObject> backSet) {
-        return new ProxyLookup(lookup, Lookups.fixed(backSet.toArray(new FileObject [backSet.size()])));
+        return new ProxyLookup(lookup, Lookups.fixed((Object[])backSet.toArray(new FileObject [backSet.size()])));
     }
 
     /** Creates list of menu items that should be used for given

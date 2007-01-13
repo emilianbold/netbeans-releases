@@ -315,7 +315,7 @@ final class InstanceNode extends DataNode implements Runnable {
                 }
             }
             Object bean = ic.instanceCreate();
-            return (String) nameGetter.invoke (bean, null);
+            return (String) nameGetter.invoke (bean);
         } catch (Exception ex) {
             return null;
         }
@@ -418,12 +418,12 @@ final class InstanceNode extends DataNode implements Runnable {
             Sheet.Set props = orig.get (Sheet.PROPERTIES);
             final InstanceCookie ic = ic();
             if (ic == null) {
-                props.put (new PropertySupport.ReadOnly (
+                props.put (new PropertySupport.ReadOnly<String> (
                     "className", String.class, // NOI18N
                     NbBundle.getMessage (InstanceDataObject.class, "PROP_instance_class"), // NOI18N
                     NbBundle.getMessage (InstanceDataObject.class, "HINT_instance_class") // NOI18N
                 ) {
-                    public Object getValue () {
+                    public String getValue () {
                         return ic.instanceName ();
                     }
                 });
@@ -597,13 +597,13 @@ final class InstanceNode extends DataNode implements Runnable {
     /** A property that delegates every call to original property
      * but when modified, also starts a saving task.
      */
-    private static final class P extends Node.Property {
+    private static final class P<T> extends Node.Property<T> {
         /** delegate */
-        private Node.Property del;
+        private Node.Property<T> del;
         /** task to executed */
         private InstanceDataObject t;
 
-        public P (Node.Property del, InstanceDataObject t) {
+        public P (Node.Property<T> del, InstanceDataObject t) {
             super (del.getValueType ());
             this.del = del;
             this.t = t;
@@ -637,7 +637,7 @@ final class InstanceNode extends DataNode implements Runnable {
             return del.isHidden();
         }
 
-        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+        public T getValue() throws IllegalAccessException, InvocationTargetException {
             return del.getValue ();
         }
 
@@ -647,7 +647,7 @@ final class InstanceNode extends DataNode implements Runnable {
 
         /** Delegates the set value and also saves the bean.
          */
-        public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        public void setValue(T val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             del.setValue (val);
             t.scheduleSave();
         }
@@ -664,7 +664,7 @@ final class InstanceNode extends DataNode implements Runnable {
             return del.canWrite ();
         }
 
-        public Class getValueType() {
+        public Class<T> getValueType() {
             return del.getValueType();
         }
 
@@ -672,7 +672,7 @@ final class InstanceNode extends DataNode implements Runnable {
             return del.getDisplayName();
         }
 
-        public java.util.Enumeration attributeNames() {
+        public java.util.Enumeration<String> attributeNames() {
             return del.attributeNames();
         }
 
@@ -709,13 +709,13 @@ final class InstanceNode extends DataNode implements Runnable {
     /** A property that delegates every call to original property
      * but when modified, also starts a saving task.
      */
-    private static final class I extends Node.IndexedProperty {
+    private static final class I<T> extends Node.IndexedProperty<T, InstanceDataObject> {
         /** delegate */
-        private Node.IndexedProperty del;
+        private Node.IndexedProperty<T, InstanceDataObject> del;
         /** task to executed */
         private InstanceDataObject t;
 
-        public I (Node.IndexedProperty del, InstanceDataObject t) {
+        public I (Node.IndexedProperty<T, InstanceDataObject> del, InstanceDataObject t) {
             super (del.getValueType (), del.getElementType ());
             this.del = del;
             this.t = t;
@@ -749,7 +749,7 @@ final class InstanceNode extends DataNode implements Runnable {
             return del.isHidden();
         }
 
-        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+        public T getValue() throws IllegalAccessException, InvocationTargetException {
             return del.getValue ();
         }
 
@@ -759,7 +759,7 @@ final class InstanceNode extends DataNode implements Runnable {
 
         /** Delegates the set value and also saves the bean.
          */
-        public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        public void setValue(T val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             del.setValue (val);
             t.scheduleSave();
         }
@@ -776,7 +776,7 @@ final class InstanceNode extends DataNode implements Runnable {
             return del.canWrite ();
         }
 
-        public Class getValueType() {
+        public Class<T> getValueType() {
             return del.getValueType();
         }
 
@@ -784,7 +784,7 @@ final class InstanceNode extends DataNode implements Runnable {
             return del.getDisplayName();
         }
 
-        public java.util.Enumeration attributeNames() {
+        public java.util.Enumeration<String> attributeNames() {
             return del.attributeNames();
         }
 
@@ -820,11 +820,11 @@ final class InstanceNode extends DataNode implements Runnable {
             return del.canIndexedRead ();
         }
 
-        public Class getElementType () {
+        public Class<InstanceDataObject> getElementType () {
             return del.getElementType ();
         }
 
-        public Object getIndexedValue (int index) throws
+        public InstanceDataObject getIndexedValue (int index) throws
         IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             return del.getIndexedValue (index);
         }
@@ -833,7 +833,7 @@ final class InstanceNode extends DataNode implements Runnable {
             return del.canIndexedWrite ();
         }
 
-        public void setIndexedValue (int indx, Object val) throws
+        public void setIndexedValue (int indx, InstanceDataObject val) throws
         IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             del.setIndexedValue (indx, val);
             t.scheduleSave();
@@ -846,7 +846,7 @@ final class InstanceNode extends DataNode implements Runnable {
     
     /** Derived from BeanChildren and allow replace beancontext. */
     private final static class InstanceChildren extends Children.Keys implements PropertyChangeListener {
-        java.lang.ref.WeakReference dobjListener;
+        java.lang.ref.WeakReference<PropertyChangeListener> dobjListener;
         InstanceDataObject dobj;
         Object bean;
         ContextL contextL = null;
@@ -859,7 +859,7 @@ final class InstanceNode extends DataNode implements Runnable {
             super.addNotify();
             
             PropertyChangeListener p = org.openide.util.WeakListeners.propertyChange(this, dobj);
-            dobjListener = new java.lang.ref.WeakReference(p);
+            dobjListener = new java.lang.ref.WeakReference<PropertyChangeListener>(p);
             dobj.addPropertyChangeListener(p);
             // attaches a listener to the bean
             contextL = new ContextL (this);
@@ -871,13 +871,13 @@ final class InstanceNode extends DataNode implements Runnable {
                 ((BeanContext) bean).removeBeanContextMembershipListener (contextL);
             contextL = null;
             
-            PropertyChangeListener p = (PropertyChangeListener) dobjListener.get();
+            PropertyChangeListener p = dobjListener.get();
             if (p != null) {
                 dobj.removePropertyChangeListener(p);
                 dobjListener.clear();
             }
 
-            setKeys (java.util.Collections.EMPTY_SET);
+            setKeys (java.util.Collections.emptySet());
         }
         
         public void propertyChange(PropertyChangeEvent evt) {
@@ -887,12 +887,12 @@ final class InstanceNode extends DataNode implements Runnable {
                 ((BeanContext) bean).removeBeanContextMembershipListener (contextL);
             
             try {
-                InstanceCookie ic = (InstanceCookie) dobj.getCookie(InstanceCookie.class);
+                InstanceCookie ic = dobj.getCookie(InstanceCookie.class);
                 if (ic == null) {
                     bean = null;
                     return;
                 }
-                Class clazz = ic.instanceClass();
+                Class<?> clazz = ic.instanceClass();
                 if (BeanContext.class.isAssignableFrom(clazz)) {
                     bean = ic.instanceCreate();
                 } else if (BeanContextProxy.class.isAssignableFrom(clazz)) {
@@ -913,7 +913,7 @@ final class InstanceNode extends DataNode implements Runnable {
         
         private void updateKeys() {
             if (bean == null) {
-                setKeys(java.util.Collections.EMPTY_SET);
+                setKeys(java.util.Collections.emptySet());
             } else {
                 setKeys(((BeanContext) bean).toArray());
             }
@@ -941,7 +941,7 @@ final class InstanceNode extends DataNode implements Runnable {
                     }
                 }
 
-                return new Node[] { new BeanContextNode (key, dobj) };
+                return new Node[] { new BeanContextNode<Object> (key, dobj) };
             } catch (IntrospectionException ex) {
                 // ignore the exception
                 return new Node[0];
@@ -952,11 +952,11 @@ final class InstanceNode extends DataNode implements Runnable {
         */
         private static final class ContextL implements BeanContextMembershipListener {
             /** weak reference to the BeanChildren object */
-            private java.lang.ref.WeakReference ref;
+            private java.lang.ref.WeakReference<InstanceChildren> ref;
 
             /** Constructor */
             ContextL (InstanceChildren bc) {
-                ref = new java.lang.ref.WeakReference (bc);
+                ref = new java.lang.ref.WeakReference<InstanceChildren> (bc);
             }
 
             /** Listener method that is called when a bean is added to
@@ -964,7 +964,7 @@ final class InstanceNode extends DataNode implements Runnable {
             * @param bcme event describing the action
             */
             public void childrenAdded (BeanContextMembershipEvent bcme) {
-                InstanceChildren bc = (InstanceChildren)ref.get ();
+                InstanceChildren bc = ref.get ();
                 if (bc != null) {
                     bc.updateKeys();
                 }
@@ -975,7 +975,7 @@ final class InstanceNode extends DataNode implements Runnable {
             * @param bcme event describing the action
             */
             public void childrenRemoved (BeanContextMembershipEvent bcme) {
-                InstanceChildren bc = (InstanceChildren)ref.get ();
+                InstanceChildren bc = ref.get ();
                 if (bc != null) {
                     bc.updateKeys ();
                 }
@@ -993,12 +993,12 @@ final class InstanceNode extends DataNode implements Runnable {
         
         /** @return bean node */
         public Node createNode (Object bean) throws IntrospectionException {
-            return new BeanContextNode (bean, task);
+            return new BeanContextNode<Object> (bean, task);
         }
     }
     
-    private static class BeanContextNode extends BeanNode {
-        public BeanContextNode(Object bean, InstanceDataObject task) throws IntrospectionException {
+    private static class BeanContextNode<T> extends BeanNode<T> {
+        public BeanContextNode(T bean, InstanceDataObject task) throws IntrospectionException {
             super(bean, getChildren(bean, task));
             changeSheet(getSheet(), task);
         }

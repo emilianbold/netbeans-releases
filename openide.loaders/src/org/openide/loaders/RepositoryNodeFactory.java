@@ -28,6 +28,7 @@ import org.openide.util.Lookup;
  * @author Jesse Glick
  * @since 3.14
  */
+@Deprecated
 public abstract class RepositoryNodeFactory {
 
     /** Get the default factory.
