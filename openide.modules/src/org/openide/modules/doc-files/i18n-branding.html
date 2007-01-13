@@ -262,6 +262,19 @@ EXEC_EXPORT_MODULE_DATE=${RUN} ${CD} ${PROMPT_FOR_DIR(Directory to export into)}
   Analogously, for files named <samp>Bundle.properties</samp> with some nonlocalizable bits
   in some messages, use <code>#PARTNOI18N</code>.</li>
 
+  <li>Use "&amp;" to denote mnemonic letter in text of <code>JLabel</code>s and buttons and
+  set this text by calling <code>org.openide.awt.Mnemonics</code> helper method.
+  This makes it easier to localize these texts together with assigned mnemonic.<br>
+  If <code>org.openide.awt.Mnemonics</code> cannot be used (for example installer has no access
+  to NetBeans API) then:
+    <ul>
+      <li>Always group label and mnemonic on adjacent lines
+    in a property file (label on the first mnemonic on next)
+      </li>
+      <li>Never resuse a label or mnemonic. When a new
+    mnemonic is added, create a new key/value pair. </li>
+      <li>Mark mnemonic key by adding the suffix <strong>_Mnemonic</strong>> to the label key. </li>
+    </ul>
 </ol>
 
 <p>The bundle debugging mode (above) recognizes these conventions and
