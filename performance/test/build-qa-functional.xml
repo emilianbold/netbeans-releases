@@ -123,7 +123,8 @@ Microsystems, Inc. All Rights Reserved.
         <property name="test.qa-functional.run.cp.extra" value=""/>
         
         <!-- Opens project at specified location -->
-        <property name="xtest.ide.open.project" location="${xtest.tmpdir}/jEdit41"/>
+        <!-- open this project in test run - because not all tests are supposed to have jEdit opened
+        <property name="xtest.ide.open.project" location="${xtest.tmpdir}/jEdit41"/> -->
         
         <executeTests pluginName="ide">
             <classpath>
