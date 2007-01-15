@@ -37,7 +37,6 @@ import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.awt.Dialog;
 import java.io.File;
 import java.text.MessageFormat;
@@ -76,6 +75,7 @@ public class MergeBranchAction extends AbstractSystemAction {
         MergeBranchPanel settings = new MergeBranchPanel(context.getFiles());
 
         JButton merge = new JButton(NbBundle.getMessage(MergeBranchAction.class, "CTL_MergeBranchDialog_Action_Merge"));
+        settings.putClientProperty("OKButton", merge);        
         merge.setToolTipText(NbBundle.getMessage(MergeBranchAction.class, "TT_MergeBranchDialog_Action_Merge"));
         JButton cancel = new JButton(NbBundle.getMessage(MergeBranchAction.class, "CTL_MergeBranchDialog_Action_Cancel"));
         cancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MergeBranchAction.class, "ACSD_MergeBranchDialog_Action_Cancel"));
