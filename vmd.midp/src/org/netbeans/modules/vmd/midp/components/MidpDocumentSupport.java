@@ -148,7 +148,12 @@ public final class MidpDocumentSupport {
             eventHandler.writeProperty(SwitchDisplayableEventHandlerCD.PROP_ALERT, PropertyValue.createNull());
         }
     }
-    
+
+    public static void updateSwitchDisplayableEventHandler (DesignComponent eventHandler, DesignComponent alert, DesignComponent displayable) {
+        eventHandler.writeProperty (SwitchDisplayableEventHandlerCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference (displayable));
+        updateEventHandlerWithAlert (eventHandler, alert);
+    }
+
     public static String createDisplayNameFromTypeID(TypeID type) {
         String str = type.getString();
         int i = str.lastIndexOf('.');
@@ -219,5 +224,5 @@ public final class MidpDocumentSupport {
         PropertyValue propertyValue = document.getRootComponent().readProperty(RootCD.PROP_VERSION);
         return propertyValue.getKind() == PropertyValue.Kind.VALUE  &&  "MIDP-2.0".equals(MidpTypes.getString(propertyValue)) ? 2 : 1;
     }
-    
+
 }
