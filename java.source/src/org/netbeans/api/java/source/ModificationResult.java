@@ -23,9 +23,7 @@ import java.io.*;
 import java.util.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-
 import org.netbeans.editor.BaseDocument;
-
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -61,103 +59,129 @@ public final class ModificationResult {
      */
     public void commit() throws IOException {
         for (Map.Entry<FileObject, List<Difference>> me : diffs.entrySet()) {
-            FileObject fo = me.getKey();
-            DataObject dObj = DataObject.find(fo);
-            EditorCookie ec = dObj != null ? (EditorCookie) dObj.getCookie(EditorCookie.class) : null;
-            if (ec != null) {
-                Document doc = ec.getDocument();
-                if (doc != null) {
-                    if (doc instanceof BaseDocument)
-                        ((BaseDocument)doc).atomicLock();
-                    try {
-                        for (Difference diff : me.getValue()) {
-                            if (diff.isExcluded())
-                                continue;
-                            try {
-                                switch (diff.getKind()) {
-                                    case INSERT:
-                                        doc.insertString(diff.getStartPosition().getOffset(), diff.getNewText(), null);
-                                        break;
-                                    case REMOVE:
-                                        doc.remove(diff.getStartPosition().getOffset(), diff.getEndPosition().getOffset() - diff.getStartPosition().getOffset());
-                                        break;
-                                    case CHANGE:
-                                        doc.remove(diff.getStartPosition().getOffset(), diff.getEndPosition().getOffset() - diff.getStartPosition().getOffset());
-                                        doc.insertString(diff.getStartPosition().getOffset(), diff.getNewText(), null);
-                                        break;
-                                }
-                            } catch (BadLocationException ex) {
-                                IOException ioe = new IOException();
-                                ioe.initCause(ex);
-                                throw ioe;
-                            }
-                        }
-                    } finally {
-                        if (doc instanceof BaseDocument)
-                            ((BaseDocument)doc).atomicUnlock();
-                    }
-                    continue;
-                }
-            }
-            InputStream ins = null;
-            ByteArrayOutputStream baos = null;           
-            Reader in = null;
-            Writer out = null;
-            try {
-                ins = fo.getInputStream();
-                baos = new ByteArrayOutputStream();
-                FileUtil.copy(ins, baos);
-                
-                ins.close();
-                ins = null;
-                byte[] arr = baos.toByteArray();
-                baos.close();
-                baos = null;
-                in = new InputStreamReader(new ByteArrayInputStream(arr));
-                out = new OutputStreamWriter(fo.getOutputStream());
-                int offset = 0;                
-                for (Difference diff : me.getValue()) {
-                    if (diff.isExcluded())
-                        continue;
-                    int pos = diff.getStartPosition().getOffset();
-                    char[] buff = new char[pos - offset];
-                    int n;
-                    if ((n = in.read(buff)) > 0) {
-                        out.write(buff, 0, n);
-                        offset += n;
-                    }
-                    switch (diff.getKind()) {
-                        case INSERT:
-                            out.write(diff.getNewText());
-                            break;
-                        case REMOVE:
-                            int len = diff.getEndPosition().getOffset() - diff.getStartPosition().getOffset();
-                            in.skip(len);
-                            offset += len;
-                            break;
-                        case CHANGE:
-                            len = diff.getEndPosition().getOffset() - diff.getStartPosition().getOffset();
-                            in.skip(len);
-                            offset += len;
-                            out.write(diff.getNewText());
-                            break;
-                    }
-                }                    
-                char[] buff = new char[1024];
-                int n;
-                while ((n = in.read(buff)) > 0)
-                    out.write(buff, 0, n);
-            } finally {
-                if (ins != null)
-                    ins.close();
-                if (baos != null)
-                    baos.close();
-                if (in != null)
-                    in.close();
-                if (out != null)
-                    out.close();
-            }            
+            commit(me.getKey(), me.getValue(), null);
         }
+    }
+    
+    private void commit(FileObject fo, List<Difference> differences, Writer out) throws IOException {
+        DataObject dObj = DataObject.find(fo);
+        EditorCookie ec = dObj != null ? (EditorCookie) dObj.getCookie(EditorCookie.class) : null;
+        // if editor cookie was found and user does not provided his own
+        // writer where he wants to see changes, commit the changes to 
+        // found document.
+        if (ec != null && out == null) {
+            Document doc = ec.getDocument();
+            if (doc != null) {
+                if (doc instanceof BaseDocument)
+                    ((BaseDocument)doc).atomicLock();
+                try {
+                    for (Difference diff : differences) {
+                        if (diff.isExcluded())
+                            continue;
+                        try {
+                            switch (diff.getKind()) {
+                                case INSERT:
+                                    doc.insertString(diff.getStartPosition().getOffset(), diff.getNewText(), null);
+                                    break;
+                                case REMOVE:
+                                    doc.remove(diff.getStartPosition().getOffset(), diff.getEndPosition().getOffset() - diff.getStartPosition().getOffset());
+                                    break;
+                                case CHANGE:
+                                    doc.remove(diff.getStartPosition().getOffset(), diff.getEndPosition().getOffset() - diff.getStartPosition().getOffset());
+                                    doc.insertString(diff.getStartPosition().getOffset(), diff.getNewText(), null);
+                                    break;
+                            }
+                        } catch (BadLocationException ex) {
+                            IOException ioe = new IOException();
+                            ioe.initCause(ex);
+                            throw ioe;
+                        }
+                    }
+                } finally {
+                    if (doc instanceof BaseDocument)
+                        ((BaseDocument)doc).atomicUnlock();
+                }
+                return;
+            }
+        }
+        InputStream ins = null;
+        ByteArrayOutputStream baos = null;           
+        Reader in = null;
+        try {
+            ins = fo.getInputStream();
+            baos = new ByteArrayOutputStream();
+            FileUtil.copy(ins, baos);
+
+            ins.close();
+            ins = null;
+            byte[] arr = baos.toByteArray();
+            baos.close();
+            baos = null;
+            in = new InputStreamReader(new ByteArrayInputStream(arr));
+            // initialize standard commit output stream, if user
+            // does not provide his own writer
+            if (out == null) {
+                out = new OutputStreamWriter(fo.getOutputStream());
+            }
+            int offset = 0;                
+            for (Difference diff : differences) {
+                if (diff.isExcluded())
+                    continue;
+                int pos = diff.getStartPosition().getOffset();
+                char[] buff = new char[pos - offset];
+                int n;
+                if ((n = in.read(buff)) > 0) {
+                    out.write(buff, 0, n);
+                    offset += n;
+                }
+                switch (diff.getKind()) {
+                    case INSERT:
+                        out.write(diff.getNewText());
+                        break;
+                    case REMOVE:
+                        int len = diff.getEndPosition().getOffset() - diff.getStartPosition().getOffset();
+                        in.skip(len);
+                        offset += len;
+                        break;
+                    case CHANGE:
+                        len = diff.getEndPosition().getOffset() - diff.getStartPosition().getOffset();
+                        in.skip(len);
+                        offset += len;
+                        out.write(diff.getNewText());
+                        break;
+                }
+            }                    
+            char[] buff = new char[1024];
+            int n;
+            while ((n = in.read(buff)) > 0)
+                out.write(buff, 0, n);
+        } finally {
+            if (ins != null)
+                ins.close();
+            if (baos != null)
+                baos.close();
+            if (in != null)
+                in.close();
+            if (out != null)
+                out.close();
+        }            
+    }
+    
+    /**
+     * Returned string represents preview of resulting source. No difference
+     * really is applied. Respects {@code isExcluded()} flag of difference.
+     * 
+     * @param   there can be more resulting source, user has to specify
+     *          which wants to preview.
+     * @return  if changes are applied source looks like return string
+     */
+    public String getResultingSource(FileObject fileObject) throws IOException {
+        assert fileObject == null || diffs.get(fileObject) == null 
+                : "Provided fileObject is not changed or null";
+        StringWriter writer = new StringWriter();
+        commit(fileObject, diffs.get(fileObject), writer);
+        
+        return writer.toString();
     }
     
     public static final class Difference {
