@@ -19,6 +19,7 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
+import com.sun.source.tree.TypeParameterTree;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -432,7 +433,7 @@ public class ClassMemberTest extends GeneratorTest {
         String golden =
             "package hierbas.del.litoral;\n\n" +
             "public interface Test {\n\n" +
-            "    public void newlyCreatedMethod(int a, float b) throws java.io.IOException;\n" +
+            "    public void newlyCreatedMethod(int a, float b) throws java.io.IOException ;\n" +
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
@@ -447,7 +448,17 @@ public class ClassMemberTest extends GeneratorTest {
                     // ensure that it is correct type declaration, i.e. class
                     if (Tree.Kind.CLASS == typeDecl.getKind()) {
                         ClassTree classTree = (ClassTree) typeDecl;
-                        ClassTree copy = make.addClassMember(classTree, m(make));
+                        MethodTree method = m(make);
+                        MethodTree methodC = make.Method(method.getModifiers(),
+                                method.getName(),
+                                method.getReturnType(),
+                                (List<TypeParameterTree>) method.getTypeParameters(),
+                                method.getParameters(),
+                                method.getThrows(),
+                                (BlockTree) null,
+                                null
+                        );
+                        ClassTree copy = make.addClassMember(classTree, methodC);
                         workingCopy.rewrite(classTree, copy);
                     }
                 }
