@@ -70,6 +70,7 @@ import java.util.zip.ZipInputStream;
 import java.util.jar.Manifest;
 import java.util.jar.Attributes;
 import java.util.regex.Pattern;
+import java.beans.PropertyVetoException;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -234,6 +235,11 @@ public class J2MEProjectGenerator {
                                     name=name.substring(0,name.length()-5);
                                 }
                                 DataObject fromTemplate = template.createFromTemplate (helloFolder);
+                                try {
+                                    fromTemplate.setValid (false);
+                                } catch (PropertyVetoException e) {
+                                    e.printStackTrace (); // TODO
+                                }
                                 fromTemplate = DataObject.find (fromTemplate.getPrimaryFile ());
                                 createHelloMIDlet.add(fromTemplate);
                                 addMIDletProperty(project, helper, name, hello != src ? "hello."+name : name, ""); // NOI18N
