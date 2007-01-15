@@ -53,6 +53,8 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
+import static org.netbeans.modules.apisupport.project.universe.TestModuleDependency.UNIT;
+import static org.netbeans.modules.apisupport.project.universe.TestModuleDependency.QA_FUNCTIONAL;
 
 /**
  * Tests ProjectXMLManager class.
@@ -63,11 +65,10 @@ public class ProjectXMLManagerTest extends TestBase {
     
     private final static String ANT_PROJECT_SUPPORT = "org.netbeans.modules.project.ant";
     private final static String DIALOGS = "org.openide.dialogs";
-    private final static Set ASSUMED_CNBS;
-    private static String TEST_DEPENDENCIES ="";
+    private final static Set<String> ASSUMED_CNBS;
     
     static {
-        Set assumedCNBs = new HashSet(2, 1.0f);
+        Set<String> assumedCNBs = new HashSet<String>(2, 1.0f);
         assumedCNBs.add(ANT_PROJECT_SUPPORT);
         assumedCNBs.add(DIALOGS);
         ASSUMED_CNBS = Collections.unmodifiableSet(assumedCNBs);
@@ -101,12 +102,11 @@ public class ProjectXMLManagerTest extends TestBase {
     public void testGetDirectDependencies() throws Exception {
         final NbModuleProject testingProject = generateTestingProject();
         ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
-        Set deps = testingPXM.getDirectDependencies();
+        Set<ModuleDependency> deps = testingPXM.getDirectDependencies();
         assertEquals("number of dependencies", 2, deps.size());
         
-        Set assumedCNBs = new HashSet(ASSUMED_CNBS);
-        for (Iterator it = deps.iterator(); it.hasNext(); ) {
-            ModuleDependency md = (ModuleDependency) it.next();
+        Set<String> assumedCNBs = new HashSet<String>(ASSUMED_CNBS);
+        for (ModuleDependency md : deps) {
             if (md.getModuleEntry().getCodeNameBase().equals(DIALOGS)) {
                 assertNotNull("module entry", md.getModuleEntry());
                 assertEquals("release version", null, md.getReleaseVersion());
@@ -137,21 +137,20 @@ public class ProjectXMLManagerTest extends TestBase {
         final NbModuleProject testingProject = generateTestingProject();
         final ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
         // apply and save project
-        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-            public Object run() throws IOException {
+        boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+            public Boolean run() throws IOException {
                 testingPXM.removeDependency(DIALOGS);
-                return Boolean.TRUE;
+                return true;
             }
         });
-        assertTrue("removing dependency", result.booleanValue());
+        assertTrue("removing dependency", result);
         ProjectManager.getDefault().saveProject(testingProject);
         
-        final Set newDeps = testingPXM.getDirectDependencies();
+        final Set<ModuleDependency> newDeps = testingPXM.getDirectDependencies();
         assertEquals("number of dependencies", 1, newDeps.size());
-        Set newCNBs = new HashSet();
+        Set<String> newCNBs = new HashSet<String>();
         newCNBs.add(ANT_PROJECT_SUPPORT);
-        for (Iterator it = newDeps.iterator(); it.hasNext(); ) {
-            ModuleDependency md = (ModuleDependency) it.next();
+        for (ModuleDependency md : newDeps) {
             String cnbToRemove = md.getModuleEntry().getCodeNameBase();
             assertTrue("unknown dependency: " + cnbToRemove, newCNBs.remove(cnbToRemove));
         }
@@ -162,14 +161,13 @@ public class ProjectXMLManagerTest extends TestBase {
     public void testEditDependency() throws Exception {
         final NbModuleProject testingProject = generateTestingProject();
         final ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
-        final Set deps = testingPXM.getDirectDependencies();
+        final Set<ModuleDependency> deps = testingPXM.getDirectDependencies();
         
         // apply and save project
-        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-            public Object run() throws IOException {
+        boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+            public Boolean run() throws IOException {
                 boolean tested = false;
-                for (Iterator it = deps.iterator(); it.hasNext(); ) {
-                    ModuleDependency origDep = (ModuleDependency) it.next();
+                for (ModuleDependency origDep : deps) {
                     if (DIALOGS.equals(origDep.getModuleEntry().getCodeNameBase())) {
                         tested = true;
                         ModuleDependency newDep = new ModuleDependency(
@@ -182,18 +180,17 @@ public class ProjectXMLManagerTest extends TestBase {
                     }
                 }
                 assertTrue("org.openide.dialogs dependency tested", tested);
-                return Boolean.TRUE;
+                return true;
             }
         });
-        assertTrue("editing dependencies", result.booleanValue());
+        assertTrue("editing dependencies", result);
         ProjectManager.getDefault().saveProject(testingProject);
         // XXX this refresh shouldn't be needed (should listen on project.xml changes)
         ProjectXMLManager freshTestingPXM = new ProjectXMLManager(testingProject);
         
-        final Set newDeps = freshTestingPXM.getDirectDependencies();
+        final Set<ModuleDependency> newDeps = freshTestingPXM.getDirectDependencies();
         boolean tested = false;
-        for (Iterator it = newDeps.iterator(); it.hasNext(); ) {
-            ModuleDependency md = (ModuleDependency) it.next();
+        for (ModuleDependency md : newDeps) {
             if (DIALOGS.equals(md.getModuleEntry().getCodeNameBase())) {
                 tested = true;
                 assertEquals("edited release version", "2", md.getReleaseVersion());
@@ -208,7 +205,7 @@ public class ProjectXMLManagerTest extends TestBase {
     public void testAddDependencies() throws Exception {
         final NbModuleProject testingProject = generateTestingProject();
         final ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
-        final Set newDeps = new HashSet();
+        final Set<ModuleDependency> newDeps = new HashSet<ModuleDependency>();
         ModuleEntry me = testingProject.getModuleList().getEntry(
                 "org.netbeans.modules.java.project");
         assertNotNull("java/project must be built", me);
@@ -220,24 +217,23 @@ public class ProjectXMLManagerTest extends TestBase {
         newDeps.add(new ModuleDependency(me, "1", null, false, true));
         
         // apply and save project
-        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-            public Object run() throws IOException {
+        boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+            public Boolean run() throws IOException {
                 testingPXM.addDependencies(newDeps);
-                return Boolean.TRUE;
+                return true;
             }
         });
-        assertTrue("adding dependencies", result.booleanValue());
+        assertTrue("adding dependencies", result);
         ProjectManager.getDefault().saveProject(testingProject);
         
-        Set deps = testingPXM.getDirectDependencies();
+        Set<ModuleDependency> deps = testingPXM.getDirectDependencies();
         
-        Set assumedCNBs = new HashSet(ASSUMED_CNBS);
+        Set<String> assumedCNBs = new HashSet<String>(ASSUMED_CNBS);
         assumedCNBs.add("org.netbeans.modules.java.project");
         assumedCNBs.add("org.netbeans.modules.java.j2seplatform");
         
         assertEquals("number of dependencies", deps.size(), assumedCNBs.size());
-        for (Iterator it = deps.iterator(); it.hasNext(); ) {
-            ModuleDependency md = (ModuleDependency) it.next();
+        for (ModuleDependency md : deps) {
             assertTrue("unknown dependency",
                     assumedCNBs.remove(md.getModuleEntry().getCodeNameBase()));
             if ("org.netbeans.modules.java.project".equals(md.getModuleEntry().getCodeNameBase())) {
@@ -260,17 +256,17 @@ public class ProjectXMLManagerTest extends TestBase {
         ModuleEntry me = testingProject.getModuleList().getEntry(
                 "org.netbeans.modules.java.project");
         final ModuleDependency md = new ModuleDependency(me, "1", null, false, true);
-        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-            public Object run() throws IOException {
+        boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+            public Boolean run() throws IOException {
                 Element confData = testingProject.getPrimaryConfigurationData();
                 Element moduleDependencies = ProjectXMLManager.findModuleDependencies(confData);
                 ProjectXMLManager.createModuleDependencyElement(moduleDependencies, md, null);
                 ProjectXMLManager.createModuleDependencyElement(moduleDependencies, md, null);
                 testingProject.putPrimaryConfigurationData(confData);
-                return Boolean.TRUE;
+                return true;
             }
         });
-        assertTrue("adding dependencies", result.booleanValue());
+        assertTrue("adding dependencies", result);
         ProjectManager.getDefault().saveProject(testingProject);
         try {
             testingPXM.getDirectDependencies();
@@ -286,8 +282,8 @@ public class ProjectXMLManagerTest extends TestBase {
         final File projectXML = FileUtil.toFile(
                 testingProject.getProjectDirectory().getFileObject("nbproject/project.xml"));
         assert projectXML.exists();
-        Element confData = (Element) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        Element confData = ProjectManager.mutex().readAccess(new Mutex.Action<Element>() {
+            public Element run() {
                 Element data = null;
                 try {
                     Document doc = XMLUtil.parse(new InputSource(projectXML.toURI().toString()),
@@ -313,12 +309,12 @@ public class ProjectXMLManagerTest extends TestBase {
     public void testReplaceDependencies() throws Exception {
         final NbModuleProject testingProject = generateTestingProject();
         final ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
-        final SortedSet deps = new TreeSet(testingPXM.getDirectDependencies());
+        final SortedSet<ModuleDependency> deps = new TreeSet<ModuleDependency>(testingPXM.getDirectDependencies());
         assertEquals("number of dependencies", 2, deps.size());
         ModuleDependency newOO = null;
         ModuleDependency oldOO = null;
-        for (Iterator it = deps.iterator(); it.hasNext(); ) {
-            ModuleDependency md = (ModuleDependency) it.next();
+        for (Iterator<ModuleDependency> it = deps.iterator(); it.hasNext(); ) {
+            ModuleDependency md = it.next();
             if (DIALOGS.equals(md.getModuleEntry().getCodeNameBase())) {
                 oldOO = md;
                 ModuleEntry me = md.getModuleEntry();
@@ -334,20 +330,19 @@ public class ProjectXMLManagerTest extends TestBase {
         deps.add(newOO);
         
         // apply and save project
-        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-            public Object run() throws IOException {
+        boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+            public Boolean run() throws IOException {
                 testingPXM.replaceDependencies(deps);
-                return Boolean.TRUE;
+                return true;
             }
         });
-        assertTrue("project successfully saved", result.booleanValue());
+        assertTrue("project successfully saved", result);
         ProjectManager.getDefault().saveProject(testingProject);
         validate(testingProject, true);
         
         final ProjectXMLManager newTestingPXM = new ProjectXMLManager(testingProject);
-        final Set newDeps = newTestingPXM.getDirectDependencies();
-        for (Iterator it = newDeps.iterator(); it.hasNext(); ) {
-            ModuleDependency md = (ModuleDependency) it.next();
+        final Set<ModuleDependency> newDeps = newTestingPXM.getDirectDependencies();
+        for (ModuleDependency md : newDeps) {
             if (DIALOGS.equals(md.getModuleEntry().getCodeNameBase())) {
                 assertNull("empty(null) release version", md.getReleaseVersion());
                 assertEquals("unedited specification version",
@@ -379,14 +374,13 @@ public class ProjectXMLManagerTest extends TestBase {
         final String[] newPP = new String[] { publicPackages[0].getPackage(), "org.netbeans.examples.modules" };
         
         // apply and save project
-        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-            public Object run() throws IOException {
+        boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+            public Boolean run() throws IOException {
                 testingPXM.replacePublicPackages(newPP);
-                return Boolean.TRUE;
+                return true;
             }
         });
-        assertTrue("replace public packages", result.booleanValue());
-        assertTrue("replace public packages", result.booleanValue());
+        assertTrue("replace public packages", result);
         ProjectManager.getDefault().saveProject(testingProject);
         ManifestManager.PackageExport[] newPublicPackages = testingPXM.getPublicPackages();
         assertEquals("number of new public packages", 2, newPublicPackages.length);
@@ -405,18 +399,18 @@ public class ProjectXMLManagerTest extends TestBase {
         final String[] newFriends = new String[] { "org.exampleorg.somefriend", "org.exampleorg.anotherfriend" };
         
         // apply and save project
-        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-            public Object run() throws IOException {
+        boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+            public Boolean run() throws IOException {
                 ManifestManager.PackageExport pkgs[] = testingPXM.getPublicPackages();
                 String[] packagesToExpose = new String[pkgs.length];
                 for (int i = 0; i < pkgs.length; i++) {
                     packagesToExpose[i] = pkgs[i].getPackage();
                 }
                 testingPXM.replaceFriends(newFriends, packagesToExpose);
-                return Boolean.TRUE;
+                return true;
             }
         });
-        assertTrue("replace friends", result.booleanValue());
+        assertTrue("replace friends", result);
         ProjectManager.getDefault().saveProject(testingProject);
         final ProjectXMLManager newTestingPXM = new ProjectXMLManager(testingProject);
         String[] actualFriends = newTestingPXM.getFriends();
@@ -465,21 +459,19 @@ public class ProjectXMLManagerTest extends TestBase {
         ModuleEntry me = testingProject.getModuleList().getEntry(
                 "org.netbeans.modules.java.project");
         final ModuleDependency md = new ModuleDependency(me, "1", null, false, true);
-        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-            public Object run() throws IOException {
+        boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+            public Boolean run() throws IOException {
                 testingPXM.addDependency(md);
-                return Boolean.TRUE;
+                return true;
             }
         });
-        assertTrue("adding dependencies", result.booleanValue());
+        assertTrue("adding dependencies", result);
         ProjectManager.getDefault().saveProject(testingProject);
         validate(testingProject, true);
     }
     
   
     public void testRemoveTestDependency() throws Exception {
-        final String UNIT = TestModuleDependency.UNIT;
-        final String QAFUNC = TestModuleDependency.QA_FUNCTIONAL;
         final NbModuleProject testingProject = generateTestingProject();
         final ProjectXMLManager pxm = new ProjectXMLManager(testingProject);
         final String cnb = "org.netbeans.modules.java.project";
@@ -495,7 +487,7 @@ public class ProjectXMLManagerTest extends TestBase {
         pxm.addTestDependency(UNIT, tdAnt_111);
         ProjectManager.getDefault().saveProject(testingProject);
         //try wrong usage of remove
-        assertFalse("no such cnb under QA func.", pxm.removeTestDependency(QAFUNC, cnb));
+        assertFalse("no such cnb under QA func.", pxm.removeTestDependency(QA_FUNCTIONAL, cnb));
         assertFalse("no such cnb under UNIT func.", pxm.removeTestDependency(UNIT, "someCNB"));
         Set setBefore = (Set) pxm.getTestDependencies(ml).get(UNIT);
         assertEquals("unit test type contains two TD", 2 , setBefore.size());
@@ -514,9 +506,6 @@ public class ProjectXMLManagerTest extends TestBase {
     }
     
     public void testAddTestDependency () throws Exception{
-        final String UNIT = TestModuleDependency.UNIT;
-        final String QAFUNC = TestModuleDependency.QA_FUNCTIONAL;
-        
         final NbModuleProject testingProject = generateTestingProject();
         final ProjectXMLManager pxm = new ProjectXMLManager(testingProject);
         File projectDir = FileUtil.toFile(testingProject.getProjectDirectory());
@@ -545,7 +534,7 @@ public class ProjectXMLManagerTest extends TestBase {
         mapOfTD = pxm.getTestDependencies(ml);
         assertEquals("map has already unit test type", 1, mapOfTD.size());
         unitTD = (HashSet) mapOfTD.get(UNIT);
-        qafuncTD = (HashSet) mapOfTD.get(QAFUNC);
+        qafuncTD = (HashSet) mapOfTD.get(QA_FUNCTIONAL);
         assertEquals("set with unit TD has one TD", 1, unitTD.size());
         assertNull("set with qafunc TD does not exist", qafuncTD);
         //now add 2 other  unit test dep;
@@ -558,11 +547,11 @@ public class ProjectXMLManagerTest extends TestBase {
         unitTD = (HashSet) mapOfTD.get(UNIT);
         assertEquals("set with unit TD has now three TD", 3, unitTD.size());
         //now add qa-func test dependency
-        pxm.addTestDependency(QAFUNC, tdJP_010);
+        pxm.addTestDependency(QA_FUNCTIONAL, tdJP_010);
         ProjectManager.getDefault().saveProject(testingProject);
         mapOfTD = pxm.getTestDependencies(ml);
         unitTD = (HashSet) mapOfTD.get(UNIT);
-        qafuncTD = (HashSet) mapOfTD.get(QAFUNC);
+        qafuncTD = (HashSet) mapOfTD.get(QA_FUNCTIONAL);
         assertEquals("map has both test types", 2, mapOfTD.size());
         assertEquals("set with unit TD has still three TD", 3, unitTD.size());
         assertEquals("set with qafunc TD has one TD", 1, qafuncTD.size());
@@ -571,8 +560,7 @@ public class ProjectXMLManagerTest extends TestBase {
     }
     
     public void testIssue92363FixAddDependencyWhereSomeIsAlreadyPresent() throws Exception{
-        final String UNIT = TestModuleDependency.UNIT;
-        TEST_DEPENDENCIES = "\n" +
+        String testDependencies = "\n" +
                 "<test-type>\n" +
                 "<name>unit</name>\n" +
                 "<test-dependency>\n" +
@@ -580,8 +568,7 @@ public class ProjectXMLManagerTest extends TestBase {
                 "</test-dependency>\n" +
                 "</test-type>\n";
         //create a project that already contains testdependency
-        final NbModuleProject testingProject = generateTestingProject();
-        TEST_DEPENDENCIES = "";
+        final NbModuleProject testingProject = generateTestingProject(testDependencies);
         final ProjectXMLManager pxm = new ProjectXMLManager(testingProject);
         ModuleList ml = ModuleList.getModuleList(testingProject.getProjectDirectoryFile());
         Map map = pxm.getTestDependencies(ml);
@@ -603,6 +590,10 @@ public class ProjectXMLManagerTest extends TestBase {
     
     
     private NbModuleProject generateTestingProject() throws Exception {
+        return generateTestingProject("");
+    }
+    
+    private NbModuleProject generateTestingProject(final String testDependencies) throws Exception {
         FileObject fo = TestBase.generateStandaloneModuleDirectory(getWorkDir(), "testing");
         FileObject projectXMLFO = fo.getFileObject("nbproject/project.xml");
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -631,7 +622,7 @@ public class ProjectXMLManagerTest extends TestBase {
                 "</run-dependency>\n" +
                 "</dependency>\n" +
                 "</module-dependencies>\n" +
-                "<test-dependencies>"+ TEST_DEPENDENCIES + "</test-dependencies>\n" +
+                "<test-dependencies>"+ testDependencies + "</test-dependencies>\n" +
                 "<friend-packages>\n" +
                 "<friend>org.module.examplemodule</friend>\n" +
                 "<package>org.netbeans.examples.modules.misc</package>\n" +
