@@ -46,16 +46,23 @@ public class OpenInEditorAction extends AbstractAction {
 
     private boolean isActionEnabled() {
         File [] files = SvnUtils.getCurrentContext(null).getFiles();
-        return files.length == 1 && files[0].canRead();
+        for (File file : files) {
+            if (file.canRead()) return true;
+        }
+        return false;
     }
 
     public void actionPerformed(ActionEvent e) {
-        File file = SvnUtils.getCurrentContext(null).getFiles()[0];
-        FileObject fo = FileUtil.toFileObject(file);
-        if (fo == null) return;
-        try {
-            openDataObjectByCookie(DataObject.find(fo));
-        } catch (DataObjectNotFoundException ex) {
+        File [] files = SvnUtils.getCurrentContext(null).getFiles();
+        for (File file : files) {
+            FileObject fo = FileUtil.toFileObject(file);
+            if (fo != null) {
+                try {
+                    openDataObjectByCookie(DataObject.find(fo));
+                } catch (DataObjectNotFoundException ex) {
+                    // ignore this error and try to open other files too
+                }
+            }
         }
     }
     
