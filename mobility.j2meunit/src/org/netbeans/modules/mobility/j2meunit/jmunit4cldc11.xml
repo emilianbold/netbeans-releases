@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
+
+<library version="1.0">
+    <name>JMUnit4CLDC11</name>
+    <type>j2se</type>
+    <description>JMUnit library for CLDC11.</description>
+    <volume>
+        <type>classpath</type>
+        <resource>jar:nbinst:///modules/ext/jmunit4cldc11-1.0.1.jar!/</resource>
+    </volume>
+    <volume>
+        <type>javadoc</type>
+        <resource>jar:nbinst:///docs/jmunit-1.0.1-api.zip!/</resource>
+    </volume>
+</library>

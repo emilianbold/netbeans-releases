@@ -23,7 +23,19 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
-	    <file name="j2meunit.xml" url="j2meunit.xml"/>
+            <file name="jmunit4cldc10.xml" url="jmunit4cldc10.xml"/>
+            <file name="jmunit4cldc11.xml" url="jmunit4cldc11.xml"/>
+        </folder>
+    </folder>
+    <folder name="Templates">
+    	<folder name="J2MEUnit">
+            <file name="EmptyJ2MEUnitTest.java" url="resources/templates/EmptyJ2MEUnitTest.java.template">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.j2meunit.Bundle"/> 
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/j2meunit/resources/templates/EmptyJUnitTest.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/j2meunit/resources/JUnitLogo.png"/>
+                <attr name="templateCategory" stringvalue="junit"/>
+            </file>
         </folder>
     </folder>
 </filesystem>

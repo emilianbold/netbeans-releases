@@ -13,41 +13,45 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * TestUtil.java
- *
- * Created on March 23, 2006, 4:43 PM
- *
- */
 package org.netbeans.modules.mobility.j2meunit;
 
-import java.util.Collection;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
+import java.io.IOException;
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.EnumSet;
 import java.util.List;
-import org.netbeans.jmi.javamodel.AnnotationType;
-import org.netbeans.jmi.javamodel.Array;
-import org.netbeans.jmi.javamodel.ClassDefinition;
-import org.netbeans.jmi.javamodel.Element;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.JavaModelPackage;
-import org.netbeans.jmi.javamodel.Parameter;
-import org.netbeans.jmi.javamodel.ParameterizedType;
-import org.netbeans.jmi.javamodel.PrimitiveType;
-import org.netbeans.jmi.javamodel.Type;
-import org.netbeans.jmi.javamodel.TypeReference;
-import org.netbeans.modules.javacore.api.JavaModel;
+import java.util.Map;
+import java.util.Set;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.junit.plugin.JUnitPlugin;
+import org.openide.filesystems.FileUtil;
 
 /**
- *
+ * This is a utilities class used by the J2MEUnit test generator
+ * 
  * @author bohemius
  */
 public class TestUtils {
@@ -68,131 +72,284 @@ public class TestUtils {
             TestUtils.class,"PROP_test_method_suffix");
     static final String TEST_RUNNER_NAME = "TestRunnerMIDlet";//NOI18N TODO add to bundle
     
-    /**
-     * Gets all top-level classes from file.
-     * @param fo the <code>FileObject</code> to examine
-     * @return Collection<JavaClass>, not null
-     */
-    static Collection getAllClassesFromFile(FileObject fo) {
-        if (fo == null) {
-            return Collections.EMPTY_LIST;
+    public static Set<Modifier> createModifierSet(Modifier... modifiers) {
+        EnumSet<Modifier> modifierSet = EnumSet.noneOf(Modifier.class);
+        for (Modifier m : modifiers) {
+            modifierSet.add(m);
         }
-        
-        System.out.println("inspecting fileobject: "+fo.getName());
-        Iterator it = JavaModel.getResource(fo).getClassifiers().iterator();
-        LinkedList ret = new LinkedList();
-        
-        while (it.hasNext()) {
-            Element e = (Element)it.next();
-            if (e instanceof JavaClass) {
-                ret.add((JavaClass) e);
+        return modifierSet;
+    }
+    
+    public static String getTestClassName(String sourceClassName) {
+        return TEST_CLASSNAME_PREFIX + sourceClassName + TEST_CLASSNAME_SUFFIX;
+    }
+    
+    public static String getSimpleName(String fullName) {
+        int lastDotIndex = fullName.lastIndexOf('.');
+        return (lastDotIndex == -1) ? fullName
+                : fullName.substring(lastDotIndex + 1);
+    }
+    
+    static String getPackageName(String fullName) {
+        if (fullName!=null) {
+            int i = fullName.lastIndexOf('.');
+            return (i != -1) ? fullName.substring(0, i) : ""; //NOI18N
+        } else 
+            return "";
+    }
+    
+    public static String getTestClassFullName(String sourceClassName, String packageName) {
+        String shortTestClassName = getTestClassName(sourceClassName);
+        return ((packageName == null) || (packageName.length() == 0))
+                ? shortTestClassName
+                : packageName.replace('.','/') + '/' + shortTestClassName;
+    }
+    
+    public static String createTestMethodName(String smName) {
+        return "test"                                                   //NOI18N
+                + smName.substring(0,1).toUpperCase() + smName.substring(1);
+    }
+    
+    static void addTestClassProperty(Project p, AntProjectHelper aph, String clazz) throws IOException {
+        /*
+        ProjectConfigurationsHelper pch=(ProjectConfigurationsHelper) p.getLookup().lookup(ProjectConfigurationsHelper.class);
+        ProjectConfiguration[] confs=pch.getConfigurations();
+        EditableProperties ep=aph.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+         
+        String defaultValue=ep.getProperty(J2MEProjectProperties.MANIFEST_JAD);
+        HashMap map = defaultValue != null ? J2MEProjectProperties.ManifestPropertyParser.decode(defaultValue) : new HashMap();
+        addTestClassProperty(map,clazz);
+        ep.put(J2MEProjectProperties.MANIFEST_JAD, J2MEProjectProperties.ManifestPropertyParser.encode(map));
+         
+        for (int i = 0; i < confs.length; i++) {
+            ProjectConfiguration conf = confs[i];
+            String confName = conf.getName();
+            String propertyName = VisualPropertySupport.translatePropertyName(confName, J2MEProjectProperties.MANIFEST_JAD, false);
+            if (propertyName == null)
+                continue;
+            String propertyValue = ep.getProperty(propertyName);
+            if (propertyValue == null)
+                continue;
+            map = J2MEProjectProperties.ManifestPropertyParser.decode(defaultValue);
+            addTestClassProperty(map, clazz);
+            ep.put(propertyName, J2MEProjectProperties.ManifestPropertyParser.encode(map));
+        }
+         
+        aph.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+         
+        ProjectManager.getDefault().saveProject(p);
+         */
+    }
+    
+    private static void addTestClassProperty(Map map, String clazz) {
+        String key=NbBundle.getMessage(TestUtils.class,"PROP_config_TestClasses_key");//NOI18N
+        if (map.containsKey(key)) {
+            String prop=(String) map.get(key);
+            if (prop.indexOf(clazz)<0) {
+                if (prop==null || prop.equals(""))
+                    prop=clazz;
+                else
+                    prop=prop+" "+clazz;
+                map.put(key,prop);
             }
+        } else
+            map.put(key,clazz);
+    }
+    
+    static void addTestRunnerMIDletProperty(Project project, AntProjectHelper h) throws IOException {
+        /*
+        String name=NbBundle.getMessage(TestUtils.class,"PROP_config_TestRunner_name");//NOI18N
+        String clazz=NbBundle.getMessage(TestUtils.class,"PROP_config_TestRunner_clazz");//NOI18N
+        String icon=NbBundle.getMessage(TestUtils.class,"PROP_config_TestRunner_icon");//NOI18N
+         
+        ProjectConfigurationsHelper confHelper = (ProjectConfigurationsHelper) project.getLookup().lookup(ProjectConfigurationsHelper.class);
+        ProjectConfiguration[] confs = confHelper.getConfigurations();
+        EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+         
+        String defaultValue = ep.getProperty(J2MEProjectProperties.MANIFEST_MIDLETS);
+        HashMap map = defaultValue != null ? J2MEProjectProperties.ManifestPropertyParser.decode(defaultValue) : new HashMap();
+        addTestRunnerMIDletProperty(map, name, clazz, icon);
+        ep.put(J2MEProjectProperties.MANIFEST_MIDLETS, J2MEProjectProperties.ManifestPropertyParser.encode(map));
+         
+        for (int i = 0; i < confs.length; i++) {
+            ProjectConfiguration conf = confs[i];
+            String confName = conf.getName();
+            String propertyName = VisualPropertySupport.translatePropertyName(confName, J2MEProjectProperties.MANIFEST_MIDLETS, false);
+            if (propertyName == null)
+                continue;
+            String propertyValue = ep.getProperty(propertyName);
+            if (propertyValue == null)
+                continue;
+            map = J2MEProjectProperties.ManifestPropertyParser.decode(defaultValue);
+            addTestRunnerMIDletProperty(map, name, clazz, icon);
+            ep.put(propertyName, J2MEProjectProperties.ManifestPropertyParser.encode(map));
         }
-        return ret;
+         
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+         
+        ProjectManager.getDefault().saveProject(project);
+         */
     }
     
-    static TypeReference getTypeReference(JavaModelPackage pkg, String name) {
-        return pkg.getMultipartId().createMultipartId(name, null, Collections.EMPTY_LIST);
-    }
-    
-    static String getTestMethodName(String origMethodName) {
-        return TEST_METHODNAME_PREFIX+origMethodName+TEST_METHODNAME_SUFFIX;
-    }
-    
-    static String getOriginalMethodName(String testMethodName) {
-        if (TEST_METHODNAME_PREFIX==null || TEST_METHODNAME_PREFIX.equals(""))
-            return
-            testMethodName.substring(testMethodName.length()-TEST_METHODNAME_SUFFIX.length());
-        else if (TEST_METHODNAME_SUFFIX==null || TEST_METHODNAME_SUFFIX.equals(""))
-            return
-            testMethodName.substring(TEST_METHODNAME_PREFIX.length(),testMethodName.length());
-        else
-            return
-            testMethodName.substring(TEST_METHODNAME_PREFIX.length(),testMethodName.length()-TEST_METHODNAME_SUFFIX.length());
-    }
-    
-    static String getTestClassName(String origClassName) {
-        return TEST_CLASSNAME_PREFIX+origClassName+TEST_CLASSNAME_SUFFIX;
-    }
-    
-    static String getFullyQualifiedTestClassName(JavaClass clazz) {
-        if (clazz==null)
-            return null;
-        else
-            if (clazz.getResource().getPackageName().equals(""))
-                return getTestClassName(clazz.getSimpleName());
-            else
-                return clazz.getResource().getPackageName()+"."+getTestClassName(clazz.getSimpleName());
-    }
-    
-    static String getFullTestClassFileName(JavaClass clazz) {
-        if (clazz==null)
-            return null;
-        else
-            return getFullyQualifiedTestClassName(clazz).replace('.','/')+".java";
-    }
-    
-    static String getTypeNameString(Type type) {
-        if (!(type instanceof ClassDefinition)) {     //e.g. primitive types
-            return type.getName();
+    private static void addTestRunnerMIDletProperty(Map map, String name, String clazz, String icon) {
+        int a = 1;
+        boolean flag = false;
+        while (map.containsKey("MIDlet-" + a)) { //NOI18N
+            String midletDef=(String) map.get("MIDlet-" + a); //NOI18N
+            if (midletDef.contains(NbBundle.getMessage(TestUtils.class, "PROP_config_TestRunner_clazz")))
+                flag=true;
+            a++;
         }
-        if (type instanceof Array) {
-            return getTypeNameString(((Array) type).getType())
-                    + "[]";                                          //NOI18N
-        }
-        if (!(type instanceof JavaClass)) {
-            return type.getName();       //handle unknown Type subinterfaces
-        }
-        
-        return type.getName();        //arbitrary Java class, TODO fix imports or use fully qualified Java name
+        if (!flag)
+            map.put("MIDlet-" + a, name + ", " + icon + ", " + clazz);  //NOI18N
     }
     
-    static String getDefaultValue(Type type) {
-        final String typeName = type.getName();
-        
-        if (typeName.equals("void")) {                               //NOI18N
-            return null;
-        } else if (typeName.equals("int")) {                         //NOI18N
-            return "0";                                                 //NOI18N
-        } else if (typeName.equals("float")) {                       //NOI18N
-            return "0.0F";                                              //NOI18N
-        } else if (typeName.equals("long")) {                        //NOI18N
-            return "0L";                                                //NOI18N
-        } else if (typeName.equals("double")) {                      //NOI18N
-            return "0.0";                                               //NOI18N
-        } else if (typeName.equals("boolean")) {                     //NOI18N
-            return "true";                                              //NOI18N
-        } else if (typeName.equals("java.lang.String")) {            //NOI18N
-            return "\"\"";                                              //NOI18N
-        } else if (typeName.equals("short")) {                       //NOI18N
-            return "0";                                                 //NOI18N
-        } else if (typeName.equals("byte")) {                        //NOI18N
-            return "0";                                                 //NOI18N
-        } else if (typeName.equals("char")) {                        //NOI18N
-            return "' '";                                               //NOI18N
-        } else {
-            assert !(type instanceof PrimitiveType);
-            return "null";                                              //NOI18N
-        }
-    }
-    
-    static String getParamString(List testParameters) {
-        Iterator it=testParameters.iterator();
-        StringBuffer result=new StringBuffer("");
-        
-        while (it.hasNext()) {
-            result.append(((Parameter) it.next()).getName());
-            if (it.hasNext())
-                result.append(",");
-        }
-        return result.toString();
-    }
-    
-    static boolean isTestable(FileObject fo) {
-        if (!(fo.getName().endsWith(TEST_RUNNER_NAME) || fo.getName().endsWith(TEST_CLASSNAME_SUFFIX)))
-            return true;
-        
+    public static boolean testClassExists(FileObject classFile) {
+        if (getTestFileObject(classFile)!=null) return true;
         return false;
     }
     
+    public static FileObject getTestFileObject(FileObject classFile) {
+        String testClassName=TEST_CLASSNAME_PREFIX+classFile.getName()+TEST_CLASSNAME_SUFFIX;
+        String absolutePath=FileUtil.toFile(classFile).getAbsolutePath();
+        
+        String directoryPath=absolutePath.substring(absolutePath.indexOf(classFile.getName()));
+        
+        File testFile=new File(directoryPath+testClassName+".java");
+        
+        return FileUtil.toFileObject(testFile);
+    }
+    
+    /*
+     *
+     * The retouche stuff for finding classes and element handles
+     * for JavaSource
+     *
+     */
+    
+    
+    public static boolean testMethodExists(ClassTree tstClass,String testMethodName) {
+        //TODO
+        return true;
+    }
+    
+    private static boolean isTestable(ClassTree typeDecl,
+            TreeUtilities treeUtils) {
+        return !treeUtils.isAnnotation(typeDecl);
+    }
+    
+    
+    static boolean isTestable(FileObject fo) {
+        if (!(fo.getName().endsWith(TEST_RUNNER_NAME) || fo.getName().endsWith(TEST_CLASSNAME_SUFFIX)) && fo.getExt().equals("java")) //NOI18N
+            return true;
+        return false;
+    }
+    
+    static boolean isTestable(Element typeDeclElement) {
+        ElementKind elemKind = typeDeclElement.getKind();
+        return (elemKind != ElementKind.ANNOTATION_TYPE)
+                && (elemKind.isClass()|| elemKind.isInterface());
+    }
+    
+    private static List<TypeElement> findTopClassElems(CompilationInfo compInfo, CompilationUnitTree compilationUnit) {
+        List<? extends Tree> typeDecls = compilationUnit.getTypeDecls();
+        if ((typeDecls == null) || typeDecls.isEmpty()) {
+            return Collections.<TypeElement>emptyList();
+        }
+        
+        List<TypeElement> result = new ArrayList<TypeElement>(typeDecls.size());
+        
+        Trees trees = compInfo.getTrees();
+        for (Tree typeDecl : typeDecls) {
+            if (typeDecl.getKind() == Tree.Kind.CLASS) {
+                Element element = trees.getElement(new TreePath(new TreePath(compilationUnit), typeDecl));
+                TypeElement typeElement = (TypeElement) element;
+                if (isTestable(element)) {
+                    result.add(typeElement);
+                }
+            }
+        }
+        return result;
+    }
+    
+    private static List<ElementHandle<TypeElement>> findTopClassElemHandles(
+            CompilationInfo compInfo,
+            CompilationUnitTree compilationUnit) {
+        return getElemHandles(findTopClassElems(compInfo, compilationUnit));
+    }
+    
+    private static <T extends Element> List<ElementHandle<T>> getElemHandles(List<T> elements) {
+        if (elements == null) {
+            return null;
+        }
+        if (elements.isEmpty()) {
+            return Collections.<ElementHandle<T>>emptyList();
+        }
+        
+        List<ElementHandle<T>> handles = new ArrayList<ElementHandle<T>>(elements.size());
+        for (T element : elements) {
+            handles.add(ElementHandle.<T>create(element));
+        }
+        return handles;
+    }
+    
+    public static List<ClassTree> findTopClasses(CompilationUnitTree compilationUnit, TreeUtilities treeUtils) {
+        List<? extends Tree> typeDecls = compilationUnit.getTypeDecls();
+        if ((typeDecls == null) || typeDecls.isEmpty()) {
+            return Collections.<ClassTree>emptyList();
+        }
+        
+        List<ClassTree> result = new ArrayList<ClassTree>(typeDecls.size());
+        
+        for (Tree typeDecl : typeDecls) {
+            if (typeDecl.getKind() == Tree.Kind.CLASS) {
+                ClassTree clsTree = (ClassTree) typeDecl;
+                if (isTestable(clsTree, treeUtils)) {
+                    result.add(clsTree);
+                }
+            }
+        }
+        
+        return result;
+    }
+    
+    public static List<ElementHandle<TypeElement>> findTopClasses(JavaSource javaSource) throws IOException {
+        TopClassFinderTask finder = new TopClassFinderTask();
+        javaSource.runUserActionTask(finder, true);
+        return finder.getTopClassElems();
+    }
+    
+    public static boolean hasSetUp(ClassTree tstClass) {
+        //TODO
+        return true;
+    }
+    
+    public static boolean hasTearDown(ClassTree tstClass) {
+        //TODO
+        return true;
+    }
+    
+    private static class TopClassFinderTask  implements CancellableTask<CompilationController> {
+        private volatile boolean cancelled;
+        private List<ElementHandle<TypeElement>> topClassElems;
+        
+        private TopClassFinderTask() {}
+        
+        public void cancel() {
+            this.cancelled=true;
+        }
+        
+        public void run(CompilationController parameter) throws Exception {
+            parameter.toPhase(Phase.ELEMENTS_RESOLVED);
+            if (cancelled) {
+                return;
+            }
+            
+            topClassElems = findTopClassElemHandles(parameter,parameter.getCompilationUnit());
+        }
+        
+        public List<ElementHandle<TypeElement>> getTopClassElems() {
+            return this.topClassElems;
+        }
+    }
 }

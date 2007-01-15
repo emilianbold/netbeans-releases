@@ -1,0 +1,21 @@
+/*
+ * __NAME__.java
+ * J2MEUnit based test
+ *
+ * Created on __DATE__, __TIME__
+ */
+
+package Template.Classes;
+
+import jmunit.framework.cldc10.*;
+
+/**
+ *
+ * @author __USER__
+ */
+public class EmptyJ2MEUnitTest extends TestCase {
+    
+    public EmptyJ2MEUnitTest() {
+    }            
+    
+}

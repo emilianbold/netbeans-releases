@@ -1,19 +1,13 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
+ *                 Sun Public License Notice
  *
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
  *
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,15 +19,19 @@
  */
 package org.netbeans.modules.mobility.j2meunit;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.junit.plugin.JUnitPlugin;
 import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -41,8 +39,14 @@ import org.openide.filesystems.FileObject;
  */
 public class J2MEUnitPlugin extends JUnitPlugin {
     
+    private Project p;
+    private AntProjectHelper aph;
+    
     /** Creates a new instance of J2MEUnitPlugin */
-    public J2MEUnitPlugin() {
+    public J2MEUnitPlugin(Project p, AntProjectHelper aph) {
+        this.p=p;
+        this.aph=aph;
+        System.out.println("Picking it up!");
     }
     
     protected JUnitPlugin.Location getTestLocation(JUnitPlugin.Location sourceLocation) {
@@ -56,24 +60,45 @@ public class J2MEUnitPlugin extends JUnitPlugin {
     protected FileObject[] createTests(FileObject[] filesToTest, FileObject targetRoot,
             Map<CreateTestParam, Object> params) {
         //add J2MEUnit JAR to library if needed
-        Project p=FileOwnerQuery.getOwner(targetRoot);
-        ProjectClassPathExtender pcpe=p.getLookup().lookup(ProjectClassPathExtender.class);
+        ProjectClassPathExtender pcpe=(ProjectClassPathExtender) p.getLookup().lookup(ProjectClassPathExtender.class);
         if (pcpe!=null) {
-            Library lib=LibraryManager.getDefault().getLibrary("J2MEUnit");
+            Library lib=LibraryManager.getDefault().getLibrary("JMUnit4CLDC10");
             try {
-            pcpe.addLibrary(lib);
+                pcpe.addLibrary(lib);
             } catch (Exception e) {
                 System.out.println(e.getMessage());
                 e.printStackTrace();
             }
         }
-        /*System.out.println("Preparing to generate test");
-        System.out.println("Number of files to test:"+filesToTest.length);
-        System.out.println("Target root:"+targetRoot.getPath());
-        System.out.println("parameters: "+params);*/
-        TestCreator generator=new TestCreator(params,targetRoot);
+        
+        //add TestRunner MIDlet to all configurations
+        AntProjectHelper aph=(AntProjectHelper) p.getLookup().lookup(AntProjectHelper.class);
+        try {
+            TestUtils.addTestRunnerMIDletProperty(p,aph);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+            
+        final TestCreator generator=new TestCreator(params,targetRoot,this.p, this.aph);
         FileObject[] result=generator.generateTests(filesToTest);
-        generator=null;
         return result;
+    }
+    
+    public static void main(String args[]) {
+        try {
+            TestCreator testGenerator=new TestCreator(Collections.EMPTY_MAP,FileUtil.createData(new File("./")),null,null);
+            if (args.length>0) {
+                FileObject[] files2test=new FileObject[args.length];                
+                for (int i=0;i<args.length;i++) {
+                    files2test[i]=FileUtil.createData(new File(args[i]));
+                }
+                FileObject[] testFiles=testGenerator.generateTests(files2test);
+            } else {
+                System.out.println("Usage: J2MEUnitPlugin FILES...");
+            }
+        } catch (IOException ioe) {
+            System.out.println(ioe.getMessage());
+            ioe.printStackTrace();
+        }
     }
 }
