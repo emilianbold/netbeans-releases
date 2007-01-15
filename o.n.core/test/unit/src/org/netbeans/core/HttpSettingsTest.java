@@ -82,7 +82,7 @@ public class HttpSettingsTest extends NbTestCase {
             }
         });
         System.setProperty ("netbeans.system_http_proxy", SYSTEM_PROXY_HOST + ":" + SYSTEM_PROXY_PORT);
-        System.setProperty ("netbeans.system_http_non_proxy_hosts", "*.other.org");
+        System.setProperty ("netbeans.system_http_non_proxy_hosts", OTHER_ORG);
         synchronized (sync) {
             if (! USER_PROXY_HOST.equals (proxyPreferences.get ("proxyHttpHost", ""))) {
                 proxyPreferences.put ("proxyHttpHost", USER_PROXY_HOST);
@@ -217,7 +217,9 @@ public class HttpSettingsTest extends NbTestCase {
                 sync.wait ();
             }
         }
-        assertFalse ("ProxySettings doesn't return new value if AUTO_DETECT_PROXY set.", "myhost.mydomain.net".equals (System.getProperty ("http.nonProxyHosts")));
+        log ("AUTO_DETECT_PROXY: ProxySettings.SystemProxySettings.getNonProxyHosts (): " + ProxySettings.SystemProxySettings.getNonProxyHosts ());
+        log ("AUTO_DETECT_PROXY: System.getProperty (\"http.nonProxyHosts\"): " + System.getProperty ("http.nonProxyHosts"));
+        assertTrue ("ProxySettings contains OTHER_ORG if AUTO_DETECT_PROXY set.", System.getProperty ("http.nonProxyHosts").indexOf (OTHER_ORG) > 0);
                 
         // switch proxy type back to MANUAL_SET_PROXY
         synchronized (sync) {
