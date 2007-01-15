@@ -48,13 +48,14 @@ public class ClassMemberTest extends GeneratorTest {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-//        suite.addTestSuite(ClassMemberTest.class);
-        suite.addTest(new ClassMemberTest("testAddAtIndex0"));
-        suite.addTest(new ClassMemberTest("testAddAtIndex2"));
-        suite.addTest(new ClassMemberTest("testAddToEmpty"));
-        suite.addTest(new ClassMemberTest("testAddConstructor"));
-        suite.addTest(new ClassMemberTest("testModifyFieldName"));
+        suite.addTestSuite(ClassMemberTest.class);
+//        suite.addTest(new ClassMemberTest("testAddAtIndex0"));
+//        suite.addTest(new ClassMemberTest("testAddAtIndex2"));
+//        suite.addTest(new ClassMemberTest("testAddToEmpty"));
+//        suite.addTest(new ClassMemberTest("testAddConstructor"));
+//        suite.addTest(new ClassMemberTest("testModifyFieldName"));
 //        suite.addTest(new ClassMemberTest("testModifyModifiers"));
+//        suite.addTest(new ClassMemberTest("testAddToEmptyInterface"));
           return suite;
     }
     
@@ -415,6 +416,47 @@ public class ClassMemberTest extends GeneratorTest {
             }
         };
         src.runModificationTask(task).commit();    
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testAddToEmptyInterface() throws Exception {
+        //member position 2 is actually after the taragui method, as position 0 is the syntetic constructor:
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public interface Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public interface Test {\n\n" +
+            "    public void newlyCreatedMethod(int a, float b) throws java.io.IOException;\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree classTree = (ClassTree) typeDecl;
+                        ClassTree copy = make.addClassMember(classTree, m(make));
+                        workingCopy.rewrite(classTree, copy);
+                    }
+                }
+            }
+            
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
