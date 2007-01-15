@@ -64,6 +64,7 @@ public class ProjectXMLManagerTest extends TestBase {
     private final static String ANT_PROJECT_SUPPORT = "org.netbeans.modules.project.ant";
     private final static String DIALOGS = "org.openide.dialogs";
     private final static Set ASSUMED_CNBS;
+    private static String TEST_DEPENDENCIES ="";
     
     static {
         Set assumedCNBs = new HashSet(2, 1.0f);
@@ -569,6 +570,36 @@ public class ProjectXMLManagerTest extends TestBase {
         validate(testingProject, false);
     }
     
+    public void testIssue92363FixAddDependencyWhereSomeIsAlreadyPresent() throws Exception{
+        final String UNIT = TestModuleDependency.UNIT;
+        TEST_DEPENDENCIES = "\n" +
+                "<test-type>\n" +
+                "<name>unit</name>\n" +
+                "<test-dependency>\n" +
+                "<code-name-base>org.netbeans.core</code-name-base>\n" +
+                "</test-dependency>\n" +
+                "</test-type>\n";
+        //create a project that already contains testdependency
+        final NbModuleProject testingProject = generateTestingProject();
+        TEST_DEPENDENCIES = "";
+        final ProjectXMLManager pxm = new ProjectXMLManager(testingProject);
+        ModuleList ml = ModuleList.getModuleList(testingProject.getProjectDirectoryFile());
+        Map map = pxm.getTestDependencies(ml);
+        assertEquals("map has already unit test type", 1, map.size());
+        Set setUnit = (Set) map.get(UNIT);
+        assertEquals("contains one dependency", 1, setUnit.size());
+        //now add one more testdependency
+        ModuleEntry meJP = testingProject.getModuleList().getEntry(
+                "org.netbeans.modules.java.project");
+        TestModuleDependency tdJP = new TestModuleDependency(meJP, false, false, true);
+        pxm.addTestDependency(UNIT, tdJP);
+        ProjectManager.getDefault().saveProject(testingProject);
+        map = pxm.getTestDependencies(ml);
+        assertEquals("map has already unit test type", 1, map.size());
+        setUnit = (Set) map.get(UNIT);
+        assertEquals("contains two dependencies now", 2, setUnit.size());
+        validate(testingProject, false);
+    }
     
     
     private NbModuleProject generateTestingProject() throws Exception {
@@ -600,7 +631,7 @@ public class ProjectXMLManagerTest extends TestBase {
                 "</run-dependency>\n" +
                 "</dependency>\n" +
                 "</module-dependencies>\n" +
-                "<test-dependencies/>\n" +
+                "<test-dependencies>"+ TEST_DEPENDENCIES + "</test-dependencies>\n" +
                 "<friend-packages>\n" +
                 "<friend>org.module.examplemodule</friend>\n" +
                 "<package>org.netbeans.examples.modules.misc</package>\n" +
@@ -681,6 +712,6 @@ public class ProjectXMLManagerTest extends TestBase {
             throw e;
         }
     }
-    
+        
 }
 
