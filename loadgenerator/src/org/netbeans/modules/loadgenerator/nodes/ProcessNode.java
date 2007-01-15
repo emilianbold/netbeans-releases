@@ -74,7 +74,7 @@ public class ProcessNode extends AbstractNode {
   
   @Override
   public String getDisplayName() {
-    return (provider.isRunning() ? NbBundle.getMessage(ProcessNode.class, "ProcessNode_Running") : NbBundle.getMessage(ProcessNode.class, "ProcessNode_Stopped")) + provider.getDisplayName(); // NOI18N
+    return (provider.isRunning() ? NbBundle.getMessage(ProcessNode.class, "ProcessNode_Running") : NbBundle.getMessage(ProcessNode.class, "ProcessNode_Stopped")) + " : " + provider.getDisplayName(); // NOI18N
   }
   
   @Override
