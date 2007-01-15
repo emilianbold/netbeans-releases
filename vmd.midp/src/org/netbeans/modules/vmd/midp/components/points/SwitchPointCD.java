@@ -18,12 +18,13 @@
  */
 package org.netbeans.modules.vmd.midp.components.points;
 
-import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.CodeClassLevelPresenter;
 import org.netbeans.modules.vmd.api.codegen.CodeMultiGuardedLevelPresenter;
 import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
+import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingPresenter;
+import org.netbeans.modules.vmd.api.inspector.common.ArrayPropertyOrderingController;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.support.ArraySupport;
@@ -37,13 +38,13 @@ import org.netbeans.modules.vmd.midp.flow.FlowSwitchPointPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorJavaString;
 import org.openide.util.Utilities;
+
 import javax.swing.text.StyledDocument;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
-import org.netbeans.modules.vmd.api.inspector.common.ArrayPropertyOrderingController;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorJavaString;
 
 /**
  * @author David Kaspar
@@ -90,6 +91,7 @@ public class SwitchPointCD extends ComponentDescriptor {
     
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         MidpActionsSupport.addNewActionPresenter(presenters, SwitchCaseEventSourceCD.TYPEID);
+        MidpActionsSupport.addCommonActionsPresenters (presenters, false, true, true, true, true);
         super.gatherPresenters(presenters);
     }
     
