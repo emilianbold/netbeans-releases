@@ -489,19 +489,19 @@ public class ProjectXMLManagerTest extends TestBase {
         //try wrong usage of remove
         assertFalse("no such cnb under QA func.", pxm.removeTestDependency(QA_FUNCTIONAL, cnb));
         assertFalse("no such cnb under UNIT func.", pxm.removeTestDependency(UNIT, "someCNB"));
-        Set setBefore = (Set) pxm.getTestDependencies(ml).get(UNIT);
+        Set<TestModuleDependency> setBefore = pxm.getTestDependencies(ml).get(UNIT);
         assertEquals("unit test type contains two TD", 2 , setBefore.size());
         //remove first one
         assertTrue("one should be found && removed", pxm.removeTestDependency(UNIT, cnb));        
         ProjectManager.getDefault().saveProject(testingProject);
         //try to remove just removed
         assertFalse("this was just removed", pxm.removeTestDependency(UNIT, cnb));        
-        Set setNow = (Set) pxm.getTestDependencies(ml).get(UNIT);
+        Set<TestModuleDependency> setNow = pxm.getTestDependencies(ml).get(UNIT);
         assertEquals("unit test type contains one TD", 1 , setNow.size());
         //remove last one
         assertTrue("all unit test deps have been removed", pxm.removeTestDependency(UNIT, cnb2));
         ProjectManager.getDefault().saveProject(testingProject);
-        Set setAfter = (Set) pxm.getTestDependencies(ml).get(UNIT);
+        Set<TestModuleDependency> setAfter = pxm.getTestDependencies(ml).get(UNIT);
         assertTrue("unit test type is empty now", setAfter.isEmpty());
     }
     
@@ -522,19 +522,16 @@ public class ProjectXMLManagerTest extends TestBase {
         TestModuleDependency tdAnt_111 = new TestModuleDependency(meAnt, true, true, true);
         TestModuleDependency tdDialogs_000 = new TestModuleDependency(meDialogs, false, false, false);
         
-        Map mapOfTD;
-        HashSet unitTD;
-        HashSet qafuncTD;
+        Map<String,Set<TestModuleDependency>> mapOfTD = pxm.getTestDependencies(ml);
         
-        mapOfTD = pxm.getTestDependencies(ml);
         assertTrue("currently no TD", mapOfTD.isEmpty());
         //first, add one unit test dep
         pxm.addTestDependency(UNIT, tdJP_001);
         ProjectManager.getDefault().saveProject(testingProject);
         mapOfTD = pxm.getTestDependencies(ml);
         assertEquals("map has already unit test type", 1, mapOfTD.size());
-        unitTD = (HashSet) mapOfTD.get(UNIT);
-        qafuncTD = (HashSet) mapOfTD.get(QA_FUNCTIONAL);
+        Set<TestModuleDependency> unitTD = mapOfTD.get(UNIT);
+        Set<TestModuleDependency> qafuncTD = mapOfTD.get(QA_FUNCTIONAL);
         assertEquals("set with unit TD has one TD", 1, unitTD.size());
         assertNull("set with qafunc TD does not exist", qafuncTD);
         //now add 2 other  unit test dep;
@@ -544,14 +541,14 @@ public class ProjectXMLManagerTest extends TestBase {
         ProjectManager.getDefault().saveProject(testingProject);
         mapOfTD = pxm.getTestDependencies(ml);
         assertEquals("map still has only unit test type", 1, mapOfTD.size());
-        unitTD = (HashSet) mapOfTD.get(UNIT);
+        unitTD = mapOfTD.get(UNIT);
         assertEquals("set with unit TD has now three TD", 3, unitTD.size());
         //now add qa-func test dependency
         pxm.addTestDependency(QA_FUNCTIONAL, tdJP_010);
         ProjectManager.getDefault().saveProject(testingProject);
         mapOfTD = pxm.getTestDependencies(ml);
-        unitTD = (HashSet) mapOfTD.get(UNIT);
-        qafuncTD = (HashSet) mapOfTD.get(QA_FUNCTIONAL);
+        unitTD = mapOfTD.get(UNIT);
+        qafuncTD = mapOfTD.get(QA_FUNCTIONAL);
         assertEquals("map has both test types", 2, mapOfTD.size());
         assertEquals("set with unit TD has still three TD", 3, unitTD.size());
         assertEquals("set with qafunc TD has one TD", 1, qafuncTD.size());
@@ -571,9 +568,9 @@ public class ProjectXMLManagerTest extends TestBase {
         final NbModuleProject testingProject = generateTestingProject(testDependencies);
         final ProjectXMLManager pxm = new ProjectXMLManager(testingProject);
         ModuleList ml = ModuleList.getModuleList(testingProject.getProjectDirectoryFile());
-        Map map = pxm.getTestDependencies(ml);
-        assertEquals("map has already unit test type", 1, map.size());
-        Set setUnit = (Set) map.get(UNIT);
+        Map<String,Set<TestModuleDependency>> testDeps = pxm.getTestDependencies(ml);
+        assertEquals("map has already unit test type", 1, testDeps.size());
+        Set<TestModuleDependency> setUnit = testDeps.get(UNIT);
         assertEquals("contains one dependency", 1, setUnit.size());
         //now add one more testdependency
         ModuleEntry meJP = testingProject.getModuleList().getEntry(
@@ -581,13 +578,12 @@ public class ProjectXMLManagerTest extends TestBase {
         TestModuleDependency tdJP = new TestModuleDependency(meJP, false, false, true);
         pxm.addTestDependency(UNIT, tdJP);
         ProjectManager.getDefault().saveProject(testingProject);
-        map = pxm.getTestDependencies(ml);
-        assertEquals("map has already unit test type", 1, map.size());
-        setUnit = (Set) map.get(UNIT);
+        testDeps = pxm.getTestDependencies(ml);
+        assertEquals("map has already unit test type", 1, testDeps.size());
+        setUnit = testDeps.get(UNIT);
         assertEquals("contains two dependencies now", 2, setUnit.size());
         validate(testingProject, false);
     }
-    
     
     private NbModuleProject generateTestingProject() throws Exception {
         return generateTestingProject("");
