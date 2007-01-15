@@ -52,6 +52,7 @@ public class FileOwnerQueryTest extends NbTestCase {
     private FileObject projfile2;
     private FileObject subprojdir;
     private FileObject subprojfile;
+    private FileObject hashedFile;
     private Project p;
     private FileObject zippedfile;
     
@@ -76,6 +77,7 @@ public class FileOwnerQueryTest extends NbTestCase {
         scratch.createFolder("external3").createFolder("subproject").createFolder("testproject");
         p = ProjectManager.getDefault().findProject(projdir);
         assertNotNull("found a project successfully", p);
+        
         // make jar:file:/.../projdir/foo.jar!/zipfile/zippedfile
         FileObject foojar = projdir.createData("foo.jar");
         FileLock lock = foojar.lock();
@@ -105,6 +107,35 @@ public class FileOwnerQueryTest extends NbTestCase {
         assertNotNull("have an archive in " + foojar, foojarRoot);
         zippedfile = foojarRoot.getFileObject("zipdir/zippedfile");
         assertNotNull("zippedfile found in it", zippedfile);
+        
+        hashedFile = projdir.createData(".#webapp.jar.1.45");
+        lock = hashedFile.lock();
+        try {
+            OutputStream os = hashedFile.getOutputStream(lock);
+            try {
+                ZipOutputStream zos = new ZipOutputStream(os);
+                ZipEntry ze = new ZipEntry("zipdir/");
+                ze.setMethod(ZipEntry.STORED);
+                ze.setSize(0L);
+                ze.setCrc(new CRC32().getValue());
+                zos.putNextEntry(ze);
+                ze = new ZipEntry("zipdir/zippedfile");
+                ze.setMethod(ZipEntry.STORED);
+                ze.setSize(0L);
+                ze.setCrc(new CRC32().getValue());
+                zos.putNextEntry(ze);
+                zos.closeEntry();
+                zos.close();
+            } finally {
+                os.close();
+            }
+        } finally {
+            lock.releaseLock();
+        }
+        foojarRoot = FileUtil.getArchiveRoot(hashedFile);
+        assertNotNull("have an archive in " + hashedFile, foojarRoot);
+        hashedFile = foojarRoot.getFileObject("zipdir/zippedfile");
+
     }
     
     protected void tearDown() throws Exception {
@@ -138,6 +169,8 @@ public class FileOwnerQueryTest extends NbTestCase {
     public void testJarOwners() throws Exception {
         assertEquals("correct owner of a ZIPped file", p, FileOwnerQuery.getOwner(zippedfile));
         assertEquals("correct owner of a ZIPped file URL", p, FileOwnerQuery.getOwner(URI.create(zippedfile.getURL().toExternalForm())));
+        assertEquals("correct owner of a ZIPped file", p, FileOwnerQuery.getOwner(hashedFile));
+        assertEquals("correct owner of a ZIPped file URL", p, FileOwnerQuery.getOwner(URI.create(hashedFile.getURL().toExternalForm())));
     }
     
     public void testExternalOwner() throws Exception {

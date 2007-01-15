@@ -93,6 +93,8 @@ public class FileOwnerQuery {
             // XXX: schemaPart can contains spaces. create File first and 
             // then convert it to URI.
             try {
+                //#85137 - # character in uri path seems to cause problems, because it's not escaped. test added.
+                schemaPart = schemaPart.replace("#", "%23");
                 uri = new URI(schemaPart);
             } catch (URISyntaxException ex) {
                 try {
