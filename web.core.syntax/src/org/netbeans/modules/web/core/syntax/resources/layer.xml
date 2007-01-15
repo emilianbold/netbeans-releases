@@ -167,7 +167,7 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-web-core-syntax-completion-JspCompletionProvider.instance"/>
-                    <!--<file name="org-netbeans-modules-web-core-syntax-completion-JavaJspCompletionProvider.instance"/>-->
+                    <file name="org-netbeans-modules-web-core-syntax-completion-JavaJSPCompletionProvider.instance"/>
                 </folder>
 
                 <folder name="HyperlinkProviders">
