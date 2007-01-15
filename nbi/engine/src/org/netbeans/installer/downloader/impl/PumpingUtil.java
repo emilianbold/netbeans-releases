@@ -28,6 +28,9 @@ import java.io.File;
 
 public class PumpingUtil {
   
+  
+  /////////////////////////////////////////////////////////////////////////////////
+  // Static
   // however may be synchronization by dir more local but now I'm not sure that here
   //object that represent dir will be the same when anoth thread need the same dir
   
@@ -36,6 +39,7 @@ public class PumpingUtil {
       if (urlPath.endsWith("/")) fileName = "index.html";
       else if (urlPath.lastIndexOf('/') == -1) fileName = urlPath;
       else fileName = urlPath.substring(urlPath.lastIndexOf('/'));
+     // fileName = fileName.split("[#?]")[0];
       File file = new File(dir, fileName);
       int index = 2;
       int dotPosition = fileName.lastIndexOf('.');

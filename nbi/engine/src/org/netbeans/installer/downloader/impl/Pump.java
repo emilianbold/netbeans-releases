@@ -42,9 +42,13 @@ import org.netbeans.installer.utils.helper.URLUtil;
  */
 public class Pump implements Process {
   
+  /////////////////////////////////////////////////////////////////////////////////
+  // Constants
   private static final int ATTEMPT_TIME_DELAY = DownloadConfig.REATTEMPT_DELAY;
   private static final int MAX_ATTEMPT_COUNT = DownloadConfig.ATTEMPT_COUNT;
   
+  /////////////////////////////////////////////////////////////////////////////////
+  // Instance
   final PumpingImpl pummping;
   URLConnector connector = URLConnector.getConnector();
   
@@ -66,7 +70,6 @@ public class Pump implements Process {
     if (!initPumping()) return;
     pummping.fireChanges("pumpingUpdate");
     if (!processPumping()) return;
-    //verifyPumping();
   }
   
   private boolean initPumping() {
@@ -166,34 +169,6 @@ public class Pump implements Process {
     pummping.changeState(Pumping.State.INTERRUPTED);
     return true;
   }
-  
- /* private boolean verifyPumping() {
-    final URL checksum = URLUtil.create(pummping.realURL().toString() + ".md5");
-    int attemptCount = 0;
-    while (attemptCount < MAX_ATTEMPT_COUNT) {
-      try {
-        final URLConnection connection = connector.establishConnection(checksum);
-        in = connection.getInputStream();
-        final String md5 = StreamUtils.readStream(in).toString();
-        try {
-          return md5.equals(FileUtils.getMd5String(pumping().outputFile()));
-        } catch (NoSuchAlgorithmException ex) {
-          LogManager.log("checksum algorithm not supported", ex);
-        }
-      } catch (IOException ex) {
-        if (exitOnInterrupt()) return false;
-        attemptCount++;
-        try {
-          pummping.changeState(Pumping.State.WAITING);
-          Thread.sleep(ATTEMPT_TIME_DELAY);
-        } catch (InterruptedException exit) {
-          pummping.changeState(Pumping.State.INTERRUPTED);
-          return false;
-        }
-      }
-    }
-    return false;
-  }*/
   
   public void terminate() {
     if (in != null) try {

@@ -42,12 +42,19 @@ import org.netbeans.installer.utils.helper.MutualMap;
  * @author Danila_Dugurov
  */
 public class RoundRobinDispatcher implements ProcessDispatcher {
+  
+  /////////////////////////////////////////////////////////////////////////////////
+  // Static
   private static final Map<LoadFactor, Byte> quantumToSkip = new HashMap<LoadFactor, Byte>();
   static {
     quantumToSkip.put(LoadFactor.FULL, (byte)0);
     quantumToSkip.put(LoadFactor.AVERAGE, (byte)2);
     quantumToSkip.put(LoadFactor.LOW, (byte)4);
   }
+  
+  /////////////////////////////////////////////////////////////////////////////////
+  // Instance
+  
   private final int timeQuantum;
   private final int pollingTime;
   private final WorkersPool pool;
@@ -129,7 +136,7 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
   
   public synchronized void start() {
     if (isActive) return;
-    dispatcherThread = new Thread(new DispathcerWorker());
+    dispatcherThread = new Thread(new DispatcherWorker());
     dispatcherThread.setDaemon(true);
     dispatcherThread.start();
     isActive = true;
@@ -149,7 +156,9 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
     isActive = false;
   }
   
-  private class DispathcerWorker implements Runnable {
+  /////////////////////////////////////////////////////////////////////////////////
+  // Inner Classes 
+  private class DispatcherWorker implements Runnable {
     Worker current;
     
     public void run() {

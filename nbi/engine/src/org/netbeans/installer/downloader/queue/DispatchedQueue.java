@@ -41,6 +41,8 @@ import java.util.Map;
  */
 public class DispatchedQueue extends QueueBase {
   
+  /////////////////////////////////////////////////////////////////////////////////
+  // Instance  
   private final ProcessDispatcher dispatcher = new RoundRobinDispatcher(DISPATCHER_QUANTUM, DISPATCHER_POOL);
   
   private final Map<String, Pump> pId2p = new LinkedHashMap<String, Pump>();

@@ -46,8 +46,12 @@ import org.w3c.dom.Element;
 
 public class PumpingImpl implements Pumping, DomExternalizable {
   
+  /////////////////////////////////////////////////////////////////////////////////
+  // Static  
   private static int nextId;
   
+  /////////////////////////////////////////////////////////////////////////////////
+  // Instance
   private final transient String id;
   private final QueueBase queue;
   

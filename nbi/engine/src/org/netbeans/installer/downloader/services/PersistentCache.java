@@ -41,6 +41,8 @@ import java.util.HashMap;
  */
 public class PersistentCache {
   
+  /////////////////////////////////////////////////////////////////////////////////
+  // Instance  
   private File stateFile;
   
   private final Map<URL, File> url2File = new HashMap<URL, File>();
@@ -104,7 +106,7 @@ public class PersistentCache {
     }
   }
   
-  public void dump() {
+  public synchronized void dump() {
     try {
       final Document document = DomUtil.parseXmlFile("<cache/>");
       final Element root = document.getDocumentElement();
@@ -120,6 +122,8 @@ public class PersistentCache {
     }
   }
   
+  /////////////////////////////////////////////////////////////////////////////////
+  // Inner Classes 
   private static class CacheEntry implements DomExternalizable {
     
     private URL url;

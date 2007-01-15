@@ -46,11 +46,15 @@ import java.util.*;
 
 public abstract class QueueBase implements PumpingsQueue {
   
+  /////////////////////////////////////////////////////////////////////////////////
+  // Static
   /**
    * @noinspection unchecked
    */
   private static final WeakReference<DownloadListener>[] EMPTY_ARRAY = new WeakReference[0];
   
+  /////////////////////////////////////////////////////////////////////////////////
+  // Instance  
   private final List<WeakReference<DownloadListener>> listeners;
   
   protected final Map<String, PumpingImpl> id2Pumping = new HashMap<String, PumpingImpl>();
@@ -110,7 +114,9 @@ public abstract class QueueBase implements PumpingsQueue {
         mehtod.invoke(listener, args);
       } catch (IllegalAccessException ignored) {
         LogManager.log(ignored);
-      } catch (InvocationTargetException ignored) {//undeline throw an exception.
+      } catch (InvocationTargetException ignored) {
+        //undeline throw an exception.
+        //It's not headache of queue if listener throws exceptions - just log it for debug purpose
         LogManager.log(ignored);
       }
     }

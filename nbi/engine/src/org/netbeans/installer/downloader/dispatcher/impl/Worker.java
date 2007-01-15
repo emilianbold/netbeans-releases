@@ -27,6 +27,9 @@ import org.netbeans.installer.downloader.dispatcher.Process;
  */
 public class Worker extends Thread {
   
+  /////////////////////////////////////////////////////////////////////////////////
+  // Instance
+  
   Process current;
   
   public Worker() {

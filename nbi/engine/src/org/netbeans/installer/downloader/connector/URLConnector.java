@@ -42,10 +42,25 @@ import org.w3c.dom.Element;
 
 public class URLConnector {
   
-  private final MyProxySelector proxySelector = new MyProxySelector();
+  /////////////////////////////////////////////////////////////////////////////////
+  // Constants
   
   public static final int SECOND = 1000;
   public static final int MINUTE = 60 * SECOND;
+  
+  /////////////////////////////////////////////////////////////////////////////////
+  // Static
+  private static URLConnector instance;//Singleton
+  
+  public static URLConnector getConnector() {
+    if (instance != null) return instance;
+    return instance = new URLConnector(new File(DownloadManager.instance.getWd(),"settings.xml"));
+  }
+  
+  /////////////////////////////////////////////////////////////////////////////////
+  // Instance
+  
+  final MyProxySelector proxySelector = new MyProxySelector();
   int readTimeout = MINUTE / 3;
   int connectTimeout = MINUTE / 3;
   boolean doInput = true;
@@ -55,13 +70,6 @@ public class URLConnector {
   boolean useProxy = false;
   
   private File settingFile;
-  
-  private static URLConnector instance;
-  
-  public static URLConnector getConnector() {
-    if (instance != null) return instance;
-    return instance = new URLConnector(new File(DownloadManager.instance.getWd(),"settings.xml"));
-  }
   
   private void addSystemProxies() {
     addProxyFrom("http.proxyHost", "http.proxyPort", MyProxyType.HTTP);

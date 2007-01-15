@@ -34,6 +34,16 @@ import org.netbeans.installer.downloader.Pumping.State;
 //todo: may be very general synchronization - optimize!
 public class FileProvider {
   
+  /////////////////////////////////////////////////////////////////////////////////
+  // Static
+  private static final FileProvider fileProvider = new FileProvider();
+  
+  public static FileProvider getProvider() {
+    return fileProvider;
+  }
+  
+  /////////////////////////////////////////////////////////////////////////////////
+  // Instance
   private final DownloadManager downloadManager = DownloadManager.instance;
   
   private final DownloadListener listener = new MyListener();
@@ -41,12 +51,6 @@ public class FileProvider {
   private final PersistentCache cache = new PersistentCache();
   
   private final Map<URL, State> scheduledURL2State = new HashMap<URL, State>();
-  
-  private static final FileProvider fileProvider = new FileProvider();
-  
-  public static FileProvider getProvider() {
-    return fileProvider;
-  }
   
   protected FileProvider() {
     downloadManager.registerListener(listener);
@@ -107,8 +111,10 @@ public class FileProvider {
   
   public synchronized boolean manuallyDelete(URL url) {
     return cache.delete(url);
-  }
+  }  
   
+  /////////////////////////////////////////////////////////////////////////////////
+  // Inner Classes
   private class MyListener extends EmptyQueueListener {
     public void pumpingStateChange(String id) {
       final Pumping pumping = downloadManager.queue().getById(id);

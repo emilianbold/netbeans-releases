@@ -43,6 +43,9 @@ import org.w3c.dom.Element;
  * @author Danila_Dugurov
  */
 public class MyProxySelector extends ProxySelector implements DomExternalizable {
+    
+  /////////////////////////////////////////////////////////////////////////////////
+  // Instance
   
   private final Map<MyProxyType, MyProxy> proxies = new HashMap<MyProxyType, MyProxy>();
   transient private Set<String> byPassSet = new HashSet<String>();

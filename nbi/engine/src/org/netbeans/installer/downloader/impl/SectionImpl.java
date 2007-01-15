@@ -38,6 +38,8 @@ import org.w3c.dom.Element;
  */
 public class SectionImpl implements Section, DomExternalizable {
   
+  /////////////////////////////////////////////////////////////////////////////////
+  // Instance
   protected long start;
   protected long length;
   protected long offset;

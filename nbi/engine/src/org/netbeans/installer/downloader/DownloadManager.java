@@ -31,13 +31,22 @@ import org.netbeans.installer.utils.FileUtils;
  * @author Danila_Dugurov
  */
 
+/**
+ * It's main downloader class. It's singleton.
+ * Only from here client can access download service and register there own listeners.
+ * Also from here managed execution of downloding process.
+ */
 public class DownloadManager {
   
+  /////////////////////////////////////////////////////////////////////////////////
+  // Constants
   public static final DownloadManager instance = new DownloadManager();
+  private static File defaultFolder;
   
+  /////////////////////////////////////////////////////////////////////////////////
+  // Instance
   private final DispatchedQueue queue;
   private final File wd;
-  private static File defaultFolder;
   
   private DownloadManager() {
     wd = new File(Installer.DEFAULT_LOCAL_DIRECTORY_PATH, "wd");
