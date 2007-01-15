@@ -54,7 +54,7 @@ import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.mobility.project.classpath.J2MEProjectClassPathExtender;
 import org.netbeans.modules.mobility.project.queries.UnitTestForSourceQueryImpl;
-//import org.netbeans.modules.mobility.j2meunit.J2MEUnitPlugin;
+import org.netbeans.modules.mobility.j2meunit.J2MEUnitPlugin;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -242,7 +242,7 @@ public final class J2MEProject implements Project, AntProjectListener {
             refHelper,
             new J2MEProjectClassPathExtender(this, helper, refHelper),
             new J2MEProjectOperations(this, helper, refHelper),
-//            new J2MEUnitPlugin(),
+            new J2MEUnitPlugin(this,helper),
             new UnitTestForSourceQueryImpl(this.helper),
             new PreprocessorFileFilterImplementation(configHelper, helper)
         });
