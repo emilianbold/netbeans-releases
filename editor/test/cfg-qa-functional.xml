@@ -153,6 +153,15 @@ executor="ide-nogui">
         </testset>
     </testbag>
     
+    
+    <!-- Formatting tests -->
+    <testbag testattribs="formatting" name="FormattingTests">
+        <testset dir="qa-functional/src">
+            <patternset>            
+                <include name="org/netbeans/test/editor/formatting/*.class"/>            
+            </patternset>
+        </testset>
+    </testbag>
             
     <!-- Key bindings tests -->
     
