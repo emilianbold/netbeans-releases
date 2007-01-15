@@ -45,6 +45,7 @@ import org.openide.actions.PasteAction;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
@@ -185,73 +186,77 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
         
         public void propertyChange(final PropertyChangeEvent evt)
         {
-            if (evt.getNewValue() instanceof ProjectConfiguration[])
-            {
-                final List<ProjectConfiguration> nObj=Arrays.asList((ProjectConfiguration[])evt.getNewValue());
-                final List<ProjectConfiguration> oObj=Arrays.asList((ProjectConfiguration[])evt.getOldValue());
-                
-                //Add new configurations
-                List<ProjectConfiguration> base=new ArrayList(nObj);
-                base.removeAll(oObj);
-                for (ProjectConfiguration cfg : base)
-                {
-                    //new Configuration
-                    final J2MEProject project=node.getLookup().lookup(J2MEProject.class);
-                    final Node n=new CfgNode(
-                            new ConfigChildren(),
-                            Lookups.fixed(new Object[] {project, cfg, new AbilitiesPanel.VAData()}),
-                            cfg.getDisplayName(),PLATFORM_ICON,
-                            new Action[] {
-                                          SetConfigurationAction.getStaticInstance(),
-                                          null,
-                                          SystemAction.get(CopyAction.class),
-                                          RemoveConfigurationAction.getStaticInstance(),
-                                         });
-                    node.getChildren().add(new Node[] {n});
-                    n.setName(cfg.getDisplayName());
-                }
-                
-                //Remove configurations
-                base=new ArrayList(oObj);
-                base.removeAll(nObj);
-                for (ProjectConfiguration cfg : base)
-                {
-                   Node parentNode=node.getChildren().findChild(cfg.getDisplayName());
-                   if (parentNode!= null)
-                     node.getChildren().remove(new Node[] {parentNode}) ;
-                   return;
-                }
-            }
-            
-            //Change of active configuration
-            if (evt.getNewValue() instanceof ProjectConfiguration)
-            {   // Configuration changed
-                final ProjectConfiguration nObj=(ProjectConfiguration)evt.getNewValue();
-                final ProjectConfiguration oObj=(ProjectConfiguration)evt.getOldValue();
-
-                if (oObj!=null && oObj!=nObj)
-                {
-                    if (oObj!=null)
+            RequestProcessor.getDefault().post(new Runnable(){
+                public void run() {
+                    if (evt.getNewValue() instanceof ProjectConfiguration[])
                     {
-                        final Node n=node.getChildren().findChild(oObj.getDisplayName());
-                        if (n!=null)
+                        final List<ProjectConfiguration> nObj=Arrays.asList((ProjectConfiguration[])evt.getNewValue());
+                        final List<ProjectConfiguration> oObj=Arrays.asList((ProjectConfiguration[])evt.getOldValue());
+
+                        //Add new configurations
+                        List<ProjectConfiguration> base=new ArrayList(nObj);
+                        base.removeAll(oObj);
+                        for (ProjectConfiguration cfg : base)
                         {
-                            n.setValue("bold",Boolean.FALSE);
-                            n.setName(oObj.getDisplayName());
+                            //new Configuration
+                            final J2MEProject project=node.getLookup().lookup(J2MEProject.class);
+                            final Node n=new CfgNode(
+                                    new ConfigChildren(),
+                                    Lookups.fixed(new Object[] {project, cfg, new AbilitiesPanel.VAData()}),
+                                    cfg.getDisplayName(),PLATFORM_ICON,
+                                    new Action[] {
+                                                  SetConfigurationAction.getStaticInstance(),
+                                                  null,
+                                                  SystemAction.get(CopyAction.class),
+                                                  RemoveConfigurationAction.getStaticInstance(),
+                                                 });
+                            node.getChildren().add(new Node[] {n});
+                            n.setName(cfg.getDisplayName());
+                        }
+
+                        //Remove configurations
+                        base=new ArrayList(oObj);
+                        base.removeAll(nObj);
+                        for (ProjectConfiguration cfg : base)
+                        {
+                           Node parentNode=node.getChildren().findChild(cfg.getDisplayName());
+                           if (parentNode!= null)
+                             node.getChildren().remove(new Node[] {parentNode}) ;
+                           return;
                         }
                     }
 
-                    if (nObj!=null)
-                    {
-                        Node n=node.getChildren().findChild(nObj.getDisplayName());
-                        if (n!=null)
+                    //Change of active configuration
+                    if (evt.getNewValue() instanceof ProjectConfiguration)
+                    {   // Configuration changed
+                        final ProjectConfiguration nObj=(ProjectConfiguration)evt.getNewValue();
+                        final ProjectConfiguration oObj=(ProjectConfiguration)evt.getOldValue();
+
+                        if (oObj!=null && oObj!=nObj)
                         {
-                            n.setValue("bold",Boolean.TRUE);
-                            n.setName(nObj.getDisplayName());
+                            if (oObj!=null)
+                            {
+                                final Node n=node.getChildren().findChild(oObj.getDisplayName());
+                                if (n!=null)
+                                {
+                                    n.setValue("bold",Boolean.FALSE);
+                                    n.setName(oObj.getDisplayName());
+                                }
+                            }
+
+                            if (nObj!=null)
+                            {
+                                Node n=node.getChildren().findChild(nObj.getDisplayName());
+                                if (n!=null)
+                                {
+                                    n.setValue("bold",Boolean.TRUE);
+                                    n.setName(nObj.getDisplayName());
+                                }
+                            }                    
                         }
-                    }                    
+                    }
                 }
-            }
+            });
         }
     }
     
