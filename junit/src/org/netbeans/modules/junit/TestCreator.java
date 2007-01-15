@@ -2173,7 +2173,7 @@ public final class TestCreator implements TestabilityJudge {
             result = TestabilityResult.combine(result, TestabilityResult.PRIVATE_CLASS);
         if (skipTestClasses && TestUtil.isClassImplementingTestInterface(compInfo, classElem)) 
             result = TestabilityResult.combine(result, TestabilityResult.TEST_CLASS);
-        if (skipPkgPrivateClasses && !EnumSet.copyOf(modifiers).removeAll(ACCESS_MODIFIERS))
+        if (skipPkgPrivateClasses && (modifiers.isEmpty() || !EnumSet.copyOf(modifiers).removeAll(ACCESS_MODIFIERS)))
             result = TestabilityResult.combine(result, TestabilityResult.PACKAGE_PRIVATE_CLASS);
         if (skipAbstractClasses && modifiers.contains(ABSTRACT))
             result = TestabilityResult.combine(result, TestabilityResult.ABSTRACT_CLASS);
@@ -2249,8 +2249,16 @@ public final class TestCreator implements TestabilityJudge {
     private boolean isMethodAcceptable(ExecutableElement method) {
         Set<Modifier> modifiers = method.getModifiers();
         
-        return (testPkgPrivateMethods && !EnumSet.copyOf(modifiers).removeAll(ACCESS_MODIFIERS))
-               || EnumSet.copyOf(modifiers).removeAll(methodAccessModifiers);
+        if (modifiers.isEmpty()) {
+            /*
+             * EnumSet.copyOf(modifiers) may throw an exception if 'modifiers'
+             * is empty.
+             */
+            return testPkgPrivateMethods;
+        } else {
+            return (testPkgPrivateMethods && !EnumSet.copyOf(modifiers).removeAll(ACCESS_MODIFIERS))
+                   || EnumSet.copyOf(modifiers).removeAll(methodAccessModifiers);
+        }
     }
     
     /**
