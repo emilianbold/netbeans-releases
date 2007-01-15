@@ -25,7 +25,8 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
                <include name="org/netbeans/test/jsf/JsfFunctionalTest.class"/>
-               <include name="org/netbeans/test/jsf/JsfFunctionalTest.class/testManagedBeanDelete" expectedFail="Safe delete not yet implemented (#77310)"/>
+               <!-- Safe delete not yet implemented (#77310) -->
+               <exclude name="org/netbeans/test/jsf/JsfFunctionalTest.class/testManagedBeanDelete"/>
                <include name="org/netbeans/test/jsf/JsfPagesFromEntityClassTest.class"/>
                <include name="org/netbeans/test/jsf/JsfPagesFromEntityClassTest.class/testCreateJSFPagesFromEntityClass" expectedFail="JSF Pages from Entity Class not yet implemented."/>
                <!-- Add when 91417 fixed.
