@@ -73,9 +73,11 @@ public class UploadLogsTest extends NbTestCase {
 
             final byte[] content = MemoryURL.getOutputForURL("memory://upload");
 
-            int head = new String(content, "utf-8").indexOf("\n\n");
+            String lineDelim = System.getProperty("line.separator");
+            assertNotNull("Some delim is there", lineDelim);
+            int head = new String(content, "utf-8").indexOf(lineDelim + lineDelim);
             if (head == -1) {
-                fail("There should be an empty line:\n" + content);
+                fail("There should be an empty line:\n" + new String(content, "utf-8"));
             }
 
             class RFImpl implements MultiPartHandler.RequestFacade, MultiPartHandler.InputFacade {
