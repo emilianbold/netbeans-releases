@@ -30,7 +30,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorElem
 public interface PropertyEditorEventHandlerElement extends PropertyEditorElement {
     
     int MODEL_TYPE_DISPLAYABLES = 0;
-    int MODEL_TYPE_ALERTS = 1;
+    int MODEL_TYPE_DISPLAYABLES_WITHOUT_ALERTS = 1;
     int MODEL_TYPE_POINTS = 2;
     
     void createEventHandler(DesignComponent eventSource);

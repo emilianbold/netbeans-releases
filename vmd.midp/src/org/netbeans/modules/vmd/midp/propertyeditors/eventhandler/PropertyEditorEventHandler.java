@@ -89,15 +89,17 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
                 DesignComponent displayableCategory = MidpDocumentSupport.getCategoryComponent(document, DisplayablesCategoryCD.TYPEID);
                 DesignComponent pointsCategory = MidpDocumentSupport.getCategoryComponent(document, PointsCategoryCD.TYPEID);
                 List<DesignComponent> displayables = DocumentSupport.gatherAllComponentsOfTypeID(displayableCategory, DisplayableCD.TYPEID);
-                
                 customEditor.updateModels(displayables, PropertyEditorEventHandlerElement.MODEL_TYPE_DISPLAYABLES, value);
+
                 List<DesignComponent> alerts = DocumentSupport.gatherAllComponentsOfTypeID(displayableCategory, AlertCD.TYPEID);
-                
-                customEditor.updateModels(alerts, PropertyEditorEventHandlerElement.MODEL_TYPE_ALERTS, value);
+                List<DesignComponent> displExceptAlerts = new ArrayList<DesignComponent>(displayables.size() - alerts.size());
+                displExceptAlerts.addAll(displayables);
+                displExceptAlerts.removeAll(alerts);
+                customEditor.updateModels(displExceptAlerts, PropertyEditorEventHandlerElement.MODEL_TYPE_DISPLAYABLES_WITHOUT_ALERTS, value);
+
                 List<DesignComponent> points = DocumentSupport.gatherAllComponentsOfTypeID(pointsCategory, CallPointCD.TYPEID);
                 List<DesignComponent> methods = DocumentSupport.gatherAllComponentsOfTypeID(pointsCategory, MethodPointCD.TYPEID);
                 List<DesignComponent> pointsAndMethods = new ArrayList<DesignComponent>(points.size() + methods.size());
-                
                 pointsAndMethods.addAll(points);
                 pointsAndMethods.addAll(methods);
                 customEditor.updateModels(pointsAndMethods, PropertyEditorEventHandlerElement.MODEL_TYPE_POINTS, value);

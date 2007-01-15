@@ -142,7 +142,11 @@ public final class MidpDocumentSupport {
     }
     
     public static void updateEventHandlerWithAlert(DesignComponent eventHandler, DesignComponent alert) {
-        eventHandler.writeProperty(SwitchDisplayableEventHandlerCD.PROP_ALERT, PropertyValue.createComponentReference(alert));
+        if (alert  != null) {
+            eventHandler.writeProperty(SwitchDisplayableEventHandlerCD.PROP_ALERT, PropertyValue.createComponentReference(alert));
+        } else {
+            eventHandler.writeProperty(SwitchDisplayableEventHandlerCD.PROP_ALERT, PropertyValue.createNull());
+        }
     }
     
     public static String createDisplayNameFromTypeID(TypeID type) {

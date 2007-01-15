@@ -14,10 +14,10 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <Component id="throwAlertCheckBox" min="-2" max="-2" attributes="0"/>
+              <Component id="thenGoToCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
-          <Component id="alertsComboBox" alignment="0" pref="300" max="32767" attributes="0"/>
+          <Component id="displayablesWithoutAlertsComboBox" alignment="0" pref="300" max="32767" attributes="0"/>
           <Component id="displayablesComboBox" alignment="0" pref="300" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
@@ -26,9 +26,9 @@
           <Group type="102" alignment="0" attributes="0">
               <Component id="displayablesComboBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="throwAlertCheckBox" min="-2" max="-2" attributes="0"/>
+              <Component id="thenGoToCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="alertsComboBox" min="-2" max="-2" attributes="0"/>
+              <Component id="displayablesWithoutAlertsComboBox" min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -47,7 +47,7 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="displayablesComboBoxActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JCheckBox" name="throwAlertCheckBox">
+    <Component class="javax.swing.JCheckBox" name="thenGoToCheckBox">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/vmd/midp/propertyeditors/eventhandler/Bundle.properties" key="LBL_THROUGH_ALERT" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -57,30 +57,28 @@
             <EmptyBorder bottom="0" left="0" right="0" top="0"/>
           </Border>
         </Property>
+        <Property name="enabled" type="boolean" value="false"/>
         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
           <Insets value="[0, 0, 0, 0]"/>
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="throwAlertCheckBoxActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="thenGoToCheckBoxActionPerformed"/>
       </Events>
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
     </Component>
-    <Component class="javax.swing.JComboBox" name="alertsComboBox">
+    <Component class="javax.swing.JComboBox" name="displayablesWithoutAlertsComboBox">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="alertsModel" type="code"/>
+          <Connection code="displayablesWithoutAlertModel" type="code"/>
         </Property>
         <Property name="enabled" type="boolean" value="false"/>
         <Property name="renderer" type="javax.swing.ListCellRenderer" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="cellRenderer" type="code"/>
         </Property>
       </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="alertsComboBoxActionPerformed"/>
-      </Events>
     </Component>
   </SubComponents>
 </Form>
