@@ -203,10 +203,12 @@ public class J2MEActionProvider implements ActionProvider {
                         }
                     }
                 } else if (COMMAND_DEBUG.equals(command)) {
-                    doPrepareForDebugger(ep, p, activeConfiguration);
+                    p.put(DefaultPropertiesDescriptor.OBFUSCATION_LEVEL, "0"); //NOI18N
+                    p.put("app.codename", project.getName()); // NOI18N
                 } else if (COMMAND_DEBUG_STEP_INTO.equals(command)) {
                     p.put("debug.step.into", "true"); //NOI18N
-                    doPrepareForDebugger(ep, p, activeConfiguration);
+                    p.put(DefaultPropertiesDescriptor.OBFUSCATION_LEVEL, "0"); //NOI18N
+                    p.put("app.codename", project.getName()); // NOI18N
                 }
                 if (COMMAND_RUN.equals(command) || COMMAND_RUN_WITH.equals(command) || COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_STEP_INTO.equals(command)) {
                     String url = getJadURL();
@@ -239,65 +241,6 @@ public class J2MEActionProvider implements ActionProvider {
 //        } else {
             action.run();
 //        }
-    }
-    
-    protected void doPrepareForDebugger(final EditableProperties ep, final Properties p, final String activeConfiguration) {
-        p.put(DefaultPropertiesDescriptor.OBFUSCATION_LEVEL, "0"); //NOI18N
-        p.put("app.codename", project.getName()); // NOI18N
-        final String raw = evaluateProperty(ep, "libs.classpath", activeConfiguration); // NOI18N
-        final PropertyParser parser = DefaultPropertyParsers.PATH_PARSER;
-        final ReferenceHelper refs = project.getLookup().lookup(ReferenceHelper.class);
-        
-        final StringBuffer buffer = new StringBuffer();
-        if (raw != null  &&  refs != null) {
-            final List<VisualClassPathItem> list = (List<VisualClassPathItem>)parser.decode(raw, helper, refs);
-            for (int i = 0; i < list.size(); i++) {
-                final VisualClassPathItem vcpi = list.get(i);
-                switch (vcpi.getType()) {
-                    case VisualClassPathItem.TYPE_ARTIFACT: {
-                        final Object o =  vcpi.getElement();
-                        if (! (o instanceof AntArtifact))
-                            continue;
-                        FileObject af[] = ((AntArtifact) o).getArtifactFiles();
-                        for (int ai=0; ai<af.length; ai++) {
-                            if (FileUtil.isArchiveFile(af[ai])) {
-                                af[ai] = FileUtil.getArchiveRoot(af[ai]);
-                                if (af[ai] != null) {
-                                    final URL url = URLMapper.findURL(af[ai], URLMapper.INTERNAL);
-                                    if (url != null) {
-                                        final SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(url);
-                                        if (result != null) {
-                                            final FileObject[] fos = result.getRoots();
-                                            if (fos != null) for (int j = 0; j < fos.length; j++) {
-                                                final FileObject fo = fos[j];
-                                                final File f = FileUtil.toFile(fo);
-                                                if (f != null) {
-                                                    if (buffer.length() > 0)
-                                                        buffer.append(File.pathSeparator);
-                                                    buffer.append(f.getAbsolutePath());
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } break;
-                    case VisualClassPathItem.TYPE_CLASSPATH:
-                    case VisualClassPathItem.TYPE_FOLDER:
-                    case VisualClassPathItem.TYPE_JAR:
-                    case VisualClassPathItem.TYPE_LIBRARY: {
-                        final String text = vcpi.getRawText();
-                        if (text == null)
-                            continue;
-                        if (buffer.length() > 0)
-                            buffer.append(File.pathSeparator);
-                        buffer.append(text);
-                    } break;
-                }
-            }
-        }
-        p.put("libs.src.path", buffer.toString()); // NOI18N
     }
     
     protected String evaluateProperty(final EditableProperties ep, final String propertyName, final String configuration) {

@@ -5,16 +5,5 @@
     <target name="debug" description="Debug project." depends="clean,jar,__DEPENDS__"/>
 
     <target name="nbdebug" description="Start NetBeans debugger" if="netbeans.home">
-        <nb-mobility-debug address="${{jpda.port}}" name="${{app.codename}}" timeout="30000" period="2000">
-            <bootclasspath>
-                <path path="${{platform.bootclasspath}}"/>
-            </bootclasspath>
-            <classpath>
-                <path path="${{dist.dir}}/${{dist.jar}}"/>
-            </classpath>
-            <sourcepath>
-                <path path="${{src.dir}}"/>
-                <path path="${{libs.src.path}}"/>
-            </sourcepath>
-        </nb-mobility-debug>
+        <nb-mobility-debug address="${{jpda.port}}" name="${{app.codename}}" timeout="30000" period="2000"/>
     </target>
