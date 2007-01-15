@@ -21,11 +21,13 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.tag;
 
 import org.netbeans.lib.cvsclient.command.tag.TagCommand;
 import org.netbeans.lib.cvsclient.CVSRoot;
-import org.netbeans.lib.cvsclient.admin.AdminHandler;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
-import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.ui.selectors.BranchSelector;
+import org.openide.DialogDescriptor;
 
+import javax.swing.event.DocumentListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.*;
 import java.io.IOException;
 import java.io.File;
 
@@ -34,15 +36,32 @@ import java.io.File;
  *
  * @author Maros Sandor
  */
-public class TagSettings extends javax.swing.JPanel {
+public class TagSettings extends javax.swing.JPanel implements DocumentListener {
     
     private final File[] roots;
 
     public TagSettings(File [] roots) {
         this.roots = roots;
         initComponents();
+        tfName.getDocument().addDocumentListener(this);
     }
     
+    void onTagNameChange() {
+        JButton dd = (JButton) getClientProperty("OKButton");
+        if (dd != null) dd.setEnabled(Utils.isTagValid(tfName.getText()));
+    }
+
+    public void insertUpdate(DocumentEvent e) {
+        onTagNameChange();
+    }
+    public void removeUpdate(DocumentEvent e) {
+        onTagNameChange();
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+        onTagNameChange();
+    }
+
     public void setCommand(TagCommand cmd) {
         cbMoveTag.setSelected(cmd.isOverrideExistingTag());
         cbCheckModified.setSelected(cmd.isCheckThatUnmodified());

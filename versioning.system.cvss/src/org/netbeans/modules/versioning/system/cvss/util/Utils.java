@@ -546,4 +546,24 @@ public class Utils {
         FileObject fo = FileUtil.toFileObject(parent);
         return FileUtil.createFolder(fo, path);
     }
+
+    /**
+     * 1) A tag must start with a letter
+     * 2) A tag must not contain characters: $,.:;@ SPACE TAB NEWLINE
+     * 3) Reserved tag names: HEAD BASE
+     * 
+     * @param name
+     * @return true if the name of the tag is valid, false otherwise
+     */
+    public static boolean isTagValid(String name) {
+        if (name == null || name.length() == 0) return false;
+        char c = name.charAt(0);
+        if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z')) return false;
+        for (int i = 1; i < name.length(); i++) {
+            c = name.charAt(i);
+            if (c == '$' || c == ',' || c=='.' || c == ':' || c == ';' || c =='@' || c == ' ' || c == '\t' || c == '\n') return false;
+        }
+        if (name.equals("HEAD") || name.equals("BASE")) return false;
+        return true;
+    }
 }

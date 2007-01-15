@@ -27,6 +27,7 @@ import org.openide.DialogDescriptor;
 
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
+import javax.swing.*;
 import java.io.IOException;
 import java.io.File;
 import org.openide.util.*;
@@ -49,14 +50,17 @@ class BranchSettings extends javax.swing.JPanel {
         tfBaseTagName.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
                 autoComputeBaseTagName = computeBaseTagName().equals(tfBaseTagName.getText());
+                onBranchNameChange(tfBaseTagName.getText());
             }
 
             public void insertUpdate(DocumentEvent e) {
                 autoComputeBaseTagName = computeBaseTagName().equals(tfBaseTagName.getText());
+                onBranchNameChange(tfBaseTagName.getText());
             }
 
             public void removeUpdate(DocumentEvent e) {
                 autoComputeBaseTagName = computeBaseTagName().equals(tfBaseTagName.getText());
+                onBranchNameChange(tfBaseTagName.getText());
             }
         });        
         
@@ -64,20 +68,32 @@ class BranchSettings extends javax.swing.JPanel {
         tfName.setText(CvsModuleConfig.getDefault().getPreferences().get("BranchSettings.branchName", NbBundle.getMessage(BranchSettings.class, "BK0002"))); // NOI18N
         tfName.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
+                onBranchNameChange(tfName.getText());
                 refreshComponents();
             }
 
             public void insertUpdate(DocumentEvent e) {
+                onBranchNameChange(tfName.getText());
                 refreshComponents();
             }
 
             public void removeUpdate(DocumentEvent e) {
+                onBranchNameChange(tfName.getText());
                 refreshComponents();
             }
         });
         refreshComponents();
     }
 
+    void onBranchNameChange() {
+        onBranchNameChange(tfName.getText());
+    }
+    
+    private void onBranchNameChange(String name) {
+        JButton dd = (JButton) getClientProperty("OKButton");
+        if (dd != null) dd.setEnabled(Utils.isTagValid(name));
+    }
+    
     public boolean isCheckingOutBranch() {
         return cbCheckoutBranch.isSelected();
     }

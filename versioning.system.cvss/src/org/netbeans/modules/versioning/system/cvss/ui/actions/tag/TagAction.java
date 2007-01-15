@@ -27,6 +27,7 @@ import org.openide.nodes.Node;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
 import org.netbeans.lib.cvsclient.command.tag.TagCommand;
 
@@ -75,6 +76,8 @@ public class TagAction extends AbstractSystemAction {
         settings.setCommand(cmd);
         
         JButton tag = new JButton(NbBundle.getMessage(TagAction.class, "CTL_TagDialog_Action_Tag"));
+        settings.putClientProperty("OKButton", tag);
+        settings.onTagNameChange();
         tag.setToolTipText(NbBundle.getMessage(TagAction.class,  "TT_TagDialog_Action_Tag"));
         DialogDescriptor descriptor = new DialogDescriptor(
                 settings,

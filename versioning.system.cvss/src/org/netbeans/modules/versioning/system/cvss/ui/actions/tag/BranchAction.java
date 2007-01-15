@@ -82,6 +82,8 @@ public class BranchAction extends AbstractSystemAction {
         JButton branch = new JButton(NbBundle.getMessage(BranchAction.class, "CTL_BranchDialog_Action_Branch"));
         branch.setToolTipText(NbBundle.getMessage(BranchAction.class,  "TT_BranchDialog_Action_Branch"));
         BranchSettings settings = new BranchSettings(context.getFiles());
+        settings.putClientProperty("OKButton", branch);
+        settings.onBranchNameChange();
         DialogDescriptor descriptor = new DialogDescriptor(
                 settings,
                 title,
