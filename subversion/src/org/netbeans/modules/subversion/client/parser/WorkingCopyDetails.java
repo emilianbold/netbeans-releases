@@ -465,7 +465,7 @@ public class WorkingCopyDetails {
                 // 1. could be a keyword ...
                 for (int keywordsIdx = 0; keywordsIdx < keywords.length; keywordsIdx++) {
 
-                    String keyword = keywords[keywordsIdx] + "$";                                   // NOI18N
+                    String keyword = keywords[keywordsIdx];                                          // NOI18N
 
                     boolean gotHeader = false;
                     for (int keyIdx = 0; keyIdx < keyword.length(); keyIdx++) {
@@ -479,15 +479,27 @@ public class WorkingCopyDetails {
                     }
                     
                     if(gotHeader) {
-                        // 3. it was a keyword -> skip the chars until the next '$'
-                        // for the base file
+                        
+                        // base file idx
                         fileIdx += keyword.length(); 
+                        
+                        // 3. now check if there is somthing like "$", ":$" after the keyword                                
+                        if(checkFollowingString(baseLine, fileIdx, "$")) {
+                            fileIdx += 1;
+                        } else if(checkFollowingString(baseLine, fileIdx, ":$")) {
+                            fileIdx += 2;    
+                        } else {
+                            // we are done
+                            return false;
+                        }
+                                                
+                        // 4. it was a correctly closed keyword -> skip the chars until the next '$'
                         // for the modified file - '$Id: '
                         modifiedIdx += keyword.length() + 1;       //                  
                         while(++modifiedIdx < modifiedLine.length() && modifiedLine.charAt(modifiedIdx) != '$');
 
                         if(modifiedIdx >= modifiedLine.length()) {
-                            // modified line is done but we found a kyeword -> wrong
+                            // modified line is done but we found a keyword -> wrong
                             return false; 
                         } 
                         break;
@@ -505,4 +517,17 @@ public class WorkingCopyDetails {
         }
         return modifiedIdx == modifiedLine.length() - 2;      
     }
+    
+    private boolean checkFollowingString(String baseLine, int offset, String str) {
+        if(baseLine.length() < offset + str.length()) {
+            return false;
+        }
+        for (int idx = 0; idx < str.length(); idx++) {
+            if(baseLine.charAt(offset + idx + 1) != str.charAt(idx)) {
+                return false;
+            }            
+        }
+        return true;    
+    }
+    
 }

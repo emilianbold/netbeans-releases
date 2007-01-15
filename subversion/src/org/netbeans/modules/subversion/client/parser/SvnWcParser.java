@@ -65,7 +65,7 @@ public class SvnWcParser {
     }
 
     private List<ISVNStatus> getStatus(File path, boolean descend) throws LocalSubversionException {
-        List<ISVNStatus> ret = new ArrayList(20);
+        List<ISVNStatus> ret = new ArrayList<ISVNStatus>(20);
                         
         File[] children = path.listFiles();
         if(children != null && children.length > 0) {        
