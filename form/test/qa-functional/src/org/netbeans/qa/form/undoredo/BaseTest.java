@@ -1,4 +1,4 @@
-package org.netbeans.qa.form.undoredo;
+    package org.netbeans.qa.form.undoredo;
 /*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in

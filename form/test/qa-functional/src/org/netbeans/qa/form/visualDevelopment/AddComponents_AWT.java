@@ -145,7 +145,7 @@ public class AddComponents_AWT extends JellyTestCase {
             fail("Fail during create reffile: " + e.getMessage());
         }
         System.out.println("reffile: " + this.getName()+".ref");
-        try {
+        try { 
             System.out.println("workdir: " + getWorkDir());
         } catch (Exception e) {
             System.out.println("e:" + e.getMessage() );

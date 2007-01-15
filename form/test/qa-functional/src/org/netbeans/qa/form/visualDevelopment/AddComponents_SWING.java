@@ -95,7 +95,7 @@ public class AddComponents_SWING extends JellyTestCase {
      */
     
     public void testAddAndCompile() {
-        String categoryName = "Swing";
+        String categoryName = "Swing Controls";
         
         pto = new ProjectsTabOperator();
         ProjectRootNode prn = pto.getProjectRootNode(DATA_PROJECT_NAME);
@@ -116,12 +116,13 @@ public class AddComponents_SWING extends JellyTestCase {
         Vector componentNames = new Vector();
         ComponentPaletteOperator palette = new ComponentPaletteOperator();
         palette.collapseBeans();
-//        palette.collapseLayouts();
+        palette.collapseSwingContainers();
+        palette.collapseSwingMenus();
+        palette.collapseSwingWindows();
         palette.collapseAWT();
-        //palette.expandSwing();
         palette.expandSwingControls();
-        JListOperator list = palette.lstComponents(); //selectPage(categoryName);
-        System.out.println("LLL " + list.getModel());
+        //JListOperator list = palette.lstComponents(); //selectPage(categoryName);
+       // System.out.println("LLL " + list.getModel());
         //String [] componentList = {"JLabel", "JButton", "JToggleButton", "JCheckBox", "JRadioButton", "ButtonGroup", "JComboBox", "JList", "JTextField", "JTextArea", "JPanel", "JTabbedPane", "JScrollBar", "JScrollPane", "JMenuBar", "JPopupMenu", "JSlider", "JProgressBar", "JSplitPane", "JFormattedTextField", "JPasswordField", "JSpinner", "JSeparator", "JTextPane", "JEditorPane", "JTree", "JTable", "JToolBar", "JInternalFrame", "JLayeredPane", "JDesktopPane", "JOptionPane", "JColorChooser", "JFileChooser", "JFrame", "JDialog"};
         String [] componentList = {"Label", "Button", "Toggle Button", "Check Box", "Radio Button", "Button Group", "Combo Box", "List", "Text Field", "Text Area", "Scroll Bar", "Slider", "Progress Bar", "Formatted Field", "Password Field", "Spinner", "Separator", "Text Pane", "Editor Pane", "Tree", "Table"};
         for (int i=0; i<componentList.length; i++) {
@@ -140,7 +141,7 @@ public class AddComponents_SWING extends JellyTestCase {
             popupAddFromPaletteAction.perform(inspectorRootNode);
         }
         
-        log("All components from Component Palette : " + categoryName + " - were added to " + FILE_NAME);
+        log("All components from Swing Controls Palette : " + categoryName + " - were added to " + FILE_NAME);
         
         log("Try to save the form.");
         editAction.perform(formnode);

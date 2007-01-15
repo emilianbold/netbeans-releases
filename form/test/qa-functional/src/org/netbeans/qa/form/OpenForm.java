@@ -62,12 +62,11 @@ public class OpenForm extends JellyTestCase {
         List list = new ArrayList();
         
         try {
-//            System.out.println("PATH : " + dataDir + fileSeparator + "FormList.dat");
+            //System.out.println("PATH : " + dataDir + fileSeparator + "FormList.dat");
             fileReader = new FileReader(dataDir + fileSeparator + "FormList.dat");
             bufferedReader = new BufferedReader(fileReader);
             String line = null;
             while ((line = bufferedReader.readLine()) != null){
-//                System.out.println("File: " + line);
                 list.add(line);
             }
         } catch (FileNotFoundException ex) {
@@ -95,6 +94,7 @@ public class OpenForm extends JellyTestCase {
         System.out.println("xtest.module        = " + System.getProperty("xtest.module"));
         System.out.println("xtest.home          = " + System.getProperty("xtest.home"));
         System.out.println("xtest.workdir       = " + System.getProperty("xtest.workdir"));
+        System.out.println("xtest.attribs       = " + System.getProperty("xtest.attribs"));
         
         System.out.println("XXXXXXXXXXXXX");
         String dataDir = getDataDir().getAbsolutePath();
@@ -103,11 +103,10 @@ public class OpenForm extends JellyTestCase {
         String fileSeparator = System.getProperty("file.separator");
         String lineSeparator = System.getProperty("line.separator");
         String xtest_sketchpad   = System.getProperty("xtest.sketchpad");
-
+        
         List list = getJavaFormList();
-//        String prePath = "/space/cvs-netbeans/form/src";
+        //        String prePath = "/space/cvs-netbeans/form/src";
         String prePath = workdirpath.substring(0,workdirpath.indexOf(fileSeparator + "testOpenForm"));
-//        System.out.println("prePath : " + prePath);
         
         FileReader fileReader = null;
         FileWriter fileWriter = null;
@@ -119,11 +118,11 @@ public class OpenForm extends JellyTestCase {
             bufferedReader = new BufferedReader(fileReader);
             fileWriter = new FileWriter(workdirpath + fileSeparator +  "OpenForm.html");
             bufferedWriter = new BufferedWriter(fileWriter);
-            
+                        
             String line = null;
             while (!(line = bufferedReader.readLine()).equals("<PUT CONTENT HERE>")) {
-//                System.out.println("LINE : " + line + " : ");
-                bufferedWriter.write(line + lineSeparator);
+                //System.out.println("LINE : " + line + " : ");
+                bufferedWriter.write(line + lineSeparator);                
             }
             
             int lastindex         = 0;
@@ -137,13 +136,19 @@ public class OpenForm extends JellyTestCase {
             FormDesignerOperator formDesignerOperator = null;
             FrameOperator frameOperator = null;
             for (ListIterator listIterator = list.listIterator(); listIterator.hasNext(); ) {
+                /** read items from list formPath: EventCustomEditor.form, FormCustomEditor.form,
+                 * FormCustomEditorAdvanced.form, MethodPicker.form, ParametersPicker.form, PropertyPicker.form, CustomCodeEditor.form, StringArrayCustomEditor.form, ConnectionPanel1.form, ConnectionPanel2.form, ConnectionPanel3.form]
+                 **/
                 formPath = (String) listIterator.next();
+                
                 fullPath = new StringBuffer(prePath).append(fileSeparator).append(formPath).toString();
+                System.out.println("fullpath: " + fullPath);
                 lastindex = fullPath.lastIndexOf(fileSeparator);
-//                module = formPath.substring(0, formPath.indexOf(fileSeparator));
+     
+                //                module = formPath.substring(0, formPath.indexOf(fileSeparator));
                 directory = dataDir + fileSeparator + "OpenForm"; //fullPath.substring(0,lastindex);
-                filename  = fullPath.substring(lastindex + 1);
-                filenamenoext = filename.substring(0, filename.lastIndexOf("."));
+                filename  = fullPath.substring(lastindex + 1);               
+                filenamenoext = filename.substring(0, filename.lastIndexOf("."));               
                 actionNoBlock = new ActionNoBlock("File|Open File...", null);
                 actionNoBlock.perform();
                 jFileChooserOperator = new JFileChooserOperator();
@@ -156,10 +161,10 @@ public class OpenForm extends JellyTestCase {
                 formDesignerOperator.btPreviewForm().push();
                 frameOperator = new FrameOperator("Design Preview [" + filenamenoext +"]");
                 
-//                org.netbeans.jemmy.util.PNGEncoder.captureScreen(formDesignerOperator.fakePane().getSource(), workdirpath + fileSeparator + filenamenoext + ".png");
                 
+                // org.netbeans.jemmy.util.PNGEncoder.captureScreen(formDesignerOperator.fakePane().getSource(), workdirpath + fileSeparator + filenamenoext + ".png");
                 new EventTool().waitNoEvent(1000);
-                
+                System.out.println("xtest_sketchpad: " + xtest_sketchpad);
                 copy(new File(dataDir + fileSeparator + "OpenForm"+ fileSeparator + filenamenoext + ".png"), new File(xtest_sketchpad + fileSeparator + filenamenoext + ".png"));
                 
                 org.netbeans.jemmy.util.PNGEncoder.captureScreen(frameOperator.getSource(), workdirpath + fileSeparator + filenamenoext + ".png");
@@ -185,7 +190,7 @@ public class OpenForm extends JellyTestCase {
             }
             
             while ((line = bufferedReader.readLine()) != null){
-//                System.out.println("XLINE : " + line + " : ");
+                //                System.out.println("XLINE : " + line + " : ");
                 bufferedWriter.write(line + lineSeparator);
             }
             
