@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -125,6 +126,9 @@ public class UploadLogsTest extends NbTestCase {
             if (!files[times].getName().startsWith("myId")) {
                 fail("Expected was 'myId':" + files[times].getName());
             }
+            LOG.info("Got these files: " + Arrays.asList(files));
+            Arrays.sort(files);
+            LOG.info("Sorted to files: " + Arrays.asList(files));
 
 
             assertEquals("Handler keeps name of the right file", files[times], handler.getFile("logs"));
