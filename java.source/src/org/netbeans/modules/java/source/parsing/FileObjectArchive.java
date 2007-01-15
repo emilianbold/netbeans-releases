@@ -19,48 +19,43 @@
 
 package org.netbeans.modules.java.source.parsing;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.tools.JavaFileObject;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Tomas Zezula
+ * @author tom
  */
-public class FolderArchive implements Archive {
-
-    final File root;
-
-    /** Creates a new instance of FolderArchive */
-    public FolderArchive (final File root) {
-        assert root != null;
+public class FileObjectArchive implements Archive {
+    
+    private final FileObject root;
+    
+    /** Creates a new instance of FileObjectArchive */
+    public FileObjectArchive (final FileObject root) {
         this.root = root;
     }
-
+    
     public Iterable<JavaFileObject> getFiles(String folderName, JavaFileFilterImplementation filter) throws IOException {
-        assert folderName != null;
-        final File folder = new File (this.root, folderName.replace('/', File.separatorChar));      //NOI18N
-        if (folder.canRead()) {
-            File[] content = folder.listFiles();            
-            if (content != null) {
-                List<JavaFileObject> result = new ArrayList<JavaFileObject>(content.length);
-                for (File f : content) {
-                    if (f.isFile()) {
-                        result.add(FileObjects.fileFileObject(f,this.root,filter));
-                    }
-                }
-                return Collections.unmodifiableList(result);
+        FileObject folder = root.getFileObject(folderName);
+        if (folder == null) {
+            return Collections.<JavaFileObject>emptySet();
+        }
+        FileObject[] children = folder.getChildren();
+        List<JavaFileObject> result = new ArrayList<JavaFileObject>(children.length);
+        for (FileObject fo : children) {
+            if (fo.isData()) {
+                result.add(FileObjects.nbFileObject(fo,filter,false));
             }
         }
-        return Collections.<JavaFileObject>emptyList();
-    }               
-    
-    public void clear () {
-        
+        return result;
     }
     
+    public void clear() {
+    }
+
 }

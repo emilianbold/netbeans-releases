@@ -315,6 +315,9 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
     
     public EditorCookie isOpened () {
         try {
+            if (this.kind == JavaFileObject.Kind.CLASS) {
+                return null;
+            }
             DataObject dobj = DataObject.find(this.file);
             return (EditorCookie) dobj.getCookie(EditorCookie.class);
         } catch (DataObjectNotFoundException dnf) {

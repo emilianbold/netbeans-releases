@@ -19,9 +19,7 @@
 
 package org.netbeans.modules.java.source.parsing;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -46,7 +44,7 @@ public class CachingFileManager implements JavaFileManager {
     
     protected final CachingArchiveProvider provider;
     private final JavaFileFilterImplementation filter;
-    protected final File[] files;
+    protected final ClassPath cp;
     private final boolean cacheFile;
     
     
@@ -57,7 +55,7 @@ public class CachingFileManager implements JavaFileManager {
     /** Creates a new instance of CachingFileManager */
     public CachingFileManager( CachingArchiveProvider provider, final ClassPath cp, final JavaFileFilterImplementation filter, boolean cacheFile) {
         this.provider = provider;
-        this.files = getClassPathRoots(cp);
+        this.cp = cp;
         this.cacheFile = cacheFile;
         this.filter = filter;
     }
@@ -76,7 +74,7 @@ public class CachingFileManager implements JavaFileManager {
         String folderName = FileObjects.convertPackage2Folder( packageName );
                         
         List<Iterator<JavaFileObject>> idxs = new LinkedList<Iterator<JavaFileObject>>();
-        for( Archive archive : provider.getArchives( files, cacheFile ) ) {
+        for( Archive archive : provider.getArchives( this.cp, cacheFile ) ) {
             try {
                 Iterable<JavaFileObject> entries = archive.getFiles( folderName, filter );
                 idxs.add( entries.iterator() );
@@ -90,9 +88,9 @@ public class CachingFileManager implements JavaFileManager {
        
     public javax.tools.FileObject getFileForInput( Location l, String pkgName, String relativeName ) {        
         
-        for( File file : files ) {
+        for( ClassPath.Entry root : this.cp.entries()) {
             try {
-                Archive  archive = provider.getArchive (file, cacheFile);
+                Archive  archive = provider.getArchive (root.getURL(), cacheFile);
                 Iterable<JavaFileObject> files = archive.getFiles(FileObjects.convertPackage2Folder(pkgName), filter);
                 for (JavaFileObject e : files) {
                     if (relativeName.equals(e.getName())) {
@@ -113,9 +111,9 @@ public class CachingFileManager implements JavaFileManager {
             return null;
         }
         namePair[1] = namePair[1] + kind.extension;
-        for( File file : files ) {
+        for( ClassPath.Entry root : this.cp.entries()) {
             try {
-                Archive  archive = provider.getArchive (file, cacheFile);
+                Archive  archive = provider.getArchive (root.getURL(), cacheFile);
                 Iterable<JavaFileObject> files = archive.getFiles(namePair[0], filter);
                 for (JavaFileObject e : files) {
                     if (namePair[1].equals(e.getName())) {
@@ -164,8 +162,7 @@ public class CachingFileManager implements JavaFileManager {
         return null;
     }    
     
-    public String inferBinaryName (Location l, JavaFileObject javaFileObject) {
-        assert javaFileObject instanceof FileObjects.Base;
+    public String inferBinaryName (Location l, JavaFileObject javaFileObject) {        
         if (javaFileObject instanceof FileObjects.Base) {
             final FileObjects.Base base = (FileObjects.Base) javaFileObject;
             final StringBuilder sb = new StringBuilder ();
@@ -174,26 +171,31 @@ public class CachingFileManager implements JavaFileManager {
             sb.append(base.getNameWithoutExtension());
             return sb.toString();
         }
+        else if (javaFileObject instanceof SourceFileObject) {
+            org.openide.filesystems.FileObject fo = ((SourceFileObject)javaFileObject).file;
+            for (org.openide.filesystems.FileObject root : this.cp.getRoots()) {
+                if (FileUtil.isParentOf(root,fo)) {
+                    String relativePath = FileUtil.getRelativePath(root,fo);
+                    int index = relativePath.lastIndexOf('.');                                    //NOI18N
+                    assert index > 0;                    
+                    final String result = relativePath.substring(0,index).replace('/','.');       //NOI18N
+                    return result;
+                }
+            }
+        }
         return null;
     }                
     
     //Static helpers - temporary
     
-    public static File[] getClassPathRoots (final ClassPath cp) {
+    public static URL[] getClassPathRoots (final ClassPath cp) {
        assert cp != null;
-       final List<File> result = new ArrayList<File>();
-       for (ClassPath.Entry entry : cp.entries()) {
-           URL url = entry.getURL();
-           if ("jar".equals(url.getProtocol())) {   // NOI18N
-               url = FileUtil.getArchiveFile(url);
-           }
-           assert "file".equals(url.getProtocol()) : "Unexpected protocol of the URL: " + url.toExternalForm();
-           final File f = new File (URI.create(url.toExternalForm()));
-           if (f.canRead()) {
-               result.add (f);
-           }
+       final List<ClassPath.Entry> entries = cp.entries();
+       final List<URL> result = new ArrayList<URL>(entries.size());
+       for (ClassPath.Entry entry : entries) {
+           result.add (entry.getURL());
        }
-       return result.toArray(new File[result.size()]);
+       return result.toArray(new URL[result.size()]);
     }            
 
     public boolean isSameFile(FileObject fileObject, FileObject fileObject0) {        

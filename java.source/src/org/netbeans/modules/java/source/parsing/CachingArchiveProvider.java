@@ -20,8 +20,17 @@
 package org.netbeans.modules.java.source.parsing;
 
 
+
 import java.io.File;
+import java.net.URI;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 
 
 /** Global cache for Archives (zip files and folders).
@@ -37,7 +46,7 @@ public class CachingArchiveProvider {
 
     // Names to caching zip files
     // XXX-PERF Consider swapping
-    HashMap<File,Archive> archives;
+    HashMap<URL,Archive> archives;
 
     public static synchronized CachingArchiveProvider getDefault () {
         if (instance == null) {
@@ -50,48 +59,63 @@ public class CachingArchiveProvider {
      *  Can be caleed only from UnitTests or {@link CachingArchiveProvider#getDefault} !!!!!
      */
     CachingArchiveProvider() {
-        archives = new HashMap<File,Archive>();
+        archives = new HashMap<URL,Archive>();
     }
     
     /** Gets archive for given file.
      */
-    public synchronized Archive getArchive( File file, boolean cacheFile)  {
-        
-        File canonical = file;
+    public synchronized Archive getArchive( URL root, boolean cacheFile)  {
+                
+        Archive archive = archives.get(root);
 
-        Archive archive = archives.get( canonical );
-
-        if ( archive == null ) {
-            archive = create( canonical, cacheFile );
-            archives.put( canonical, archive );
+        if (archive == null) {
+            archive = create(root, cacheFile);
+            if (archive != null) {
+                archives.put(root, archive );
+            }
         }
-
         return archive;
         
     }
     
     /** Gets archives for files
      */
-    public synchronized Archive[] getArchives( File[] files, boolean cacheFile) {
+    public synchronized Iterable<Archive> getArchives( URL[] roots, boolean cacheFile) {
         
-        Archive[] archives = new Archive[ files.length ];        
-        for( int i = 0; i < files.length; i++ ) {
-            archives[i] = getArchive( files[i], cacheFile );
+        List<Archive> archives = new ArrayList<Archive>(roots.length);        
+        for( int i = 0; i < roots.length; i++ ) {
+            Archive a = getArchive( roots[i], cacheFile );
+            if (a != null) {
+                archives.add(a);
+            }            
         }
-        
         return archives;
     }       
     
     
-    public synchronized void removeArchive (final File file) {
-        final Archive archive = archives.remove(file);
+    /** Gets archives for files
+     */
+    public synchronized Iterable<Archive> getArchives( ClassPath cp, boolean cacheFile) {        
+        final List<ClassPath.Entry> entries = cp.entries();
+        final List<Archive> archives = new ArrayList<Archive> (entries.size());
+        for (ClassPath.Entry entry : entries) {
+            Archive a = getArchive(entry.getURL(), cacheFile);
+            if (a != null) {
+                archives.add (a);
+            }
+        }        
+        return archives;
+    }
+    
+    public synchronized void removeArchive (final URL root) {
+        final Archive archive = archives.remove(root);
         if (archive != null) {
             archive.clear();
         }
     }
     
-    public synchronized void clearArchive (final File file) {
-        Archive archive = archives.get(file);
+    public synchronized void clearArchive (final URL root) {
+        Archive archive = archives.get(root);
         if (archive != null) {
             archive.clear();
         }
@@ -101,20 +125,38 @@ public class CachingArchiveProvider {
     
     /** Creates proper archive for given file.
      */
-    private static Archive create( File file, boolean cacheFile ) {
-        
-        if ( !file.canRead() ) {
-            throw new IllegalArgumentException( "Can't read file " + file );
+    private static Archive create( URL root, boolean cacheFile ) {
+        String protocol = root.getProtocol();
+        if ("file".equals(protocol)) {
+            File f = new File (URI.create(root.toExternalForm()));
+            if (f.isDirectory()) {
+                return new FolderArchive (f);
+            }
+            else {
+                return null;
+            }
         }
-        
-        if ( file.isDirectory() ) {
-            return new FolderArchive( file );
-        }        
+        if ("jar".equals(protocol)) {
+            URL inner = FileUtil.getArchiveFile(root);
+            protocol = inner.getProtocol();
+            if ("file".equals(protocol)) {
+                File f = new File (URI.create(inner.toExternalForm()));
+                if (f.isFile()) {
+                    return new CachingArchive( f, cacheFile );
+                }
+                else {
+                    return null;
+                }
+            }
+        }                
+        //Slow
+        FileObject fo = URLMapper.findFileObject(root);
+        if (fo != null) {
+            return new FileObjectArchive (fo);
+        }
         else {
-            //todo: check if the file is really an archive
-            return new CachingArchive( file, cacheFile );
+            return null;
         }
- 
     }
             
           

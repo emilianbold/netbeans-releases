@@ -744,7 +744,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             final CachingArchiveProvider cap = CachingArchiveProvider.getDefault();
                             for (URL oldRoot : oldBinaries) {
                                 cim.removeRoot(oldRoot);
-                                cap.removeArchive(FileObjects.getRootFile(oldRoot));
+                                cap.removeArchive(oldRoot);
                             }
                             break;
                         case COMPILE:
@@ -1145,9 +1145,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }
         }
         
-        private void updateBinary (final URL file, final URL root) throws IOException {
+        private void updateBinary (final URL file, final URL root) throws IOException {            
+            CachingArchiveProvider.getDefault().clearArchive(root);            
             File rootFile = FileObjects.getRootFile(root);
-            CachingArchiveProvider.getDefault().clearArchive(rootFile);            
             if (rootFile.exists()) {
                 final BinaryAnalyser ba = ClassIndexManager.getDefault().createUsagesQuery(root, false).getBinaryAnalyser();
                 ba.analyse(rootFile, handle);
