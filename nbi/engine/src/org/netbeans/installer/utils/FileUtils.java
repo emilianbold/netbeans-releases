@@ -627,10 +627,14 @@ public final class FileUtils {
         overallProgress.synchronizeDetails(true);
         
         try {
-            List<File> extracted = extract(jar, target, "META-INF/(?!files.list$).*", extractionProgress);
+            List<File> extracted = extract(
+                    jar, 
+                    target, 
+                    "META-INF/(?!files.list$).*", 
+                    extractionProgress);
             
             if (listFile.exists()) {
-                FilesList list = new FilesList(target, listFile);
+                final FilesList list = new FilesList(target, listFile);
                 
                 for (File file: extracted) {
                     if (!list.contains(file)) {

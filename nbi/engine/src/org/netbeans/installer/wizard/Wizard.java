@@ -301,6 +301,8 @@ public class Wizard {
             index = components.indexOf(component);
             
             component.setWizard(this);
+            component.initialize();
+            
             switch (executionMode) {
                 case SWING:
                     if (component.getWizardUi() != null) {
@@ -316,7 +318,6 @@ public class Wizard {
                             "in its enum");
             }
             
-            component.initialize();
             component.executeForward();
         } else if (parent != null) {
             parent.next();

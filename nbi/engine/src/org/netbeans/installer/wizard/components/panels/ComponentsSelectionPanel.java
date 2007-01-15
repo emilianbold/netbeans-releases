@@ -30,7 +30,6 @@ import java.util.EventObject;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
-import javax.swing.AbstractCellEditor;
 import javax.swing.JComponent;
 import javax.swing.JTree;
 import javax.swing.UIManager;
@@ -38,13 +37,10 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultTreeCellEditor;
-import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeModel;
@@ -52,6 +48,7 @@ import javax.swing.tree.TreePath;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
+import org.netbeans.installer.product.components.Group;
 import org.netbeans.installer.product.utils.Status;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
@@ -461,12 +458,15 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             }
         }
         
-        public static class ComponentsTreeCellRenderer extends NbiCheckBox implements TreeCellRenderer, TreeCellEditor {
+        public static class ComponentsTreeCellRenderer implements TreeCellRenderer, TreeCellEditor {
             private List<CellEditorListener> listeners =
                     new LinkedList<CellEditorListener>();
             
+            private NbiCheckBox checkBox = new NbiCheckBox();
+            private NbiLabel    label    = new NbiLabel();
+            
             public ComponentsTreeCellRenderer() {
-                addActionListener(new ActionListener() {
+                checkBox.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent event) {
                         fireEditingStopped();
                     }
@@ -495,7 +495,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             }
             
             public Object getCellEditorValue() {
-                if (isSelected()) {
+                if (checkBox.isSelected()) {
                     return true;
                 } else {
                     return false;
@@ -557,35 +557,49 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                     final boolean leaf,
                     final int row,
                     final boolean focus) {
-                if (value instanceof RegistryNode) {
-                    RegistryNode node = (RegistryNode) value;
+                if (selected) {
+                    checkBox.setOpaque(true);
+                    checkBox.setForeground(UIManager.getColor("Tree.selectionForeground"));
+                    checkBox.setBackground(UIManager.getColor("Tree.selectionBackground"));
                     
-                    setText(node.getDisplayName());
-                    setToolTipText(node.getDisplayName());
+                    label.setOpaque(true);
+                    label.setForeground(UIManager.getColor("Tree.selectionForeground"));
+                    label.setBackground(UIManager.getColor("Tree.selectionBackground"));
+                } else {
+                    checkBox.setOpaque(false);
+                    checkBox.setForeground(UIManager.getColor("Tree.textForeground"));
+                    checkBox.setBackground(UIManager.getColor("Tree.textBackground"));
+                    
+                    label.setOpaque(false);
+                    label.setForeground(UIManager.getColor("Tree.textForeground"));
+                    label.setBackground(UIManager.getColor("Tree.textBackground"));
                 }
+                
                 
                 if (value instanceof Product) {
                     Product product = (Product) value;
                     
+                    checkBox.setText(product.getDisplayName());
+                    checkBox.setToolTipText(product.getDisplayName());
+                    
                     if ((product.getStatus() == Status.INSTALLED) ||
                             (product.getStatus() == Status.TO_BE_INSTALLED)) {
-                        setSelected(true);
+                        checkBox.setSelected(true);
                     } else {
-                        setSelected(false);
+                        checkBox.setSelected(false);
                     }
+                    
+                    return checkBox;
+                } else if (value instanceof Group) {
+                    Group group = (Group) value;
+                    
+                    label.setText(group.getDisplayName());
+                    label.setToolTipText(group.getDisplayName());
+                    
+                    return label;
                 }
                 
-                if (selected) {
-                    setOpaque(true);
-                    setForeground(UIManager.getColor("Tree.selectionForeground"));
-                    setBackground(UIManager.getColor("Tree.selectionBackground"));
-                } else {
-                    setOpaque(false);
-                    setForeground(UIManager.getColor("Tree.textForeground"));
-                    setBackground(UIManager.getColor("Tree.textBackground"));
-                }
-                
-                return this;
+                return null;
             }
         }
     }

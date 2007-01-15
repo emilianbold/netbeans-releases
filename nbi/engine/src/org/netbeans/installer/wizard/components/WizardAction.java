@@ -26,6 +26,7 @@ import org.netbeans.installer.Installer;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.helper.ErrorLevel;
+import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiProgressBar;
 import org.netbeans.installer.utils.progress.Progress;
@@ -181,6 +182,10 @@ public abstract class WizardAction extends WizardComponent {
                     Installer.getInstance().cancel();
                 }
             }.start();
+        }
+        
+        public NbiButton getDefaultButton() {
+            return container.getCancelButton();
         }
         
         public void progressUpdated(Progress progress) {

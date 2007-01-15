@@ -71,12 +71,6 @@ import org.w3c.dom.Node;
  */
 public final class Product extends RegistryNode {
     /////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    public static final String INSTALLATION_LOCATION_PROPERTY = "installation.location";
-    public static final String INSTALLED_FILES_LIST_FILE_NAME = "installed-files.xml";
-    public static final String MANIFEST_LOGIC_CLASS           = "Configuration-Logic-Class";
-    
-    /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private Version version;
     private List<Platform> supportedPlatforms = new ArrayList<Platform>();
@@ -228,7 +222,10 @@ public final class Product extends RegistryNode {
             }
             
             try {
-                FilesList list = FileUtils.unjarWithList(data, getInstallationLocation(), unjarProgress);
+                FilesList list = FileUtils.unjarWithList(
+                        data, 
+                        getInstallationLocation(), 
+                        unjarProgress);
                 
                 filesList.add(list);
             } catch (IOException e) {
@@ -905,4 +902,13 @@ public final class Product extends RegistryNode {
         FINALIZATION,
         COMPLETE;
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String INSTALLATION_LOCATION_PROPERTY = 
+            "installation.location"; // NOI18N
+    public static final String INSTALLED_FILES_LIST_FILE_NAME = 
+            "installed-files.xml"; // NOI18N
+    public static final String MANIFEST_LOGIC_CLASS = 
+            "Configuration-Logic-Class"; // NOI18N
 }
