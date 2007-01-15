@@ -31,6 +31,7 @@ import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.openide.*;
 import org.openide.util.*;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
@@ -38,6 +39,7 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -49,8 +51,10 @@ import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
+import org.netbeans.modules.j2ee.persistence.util.JPAClassPathHelper;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileObject;
@@ -186,7 +190,19 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
             final String primaryKeyClassName, final boolean isAccessProperty) throws IOException {
         
         FileObject entityFo = GenerationUtils.createClass(targetFolder, targetName, null);
-        JavaSource targetSource = JavaSource.forFileObject(entityFo);
+        
+        ClassPath compile = ClassPath.getClassPath(targetFolder, ClassPath.COMPILE);
+        Set<ClassPath> compileClassPaths = new HashSet<ClassPath>();
+        compileClassPaths.add(compile);
+        
+        JPAClassPathHelper cpHelper = new JPAClassPathHelper(
+                Collections.<ClassPath>singleton(ClassPath.getClassPath(targetFolder, ClassPath.BOOT)), 
+                Collections.<ClassPath>singleton(ClassPath.getClassPath(targetFolder, ClassPath.COMPILE)), 
+                Collections.<ClassPath>singleton(ClassPath.getClassPath(targetFolder, ClassPath.SOURCE))
+                );
+        
+
+        JavaSource targetSource = JavaSource.create(cpHelper.createClasspathInfo(), entityFo);
         AbstractTask task = new AbstractTask<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws Exception {

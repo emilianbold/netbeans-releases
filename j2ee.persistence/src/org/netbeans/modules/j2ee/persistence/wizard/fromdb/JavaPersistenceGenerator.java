@@ -59,6 +59,7 @@ import org.netbeans.modules.j2ee.persistence.entitygenerator.RelationshipRole;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
+import org.netbeans.modules.j2ee.persistence.util.JPAClassPathHelper;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -195,15 +196,6 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             // now generate the fields and methods for each entity class
             // and its primary key class
 
-            Set<ClassPath> bootCPs = getAllClassPaths(generationPackageFOs, ClassPath.BOOT);
-            Set<ClassPath> compileCPs = getAllClassPaths(generationPackageFOs, ClassPath.COMPILE);
-            Set<ClassPath> sourceCPs = getAllClassPaths(generationPackageFOs, ClassPath.SOURCE);
-
-            ensureJPA(compileCPs);
-            ClasspathInfo classpathInfo = ClasspathInfo.create(
-                    createProxyClassPath(bootCPs),
-                    createProxyClassPath(compileCPs),
-                    createProxyClassPath(sourceCPs));
 
             for (int i = 0; i < genBeans.length; i++) {
                 final EntityClass entityClass = genBeans[i];
@@ -222,9 +214,16 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 final FileObject entityClassFO = entityClassPackageFO.getFileObject(entityClassName, "java"); // NOI18N
                 final FileObject pkClassFO = entityClassPackageFO.getFileObject(createPKClassName(entityClassName), "java"); // NOI18N
                 try {
+                    
+                    Set<ClassPath> bootCPs = getAllClassPaths(generationPackageFOs, ClassPath.BOOT);
+                    Set<ClassPath> compileCPs = getAllClassPaths(generationPackageFOs, ClassPath.COMPILE);
+                    Set<ClassPath> sourceCPs = getAllClassPaths(generationPackageFOs, ClassPath.SOURCE);
+                    
+                    JPAClassPathHelper cpHelper = new JPAClassPathHelper(bootCPs, compileCPs, sourceCPs);
+
                     JavaSource javaSource = (pkClassFO != null) ?
-                        JavaSource.create(classpathInfo, entityClassFO, pkClassFO) :
-                        JavaSource.create(classpathInfo, entityClassFO);
+                        JavaSource.create(cpHelper.createClasspathInfo(), entityClassFO, pkClassFO) :
+                        JavaSource.create(cpHelper.createClasspathInfo(), entityClassFO);
                     javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
                         public void run(WorkingCopy copy) throws IOException {
                             if (copy.getFileObject().equals(entityClassFO)) {
@@ -276,48 +275,6 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             return classPaths;
         }
 
-        private static ClassPath createProxyClassPath(Set<ClassPath> classPaths) {
-            if (classPaths.size() == 1) {
-                return classPaths.iterator().next();
-            }
-            return ClassPathSupport.createProxyClassPath(classPaths.toArray(new ClassPath[classPaths.size()]));
-        }
-
-        private void ensureJPA(Set<ClassPath> classPaths) {
-            for (ClassPath classPath : classPaths) {
-                if (classPath.findResource("javax/persistence/Entity.class") != null) { // NOI18N
-                    return;
-                }
-            }
-            ClassPath jpaClassPath = findJPALibrary();
-            if (jpaClassPath != null) {
-                classPaths.add(jpaClassPath);
-                return;
-            }
-            throw new IllegalStateException("Cannot find a Java Persistence API library"); // NOI18N
-        }
-
-        private ClassPath findJPALibrary() {
-            Library library = ProviderUtil.getFirstProviderLibrary();
-            if (library == null) {
-                return null;
-            }
-            List<URL> urls = library.getContent("classpath"); // NOI18N
-            // workaround for issue 92237
-            List<URL> localURLs = new ArrayList(urls.size());
-            for (URL url : urls) {
-                FileObject fileObject = URLMapper.findFileObject(url);
-                if (fileObject == null) {
-                    continue;
-                }
-                URL localURL = URLMapper.findURL(fileObject, URLMapper.INTERNAL);
-                if (localURL == null) {
-                    continue;
-                }
-                localURLs.add(localURL);
-            }
-            return ClassPathSupport.createClassPath(localURLs.toArray(new URL[localURLs.size()]));
-        }
 
         /**
          * Encapsulates common logic for generating classes (be it
