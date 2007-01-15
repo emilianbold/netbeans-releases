@@ -25,7 +25,6 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.debugger.SourcesOperator;
@@ -38,14 +37,9 @@ import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 
 /** Test of web application debugging. Manual test specification is here:
  * http://qa.netbeans.org/modules/webapps/promo-f/jspdebug/jspdebug-testspec.html
- * <br>
- * !!! Be careful when using internal swing html browser. It posts http requests
- * three times. That's why is probably better to finish debugging each time you
- * went through page.
  *
  * @author Jiri.Skrivanek@sun.com
  */
@@ -124,6 +118,8 @@ public class ServletDebuggingTest extends JellyTestCase {
         new ActionNoBlock(null, new DebugAction().getPopupPath()).perform(servletNode);
         String setURITitle = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "TTL_setServletExecutionUri");
         new NbDialogOperator(setURITitle).ok();
+        Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
+        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME+"/DivideServlet");
         stt.waitText("DivideServlet.java:"+line); //NOI18N
         // set sources from TestFreeformLibrary to be used for debugging
         SourcesOperator so = SourcesOperator.invoke();
@@ -147,6 +143,8 @@ public class ServletDebuggingTest extends JellyTestCase {
      */
     public void testStepOut() {
         new DebugAction().perform(servletNode);
+        Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
+        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME+"/DivideServlet");
         stt.waitText("DivideServlet.java:"+line); //NOI18N
         stt.clear();
         new StepOutAction().perform();
@@ -166,6 +164,8 @@ public class ServletDebuggingTest extends JellyTestCase {
      */
     public void testStepOver() {
         new DebugAction().perform(servletNode);
+        Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
+        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME+"/DivideServlet");
         stt.waitText("DivideServlet.java:"+line); //NOI18N
         new StepOverAction().perform();
         stt.waitText("DivideServlet.java:"+(line+2)); //NOI18N
@@ -181,10 +181,12 @@ public class ServletDebuggingTest extends JellyTestCase {
      * - call Run|Apply Code Changes from main menu
      * - wait until debugger stops somewhere in DivideServlet.java
      * - finish debugger
-     * - find and close browser with title "Servlet DIVIDE Changed"
+     * - open URL connection and wait for changed text
      */
     public void testApplyCodeChanges() {
         new DebugAction().perform(servletNode);
+        Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
+        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME+"/DivideServlet");
         stt.waitText("DivideServlet.java:"+line); //NOI18N
         stt.clear();
         EditorOperator eo = new EditorOperator("DivideServlet.java"); // NOI18N
@@ -192,7 +194,7 @@ public class ServletDebuggingTest extends JellyTestCase {
         new ApplyCodeChangesAction().perform();
         stt.waitText("DivideServlet.java:"); //NOI18N
         Utils.finishDebugger();
-        new TopComponentOperator("Servlet DIVIDE Changed").close();// NOI18N
+        Utils.waitText(SAMPLE_WEB_PROJECT_NAME+"/DivideServlet", 240000, "Servlet DIVIDE Changed");
     }
     
     /** Stop server just for clean-up.

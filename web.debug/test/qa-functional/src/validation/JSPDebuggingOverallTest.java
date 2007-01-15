@@ -24,9 +24,9 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.DebugProjectAction;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -43,20 +43,17 @@ import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
+import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
-import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /** Test of web application debugging. Manual test specification is here:
  * http://qa.netbeans.org/modules/webapps/promo-f/jspdebug/jspdebug-testspec.html
- * <br>
- * !!! Be careful when using internal swing html browser. It posts http requests
- * three times. That's why is probably better to finish debugging each time you
- * went through page.
  *
  * @author Jiri.Skrivanek@sun.com
  */
@@ -120,6 +117,18 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         // Set Main Project
         String setMainItem = Bundle.getString("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetMainProjectAction_Name");
         new Action(null, setMainItem).perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
+        // not display browser on run
+        // open project properties
+        ProjectsTabOperator.invoke().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME).properties();
+        // "Project Properties"
+        String projectPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Customizer_Title");
+        NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
+        // select "Run" category
+        new Node(new JTreeOperator(propertiesDialogOper), "Run").select();
+        String displayBrowserLabel = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_CustomizeRun_DisplayBrowser_JCheckBox");
+        new JCheckBoxOperator(propertiesDialogOper, displayBrowserLabel).setSelected(false);
+        // confirm properties dialog
+        propertiesDialogOper.ok();
     }
     
     /** Set Swing HTML Browser as default browser. */
@@ -136,10 +145,9 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
     public void testRunProject() {
         String runProjectItem = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_RunAction_Name");
         new Action(null, runProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
-        // wait until page is displayed in internal browser
-        waitBrowser().close();
+        Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "run");
     }
-
+    
     /** Debug project.
      * - on project node call Debug Project popup
      * - wait until page appears in browser
@@ -147,9 +155,9 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
     public void testDebugProject() {
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME);
         new DebugProjectAction().perform(rootNode);
-        waitBrowser();
+        Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
     }
-
+    
     /** Set breakpoint.
      * - open index.jsp
      * - select <h1> in editor
@@ -166,13 +174,10 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
      * - reload page in browser
      * - wait until debugger stops at previously set breakpoint
      * - continue debugging
-     * - finish debugger 
+     * - finish debugger
      */
     public void testDebugReload() {
-        TopComponentOperator browserOper = new TopComponentOperator("Test JSP Page"); //NOI18N
-        // "Reload"
-        String reloadTooltip = Bundle.getStringTrimmed("org.openide.awt.Bundle", "CTL_Reload");
-        new JButtonOperator(browserOper, new Utils.ToolTipChooser(reloadTooltip)).push();
+        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME);
         // check breakpoint reached
         // wait status text "Thread main stopped at SampleClass1.java:##"
         EditorOperator eo = new EditorOperator("index.jsp"); // NOI18N
@@ -181,7 +186,7 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         new ContinueAction().perform();
         Utils.finishDebugger();
     }
-
+    
     /** Attach debugger.
      * - call Run|Attach Debugger... main menu item
      * - in Attach dialog set socket attach, port and click OK
@@ -191,7 +196,7 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
      * - finish debugger
      */
     public void testAttachDebugger() {
-        // assuming server is running in debug mode and page is opened in browser
+        // assuming server is running in debug mode
         AttachDialogOperator ado = AttachDialogOperator.invoke();
         ado.selectConnector(ado.ITEM_SOCKET_ATTACH);
         ado.setPort(Utils.getSocketPort());
@@ -199,10 +204,7 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         // "User program running"
         String runningLabel = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Debugger_running");
         stt.waitText(runningLabel);
-        TopComponentOperator browserOper = new TopComponentOperator("Test JSP Page"); //NOI18N
-        // "Reload"
-        String reloadTooltip = Bundle.getStringTrimmed("org.openide.awt.Bundle", "CTL_Reload");
-        new JButtonOperator(browserOper, new Utils.ToolTipChooser(reloadTooltip)).push();
+        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME);
         // check breakpoint reached
         // wait status text "Thread main stopped at SampleClass1.java:##"
         EditorOperator eo = new EditorOperator("index.jsp"); // NOI18N
@@ -210,7 +212,7 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         stt.waitText("index.jsp:"+line);
         Utils.finishDebugger();
     }
-
+    
     /** Restart debugger after breakpoint reached.
      * - start to debug main project from main menu
      * - wait until debugger stops at previously set breakpoint
@@ -222,6 +224,8 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
     public void testDebugAfterBreakpoint() {
         // start debugging
         new DebugProjectAction().perform();
+        Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
+        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME);
         // check the first breakpoint reached
         // wait status text "Thread main stopped at index.jsp:##"
         EditorOperator eo = new EditorOperator("index.jsp"); // NOI18N
@@ -231,10 +235,12 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         Utils.finishDebugger();
         // start debugger again
         new DebugProjectAction().perform();
+        Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
+        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME);
         stt.waitText("index.jsp:"+line); // NOI18N
         Utils.finishDebugger();
     }
-
+    
     /** Restart debugger after server stopped.
      * - start to debug main project from main menu
      * - wait until debugger stops at previously set breakpoint
@@ -248,6 +254,8 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
     public void testDebugAndStopServer() {
         // start debugging
         new DebugProjectAction().perform();
+        Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
+        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME);
         // check the first breakpoint reached
         // wait status text "Thread main stopped at index.jsp:##"
         EditorOperator eo = new EditorOperator("index.jsp"); // NOI18N
@@ -262,11 +270,13 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         assertFalse("Restart action on server node should be disabled when stopped at breakpoint.", new RestartAction().isEnabled(serverNode));
         assertFalse("Start in Debug Mode action on server node should be disabled when stopped at breakpoint.", new StartDebugAction().isEnabled(serverNode));
         assertTrue("Refresh action on server node should be enabled when stopped at breakpoint.", new RefreshAction().isEnabled(serverNode));
-
+        
         Utils.finishDebugger();
         serverNode.stop();
         // start debugger again
         new DebugProjectAction().perform();
+        Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
+        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME);
         stt.waitText("index.jsp:"+line);
         Utils.finishDebugger();
     }
@@ -284,6 +294,8 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
     public void testStartAnotherSession() {
         // start debugging
         new DebugProjectAction().perform();
+        Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
+        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME);
         // check the first breakpoint reached
         // wait status text "Thread main stopped at index.jsp:##"
         EditorOperator eo = new EditorOperator("index.jsp"); // NOI18N
@@ -296,7 +308,7 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         String suspendedMessage = Bundle.getString("org.netbeans.modules.j2ee.deployment.impl.Bundle", "MSG_ServerSuspended");
         outputOper.waitText(suspendedMessage);
         outputOper.close();
-
+        
         String runProjectItem = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_RunAction_Name");
         Action runProjectAction = new Action(null, runProjectItem);
         runProjectAction.perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
@@ -304,7 +316,6 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         outputOper.waitText(suspendedMessage);
         outputOper.close();
         Utils.finishDebugger();
-        new TopComponentOperator("Test JSP Page").close(); // NOI18N
     }
     
     /** Test concurrent java and jsp debugging sessions. Also test debugging
@@ -333,12 +344,14 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         int line = Utils.setBreakpoint(eoBean, "System.out.println"); // NOI18N
         new DebugAction().perform(beanNode);
         stt.waitText("MyBean.java:"+line); //NOI18N
-
+        
         Node pageNode = new Node(new WebPagesNode(SAMPLE_WEB_PROJECT_NAME), "incl|simpleInclude.jsp"); //NOI18N
         new OpenAction().performAPI(pageNode);
         EditorOperator eoPage = new EditorOperator("simpleInclude.jsp"); // NOI18N
         line = Utils.setBreakpoint(eoPage, "incl/simpleInclude.jsp"); // NOI18N
         new DebugAction().perform(pageNode);
+        Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
+        Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME+"/incl/simpleInclude.jsp");
         stt.waitText("simpleInclude.jsp:"+line); //NOI18N
         
         SessionsOperator so = SessionsOperator.invoke();
@@ -376,23 +389,5 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
     public void testStopServer() {
         J2eeServerNode serverNode = new J2eeServerNode(Utils.DEFAULT_SERVER);
         serverNode.stop();
-    }
-    
-    /** Increases timeout and waits until page is displayed in internal browser.
-     * @return TopComponentOperator instance of internal browser
-     */
-    private TopComponentOperator waitBrowser() {
-        long oldTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
-        try {
-            // increase time to wait to 240 second (it fails on slower machines)
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 240000);
-            return new TopComponentOperator("Test JSP Page");// NOI18N
-        } finally {
-            // restore default timeout
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", oldTimeout);
-            // log messages from output
-            getLog("ServerMessages").print(new OutputTabOperator(Utils.DEFAULT_SERVER).getText()); // NOI18N
-            getLog("RunOutput").print(new OutputTabOperator(SAMPLE_WEB_PROJECT_NAME).getText()); // NOI18N
-        }
     }
 }

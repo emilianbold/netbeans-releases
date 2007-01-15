@@ -19,16 +19,24 @@
 package validation;
 
 import java.awt.Component;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
+import java.net.URI;
+import java.net.URLConnection;
 import java.util.Random;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OptionsOperator;
+import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.modules.debugger.actions.FinishDebuggerAction;
 import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
@@ -36,6 +44,7 @@ import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
@@ -215,5 +224,101 @@ public class Utils {
             }
         }).waitAction(eo);
         return line;
+    }
+    
+    /** Gets URL of default server. */
+    public static String getDefaultUrl() {
+        if(DEFAULT_SERVER.equals(SUN_APP_SERVER)) {
+            return "http://localhost:8080/";
+        } else {
+            return "http://localhost:8084/";
+        }
+    }
+    
+    /** Opens URL connection to server with given urlSuffix.
+     * @param urlSuffix suffix added to server URL
+     */
+    public static void reloadPage(final String urlSuffix) {
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    new URI(getDefaultUrl()+urlSuffix).toURL().openStream();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+    
+    /** Opens URL connection and waits for given text. It thows TimeoutExpiredException
+     * if timeout expires.
+     * @param urlSuffix suffix added to server URL
+     * @param timeout time to wait
+     * @param text text to be found
+     */
+    public static void waitText(final String urlSuffix, final long timeout, final String text) {
+        Waitable waitable = new Waitable() {
+            public Object actionProduced(Object obj) {
+                InputStream is = null;
+                try {
+                    URLConnection connection = new URI(getDefaultUrl()+urlSuffix).toURL().openConnection();
+                    connection.setReadTimeout(Long.valueOf(timeout).intValue());
+                    is = connection.getInputStream();
+                    BufferedReader br = new BufferedReader(new InputStreamReader(is));
+                    String line = br.readLine();
+                    while(line != null) {
+                        if(line.indexOf(text) > -1) {
+                            return Boolean.TRUE;
+                        }
+                        line = br.readLine();
+                    }
+                    is.close();
+                } catch (Exception e) {
+                    e.printStackTrace();;
+                    return null;
+                } finally {
+                    if(is != null) {
+                        try {
+                            is.close();
+                        } catch (IOException e) {
+                            // ignore
+                        }
+                    }
+                }
+                return null;
+            }
+            public String getDescription() {
+                return("Text \""+text+"\" at "+getDefaultUrl()+urlSuffix);
+            }
+        };
+        Waiter waiter = new Waiter(waitable);
+        waiter.getTimeouts().setTimeout("Waiter.WaitingTime", timeout);
+        try {
+            waiter.waitAction(null);
+        } catch (InterruptedException e) {
+            throw new JemmyException("Exception while waiting for connection.", e);
+        }
+    }
+    
+    /** Increases timeout and waits until deployment is finished. 
+     * @param test instance of JellyTestCase to get access to logs
+     * @param projectName name of deployed project
+     * @param target executed target
+     */
+    public static void waitFinished(JellyTestCase test, String projectName, String target) {
+        long oldTimeout = MainWindowOperator.getDefault().getTimeouts().getTimeout("Waiter.WaitingTime");
+        try {
+            // increase time to wait to 240 second (it fails on slower machines)
+            MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 240000);
+            MainWindowOperator.getDefault().waitStatusText("Finished building "+projectName+" ("+target+")");
+        } finally {
+            // start status text tracer again because we use it further
+            MainWindowOperator.getDefault().getStatusTextTracer().start();
+            // restore default timeout
+            MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", oldTimeout);
+            // log messages from output
+            test.getLog("ServerMessages").print(new OutputTabOperator(Utils.DEFAULT_SERVER).getText()); // NOI18N
+            test.getLog("RunOutput").print(new OutputTabOperator(projectName).getText()); // NOI18N
+        }
     }
 }
