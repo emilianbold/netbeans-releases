@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,6 +23,8 @@ import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+
+import org.netbeans.performance.test.guitracker.LoggingRepaintManager.RegionFilter;
 
 /**
  * Test of opening files.
@@ -60,6 +62,22 @@ public class OpenFormFile extends OpenFilesNoCloneableEditor {
         doMeasurement();
     }
     
+    @Override
+    protected void initialize() {
+        // don't measure paint events from StatusLine
+        repaintManager().setRegionFilter(STATUSLINE_FILTER);
+
+        super.initialize();
+    }
+
+    @Override
+    protected void shutdown() {
+        // reset filter
+        repaintManager().setRegionFilter(null);
+        
+        super.shutdown();
+    }
+    
     public ComponentOperator open(){
         JPopupMenuOperator popup =  this.openNode.callPopup();
         if (popup == null) {
@@ -83,5 +101,17 @@ public class OpenFormFile extends OpenFilesNoCloneableEditor {
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new OpenFormFile("testOpening20kBFormFile"));
     }
+    
+    private static final RegionFilter STATUSLINE_FILTER =
+            new RegionFilter() {
+
+                public boolean accept(javax.swing.JComponent c) {
+                    return !c.getClass().getName().equals("org.netbeans.core.windows.view.ui.StatusLine");
+                }
+
+                public String getFilterName() {
+                    return "Don't accept paints from org.netbeans.core.windows.view.ui.StatusLine";
+                }
+            };
     
 }
