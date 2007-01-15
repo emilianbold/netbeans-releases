@@ -42,7 +42,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public class AnnotationSettings implements ActionListener, /*AWTEventListener, ListSelectionListener,*/ TableModelListener {
+public class AnnotationSettings implements ActionListener, TableModelListener {
     
     private final AnnotationSettingsPanel panel; 
     private DialogDescriptor dialogDescriptor;

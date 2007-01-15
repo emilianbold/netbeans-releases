@@ -97,7 +97,8 @@ public class Annotator {
     public static String[] LABELS = new String[] {ANNOTATION_REVISION, ANNOTATION_STATUS, ANNOTATION_FOLDER, ANNOTATION_MIME_TYPE};
     
     private final FileStatusCache cache;
-    private MessageFormat format;        
+    private MessageFormat format;     
+    private String emptyFormat;
             
     private boolean mimeTypeFlag;
 
@@ -126,6 +127,7 @@ public class Annotator {
             string = string.replaceAll("\\{folder\\}",    "\\{2\\}");           // NOI18N
             string = string.replaceAll("\\{mime_type\\}", "\\{3\\}");           // NOI18N
             format = new MessageFormat(string);
+            emptyFormat = format.format(new String[] {"", "", "", ""} , new StringBuffer(), null).toString().trim();
         }                      
     }
     
@@ -267,9 +269,15 @@ public class Annotator {
             stickyString,
             binaryString
         };
-        return " " + format.format(arguments, new StringBuffer(), null).toString().trim();
+                
+        String annotation = format.format(arguments, new StringBuffer(), null).toString().trim();    
+        if(annotation.equals(emptyFormat)) {
+            return "";            
+        } else {
+            return " " + annotation;
+        }        
     }
-
+ 
     private String getMimeType(File file) {
         try {
             SvnClient client = Subversion.getInstance().getClient(false);

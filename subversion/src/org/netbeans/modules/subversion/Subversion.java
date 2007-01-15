@@ -43,7 +43,6 @@ import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.VersioningManager;
 import org.netbeans.api.queries.SharabilityQuery;
-import org.netbeans.modules.subversion.config.PasswordFile;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 
 /**
