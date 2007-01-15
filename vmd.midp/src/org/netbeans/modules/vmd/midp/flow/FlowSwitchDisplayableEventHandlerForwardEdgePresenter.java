@@ -24,7 +24,9 @@ import org.netbeans.modules.vmd.api.flow.visual.FlowDescriptor;
 import org.netbeans.modules.vmd.api.flow.visual.FlowEdgeDescriptor;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
+import org.netbeans.modules.vmd.midp.components.displayables.AlertCD;
 import org.netbeans.modules.vmd.midp.components.handlers.SwitchDisplayableEventHandlerCD;
 
 /**
@@ -88,7 +90,10 @@ public final class FlowSwitchDisplayableEventHandlerForwardEdgePresenter extends
         public boolean isReplacement (FlowEdgeDescriptor descriptor, FlowDescriptor replacementDescriptor, boolean reconnectingSource) {
             assert ! reconnectingSource;
             DesignComponent targetComponent = replacementDescriptor != null ? replacementDescriptor.getRepresentedComponent () : null;
-            return targetComponent != null  &&  getComponent ().getDocument ().getDescriptorRegistry ().isInHierarchy (DisplayableCD.TYPEID, targetComponent.getType ());
+            DescriptorRegistry descriptorRegistry = getComponent ().getDocument ().getDescriptorRegistry ();
+            return targetComponent != null  &&
+                descriptorRegistry.isInHierarchy (DisplayableCD.TYPEID, targetComponent.getType ())  &&
+                ! descriptorRegistry.isInHierarchy (AlertCD.TYPEID, targetComponent.getType ());
         }
 
         public void setReplacement (FlowEdgeDescriptor descriptor, FlowDescriptor replacementDescriptor, boolean reconnectingSource) {
