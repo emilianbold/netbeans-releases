@@ -39,7 +39,6 @@ import org.netbeans.modules.xml.axi.Attribute;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
-import org.openide.util.NbBundle;
 import org.netbeans.modules.xml.axi.Element;
 
 /**
