@@ -51,7 +51,7 @@ import org.w3c.dom.Node;
  * @author Kirill Sorokin
  */
 public abstract class RegistryNode implements PropertyContainer {
-    protected RegistryNode       parent        = null;
+    protected RegistryNode          parent        = null;
     
     protected String                uid           = null;
     
@@ -67,7 +67,7 @@ public abstract class RegistryNode implements PropertyContainer {
     protected Map<Locale, String>   displayNames  = new HashMap<Locale, String>();
     protected Map<Locale, String>   descriptions  = new HashMap<Locale, String>();
     
-    protected List<RegistryNode> children      = new ArrayList<RegistryNode>();
+    protected List<RegistryNode>    children      = new ArrayList<RegistryNode>();
     
     protected Properties            properties    = new Properties();
     
@@ -81,10 +81,6 @@ public abstract class RegistryNode implements PropertyContainer {
     
     public String getUid() {
         return uid;
-    }
-    
-    public void setUid(String uid) {
-        this.uid = uid;
     }
     
     public String getDisplayName() {
@@ -257,9 +253,11 @@ public abstract class RegistryNode implements PropertyContainer {
     }
     
     public Element saveChildrenToDom(Document document, RegistryFilter filter) throws FinalizationException {
-        Element components = document.createElement("components");
+        Element components = null;
         
-        if (children.size() > 0) {
+        if (hasChildren(filter)) {
+            components = document.createElement("components");
+            
             for (RegistryNode child: children) {
                 if (filter.accept(child) || child.hasChildren(filter)) {
                     components.appendChild(child.saveToDom(document, filter));

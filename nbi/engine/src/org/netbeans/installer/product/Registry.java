@@ -85,68 +85,6 @@ import org.xml.sax.SAXException;
  */
 public class Registry {
     /////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    public static final String DEFAULT_LOCAL_PRODUCT_CACHE_DIRECTORY_NAME =
-            "product-cache";
-    
-    public static final String LOCAL_PRODUCT_CACHE_DIRECTORY_NAME_PROPERTY =
-            "nbi.product.local.cache.directory.name";
-    
-    public static final String DEFAULT_LOCAL_REGISTRY_FILE_NAME =
-            "product-registry.xml";
-    
-    public static final String LOCAL_PRODUCT_REGISTRY_FILE_NAME_PROPERTY =
-            "nbi.product.local.registry.file.name";
-    
-    public static final String DEFAULT_LOCAL_PRODUCT_REGISTRY_STUB_URI =
-            "resource:org/netbeans/installer/product/default-product-registry.xml";
-    
-    public static final String LOCAL_PRODUCT_REGISTRY_STUB_PROPERTY =
-            "nbi.product.local.registry.stub";
-    
-    public static final String DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI =
-            "resource:" + Installer.DATA_DIRECTORY + "/bundled-product-registry.xml";
-    
-    public static final String BUNDLED_PRODUCT_REGISTRY_URI_PROPERTY =
-            "nbi.product.bundled.registry.uri";
-    
-    public static final String DEFAULT_PRODUCT_REGISTRY_SCHEMA_URI =
-            "resource:org/netbeans/installer/product/product-registry.xsd";
-    
-    public static final String PRODUCT_REGISTRY_SCHEMA_URI_PROPERTY =
-            "nbi.product.registry.schema.uri";
-    
-    public static final String REMOTE_PRODUCT_REGISTRIES_PROPERTY =
-            "nbi.product.remote.registries";
-    
-    public static final String TARGET_COMPONENT_UID_PROPERTY =
-            "nbi.product.target.component.uid";
-    
-    public static final String TARGET_COMPONENT_VERSION_PROPERTY =
-            "nbi.product.target.component.version";
-    
-    public static final String SOURCE_STATE_FILE_PATH_PROPERTY =
-            "nbi.product.source.state.file.path";
-    
-    public static final String TARGET_STATE_FILE_PATH_PROPERTY =
-            "nbi.product.target.state.file.path";
-    
-    public static final String STATE_FILE_SCHEMA_URI_PROPERTY =
-            "nbi.state.file.schema.uri";
-    
-    public static final String DEFAULT_STATE_FILE_SCHEMA_URI =
-            "resource:org/netbeans/installer/product/state-file.xsd";
-    
-    public static final String DEFAULT_STATE_FILE_STUB_URI =
-            "resource:org/netbeans/installer/product/default-state-file.xml";
-    
-    public static final String STATE_FILE_STUB_PROPERTY =
-            "nbi.state.file.stub";
-    
-    public static final String TARGET_PLATFORM_PROPERTY =
-            "nbi.target.platform";
-    
-    /////////////////////////////////////////////////////////////////////////////////
     // Static
     private static Registry instance;
     
@@ -544,9 +482,10 @@ public class Registry {
         return loadRegistryDocument(localRegistryStubURI);
     }
     
-    public Document getRegistryDocument(RegistryFilter filter) throws XMLException, FinalizationException {
-        Document document        = getEmptyRegistryDocument();
-        Element  documentElement = document.getDocumentElement();
+    public Document getRegistryDocument(final RegistryFilter filter) 
+            throws XMLException, FinalizationException {
+        final Document document        = getEmptyRegistryDocument();
+        final Element  documentElement = document.getDocumentElement();
         
         if (properties.size() > 0) {
             Element propertiesElement = document.createElement("properties");
@@ -565,7 +504,8 @@ public class Registry {
             documentElement.appendChild(propertiesElement);
         }
         
-        Element componentsElement = productTreeRoot.saveChildrenToDom(document, filter);
+        Element componentsElement = 
+                productTreeRoot.saveChildrenToDom(document, filter);
         
         if (componentsElement != null) {
             documentElement.appendChild(componentsElement);
@@ -1224,4 +1164,66 @@ public class Registry {
     private Group createTreeRoot() {
         return new Group();
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String DEFAULT_LOCAL_PRODUCT_CACHE_DIRECTORY_NAME =
+            "product-cache";
+    
+    public static final String LOCAL_PRODUCT_CACHE_DIRECTORY_NAME_PROPERTY =
+            "nbi.product.local.cache.directory.name";
+    
+    public static final String DEFAULT_LOCAL_REGISTRY_FILE_NAME =
+            "product-registry.xml";
+    
+    public static final String LOCAL_PRODUCT_REGISTRY_FILE_NAME_PROPERTY =
+            "nbi.product.local.registry.file.name";
+    
+    public static final String DEFAULT_LOCAL_PRODUCT_REGISTRY_STUB_URI =
+            "resource:org/netbeans/installer/product/default-product-registry.xml";
+    
+    public static final String LOCAL_PRODUCT_REGISTRY_STUB_PROPERTY =
+            "nbi.product.local.registry.stub";
+    
+    public static final String DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI =
+            "resource:" + Installer.DATA_DIRECTORY + "/bundled-product-registry.xml";
+    
+    public static final String BUNDLED_PRODUCT_REGISTRY_URI_PROPERTY =
+            "nbi.product.bundled.registry.uri";
+    
+    public static final String DEFAULT_PRODUCT_REGISTRY_SCHEMA_URI =
+            "resource:org/netbeans/installer/product/product-registry.xsd";
+    
+    public static final String PRODUCT_REGISTRY_SCHEMA_URI_PROPERTY =
+            "nbi.product.registry.schema.uri";
+    
+    public static final String REMOTE_PRODUCT_REGISTRIES_PROPERTY =
+            "nbi.product.remote.registries";
+    
+    public static final String TARGET_COMPONENT_UID_PROPERTY =
+            "nbi.product.target.component.uid";
+    
+    public static final String TARGET_COMPONENT_VERSION_PROPERTY =
+            "nbi.product.target.component.version";
+    
+    public static final String SOURCE_STATE_FILE_PATH_PROPERTY =
+            "nbi.product.source.state.file.path";
+    
+    public static final String TARGET_STATE_FILE_PATH_PROPERTY =
+            "nbi.product.target.state.file.path";
+    
+    public static final String STATE_FILE_SCHEMA_URI_PROPERTY =
+            "nbi.state.file.schema.uri";
+    
+    public static final String DEFAULT_STATE_FILE_SCHEMA_URI =
+            "resource:org/netbeans/installer/product/state-file.xsd";
+    
+    public static final String DEFAULT_STATE_FILE_STUB_URI =
+            "resource:org/netbeans/installer/product/default-state-file.xml";
+    
+    public static final String STATE_FILE_STUB_PROPERTY =
+            "nbi.state.file.stub";
+    
+    public static final String TARGET_PLATFORM_PROPERTY =
+            "nbi.target.platform";
 }

@@ -118,12 +118,8 @@ public abstract class ProductConfigurationLogic {
         return ResourceUtils.getString(getClass(), key);
     }
     
-    public final String getString(String baseName, String key) {
-        return ResourceUtils.getString(baseName, key, product.getClassLoader());
-    }
-    
-    public final String getString(String baseName, String key, Object... arguments) {
-        return ResourceUtils.getString(baseName, key, product.getClassLoader(), arguments);
+    public final String getString(String key, Object... arguments) {
+        return ResourceUtils.getString(getClass(), key, arguments);
     }
     
     public final InputStream getResource(String path) {

@@ -28,21 +28,27 @@ import org.apache.tools.ant.TaskContainer;
 public class ForEach extends Task implements TaskContainer {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    private List<String> list      = null;
+    private String     list      = null;
+    private String[]   items     = null;
+    private String     separator = " ";
     
-    private int          from      = 0;
-    private int          to        = 0;
-    private int          increment = 1;
+    private int        from      = 0;
+    private int        to        = 0;
+    private int        increment = 1;
     
-    private String       property  = null;
+    private String     property  = null;
     
-    private List<Task>   children  = new LinkedList<Task>();
+    private List<Task> children  = new LinkedList<Task>();
     
-    private boolean      wrongArgs = false;
+    private boolean    wrongArgs = false;
     
     // setters //////////////////////////////////////////////////////////////////////
     public void setList(final String list) {
-        this.list = Arrays.asList(list.trim().split(" "));
+        this.list = list;
+    }
+    
+    public void setSeparator(final String separator) {
+        this.separator = separator;
     }
     
     public void setProperty(final String property) {
@@ -88,7 +94,9 @@ public class ForEach extends Task implements TaskContainer {
         }
         
         if (list != null) {
-            for (String value: this.list) {
+            items = list.split(separator);
+            
+            for (String value: this.items) {
                 executeChildren(value);
             }
             return;
