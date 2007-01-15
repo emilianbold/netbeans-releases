@@ -43,7 +43,7 @@ public class Annotation {
      * a specified map.
      */
     static void load(DataInputStream in, ConstantPool pool,
-		     boolean visible, Map map) throws IOException {
+		     boolean visible, Map<ClassName,Annotation> map) throws IOException {
 	int nattrs = in.readUnsignedShort();
 	for (int i = 0; i < nattrs; i++) {
 	    Annotation ann = loadAnnotation(in, pool, visible);
@@ -63,7 +63,7 @@ public class Annotation {
 	    type = ClassName.getClassName(s);
 	}
 	int npairs = in.readUnsignedShort();
-	List pairList = new ArrayList();
+	List<AnnotationComponent> pairList = new ArrayList<AnnotationComponent>();
 	for (int j = 0; j < npairs; j++)
 	    pairList.add(AnnotationComponent.load(in, pool, visible));
 	AnnotationComponent[] acs = 

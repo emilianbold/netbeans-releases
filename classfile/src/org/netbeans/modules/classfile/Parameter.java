@@ -15,7 +15,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * Contributor(s): Thomas Ball
@@ -40,132 +40,37 @@ import java.util.*;
 public final class Parameter extends Field {
 
     static Parameter[] makeParams(Method method) {
-        List result = new ArrayList();
-        ClassFile classFile = method.getClassFile();
-        String signature = method.getDescriptor();
-        assert signature.charAt(0) == '(';
-        /** the current character in the type signature */
-        int isig = 1;  // skip '('
-        /** the current local variable array position */
-        int ivar = method.isStatic() ? 0 : 1;
-        Code code = method.getCode();
-        LocalVariableTableEntry[] localVars = code != null ?
-            code.getLocalVariableTable() :
-            new LocalVariableTableEntry[0];
-
-        
-        while (signature.charAt(isig) != ')') {
-            String name = "";
-            for (int i = 0; i < localVars.length; i++) {
-                LocalVariableTableEntry lvte = localVars[i];
-                // only parameters have a startPC of zero
-                if (lvte.index == ivar && lvte.startPC == 0) {
-                    name = localVars[i].getName();
-                    break;
-                }
-            }
-            ivar++;
-            int sigStart = isig;
-            boolean again = true;
-            while (again && isig < signature.length()) {
-                again = false;
-                char ch = signature.charAt(isig);
-                switch (ch) {
-                    case '[':
-                        isig++;
-                        again = true;
-                        break;
-                    case 'B':
-                    case 'C':
-                    case 'F':
-                    case 'I':
-                    case 'S':
-                    case 'Z':
-                    case 'V': {
-                        String type = signature.substring(sigStart, ++isig);
-                        result.add(Parameter.createParameter(name, type, classFile));
-                        break;
-                    }
-                    case 'D':
-                    case 'J': {
-                        ivar++;  // longs and doubles take two slots
-                        String type = signature.substring(sigStart, ++isig);
-                        result.add(Parameter.createParameter(name, type, classFile));
-                        break;
-                    }
-                    case 'L': {
-                        int end = signature.indexOf(';', isig) + 1;
-                        String type = signature.substring(isig, end);
-                        isig = end;
-                        result.add(Parameter.createParameter(name, type, classFile));
-                        break;
-                    }
-                    
-                }
-            }
-        }
-        
-        AttributeMap attrs = method.getAttributes();
-        DataInputStream visibleAnnotations = attrs.getStream("RuntimeVisibleParameterAnnotations"); //NOI18N
-        DataInputStream invisibleAnnotations = attrs.getStream("RuntimeInvisibleParameterAnnotations"); //NOI18N
-        
-        try {
-            int visibleAnnotationCount = visibleAnnotations != null ? visibleAnnotations.readByte() : -1;
-            int invisibleAnnotationCount = invisibleAnnotations != null ? invisibleAnnotations.readByte() : -1;
-            
-            if (visibleAnnotationCount != (-1) && invisibleAnnotationCount != (-1) && visibleAnnotationCount != invisibleAnnotationCount) {
-                throw new InvalidClassFileAttributeException("invalid RuntimeInvisibleParameterAnnotations or RuntimeVisibleParameterAnnotations attribute", null);
-            }
-            
-            int annotationCount = visibleAnnotationCount != (-1) ? visibleAnnotationCount : invisibleAnnotationCount;
-            
-            if (annotationCount != (-1)) {
-                int toAttachIndex = result.size() - annotationCount;
-                
-                if (toAttachIndex < 0) {
-                    throw new InvalidClassFileAttributeException("invalid RuntimeInvisibleParameterAnnotations or RuntimeVisibleParameterAnnotations attribute", null);
-                }
-                
-                if (toAttachIndex > 0) {
-                    //may happen for enum constructor and for constructors of inner classes:
-                    if (!"<init>".equals(method.getName())) {
-                        throw new InvalidClassFileAttributeException("invalid RuntimeInvisibleParameterAnnotations and/or RuntimeVisibleParameterAnnotations attribute", null);
-                    }
-                }
-                
-                while (toAttachIndex < result.size()) {
-                    ((Parameter) result.get(toAttachIndex)).loadParameterAnnotations(visibleAnnotations, invisibleAnnotations);
-                    toAttachIndex++;
-                }
-            }
-        } catch (IOException e) {
-            throw new InvalidClassFileAttributeException("invalid RuntimeInvisibleParameterAnnotations or RuntimeVisibleParameterAnnotations attribute", e);
-        }
-        
-        return (Parameter[]) result.toArray(new Parameter[result.size()]);
+	List<Parameter> paramList = new ArrayList<Parameter>();
+        for (Iterator<Parameter> it = new ParamIterator(method); it.hasNext();)
+            paramList.add(it.next());
+        return (Parameter[])paramList.toArray(new Parameter[paramList.size()]);
     }
 
-    private static Parameter createParameter (String name, String type, ClassFile classFile) {
-        return new Parameter (name, type, classFile);
+    private static Parameter createParameter (String name, String type, ClassFile classFile,
+            DataInputStream visibleAnnotations, DataInputStream invisibleAnnotations) {
+        return new Parameter (name, type, classFile,
+            visibleAnnotations, invisibleAnnotations);
     }
     
     /** Creates new Parameter */
-    private Parameter(String name, String type, ClassFile classFile) {
+    private Parameter(String name, String type, ClassFile classFile,
+            DataInputStream visibleAnnotations, DataInputStream invisibleAnnotations) {
         super(name, type, classFile);
+        loadParameterAnnotations(visibleAnnotations, invisibleAnnotations);
     }
     
     private void loadParameterAnnotations(DataInputStream visible, DataInputStream invisible) {
         super.loadAnnotations();
         if (annotations == null && (visible != null || invisible != null))
-            annotations = new HashMap(2);
+            annotations = new HashMap<ClassName,Annotation>(2);
         try {
-            if (visible != null)
+            if (visible != null && visible.available() > 0)
                 Annotation.load(visible, classFile.getConstantPool(), true, annotations);
         } catch (IOException e) {
             throw new InvalidClassFileAttributeException("invalid RuntimeVisibleParameterAnnotations attribute", e);
         }
         try {
-            if (invisible != null)
+            if (invisible != null && invisible.available() > 0)
                 Annotation.load(invisible, classFile.getConstantPool(), false, annotations);
         } catch (IOException e) {
             throw new InvalidClassFileAttributeException("invalid RuntimeInvisibleParameterAnnotations attribute", e);
@@ -213,4 +118,113 @@ public final class Parameter extends Field {
         return sb.toString();
     }
 
+    private static class ParamIterator implements Iterator<Parameter> {
+        ClassFile classFile;
+        String signature;
+        LocalVariableTableEntry[] localVars;
+
+        /** the current local variable array position */
+        int ivar;
+
+        /** the current character in the type signature */
+        int isig;
+        
+        /** annotation attributes */
+        DataInputStream visibleAnnotations;
+        DataInputStream invisibleAnnotations;
+        
+        /** 
+         * @param method 
+         */
+        ParamIterator(Method method) {
+            classFile = method.getClassFile();
+            signature = method.getDescriptor();
+            assert signature.charAt(0) == '(';
+            isig = 1;  // skip '('
+            ivar = method.isStatic() ? 0 : 1;
+	    Code code = method.getCode();
+            localVars = code != null ? 
+		code.getLocalVariableTable() : 
+		new LocalVariableTableEntry[0];
+            AttributeMap attrs = method.getAttributes();
+            try {
+                visibleAnnotations = 
+                    getParamAttr(attrs, "RuntimeVisibleParameterAnnotations"); //NOI18N
+            } catch (IOException e) {
+                throw new InvalidClassFileAttributeException("invalid RuntimeVisibleParameterAnnotations attribute", e);
+            }
+            try {
+                invisibleAnnotations = 
+                    getParamAttr(attrs, "RuntimeInvisibleParameterAnnotations"); //NOI18N
+            } catch (IOException e) {
+                throw new InvalidClassFileAttributeException("invalid RuntimeInvisibleParameterAnnotations attribute", e);
+            }
+        }
+        
+        private DataInputStream getParamAttr(AttributeMap attrs, String name) throws IOException {
+            DataInputStream in = attrs.getStream(name);
+            if (in != null)
+                in.readByte(); // skip the redundant parameters number
+            return in;
+        }
+        
+        public boolean hasNext() {
+            return signature.charAt(isig) != ')';
+        }
+        
+        public Parameter next() {
+            if (hasNext()) {
+		String name = "";
+		for (int i = 0; i < localVars.length; i++) {
+		    LocalVariableTableEntry lvte = localVars[i];
+		    // only parameters have a startPC of zero
+		    if (lvte.index == ivar && lvte.startPC == 0) {
+			name = localVars[i].getName();
+			break;
+		    }
+		}
+                ivar++;
+                int sigStart = isig;
+                while (isig < signature.length()) {
+                    char ch = signature.charAt(isig);
+                    switch (ch) {
+                        case '[':
+                            isig++;
+                            break;
+                        case 'B':
+                        case 'C':
+                        case 'F':
+                        case 'I':
+                        case 'S':
+                        case 'Z':
+                        case 'V': {
+                            String type = signature.substring(sigStart, ++isig);
+                            return Parameter.createParameter(name, type, classFile, 
+                                    visibleAnnotations, invisibleAnnotations);
+                        }
+                        case 'D':
+                        case 'J': {
+                            ivar++;  // longs and doubles take two slots
+                            String type = signature.substring(sigStart, ++isig);
+                            return Parameter.createParameter(name, type, classFile, 
+                                    visibleAnnotations, invisibleAnnotations);
+                        }
+                        case 'L': {
+                            int end = signature.indexOf(';', isig) + 1;
+                            String type = signature.substring(isig, end);
+                            isig = end;
+                            return Parameter.createParameter(name, type, classFile, 
+                                    visibleAnnotations, invisibleAnnotations);
+                        }
+
+                    }
+                }
+            }
+            throw new NoSuchElementException();
+        }
+        
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
 }

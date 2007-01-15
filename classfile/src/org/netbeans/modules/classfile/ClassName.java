@@ -47,7 +47,8 @@ public final class ClassName implements Comparable, Comparator, Serializable {
     private volatile transient String packageName;
     private volatile transient String simpleName;
 
-    private final static WeakHashMap cache = new WeakHashMap();
+    private final static WeakHashMap<String,WeakReference<ClassName>> cache = 
+            new WeakHashMap<String,WeakReference<ClassName>>();
 
     /**
      * Returns the ClassName object referenced by a class
@@ -114,14 +115,14 @@ public final class ClassName implements Comparable, Comparator, Serializable {
 		    }
 
 		    cn = new ClassName(_type);
-		    cache.put(_type, new WeakReference(cn));
+		    cache.put(_type, new WeakReference<ClassName>(cn));
 		}
 	    }
 	return cn;
     }
 
     private static ClassName getCacheEntry(String key) {
-	WeakReference ref = (WeakReference)cache.get(key);
+	WeakReference ref = cache.get(key);
 	return ref != null ? (ClassName)ref.get() : null;
     }
 

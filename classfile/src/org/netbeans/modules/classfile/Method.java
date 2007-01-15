@@ -142,7 +142,7 @@ public final class Method extends Field {
     /**
      * Returns the parameters for this method as a declaration-ordered list.
      */
-    public final List getParameters() {
+    public final List<Parameter> getParameters() {
 	if (parameters == null)
 	    parameters = Parameter.makeParams(this);
 	return Arrays.asList(parameters);

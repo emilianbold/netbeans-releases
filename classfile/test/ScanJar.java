@@ -94,11 +94,16 @@ public class ScanJar {
 	    ZipEntry entry = (ZipEntry)files.nextElement();
 	    String name = entry.getName();
 	    if (name.endsWith(".class")) {
-		InputStream in = zf.getInputStream(entry);
-		ClassFile cf = new ClassFile(in, includeCode);
-		if (toString)
-		    cf.toString(); // forces loading of attributes.
-		in.close();
+                InputStream in = zf.getInputStream(entry);
+                ClassFile cf = new ClassFile(in, includeCode);
+                if (toString)
+                    try {
+                        cf.toString(); // forces loading of attributes.
+                    } catch (InvalidClassFileAttributeException ex) {
+                        System.out.println("error accessing " + name);
+                        throw ex;
+                    }
+                in.close();
 		n++;
 	    }
 	}

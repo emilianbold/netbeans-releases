@@ -55,7 +55,7 @@ public final class AttributeMap {
     static AttributeMap load(DataInputStream in, ConstantPool pool,
 			     boolean includeCode) throws IOException {        
         int count = in.readUnsignedShort();
-        Map map = new HashMap(count + 1, (float)1.0);
+        Map<String,byte[]> map = new HashMap<String,byte[]>(count + 1, (float)1.0);
         for (int i = 0; i < count; i++) {
 	    Object o = pool.get(in.readUnsignedShort());
             if (!(o instanceof CPUTF8Info))
@@ -76,7 +76,7 @@ public final class AttributeMap {
 	return new AttributeMap(map);
     }
 
-    AttributeMap(Map attributes) {
+    AttributeMap(Map<String,byte[]> attributes) {
 	this.map = attributes;
     }
 

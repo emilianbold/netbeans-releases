@@ -70,6 +70,7 @@ public final class Variable extends Field {
      * otherwise null.
      * @deprecated replaced by <code>Object getConstantValue()</code>.
      */
+    @Deprecated
     public final Object getValue() {
 	return getConstantValue();
     }

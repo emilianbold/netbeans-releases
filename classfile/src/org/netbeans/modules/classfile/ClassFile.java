@@ -45,7 +45,7 @@ public class ClassFile {
     String sourceFileName;
     InnerClass[] innerClasses;
     private AttributeMap attributes;
-    private Map annotations;
+    private Map<ClassName,Annotation> annotations;
     short majorVersion;
     short minorVersion;
     String typeSignature;
@@ -223,8 +223,8 @@ public class ClassFile {
     /**
      * @return a collection of Strings describing this class's interfaces.
      */    
-    public final Collection getInterfaces() {
-        List l = new ArrayList();
+    public final Collection<ClassName> getInterfaces() {
+        List<ClassName> l = new ArrayList<ClassName>();
         int n = interfaces.length;
         for (int i = 0; i < n; i++)
             l.add(interfaces[i].getClassName());
@@ -254,7 +254,7 @@ public class ClassFile {
      * @return a Collection of Variable objects representing the fields 
      *         defined by this class.
      */    
-    public final Collection getVariables() {
+    public final Collection<Variable> getVariables() {
         return Arrays.asList(variables);
     }
 
@@ -290,7 +290,7 @@ public class ClassFile {
      * @return a Collection of Method objects representing the methods 
      *         defined by this class.
      */    
-    public final Collection getMethods() {
+    public final Collection<Method> getMethods() {
         return Arrays.asList(methods);
     }
     
@@ -356,7 +356,7 @@ public class ClassFile {
         return attributes;
     }
     
-    public final Collection getInnerClasses(){
+    public final Collection<InnerClass> getInnerClasses(){
 	if (innerClasses == null) {
 	    DataInputStream in = attributes.getStream("InnerClasses"); // NOI18N
 	    if (in != null) {
@@ -446,8 +446,8 @@ public class ClassFile {
 	    annotations = buildAnnotationMap(constantPool, attributes);
     }
 
-    static Map buildAnnotationMap(ConstantPool pool, AttributeMap attrs) {
-	Map annotations = new HashMap(2);
+    static Map<ClassName,Annotation> buildAnnotationMap(ConstantPool pool, AttributeMap attrs) {
+	Map<ClassName,Annotation> annotations = new HashMap<ClassName,Annotation>(2);
 	DataInputStream in = 
 	    attrs.getStream("RuntimeVisibleAnnotations"); //NOI18N
 	if (in != null) {
@@ -474,7 +474,7 @@ public class ClassFile {
      * Returns all runtime annotations defined for this class.  Inherited
      * annotations are not included in this collection.
      */
-    public final Collection getAnnotations() {
+    public final Collection<Annotation> getAnnotations() {
 	loadAnnotations();
 	return annotations.values();
     }
@@ -501,8 +501,8 @@ public class ClassFile {
      *
      * @return a Set of ClassNames specifying the referenced classnames.
      */
-    public final Set getAllClassNames() {
-        Set set = new HashSet();
+    public final Set<ClassName> getAllClassNames() {
+        Set<ClassName> set = new HashSet<ClassName>();
 
         // include all class name constants from constant pool
         Collection c = constantPool.getAllConstants(CPClassInfo.class);
@@ -521,7 +521,7 @@ public class ClassFile {
         return Collections.unmodifiableSet(set);
     }
 
-    private void addClassNames(Set set, String type) {
+    private void addClassNames(Set<ClassName> set, String type) {
         int i = 0;
         while ((i = type.indexOf('L', i)) != -1) {
             int j = type.indexOf(';', i);

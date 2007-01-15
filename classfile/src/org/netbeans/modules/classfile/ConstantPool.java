@@ -111,9 +111,9 @@ public final class ConstantPool {
 		   getAllConstantsImpl(classType));
     }
 
-    private Collection getAllConstantsImpl(Class classType) {
+    private Collection<CPEntry> getAllConstantsImpl(Class classType) {
         int n = cpEntries.length;
-        Collection c = new ArrayList(n);
+        Collection<CPEntry> c = new ArrayList<CPEntry>(n);
         for (int i = CONSTANT_POOL_START; i < n; i++) {
             if (cpEntries[i] != null && 
                 cpEntries[i].getClass().equals(classType)) {
@@ -132,7 +132,7 @@ public final class ConstantPool {
      * the constant pool structure.
      */
     public final Set getAllClassNames() {
-        Set set = new HashSet();
+        Set<ClassName> set = new HashSet<ClassName>();
 
         // include all class name constants
         Collection c = getAllConstantsImpl(CPClassInfo.class);

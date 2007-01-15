@@ -42,7 +42,7 @@ public abstract class Field {
 
     int access;
     ClassFile classFile;
-    Map annotations;
+    Map<ClassName,Annotation> annotations;
     String typeSignature;
     AttributeMap attributes;
 
@@ -61,7 +61,7 @@ public abstract class Field {
 	_name = name;
 	_type = type;
 	this.classFile = classFile;
-	attributes = new AttributeMap(new HashMap(1));
+	attributes = new AttributeMap(new HashMap<String,byte[]>(1));
     }
     
     public final String getName() {
@@ -150,10 +150,10 @@ public abstract class Field {
     }
 
     /**
-     * Returns all runtime annotations defined for this field.  Inherited
+     * Returns al<ClassName,Annotation>l runtime annotations defined for this field.  Inherited
      * annotations are not included in this collection.
      */
-    public final Collection getAnnotations() {
+    public final Collection<Annotation> getAnnotations() {
 	loadAnnotations();
 	return annotations.values();
     }

@@ -20,6 +20,7 @@
 package regression;
 
 import java.io.InputStream;
+import java.util.List;
 import junit.framework.TestCase;
 import junit.framework.*;
 import org.netbeans.modules.classfile.*;
@@ -34,14 +35,24 @@ public class Issue91098Test extends TestCase {
         super(testName);
     }
     
-    /**
-     * 
-     * The source code for the class file
-     */
-    public void test91098() throws Exception {
+    public void testAttributeLoading() throws Exception {
         InputStream classData = 
             getClass().getResourceAsStream("datafiles/test91098.class");
         ClassFile classFile = new ClassFile(classData);
         classFile.toString();
+    }
+    
+    public void testHasDeprecatedAttribute() throws Exception {
+        InputStream classData = 
+            getClass().getResourceAsStream("datafiles/test91098.class");
+        ClassFile classFile = new ClassFile(classData);
+        Method meth = classFile.getMethod("<init>", "(Ljava/lang/String;II)V");
+        List<Parameter> params = meth.getParameters();
+        assertEquals(params.size(), 3);  // declared parameter, plus two for internal enum params
+        Parameter param = params.get(0);
+        Annotation[] annotations = param.getAnnotations().toArray(new Annotation[0]);
+        assertEquals(annotations.length, 1);
+        ClassName type = annotations[0].getType();
+        assertEquals(type.getExternalName(), "java.lang.Deprecated");
     }
 }
