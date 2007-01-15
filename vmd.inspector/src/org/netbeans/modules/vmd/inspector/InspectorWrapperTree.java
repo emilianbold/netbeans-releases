@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.vmd.inspector;
 
+import com.sun.net.ssl.internal.ssl.Debug;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.image.ImageObserver;
@@ -60,33 +61,45 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener, Acti
     private FolderRegistry registry;
     private DesignDocument document;
     private InspectorFolderWrapper rootFolderWrapper;
-    private Set<DesignComponent> componentsToDelete;
-    private Set<DesignComponent> componentsToAdd;
-    //TODO remove private volatile boolean lock = false;
+    private WeakSet<DesignComponent> componentsToDelete;
+    private WeakSet<DesignComponent> componentsToAdd;
+    private WeakSet<DesignComponent> componentsToUndo;
     private Collection<InspectorFolderWrapper> foldersToUpdate;
-    private WeakHashMap<DesignDocument, InspectorFolderWrapper> rootFolderWrapperMap = new WeakHashMap<DesignDocument, InspectorFolderWrapper>();
-    private WeakSet<DataObjectContext> contexts = new WeakSet<DataObjectContext>();
+    private WeakHashMap<DesignDocument, InspectorFolderWrapper> rootFolderWrapperMapCash;
+    private WeakSet<DesignComponent> deletedComponentsCash;
+    private WeakSet<DataObjectContext> contextsCash;
     
     InspectorWrapperTree() {
         ActiveViewSupport.getDefault().addActiveViewListener(this);
-        foldersToUpdate = new HashSet<InspectorFolderWrapper>();
-        componentsToAdd = new HashSet<DesignComponent>();
-        componentsToDelete = new HashSet<DesignComponent>();
+        foldersToUpdate = new WeakSet<InspectorFolderWrapper>();
+        componentsToAdd = new WeakSet<DesignComponent>();
+        componentsToDelete = new WeakSet<DesignComponent>();
+        contextsCash = new WeakSet<DataObjectContext>();
+        componentsToUndo = new WeakSet<DesignComponent>();
+        rootFolderWrapperMapCash = new WeakHashMap<DesignDocument, InspectorFolderWrapper>();
     }
     
     synchronized void buildTree(final Collection<DesignComponent> createdComponents,final Collection<DesignComponent> affectedComponents) {
+        org.netbeans.modules.vmd.api.model.Debug.dumpDocument(document);
         foldersToUpdate.clear();
         updateChangedDescriptors(createdComponents, affectedComponents);
-//        System.out.println("Start");
+        System.out.println("Start");
         long start = System.currentTimeMillis();
         document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document == null)
             return;
         dive(InspectorFolderPath.createInspectorPath().add(rootFolderWrapper.getFolder()), rootFolderWrapper);
+        System.out.println("Add " + componentsToAdd);
+        System.out.println("Delete " + componentsToDelete);
         updateViewChildren(rootFolderWrapper);
         long stop = System.currentTimeMillis();
-//        System.out.println("Time to build and refresh navigator tree "+ ((stop-start) * 0.001)+" s"); //NOI18N //Remove
+        System.out.println("Time to build and refresh navigator tree "+ ((stop-start) * 0.001)+" s"); //NOI18N //Remove
+        System.out.println("Undo " + componentsToUndo);
         //DebugInspector.printFoldersTree(rootFolder);
+        //Clean up
+        componentsToAdd.clear();
+        componentsToDelete.clear();
+        componentsToUndo.clear();
     }
     
     private void dive(InspectorFolderPath path, InspectorFolderWrapper parentWrapper) {
@@ -120,6 +133,9 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener, Acti
                             if (wrappersToDelete == null)
                                 wrappersToDelete = new WeakSet<InspectorFolderWrapper>();
                             wrappersToDelete.add(folder);
+                            if (deletedComponentsCash == null)
+                                deletedComponentsCash = new WeakSet<DesignComponent>();
+                            deletedComponentsCash.add(document.getComponentByUID(component.getComponentID()));
                             foldersToUpdate.add(parentWrapper);
                         }
                     }
@@ -142,7 +158,8 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener, Acti
         List<InspectorFolderWrapper> wrapperChildren = null;
         
         for (DesignComponent component : parentComponent.getComponents()) {
-            if ((! componentsToAdd.isEmpty()) &&  componentsToAdd.contains(component)) {
+            System.out.println("Parent " + parentComponent +" Current component " + component);
+            if (componentsToAdd.contains(component) || componentsToUndo.contains(component)) {
                 List<InspectorFolderWrapper> tempWrapperChildren = componentsRecursion(path, parentWrapper, component);
                 if (wrapperChildren == null)
                     wrapperChildren = tempWrapperChildren;
@@ -184,6 +201,23 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener, Acti
                         InspectorFolderWrapper wrapper = new InspectorFolderWrapper(presenter.getFolder());
                         wrapperChildren.add(wrapper);
                         foldersToUpdate.add(parentWrapper);
+                    }
+                }
+            }
+        }
+        
+        for (DesignComponent componentToUndo : componentsToUndo) {
+            if (componentToUndo.getComponentID() != component.getComponentID() )
+                continue;
+            for (InspectorFolderPresenter presenter : componentToUndo.getPresenters(InspectorFolderPresenter.class)) {
+                if (presenter != null &&  presenter.getFolder().isInside(path, presenter.getFolder(), componentToUndo)) {
+                    if (presenter.getFolder().getComponentID() != null) {
+                        if (wrapperChildren == null)
+                            wrapperChildren = new ArrayList<InspectorFolderWrapper>();
+                        InspectorFolderWrapper wrapper = new InspectorFolderWrapper(presenter.getFolder());
+                        wrapperChildren.add(wrapper);
+                        foldersToUpdate.add(parentWrapper);
+                        deletedComponentsCash.remove(componentToUndo);
                     }
                 }
             }
@@ -309,19 +343,18 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener, Acti
     
     
     // ---------- Existing tree update view
-    void updateChangedDescriptors(final Collection<DesignComponent> createdComponents , final Collection<DesignComponent> affectedComponents) {
-        componentsToAdd.clear();
-        componentsToDelete.clear();
-        
+    private void updateChangedDescriptors(final Collection<DesignComponent> createdComponents , final Collection<DesignComponent> affectedComponents) {
         if (createdComponents != null ) {
-            for (DesignComponent component : createdComponents){
+            for (DesignComponent component : createdComponents) {
                 for (InspectorFolderPresenter presenter : component.getPresenters(InspectorFolderPresenter.class)) {
                     componentsToAdd.add(component);
                 }
             }
         }
         if (affectedComponents != null ) {
-            for (DesignComponent component : affectedComponents){
+            for (DesignComponent component : affectedComponents) {
+                if (deletedComponentsCash != null && deletedComponentsCash.contains(component))
+                    componentsToUndo.add(component);
                 if (component == null || component.getParentComponent() != null)
                     continue;
                 componentsToDelete.add(component);
@@ -367,8 +400,8 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener, Acti
             registry.removeListener(this);
         if (activatedView != null) {
             DataObjectContext localContext = activatedView.getContext();
-            if (localContext != null && (!contexts.contains(localContext))) {
-                contexts.add(localContext);
+            if (localContext != null && (!contextsCash.contains(localContext))) {
+                contextsCash.add(localContext);
                 localContext.addDesignDocumentAwareness(this);
             }
             registry = FolderRegistry.getRegistry(activatedView.getContext().getProjectType(),activatedView.getContext().getProjectID());
@@ -382,16 +415,16 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener, Acti
         if (document == null)
             return;
         rootFolderWrapper = null;
-        for (DesignDocument doc : rootFolderWrapperMap.keySet()) {
+        for (DesignDocument doc : rootFolderWrapperMapCash.keySet()) {
             if (document == doc){
-                rootFolderWrapper = rootFolderWrapperMap.get(doc);
+                rootFolderWrapper = rootFolderWrapperMapCash.get(doc);
                 return;
             }
         }
         if (rootFolderWrapper == null){
             rootFolderWrapper = new InspectorFolderWrapper(new RootFolder());
             buildTree(markAllComponentsAsToAdd(), null);
-            rootFolderWrapperMap.put(document, rootFolderWrapper);
+            rootFolderWrapperMapCash.put(document, rootFolderWrapper);
         }
     }
     
@@ -420,11 +453,11 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener, Acti
     }
     
     public void setDesignDocument(DesignDocument localDocument) {
-        if (localDocument == null && rootFolderWrapperMap.get(this.document) != null) {
-            rootFolderWrapperMap.get(this.document).terminate();
-            rootFolderWrapperMap.remove(this.document);
+        if (localDocument == null && rootFolderWrapperMapCash.get(this.document) != null) {
+            rootFolderWrapperMapCash.get(this.document).terminate();
+            rootFolderWrapperMapCash.remove(this.document);
             document = null;
-       }
+        }
     }
     
     
