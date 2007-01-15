@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.vmd.inspector;
 
-import com.sun.net.ssl.internal.ssl.Debug;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.image.ImageObserver;
@@ -28,8 +27,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
-import java.util.Set;
 import java.util.WeakHashMap;
 
 import javax.swing.Action;
@@ -43,7 +40,6 @@ import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.DesignDocumentAwareness;
-import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.TypeID;
@@ -80,7 +76,6 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener, Acti
     }
     
     synchronized void buildTree(final Collection<DesignComponent> createdComponents,final Collection<DesignComponent> affectedComponents) {
-        org.netbeans.modules.vmd.api.model.Debug.dumpDocument(document);
         foldersToUpdate.clear();
         updateChangedDescriptors(createdComponents, affectedComponents);
         System.out.println("Start");
@@ -89,13 +84,9 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener, Acti
         if (document == null)
             return;
         dive(InspectorFolderPath.createInspectorPath().add(rootFolderWrapper.getFolder()), rootFolderWrapper);
-        System.out.println("Add " + componentsToAdd);
-        System.out.println("Delete " + componentsToDelete);
         updateViewChildren(rootFolderWrapper);
         long stop = System.currentTimeMillis();
         System.out.println("Time to build and refresh navigator tree "+ ((stop-start) * 0.001)+" s"); //NOI18N //Remove
-        System.out.println("Undo " + componentsToUndo);
-        //DebugInspector.printFoldersTree(rootFolder);
         //Clean up
         componentsToAdd.clear();
         componentsToDelete.clear();
@@ -158,7 +149,6 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener, Acti
         List<InspectorFolderWrapper> wrapperChildren = null;
         
         for (DesignComponent component : parentComponent.getComponents()) {
-            System.out.println("Parent " + parentComponent +" Current component " + component);
             if (componentsToAdd.contains(component) || componentsToUndo.contains(component)) {
                 List<InspectorFolderWrapper> tempWrapperChildren = componentsRecursion(path, parentWrapper, component);
                 if (wrapperChildren == null)

@@ -21,9 +21,6 @@ package org.netbeans.modules.vmd.midp.actions;
 
 import java.awt.event.ActionEvent;
 
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.presenters.actions.ActionContext;
-
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;

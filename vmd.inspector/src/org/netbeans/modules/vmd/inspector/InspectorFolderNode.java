@@ -28,7 +28,6 @@ import org.openide.nodes.Node;
 
 import javax.swing.*;
 import java.awt.*;
-import org.netbeans.modules.vmd.api.model.Debug;
 
 /**
  *

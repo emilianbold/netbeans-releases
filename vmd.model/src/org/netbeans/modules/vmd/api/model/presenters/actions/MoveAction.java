@@ -16,8 +16,8 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.vmd.api.model.presenters.actions;
 
+package org.netbeans.modules.vmd.api.model.presenters.actions;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -31,16 +31,17 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.openide.util.NbBundle;
 
+
 /**
  *
  * @author Karol Harezlak
  */
 public abstract class MoveAction extends AbstractAction implements ActionContext {
-    
+
     public static final String DISPLAY_NAME_MOVE_UP = NbBundle.getMessage(MoveAction.class, "NAME_MoveUpAction"); //NOI18N
     public static final String DISPLAY_NAME_MOVE_DOWN = NbBundle.getMessage(MoveAction.class, "NAME_MoveDownAction"); //NOI18N
     public static final String PROPERTY_NAME_REFERENCE  = "propertyName"; //NOI18N
-    
+
     public static final Action createMoveUpAction(String arrayPropertyName) {
         return new MoveAction(arrayPropertyName, DISPLAY_NAME_MOVE_UP) {
             protected void invokeMoveAction(List<PropertyValue> array, List<PropertyValue> newArray, PropertyValue currentValue) {
@@ -51,10 +52,9 @@ public abstract class MoveAction extends AbstractAction implements ActionContext
                     saveToModel(newArray);
                 }
             }
-            
         };
     }
-    
+
     public static final Action createMoveDownAction(String arrayPropertyName) {
         return new MoveAction( arrayPropertyName, DISPLAY_NAME_MOVE_DOWN) {
             protected void invokeMoveAction(List<PropertyValue> array, List<PropertyValue> newArray, PropertyValue currentValue) {
@@ -68,21 +68,21 @@ public abstract class MoveAction extends AbstractAction implements ActionContext
             }
         };
     }
-    
+
     private DesignComponent component;
     private boolean isEnabled;
     private String arrayPropertyName;
     private TypeID newArrayTypeID;
-    
+
     private MoveAction(String arrayPropertyName, String displayName) {
         this.putValue(Action.NAME, displayName);
         this.arrayPropertyName = arrayPropertyName;
     }
-    
+
     protected DesignComponent getComponent() {
         return component;
     }
-    
+
     public boolean isEnabled() {
         component.getDocument().getTransactionManager().readAccess(new Runnable() {
             public void run() {
@@ -92,49 +92,45 @@ public abstract class MoveAction extends AbstractAction implements ActionContext
                     isEnabled = true;
             }
         });
-        
+
         return isEnabled;
     }
-    
+
     public void actionPerformed(ActionEvent actionEvent) {
         getComponent().getDocument().getTransactionManager().writeAccess(new Runnable() {
             public void run() {
-                DesignComponent component = getComponent().getParentComponent();
                 PropertyValue arrayPropertyValue = getComponent().getParentComponent().readProperty(getArrayPropertyName());
                 List<PropertyValue> array = arrayPropertyValue.getArray();
                 newArrayTypeID = arrayPropertyValue.getType().getComponentType();
-                
                 if(array.size() < 1)
                     return;
                 List<PropertyValue> newArray = new ArrayList(array);
-                
                 for (PropertyValue value : array) {
                     if (value.getComponent() == getComponent()) {
                         invokeMoveAction(array, newArray, value);
                     }
                 }
-                
             }
         });
     }
-    
+
     protected abstract void invokeMoveAction(List<PropertyValue> currentArray, List<PropertyValue> newArray, PropertyValue currentValue);
-    
+
     protected TypeID getNewArrayType() {
         return newArrayTypeID;
     }
-    
+
     public void setComponent(DesignComponent component) {
         this.component = component;
     }
-    
+
     private String getArrayPropertyName() {
         return arrayPropertyName;
     }
-    
+
     protected void saveToModel(List<PropertyValue> newArray) {
         DesignComponent parentComponent = getComponent().getParentComponent();
         parentComponent.writeProperty(getArrayPropertyName(), PropertyValue.createArray(getNewArrayType(), newArray));
     }
-    
 }
+
