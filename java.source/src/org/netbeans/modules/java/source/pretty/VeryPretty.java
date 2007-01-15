@@ -209,7 +209,7 @@ public class VeryPretty extends JCTree.Visitor {
 	imports.decideImports();
 	int nout = 0;
 	if (printPackageStatement && imports.containingPackage != null && 
-	    imports.containingPackage != symbols.emptyPackage) {
+	    imports.containingPackage != symbols.unnamedPackage) {
 	    print("package ");
 	    printAllQualified(imports.containingPackage);
 	    print(";\n\n");

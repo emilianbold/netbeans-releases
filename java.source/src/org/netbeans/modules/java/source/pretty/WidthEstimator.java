@@ -82,7 +82,7 @@ public class WidthEstimator extends Visitor {
 	    }
     }
     public void widthQ(Symbol t) {
-	if (t.owner != null && t.owner != symbols.rootPackage && t.owner != symbols.emptyPackage
+	if (t.owner != null && t.owner != symbols.rootPackage && t.owner != symbols.unnamedPackage
 	        && !(t.type instanceof Type.TypeVar)
 		&& (imports == null || !imports.imported(t)) && !(t.owner instanceof MethodSymbol)) {
 	    width++;
