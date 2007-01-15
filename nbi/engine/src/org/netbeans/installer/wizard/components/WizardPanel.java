@@ -20,6 +20,7 @@
  */
 package org.netbeans.installer.wizard.components;
 
+import org.netbeans.installer.utils.helper.UiMode;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.containers.SwingContainer;
 import org.netbeans.installer.wizard.ui.WizardUi;
@@ -36,7 +37,9 @@ public abstract class WizardPanel extends WizardComponent {
     }
     
     public final void executeForward() {
-        // does nothing
+        if (getWizard().getExecutionMode() == UiMode.SILENT) {
+            getWizard().next();
+        }
     }
     
     public final void executeBackward() {

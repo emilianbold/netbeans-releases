@@ -26,7 +26,7 @@ import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.wizard.components.WizardSequence;
-import org.netbeans.installer.wizard.components.actions.CreateRedistributableBundleAction;
+import org.netbeans.installer.wizard.components.actions.CreateBundleAction;
 import org.netbeans.installer.wizard.components.actions.DownloadConfigurationLogicAction;
 import org.netbeans.installer.wizard.components.actions.DownloadInstallationDataAction;
 import org.netbeans.installer.wizard.components.actions.InstallAction;
@@ -83,7 +83,7 @@ public class MainSequence extends WizardSequence {
                 addChild(new PreCreateBundleSummaryPanel());
                 addChild(new DownloadConfigurationLogicAction());
                 addChild(new DownloadInstallationDataAction());
-                addChild(new CreateRedistributableBundleAction());
+                addChild(new CreateBundleAction());
                 addChild(new PostCreateBundleSummaryPanel());
                 break;
             default:
