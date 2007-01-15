@@ -80,7 +80,7 @@ public final class SwitchDisplayableEventHandlerCD extends ComponentDescriptor {
             },
             // delete
             DeleteDependencyPresenter.createDependentOnPropertyPresenter (PROP_DISPLAYABLE),
-            DeleteDependencyPresenter.createDependentOnPropertyPresenter (PROP_ALERT)
+            DeleteDependencyPresenter.createNullableComponentReferencePresenter (PROP_ALERT)
         );
     }
 
