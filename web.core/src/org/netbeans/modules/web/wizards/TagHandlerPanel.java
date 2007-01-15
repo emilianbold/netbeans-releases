@@ -13,12 +13,13 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.web.wizards;
 
+import java.awt.Dimension;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 
@@ -59,6 +60,15 @@ public class TagHandlerPanel extends javax.swing.JPanel {
         }
          */
         // a11y part
+        
+        //issue #84131
+        int height = jLabel1.getFontMetrics(jLabel1.getFont()).getHeight() * 6 + 35;
+        if (height > this.getHeight()) {
+            Dimension dim = new Dimension(this.getWidth(), height);
+            setMinimumSize(dim);
+            setPreferredSize(dim);
+        }
+
     }
     
     /** This method is called from within the constructor to
@@ -71,7 +81,6 @@ public class TagHandlerPanel extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         buttonGroup1 = new javax.swing.ButtonGroup();
-        jPanel1 = new javax.swing.JPanel();
         simpleTagButton = new javax.swing.JRadioButton();
         bodyTagButton = new javax.swing.JRadioButton();
         jLabel1 = new javax.swing.JLabel();
@@ -79,62 +88,53 @@ public class TagHandlerPanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         descriptionArea = new javax.swing.JTextArea();
 
-        setLayout(new java.awt.GridBagLayout());
-
         setRequestFocusEnabled(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(jPanel1, gridBagConstraints);
+        setLayout(new java.awt.GridBagLayout());
 
         buttonGroup1.add(simpleTagButton);
         simpleTagButton.setMnemonic(org.openide.util.NbBundle.getMessage(TagHandlerPanel.class, "LBL_SimpleTag_Mnemonic").charAt(0));
-        simpleTagButton.setText(org.openide.util.NbBundle.getMessage(TagHandlerPanel.class, "OPT_SimpleTag"));
+        simpleTagButton.setText(org.openide.util.NbBundle.getMessage(TagHandlerPanel.class, "OPT_SimpleTag")); // NOI18N
         simpleTagButton.setMargin(new java.awt.Insets(2, 2, 0, 2));
         simpleTagButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 TagHandlerPanel.this.itemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(simpleTagButton, gridBagConstraints);
-        simpleTagButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/wizards/Bundle").getString("DESC_SimpleTag"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/web/wizards/Bundle"); // NOI18N
+        simpleTagButton.getAccessibleContext().setAccessibleDescription(bundle.getString("DESC_SimpleTag")); // NOI18N
 
         buttonGroup1.add(bodyTagButton);
         bodyTagButton.setMnemonic(org.openide.util.NbBundle.getMessage(TagHandlerPanel.class, "LBL_BodyTag_Mnemonic").charAt(0));
-        bodyTagButton.setText(org.openide.util.NbBundle.getMessage(TagHandlerPanel.class, "OPT_BodyTag"));
+        bodyTagButton.setText(org.openide.util.NbBundle.getMessage(TagHandlerPanel.class, "OPT_BodyTag")); // NOI18N
         bodyTagButton.setMargin(new java.awt.Insets(0, 2, 2, 2));
         bodyTagButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 TagHandlerPanel.this.itemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(bodyTagButton, gridBagConstraints);
-        bodyTagButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/wizards/Bundle").getString("DESC_BodyTag"));
+        bodyTagButton.getAccessibleContext().setAccessibleDescription(bundle.getString("DESC_BodyTag")); // NOI18N
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(TagHandlerPanel.class, "LBL_TagSupportClass"));
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(TagHandlerPanel.class, "LBL_TagSupportClass")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         add(jLabel1, gridBagConstraints);
 
         jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/wizards/Bundle").getString("A11Y_Description_mnem").charAt(0));
         jLabel2.setLabelFor(descriptionArea);
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(TagHandlerPanel.class, "LBL_description"));
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(TagHandlerPanel.class, "LBL_description")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -144,20 +144,22 @@ public class TagHandlerPanel extends javax.swing.JPanel {
 
         descriptionArea.setEditable(false);
         descriptionArea.setLineWrap(true);
-        descriptionArea.setText(org.openide.util.NbBundle.getMessage(TagHandlerPanel.class, "DESC_SimpleTag"));
+        descriptionArea.setText(org.openide.util.NbBundle.getMessage(TagHandlerPanel.class, "DESC_SimpleTag")); // NOI18N
         descriptionArea.setWrapStyleWord(true);
         jScrollPane1.setViewportView(descriptionArea);
-        descriptionArea.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/wizards/Bundle").getString("A11Y_DESC_Description"));
+        descriptionArea.getAccessibleContext().setAccessibleDescription(bundle.getString("A11Y_DESC_Description")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(jScrollPane1, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
     
     private void itemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_itemStateChanged
@@ -175,7 +177,6 @@ public class TagHandlerPanel extends javax.swing.JPanel {
     private javax.swing.JTextArea descriptionArea;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JRadioButton simpleTagButton;
     // End of variables declaration//GEN-END:variables
