@@ -28,12 +28,12 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.tigris.subversion.svnclientadapter.*;
 import org.openide.util.RequestProcessor;
-
 import java.io.*;
 import java.util.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.subversion.config.ProxyDescriptor;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
@@ -115,14 +115,15 @@ public class Subversion {
         try {
             SvnClientFactory.getInstance().setup();
         } catch (SVNClientException ex) {
-            ErrorManager.getDefault().annotate(ex, UnsupportedSvnClientAdapter.getMessage());
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Logger.getLogger("org.netbeans.modules.subversion").log(Level.INFO, UnsupportedSvnClientAdapter.getMessage());
+            
+            // ErrorManager.getDefault().annotate(ex, UnsupportedSvnClientAdapter.getMessage());
+            // ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             // TODO: #78951 hotfix
 //            ErrorManager.getDefault().notify(ErrorManager.USER, ex);
         }        
-    }
-    
-    
+    }        
+            
     /**
      * Ini4j uses context classloader to load classes, use this as a workaround. 
      */ 
