@@ -725,7 +725,18 @@ Nothing.
         </question>
 -->
 <answer id="exec-reflection">
-    No.
+    Yes. We search for services registered through our private namespace lookup
+    under <code>META-INF/debugger</code>. The contract is described in Javadoc.
+    In short: The registered file should contain a list of fully-qualified class
+    names, one per line, of classes implementing the service interface and having
+    default public constructor. It's also possible to append a name of
+    a static method followed by paranthesis, which returns the implementation
+    of the service. That method is then called instead of the default
+    constructor. The method can not take any arguments.
+    If there is a need to remove a service that is provided by some other
+    module, append <code>'-hidden'</code> after the class or method name. Space
+    and tab characters surrounding each name, as well as blank lines, are
+    ignored. The comment character is <code>'#'</code>
 </answer>
 
 

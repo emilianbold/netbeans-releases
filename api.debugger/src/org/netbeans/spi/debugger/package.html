@@ -62,25 +62,49 @@ some Debugger Core API interface of type {type name}, you should create
 file with name {service full class name}in folder
 Meta-inf/debugger/{type name}.<br>
 The file should contain a list of fully-qualified class names, one
-per line, of classes implementing the service interface. Space
+per line, of classes implementing the service interface and having
+default public constructor. It's also possible to append a name of
+a static method followed by paranthesis, which returns the implementation
+of the service. That method is then called instead of the default
+constructor. The method can not take any arguments.
+If there is a need to remove a service that is provided by some other
+module, append <code>'-hidden'</code> after the class or method name. Space
 and tab characters surrounding each name, as well as blank lines, are
 ignored. The comment character is <code>'#'</code>
 (<code>\u0023</code>); on each line all characters following the
 first comment character are ignored. The file must be encoded in
 UTF-8.<br>
+
 <br>
-Example:<br>
+Example I:<br>
 <div style="margin-left: 40px;">I would like to register
 org.netbeans.modules.debugger.jpda.actions.StepAction and
 org.netbeans.modules.debugger.jpda.actions.StartAction service
-implementations for JPDA DebuggerEngine. In this case I should cerate
+implementations for JPDA DebuggerEngine. In this case I should create
 file named org.netbeans.spi.debugger.ActionsProvider in folder
 Meta-inf/debugger/netbeans-JPDADebuggerEngine/.
 "netbeans-JPDADebuggerEngine" is a name of JPDA DebuggerEngine, and it
 can be obtained from DebuggerEngine.getTypeID(). This file should
 contain two lines:<br>
-<div style="margin-left: 40px;">org.netbeans.modules.debugger.jpda.actions.StepAction&lt;EOL&gt;<br>
-org.netbeans.modules.debugger.jpda.actions.StartAction &lt;EOL&gt;<br>
+<div style="margin-left: 40px;">org.netbeans.modules.debugger.jpda.actions.StepAction<br>
+org.netbeans.modules.debugger.jpda.actions.StartAction<br>
+</div>
+<br>
+</div>
+<br>
+Example II:<br>
+<div style="margin-left: 40px;">I would like to remove the default
+'type' and 'toString' columns in LocalVariables view and add
+a 'builtin' column instead. This is supposed to work for ANT debugger.
+In this case I should create file named
+org.netbeans.spi.viewmodel.ColumnModel in folder
+META-INF/debugger/AntSession/LocalsView/.
+This file should contain three lines, the first two remove columns we do
+not want to appear for ANT debugger, the third adds ANT-specific
+column:<br>
+<div style="margin-left: 40px;">org.netbeans.modules.debugger.ui.models.ColumnModels.createLocalsTypeColumn()-hidden<br>
+org.netbeans.modules.debugger.ui.models.ColumnModels.createLocalsToStringColumn()-hidden<br>
+org.netbeans.modules.ant.debugger.ColumnModels.createBuiltInColumn()<br>
 </div>
 <br>
 </div>
