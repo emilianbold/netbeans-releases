@@ -27,7 +27,6 @@ import org.openide.nodes.Node;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
-import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
 import org.netbeans.lib.cvsclient.command.tag.TagCommand;
 
@@ -69,15 +68,14 @@ public class TagAction extends AbstractSystemAction {
         TagCommand cmd = new TagCommand();
         copy (cmd, commandTemplate);
         
-        String title = MessageFormat.format(NbBundle.getBundle(TagAction.class).getString("CTL_TagDialog_Title"), 
-                                         new Object[] { getContextDisplayName(nodes) });
+        String title = MessageFormat.format(NbBundle.getBundle(TagAction.class).getString("CTL_TagDialog_Title"), getContextDisplayName(nodes));
         
         TagSettings settings = new TagSettings(roots);
         settings.setCommand(cmd);
         
         JButton tag = new JButton(NbBundle.getMessage(TagAction.class, "CTL_TagDialog_Action_Tag"));
         settings.putClientProperty("OKButton", tag);
-        settings.onTagNameChange();
+        settings.refreshComponents();
         tag.setToolTipText(NbBundle.getMessage(TagAction.class,  "TT_TagDialog_Action_Tag"));
         DialogDescriptor descriptor = new DialogDescriptor(
                 settings,
@@ -110,6 +108,7 @@ public class TagAction extends AbstractSystemAction {
     private void copy(TagCommand c1, TagCommand c2) {
         c1.setTag(c2.getTag());
         c1.setCheckThatUnmodified(c2.isCheckThatUnmodified());
+        c1.setDeleteTag(c2.isDeleteTag());
         c1.setOverrideExistingTag(c2.isOverrideExistingTag());
     }
 }

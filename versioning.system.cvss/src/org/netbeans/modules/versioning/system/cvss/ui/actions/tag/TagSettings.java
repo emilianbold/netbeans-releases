@@ -23,7 +23,7 @@ import org.netbeans.lib.cvsclient.command.tag.TagCommand;
 import org.netbeans.lib.cvsclient.CVSRoot;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.ui.selectors.BranchSelector;
-import org.openide.DialogDescriptor;
+import org.openide.util.NbBundle;
 
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
@@ -46,31 +46,40 @@ public class TagSettings extends javax.swing.JPanel implements DocumentListener 
         tfName.getDocument().addDocumentListener(this);
     }
     
-    void onTagNameChange() {
-        JButton dd = (JButton) getClientProperty("OKButton");
-        if (dd != null) dd.setEnabled(Utils.isTagValid(tfName.getText()));
+    void refreshComponents() {
+        cbMoveTag.setEnabled(!cbDeleteTag.isSelected());
+        cbDeleteTag.setEnabled(!cbMoveTag.isSelected());
+        cbCheckModified.setEnabled(!cbDeleteTag.isSelected());
+        JButton okButton = (JButton) getClientProperty("OKButton"); // NOI18N
+        if (okButton != null) {
+            okButton.setText(cbDeleteTag.isSelected() ? NbBundle.getMessage(TagAction.class, "CTL_TagDialog_Action_DeleteTag") : NbBundle.getMessage(TagAction.class, "CTL_TagDialog_Action_Tag"));  // NOI18N
+            okButton.setEnabled(Utils.isTagValid(tfName.getText()));
+        }
     }
 
     public void insertUpdate(DocumentEvent e) {
-        onTagNameChange();
+        refreshComponents();
     }
+
     public void removeUpdate(DocumentEvent e) {
-        onTagNameChange();
+        refreshComponents();
     }
 
     public void changedUpdate(DocumentEvent e) {
-        onTagNameChange();
+        refreshComponents();
     }
 
     public void setCommand(TagCommand cmd) {
         cbMoveTag.setSelected(cmd.isOverrideExistingTag());
         cbCheckModified.setSelected(cmd.isCheckThatUnmodified());
+        cbDeleteTag.setSelected(cmd.isDeleteTag());
         tfName.setText(cmd.getTag());
     }
 
     public void updateCommand(TagCommand cmd) {
         cmd.setOverrideExistingTag(cbMoveTag.isSelected());
         cmd.setCheckThatUnmodified(cbCheckModified.isSelected());
+        cmd.setDeleteTag(cbDeleteTag.isSelected());
         cmd.setTag(tfName.getText());
     }
     
@@ -81,79 +90,97 @@ public class TagSettings extends javax.swing.JPanel implements DocumentListener 
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         cbCheckModified = new javax.swing.JCheckBox();
         cbMoveTag = new javax.swing.JCheckBox();
         nameLabel = new javax.swing.JLabel();
         tfName = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
-
-        setLayout(new java.awt.GridBagLayout());
+        cbDeleteTag = new javax.swing.JCheckBox();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        org.openide.awt.Mnemonics.setLocalizedText(cbCheckModified, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_TagForm_EnsureUptodate"));
-        cbCheckModified.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("TT_TagForm_EnsureUptodate"));
+
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cbCheckModified, bundle.getString("CTL_TagForm_EnsureUptodate")); // NOI18N
+        cbCheckModified.setToolTipText(bundle.getString("TT_TagForm_EnsureUptodate")); // NOI18N
         cbCheckModified.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbCheckModifiedActionPerformed(evt);
             }
         });
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
-        add(cbCheckModified, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(cbMoveTag, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_TagForm_MoveExisting"));
-        cbMoveTag.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("TT_TagForm_MoveExisting"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(cbMoveTag, gridBagConstraints);
+        org.openide.awt.Mnemonics.setLocalizedText(cbMoveTag, bundle.getString("CTL_TagForm_MoveExisting")); // NOI18N
+        cbMoveTag.setToolTipText(bundle.getString("TT_TagForm_MoveExisting")); // NOI18N
+        cbMoveTag.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbMoveTagActionPerformed(evt);
+            }
+        });
 
         nameLabel.setLabelFor(tfName);
-        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_TagForm_TagName"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
-        add(nameLabel, gridBagConstraints);
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, bundle.getString("CTL_TagForm_TagName")); // NOI18N
 
         tfName.setColumns(20);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        gridBagConstraints.weightx = 1.0;
-        add(tfName, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton1, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_BrowseTag"));
-        jButton1.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("TT_BrowseTag"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, bundle.getString("CTL_BrowseTag")); // NOI18N
+        jButton1.setToolTipText(bundle.getString("TT_BrowseTag")); // NOI18N
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 onBrowseTag(evt);
             }
         });
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        add(jButton1, gridBagConstraints);
+        org.openide.awt.Mnemonics.setLocalizedText(cbDeleteTag, bundle.getString("CTL_TagForm_DeleteExisting")); // NOI18N
+        cbDeleteTag.setToolTipText(bundle.getString("TT_TagForm_DeleteExisting")); // NOI18N
+        cbDeleteTag.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbDeleteTagActionPerformed(evt);
+            }
+        });
 
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(cbMoveTag, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
+                .add(159, 159, 159))
+            .add(layout.createSequentialGroup()
+                .add(nameLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(tfName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 212, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jButton1))
+            .add(layout.createSequentialGroup()
+                .add(cbCheckModified, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(159, 159, 159))
+            .add(layout.createSequentialGroup()
+                .add(cbDeleteTag, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
+                .add(159, 159, 159))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(nameLabel)
+                    .add(jButton1)
+                    .add(tfName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cbCheckModified, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cbMoveTag)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cbDeleteTag))
+        );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void cbDeleteTagActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbDeleteTagActionPerformed
+        refreshComponents();
+    }//GEN-LAST:event_cbDeleteTagActionPerformed
+
+    private void cbMoveTagActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbMoveTagActionPerformed
+        refreshComponents();
+    }//GEN-LAST:event_cbMoveTagActionPerformed
 
     private void onBrowseTag(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onBrowseTag
         for (int i = 0; i < roots.length; i++) {
@@ -178,6 +205,7 @@ public class TagSettings extends javax.swing.JPanel implements DocumentListener 
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cbCheckModified;
+    private javax.swing.JCheckBox cbDeleteTag;
     private javax.swing.JCheckBox cbMoveTag;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel nameLabel;
