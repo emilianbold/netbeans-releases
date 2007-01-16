@@ -13,29 +13,26 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.upgrade.systemoptions;
 
-import java.rmi.UnexpectedException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Radek Matous
  */
-class FileProcessor extends PropertyProcessor {    
+class FileProcessor extends PropertyProcessor {
     FileProcessor() {
         super("java.io.File");//NOI18N
     }
-    
+
     void processPropertyImpl(String propertyName, Object value) {
-        StringBuffer sb = new StringBuffer();       
-        if ("antHome".equals(propertyName)) {//NOI18N
+        StringBuffer sb = new StringBuffer();
+        if ("antHome".equals(propertyName) || "projectsFolder".equals(propertyName)) {//NOI18N
             List l = ((SerParser.ObjectWrapper)value).data;
             for (Iterator it = l.iterator(); it.hasNext();) {
                 Object elem = (Object) it.next();
@@ -47,7 +44,7 @@ class FileProcessor extends PropertyProcessor {
                         }
                     }
                 }
-            }            
+            }
         }  else {
             throw new IllegalStateException();
         }
