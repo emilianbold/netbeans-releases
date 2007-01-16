@@ -21,6 +21,8 @@ package org.netbeans.modules.refactoring.java;
 
 import java.awt.Color;
 import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -270,5 +272,25 @@ public class RetoucheUtils {
         } while (f!=null);
         throw new IllegalArgumentException("Cannot create package name for url " + url);
     }
+
+    /**
+     * creates or finds FileObject according to 
+     * @param url
+     * @return FileObject
+     */
+    public static FileObject getOrCreateFolder(URL url) throws IOException {
+        try {
+            FileObject result = URLMapper.findFileObject(url);
+            if (result != null)
+                return result;
+            File f = new File(url.toURI());
+            
+            result = FileUtil.createFolder(f);
+            return result;
+        } catch (URISyntaxException ex) {
+            throw (IOException) new IOException().initCause(ex);
+        }
+    }
+    
     
 }

@@ -34,6 +34,7 @@ import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProblemDetails;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
+import org.netbeans.modules.refactoring.spi.impl.UndoWatcher;
 import org.netbeans.modules.refactoring.spi.ui.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -56,7 +57,7 @@ import org.openide.awt.Mnemonics;
  *
  * @author Martin Matula, Jan Becicka
  */
-public class ParametersPanel extends JPanel implements ProgressListener, ChangeListener{ //[retouche], InvalidationListener {
+public class ParametersPanel extends JPanel implements ProgressListener, ChangeListener, InvalidationListener {
     // refactoring elements that will be returned as a result of showDialog method
     private RefactoringSession result;
     
@@ -320,10 +321,10 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 if (inputState == currentState) {
                     try {
                           if (!previewAll) {
-//[retouche]                            UndoWatcher.watch(result, ParametersPanel.this);
+                            UndoWatcher.watch(result, ParametersPanel.this);
                             result.addProgressListener(ParametersPanel.this);
                             result.doRefactoring(true);
-//[retouche]                            UndoWatcher.stopWatching(ParametersPanel.this);
+                            UndoWatcher.stopWatching(ParametersPanel.this);
                         }
                     } finally {
                         if (!previewAll) {

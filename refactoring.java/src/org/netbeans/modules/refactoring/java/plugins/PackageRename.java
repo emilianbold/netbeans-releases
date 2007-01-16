@@ -24,6 +24,7 @@ import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.spi.Transaction;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -71,7 +72,7 @@ public class PackageRename implements RefactoringPluginFactory{
         }
         
         public Problem prepare(RefactoringElementsBag elements) {
-            elements.add(refactoring, new RenameNonRecursiveFolder((NonRecursiveFolder) refactoring.getRefactoredObject(), elements.getSession()));
+            elements.add(refactoring, new RenameNonRecursiveFolder((NonRecursiveFolder) refactoring.getRefactoredObject(), elements));
             return null;
         }
         
@@ -104,13 +105,13 @@ public class PackageRename implements RefactoringPluginFactory{
         private class RenameNonRecursiveFolder extends SimpleRefactoringElementImpl {
             
             private FileObject folder;
-            private RefactoringSession session;
+            private RefactoringElementsBag session;
             private String oldName;
             private FileObject root;
             private DataFolder dataFolder;
             
             
-            public RenameNonRecursiveFolder(NonRecursiveFolder nrfo, RefactoringSession session) {
+            public RenameNonRecursiveFolder(NonRecursiveFolder nrfo, RefactoringElementsBag session) {
                 this.folder = nrfo.getFolder();
                 this.session = session;
                 ClassPath cp = ClassPath.getClassPath(
@@ -130,9 +131,13 @@ public class PackageRename implements RefactoringPluginFactory{
             }
             
             public void performChange() {
-                session.registerFileChange(new Runnable() {
-                    public void run() {
+                session.registerFileChange(new Transaction() {
+                    public void commit() {
                         setName();
+                    }
+                    
+                    public void rollback() {
+                        throw new UnsupportedOperationException("not implemented");
                     }
                 });
             }

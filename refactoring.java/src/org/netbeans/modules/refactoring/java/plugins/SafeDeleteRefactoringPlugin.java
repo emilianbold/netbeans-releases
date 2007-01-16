@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -48,7 +49,7 @@ import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.api.ui.UI;
+import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.spi.ProblemDetailsFactory;
 import org.netbeans.modules.refactoring.spi.ProblemDetailsImplementation;
@@ -108,9 +109,11 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
                 final ModificationResult result = javaSource.runModificationTask(new FindTask(refactoringElements, grips.get(i)));
                 for (FileObject jfo : result.getModifiedFileObjects()) {
                     for (ModificationResult.Difference dif: result.getDifferences(jfo)) {
-                        refactoringElements.add(refactoring,DiffElement.create(dif, jfo));
+                        refactoringElements.add(refactoring,DiffElement.create(dif, jfo, result));
                     }
                 }
+                refactoringElements.registerTransaction(new RetoucheCommit(Collections.singleton(result)));
+
             } catch (MalformedURLException ex) {
                 ex.printStackTrace();
             } catch (IOException ex) {

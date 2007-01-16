@@ -30,6 +30,9 @@ import org.openide.filesystems.FileObject;
  * @author Jan Becicka
  */
 public final class RefactoringElementsBag {
+    ArrayList<Transaction> commits;
+    ArrayList<Transaction> fileChanges;
+
     static {
         SPIAccessor.DEFAULT = new AccessorImpl();
     }
@@ -44,6 +47,8 @@ public final class RefactoringElementsBag {
     RefactoringElementsBag(RefactoringSession session, List<RefactoringElementImplementation> delegate) {
         this.session = session;
         this.delegate = delegate;
+        this.commits = new ArrayList();
+        this.fileChanges =  new ArrayList();
     }
     
     /**
@@ -125,4 +130,21 @@ public final class RefactoringElementsBag {
     Collection<FileObject> getReadOnlyFiles() {
         return readOnlyFiles;
     }
+    
+    /**
+     * commits are called after all changes are performed
+     */
+    public void registerTransaction(Transaction commit) {
+        if (APIAccessor.DEFAULT.isCommit(session))
+            commits.add(commit);
+    }
+    
+    
+    /**
+     * fileChanges are performed after all element changes
+     */
+    public void registerFileChange(Transaction changes) {
+        if (APIAccessor.DEFAULT.isCommit(session))
+            fileChanges.add(changes);
+    }    
 }

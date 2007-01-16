@@ -20,7 +20,25 @@
 package org.netbeans.modules.refactoring.spi.ui;
 
 /**
- *
+ * Register your own TreeElementFactoryImplementation into META-INF/services
+ * if you want to build your own RefactoringPreview tree.
+ * 
+ * For instance Java Refactoring understand Java - specific objects e.g. 
+ * Projects, Groups, Methods etc.
+ * 
+ * <pre>
+ * public TreeElement getTreeElement(Object o) {
+ * .
+ * .
+ * if (o instanceof SourceGroup) {
+ *   return new SourceGroupTreeElement((SourceGroup)o);
+ *  } else if (o instanceof SomethingFromJava) {
+ *    return new SomethingFromJavaTreeElement((SomethingFromJava) o);
+ *  }
+ * </pre>
+ * 
+ * Important note. It is expected from mathematical point of view, that this method
+ * is function, or even better bijection.
  * @author Jan Becicka
  */
 public interface TreeElementFactoryImplementation {

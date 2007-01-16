@@ -34,7 +34,8 @@ public class UndoAction extends CallableSystemAction implements PropertyChangeLi
     public UndoAction() {
         putValue(Action.NAME, getString("LBL_Undo")); //NOI18N
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-        undoManager = new UndoManager();
+        undoManager = UndoManager.getDefault();
+        undoManager.addPropertyChangeListener(this);
         updateState();
     }
     
@@ -83,24 +84,5 @@ public class UndoAction extends CallableSystemAction implements PropertyChangeLi
 
     protected boolean asynchronous() {
         return true;
-    }
-    
-    private class UndoManager {
-        private String getUndoDescription() {
-            return null;
-        }
-
-        private boolean isUndoAvailable() {
-            return false;
-        }
-
-        private void undo() {
-            throw new UnsupportedOperationException("Not yet implemented");
-        }
-
-        private void saveAll() {
-            throw new UnsupportedOperationException("Not yet implemented");
-        }
-        
     }
 }

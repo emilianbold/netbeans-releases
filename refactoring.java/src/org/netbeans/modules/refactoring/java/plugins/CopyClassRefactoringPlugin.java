@@ -31,9 +31,7 @@ import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.api.SingleCopyRefactoring;
-import org.netbeans.modules.refactoring.api.ui.UI;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.plugins.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
@@ -135,7 +133,7 @@ private class CopyClass extends SimpleRefactoringElementImpl implements Refactor
 
         public void performChange() {
             try {
-                FileObject fo = UI.getOrCreateFolder((URL)refactoring.getTarget());
+                FileObject fo = RetoucheUtils.getOrCreateFolder((URL)refactoring.getTarget());
                 FileObject source = (FileObject) refactoring.getRefactoredObject();
                 String oldPackage = RetoucheUtils.getPackageName(source.getParent());
                 

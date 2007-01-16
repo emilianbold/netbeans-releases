@@ -20,7 +20,7 @@
 package org.netbeans.modules.refactoring.plugins;
 
 import java.util.Collection;
-import org.netbeans.modules.refactoring.api.ui.UI;
+import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.modules.refactoring.spi.impl.SafeDeleteUI;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.openide.filesystems.FileObject;

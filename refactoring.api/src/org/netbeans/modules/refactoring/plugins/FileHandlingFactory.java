@@ -18,6 +18,10 @@
  */
 package org.netbeans.modules.refactoring.plugins;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Collection;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
@@ -27,6 +31,8 @@ import org.netbeans.modules.refactoring.api.SingleCopyRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -58,4 +64,24 @@ public class FileHandlingFactory implements RefactoringPluginFactory {
         }
         return null;
     }
+    
+        /**
+     * creates or finds FileObject according to 
+     * @param url
+     * @return FileObject
+     */
+    static FileObject getOrCreateFolder(URL url) throws IOException {
+        try {
+            FileObject result = URLMapper.findFileObject(url);
+            if (result != null)
+                return result;
+            File f = new File(url.toURI());
+            
+            result = FileUtil.createFolder(f);
+            return result;
+        } catch (URISyntaxException ex) {
+            throw (IOException) new IOException().initCause(ex);
+        }
+    }
+
 }

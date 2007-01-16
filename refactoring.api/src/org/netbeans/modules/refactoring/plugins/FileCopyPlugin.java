@@ -18,11 +18,11 @@
  */
 package org.netbeans.modules.refactoring.plugins;
 
+import java.io.IOException;
 import java.net.URL;
 import org.netbeans.modules.refactoring.api.SingleCopyRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
-import org.netbeans.modules.refactoring.api.ui.UI;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
@@ -68,6 +68,7 @@ public class FileCopyPlugin implements RefactoringPlugin {
         
         private FileObject fo;
         private RefactoringSession session;
+        private DataObject newOne;
         public CopyFile(FileObject fo, RefactoringSession session) {
             this.fo = fo;
             this.session = session;
@@ -82,14 +83,23 @@ public class FileCopyPlugin implements RefactoringPlugin {
         
         public void performChange() {
             try {
-                FileObject fo = UI.getOrCreateFolder((URL)refactoring.getTarget());
+                FileObject fo = FileHandlingFactory.getOrCreateFolder((URL)refactoring.getTarget());
                 FileObject source = (FileObject) refactoring.getRefactoredObject();
                 DataObject dob = DataObject.find(source);
-                DataObject d = dob.copy(DataFolder.findFolder(fo));
-                d.rename(refactoring.getNewName());
-                refactoring.getContext().add(d.getPrimaryFile());
+                newOne = dob.copy(DataFolder.findFolder(fo));
+                newOne.rename(refactoring.getNewName());
+                refactoring.getContext().add(newOne.getPrimaryFile());
             } catch (Exception ioe) {
                 ErrorManager.getDefault().notify(ioe);
+            }
+        }
+        
+        @Override
+        public void undoChange() {
+            try {
+                newOne.delete();
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
             }
         }
         

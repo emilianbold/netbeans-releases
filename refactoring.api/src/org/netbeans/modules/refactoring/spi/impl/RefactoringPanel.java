@@ -21,29 +21,17 @@ package org.netbeans.modules.refactoring.spi.impl;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.BeanInfo;
 import java.lang.ref.WeakReference;
-import java.util.List;
 import java.util.*;
-//[retouche]import javax.jmi.reflect.RefObject;
 import javax.swing.*;
 import javax.swing.ImageIcon;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.Position;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-//import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.*;
-//import org.netbeans.modules.refactoring.RetoucheUtils;
-//[retouche]import org.netbeans.jmi.javamodel.*;
-//[retouche]import org.netbeans.modules.java.ui.nodes.elements.IconResolver;
-//[retouche]import org.netbeans.modules.javacore.api.JavaModel;
-//[retouche]import org.netbeans.modules.javacore.internalapi.InvalidationListener;
-//[retouche]import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
-//[retouche]import org.netbeans.modules.javacore.internalapi.JavaModelUtil;
-//[retouche]import org.netbeans.modules.refactoring.UndoWatcher;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.spi.impl.ParametersPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -52,11 +40,6 @@ import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.util.NbBundle;
@@ -69,7 +52,7 @@ import org.openide.windows.TopComponent;
  *
  * @author  Pavel Flaska, Martin Matula
  */
-public class RefactoringPanel extends JPanel { //[retoucher] implements InvalidationListener {
+public class RefactoringPanel extends JPanel implements InvalidationListener {
     
     // PRIVATE FIELDS
     /* tree contains elements which will be changed by refactoring action */
@@ -93,6 +76,8 @@ public class RefactoringPanel extends JPanel { //[retoucher] implements Invalida
     private transient ParametersPanel parametersPanel = null;
     private transient JScrollPane scrollPane = null; 
     private transient JPanel southPanel;
+    public JSplitPane splitPane;
+    private JPanel left;
     private Action callback = null;
     
     private static final int MAX_ROWS = 50;
@@ -104,6 +89,7 @@ public class RefactoringPanel extends JPanel { //[retoucher] implements Invalida
     private transient JButton prevMatch = null;
     private transient JButton nextMatch = null;
     private WeakReference refCallerTC;
+    private boolean inited = false;
 
     
     static Image PACKAGE_BADGE = Utilities.loadImage( "org/netbeans/spi/java/project/support/ui/packageBadge.gif" ); // NOI18N
@@ -117,7 +103,6 @@ public class RefactoringPanel extends JPanel { //[retoucher] implements Invalida
             refCallerTC = new WeakReference(caller);
         this.ui = ui;
         this.isQuery = ui.isQuery();
-        initialize();
         refresh(true);
     }
     
@@ -138,9 +123,16 @@ public class RefactoringPanel extends JPanel { //[retoucher] implements Invalida
     
     /* initializes all the ui */
     private void initialize() {
+        if (inited)
+            return ;
         checkEventThread();
         setFocusCycleRoot(true);
+        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        left = new JPanel();
+        splitPane.setLeftComponent(left);
+        left.setLayout(new BorderLayout());
         setLayout(new BorderLayout());
+        add(splitPane, BorderLayout.CENTER);
         // add panel with buttons
         JButton[] buttons = getButtons();
         //if (buttons.length != 0) {
@@ -161,15 +153,16 @@ public class RefactoringPanel extends JPanel { //[retoucher] implements Invalida
             southPanel.add(pp, c);
             
             if (!isQuery|| callback != null) {
-                add(southPanel, BorderLayout.SOUTH);
+                left.add(southPanel, BorderLayout.SOUTH);
             }
         //}
         // put the toolbar to the panel. If the getToolBar() returns null,
         // suppose the toolbar does not exist.
         JToolBar toolBar = getToolBar();
         if (toolBar != null)
-            add(toolBar, BorderLayout.WEST);
+            left.add(toolBar, BorderLayout.WEST);
         validate();
+        inited=true;
     }
 
     /**
@@ -230,7 +223,7 @@ public class RefactoringPanel extends JPanel { //[retoucher] implements Invalida
         logicalViewButton.setMaximumSize(dim);
         logicalViewButton.setMinimumSize(dim);
         logicalViewButton.setPreferredSize(dim);
-        logicalViewButton.setSelected(true);
+        logicalViewButton.setSelected(currentView==LOGICAL);
         logicalViewButton.setToolTipText(
             NbBundle.getMessage(RefactoringPanel.class, "HINT_logicalView") // NOI18N
         );
@@ -247,6 +240,7 @@ public class RefactoringPanel extends JPanel { //[retoucher] implements Invalida
         physicalViewButton.setMaximumSize(dim);
         physicalViewButton.setMinimumSize(dim);
         physicalViewButton.setPreferredSize(dim);
+        physicalViewButton.setSelected(currentView==PHYSICAL);
         physicalViewButton.setToolTipText(
             NbBundle.getMessage(RefactoringPanel.class, "HINT_physicalView") // NOI18N
         );
@@ -326,7 +320,7 @@ public class RefactoringPanel extends JPanel { //[retoucher] implements Invalida
     private static final byte LOGICAL = 0;
     private static final byte PHYSICAL = 1;
     
-    private byte currentView = LOGICAL;
+    private byte currentView = PHYSICAL;
 
     void switchToLogicalView() {
         logicalViewButton.setSelected(true);
@@ -544,6 +538,8 @@ public class RefactoringPanel extends JPanel { //[retoucher] implements Invalida
             
             session = tempSession;
         }
+        
+        initialize();
 
         final String description = ui.getDescription();
         setToolTipText("<html>" + description + "</html>"); // NOI18N
@@ -610,7 +606,7 @@ public class RefactoringPanel extends JPanel { //[retoucher] implements Invalida
                     } finally {
 //[retouche]                        JavaModel.getJavaRepository().endTrans();
                     }
-//[retouche]                    JavaMetamodel.getUndoManager().watch(editorSupports, RefactoringPanel.this);
+                    UndoManager.getDefault().watch(editorSupports, RefactoringPanel.this);
                 } catch (RuntimeException t) {
                     TreeElementFactory.cleanUp();
                     throw t;
@@ -646,7 +642,7 @@ public class RefactoringPanel extends JPanel { //[retoucher] implements Invalida
                             tree.addKeyListener(l);
                             tree.setToggleClickCount(0);
                             scrollPane = new JScrollPane(tree);
-                            RefactoringPanel.this.add(scrollPane, BorderLayout.CENTER);
+                            RefactoringPanel.this.left.add(scrollPane, BorderLayout.CENTER);
                             RefactoringPanel.this.validate();
                         } else {
                             tree.setModel(new DefaultTreeModel(root));
@@ -654,14 +650,17 @@ public class RefactoringPanel extends JPanel { //[retoucher] implements Invalida
                         tree.setRowHeight((int) ((CheckRenderer) tree.getCellRenderer()).getPreferredSize().getHeight());
                         
                         if (showParametersPanel) {
-                            if (elements.size() < MAX_ROWS)
+                            splitPane.setDividerLocation(0.3);
+                            if (elements.size() < MAX_ROWS) {
                                 expandAll();
-                            else
+                                selectNextUsage();
+                            } else
                                 expandButton.setSelected(false);
                         } else {
-                            if (expandButton.isSelected())
+                            if (expandButton.isSelected()) {
                                 expandAll();
-                            else
+                                selectNextUsage();
+                            } else
                                 expandButton.setSelected(false);
                         }
 
@@ -760,7 +759,11 @@ public class RefactoringPanel extends JPanel { //[retoucher] implements Invalida
         while (!node.isLeaf());
         tree.setSelectionRow(newRow);
         tree.scrollRowToVisible(newRow);
-        CheckNodeListener.findInSource(node);
+        if (isQuery) {
+            CheckNodeListener.findInSource(node);
+        } else {
+            CheckNodeListener.openDiff(node);
+        }
     }
     
     private int getSelectedRow() {
@@ -862,7 +865,7 @@ public class RefactoringPanel extends JPanel { //[retoucher] implements Invalida
     } */
     
     protected void closeNotify() {
-//[retouche]        UndoWatcher.stopWatching(this);
+        UndoWatcher.stopWatching(this);
         if (tree!=null) {
             ToolTipManager.sharedInstance().unregisterComponent(tree);
             scrollPane.getViewport().remove(tree);

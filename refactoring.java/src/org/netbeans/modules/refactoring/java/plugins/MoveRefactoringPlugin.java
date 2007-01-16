@@ -51,6 +51,7 @@ import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.spi.Transaction;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
@@ -59,6 +60,7 @@ import org.netbeans.modules.refactoring.java.DiffElement;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.classpath.RefactoringClassPathImplementation;
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
+import org.netbeans.modules.refactoring.spi.BackupFacility;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -171,22 +173,12 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
             for (ModificationResult result:results) {
                 for (FileObject jfo : result.getModifiedFileObjects()) {
                     for (Difference dif: result.getDifferences(jfo)) {
-                        elements.add(refactoring,DiffElement.create(dif, jfo));
+                        elements.add(refactoring,DiffElement.create(dif, jfo,result));
                     }
                 }
             }
             
-            elements.getSession().registerCommit(new Runnable() {
-                public void run() {
-                    try {
-                        for (ModificationResult result:results) {
-                            result.commit();
-                        }
-                    } catch (IOException ex) {
-                        throw (RuntimeException) new RuntimeException().initCause(ex);
-                    }
-                }
-            });
+            elements.registerTransaction(new RetoucheCommit(results));
         }
         fireProgressListenerStop();
         return null;

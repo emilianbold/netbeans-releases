@@ -41,7 +41,7 @@ public final class RefactoringElement {
     public static final int READ_ONLY = 3;
     
     // delegate
-    private final RefactoringElementImplementation impl;
+    final RefactoringElementImplementation impl;
     
     RefactoringElement(RefactoringElementImplementation impl) {
         assert impl != null;
@@ -109,13 +109,4 @@ public final class RefactoringElement {
     public int getStatus() {
         return impl.getStatus();
     }
-
-    /**
-     * opens this RefactoringElement in the editor
-     * @since 1.5.0
-     */
-    public void openInEditor() {
-        impl.openInEditor();
-    }
-    
 }

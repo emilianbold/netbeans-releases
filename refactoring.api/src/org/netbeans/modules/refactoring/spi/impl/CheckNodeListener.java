@@ -27,6 +27,7 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
+import org.netbeans.modules.refactoring.api.impl.APIAccessor;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 
 /**
@@ -87,6 +88,13 @@ class CheckNodeListener implements MouseListener, KeyListener {
                             tree.expandPath(path);
                         else
                             tree.collapsePath(path);
+                    } 
+                    Object o = node.getUserObject();
+                    if (o instanceof TreeElement) {
+                        o = ((TreeElement) o).getUserObject();
+                        if (o instanceof RefactoringElement) {
+                            openDiff(node);
+                        }
                     }
                     ((DefaultTreeModel) tree.getModel()).nodeChanged(node);
                     if (row == 0) {
@@ -108,6 +116,14 @@ class CheckNodeListener implements MouseListener, KeyListener {
                             tree.expandRow(row);
                         else
                             tree.collapseRow(row);
+                    }
+                } else if (e.getClickCount() == 1 && chRect.contains(p) == false) {
+                    Object o = node.getUserObject();
+                    if (o instanceof TreeElement) {
+                        o = ((TreeElement) o).getUserObject();
+                        if (o instanceof RefactoringElement) {
+                            openDiff(node);
+                        }
                     }
                 }
             }
@@ -158,9 +174,20 @@ class CheckNodeListener implements MouseListener, KeyListener {
         if (o instanceof TreeElement) {
             o = ((TreeElement)o).getUserObject();
             if (o instanceof RefactoringElement) {
-                ((RefactoringElement) o).openInEditor();
+                APIAccessor.DEFAULT.getRefactoringElementImplementation((RefactoringElement) o).openInEditor();
             }
         }
     }
+    
+    static void openDiff(CheckNode node) {
+        Object o = node.getUserObject();
+        if (o instanceof TreeElement) {
+            o = ((TreeElement)o).getUserObject();
+            if (o instanceof RefactoringElement) {
+                APIAccessor.DEFAULT.getRefactoringElementImplementation((RefactoringElement) o).showPreview();
+            }
+        }
+    }
+    
 
 } // end CheckNodeListener

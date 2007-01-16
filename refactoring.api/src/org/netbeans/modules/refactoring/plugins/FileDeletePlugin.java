@@ -18,14 +18,17 @@
  */
 package org.netbeans.modules.refactoring.plugins;
 
+import java.io.File;
 import java.io.IOException;
+import org.netbeans.modules.refactoring.spi.Transaction;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
+import org.netbeans.modules.refactoring.spi.BackupFacility;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.PositionBounds;
@@ -50,7 +53,7 @@ public class FileDeletePlugin implements RefactoringPlugin {
     public Problem prepare(RefactoringElementsBag elements) {
         Object[] o = refactoring.getRefactoredObjects();
         for (int i=0; i< o.length; i++ ) {
-            elements.add(refactoring, new DeleteFile((FileObject) o[i], elements.getSession()));
+            elements.add(refactoring, new DeleteFile((FileObject) o[i], elements));
         }
         return null;
     }
@@ -69,8 +72,8 @@ public class FileDeletePlugin implements RefactoringPlugin {
     private class DeleteFile extends SimpleRefactoringElementImpl {
         
         private FileObject fo;
-        private RefactoringSession session;
-        public DeleteFile(FileObject fo, RefactoringSession session) {
+        private RefactoringElementsBag session;
+        public DeleteFile(FileObject fo, RefactoringElementsBag session) {
             this.fo = fo;
             this.session = session;
         }
@@ -83,12 +86,26 @@ public class FileDeletePlugin implements RefactoringPlugin {
         }
 
         public void performChange() {
-            session.registerFileChange(new Runnable() {
-                public void run() {
+            session.registerFileChange(new Transaction() {
+               long id;
+                public void commit () {
                     try {
+                        if (!fo.isValid()) {
+                            fo = FileUtil.toFileObject(new File(fo.getPath()));
+                        }
+                            
+                        id = BackupFacility.getDefault().backup(fo);
                         DataObject.find(fo).delete();
                     } catch (DataObjectNotFoundException ex) {
                         ex.printStackTrace();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+                
+                public void rollback() {
+                    try {
+                        BackupFacility.getDefault().restore(id);
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }
@@ -97,11 +114,11 @@ public class FileDeletePlugin implements RefactoringPlugin {
         }
 
         public Object getComposite() {
-            return fo.getParent();
+            return fo;
         }
 
         public FileObject getParentFile() {
-            return fo.getParent();
+            return fo;
         }
 
         public PositionBounds getPosition() {

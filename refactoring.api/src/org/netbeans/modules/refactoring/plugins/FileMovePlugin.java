@@ -20,10 +20,9 @@ package org.netbeans.modules.refactoring.plugins;
 
 import java.io.IOException;
 import java.net.URL;
+import org.netbeans.modules.refactoring.spi.Transaction;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.RefactoringSession;
-import org.netbeans.modules.refactoring.api.ui.UI;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImpl;
@@ -52,7 +51,7 @@ public class FileMovePlugin implements RefactoringPlugin {
     public Problem prepare(RefactoringElementsBag elements) {
         for (Object o: refactoring.getRefactoredObjects()) {
             if (o instanceof FileObject) {
-                elements.add(refactoring, new MoveFile((FileObject) o, elements.getSession()));
+                elements.add(refactoring, new MoveFile((FileObject) o, elements));
             }
         }
         return null;
@@ -72,8 +71,8 @@ public class FileMovePlugin implements RefactoringPlugin {
     private class MoveFile extends SimpleRefactoringElementImpl {
         
         private FileObject fo;
-        private RefactoringSession session;
-        public MoveFile(FileObject fo, RefactoringSession session) {
+        private RefactoringElementsBag session;
+        public MoveFile(FileObject fo, RefactoringElementsBag session) {
             this.fo = fo;
             this.session = session;
         }
@@ -86,12 +85,25 @@ public class FileMovePlugin implements RefactoringPlugin {
         }
 
         public void performChange() {
-            session.registerFileChange(new Runnable() {
-                public void run() {
+            session.registerFileChange(new Transaction() {
+                DataFolder sourceFolder;
+                DataObject source;
+                public void commit() {
                     try {
-                        FileObject target = UI.getOrCreateFolder((URL) refactoring.getTarget());
+                        FileObject target = FileHandlingFactory.getOrCreateFolder((URL) refactoring.getTarget());
                         DataFolder targetFolder = DataFolder.findFolder(target);
-                        DataObject.find(fo).move(targetFolder);
+                        source = DataObject.find(fo);
+                        sourceFolder = source.getFolder();
+                        source.move(targetFolder);
+                    } catch (DataObjectNotFoundException ex) {
+                        ex.printStackTrace();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+                public void rollback() {
+                    try {
+                        source.move(sourceFolder);
                     } catch (DataObjectNotFoundException ex) {
                         ex.printStackTrace();
                     } catch (IOException ex) {

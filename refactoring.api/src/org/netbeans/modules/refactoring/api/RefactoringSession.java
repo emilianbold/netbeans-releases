@@ -23,10 +23,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.ListIterator;
 import org.netbeans.modules.refactoring.api.impl.ProgressSupport;
 import org.netbeans.modules.refactoring.api.impl.SPIAccessor;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.refactoring.spi.Transaction;
+import org.netbeans.modules.refactoring.spi.impl.UndoManager;
 import org.openide.LifecycleManager;
 
 
@@ -40,16 +43,14 @@ public final class RefactoringSession {
     private final Collection<RefactoringElement> refactoringElements;
     private final String description;
     private ProgressSupport progressSupport;
-    private Collection<Runnable> commits;
-    private Collection<Runnable> fileChanges;
+    private UndoManager undoManager = UndoManager.getDefault();
+    boolean realcommit = true;
     
     private RefactoringSession(String description) {
         internalList = new LinkedList();
         bag = SPIAccessor.DEFAULT.createBag(this, internalList);
         this.description = description;
         this.refactoringElements = new ElementsCollection();
-        this.commits = new ArrayList();
-        this.fileChanges =  new ArrayList();
     }
     
     /** 
@@ -59,21 +60,7 @@ public final class RefactoringSession {
         return new RefactoringSession(description);
     }
 
-    /**
-     * commits are called after all changes are performed
-     */
-    public void registerCommit(Runnable commit) {
-        commits.add(commit);
-    }
-    
-    
-    /**
-     * fileChanges are performed after all element changes
-     */
-    public void registerFileChange(Runnable changes) {
-        fileChanges.add(changes);
-    }
-    
+
     /**
      * process all elements from elements bags,
      * do all fileChanges
@@ -82,6 +69,10 @@ public final class RefactoringSession {
     public Problem doRefactoring(boolean saveAfterDone) {
         Iterator it = internalList.iterator();
         fireProgressListenerStart(0, internalList.size()+1);
+        if (realcommit) {
+            undoManager.transactionStarted();
+            undoManager.setUndoDescription(description);
+        }
         try {
             try {
                 while (it.hasNext()) {
@@ -92,23 +83,53 @@ public final class RefactoringSession {
                     }
                 }
             } finally {
-                try {
-                    for (Runnable commit:commits) {
-                        commit.run();
-                    }
-                } finally {
-                    commits.clear();
+                for (Transaction commit:SPIAccessor.DEFAULT.getCommits(bag)) {
+                    commit.commit();
                 }
             }
             if (saveAfterDone) {
                 LifecycleManager.getDefault().saveAll();
             }
-            try {
-                for (Runnable fileChange:fileChanges) {
-                    fileChange.run();
+            for (Transaction fileChange:SPIAccessor.DEFAULT.getFileChanges(bag)) {
+                fileChange.commit();
+            }
+            fireProgressListenerStep();
+        } finally {
+            fireProgressListenerStop();
+            if (realcommit) {
+                undoManager.addItem(this);
+                undoManager.transactionEnded(false);
+                realcommit=false;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * do undo of previous doRefactoring()
+     */
+    public Problem undoRefactoring(boolean saveAfterDone) {
+        try {
+            ListIterator it = internalList.listIterator(internalList.size());
+            fireProgressListenerStart(0, internalList.size()+1);
+            ArrayList<Transaction> fileChanges = SPIAccessor.DEFAULT.getFileChanges(bag);
+            ArrayList<Transaction> commits = SPIAccessor.DEFAULT.getCommits(bag);
+            for (ListIterator<Transaction> fileChangeIterator = fileChanges.listIterator(fileChanges.size()); fileChangeIterator.hasPrevious();) {
+                fileChangeIterator.previous().rollback();
+            }
+            for (ListIterator<Transaction> commitIterator = commits.listIterator(commits.size()); commitIterator.hasPrevious();) {
+                commitIterator.previous().rollback();
+            }
+            
+            while (it.hasPrevious()) {
+                fireProgressListenerStep();
+                RefactoringElementImplementation element = (RefactoringElementImplementation) it.previous();
+                if (element.isEnabled() && !((element.getStatus() == RefactoringElement.GUARDED) || (element.getStatus() == RefactoringElement.READ_ONLY))) {
+                    element.undoChange();
                 }
-            } finally {
-                fileChanges.clear();
+            }
+            if (saveAfterDone) {
+                LifecycleManager.getDefault().saveAll();
             }
             fireProgressListenerStep();
         } finally {

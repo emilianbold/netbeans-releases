@@ -19,6 +19,7 @@
 package org.netbeans.modules.refactoring.plugins;
 
 import java.io.IOException;
+import org.netbeans.modules.refactoring.spi.Transaction;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -47,7 +48,7 @@ public class FileRenamePlugin implements RefactoringPlugin {
     }
     
     public Problem prepare(RefactoringElementsBag elements) {
-        elements.add(refactoring, new RenameFile((FileObject) refactoring.getRefactoredObject(), elements.getSession()));
+        elements.add(refactoring, new RenameFile((FileObject) refactoring.getRefactoredObject(), elements));
         return null;
     }
     
@@ -65,10 +66,10 @@ public class FileRenamePlugin implements RefactoringPlugin {
     private class RenameFile extends SimpleRefactoringElementImpl {
         
         private FileObject fo;
-        private RefactoringSession session;
-        public RenameFile(FileObject fo, RefactoringSession session) {
+        private RefactoringElementsBag bag;
+        public RenameFile(FileObject fo, RefactoringElementsBag bag) {
             this.fo = fo;
-            this.session = session;
+            this.bag = bag;
         }
         public String getText() {
             return "Rename file " + fo.getNameExt();
@@ -79,10 +80,22 @@ public class FileRenamePlugin implements RefactoringPlugin {
         }
 
         public void performChange() {
-            session.registerFileChange(new Runnable() {
-                public void run() {
+            bag.registerFileChange(new Transaction() {
+                private String oldName;
+                public void commit() {
                     try {
+                        oldName = fo.getName();
                         DataObject.find(fo).rename(refactoring.getNewName());
+                    } catch (DataObjectNotFoundException ex) {
+                        ex.printStackTrace();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+                
+                public void rollback() {
+                    try {
+                        DataObject.find(fo).rename(oldName);
                     } catch (DataObjectNotFoundException ex) {
                         ex.printStackTrace();
                     } catch (IOException ex) {
@@ -93,11 +106,11 @@ public class FileRenamePlugin implements RefactoringPlugin {
          }
 
         public Object getComposite() {
-            return fo.getParent();
+            return fo;
         }
 
         public FileObject getParentFile() {
-            return fo.getParent();
+            return fo;
         }
 
         public PositionBounds getPosition() {

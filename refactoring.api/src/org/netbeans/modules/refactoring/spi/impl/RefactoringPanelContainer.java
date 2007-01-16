@@ -217,7 +217,7 @@ public class RefactoringPanelContainer extends TopComponent {
         map.put("jumpPrev", new PrevNextAction (true)); // NOI18N
     }
     
-    private RefactoringPanel getCurrentPanel() {
+    public RefactoringPanel getCurrentPanel() {
         if (getComponentCount() > 0) {
             Component comp = getComponent(0);
             if (comp instanceof JTabbedPane) {

@@ -22,11 +22,14 @@ import java.util.Collection;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProblemDetails;
+import org.netbeans.modules.refactoring.api.RefactoringElement;
+import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.spi.ProblemDetailsImplementation;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 
 /**
  *
- * @author Martin Matula
+ * @author Martin Matula, Jan Becicka
  */
 public abstract class APIAccessor {
     public static APIAccessor DEFAULT;
@@ -43,4 +46,6 @@ public abstract class APIAccessor {
     public abstract Collection getGBHandlers(AbstractRefactoring refactoring);
     public abstract Problem chainProblems(Problem p, Problem p1);
     public abstract ProblemDetails createProblemDetails(ProblemDetailsImplementation pdi);
+    public abstract boolean isCommit(RefactoringSession session);
+    public abstract RefactoringElementImplementation getRefactoringElementImplementation(RefactoringElement el) ;
 }

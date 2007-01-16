@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.refactoring.spi;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.refactoring.api.impl.SPIAccessor;
@@ -26,7 +27,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 
 /**
  *
- * @author Martin Matula
+ * @author Martin Matula, Jan Becicka
  */
 final class AccessorImpl extends SPIAccessor {
     public RefactoringElementsBag createBag(RefactoringSession session, List delegate) {
@@ -37,4 +38,14 @@ final class AccessorImpl extends SPIAccessor {
     public Collection getReadOnlyFiles(RefactoringElementsBag bag) {
         return bag.getReadOnlyFiles();
     }
+    
+    public ArrayList<Transaction> getCommits(RefactoringElementsBag bag) {
+        return bag.commits;
+    }
+
+    public ArrayList<Transaction> getFileChanges(RefactoringElementsBag bag) {
+        return bag.fileChanges;
+    }
+
+    
 }

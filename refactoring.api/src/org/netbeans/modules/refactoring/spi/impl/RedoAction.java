@@ -34,7 +34,8 @@ public class RedoAction extends CallableSystemAction implements PropertyChangeLi
     public RedoAction() {
         putValue(Action.NAME, getString("LBL_Redo")); //NOI18N
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-        undoManager = new UndoManager();
+        undoManager = UndoManager.getDefault();
+        undoManager.addPropertyChangeListener(this);
         updateState();
     }
     
@@ -83,24 +84,5 @@ public class RedoAction extends CallableSystemAction implements PropertyChangeLi
     
     protected boolean asynchronous() {
         return true;
-    }
-    
-    private class UndoManager {
-        private String getRedoDescription() {
-            return null;
-        }
-
-        private boolean isRedoAvailable() {
-            return false;
-        }
-
-        private void redo() {
-            throw new UnsupportedOperationException("Not yet implemented");
-        }
-
-        private void saveAll() {
-            throw new UnsupportedOperationException("Not yet implemented");
-        }
-        
     }
 }

@@ -21,11 +21,11 @@ package org.netbeans.modules.refactoring.api;
 import java.util.Collection;
 import org.netbeans.modules.refactoring.api.impl.APIAccessor;
 import org.netbeans.modules.refactoring.spi.ProblemDetailsImplementation;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 
 /**
  *
- * @author Martin Matula
+ * @author Martin Matula, Jan Becicka
  */
 final class AccessorImpl extends APIAccessor {
     public Collection getGBHandlers(AbstractRefactoring refactoring) {
@@ -40,5 +40,13 @@ final class AccessorImpl extends APIAccessor {
     public ProblemDetails createProblemDetails(ProblemDetailsImplementation pdi) {
         assert pdi != null;
         return new ProblemDetails(pdi);
+    }
+
+    public boolean isCommit(RefactoringSession session) {
+        return session.realcommit;
+    }
+    
+    public RefactoringElementImplementation getRefactoringElementImplementation(RefactoringElement el) {
+        return el.impl;
     }
 }

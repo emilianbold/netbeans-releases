@@ -62,9 +62,17 @@ public interface RefactoringElementImplementation {
      */
     void setEnabled(boolean enabled);
     
-    /** Performs the change represented by this refactoring element.
+    /** 
+     *  Performs the change represented by this refactoring element.
+     *  Implementation can be impty if the change is done using some high level
+     *  transaction model
      */
     void performChange();
+    
+    /**
+     * Undo change done by performChange
+     */
+    void undoChange();
     
     /** Returns element containing this refactoring element.
      * @see org.netbeans.modules.refactoring.spi.ui.TreeElement
@@ -100,4 +108,11 @@ public interface RefactoringElementImplementation {
      * @since 1.5.0
      */
     void openInEditor();
+    
+    /**
+     * Shows this element in refactoring preview are
+     * @see org.netbeans.modules.refactoring.api.ui.UI#setComponentForRefactoringPreview
+     */
+    void showPreview();
+    
 }
