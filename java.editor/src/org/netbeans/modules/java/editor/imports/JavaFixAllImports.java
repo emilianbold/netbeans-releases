@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.editor.imports;
@@ -58,7 +58,7 @@ public class JavaFixAllImports {
             }
             public void run(final WorkingCopy wc) {
                 try {
-                    wc.toPhase(Phase.ELEMENTS_RESOLVED);
+                    wc.toPhase(Phase.RESOLVED);
 
                     ComputeImports.Pair<Map<String, List<TypeElement>>, Map<String, List<TypeElement>>> candidates = new ComputeImports().computeCandidates(wc);
 
@@ -70,6 +70,7 @@ public class JavaFixAllImports {
                     String[][] variants = new String[size][];
                     String[] defaults = new String[size];
                     Map<String, TypeElement> fqn2TE = new HashMap<String, TypeElement>();
+                    Map<String, String> displayName2FQN = new HashMap<String, String>();
 
                     int index = 0;
 
@@ -93,8 +94,12 @@ public class JavaFixAllImports {
                                 if (filteredVars.contains(e))
                                     continue;
 
-                                variants[index][i++] = "<html><font color='#808080'><s>" + e.getQualifiedName().toString();
-                                fqn2TE.put(e.getQualifiedName().toString(), e);
+                                String fqn = e.getQualifiedName().toString();
+                                String dn = "<html><font color='#808080'><s>" + fqn;
+                                
+                                variants[index][i++] = dn;
+                                fqn2TE.put(fqn, e);
+                                displayName2FQN.put(dn, fqn);
                             }
                         } else {
                             variants[index] = new String[1];
@@ -122,8 +127,9 @@ public class JavaFixAllImports {
                         //do imports:
                         List<String> toImport = new ArrayList<String>();
 
-                        for (String fqn : panel.getSelections()) {
-                            TypeElement el = fqn2TE.get(fqn);
+                        for (String dn : panel.getSelections()) {
+                            String fqn = displayName2FQN.get(dn);
+                            TypeElement el = fqn2TE.get(fqn != null ? fqn : dn);
 
                             if (el != null) {
                                 toImport.add(el.getQualifiedName().toString());
