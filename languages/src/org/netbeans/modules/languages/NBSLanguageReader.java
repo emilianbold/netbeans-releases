@@ -391,25 +391,21 @@ public class NBSLanguageReader {
         if (Language.COMPLETE.equals (featureName)) {
             if (identifier != null)
                 throw new ParseException ("Syntax error.");
+            Object ov = language.getProperty (language.getMimeType (), Language.COMPLETE);
+            Object[] ss = (Object[]) ov;
+            if (ss == null) {
+                ss = new Object [] {new ArrayList (), new ArrayList (), null};
+                language.addProperty (featureName, ss);
+            }
             if (feature instanceof Evaluator.Method) {
-                if (language.getProperty (language.getMimeType (), featureName) != null)
-                    throw new ParseException ("Syntax error.");
-                language.addProperty (featureName, feature);
+                ss [2] = feature;
             } else
             if (feature instanceof Evaluator.Expression) {
-                Object ov = language.getProperty (language.getMimeType (), featureName);
-                if (ov != null && !(ov instanceof List[]))
-                    throw new ParseException ("Syntax error.");
-                List[] ss = (List[]) ov;
-                if (ss == null) {
-                    ss = new List [] {new ArrayList (), new ArrayList ()};
-                    language.addProperty (featureName, ss);
-                }
                 String s = (String) ((Evaluator.Expression) feature).evaluate ();
                 int i = s.indexOf (':');
                 if (i < 1) throw new ParseException ("Syntax error.");
-                ss [0].add (s.substring (0, i));
-                ss [1].add (s.substring (i + 1));
+                ((List) ss [0]).add (s.substring (0, i));
+                ((List) ss [1]).add (s.substring (i + 1));
             } else
                 throw new ParseException ("Syntax error.");
         } else
