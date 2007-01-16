@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,6 +21,7 @@ package gui.window;
 
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.WizardOperator;
 
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -36,7 +37,7 @@ public class ProxyConfiguration extends org.netbeans.performance.test.utilities.
 
     JButtonOperator openProxyButton;
     WizardOperator wizard;
-    private String BUNDLE, BUTTON, MENU, TITLE_1, TITLE;
+    private String BUNDLE, BUTTON, MENU, TITLE_1;
     
     /** Creates a new instance of ProxyConfiguration */
     public ProxyConfiguration(String testName) {
@@ -55,10 +56,10 @@ public class ProxyConfiguration extends org.netbeans.performance.test.utilities.
         MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + Bundle.getStringTrimmed(BUNDLE,"CTL_Update");
         TITLE_1 = Bundle.getStringTrimmed(BUNDLE,"CTL_Wizard");
         BUTTON = Bundle.getStringTrimmed(BUNDLE,"BNT_Proxy");
-        TITLE = Bundle.getStringTrimmed(BUNDLE,"CTL_ProxyDialog_Title");
         
         // open the Update Center wizard
         new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        
         wizard = new WizardOperator(TITLE_1);
         openProxyButton = new JButtonOperator(wizard, BUTTON);
     }
@@ -68,9 +69,9 @@ public class ProxyConfiguration extends org.netbeans.performance.test.utilities.
     }
     
     public ComponentOperator open(){
-        // invoke the action
+        // invoke an action
         openProxyButton.pushNoBlock();
-        return new org.netbeans.jellytools.NbDialogOperator(TITLE);
+        return new OptionsOperator();
     }
 
     public void shutdown() {

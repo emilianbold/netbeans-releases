@@ -130,7 +130,7 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
     }
     
     private void setCompletionForMeasuringOff(){
-        // measure only paint events from QuietEditorPane
+        // reset filter
         repaintManager().setRegionFilter(null);
         
         // set back the original font size for Editor

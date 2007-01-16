@@ -58,7 +58,7 @@ public class JavadocIndexSearch extends org.netbeans.performance.test.utilities.
     }
     
     public ComponentOperator open() {
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu(MENU,"|");
         return new TopComponentOperator(TITLE);
     }
     
