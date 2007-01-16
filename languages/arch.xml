@@ -60,9 +60,80 @@ defining language structure and describing its features, <a href="http://saturn.
         </question>
 -->
 <answer id="arch-usecases">
+    Schliemann Engine allows to specify lexical and syntax structure of a
+    language and then easily define features based on this description.
+    To add support for a new language requires to create a netbeans module,
+    specify mime type of the supported language within the module and
+    include .nbs text file with the following definitions:
+    <ul>
+        <li> Lexical analysis section
+        </li>
+        <li> Syntax analysis section (optional)
+        </li>
+        <li> Editing and visualization features
+        </li>
+    </ul>
+    Tokens of the language are specified in the lexical analysis section using regular expressions.
+    <p><b>Example:</b></p>
+    <pre>
+    TOKEN:number:( ["0"] | ["1"-"9"] ["0"-"9"]* )
+    </pre>
+    The syntax analysis section defines grammar of the language. The Extended Backus-Naur
+    form is used to describe grammar productions. The section is optional,
+    but more rich feature set can be implemented when the grammar is
+    provided. For example, it is usually required to implement displaying
+    elements of the language (like classes and methods) in Navigator
+    window. In general, non-terminals of the language can be referenced
+    only when the grammar is present.
+    <p><b>Example:</b></p>
+    <pre>
+    S = additiveExpression;
+    additiveExpression = multiplicativeExpression "+" additiveExpression;
+    additiveExpression = multiplicativeExpression;
+    multiplicativeExpression = operand "*" multiplicativeExpression;
+    multiplicativeExpression = operand;
+    operand = &lt;number&gt;;
+    </pre>
+    Several features from the supported generic set can be implemented.
+    They include syntax coloring, code folding, navigation, brace matching,
+    code completion, tooltips, hyperlinks, indentation, annotations,
+    actions and languages embedding. Each of the features is defined in its
+    own section, starting by the correspondent keyword.
+    <p><b>Example:</b></p>
+    <pre>
+    COLOR:number {
+        default-coloring:"identifier";
+        foreground-color:"orange";
+        font-type:"bold";
+    }
+    </pre>
+    The example shows syntax coloring definition for token <b>number</b>. The definition is composed
+    of attribute's names and values.
+    <br/>
+    Some of the features can be, resp. have to be implemented via Java code
+    calls. The usage of Java calls covers cases like computation of
+    attribute's value in general, actions performing, tooltips evaluations,
+    etc. A method call specification in .nbs file follows the syntax:
+    <pre> 
+    attribute-name:languagePackage.ClassName.methodName;
+    </pre>
+    where ClassName is a class located in the module corresponding to the
+    language and methodName is its static method.
 
-<!-- API Usecases - API Usecases - API Usecases - API Usecases - API Usecases -->
-Languages Engine allows you define lexical and syntax structure of language. You can define other features based on this description.
+    The called methods have access to the context information related to
+    the document they have been called on. The information is passed into
+    the method as <code>org.netbeans.api.languages.Cookie</code>
+    instance. <code>org.netbeans.api.languages.Cookie</code> can
+    be queried for related <code>javax.swing.text.Document</code>
+    and <code>javax.swing.text.JTextComponent</code>, as
+    well as for <code>org.netbeans.api.lexer.TokenSequence</code>.
+    <code>org.netbeans.api.languages.SyntaxCookie</code>
+    provides addional information - <code>org.netbeans.api.languages.PTPath</code>. It is available
+    for all caret position related calls and holds the path in the parset
+    ASTree from the root node to the leaf corresponding to the token the
+    caret is placed on. In the ASTree, non-terminals are represented by 
+    <code>org.netbeans.api.languages.ASTNode</code>, while tokens by
+    <code>SToken</code>.
 </answer>
 
 
@@ -527,7 +598,7 @@ No files read or written to the disk.
         </question>
 -->
 <answer id="lookup-lookup">
-No
+No.
 </answer>
 
 
