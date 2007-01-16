@@ -54,7 +54,7 @@ final class PrimitivePropertySupport extends DefaultPropertySupport {
                 this.value,
                 this,
                 ((DesignPropertyEditor) getPropertyEditor()).getInplaceEditor(),
-                ((DesignPropertyEditor) getPropertyEditor()).getCustomEditorTitle()
+                designerPropertyDescriptor.getPropertyDisplayName()
                 );
         }
     }

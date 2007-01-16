@@ -32,6 +32,7 @@ import org.netbeans.modules.vmd.api.model.DesignEvent;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
+import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.InplaceEditor;
 import org.openide.explorer.propertysheet.InplaceEditor.Factory;
@@ -51,6 +52,7 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
     private PropertyValue propertyValue;
     private PropertySupport propertySupport;
     private InplaceEditor inplaceEditor;
+    private String propertyDisplayName;
     private String customEditorTitle;
     
     /**
@@ -173,17 +175,17 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
     }
     
     public final void resolve(DesignComponent component,
-            List<String> propertyNames,
-            Object value,
-            PropertySupport propertySupport,
-            InplaceEditor inplaceEditor,
-            String customEditorTitle) {
+                              List<String> propertyNames,
+                              Object value,
+                              PropertySupport propertySupport,
+                              InplaceEditor inplaceEditor,
+                              String propertyDisplayName) {
         this.component = component;
         this.propertyNames = propertyNames;
         this.tempValue = value;
         this.propertySupport = propertySupport;
         this.inplaceEditor = inplaceEditor;
-        this.customEditorTitle = customEditorTitle;
+        this.propertyDisplayName = propertyDisplayName;
     }
     
     public InplaceEditor getInplaceEditor() {
@@ -195,6 +197,15 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
      * @return custom property editor title
      */
     public String getCustomEditorTitle() {
+        
+        if (component == null)
+            return null;
+        component.getDocument().getTransactionManager().readAccess((new Runnable() {
+            public void run() {
+                customEditorTitle = InfoPresenter.getDisplayName(component) + " - " + propertyDisplayName; //NOI18N //TODO REplace with StringBuffer
+            }
+        }));
+        
         return customEditorTitle;
     }
     
@@ -205,7 +216,7 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
     public void init(DesignComponent component) {
     }
     /**
-     * Its called according to the DesignEventFilterResolver(DEsignEventFilter) passed into the PropertiesPresenter
+     * Its called according to the DesignEventFilterResolver(DesignEventFilter) passed into the PropertiesPresenter
      *
      */
     public void notifyDesignChanged(DesignEvent event) {
@@ -255,5 +266,9 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
         });
         
         return propertyValue;
+    }
+    
+    public String getPropertyDisplayName() {
+        return propertyDisplayName;
     }
 }

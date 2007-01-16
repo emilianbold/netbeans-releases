@@ -216,6 +216,17 @@ public final class InfoPresenter extends DynamicPresenter {
         String secondary = presenter.getDisplayName (InfoPresenter.NameType.SECONDARY);
         return secondary != null ? primary + " <font color=\"#808080\">[" + secondary + "]" : primary;
     }
+    
+    public static String getDisplayName (DesignComponent component) {
+        InfoPresenter presenter = component.getPresenter (InfoPresenter.class);
+        if (presenter == null) {
+            Debug.warning ("Missing InfoPresenter for", component);
+            return null;
+        }
+        String primary = presenter.getDisplayName (InfoPresenter.NameType.PRIMARY);
+        String secondary = presenter.getDisplayName (InfoPresenter.NameType.SECONDARY);
+        return secondary != null ? primary +" [" + secondary + "]" : primary; //NOI18N
+    }
 
     public interface Resolver {
 

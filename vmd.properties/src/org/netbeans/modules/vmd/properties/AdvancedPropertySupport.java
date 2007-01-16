@@ -52,7 +52,7 @@ final class AdvancedPropertySupport extends DefaultPropertySupport {
                 this.value,
                 this,
                 ((DesignPropertyEditor) getPropertyEditor()).getInplaceEditor(),
-                ((DesignPropertyEditor) getPropertyEditor()).getCustomEditorTitle()
+                designerPropertyDescriptor.getPropertyDisplayName()
                 );
         }
     }
