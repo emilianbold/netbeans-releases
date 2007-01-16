@@ -19,7 +19,6 @@
 
 package footprint;
 
-import java.io.PrintStream;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -140,9 +139,4 @@ public class RefactoringRename extends MemoryFootprintTestCase {
         junit.textui.TestRunner.run(new RefactoringRename("measureMemoryFootprint"));
     }
     
-    @Override
-    public PrintStream getLog() {
-        return System.out;
-    }
-
 }
