@@ -38,8 +38,6 @@ public class HTMLViewAction extends CallableSystemAction {
         putValue("noIconInMenu", Boolean.TRUE); //NOI18N
     }
     
-    public static final String MODE_NAME = "webbrowser"; // NOI18N
-
     protected String iconResource () {
         return "org/netbeans/core/resources/actions/htmlView.gif"; // NOI18N
     }
@@ -48,19 +46,9 @@ public class HTMLViewAction extends CallableSystemAction {
         org.openide.awt.StatusDisplayer.getDefault().setStatusText(
             NbBundle.getBundle(HTMLViewAction.class).getString("CTL_OpeningBrowser"));
         try {
-            Mode mode = WindowManager.getDefault().findMode(MODE_NAME);
-            if (mode != null) {
-                TopComponent [] comps = mode.getTopComponents ();
-                if (comps.length > 0) {
-                    comps[0].open ();
-                    comps[0].requestActive ();
-                }
-		else {
-		    HtmlBrowser.URLDisplayer.getDefault().showURL(
-			    new java.net.URL(HtmlBrowser.getHomePage ()
-			    ));
-		}
-            }
+            HtmlBrowser.URLDisplayer.getDefault().showURL(
+                    new java.net.URL(HtmlBrowser.getHomePage ()
+                    ));
         } catch (java.net.MalformedURLException e) {
             if (!HtmlBrowser.getHomePage ().
               startsWith ("http://") // NOI18N

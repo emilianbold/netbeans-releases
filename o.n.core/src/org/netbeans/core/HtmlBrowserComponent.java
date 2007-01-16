@@ -44,11 +44,6 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
 
     // variables .........................................................................................
     
-    /** programmatic name of special mode for this top component
-     * sync w/ HtmlViewAction
-     */
-    public static final String MODE_NAME = "webbrowser"; // NOI18N
-
     /** Delegating component */
     private HtmlBrowser browserComponent;
     
