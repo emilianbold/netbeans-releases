@@ -36,6 +36,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.j2seproject.classpath.J2SEProjectClassPathExtender;
 import org.netbeans.modules.java.j2seproject.classpath.J2SEProjectClassPathModifier;
@@ -252,7 +253,8 @@ public final class J2SEProject implements Project, AntProjectListener {
             jaxWsModel,
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
-            LookupProviderSupport.createSourcesMerger()
+            LookupProviderSupport.createSourcesMerger(),
+            new J2SEPropertyEvaluatorImpl(evaluator())
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-java-j2seproject/Lookup"); //NOI18N
     }
@@ -590,6 +592,16 @@ public final class J2SEProject implements Project, AntProjectListener {
             return PRIVILEGED_NAMES;
         }
         
+    }
+    
+    private static final class J2SEPropertyEvaluatorImpl implements J2SEPropertyEvaluator {
+        private PropertyEvaluator evaluator;
+        public J2SEPropertyEvaluatorImpl (PropertyEvaluator eval) {
+            evaluator = eval;
+        }
+        public PropertyEvaluator evaluator() {
+            return evaluator;
+        }
     }
     
     private FileObject getJaxWsFileObject() throws IOException {

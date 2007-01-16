@@ -349,7 +349,10 @@ Microsystems, Inc. All Rights Reserved.
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.javawebstart</friend>
+                <package>org.netbeans.modules.java.j2seproject.api</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>
