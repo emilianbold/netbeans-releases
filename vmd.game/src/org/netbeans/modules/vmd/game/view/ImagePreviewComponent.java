@@ -115,9 +115,9 @@ public class ImagePreviewComponent extends JComponent {
 		Scene scene = GlobalRepository.getInstance().createScene("scene1");
 		
 		URL urlRock = MainView.class.getResource("res/color_tiles.png");
-		Sprite rock = scene.createSprite("rock2", GlobalRepository.getImageResource(urlRock, 20, 20), 5);
+		Sprite rock = scene.createSprite("rock2", GlobalRepository.getInstance().getImageResource(urlRock, 20, 20), 5);
 		Sequence def = rock.getDefaultSequence();
-		ImageResource imgRock = GlobalRepository.getImageResource(urlRock, 20, 20);
+		ImageResource imgRock = GlobalRepository.getInstance().getImageResource(urlRock, 20, 20);
 		def.setFrame((StaticTile) imgRock.getTile(1), 0);
 		def.setFrame((StaticTile) imgRock.getTile(3), 1);
 		def.setFrame((StaticTile) imgRock.getTile(5), 2);

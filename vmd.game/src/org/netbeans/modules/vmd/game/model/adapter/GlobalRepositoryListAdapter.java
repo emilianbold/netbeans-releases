@@ -19,18 +19,10 @@
 
 package org.netbeans.modules.vmd.game.model.adapter;
 
-import java.awt.Graphics2D;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 import javax.swing.AbstractListModel;
-import javax.swing.JComponent;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.GlobalRepositoryListener;
-import org.netbeans.modules.vmd.game.model.Layer;
+import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.Scene;
 import org.netbeans.modules.vmd.game.model.Sprite;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
@@ -126,4 +118,7 @@ public class GlobalRepositoryListAdapter extends AbstractListModel implements Gl
 		this.fireIntervalRemoved(this, index + offset, index + offset);
 	}
 	
+    public void imageResourceAdded(ImageResource imageResource) {
+    }
+
 }

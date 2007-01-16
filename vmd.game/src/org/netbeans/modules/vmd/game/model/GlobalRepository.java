@@ -84,11 +84,12 @@ public class GlobalRepository implements PropertyChangeListener {
 	    }
 	}
 	
-	public static ImageResource getImageResource(URL imageURL, int cellWidth, int cellHeight) {
+	public ImageResource getImageResource(URL imageURL, int cellWidth, int cellHeight) {
 		ImageResource imgResource = imgResourceMap.get(imageURL.toString() + "_" + cellWidth + "_" + cellHeight);
 		if (imgResource == null) {
 			imgResource = new ImageResource(imageURL, cellWidth, cellHeight);
 			imgResourceMap.put(imageURL.toString() + "_" + cellWidth + "_" + cellHeight, imgResource);
+			this.fireImageResourceAdded(imgResource);
 			
 			if (DEBUG) {
 				System.out.println("Added " + imageURL + ". ImgResourceMap now contains:");
@@ -101,7 +102,14 @@ public class GlobalRepository implements PropertyChangeListener {
 		}
 		return imgResource;
 	}
-
+	private void fireImageResourceAdded(ImageResource imgRes) {
+		Object[] listeners = listenerList.getListenerList();
+		for (int i = listeners.length - 2; i >= 0; i -= 2) {
+			if (listeners[i] == GlobalRepositoryListener.class) {
+				((GlobalRepositoryListener) listeners[i+1]).imageResourceAdded(imgRes);
+			}
+		}
+	}
 	
 	boolean addTiledLayer(TiledLayer layer) {
 		if (!this.addLayer(layer))

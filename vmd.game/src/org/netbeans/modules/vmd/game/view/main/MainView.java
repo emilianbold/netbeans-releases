@@ -21,7 +21,6 @@ package org.netbeans.modules.vmd.game.view.main;
 import org.netbeans.modules.vmd.game.editor.grid.ResourceImageEditor;
 import org.netbeans.modules.vmd.game.editor.tiledlayer.TiledLayerEditor;
 import org.netbeans.modules.vmd.game.model.*;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.Frame;
@@ -118,7 +117,7 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 	}
 
 
-	
+//--------GlobalRepositoryListener	
 	public void sceneAdded(Scene scene, int index) {
 		this.requestEditing(scene);
 	}
@@ -144,6 +143,8 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 		this.closeEditor(sprite);
 	}
 
+    public void imageResourceAdded(ImageResource imageResource) {
+    }
 
 	public void requestEditing(Editable editable) {
 		if (this.currentEditable == editable)
@@ -225,10 +226,14 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 	}
 
 	private static void loadPreviews() {
-		Scene scene = GlobalRepository.getInstance().createScene("scene1");
+		if (true) {
+			return;
+		}
+		
+		Scene scene = GlobalRepository.getInstance().createScene("test_scene");
 		
 		URL urlRock = MainView.class.getResource("res/color_tiles.png");
-		ImageResource imgRock = GlobalRepository.getImageResource(urlRock, 20, 20);
+		ImageResource imgRock = GlobalRepository.getInstance().getImageResource(urlRock, 20, 20);
 		Sprite rock = scene.createSprite("rock2", imgRock, 5);
 		Sequence def = rock.getDefaultSequence();
 		def.setFrame((StaticTile) imgRock.getTile(1), 0);
@@ -261,7 +266,7 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 		back.setFrameMs(120);		
 		
 		URL urlBunny = MainView.class.getResource("res/color_tiles.png");
-		ImageResource bunnyImgRes = GlobalRepository.getImageResource(urlBunny, 20, 20);
+		ImageResource bunnyImgRes = GlobalRepository.getInstance().getImageResource(urlBunny, 20, 20);
 		Sprite bunny = scene.createSprite("bunny2", bunnyImgRes, 8);
 		Sequence bunnyDefSeq = bunny.getDefaultSequence();
 		bunnyDefSeq.setFrame((StaticTile) bunnyImgRes.getTile(1), 0);
@@ -282,7 +287,7 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 		shorter.setFrameMs(130);
 		
 		URL urlTrees = MainView.class.getResource("res/color_tiles.png");
-		ImageResource treesImgRes = GlobalRepository.getImageResource(urlTrees, 20, 20);
+		ImageResource treesImgRes = GlobalRepository.getInstance().getImageResource(urlTrees, 20, 20);
 		
 		AnimatedTile pineTree = treesImgRes.createAnimatedTile("pineTree2", 1);
 		pineTree.getDefaultSequence().addFrame((StaticTile) treesImgRes.getTile(2));
@@ -296,16 +301,16 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 		trees.setTileAt(pineTree.getIndex(), 7, 7);
 		
 		URL urlTiles = MainView.class.getResource("res/color_tiles.png");
-		ImageResource imgRes = GlobalRepository.getImageResource(urlTiles, 20, 20);
+		ImageResource imgRes = GlobalRepository.getInstance().getImageResource(urlTiles, 20, 20);
 		
-		TiledLayer grass = scene.createTiledLayer("grass2", GlobalRepository.getImageResource(urlTiles, 20, 20), 10, 20);
+		TiledLayer grass = scene.createTiledLayer("grass2", GlobalRepository.getInstance().getImageResource(urlTiles, 20, 20), 10, 20);
 		for (int i = 0; i < 10; i++) {
 			for (int j = 0; j < 20; j++) {
 				grass.setTileAt(3, i, j);
 			}
 		}
 
-		TiledLayer water = scene.createTiledLayer("water2", GlobalRepository.getImageResource(urlTiles, 20, 20), 4, 3);
+		TiledLayer water = scene.createTiledLayer("water2", GlobalRepository.getInstance().getImageResource(urlTiles, 20, 20), 4, 3);
 		water.setTileAt(4, 0, 0);
 		water.setTileAt(4, 0, 1);
 		water.setTileAt(4, 0, 2);
@@ -319,7 +324,7 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 		water.setTileAt(6, 3, 1);
 		water.setTileAt(7, 3, 2);
 
-		TiledLayer things = scene.createTiledLayer("things2", GlobalRepository.getImageResource(urlTiles, 20, 20), 7, 7);
+		TiledLayer things = scene.createTiledLayer("things2", GlobalRepository.getInstance().getImageResource(urlTiles, 20, 20), 7, 7);
 		things.setTileAt(7, 0, 5);
 		things.setTileAt(5, 0, 6);
 		things.setTileAt(4, 2, 0);

@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.vmd.game.integration.components;
 
+import java.awt.Point;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
 
@@ -43,6 +44,10 @@ public class GameTypes {
 
 	public static PropertyValue createFramesProperty(int[] frames) {
 		return PropertyValue.createValue(GamePrimitiveDescriptor.PRIMITIVE_DESCRIPTOR_FRAMES, TYPEID_SEQUENCE_FRAMES, frames);
+	}
+	
+	public static PropertyValue createPointProperty(Point point) {
+		return PropertyValue.createValue(GamePrimitiveDescriptor.PRIMITIVE_DESCRIPTOR_POINT, TYPEID_POINT, point);
 	}
 
 	public static int[] getFrames(PropertyValue value) {

@@ -18,11 +18,11 @@
  */
 package org.netbeans.modules.vmd.game.integration.components;
 
+import java.awt.Point;
 import org.netbeans.modules.vmd.api.model.PrimitiveDescriptor;
 import org.netbeans.modules.vmd.api.model.PrimitiveDescriptorFactory;
 import org.netbeans.modules.vmd.midp.components.MidpPrimitiveDescriptor;
 import org.netbeans.modules.vmd.game.GameController;
-
 import java.util.StringTokenizer;
 
 /**
@@ -33,9 +33,11 @@ public final class GamePrimitiveDescriptor implements PrimitiveDescriptorFactory
 	
 	static final String TYPEID_STRING_TILES = "#TiledLayerTiles";
 	static final String TYPEID_STRING_FAMES = "#SequenceFrames";
+	static final String TYPEID_STRING_POINT = "#Point";
 	
 	static final TilesPrimitiveDescriptor PRIMITIVE_DESCRIPTOR_TILES = new TilesPrimitiveDescriptor();
 	static final FramesPrimitiveDescriptor PRIMITIVE_DESCRIPTOR_FRAMES = new FramesPrimitiveDescriptor();
+	static final PointPrimitiveDescriptor PRIMITIVE_DESCRIPTOR_POINT = new PointPrimitiveDescriptor();
 	
 	private MidpPrimitiveDescriptor midp = new MidpPrimitiveDescriptor();
 	
@@ -48,18 +50,39 @@ public final class GamePrimitiveDescriptor implements PrimitiveDescriptorFactory
 			return PRIMITIVE_DESCRIPTOR_TILES;
 		if (TYPEID_STRING_FAMES.equals(string))
 			return PRIMITIVE_DESCRIPTOR_FRAMES;
-		
+		if (TYPEID_STRING_POINT.equals(string))
+			return PRIMITIVE_DESCRIPTOR_POINT;
 		//TODO
 		return midp.getDescriptorForTypeIDString(string);
 	}
 	
-	
+	private static class PointPrimitiveDescriptor implements PrimitiveDescriptor {
+		
+        public String serialize(Object value) {
+			Point point = (Point) value;
+			StringBuilder sb = new StringBuilder();
+			sb.append(Integer.toString((int) point.getX()));
+			sb.append(",");
+			sb.append(Integer.toString((int) point.getY()));
+			return sb.toString();
+        }
+
+        public Object deserialize(String serialized) {
+			String[] xAndY = serialized.split(",");
+			Point p = new Point(Integer.parseInt(xAndY[0]), Integer.parseInt(xAndY[1]));
+			return p;
+        }
+
+        public boolean isValidInstance(Object object) {
+			return (object instanceof Point);
+        }
+}
 	
 	private static class FramesPrimitiveDescriptor implements PrimitiveDescriptor {
 		
 		public String serialize(Object value) {
 			int[] array = (int[]) value;
-			StringBuffer serialized = new StringBuffer();
+			StringBuilder serialized = new StringBuilder();
 			serialized.append(array.length).append(',');
 			for (int cell : array) {
 				serialized.append(cell).append(',');

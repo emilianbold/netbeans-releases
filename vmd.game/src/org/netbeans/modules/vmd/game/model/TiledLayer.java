@@ -23,6 +23,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -30,7 +31,6 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.modules.vmd.game.editor.tiledlayer.TiledLayerEditor;
-
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.event.EventListenerList;
@@ -393,6 +393,10 @@ public class TiledLayer extends Layer {
 
 	public String getDisplayableTypeName() {
 		return "tiled layer";
+	}
+	
+	public int[][] getTiles() {
+		return this.grid;
 	}
 	
 	// Previewable

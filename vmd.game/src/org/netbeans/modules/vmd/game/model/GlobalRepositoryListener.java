@@ -34,4 +34,5 @@ public interface GlobalRepositoryListener extends EventListener {
 	
 	public void spriteRemoved(Sprite sprite, int index);
 	
+	public void imageResourceAdded(ImageResource imageResource);
 }

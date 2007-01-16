@@ -86,7 +86,7 @@ public class Sprite extends Layer implements SequenceContainer {
 		this.sequenceContainer.move(sequence, newIndex);
 	}
 	
-	public List getSequences() {
+	public List<Sequence> getSequences() {
 		return this.sequenceContainer.getSequences();
 	}
 

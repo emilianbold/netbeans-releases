@@ -20,14 +20,13 @@ package org.netbeans.modules.vmd.game.model.adapter;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
-
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.GlobalRepositoryListener;
+import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.Scene;
 import org.netbeans.modules.vmd.game.model.Sprite;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
@@ -174,4 +173,7 @@ public class GlobalRepositoryTreeAdapter implements TreeModel, GlobalRepositoryL
 		}
 	}
 	
+    public void imageResourceAdded(ImageResource imageResource) {
+    }
+
 }

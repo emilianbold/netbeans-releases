@@ -34,12 +34,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.event.EventListenerList;
-
 import org.netbeans.modules.vmd.game.dialog.NewSpriteDialog;
 import org.netbeans.modules.vmd.game.dialog.NewTiledLayerDialog;
 import org.netbeans.modules.vmd.game.dialog.RenameSceneDialog;
@@ -526,6 +524,7 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 		}
 	}
 
+	//----GlobalRepositoryListener
 	public void sceneAdded(Scene scene, int index) {
 	}
 
@@ -545,6 +544,9 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 	public void spriteRemoved(Sprite sprite, int index) {
 		this.remove(sprite);
 	}
+	
+    public void imageResourceAdded(ImageResource imageResource) {
+    }
 
 	//-----Previewable
 	//XXX
@@ -592,4 +594,5 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 			return this.navigator = new SceneLayerNavigator(this);
 		return this.navigator;
 	}
+
 }

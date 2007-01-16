@@ -27,16 +27,22 @@ import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.DesignDocumentAwareness;
 import org.netbeans.modules.vmd.api.io.IOUtils;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.game.integration.components.GameTypes;
 import org.netbeans.modules.vmd.game.model.AnimatedTile;
 import org.netbeans.modules.vmd.game.model.AnimatedTileCD;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
+import org.netbeans.modules.vmd.game.model.GlobalRepositoryListener;
 import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.ImageResourceCD;
 import org.netbeans.modules.vmd.game.model.Layer;
@@ -53,12 +59,20 @@ import org.netbeans.modules.vmd.game.model.Tile;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
 import org.netbeans.modules.vmd.game.model.TiledLayerCD;
 import org.netbeans.modules.vmd.game.view.main.MainView;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
 
 /**
  *
  * @author Karel Herink
  */
-public class GameController implements DesignDocumentAwareness {
+public class GameController implements DesignDocumentAwareness, GlobalRepositoryListener {
+	
+	/**
+	 * Maps game builder model objects to the component ids of their designer2 design component
+	 * counter-parts. E.g. a TiledLayer instance is the key and value is design component id of 
+	 * the design component that represents the tiled layer in the design document.
+	 */
+	private final static Map<Object, DesignComponent> designIdMap = new HashMap<Object, DesignComponent>();
 	
 	public static final String PROJECT_TYPE_GAME = "vmd-midp-game"; // NOI18N
 	
@@ -94,13 +108,17 @@ public class GameController implements DesignDocumentAwareness {
 		this.view = MainView.getInstance().getRootComponent();
 		this.document.getTransactionManager().readAccess(new Runnable() {
 			public void run() {
-				if (false) {
+				if (true) {
+					GlobalRepository.getInstance().removeGlobalRepositoryListener(GameController.this);
+					
 					//clean my internal model - remove all scenes, layers, and image resources
 					GlobalRepository.getInstance().removeAllComponents();
 
 					//add all components in the document
 					DesignComponent root = designDocument.getRootComponent();
 					GameController.this.modelComponent(root);
+					
+					GlobalRepository.getInstance().addGlobalRepositoryListener(GameController.this);
 				}
 			}
 		});
@@ -158,7 +176,7 @@ public class GameController implements DesignDocumentAwareness {
 			Sequence sequence = this.constructSequence(sequenceDC);
 			animatedTile.append(sequence);
 		}		
-		
+		designIdMap.put(animatedTile, animatedTiledDC);
 		return animatedTile;
 	}
 	
@@ -184,7 +202,7 @@ public class GameController implements DesignDocumentAwareness {
 			Sequence sequence = this.constructSequence(sequenceDC);
 			sprite.append(sequence);
 		}		
-		
+		designIdMap.put(sprite, spriteDC);
 		return sprite;
 	}
 	
@@ -200,6 +218,7 @@ public class GameController implements DesignDocumentAwareness {
 		int[][]  grid = (int[][]) tiledLayerDC.readProperty(TiledLayerCD.PROPERTY_TILES).getPrimitiveValue();
 		
 		GlobalRepository.getInstance().createTiledLayer(name, imgRes, grid);
+		designIdMap.put(tiledLayer, tiledLayerDC);
 		return tiledLayer;
 	}
 	
@@ -221,7 +240,7 @@ public class GameController implements DesignDocumentAwareness {
 		for (int i : frames) {
 			sequence.addFrame((StaticTile) imgRes.getTile(i));
 		}
-		
+		designIdMap.put(sequence, sequenceDC);
 		return sequence;
 	}	
 	
@@ -238,7 +257,8 @@ public class GameController implements DesignDocumentAwareness {
 		int tileHeight = (Integer) imageResourceDC.readProperty(ImageResourceCD.PROPERTY_TILE_HEIGHT).getPrimitiveValue();
 		int tileWidth = (Integer) imageResourceDC.readProperty(ImageResourceCD.PROPERTY_TILE_WIDTH).getPrimitiveValue();		
 		
-		ImageResource imgRes = GlobalRepository.getImageResource(imgResUrl, tileWidth, tileHeight);
+		ImageResource imgRes = GlobalRepository.getInstance().getImageResource(imgResUrl, tileWidth, tileHeight);
+		designIdMap.put(imgRes, imageResourceDC);
 		return imgRes;
 	}
 	
@@ -273,7 +293,146 @@ public class GameController implements DesignDocumentAwareness {
 			scene.setLayerVisible(layer, visible);
 			scene.setLayerLocked(layer, locked);
 		}
+		designIdMap.put(scene, sceneDC);		
 		return scene;
 	}
 	
+	public static DesignComponent createSceneDCFromScene(DesignDocument doc, Scene scene) {
+		DesignComponent dcScene = doc.createComponent(SceneCD.TYPEID);
+		dcScene.writeProperty(SceneCD.PROPERTY_NAME, MidpTypes.createStringValue(scene.getName()));		
+		List<PropertyValue> sceneItems = new ArrayList<PropertyValue>();
+		List<Layer> layers = scene.getLayers();
+		for (Iterator<Layer> it = layers.iterator(); it.hasNext();) {
+			DesignComponent sceneItemDC = doc.createComponent(SceneItemCD.TYPEID);			
+
+			Layer layer = it.next();
+			DesignComponent layerDC = designIdMap.get(layer);		
+			assert (layerDC != null);
+
+			sceneItemDC.writeProperty(SceneItemCD.PROPERTY_LAYER, PropertyValue.createComponentReference(layerDC));
+			sceneItemDC.writeProperty(SceneItemCD.PROPERTY_LOCK, MidpTypes.createBooleanValue(scene.isLayerLocked(layer)));
+			sceneItemDC.writeProperty(SceneItemCD.PROPERTY_VISIBLE, MidpTypes.createBooleanValue(scene.isLayerLocked(layer)));
+			sceneItemDC.writeProperty(SceneItemCD.PROPERTY_POSITION, GameTypes.createPointProperty(scene.getLayerPosition(layer)));
+			
+			PropertyValue sceneItemPropVal = PropertyValue.createComponentReference(sceneItemDC);
+			sceneItems.add(sceneItemPropVal);
+		}
+		dcScene.writeProperty(SceneCD.PROPERTY_SCENE_ITEMS, PropertyValue.createArray(SceneItemCD.TYPEID, sceneItems));
+		
+		designIdMap.put(scene, dcScene);
+		return dcScene;
+	}
+	
+	public static DesignComponent createTiledLayerDCFromTiledLayer(DesignDocument doc, TiledLayer layer) {
+		DesignComponent dcLayer = doc.createComponent(TiledLayerCD.TYPEID);
+		dcLayer.writeProperty(LayerCD.PROPERTY_NAME, MidpTypes.createStringValue(layer.getName()));
+		
+		DesignComponent dcImgRes = designIdMap.get(layer.getImageResource());
+		assert(dcImgRes != null);
+		
+		dcLayer.writeProperty(LayerCD.PROPERTY_IMAGE_RESOURCE, PropertyValue.createComponentReference(dcImgRes));
+		PropertyValue propTiles = GameTypes.createTilesProperty(layer.getTiles());
+		dcLayer.writeProperty(TiledLayerCD.PROPERTY_TILES, propTiles);
+				
+		designIdMap.put(layer, dcLayer);
+		return dcLayer;
+	}
+	
+	public static DesignComponent createSpriteDCFromSprite(DesignDocument doc, Sprite layer) {
+		DesignComponent dcLayer = doc.createComponent(SpriteCD.TYPEID);
+		dcLayer.writeProperty(LayerCD.PROPERTY_NAME, MidpTypes.createStringValue(layer.getName()));
+		
+		DesignComponent dcImgRes = designIdMap.get(layer.getImageResource());
+		assert(dcImgRes != null);
+		dcLayer.writeProperty(LayerCD.PROPERTY_IMAGE_RESOURCE, PropertyValue.createComponentReference(dcImgRes));
+		
+		Sequence defaultSequence = layer.getDefaultSequence();
+		DesignComponent dcDefSequence = designIdMap.get(defaultSequence);
+		assert(dcDefSequence != null);
+		dcLayer.writeProperty(SpriteCD.PROP_DEFAULT_SEQUENCE, PropertyValue.createComponentReference(dcDefSequence));
+		
+		List<PropertyValue> sequenceDCs = new ArrayList<PropertyValue>();
+		List<Sequence> sequences = layer.getSequences();
+		for (Sequence sequence : sequences) {
+			DesignComponent dcSequence = designIdMap.get(sequence);
+			assert(dcDefSequence != null);
+			PropertyValue seqPropVal = PropertyValue.createComponentReference(dcImgRes);
+			sequenceDCs.add(seqPropVal);
+		}
+		dcLayer.writeProperty(SpriteCD.PROP_SEQUENCES, PropertyValue.createArray(SequenceCD.TYPEID, sequenceDCs));
+		
+		designIdMap.put(layer, dcLayer);
+		return  dcLayer;
+	}
+	
+	public static DesignComponent createImageResourceDCFromImageResource(DesignDocument doc, ImageResource imageResource) {
+		DesignComponent dcImgRes = doc.createComponent(ImageResourceCD.TYPEID);
+		dcImgRes.writeProperty(ImageResourceCD.PROPERTY_IMAGE_URL, MidpTypes.createStringValue(imageResource.getURL().toExternalForm()));
+		dcImgRes.writeProperty(ImageResourceCD.PROPERTY_TILE_WIDTH, MidpTypes.createIntegerValue(imageResource.getCellWidth()));
+		dcImgRes.writeProperty(ImageResourceCD.PROPERTY_TILE_HEIGHT, MidpTypes.createIntegerValue(imageResource.getCellHeight()));
+		
+		designIdMap.put(imageResource, dcImgRes);
+		return dcImgRes;
+	}
+	
+	//--------------- GlobalRepositoryListener ------------------
+	
+    public void sceneAdded(final Scene scene, int index) {
+		this.document.getTransactionManager().writeAccess(new Runnable() {
+            public void run() {
+				DesignDocument doc = GameController.this.document;
+				DesignComponent sceneDC = createSceneDCFromScene(doc, scene);
+				doc.getRootComponent().addComponent(sceneDC);
+            }
+		});
+    }
+
+    public void sceneRemoved(Scene scene, int index) {
+		DesignComponent dcScene = designIdMap.remove(scene);
+		assert (dcScene != null);
+		this.document.deleteComponent(dcScene);
+    }
+
+    public void tiledLayerAdded(final TiledLayer tiledLayer, int index) {
+		this.document.getTransactionManager().writeAccess(new Runnable() {
+            public void run() {
+				DesignDocument doc = GameController.this.document;
+				DesignComponent tiledLayerDC = createTiledLayerDCFromTiledLayer(doc, tiledLayer);
+				doc.getRootComponent().addComponent(tiledLayerDC);
+            }
+		});		
+    }
+
+    public void tiledLayerRemoved(TiledLayer tiledLayer, int index) {
+		DesignComponent dcLayer = designIdMap.remove(tiledLayer);
+		assert (dcLayer != null);
+		this.document.deleteComponent(dcLayer);
+    }
+
+    public void spriteAdded(final Sprite sprite, int index) {
+		this.document.getTransactionManager().writeAccess(new Runnable() {
+            public void run() {
+				DesignDocument doc = GameController.this.document;
+				DesignComponent spriteDC = createSpriteDCFromSprite(doc, sprite);
+				doc.getRootComponent().addComponent(spriteDC);
+            }
+		});
+    }
+
+    public void spriteRemoved(Sprite sprite, int index) {
+		DesignComponent dcLayer = designIdMap.remove(sprite);
+		assert (dcLayer != null);
+		this.document.deleteComponent(dcLayer);
+    }
+
+    public void imageResourceAdded(final ImageResource imageResource) {
+		this.document.getTransactionManager().writeAccess(new Runnable() {
+            public void run() {
+				DesignDocument doc = GameController.this.document;
+				DesignComponent imgResDC = createImageResourceDCFromImageResource(doc, imageResource);
+				doc.getRootComponent().addComponent(imgResDC);
+            }
+		});
+    }
+
 }

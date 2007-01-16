@@ -66,13 +66,15 @@
 
         <folder name="components">
 
+            <file name="org-netbeans-modules-vmd-game-model-AnimatedTileCD.instance"/>
             <file name="org-netbeans-modules-vmd-game-model-GameRootCD.instance"/>
-            <file name="org-netbeans-modules-vmd-game-model-SceneCD.instance"/>
-            <file name="org-netbeans-modules-vmd-game-model-SequenceCD.instance"/>
-            <file name="org-netbeans-modules-vmd-game-model-LayerCD.instance"/>
-            <file name="org-netbeans-modules-vmd-game-model-TiledLayerCD.instance"/>
-            <file name="org-netbeans-modules-vmd-game-model-SpriteCD.instance"/>
             <file name="org-netbeans-modules-vmd-game-model-ImageResourceCD.instance"/>
+            <file name="org-netbeans-modules-vmd-game-model-LayerCD.instance"/>
+            <file name="org-netbeans-modules-vmd-game-model-SceneCD.instance"/>
+            <file name="org-netbeans-modules-vmd-game-model-SceneItemCD.instance"/>
+            <file name="org-netbeans-modules-vmd-game-model-SequenceCD.instance"/>
+            <file name="org-netbeans-modules-vmd-game-model-SpriteCD.instance"/>
+            <file name="org-netbeans-modules-vmd-game-model-TiledLayerCD.instance"/>
 
         </folder>
 

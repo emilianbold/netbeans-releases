@@ -259,7 +259,7 @@ public class SequenceContainerEditor extends JPanel implements SequenceEditingPa
 		Scene scene = GlobalRepository.getInstance().createScene("scene1");
 		
 		URL urlRock = MainView.class.getResource("res/color_tiles.png");
-		ImageResource imgRock = GlobalRepository.getImageResource(urlRock, 20, 20);
+		ImageResource imgRock = GlobalRepository.getInstance().getImageResource(urlRock, 20, 20);
 
 		Sprite rock = scene.createSprite("rock2", imgRock, 5);
 		Sequence def = rock.getDefaultSequence();
