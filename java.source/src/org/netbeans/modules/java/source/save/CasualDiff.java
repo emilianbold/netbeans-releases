@@ -278,6 +278,7 @@ public class CasualDiff {
                 output.writeTo(origText.substring(pointer, getOldPos(oldT.pid)));
                 pointer = endPos(oldT.pid);
                 printer.print(newT.pid);
+                diffInfo.put(getOldPos(oldT.pid), "Update package statement");
                 output.writeTo(printer.toString());
                 break;
         }
@@ -452,6 +453,7 @@ public class CasualDiff {
                 }
                 else {
                     printer.print(newT.name);
+                    diffInfo.put(oldT.pos, "Rename method " + oldT.name);
                     localPointer = oldT.pos + oldT.name.length();
                 }
             } else {
@@ -515,6 +517,7 @@ public class CasualDiff {
         if (nameChanged(oldT.name, newT.name)) {
             printer.print(origText.substring(localPointer, oldT.pos));
             printer.print(newT.name);
+            diffInfo.put(oldT.pos, "Rename variable " + oldT.name);
             localPointer = oldT.pos + oldT.name.length();
         }
         if (newT.init != null && oldT.init != null) {
@@ -962,6 +965,7 @@ public class CasualDiff {
             copyTo(localPointer, endPos(oldT.selected));
             printer.print(".");
             printer.print(newT.name);
+            diffInfo.put(endPos(oldT.selected) + 1, "Update reference to " + oldT.name);
             localPointer = endPos(oldT.selected) + 1 +oldT.name.length();
         }
         return localPointer;
@@ -971,6 +975,7 @@ public class CasualDiff {
         if (nameChanged(oldT.name, newT.name)) {
             copyTo(lastPrinted, getOldPos(oldT));
             printer.print(newT.name);
+            diffInfo.put(oldT.pos, "Update reference to " + oldT.name);
             return endPos(oldT);
         }
         return lastPrinted;

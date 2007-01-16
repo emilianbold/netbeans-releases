@@ -176,8 +176,7 @@ public final class ModificationResult {
      * @return  if changes are applied source looks like return string
      */
     public String getResultingSource(FileObject fileObject) throws IOException {
-        assert fileObject == null || diffs.get(fileObject) == null 
-                : "Provided fileObject is not changed or null";
+        assert fileObject == null : "Provided fileObject is null";
         StringWriter writer = new StringWriter();
         commit(fileObject, diffs.get(fileObject), writer);
         
