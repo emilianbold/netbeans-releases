@@ -113,14 +113,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     /** default logger for whole package */
     static final Logger LOG = Logger.getLogger("org.openide.loaders"); // NOI18N
 
-    /** Create new data object.
-     * <p>
-     * <b>Important notice:</b>
-     * The constructor registers this data object in DataObjectPool. The registration
-     * is currently delayed by 500 ms. After this time any other thread can obtain
-     * this data object using <code>DataObject.find(fileObject)</code> method.
-     * <p> It is recommended to eliminate time-consuming functionality 
-     * in constructors of DataObject's subclasses.
+    /** Create a new data object.
      *
      * @param pf primary file object for this data object
      * @param loader loader that created the data object
