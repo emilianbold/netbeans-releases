@@ -310,8 +310,11 @@ public final class FileUtils {
             String type = "";
             if (file.isDirectory()) {
                 if (recurse) {
-                    for(File child: file.listFiles()) {
-                        deleteFile(child, true);
+                    File [] list = file.listFiles();
+                    if(list!=null) {
+                        for(File child: list) {
+                            deleteFile(child, true);
+                        }
                     }
                 }
                 
@@ -334,8 +337,11 @@ public final class FileUtils {
     
     public static void deleteFile(File file, String mask) throws IOException {
         if (file.isDirectory()) {
-            for(File child: file.listFiles(new MaskFileFilter(mask))) {
-                deleteFile(child, mask);
+            File [] list = file.listFiles(new MaskFileFilter(mask));
+            if(list!=null) {
+                for(File child: list) {
+                    deleteFile(child, mask);
+                }
             }
         } else {
             if (file.getName().matches(mask)) {
@@ -531,12 +537,14 @@ public final class FileUtils {
         }
         
         if (file.isDirectory()) {
-            for(File child : file.listFiles()) {
-                if (!isEmpty(child)) {
-                    return false;
+            File [] list = file.listFiles();
+            if (list != null) {
+                for(File child : list) {
+                    if (!isEmpty(child)) {
+                        return false;
+                    }
                 }
             }
-            
             return true;
         }  else {
             return false;
@@ -628,9 +636,9 @@ public final class FileUtils {
         
         try {
             List<File> extracted = extract(
-                    jar, 
-                    target, 
-                    "META-INF/(?!files.list$).*", 
+                    jar,
+                    target,
+                    "META-INF/(?!files.list$).*",
                     extractionProgress);
             
             if (listFile.exists()) {
