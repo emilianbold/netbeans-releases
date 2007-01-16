@@ -149,7 +149,8 @@ public class GlobalSourcePathTest extends NbTestCase {
     public void testGlobalSourcePath () throws Exception {
         GlobalPathRegistry regs = GlobalPathRegistry.getDefault();
         GlobalSourcePath gcp = GlobalSourcePath.getDefault();
-        List<? extends PathResourceImplementation> impls = gcp.getSourcePath().getResources();
+        ClassPathImplementation cpi = ClassPathSupport.createProxyClassPathImplementation(new ClassPathImplementation[] {gcp.getSourcePath(), gcp.getUnknownSourcePath()});
+        List<? extends PathResourceImplementation> impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(0,impls.size());
         //Testing classpath registration
@@ -157,18 +158,18 @@ public class GlobalSourcePathTest extends NbTestCase {
         mcpi1.addResource(this.srcRoot1);
         ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
         regs.register(ClassPath.SOURCE,new ClassPath[]{cp1});
-        impls = gcp.getSourcePath().getResources();
+        impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(1,impls.size());
         assertEquals(srcRoot1.getURL(),impls.get(0).getRoots()[0]);
         //Testing changes in registered classpath
         mcpi1.addResource(srcRoot2);
-        impls = gcp.getSourcePath().getResources();
+        impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(2,impls.size());
         assertEquals(new FileObject[] {srcRoot1, srcRoot2},impls);
         mcpi1.removeResource(srcRoot1);
-        impls = gcp.getSourcePath().getResources();
+        impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(1,impls.size());
         assertEquals(srcRoot2.getURL(),impls.get(0).getRoots()[0]);
@@ -177,84 +178,84 @@ public class GlobalSourcePathTest extends NbTestCase {
         mcpi2.addResource(srcRoot1);
         ClassPath cp2 = ClassPathFactory.createClassPath(mcpi2);
         regs.register (ClassPath.SOURCE, new ClassPath[] {cp2});
-        impls = gcp.getSourcePath().getResources();
+        impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(new FileObject[] {srcRoot2, srcRoot1},impls);
         mcpi2.addResource(srcRoot3);
-        impls = gcp.getSourcePath().getResources();
+        impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(new FileObject[] {srcRoot2, srcRoot1, srcRoot3},impls);
         //Testing removing ClassPath
         regs.unregister(ClassPath.SOURCE,new ClassPath[] {cp2});
-        impls = gcp.getSourcePath().getResources();
+        impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(new FileObject[] {srcRoot2},impls);
         //Testing registering classpath with SFBQ
         ClassPath cp3 = ClassPathSupport.createClassPath(new FileObject[] {bootRoot1,bootRoot2});
         regs.register(ClassPath.BOOT,new ClassPath[] {cp3});
-        impls = gcp.getSourcePath().getResources();
+        impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(new FileObject[] {srcRoot2, bootSrc1},impls);
         MutableClassPathImplementation mcpi4 = new MutableClassPathImplementation ();
         mcpi4.addResource (compRoot1);
         ClassPath cp4 = ClassPathFactory.createClassPath(mcpi4);
         regs.register(ClassPath.COMPILE,new ClassPath[] {cp4});
-        impls = gcp.getSourcePath().getResources();
+        impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(new FileObject[] {srcRoot2, bootSrc1, compSrc1},impls);
         mcpi4.addResource(compRoot2);
-        impls = gcp.getSourcePath().getResources();
+        impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(new FileObject[] {srcRoot2, bootSrc1, compSrc1, compSrc2},impls);
         mcpi4.removeResource(compRoot1);
-        impls = gcp.getSourcePath().getResources();
+        impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(new FileObject[] {srcRoot2, bootSrc1, compSrc2},impls);
         regs.unregister(ClassPath.BOOT,new ClassPath[] {cp3});
-        impls = gcp.getSourcePath().getResources();
+        impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(new FileObject[] {srcRoot2, compSrc2},impls);
         //Testing listening on SFBQ.Results
         SFBQImpl.getDefault().register(compRoot2,compSrc1);
-        impls = gcp.getSourcePath().getResources();
+        impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(new FileObject[] {srcRoot2, compSrc1},impls);
         SFBQImpl.getDefault().register(compRoot2,compSrc2);
-        impls = gcp.getSourcePath().getResources();
+        impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(new FileObject[] {srcRoot2, compSrc2},impls);                
         //Test unknown source roots
         ClassPath ucp = ClassPathSupport.createClassPath(new FileObject[] {unknown1, unknown2});
         gcp.getSourceRootForBinaryRoot(unknown1.getURL(),ucp,true);
         gcp.getSourceRootForBinaryRoot(unknown2.getURL(),ucp,true);
-        impls = gcp.getSourcePath().getResources();
+        impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(new FileObject[] {srcRoot2, compSrc2, unknownSrc2},impls);
         //Test unknown source root after gc
         ucp = null;
-        gc();
-        impls = gcp.getSourcePath().getResources();
+        gc(); gc();
+        impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(new FileObject[] {srcRoot2, compSrc2},impls);
         //Test reregistration of unknown cp
         ucp = ClassPathSupport.createClassPath(new FileObject[] {unknown1, unknown2});
         gcp.getSourceRootForBinaryRoot(unknown1.getURL(),ucp,true);
         gcp.getSourceRootForBinaryRoot(unknown2.getURL(),ucp,true);
-        impls = gcp.getSourcePath().getResources();
+        impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(new FileObject[] {srcRoot2, compSrc2, unknownSrc2},impls);
         ClassPath rcp = ClassPathSupport.createClassPath(new FileObject[] {unknown1, unknown2});
         regs.register(ClassPath.COMPILE,new ClassPath[] {rcp});
-        impls = gcp.getSourcePath().getResources();
+        impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(new FileObject[] {srcRoot2, compSrc2, unknownSrc2},impls);
         ucp = null;
-        gc();
-        impls = gcp.getSourcePath().getResources();
+        gc(); gc();
+        impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(new FileObject[] {srcRoot2, compSrc2, unknownSrc2},impls);
         regs.unregister(ClassPath.COMPILE,new ClassPath[] {rcp});
-        impls = gcp.getSourcePath().getResources();
+        impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(new FileObject[] {srcRoot2, compSrc2},impls);
     }

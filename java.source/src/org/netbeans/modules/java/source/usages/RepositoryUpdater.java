@@ -124,6 +124,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     
     private final GlobalSourcePath cpImpl;
     private final ClassPath cp;
+    private final ClassPath ucp;
     private final ClassPath binCp;
     private Set<URL> scannedRoots;
     private Set<URL> scannedBinaries;
@@ -142,6 +143,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         this.cpImpl = GlobalSourcePath.getDefault();
         this.cp = ClassPathFactory.createClassPath (this.cpImpl.getSourcePath());
         this.cp.addPropertyChangeListener(this);
+        this.ucp = ClassPathFactory.createClassPath (this.cpImpl.getUnknownSourcePath());
         this.binCp = ClassPathFactory.createClassPath(this.cpImpl.getBinaryPath());
         this.registerFileSystemListener();
         this.scannedRoots = Collections.synchronizedSet(new HashSet<URL>());
@@ -659,7 +661,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             try {
                                 oldRoots = new HashSet<URL> (scannedRoots);
                                 oldBinaries = new HashSet<URL> (scannedBinaries);
-                                final List<ClassPath.Entry> entries = cp.entries();                                                                                                
+                                final List<ClassPath.Entry> entries = new LinkedList<ClassPath.Entry>();
+                                entries.addAll (cp.entries());
+                                entries.addAll (ucp.entries());
                                 final List<ClassPath.Entry> binaryEntries = binCp.entries();
                                 newBinaries = new HashSet<URL> ();
                                 for (ClassPath.Entry entry : binaryEntries) {
@@ -694,8 +698,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                     return null;
                                 }
                                 while (isDirty()) {
-                                    assert CompileWorker.this.state.isEmpty();
-                                    final List<ClassPath.Entry> entries = cp.entries();
+                                    assert CompileWorker.this.state.isEmpty();                                    
+                                    final List<ClassPath.Entry> entries = new LinkedList<ClassPath.Entry>();
+                                    entries.addAll (cp.entries());
+                                    entries.addAll (ucp.entries());                                    
                                     final List<ClassPath.Entry> binaryEntries = binCp.entries();
                                     newBinaries = new HashSet<URL> ();
                                     for (ClassPath.Entry entry : binaryEntries) {

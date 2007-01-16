@@ -35,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -61,6 +62,7 @@ public class GlobalSourcePath {
     
     private final GlobalPathRegistry gpr;
     private List<? extends PathResourceImplementation> resources;
+    private List<? extends PathResourceImplementation> unknownResources;
     private List<? extends PathResourceImplementation> binaryResources;
     private Set<ClassPath> activeCps;
     private Map<URL, SourceForBinaryQuery.Result> sourceResults;
@@ -71,6 +73,7 @@ public class GlobalSourcePath {
     
     private final SourcePathImplementation sourcePath;
     private final BinaryPathImplementation binaryPath;
+    private final UnknownSourcePathImplementation unknownSourcePath;
     
     private final Listener listener;
 
@@ -79,6 +82,7 @@ public class GlobalSourcePath {
         this.listener = new Listener ();
         this.sourcePath = new SourcePathImplementation ();
         this.binaryPath = new BinaryPathImplementation ();
+        this.unknownSourcePath = new UnknownSourcePathImplementation ();
         this.timeStamp = -1;
         this.gpr = GlobalPathRegistry.getDefault();
         this.activeCps = Collections.emptySet();
@@ -125,6 +129,10 @@ public class GlobalSourcePath {
         return this.sourcePath;
     }
     
+    public ClassPathImplementation getUnknownSourcePath () {
+        return this.unknownSourcePath;
+    }
+    
     public ClassPathImplementation getBinaryPath () {
         return this.binaryPath;
     }
@@ -133,15 +141,18 @@ public class GlobalSourcePath {
         synchronized (this) {
             this.resources = null;
             this.binaryResources = null;
+            this.unknownResources = null;
             this.timeStamp++;
         }
         this.sourcePath.firePropertyChange ();
         this.binaryPath.firePropertyChange ();
+        this.unknownSourcePath.firePropertyChange();
     }
     
     private static Result createResources (final Request r) {
         assert r != null;
         Set<PathResourceImplementation> result = new HashSet<PathResourceImplementation> ();
+        Set<PathResourceImplementation> unknownResult = new HashSet<PathResourceImplementation> ();
         Set<PathResourceImplementation> binaryResult = new HashSet<PathResourceImplementation> ();
         final Map<URL,URL[]> translatedRoots = new HashMap<URL, URL[]>();
         Set<ClassPath> newCps = new HashSet<ClassPath> ();
@@ -234,11 +245,12 @@ public class GlobalSourcePath {
         
         for (Map.Entry<URL,SourceForBinaryQuery.Result> entry : r.oldSR.entrySet()) {
             entry.getValue().removeChangeListener(r.changeListener);
-        }        
+        }                        
         for (URL unknownRoot : r.unknownRoots.keySet()) {
-            result.add (ClassPathSupport.createResource(unknownRoot));
+            unknownResult.add (ClassPathSupport.createResource(unknownRoot));
         }        
-        return new Result (r.timeStamp, new ArrayList<PathResourceImplementation> (result), new ArrayList(binaryResult), newCps,newSR,translatedRoots, r.unknownRoots);
+        return new Result (r.timeStamp, new ArrayList<PathResourceImplementation> (result), new ArrayList(binaryResult), new ArrayList<PathResourceImplementation>(unknownResult),
+                newCps,newSR,translatedRoots, r.unknownRoots);
     }    
     
     /**
@@ -351,23 +363,28 @@ public class GlobalSourcePath {
         final long timeStamp;
         final List<? extends PathResourceImplementation> resources;
         final List<? extends PathResourceImplementation> binaryResources;
+        final List<? extends PathResourceImplementation> unknownResources;
         final Set<ClassPath> newCps;
         final Map<URL, SourceForBinaryQuery.Result> newSR;
         final Map<URL, URL[]> translatedRoots;
         final Map<URL, WeakValue> unknownRoots;
         
         public Result (final long timeStamp, final List<? extends PathResourceImplementation> resources,
-            final List<? extends PathResourceImplementation> binaryResources, final Set<ClassPath> newCps,
+            final List<? extends PathResourceImplementation> binaryResources,
+            final List<? extends PathResourceImplementation> unknownResources,
+            final Set<ClassPath> newCps,
             final Map<URL, SourceForBinaryQuery.Result> newSR, final Map<URL, URL[]> translatedRoots,
             final Map<URL, WeakValue> unknownRoots) {
             assert resources != null;
             assert binaryResources != null;
+            assert unknownResources != null;
             assert newCps != null;
             assert newSR  != null;
             assert translatedRoots != null;
             this.timeStamp = timeStamp;
             this.resources = resources;
             this.binaryResources = binaryResources;
+            this.unknownResources = unknownResources;
             this.newCps = newCps;
             this.newSR = newSR;
             this.translatedRoots = translatedRoots;
@@ -406,6 +423,7 @@ public class GlobalSourcePath {
                     if (GlobalSourcePath.this.resources == null) {
                         GlobalSourcePath.this.resources = res.resources;
                         GlobalSourcePath.this.binaryResources = res.binaryResources;
+                        GlobalSourcePath.this.unknownResources = res.unknownResources;
                         GlobalSourcePath.this.activeCps = res.newCps;
                         GlobalSourcePath.this.sourceResults = res.newSR;
                         GlobalSourcePath.this.translatedRoots = res.translatedRoots;
@@ -450,6 +468,69 @@ public class GlobalSourcePath {
         }
     }
     
+    private class UnknownSourcePathImplementation implements ClassPathImplementation {
+        
+        private List<PropertyChangeListener> listeners = new CopyOnWriteArrayList<PropertyChangeListener> ();
+    
+        public List<? extends PathResourceImplementation> getResources() {
+            Request request;
+            synchronized (GlobalSourcePath.this) {
+                if (GlobalSourcePath.this.unknownResources != null) {
+                    return GlobalSourcePath.this.unknownResources;
+                }
+                request = new Request (
+                    GlobalSourcePath.this.getTimeStamp(),
+                    GlobalSourcePath.this.gpr.getPaths(ClassPath.SOURCE),
+                    GlobalSourcePath.this.gpr.getPaths(ClassPath.BOOT), 
+                    GlobalSourcePath.this.gpr.getPaths(ClassPath.COMPILE),
+                    GlobalSourcePath.this.activeCps,
+                    GlobalSourcePath.this.sourceResults,
+                    new HashMap<URL, WeakValue> (GlobalSourcePath.this.unknownRoots),
+                    GlobalSourcePath.this.listener,
+                    GlobalSourcePath.this.listener);
+            }
+            Result res = createResources (request);
+            if (GlobalSourcePath.this.debugCallBack != null) {
+                GlobalSourcePath.this.debugCallBack.run();
+            }
+            synchronized (this) {            
+                if (GlobalSourcePath.this.getTimeStamp() == res.timeStamp) {
+                    if (GlobalSourcePath.this.binaryResources == null) {
+                        GlobalSourcePath.this.resources = res.resources;
+                        GlobalSourcePath.this.binaryResources = res.binaryResources;
+                        GlobalSourcePath.this.unknownResources = res.unknownResources;
+                        GlobalSourcePath.this.activeCps = res.newCps;
+                        GlobalSourcePath.this.sourceResults = res.newSR;
+                        GlobalSourcePath.this.translatedRoots = res.translatedRoots;                    
+                        GlobalSourcePath.this.unknownRoots = res.unknownRoots;
+                    }
+                    return GlobalSourcePath.this.unknownResources;
+                }            
+                else {
+                    return res.unknownResources;
+                }
+            }
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            assert listener != null;
+            this.listeners.add (listener);
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            assert listener != null;
+            this.listeners.remove (listener);
+        }
+        
+        
+        void firePropertyChange () {        
+            PropertyChangeEvent event = new PropertyChangeEvent (this,PROP_RESOURCES,null,null);
+            for (PropertyChangeListener l : this.listeners) {
+                l.propertyChange (event);
+            }
+        }
+}
+    
     private class BinaryPathImplementation implements ClassPathImplementation {
         private List<PropertyChangeListener> listeners = new ArrayList<PropertyChangeListener>();
     
@@ -479,6 +560,7 @@ public class GlobalSourcePath {
                     if (GlobalSourcePath.this.binaryResources == null) {
                         GlobalSourcePath.this.resources = res.resources;
                         GlobalSourcePath.this.binaryResources = res.binaryResources;
+                        GlobalSourcePath.this.unknownResources = res.unknownResources;
                         GlobalSourcePath.this.activeCps = res.newCps;
                         GlobalSourcePath.this.sourceResults = res.newSR;
                         GlobalSourcePath.this.translatedRoots = res.translatedRoots;                    
