@@ -79,16 +79,16 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
     }
     
     private void saveValue(String text) {
-        if (text != null && text.length() > 0) {
+        if (text != null) {
             super.setValue(MidpTypes.createJavaCodeValue(text));
         }
     }
     
     public void customEditorOKButtonPressed() {
         String text = customEditor.getText();
-        if (text.length() > 0) {
+//        if (text.length() > 0) {
             saveValue(text);
-        }
+//        }
     }
     
     public boolean supportsDefaultValue() {
