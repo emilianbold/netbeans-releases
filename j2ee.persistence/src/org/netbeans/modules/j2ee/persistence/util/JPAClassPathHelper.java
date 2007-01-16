@@ -115,20 +115,7 @@ public class JPAClassPathHelper {
             return null;
         }
         List<URL> urls = library.getContent("classpath"); // NOI18N
-        // workaround for issue 92237
-        List<URL> localURLs = new ArrayList(urls.size());
-        for (URL url : urls) {
-            FileObject fileObject = URLMapper.findFileObject(url);
-            if (fileObject == null) {
-                continue;
-            }
-            URL localURL = URLMapper.findURL(fileObject, URLMapper.INTERNAL);
-            if (localURL == null) {
-                continue;
-            }
-            localURLs.add(localURL);
-        }
-        return ClassPathSupport.createClassPath(localURLs.toArray(new URL[localURLs.size()]));
+        return ClassPathSupport.createClassPath(urls.toArray(new URL[urls.size()]));
     }
     
     
