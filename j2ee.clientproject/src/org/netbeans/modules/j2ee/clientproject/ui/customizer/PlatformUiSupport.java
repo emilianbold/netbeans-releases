@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -158,6 +158,9 @@ public class PlatformUiSupport {
                 sourceLevel = platform.getSpecification().getVersion();
             }
             String javacSource = sourceLevel.toString();
+            // #89131: these levels are not actually distinct from 1.5.
+            if (javacSource.equals("1.6") || javacSource.equals("1.7"))
+                javacSource = "1.5";       
             String javacTarget = jdk13.compareTo(sourceLevel)>=0 ? "1.1" : javacSource;     //NOI18N
             if (!javacSource.equals(props.getProperty(AppClientProjectProperties.JAVAC_SOURCE))) {
                 props.setProperty(AppClientProjectProperties.JAVAC_SOURCE, javacSource);

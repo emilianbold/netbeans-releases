@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -240,6 +240,10 @@ public class WebProjectUtilities {
         
         Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory ());
         UpdateHelper updateHelper = ((WebProject) p).getUpdateHelper();
+        
+        // #89131: these levels are not actually distinct from 1.5.
+        if (sourceLevel != null && (sourceLevel.equals("1.6") || sourceLevel.equals("1.7")))
+            sourceLevel = "1.5";       
         PlatformUiSupport.storePlatform(ep, updateHelper, javaPlatformName, sourceLevel != null ? new SpecificationVersion(sourceLevel) : null);
         
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
@@ -465,6 +469,9 @@ public class WebProjectUtilities {
         ep.setProperty(WebProjectProperties.JAVA_SOURCE_BASED,javaSourceBased+"");
 
         UpdateHelper updateHelper = ((WebProject) p).getUpdateHelper();
+        // #89131: these levels are not actually distinct from 1.5.
+        if (sourceLevel != null && (sourceLevel.equals("1.6") || sourceLevel.equals("1.7")))
+            sourceLevel = "1.5";       
         PlatformUiSupport.storePlatform(ep, updateHelper, javaPlatformName, sourceLevel != null ? new SpecificationVersion(sourceLevel) : null);
         
         // Utils.updateProperties() prevents problems caused by modification of properties in AntProjectHelper

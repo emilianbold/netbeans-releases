@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -119,6 +119,10 @@ public final class J2eeVersionWarningPanel extends JPanel {
     public static String findWarningType(String j2eeLevel) {
         JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
         SpecificationVersion version = defaultPlatform.getSpecification().getVersion();
+        String sourceLevel = version.toString();
+        // #89131: these levels are not actually distinct from 1.5.
+        if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7"))
+            sourceLevel = "1.5";       
         
         // no warning if 1.4 is the default for j2ee14
         if (new SpecificationVersion("1.4").equals(version) && j2eeLevel.equals(J2eeModule.J2EE_14)) { // NOI18N
@@ -126,7 +130,7 @@ public final class J2eeVersionWarningPanel extends JPanel {
         }
         
         // no warning if 1.5 is the default for j2ee15
-        if (new SpecificationVersion("1.5").equals(version) && j2eeLevel.equals(J2eeModule.JAVA_EE_5)) { // NOI18N
+        if ("1.5".equals(sourceLevel) && j2eeLevel.equals(J2eeModule.JAVA_EE_5)) { // NOI18N
             return null;
         }
         

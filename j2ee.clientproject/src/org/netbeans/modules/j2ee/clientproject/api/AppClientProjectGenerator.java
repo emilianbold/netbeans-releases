@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.util.Stack;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -359,12 +360,15 @@ public class AppClientProjectGenerator {
         ep.setComment("javac.compilerargs", new String[] { // NOI18N
             "# " + NbBundle.getMessage(AppClientProjectGenerator.class, "COMMENT_javac.compilerargs"), // NOI18N
         }, false);
-//        SpecificationVersion sourceLevel = getDefaultSourceLevel();
-//        ep.setProperty("javac.source", sourceLevel.toString()); // NOI18N
-//        ep.setProperty("javac.target", sourceLevel.toString()); // NOI18N
         
-        ep.setProperty(AppClientProjectProperties.JAVAC_SOURCE, "${default.javac.source}"); // NOI18N
-        ep.setProperty(AppClientProjectProperties.JAVAC_TARGET, "${default.javac.target}"); // NOI18N
+        JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
+        SpecificationVersion v = defaultPlatform.getSpecification().getVersion();
+        String sourceLevel = v.toString();
+        // #89131: these levels are not actually distinct from 1.5.
+        if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7"))
+            sourceLevel = "1.5";       
+        ep.setProperty(AppClientProjectProperties.JAVAC_SOURCE, sourceLevel); // NOI18N
+        ep.setProperty(AppClientProjectProperties.JAVAC_TARGET, sourceLevel); // NOI18N
         
         ep.setProperty("javac.deprecation", "false"); // NOI18N
         ep.setProperty("javac.test.classpath", new String[] { // NOI18N
@@ -581,7 +585,12 @@ public class AppClientProjectGenerator {
                     if (finalPlatformName == null) {
                         finalPlatformName = JavaPlatformManager.getDefault().getDefaultPlatform().getDisplayName();
                     }
-                    PlatformUiSupport.storePlatform(ep, updateHelper, finalPlatformName, sourceLevel != null ? new SpecificationVersion(sourceLevel) : null);
+                    
+                    // #89131: these levels are not actually distinct from 1.5.
+                    String srcLevel = sourceLevel;
+                    if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7"))
+                        srcLevel = "1.5";       
+                    PlatformUiSupport.storePlatform(ep, updateHelper, finalPlatformName, srcLevel != null ? new SpecificationVersion(srcLevel) : null);
                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                     ProjectManager.getDefault().saveProject(ProjectManager.getDefault().findProject(helper.getProjectDirectory()));
                 } catch (IOException e) {

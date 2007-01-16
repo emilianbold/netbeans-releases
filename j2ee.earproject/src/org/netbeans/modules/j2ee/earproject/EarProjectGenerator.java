@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,6 +26,8 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -58,6 +60,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -89,6 +92,9 @@ public final class EarProjectGenerator {
         this.name = name;
         this.j2eeLevel = j2eeLevel;
         this.serverInstanceID = serverInstanceID;
+        // #89131: these levels are not actually distinct from 1.5.
+        if (sourceLevel != null && (sourceLevel.equals("1.6") || sourceLevel.equals("1.7")))
+            sourceLevel = "1.5";       
         this.sourceLevel = sourceLevel;
     }
     
@@ -464,13 +470,23 @@ public final class EarProjectGenerator {
         ep.setProperty(EarProjectProperties.DISPLAY_BROWSER, "true"); // NOI18N
         Deployment deployment = Deployment.getDefault();
         ep.setProperty(EarProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID(serverInstanceID));
-        ep.setProperty(EarProjectProperties.JAVAC_SOURCE, "${default.javac.source}"); //NOI18N
+        
+        String srcLevel = sourceLevel;
+        if (srcLevel == null) {
+            JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
+            SpecificationVersion v = defaultPlatform.getSpecification().getVersion();
+            srcLevel = v.toString();
+            // #89131: these levels are not actually distinct from 1.5.
+            if (srcLevel.equals("1.6") || srcLevel.equals("1.7"))
+                srcLevel = "1.5";       
+        }
+        ep.setProperty(EarProjectProperties.JAVAC_SOURCE, srcLevel); //NOI18N
         ep.setProperty(EarProjectProperties.JAVAC_DEBUG, "true"); // NOI18N
         ep.setProperty(EarProjectProperties.JAVAC_DEPRECATION, "false"); // NOI18N
         
         //xxx Default should be 1.2
         //http://projects.netbeans.org/buildsys/j2se-project-ui-spec.html#Build_Compiling_Sources
-        ep.setProperty(EarProjectProperties.JAVAC_TARGET, "${default.javac.target}"); //NOI18N
+        ep.setProperty(EarProjectProperties.JAVAC_TARGET, srcLevel); //NOI18N
         
         ep.setProperty(EarProjectProperties.BUILD_DIR, DEFAULT_BUILD_DIR);
         ep.setProperty(EarProjectProperties.BUILD_ARCHIVE_DIR, "${"+EarProjectProperties.BUILD_DIR+"}/jar"); // NOI18N
@@ -530,8 +546,12 @@ public final class EarProjectGenerator {
             public void run() {
                 try {
                     EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    ep.setProperty(EarProjectProperties.JAVAC_SOURCE, sourceLevel);
-                    ep.setProperty(EarProjectProperties.JAVAC_TARGET, sourceLevel);
+                    // #89131: these levels are not actually distinct from 1.5.
+                    String srcLevel = sourceLevel;
+                    if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7"))
+                        srcLevel = "1.5";       
+                    ep.setProperty(EarProjectProperties.JAVAC_SOURCE, srcLevel);
+                    ep.setProperty(EarProjectProperties.JAVAC_TARGET, srcLevel);
                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                     ProjectManager.getDefault().saveProject(ProjectManager.getDefault().findProject(helper.getProjectDirectory()));
                 } catch (IOException e) {

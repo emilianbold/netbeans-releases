@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -56,10 +56,6 @@ import org.w3c.dom.NodeList;
  * @author tzezula
  */
 public class PlatformUiSupport {
-    
-    private static final String DEFAULT_JAVAC_TARGET = "${default.javac.target}";  //NOI18N
-    private static final String DEFAULT_JAVAC_SOURCE = "${default.javac.source}";  //NOI18N
-    
     
     private PlatformUiSupport() {
     }
@@ -126,9 +122,7 @@ public class PlatformUiSupport {
                 String newTargetValue;
                 String newSourceValue;
                 if (sourceLevel == null || sourceLevel.equals (platformVersion)){
-                    //Try to keep the DEFAULT_JAVAC_TARGET and DEFAULT_JAVAC_TARGET if possible
-                    newTargetValue = DEFAULT_JAVAC_TARGET;
-                    newSourceValue = DEFAULT_JAVAC_SOURCE;
+                    newTargetValue = newSourceValue = getDefaultSourceLevel(platform);
                 }
                 else {
                     newTargetValue = newSourceValue = sourceLevel.toString();
@@ -172,8 +166,11 @@ public class PlatformUiSupport {
                 }
                 if (sourceLevel == null) {
                     sourceLevel = platform.getSpecification().getVersion();
-                }                
+                }
                 String javacSource = sourceLevel.toString();
+                // #89131: these levels are not actually distinct from 1.5.
+                if (javacSource.equals("1.6") || javacSource.equals("1.7"))
+                    javacSource = "1.5";       
                 if (!javacSource.equals(props.getProperty(EjbJarProjectProperties.JAVAC_SOURCE))) {                    
                     props.setProperty (EjbJarProjectProperties.JAVAC_SOURCE, javacSource);
                 }
@@ -533,5 +530,15 @@ public class PlatformUiSupport {
                         changeOption)) == changeOption;
         }
     }
-    
+
+    private static String getDefaultSourceLevel(JavaPlatform platform) {
+        SpecificationVersion v = platform.getSpecification().getVersion();
+        String javacSource = v.toString();
+        // #89131: these levels are not actually distinct from 1.5.
+        if (javacSource.equals("1.6") || javacSource.equals("1.7"))
+            javacSource = "1.5";       
+
+        return javacSource;
+    }
+
 }
