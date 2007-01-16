@@ -19,6 +19,7 @@
 
 package gui.action;
 
+import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -64,18 +65,16 @@ public class OpenFormFile extends OpenFilesNoCloneableEditor {
     
     @Override
     protected void initialize() {
+        EditorOperator.closeDiscardAll();
         // don't measure paint events from StatusLine
         repaintManager().setRegionFilter(STATUSLINE_FILTER);
-
-        super.initialize();
     }
 
     @Override
     protected void shutdown() {
+        EditorOperator.closeDiscardAll();
         // reset filter
         repaintManager().setRegionFilter(null);
-        
-        super.shutdown();
     }
     
     public ComponentOperator open(){

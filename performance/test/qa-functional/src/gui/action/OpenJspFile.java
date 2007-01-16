@@ -33,8 +33,6 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  */
 public class OpenJspFile extends OpenFiles {
 
-    private static final String WEB_PAGES = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.Bundle", "LBL_Node_DocBase");
-    
     /**
      * Creates a new instance of OpenFiles
      * @param testName the name of the test
@@ -66,11 +64,11 @@ public class OpenJspFile extends OpenFiles {
     }
     
     public void prepare(){
-        this.openNode = new Node(new ProjectsTabOperator().getProjectRootNode(fileProject),WEB_PAGES + '|' + fileName);
+        this.openNode = new Node(new ProjectsTabOperator().getProjectRootNode(fileProject),gui.Utilities.WEB_PAGES + '|' + fileName);
         this.openNode.select();
         
         if (this.openNode == null) {
-            throw new Error("Cannot find node [" + WEB_PAGES + '|' + fileName + "] in project [" + fileProject + "]");
+            throw new Error("Cannot find node [" + openNode.getPath() + "] in project [" + fileProject + "]");
         }
         log("========== Open file path ="+this.openNode.getPath());
     }

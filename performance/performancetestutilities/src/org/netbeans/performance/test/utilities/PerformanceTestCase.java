@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -438,7 +438,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
                 }catch(Exception e){
                     e.printStackTrace(getLog());
-                    getScreenshot("measure");
+                    getScreenshot("exception_during_close");
                     exceptionDuringMeasurement = e;
                 }finally{ // finally for initialize(), shutdown(), closeAllDialogs()
                     // XXX export results?
@@ -815,7 +815,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     protected void waitNoEvent(long time) {
         if(repeat_memory!=-1){
             try {
-                this.wait(time);
+                Thread.currentThread().wait(time);
             } catch(Exception exc){
                 log("Exception rises during waiting " + time + " ms");
                 exc.printStackTrace(getLog());

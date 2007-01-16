@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -115,7 +115,7 @@ public class OpenFiles extends org.netbeans.performance.test.utilities.Performan
         this.openNode = new Node(new ProjectsTabOperator().getProjectRootNode(fileProject), gui.Utilities.SOURCE_PACKAGES + '|' +  filePackage + '|' + fileName);
         
         if (this.openNode == null) {
-            throw new Error ("Cannot find node [" + gui.Utilities.SOURCE_PACKAGES + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
+            throw new Error ("Cannot find node [" + openNode.getPath() + "] in project [" + fileProject + "]");
         }
         log("========== Open file path ="+this.openNode.getPath());
     }
@@ -123,14 +123,16 @@ public class OpenFiles extends org.netbeans.performance.test.utilities.Performan
     public ComponentOperator open(){
         JPopupMenuOperator popup =  this.openNode.callPopup();
         if (popup == null) {
-            throw new Error ("Cannot get context menu for node ["+ gui.Utilities.SOURCE_PACKAGES + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
+            throw new Error ("Cannot get context menu for node ["+ openNode.getPath() + "] in project [" + fileProject + "]");
         }
         log("------------------------- after popup invocation ------------");
+        
         try {
             popup.pushMenu(this.menuItem);
         }
         catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
-            throw new Error ("Cannot push menu item "+this.menuItem+" of node [" + gui.Utilities.SOURCE_PACKAGES + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
+            tee.printStackTrace(getLog());
+            throw new Error ("Cannot push menu item ["+this.menuItem+"] of node [" + openNode.getPath() + "] in project [" + fileProject + "]");
         }
         log("------------------------- after open ------------");
         return new EditorOperator(this.fileName);
