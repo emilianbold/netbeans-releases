@@ -225,10 +225,10 @@ public class FileManagerTest extends TestCase {
 	    // Create archive provider
             archiveProvider = CachingArchiveProvider.getDefault();
 	    
-	    rtJarArchive = archiveProvider.getArchive( rtFile, true );
-	    rtFolderArchive = archiveProvider.getArchive( rtFolder, true );
-	    srcZipArchive = archiveProvider.getArchive( srcFile, true );
-	    srcFolderArchive = archiveProvider.getArchive( srcFolder, true );
+	    rtJarArchive = archiveProvider.getArchive( rtFile.toURI().toURL(), true );
+	    rtFolderArchive = archiveProvider.getArchive( rtFolder.toURI().toURL(), true );
+	    srcZipArchive = archiveProvider.getArchive( srcFile.toURI().toURL(), true );
+	    srcFolderArchive = archiveProvider.getArchive( srcFolder.toURI().toURL(), true );
 	    	    	    
         }
      }
