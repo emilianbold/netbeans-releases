@@ -13,12 +13,11 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.spi.viewmodel;
-
 
 /**
  * Used by various data models if data model is asked to resolve node
@@ -34,7 +33,8 @@ public class UnknownTypeException extends Exception {
      * @param node a node of unknown type
      */
     public UnknownTypeException (Object node) {
-        super (node.toString ());
+        super (node.toString() + " [" + node.getClass() + ']'); // NOI18N
     }
+    
 }
 
