@@ -25,6 +25,7 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.VariableTree;
 import java.io.File;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
@@ -38,7 +39,8 @@ import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileUtil;
 
 /**
- *
+ * Tests modifiers changes.
+ * 
  * @author Pavel Flaska
  */
 public class ModifiersTest extends GeneratorTest {
@@ -53,6 +55,13 @@ public class ModifiersTest extends GeneratorTest {
         suite.addTestSuite(ModifiersTest.class);
 //        suite.addTest(new ModifiersTest("testChangeToFinalLocVar"));
 //        suite.addTest(new ModifiersTest("testAddClassAbstract"));
+//        suite.addTest(new ModifiersTest("testMethodMods1"));
+//        suite.addTest(new ModifiersTest("testMethodMods2"));
+//        suite.addTest(new ModifiersTest("testMethodMods3"));
+//        suite.addTest(new ModifiersTest("testMethodMods4"));
+//        suite.addTest(new ModifiersTest("testMethodMods5"));
+//        suite.addTest(new ModifiersTest("testMethodMods6"));
+//        suite.addTest(new ModifiersTest("testMethodMods7"));
         return suite;
     }
     
@@ -134,6 +143,312 @@ public class ModifiersTest extends GeneratorTest {
                 Set<Modifier> s = new HashSet<Modifier>(mods.getFlags());
                 s.add(Modifier.ABSTRACT);
                 workingCopy.rewrite(mods, make.Modifiers(s));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * Original:
+     * 
+     * void method() {
+     * }
+     * 
+     * Result:
+     * 
+     * public static void method() {
+     * }
+     */
+    public void testMethodMods1() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package hierbas.del.litoral;\n\n" +
+                "import java.io.*;\n\n" +
+                "public class Test {\n" +
+                "    void method() {\n" +
+                "    }\n" +
+                "}\n"
+                );
+        String golden =
+                "package hierbas.del.litoral;\n\n" +
+                "import java.io.*;\n\n" +
+                "public class Test {\n" +
+                "    public static void method() {\n" +
+                "    }\n" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                
+                // finally, find the correct body and rewrite it.
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                ModifiersTree mods = method.getModifiers();
+                workingCopy.rewrite(mods, make.Modifiers(EnumSet.of(Modifier.PUBLIC, Modifier.STATIC)));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * Original:
+     * 
+     * public static void method() {
+     * }
+     * 
+     * Result:
+     * 
+     * void method() {
+     * }
+     */
+    public void testMethodMods2() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package hierbas.del.litoral;\n\n" +
+                "import java.io.*;\n\n" +
+                "public class Test {\n" +
+                "    public static void method() {\n" +
+                "    }\n" +
+                "}\n"
+                );
+        String golden =
+                "package hierbas.del.litoral;\n\n" +
+                "import java.io.*;\n\n" +
+                "public class Test {\n" +
+                "    void method() {\n" +
+                "    }\n" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                
+                // finally, find the correct body and rewrite it.
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                ModifiersTree mods = method.getModifiers();
+                workingCopy.rewrite(mods, make.Modifiers(Collections.<Modifier>emptySet()));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * Original:
+     * 
+     * Test() {
+     * }
+     * 
+     * Result:
+     * 
+     * public Test() {
+     * }
+     */
+    public void testMethodMods3() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package hierbas.del.litoral;\n\n" +
+                "import java.io.*;\n\n" +
+                "public class Test {\n" +
+                "    Test() {\n" +
+                "    }\n" +
+                "}\n"
+                );
+        String golden =
+                "package hierbas.del.litoral;\n\n" +
+                "import java.io.*;\n\n" +
+                "public class Test {\n" +
+                "    public Test() {\n" +
+                "    }\n" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                
+                // finally, find the correct body and rewrite it.
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(0);
+                ModifiersTree mods = method.getModifiers();
+                workingCopy.rewrite(mods, make.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC)));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * Original:
+     * 
+     * public Test() {
+     * }
+     * 
+     * Result:
+     * 
+     * Test() {
+     * }
+     */
+    public void testMethodMods4() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package hierbas.del.litoral;\n\n" +
+                "import java.io.*;\n\n" +
+                "public class Test {\n" +
+                "    public Test() {\n" +
+                "    }\n" +
+                "}\n"
+                );
+        String golden =
+                "package hierbas.del.litoral;\n\n" +
+                "import java.io.*;\n\n" +
+                "public class Test {\n" +
+                "    Test() {\n" +
+                "    }\n" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                
+                // finally, find the correct body and rewrite it.
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(0);
+                ModifiersTree mods = method.getModifiers();
+                workingCopy.rewrite(mods, make.Modifiers(Collections.<Modifier>emptySet()));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    /**
+     * Original:
+     * 
+     * public static void method() {
+     * }
+     * 
+     * Result:
+     * 
+     * static void method() {
+     * }
+     */
+    
+    public void testMethodMods5() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package hierbas.del.litoral;\n\n" +
+                "import java.io.*;\n\n" +
+                "public class Test {\n" +
+                "    public static void method() {\n" +
+                "    }\n" +
+                "}\n"
+                );
+        String golden =
+                "package hierbas.del.litoral;\n\n" +
+                "import java.io.*;\n\n" +
+                "public class Test {\n" +
+                "    static void method() {\n" +
+                "    }\n" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                
+                // finally, find the correct body and rewrite it.
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                ModifiersTree mods = method.getModifiers();
+                workingCopy.rewrite(mods, make.Modifiers(Collections.<Modifier>singleton(Modifier.STATIC)));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * Original:
+     * 
+     * public Test() {
+     * }
+     * 
+     * Result:
+     * 
+     * protected Test() {
+     * }
+     */
+    public void testMethodMods6() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package hierbas.del.litoral;\n\n" +
+                "import java.io.*;\n\n" +
+                "public class Test {\n" +
+                "    public Test() {\n" +
+                "    }\n" +
+                "}\n"
+                );
+        String golden =
+                "package hierbas.del.litoral;\n\n" +
+                "import java.io.*;\n\n" +
+                "public class Test {\n" +
+                "    protected Test() {\n" +
+                "    }\n" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                
+                // finally, find the correct body and rewrite it.
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(0);
+                ModifiersTree mods = method.getModifiers();
+                workingCopy.rewrite(mods, make.Modifiers(Collections.<Modifier>singleton(Modifier.PROTECTED)));
             }
             
             public void cancel() {
