@@ -44,6 +44,7 @@ import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Position;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -148,6 +149,13 @@ public class CasualDiff {
 	    }
 	}
         return result;
+    }
+    
+    private int endPos(List<? extends JCTree> trees) {
+        if (trees.isEmpty())
+            return -1;
+        JCTree tree;
+        return endPos(trees.get(trees.size()-1));
     }
 
     protected void diffTopLevel(JCCompilationUnit oldT, JCCompilationUnit newT) {
@@ -420,17 +428,49 @@ public class CasualDiff {
         return bounds[1];
     }
 
+    private boolean hasModifiers(JCModifiers mods) {
+        return mods != null && (!mods.getFlags().isEmpty() || !mods.getAnnotations().isEmpty());
+    }
+    
     protected int diffMethodDef(JCMethodDecl oldT, JCMethodDecl newT, int[] bounds) {
         int localPointer = bounds[0];
-        if (oldT.mods != newT.mods) {
-            if (newT.mods.toString().length() > 0) {
+        // match modifiers and annotations
+        if (!matchModifiers(oldT.mods, newT.mods)) {
+            // if new tree has modifiers, print them
+            if (hasModifiers(newT.mods)) {
                 localPointer = diffModifiers(oldT.mods, newT.mods, oldT, localPointer);
             } else {
+                // there are no new modifiers, just skip after existing. --
+                // endPos of modifiers are not usable, we have to remove also
+                // space. Go to return type in case of method, in case of
+                // constructor use whole tree start.
                 int oldPos = getOldPos(oldT.mods);
                 printer.print(origText.substring(localPointer, oldPos));
-                localPointer = getOldPos(oldT.restype);
+                localPointer = oldT.restype != null ? getOldPos(oldT.restype) : oldT.pos;
             }
         }
+        // compute the position for type parameters - if type param is empty,
+        // use in case of
+        // i) method - start position of return type,
+        // ii) constructor - start position of tree - i.e. first token after
+        //                   modifiers.
+        int pos = oldT.typarams.isEmpty() ? 
+            oldT.restype != null ?
+                getOldPos(oldT.restype) : 
+                oldT.pos : 
+            getOldPos(oldT.typarams.head);
+        
+        if (newT.typarams.nonEmpty() || listsMatch(oldT.typarams, newT.typarams)) {
+            copyTo(localPointer, pos);
+        }
+        VeryPretty locBuf = new VeryPretty(context);
+        localPointer = diffParameterList(oldT.typarams,
+                newT.typarams,
+                oldT.typarams.isEmpty() || newT.typarams.isEmpty(),
+                pos,
+                locBuf
+        );
+        printer.print(locBuf.toString());
         if (oldT.restype != null) { // means constructor, skip return type gen.
             int[] restypeBounds = getBounds(oldT.restype);
             copyTo(localPointer, restypeBounds[0]);
@@ -460,7 +500,6 @@ public class CasualDiff {
                 printer.print(origText.substring(localPointer, localPointer = (oldT.pos + oldT.name.length())));
             }
         }
-        diffParameterList(oldT.typarams, newT.typarams, posHint, ListType.TYPE_PARAMETER);
         if (oldT.params.isEmpty()) {
             // compute the position. Find the parameters closing ')', its
             // start position is important for us. This is used when 
@@ -1442,6 +1481,7 @@ public class CasualDiff {
     
     /**
      * Diff a ordered list for differences.
+     * REMOVE - use printing 
      */
     protected void diffParameterList(List<? extends JCTree> oldList, 
                                      List<? extends JCTree> newList,
@@ -1508,6 +1548,80 @@ public class CasualDiff {
                     break;
             }
         }
+    }
+    
+    /**
+     * Diff two lists of parameters separated by comma. It is used e.g.
+     * from type parameters and method parameters.
+     * 
+     */
+    protected int diffParameterList(
+            List<? extends JCTree> oldList,
+            List<? extends JCTree> newList,
+            boolean printParen,
+            int pos,
+            VeryPretty buf)
+    {
+        if (oldList == newList || (oldList.isEmpty() && newList.isEmpty()))
+            return pos; // they match perfectly or no need to do anything
+        
+        assert oldList != null && newList != null;
+        
+        if (newList.isEmpty()) {
+            int endPos = endPos(oldList);
+            if (printParen) {
+                tokenSequence.move(endPos);
+                TokenUtilities.moveFwdToToken(tokenSequence, endPos, JavaTokenId.GT);
+                tokenSequence.moveNext();
+                endPos = tokenSequence.offset();
+                if (!PositionEstimator.nonRelevant.contains(tokenSequence.token()))
+                    buf.print(" "); // use options, if mods should be at new line
+            }
+            return endPos;
+        }
+        ListMatcher<JCExpression> matcher = ListMatcher.<JCExpression>instance(
+                (List<JCExpression>) oldList, 
+                (List<JCExpression>) newList
+        );
+        if (!matcher.match()) {
+            // nothing in the list, no need to print and nothing was printed
+            return pos; 
+        }
+        ResultItem<JCExpression>[] result = matcher.getResult();
+        if (printParen && oldList.isEmpty()) {
+            buf.print(JavaTokenId.LT.fixedText());
+        }
+        
+        for (int index = 0, j = 0; j < result.length; j++) {
+            ResultItem<JCExpression> item = result[j];
+            switch (item.operation) {
+                // insert new element
+                case INSERT:
+                    if (index++ > 0) buf.print(",");
+                    buf.print(item.element);
+                    break;
+                // just copy existing element
+                case NOCHANGE:
+                    if (index++ > 0) buf.print(",");
+                    int[] bounds = getBounds(item.element);
+                    tokenSequence.move(bounds[0]);
+                    TokenUtilities.movePrevious(tokenSequence, bounds[0]);
+                    tokenSequence.moveNext();
+                    int start = tokenSequence.offset();
+                    TokenUtilities.moveNext(tokenSequence, bounds[1]);
+                    int end = tokenSequence.offset();
+                    copyTo(start, end, buf);
+                    break;
+                // modification and deletion are ignored.
+                default: 
+                    break;
+            }
+        }
+        if (printParen && oldList.isEmpty()) {
+            buf.print(JavaTokenId.GT.fixedText());
+            buf.print(" "); // part of options?
+        }
+        return oldList.isEmpty() ? pos : endPos(oldList);
     }
     
     /**
@@ -2252,6 +2366,10 @@ public class CasualDiff {
 
     private void copyTo(int from, int to) {
         printer.print(origText.substring(from, to));
+    }
+    
+    private void copyTo(int from, int to, VeryPretty loc) {
+        loc.print(origText.substring(from, to));
     }
     
     private static class Line {
