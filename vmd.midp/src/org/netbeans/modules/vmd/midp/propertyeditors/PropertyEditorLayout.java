@@ -107,9 +107,9 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
     
     public void setPropertyValue(PropertyValue value) {
         if (isCurrentValueANull() || value == null) {
-            customEditor.setLayoutDefault(true);
+            customEditor.setValue(0);
         } else {
-            customEditor.setConstant(MidpTypes.getInteger(value));
+            customEditor.setValue(MidpTypes.getInteger(value));
         }
         radioButton.setSelected(!isCurrentValueAUserCodeType());
     }
@@ -363,6 +363,15 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
             }
             
             return layouts;
+        }
+        
+        public void setValue(int value) {
+            if (value == 0) {
+                defaultCheckBox.setSelected(true);
+                itemStateChanged(new ItemEvent(defaultCheckBox, ItemEvent.ITEM_STATE_CHANGED, null, ItemEvent.SELECTED));
+            } else {
+                setConstant(value);
+            }
         }
         
         public int getBitMask() {
