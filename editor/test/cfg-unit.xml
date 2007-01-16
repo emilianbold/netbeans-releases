@@ -31,6 +31,17 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="editor unit test config">
 
+    <testbag testattribs="stable" executor="code" name="editor">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/modules/editor/AnnotationLoadingTest.class"/>
+                <include name="org/netbeans/modules/editor/AnnotationsUnitTestSuite.class"/>
+                <include name="org/netbeans/modules/editor/DocumentUnitTestSuite.class"/>
+                <include name="org/netbeans/modules/editor/openide/*.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
     <testbag testattribs="document" executor="code" name="document_testbag">
         <testset dir="unit/src">
             <patternset>
@@ -50,6 +61,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="failing" executor="code" name="testbag_2">
         <testset dir="unit/src">
             <patternset>
+                <include name="org/netbeans/modules/editor/options/BaseOptionsDeadlock92449Test.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -61,17 +73,6 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src"/>
     </testbag>
 
-    <testbag testattribs="dev" executor="code" name="Developers' Tests">
-        <testset dir="unit/src">
-            <patternset>
-                <include name="org/netbeans/modules/editor/AnnotationLoadingTest.class"/>
-                <include name="org/netbeans/modules/editor/AnnotationsUnitTestSuite.class"/>
-                <include name="org/netbeans/modules/editor/DocumentUnitTestSuite.class"/>
-                <include name="org/netbeans/modules/editor/openide/*.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
     <executor name="code" antfile="build-unit.xml" target="run-unit-test" default="true"/>
     <compiler name="unit-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
     

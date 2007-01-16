@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="devu">
         <antcall target="all">
             <param name="xtest.testtype" value="unit"/>
-            <param name="xtest.attribs" value="dev"/>
+            <param name="xtest.attribs" value="stable"/>
         </antcall>
     </target>
     
