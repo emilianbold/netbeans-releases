@@ -24,6 +24,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.openide.nodes.Node;
@@ -56,7 +57,7 @@ public class RegisterMBeanAction extends NodeAction {
     private static final String CONSTRUCTOR_COMMENTS = "// TODO Replace {0} Constructor parameters with valid values\n";// NOI18N
     private static final String REFERENCE_COMMENTS = "// TODO provide a {0} reference to StandardMBean constructor\n";// NOI18N
     private static final String MBEAN_COMMENTS = "// TODO provide a {0} reference to registerMBean\n";// NOI18N
-
+    
     /**
      * Creates a new instance of AddAttrAction
      */
@@ -92,11 +93,11 @@ public class RegisterMBeanAction extends NodeAction {
         try {
             // show configuration dialog
             // when dialog is canceled, escape the action
-            RegisterMBeanPanel cfg = new RegisterMBeanPanel(nodes[0]);
+            final RegisterMBeanPanel cfg = new RegisterMBeanPanel(nodes[0]);
             if (!cfg.configure()) {
                 return;
             }
-            StringBuffer methodCall = new StringBuffer();
+            final StringBuffer methodCall = new StringBuffer();
             
             methodCall.append(REGISTRATION_1);
             
@@ -109,7 +110,7 @@ public class RegisterMBeanAction extends NodeAction {
                 imports.add(className);
                 if(cfg.getExecutableConstructor().getParameters().size() > 0) {
                     MessageFormat ctrFormat =
-                    new MessageFormat(CONSTRUCTOR_COMMENTS);
+                            new MessageFormat(CONSTRUCTOR_COMMENTS);
                     Object[] arg = {WizardHelpers.getClassName(className)};
                     methodCall.append(ctrFormat.format(arg));
                 }
@@ -141,8 +142,8 @@ public class RegisterMBeanAction extends NodeAction {
                     itf = itf + ".class";
                 }
                 methodCall.append("new StandardMBean(" // NOI18N
-                       + (ctr == null ? null : "new " + ctr) + ",\n"
-                       + itf);
+                        + (ctr == null ? null : "new " + ctr) + ",\n"
+                        + itf);
                 
                 if(cfg.isMXBean())
                     methodCall.append(", true");
@@ -164,25 +165,35 @@ public class RegisterMBeanAction extends NodeAction {
             JavaModelHelper.addImports(imports, cfg.getAgentJavaSource());
             
             // Generate code
-            DataObject dob = cfg.getDataObject();
-            EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
-            JEditorPane pane = ec.getOpenedPanes()[0];
-            int pos = pane.getCaretPosition();
-            Document document = pane.getDocument();
-            IndentEngine eng = IndentEngine.find(document);
-            StringWriter textWriter = new StringWriter();
-            Writer indentWriter = eng.createWriter(document, pos, textWriter);
+            Runnable doUpdateCode = new Runnable() {
+                public void run() {
+                    try {
+                        DataObject dob = cfg.getDataObject();
+                        EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
+                        JEditorPane pane = ec.getOpenedPanes()[0];
+                        int pos = pane.getCaretPosition();
+                        Document document = pane.getDocument();
+                        IndentEngine eng = IndentEngine.find(document);
+                        StringWriter textWriter = new StringWriter();
+                        Writer indentWriter = eng.createWriter(document, pos, textWriter);
+                        
+                        indentWriter.write(methodCall.toString());
+                        indentWriter.close();
+                        String textToInsert = textWriter.toString();
+                        
+                        try {
+                            document.insertString(pos, textToInsert, null);
+                        } catch (BadLocationException badLoc) {
+                            document.insertString(pos + 1, textToInsert, null);
+                        }
+                    }catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
             
-            indentWriter.write(methodCall.toString());
-            indentWriter.close();
-            String textToInsert = textWriter.toString();
-            
-            try {
-                document.insertString(pos, textToInsert, null);
-            } catch (BadLocationException badLoc) {
-                document.insertString(pos + 1, textToInsert, null);
-            }
-            
+            SwingUtilities.invokeLater(doUpdateCode);
+  
         } catch (Exception e) {
             e.printStackTrace();
         }
