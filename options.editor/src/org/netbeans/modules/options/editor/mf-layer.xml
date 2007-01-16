@@ -329,7 +329,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="originalFile" stringvalue="Actions/Edit/bookmark-toggle.instance"/>
                 </file>
                 <file name="goto"/>
-                <file name="goto-delcalaration"/>
+                <file name="goto-declaration"/>
                 <file name="goto-source"/>
                 <file name="goto-super-implementation"/>
                 <file name="goto-help"/>
