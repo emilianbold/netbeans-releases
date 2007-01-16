@@ -29,7 +29,7 @@ public class MethodTest1 {
 
     private static void firstMethod() {
     }
-    
+
     public int druhaMetoda() {
         return 0;
     }
@@ -54,7 +54,7 @@ public class MethodTest1 {
         return;
     }
     
-    private void fifthMethod(String d) throws IllegalAccessError, IllegalArgumentException, java.lang.IllegalMonitorStateException {
+    private void fifthMethod(String d) throws  IllegalAccessError, IllegalArgumentException, java.lang.IllegalMonitorStateException {
         // three exceptions thrown
     }
     
