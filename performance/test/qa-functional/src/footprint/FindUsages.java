@@ -13,19 +13,20 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package footprint;
 
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 
 import org.netbeans.junit.ide.ProjectSupport;
@@ -76,9 +77,9 @@ public class FindUsages extends MemoryFootprintTestCase {
         Node filenode = new Node(new SourcePackagesNode("jEdit"), "org.gjt.sp.jedit" + "|" + "jEdit.java");
         filenode.callPopup().pushMenuNoBlock("Find Usages");
         
-        WizardOperator findusagesdialog = new WizardOperator("Find Usages");
+        NbDialogOperator findusagesdialog = new NbDialogOperator("Find Usages");
         new JCheckBoxOperator(findusagesdialog,"Search in Comments").setSelected(true);
-        findusagesdialog.next();
+        new JButtonOperator(findusagesdialog,"Find").push();
         
         return new TopComponentOperator("Usages");
     }

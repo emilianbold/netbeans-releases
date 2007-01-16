@@ -13,16 +13,17 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package footprint;
 
+import java.io.PrintStream;
 import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
@@ -107,23 +108,19 @@ public class RefactoringRename extends MemoryFootprintTestCase {
         Node filenode = new Node(packagenode, rename_from);
         filenode.callPopup().pushMenuNoBlock("Refactor|Rename...");
         
-        WizardOperator renamedialog = new WizardOperator("Rename");
-        
+        NbDialogOperator renamedialog = new NbDialogOperator("Rename  " + rename);
         
         JTextFieldOperator txtfNewName = new JTextFieldOperator(renamedialog);
+        JButtonOperator btnRefactor = new JButtonOperator(renamedialog,"Refactor");
         
         // if the project exists, try to generate new name
-        int iter = 0;
-        while(!renamedialog.btNext().isEnabled() && iter < 5){
-            rename_to = rename_to+"1";
-            log("... rename to  " + rename_to);
-            txtfNewName.clearText();
-            txtfNewName.typeText(rename_to);
-            iter++;
-        }
-        new JCheckBoxOperator(renamedialog,"Apply Rename on Comments").changeSelection(true);
-        renamedialog.next();
+        rename_to = rename_to+"1";
+        log("    ... rename to  " + rename_to);
+        txtfNewName.clearText();
+        txtfNewName.typeText(rename_to);
         
+        new JCheckBoxOperator(renamedialog,"Apply Rename on Comments").changeSelection(true);
+        btnRefactor.push();
         
         TopComponentOperator refactoringwindow = new TopComponentOperator("Refactoring");
         
@@ -140,7 +137,12 @@ public class RefactoringRename extends MemoryFootprintTestCase {
     }
     
     public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new RefactoringRename("measureMemoryFooprint"));
+        junit.textui.TestRunner.run(new RefactoringRename("measureMemoryFootprint"));
     }
     
+    @Override
+    public PrintStream getLog() {
+        return System.out;
+    }
+
 }
