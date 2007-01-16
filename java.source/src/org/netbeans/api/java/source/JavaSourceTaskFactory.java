@@ -29,9 +29,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
+import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.openide.filesystems.FileObject;
-
-//because of Javadoc:
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.LookupBasedJavaSourceTaskFactory;
@@ -152,7 +151,9 @@ public abstract class JavaSourceTaskFactory {
             for (FileObject a : addedFiles) {
                 if (a == null)
                     continue;
-                
+                if (!a.isValid()) {
+                    continue;
+                }
                 JavaSource js = JavaSource.forFileObject(a);
                 
                 if (js != null) {
@@ -175,6 +176,8 @@ public abstract class JavaSourceTaskFactory {
         for (Entry<JavaSource, CancellableTask<CompilationInfo>> e : toAdd.entrySet()) {
             try {
                 ACCESSOR2.addPhaseCompletionTask(e.getKey(), e.getValue(), phase, priority);
+            } catch (FileObjects.InvalidFileException ie) {
+                LOG.info("JavaSource.addPhaseCompletionTask called on deleted file");       //NOI18N
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
