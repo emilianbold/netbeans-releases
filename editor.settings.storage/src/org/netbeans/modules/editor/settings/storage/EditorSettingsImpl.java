@@ -36,7 +36,6 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.api.FontColorSettingsFactory;
 import org.netbeans.modules.editor.settings.storage.api.KeyBindingSettingsFactory;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
@@ -160,10 +159,12 @@ public class EditorSettingsImpl extends EditorSettings {
         if (currentFontColorProfile == null) {
             FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
             FileObject fo = fs.findResource (EDITORS_FOLDER);
-            currentFontColorProfile = (String) fo.getAttribute 
-                (FATTR_CURRENT_FONT_COLOR_PROFILE);
-            if (currentFontColorProfile == null)
+            if (fo != null) {
+                currentFontColorProfile = (String) fo.getAttribute(FATTR_CURRENT_FONT_COLOR_PROFILE);
+            }
+            if (currentFontColorProfile == null) {
                 currentFontColorProfile = DEFAULT_PROFILE;
+            }
         }
         if (!getFontColorProfiles ().contains (currentFontColorProfile)) {
             currentFontColorProfile = DEFAULT_PROFILE;
@@ -179,15 +180,22 @@ public class EditorSettingsImpl extends EditorSettings {
     public void setCurrentFontColorProfile (String profile) {
         String oldProfile = getCurrentFontColorProfile ();
         if (oldProfile.equals (profile)) return;
+
+        currentFontColorProfile = profile;
+        
+        // Persist the change
 	FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
 	FileObject fo = fs.findResource (EDITORS_FOLDER);
-        try {
-            fo.setAttribute (FATTR_CURRENT_FONT_COLOR_PROFILE, profile);
-            currentFontColorProfile = profile;
-            pcs.firePropertyChange (PROP_CURRENT_FONT_COLOR_PROFILE, oldProfile, currentFontColorProfile);
-        } catch (IOException ex) {
-            ErrorManager.getDefault ().notify (ex);
+        if (fo != null) {
+            try {
+                fo.setAttribute (FATTR_CURRENT_FONT_COLOR_PROFILE, profile);
+            } catch (IOException ex) {
+                LOG.log(Level.WARNING, "Can't persist change in current font&colors profile.", ex); //NOI18N
+            }
         }
+
+        // Notify others
+        pcs.firePropertyChange (PROP_CURRENT_FONT_COLOR_PROFILE, oldProfile, currentFontColorProfile);
     }
     
     /**
@@ -397,17 +405,23 @@ public class EditorSettingsImpl extends EditorSettings {
     public void setCurrentKeyMapProfile (String keyMapName) {
         String oldKeyMap = getCurrentKeyMapProfile ();
         if (oldKeyMap.equals (keyMapName)) return;
+
+        currentKeyMapProfile = keyMapName;
+        
+        // Persist the change
         try {
             FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
             FileObject fo = fs.findResource (KEYMAPS_FOLDER);
-            if (fo == null)
+            if (fo == null) {
                 fo = fs.getRoot ().createFolder (KEYMAPS_FOLDER);
+            }
             fo.setAttribute (FATTR_CURRENT_KEYMAP_PROFILE, keyMapName);
-            currentKeyMapProfile = keyMapName;
-            pcs.firePropertyChange (PROP_CURRENT_KEY_MAP_PROFILE, oldKeyMap, currentKeyMapProfile);
         } catch (IOException ex) {
-            ErrorManager.getDefault ().notify (ex);
+            LOG.log(Level.WARNING, "Can't persist change in current keybindings profile.", ex); //NOI18N
         }
+        
+        // Notify others
+        pcs.firePropertyChange (PROP_CURRENT_KEY_MAP_PROFILE, oldKeyMap, currentKeyMapProfile);
     }
     
     /**
@@ -477,10 +491,13 @@ public class EditorSettingsImpl extends EditorSettings {
         systemFontColorProfiles = new HashSet<String>();
         systemKeymapProfiles = new HashSet<String>();
 	FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
-	FileObject fo = fs.findResource ("Editors");
-	Enumeration e = fo.getFolders (false);
-	while (e.hasMoreElements ())
-	    init1 ((FileObject) e.nextElement ());
+	FileObject fo = fs.findResource (EDITORS_FOLDER);
+        if (fo != null) {
+            Enumeration e = fo.getFolders (false);
+            while (e.hasMoreElements()) {
+                init1 ((FileObject) e.nextElement ());
+            }
+        }
     }
     
     private void init1 (FileObject fo) {
