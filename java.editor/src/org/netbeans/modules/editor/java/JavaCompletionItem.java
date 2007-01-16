@@ -298,7 +298,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             
     private static class KeywordItem extends JavaCompletionItem {
         
-        private static final String JAVA_KEYWORD = "org/netbeans/modules/java/editor/resources/javakw.gif"; //NOI18N
+        private static final String JAVA_KEYWORD = "org/netbeans/modules/java/editor/resources/javakw_16.png"; //NOI18N
         private static final String KEYWORD_COLOR = "<font color=#000099>"; //NOI18N
         private static ImageIcon icon;
         
@@ -727,7 +727,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
     
     private static class TypeParameterItem extends JavaCompletionItem {
         
-        private static final String TYPE_PARAMETER = "org/netbeans/modules/java/editor/resources/javakw.gif"; //NOI18N
         private static final String TYPE_PARAMETER_COLOR = "<font color=#000000>"; //NOI18N
         private static ImageIcon icon;
 
@@ -748,11 +747,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
         
         public CharSequence getInsertPrefix() {
             return elem.getSimpleName();
-        }
-        
-        protected ImageIcon getIcon(){
-            if (icon == null) icon = new ImageIcon(org.openide.util.Utilities.loadImage(TYPE_PARAMETER));
-            return icon;            
         }
         
         protected String getLeftHtmlText() {
