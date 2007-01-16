@@ -84,6 +84,24 @@ is the proper place.
 
         <change>
             <api name="editor"/>
+            <summary>Deprecating AllOptionsFolder.loadMimeOption methods</summary>
+            <version major="1" minor="28"/>
+            <date day="16" month="1" year="2007"/>
+            <author login="vstejskal"/>
+            <compatibility source="compatible" semantic="compatible" binary="compatible" modification="no" addition="no" deletion="no" deprecation="yes" />
+            <description>
+            <p>
+                Deprecating <code>AllOptionsFolder.loadMimeOption(Class kitClass)</code>
+                and <code>AllOptionsFolder.loadMimeOption(Class kitClass, boolean processOldTypeOption)</code>.
+                There is no reason anybody should need to call these methods.
+                <code>MimeLookup</code> should be used for accessing editor settings
+                including <code>BaseOptions</code>.
+            </p>
+            </description>
+        </change>
+        
+        <change>
+            <api name="editor"/>
             <summary>Fake MIME type <code>text/base</code> was removed</summary>
             <version major="1" minor="24"/>
             <date day="27" month="7" year="2005"/>

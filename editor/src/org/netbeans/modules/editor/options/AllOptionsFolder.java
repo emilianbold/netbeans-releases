@@ -385,12 +385,29 @@ public class AllOptionsFolder{
         }
     }
     
-    /** Lazily inits MIME Option class */
+    /** 
+     * Lazily inits MIME Option class. Calls <code>loadMIMEOption(kitClass, true)</code>.
+     * 
+     * @param kitClass The editor kit class you want to load options for.
+     * 
+     * @deprecated See {@link loadMimeOption(Class, boolean)} for details.
+     */
     public void loadMIMEOption(Class kitClass){
         loadMIMEOption(kitClass, true);
     }
     
-    /** Lazily inits MIME Option class. If processOldTypeOption is true initializers for this option will be processed. */
+    /** 
+     * Lazily inits MIME Option class. If processOldTypeOption is true initializers 
+     * for this option will be processed.
+     * 
+     * @param kitClass The editor kit class you want to load options for.
+     * @param processOldTypeOptions Internal magic, if you really want to call
+     *   this method, you should probably set this to <code>true</code>.
+     * 
+     * @deprecated There is no reason you should call this method. It should have
+     *   never been made public. Use <code>MimeLookup.getLookup(MimePath.parse(your-mime-type)).lookup(BaseOptions.class)</code>
+     *   for accessing <code>BaseOptions</code> for your mime type.
+     */
     public void loadMIMEOption(Class kitClass, boolean processOldTypeOption){
         String contentType = BaseKit.getKit(kitClass).getContentType();
         if (contentType == null) return;
