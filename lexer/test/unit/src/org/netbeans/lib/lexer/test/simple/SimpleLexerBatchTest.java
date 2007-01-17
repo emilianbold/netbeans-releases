@@ -14,6 +14,7 @@
 package org.netbeans.lib.lexer.test.simple;
 
 import junit.framework.TestCase;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -113,8 +114,9 @@ public class SimpleLexerBatchTest extends TestCase {
         String text = sb.toString();
 
         long tm;
+        Language<SimpleTokenId> language = SimpleTokenId.language();
         tm = System.currentTimeMillis();
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, SimpleTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, language);
         tm = System.currentTimeMillis() - tm;
         assertTrue("Timeout tm = " + tm + "msec", tm < 100); // Should be fast
         
