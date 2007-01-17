@@ -170,40 +170,54 @@ public class SwitchLookup extends Lookup {
         }
     }
     
+    // XXX: This is currently called from editor/settings/storage (SettingsProvider)
+    // via reflection. We will eventually make it friend API. In the meantime just
+    // make sure that any changes here still work for e/s/s module.
+
     /* package */ static List computePaths(MimePath mimePath, String prefixPath, String suffixPath) {
         ArrayList arrays = new ArrayList(mimePath.size());
+        String innerMimeType = null;
 
+        if (mimePath.size() > 1) {
+            innerMimeType = mimePath.getMimeType(mimePath.size() - 1);
+        }
+        
         for (int i = mimePath.size(); i >= 0 ; i--) {
             MimePath currentPath = mimePath.getPrefix(i);
 
-            // Add the current mime path
-            arrays.add(split(currentPath));
+            // Skip the top level mime type if it's the same as the inner mime type
+            // to avoid duplicities.
+            if (currentPath.size() != 1 || innerMimeType == null ||
+                !currentPath.getMimeType(0).equals(innerMimeType)
+            ) {
+                // Add the current mime path
+                arrays.add(split(currentPath));
+            }
 
             // For compound mime types fork the existing paths and add their
             // variant for the generic part of the mime type as well.
             // E.g. text/x-ant+xml adds both text/x-ant+xml and text/xml
             if (currentPath.size() > 0) {
                 String mimeType = currentPath.getMimeType(currentPath.size() - 1);
-                int plusIdx = mimeType.indexOf('+'); //NOI18N
+                String genericMimeType = getGenericPartOfCompoundMimeType(mimeType);
 
-                if (plusIdx != -1) {
-                    int slashIdx = mimeType.indexOf('/'); //NOI18N
-                    String prefix = mimeType.substring(0, slashIdx + 1);
-                    String suffix = mimeType.substring(plusIdx + 1);
-
-                    // fix for #61245
-                    if (suffix.equals("xml")) { //NOI18N
-                        prefix = "text/"; //NOI18N
-                    }
-                    
-                    String genericMimeType = prefix + suffix;
-
+                if (genericMimeType != null) {
                     List genericPaths = forkPaths(arrays, genericMimeType, i - 1);
                     arrays.addAll(genericPaths);
                 }
             }
         }
 
+        // Add the inner type on a prominent position
+        if (innerMimeType != null) {
+            arrays.add(1, new String [] { innerMimeType });
+            
+            String genericInnerMimeType = getGenericPartOfCompoundMimeType(innerMimeType);
+            if (genericInnerMimeType != null) {
+                arrays.add(2, new String [] { genericInnerMimeType });
+            }
+        }
+        
         ArrayList paths = new ArrayList(arrays.size());
 
         for (Iterator i = arrays.iterator(); i.hasNext(); ) {
@@ -232,6 +246,24 @@ public class SwitchLookup extends Lookup {
         }
 
         return paths;
+    }
+
+    private static String getGenericPartOfCompoundMimeType(String mimeType) {
+        int plusIdx = mimeType.indexOf('+'); //NOI18N
+        if (plusIdx != -1) {
+            int slashIdx = mimeType.indexOf('/'); //NOI18N
+            String prefix = mimeType.substring(0, slashIdx + 1);
+            String suffix = mimeType.substring(plusIdx + 1);
+
+            // fix for #61245
+            if (suffix.equals("xml")) { //NOI18N
+                prefix = "text/"; //NOI18N
+            }
+
+            return prefix + suffix;
+        } else {
+            return null;
+        }
     }
 
     private static String [] split(MimePath mimePath) {

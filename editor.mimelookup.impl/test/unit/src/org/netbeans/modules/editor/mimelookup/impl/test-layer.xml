@@ -75,16 +75,16 @@ Microsystems, Inc. All Rights Reserved.
                                     <file name="Separator0.instance">
                                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                                     </file>
-                                    <attr name="org-openide-actions-PasteAction.instance/format" boolvalue="true"/>
+                                    <attr name="org-openide-actions-ReplaceAction.instance/format" boolvalue="true"/>
                                     <attr name="Separator0.instance/format" boolvalue="true"/>
-                                    <attr name="org-openide-actions-PasteAction.instance/Separator0.instance" boolvalue="true"/>
+                                    <attr name="org-openide-actions-ReplaceAction.instance/Separator0.instance" boolvalue="true"/>
                                 </folder>
                             </folder>
                         </folder>
                         <folder name="Popup">
-                            <file name="org-openide-actions-ReplaceAction.instance"/>
-                            <attr name="org-openide-actions-CopyAction.instance/org-openide-actions-ReplaceAction.instance" boolvalue="true"/>
-                            <attr name="org-openide-actions-ReplaceAction.instance/org-openide-actions-PasteAction.instance" boolvalue="true"/>
+                            <file name="org-openide-actions-NewAction.instance"/>
+                            <attr name="org-openide-actions-CopyAction.instance/org-openide-actions-NewAction.instance" boolvalue="true"/>
+                            <attr name="org-openide-actions-NewAction.instance/org-openide-actions-PasteAction.instance" boolvalue="true"/>
                         </folder>
                     </folder>
                 </folder>

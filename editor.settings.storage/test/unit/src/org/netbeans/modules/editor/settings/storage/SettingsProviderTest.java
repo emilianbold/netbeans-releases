@@ -225,6 +225,27 @@ public class SettingsProviderTest extends NbTestCase {
         assertNotNull("Can't find coloring defined for root", attribs);
         assertEquals("Wrong bgColor in coloring defined for root", new Color(0xABCDEF), attribs.getAttribute(StyleConstants.Background));
     }
+
+    public void testInheritanceForEmbedded() {
+        MimePath mimePath = MimePath.parse("text/x-type-B/text/x-type-A");
+        FontColorSettings fcs = MimeLookup.getLookup(mimePath).lookup(FontColorSettings.class);
+        
+        AttributeSet attribsTypeA = fcs.getTokenFontColors("test-inheritance-typeA-specific");
+        assertNotNull("Can't find coloring defined for text/x-type-A", attribsTypeA);
+        assertEquals("Wrong bgColor in coloring defined for text/x-type-A", new Color(0xAA0000), attribsTypeA.getAttribute(StyleConstants.Background));
+        
+        AttributeSet attribsTypeB = fcs.getTokenFontColors("test-inheritance-typeB-specific");
+        assertNotNull("Can't find coloring defined for text/x-type-B", attribsTypeB);
+        assertEquals("Wrong bgColor in coloring defined for text/x-type-B", new Color(0xBB0000), attribsTypeB.getAttribute(StyleConstants.Background));
+        
+        AttributeSet attribsBoth = fcs.getTokenFontColors("test-inheritance-typeA-typeB");
+        assertNotNull("Can't find coloring defined for both typeA and typeB", attribsBoth);
+        assertEquals("Wrong bgColor in coloring defined for both typeA typeB", new Color(0xAAAA00), attribsBoth.getAttribute(StyleConstants.Background));
+
+        AttributeSet attribsEmbedded = fcs.getTokenFontColors("test-inheritance-typeA-embedded-in-typeB");
+        assertNotNull("Can't find coloring defined for typeA embedded in typeB", attribsEmbedded);
+        assertEquals("Wrong bgColor in coloring defined for typeA embedded in typeB", new Color(0xAABB00), attribsEmbedded.getAttribute(StyleConstants.Background));
+    }
     
     public static Marker createMarker(FileObject f) {
         return new Marker(f);

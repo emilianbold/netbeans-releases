@@ -19,4 +19,7 @@
     <fontcolor name="test-font-cute-B">
         <font name="Test Font Cute B" size="13" style="italic" />
     </fontcolor>
+
+    <fontcolor name="test-inheritance-typeA-specific" bgColor="AA0000" />
+    <fontcolor name="test-inheritance-typeA-typeB" bgColor="AAAA00" />
 </fontscolors>

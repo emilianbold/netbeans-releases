@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.editor.mimelookup.impl;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -262,8 +263,71 @@ public class SwitchLookupTest extends NbTestCase {
     
     public void testNoMapper() {
         MimePath mimePath = MimePath.parse("text/x-jsp/text/x-java/text/x-javadoc");
-        List paths = SwitchLookup.computePaths(mimePath, SwitchLookup.ROOT_FOLDER, ClassInfoStorage.getInstance().getInfo(DummySetting.class.getName()).getExtraPath());
-        checkPaths(mimePath, null, paths);
+        List paths = SwitchLookup.computePaths(mimePath, null, ClassInfoStorage.getInstance().getInfo(DummySetting.class.getName()).getExtraPath());
+        checkPaths(
+            Arrays.asList(new String [] {
+                "text/x-jsp/text/x-java/text/x-javadoc",
+                "text/x-javadoc",
+                "text/x-jsp/text/x-java",
+                "text/x-jsp",
+                ""
+            }),
+            paths
+        );
+    }
+
+    public void testNoMapperCompoundMimeType1() {
+        MimePath mimePath = MimePath.parse("text/x-ant+xml/text/x-java/text/x-javadoc");
+        List paths = SwitchLookup.computePaths(mimePath, null, ClassInfoStorage.getInstance().getInfo(DummySetting.class.getName()).getExtraPath());
+        checkPaths(
+            Arrays.asList(new String [] {
+                "text/x-ant+xml/text/x-java/text/x-javadoc",
+                "text/x-javadoc",
+                "text/x-ant+xml/text/x-java",
+                "text/x-ant+xml",
+                "text/xml/text/x-java/text/x-javadoc",
+                "text/xml/text/x-java",
+                "text/xml",
+                ""
+            }),
+            paths
+        );
+    }
+    
+    public void testNoMapperCompoundMimeType2() {
+        MimePath mimePath = MimePath.parse("text/x-ant+xml/text/x-ant+xml");
+        List paths = SwitchLookup.computePaths(mimePath, null, ClassInfoStorage.getInstance().getInfo(DummySetting.class.getName()).getExtraPath());
+        checkPaths(
+            Arrays.asList(new String [] {
+                "text/x-ant+xml/text/x-ant+xml",
+                "text/x-ant+xml",
+                "text/xml",
+                "text/x-ant+xml/text/xml",
+                "text/xml/text/x-ant+xml",
+                "text/xml/text/xml",
+                ""
+            }),
+            paths
+        );
+    }
+
+    public void testNoMapperCompoundMimeType3() {
+        MimePath mimePath = MimePath.parse("text/x-ant+xml/text/x-java/text/x-ant+xml");
+        List paths = SwitchLookup.computePaths(mimePath, null, ClassInfoStorage.getInstance().getInfo(DummySetting.class.getName()).getExtraPath());
+        checkPaths(
+            Arrays.asList(new String [] {
+                "text/x-ant+xml/text/x-java/text/x-ant+xml",
+                "text/x-ant+xml",
+                "text/xml",
+                "text/x-ant+xml/text/x-java/text/xml",
+                "text/x-ant+xml/text/x-java",
+                "text/xml/text/x-java/text/x-ant+xml",
+                "text/xml/text/x-java/text/xml",
+                "text/xml/text/x-java",
+                ""
+            }),
+            paths
+        );
     }
     
     public void testDummyMapper() throws Exception {
@@ -272,26 +336,32 @@ public class SwitchLookupTest extends NbTestCase {
         
         MimePath mimePath = MimePath.parse("text/x-jsp/text/x-java/text/x-javadoc");
         List paths = SwitchLookup.computePaths(mimePath, SwitchLookup.ROOT_FOLDER, ClassInfoStorage.getInstance().getInfo(DummySetting.class.getName()).getExtraPath());
-        checkPaths(mimePath, "DummyFolder", paths);
+        checkPaths(
+            Arrays.asList(new String [] {
+                SwitchLookup.ROOT_FOLDER + "/text/x-jsp/text/x-java/text/x-javadoc/DummyFolder",
+                SwitchLookup.ROOT_FOLDER + "/text/x-javadoc/DummyFolder",
+                SwitchLookup.ROOT_FOLDER + "/text/x-jsp/text/x-java/DummyFolder",
+                SwitchLookup.ROOT_FOLDER + "/text/x-jsp/DummyFolder",
+                SwitchLookup.ROOT_FOLDER + "/DummyFolder"
+            }), 
+            paths
+        );
     }
     
-    private void checkPaths(MimePath mimePath, String extraPath, List paths) {
-        int j = 0;
-        for (int i = mimePath.size(); i >= 0; i--) {
-            String path1 = mimePath.getPrefix(i).getPath();
-            String path2 = (String) paths.get(j++);
-            
-            if (path1.length() != 0) {
-                path1 = SwitchLookup.ROOT_FOLDER + "/" + path1;
-            } else {
-                path1 = SwitchLookup.ROOT_FOLDER;
-            }
-
-            if (extraPath != null) {
-                path1 += "/" + extraPath;
-            }
-            
-            assertEquals("Invalid path", path1, path2);
+    private void checkPaths(List expectedPaths, List paths) {
+//        for(Iterator i = expectedPaths.iterator(); i.hasNext(); ) {
+//            System.out.println("Expected: " + i.next());
+//        }
+//        for(Iterator i = paths.iterator(); i.hasNext(); ) {
+//            System.out.println("Current: " + i.next());
+//        }
+//        
+        assertEquals("Wrong number of paths", expectedPaths.size(), paths.size());
+        
+        for (int i = 0; i < expectedPaths.size(); i++) {
+            String expectedPath = (String) expectedPaths.get(i);
+            String path = (String) paths.get(i);
+            assertEquals("Invalid path", expectedPath, path);
         }
     }
     

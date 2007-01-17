@@ -485,6 +485,8 @@ public class Depr_MimeLookupTest extends NbTestCase {
         // testing issue #58941
         TestUtilities.deleteFile(getWorkDir(),
                 "Editors/text/xml/text/jsp/testLookup/org-netbeans-modules-editor-mimelookup-impl-TestLookupObject.instance");
+        TestUtilities.deleteFile(getWorkDir(),
+                "Editors/text/jsp/testLookup/org-netbeans-modules-editor-mimelookup-impl-TestLookupObject.instance");
         checkLookupTemplate(lookup, TestLookupObject.class, 0);
         checkLookupTemplate(lookup, TestLookupObjectTwo.class, 0);
     }

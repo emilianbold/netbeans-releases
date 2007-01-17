@@ -45,6 +45,16 @@ Microsystems, Inc. All Rights Reserved.
                         <file name="coloring.xml" url="fonts-and-colors-2.xml"/>
                     </folder>
                 </folder>
+
+                <folder name="text">
+                    <folder name="x-type-A">
+                        <folder name="NetBeans">
+                            <folder name="Defaults">
+                                <file name="coloring.xml" url="fonts-and-colors-5.xml"/>
+                            </folder>
+                        </folder>
+                    </folder>
+                </folder>
             </folder>
             
             <folder name="x-orig">

@@ -10,4 +10,7 @@
 
     <fontcolor name="test-inheritance-coloring-X" default="test-all-languages-super-default" bgColor="BB0000"/>
     <fontcolor name="test-inheritance-coloring-Y" default="test-inheritance-coloring-X" />
+
+    <fontcolor name="test-inheritance-typeB-specific" bgColor="BB0000" />
+    <fontcolor name="test-inheritance-typeA-typeB" bgColor="BBBB00" />
 </fontscolors>

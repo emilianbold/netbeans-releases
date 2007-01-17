@@ -22,7 +22,6 @@ package org.netbeans.modules.editor.mimelookup.impl;
 import java.net.URL;
 import java.util.List;
 import javax.swing.JSeparator;
-import junit.framework.Test;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.junit.NbTestCase;
@@ -32,6 +31,7 @@ import org.openide.actions.DeleteAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.ReplaceAction;
 import org.openide.actions.FindAction;
+import org.openide.actions.NewAction;
 import org.openide.util.Lookup;
 
 /** Testing merging and sorting merged objects
@@ -90,7 +90,7 @@ public class MimeLookupInheritanceTest extends NbTestCase {
         MimePath mp = MimePath.parse("text/x-java/text/html"); //NOI18N
         Lookup lookup = MimeLookup.getLookup(mp);
         Class layerObjects[] = {CutAction.class, DeleteAction.class, CopyAction.class,
-                ReplaceAction.class, PasteAction.class};
+                NewAction.class, PasteAction.class};
         testPopupItems(lookup, layerObjects);
     }
 
@@ -99,7 +99,7 @@ public class MimeLookupInheritanceTest extends NbTestCase {
         MimePath mp = MimePath.parse("text/x-java/text/html/text/xml"); //NOI18N
         Lookup lookup = MimeLookup.getLookup(mp);
         Class layerObjects[] = {CutAction.class, DeleteAction.class, CopyAction.class,
-                ReplaceAction.class, PasteAction.class, JSeparator.class, String.class};
+                NewAction.class, PasteAction.class, ReplaceAction.class, JSeparator.class, String.class};
         testPopupItems(lookup, layerObjects);
     }
 
