@@ -135,28 +135,6 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
         StatusDisplayer.getDefault().setStatusText(text);
     }
     
-    /** Clears the status line. */
-    private final void clearStatusLine(String toReplace) {
-        if (toReplace == null || toReplace.equals(StatusDisplayer.getDefault().getStatusText())) {
-            setStatusLine(""); //NOI18N
-        }
-    }
-    
-    /**
-     * Prints a text into the status line that a file is being opened
-     * and (optionally) that the Open File Server is waiting
-     * for it to be closed.
-     *
-     * @param  fileName  name of the file
-     * @param  waiting  <code>true</code> if the server will wait for the file,
-     *                  <code>false</code> if not
-     */
-    private String setStatusLineOpening(String fileName) {
-        String msg = NbBundle.getMessage(DefaultOpenFileImpl.class, "MSG_opening", fileName);
-        setStatusLine(msg);
-        return msg;
-    }
-    
     /**
      * Displays a dialog that the file cannot be open.
      * This method is to be used in cases that the file was open via
@@ -223,7 +201,6 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
             ErrorManager.getDefault().notify(
                     ErrorManager.EXCEPTION,
                     ErrorManager.getDefault().annotate(ex, msg));
-            clearStatusLine(null);
             return false;
         }
 
@@ -339,7 +316,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
                 }
             }
             if (!setCursorTask.completed) {
-                setStatusLine(NbBundle.getMessage(
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
                         DefaultOpenFileImpl.class,
                         "MSG_couldNotOpenAt"));                         //NOI18N
             }
@@ -485,7 +462,6 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
         if ( (line != -1 && ((cookie = dataObject.getCookie(cookieClass = EditorCookie.Observable.class)) != null
              || (cookie = dataObject.getCookie(cookieClass = EditorCookie.class)) != null)) ){
             boolean ret = openByCookie(cookie,cookieClass, line);      
-            clearStatusLine(null);                              
             return ret;
         } 
                             
@@ -496,16 +472,14 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     action.actionPerformed(new ActionEvent(dataNode, 0, null));                                 
-                    clearStatusLine(null);            
                 }
             });            
             return true;            
         }             
         
         /* Try to grab an editor/open/edit/view cookie and open the object: */
-        String prev = setStatusLineOpening(fileName);
+        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DefaultOpenFileImpl.class, "MSG_opening", fileName));
         boolean success = openDataObjectByCookie(dataObject, line);
-        clearStatusLine(prev);
         if (success) {
             return true;
         }
