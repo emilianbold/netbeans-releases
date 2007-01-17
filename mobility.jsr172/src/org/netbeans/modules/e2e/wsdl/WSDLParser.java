@@ -494,7 +494,7 @@ public class WSDLParser {
         }
 
         public void characters(char[] ch, int start, int length) throws SAXException {
-            tagString = new String( ch, start, length );
+            tagString += new String( ch, start, length );
         }
         
     }
