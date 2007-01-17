@@ -30,7 +30,7 @@ import org.netbeans.modules.j2ee.common.DatasourceUIHelper;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.ejbcore.ui.FoldersListSettings;
+import org.netbeans.modules.j2ee.ejbcore.ui.EJBPreferences;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -49,10 +49,12 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
     private static String PROTOTYPE_VALUE = "jdbc:pointbase://localhost/sample [pbpublic on PBPUBLIC] "; //NOI18N
     private ServiceLocatorStrategyPanel slPanel;
     private DatasourceComboBoxHelper comboHelper;
+    private final EJBPreferences ejbPreferences;
 
     public SelectDatabasePanel(J2eeModuleProvider provider, String lastLocator) {
         initComponents();
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SelectDatabasePanel.class, "ACSD_ChooseDatabase"));
+        ejbPreferences = new EJBPreferences();
         
         dsCombo.setPrototypeDisplayValue(PROTOTYPE_VALUE);
         if (provider != null && provider.isDatasourceCreationSupported()) {
@@ -83,7 +85,7 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
         
         slPanel = new ServiceLocatorStrategyPanel(lastLocator);
         serviceLocatorPanel.add(slPanel, BorderLayout.CENTER);
-        createResourcesCheckBox.setSelected(FoldersListSettings.getDefault().isAgreedCreateServerResources());
+        createResourcesCheckBox.setSelected(ejbPreferences.isAgreedCreateServerResources());
         slPanel.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(ServiceLocatorStrategyPanel.IS_VALID)) {
@@ -194,7 +196,7 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
     
     private void createResourcesCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createResourcesCheckBoxActionPerformed
-        FoldersListSettings.getDefault().setAgreedCreateServerResources(createResourcesCheckBox.isSelected());
+        ejbPreferences.setAgreedCreateServerResources(createResourcesCheckBox.isSelected());
     }//GEN-LAST:event_createResourcesCheckBoxActionPerformed
     
     

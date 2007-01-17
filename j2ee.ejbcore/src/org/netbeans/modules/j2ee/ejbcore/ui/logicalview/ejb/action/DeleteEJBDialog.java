@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
-import org.netbeans.modules.j2ee.ejbcore.ui.FoldersListSettings;
+import org.netbeans.modules.j2ee.ejbcore.ui.EJBPreferences;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -35,11 +35,13 @@ public class DeleteEJBDialog extends javax.swing.JPanel {
     public static final String DELETE_ALL = "deleteAll";
 
     private String ejbDisplayName;
+    private final EJBPreferences ejbPreferences;
     
     private DeleteEJBDialog(String ejbDisplayName) {
         this.ejbDisplayName = ejbDisplayName;
         initComponents();
-        deleteClassesCheckBox.setSelected(FoldersListSettings.getDefault().isAgreedDeleteEJBGeneratedSources());
+        ejbPreferences = new EJBPreferences();
+        deleteClassesCheckBox.setSelected(ejbPreferences.isAgreedDeleteEJBGeneratedSources());
     }
 
     public static String open(String ejbDisplayName) {
@@ -98,7 +100,7 @@ public class DeleteEJBDialog extends javax.swing.JPanel {
     // </editor-fold>//GEN-END:initComponents
 
     private void deleteClassesCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteClassesCheckBoxActionPerformed
-        FoldersListSettings.getDefault().setAgreedDeleteEJBGeneratedSources(deleteClassesCheckBox.isSelected());
+        ejbPreferences.setAgreedDeleteEJBGeneratedSources(deleteClassesCheckBox.isSelected());
     }//GEN-LAST:event_deleteClassesCheckBoxActionPerformed
     
     

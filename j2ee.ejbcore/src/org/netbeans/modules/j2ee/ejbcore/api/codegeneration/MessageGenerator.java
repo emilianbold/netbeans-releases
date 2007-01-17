@@ -132,6 +132,7 @@ public final class MessageGenerator {
         return resultFileObject;
     }
     
+    @SuppressWarnings("deprecation") //NOI18N
     private void generateEJB21Xml() throws IOException, VersionNotSupportedException {
         org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(pkg);
         org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = DDProvider.getDefault().getMergedDDRoot(ejbModule.getMetadataUnit());

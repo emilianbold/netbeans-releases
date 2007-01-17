@@ -68,6 +68,7 @@ public class AddSelectMethodStrategy extends AbstractAddMethodStrategy {
         return MethodCollectorFactory.selectCollector(pType.getMethodElement());
     }
     
+    @SuppressWarnings("deprecation") //NOI18N
     protected void okButtonPressed(final MethodCustomizer methodCustomizer, final MethodType methodType, 
             final FileObject fileObject, String classHandle) throws java.io.IOException {
         ProgressHandle handle = ProgressHandleFactory.createHandle("Adding method");

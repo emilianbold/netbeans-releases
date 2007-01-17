@@ -264,8 +264,4 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder> 
     
-    <folder name="Services">
-        <file name="org-netbeans-modules-j2ee-ejbcore-ui-FoldersList.settings" url="foldersList.settings"/>
-    </folder>
-    
 </filesystem>

@@ -22,6 +22,7 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.SuppressWarnings;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
@@ -68,6 +69,7 @@ public abstract class AbstractAddMethodStrategy {
         return fqn;
     }
     
+    @SuppressWarnings("deprecation") //NOI18N
     public void addMethod(FileObject fileObject, String className) throws IOException {
         if (className == null) {
             return;
@@ -105,6 +107,7 @@ public abstract class AbstractAddMethodStrategy {
         }
     }
     
+    @SuppressWarnings("deprecation") //NOI18N
     protected void okButtonPressed(final MethodCustomizer methodCustomizer, final MethodType methodType, 
             final FileObject ejbClassFO, String classHandle) throws IOException {
         ProgressHandle handle = ProgressHandleFactory.createHandle("Adding method");
