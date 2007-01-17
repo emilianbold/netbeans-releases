@@ -19,31 +19,37 @@
 package org.netbeans.test.java.editor.completion;
 
 import java.io.*;
-import javax.swing.text.*;
-import javax.swing.*;
-import java.util.List;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
+import lib.EditorTestCase;
+import lib.EditorTestCase.ValueResolver;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.openide.filesystems.FileObject;
-//import java.lang.reflect.UndeclaredThrowableException;
-//import org.netbeans.api.project.Project;
-//import org.netbeans.api.project.ProjectManager;
-
-//import org.netbeans.editor.*;
-//import org.netbeans.editor.ext.*;
-//import org.openide.nodes.*;
-//import org.openide.*;
-//import org.openide.cookies.*;
-//import org.openide.filesystems.*;
-//import org.openide.loaders.*;
-//import org.openide.util.Task;   //Some compilation error occurs when this class is imported directly (class Task not found).
-//import org.openide.util.*;
-//import org.openide.cookies.EditorCookie;
-//import org.netbeans.editor.Utilities;
-//import org.netbeans.modules.project.ui.OpenProjectList;
-//import org.openide.cookies.SourceCookie;
-//import org.openide.src.SourceElement;
-//import org.openide.text.CloneableEditorSupport;
-//import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.editor.*;
+import org.netbeans.editor.ext.Completion;
+import org.netbeans.editor.ext.CompletionQuery;
+import org.netbeans.editor.ext.ExtUtilities;
+import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.modules.editor.completion.CompletionImpl;
+import org.netbeans.modules.editor.completion.CompletionResultSetImpl;
+import org.netbeans.modules.editor.java.JavaCompletionProvider;
+import org.netbeans.spi.editor.completion.CompletionItem;
+import org.netbeans.spi.editor.completion.CompletionProvider;
+import org.netbeans.spi.editor.completion.CompletionResultSet;
+import org.netbeans.spi.editor.completion.CompletionTask;
+import org.openide.cookies.CloseCookie;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 
 /**<FONT COLOR="#CC3333" FACE="Courier New, Monospaced" SIZE="+1">
  * <B>
@@ -103,54 +109,87 @@ public class CompletionTest extends java.lang.Object {
     public CompletionTest() {
     }
     
+    private class ResultReadyResolver implements ValueResolver {
+        private CompletionResultSetImpl crs;
+        
+        public ResultReadyResolver(CompletionResultSetImpl crs) {
+            this.crs = crs;
+        }
+
+        public Object getValue() {
+            return crs.isFinished();
+        }                
+    }
+    
     private void completionQuery(PrintWriter  out,
-                                 PrintWriter  log,
-                                 JEditorPane  editor,
-                                 boolean      sort
-                                ) {
-        throw new UnsupportedOperationException("Commented out after retouche merge");
-//        BaseDocument doc = Utilities.getDocument(editor);
-//        SyntaxSupport support = doc.getSyntaxSupport();
-//        
-//        Completion completion = ExtUtilities.getCompletion(editor);
-//        
-//        if (completion != null) {
-//            CompletionQuery completionQuery = completion.getQuery();
-//            
-//            if (completionQuery != null) {
-//                CompletionQuery.Result query = completionQuery.query(editor, editor.getCaret().getDot(), support);
-//                
-//                if (query != null) {
-//                    List list = query.getData();
-//                    
-//                    if (list != null) {
-//                        
-//                        String[] texts = new String[list.size()];
-//                        for (int cntr = 0; cntr < list.size(); cntr++) {
-//                            texts[cntr] = list.get(cntr).toString();
-//                        };
-//                        if (sort)
-//                            Arrays.sort(texts);
-//                        
-//                        for (int cntr = 0; cntr < texts.length; cntr++) {
-//                            out.println(texts[cntr].toString());
-//                        };
-//                    } else {
-//                        log.println("CompletionTest: query.getData() == null");
-//                        throw new IllegalStateException("CompletionTest: query.getData() == null");
-//                    }
-//                } else {
-//                    log.println("CompletionTest: completionQuery.query(pane, end, support) == null");
-//                    throw new IllegalStateException("CompletionTest: completionQuery.query(pane, end, support) == null");
-//                }
-//            } else {
-//                log.println("CompletionTest: completion.getQuery() == null");
-//                throw new IllegalStateException("CompletionTest: completion.getQuery() == null");
-//            }
-//        } else {
-//            log.println("CompletionTest: ExtUtilities.getCompletion(pane) == null");
-//            throw new IllegalStateException("CompletionTest: ExtUtilities.getCompletion(pane) == null");
-//        }
+            PrintWriter  log,
+            JEditorPane  editor,
+            boolean      sort,
+            int queryType
+            ) {
+        BaseDocument doc = Utilities.getDocument(editor);
+        SyntaxSupport support = doc.getSyntaxSupport();
+        
+        CompletionImpl completion = CompletionImpl.get();            
+        String mimeType = (String) doc.getProperty("mimeType");
+        Lookup lookup = MimeLookup.getLookup(MimePath.get(mimeType));
+        Collection<? extends CompletionProvider> col = lookup.lookupAll(CompletionProvider.class);
+        JavaCompletionProvider  jcp = null;
+        for (Iterator<? extends CompletionProvider> it = col.iterator(); it.hasNext();) {
+            CompletionProvider completionProvider = it.next();        
+            if(completionProvider instanceof JavaCompletionProvider) jcp = (JavaCompletionProvider) completionProvider;
+        }
+        if(jcp==null) log.println("JavaCompletionProvider not found");
+        CompletionTask task = jcp.createTask(queryType, editor);                                                
+        CompletionResultSetImpl result =  completion.createTestResultSet(task,queryType);        
+        task.query(result.getResultSet());                
+        EditorTestCase.waitMaxMilisForValue(5000, new ResultReadyResolver(result), Boolean.TRUE);
+        List<? extends  CompletionItem> list = result.getItems();
+        CompletionItem[] array = list.toArray(new CompletionItem[]{});
+        if(sort) {
+            Arrays.sort(array);
+        }
+        for (int i = 0; i < array.length; i++) {
+            CompletionItem completionItem = array[i];
+            out.println(completionItem.toString());            
+        }
+        /*Completion completion = ExtUtilities.getCompletion(editor);
+        if (completion != null) {
+            CompletionQuery completionQuery = completion.getQuery();
+            if (completionQuery != null) {
+                CompletionQuery.Result query = completionQuery.query(editor, editor.getCaret().getDot(), support);
+                
+                if (query != null) {
+                    List list = query.getData();
+                    
+                    if (list != null) {
+                        
+                        String[] texts = new String[list.size()];
+                        for (int cntr = 0; cntr < list.size(); cntr++) {
+                            texts[cntr] = list.get(cntr).toString();
+                        };
+                        if (sort)
+                            Arrays.sort(texts);
+                        
+                        for (int cntr = 0; cntr < texts.length; cntr++) {
+                            out.println(texts[cntr].toString());
+                        };
+                    } else {
+                        log.println("CompletionTest: query.getData() == null");
+                        throw new IllegalStateException("CompletionTest: query.getData() == null");
+                    }
+                } else {
+                    log.println("CompletionTest: completionQuery.query(pane, end, support) == null");
+                    throw new IllegalStateException("CompletionTest: completionQuery.query(pane, end, support) == null");
+                }
+            } else {
+                log.println("CompletionTest: completion.getQuery() == null");
+                throw new IllegalStateException("CompletionTest: completion.getQuery() == null");
+            }
+        } else {
+            log.println("CompletionTest: ExtUtilities.getCompletion(pane) == null");
+            throw new IllegalStateException("CompletionTest: ExtUtilities.getCompletion(pane) == null");
+        }*/
     }
     
     
@@ -164,156 +203,167 @@ public class CompletionTest extends java.lang.Object {
      * in future.
      */
     private void testPerform(PrintWriter out, PrintWriter log,
-    JEditorPane editor,
-    boolean sort,
-    String assign,
-    int lineIndex) throws BadLocationException, IOException {
-        throw new UnsupportedOperationException("Commented out after retouche merge");
-//        if (!SwingUtilities.isEventDispatchThread())
-//            throw new IllegalStateException("The testPerform method may be called only inside AWT event dispatch thread.");
-//        
-//        BaseDocument doc        = Utilities.getDocument(editor);
-//        int          lineOffset = Utilities.getRowStartFromLineOffset(doc, lineIndex -1);
-//        
-//        editor.grabFocus();
-//        editor.getCaret().setDot(lineOffset);
-//        doc.insertString(lineOffset, assign, null);
-//        reparseDocument((DataObject) doc.getProperty(doc.StreamDescriptionProperty));
-//        completionQuery(out, log, editor, sort);
+            JEditorPane editor,
+            boolean sort,
+            String assign,
+            int lineIndex,
+            int queryType) throws BadLocationException, IOException {
+        if (!SwingUtilities.isEventDispatchThread())
+            throw new IllegalStateException("The testPerform method may be called only inside AWT event dispatch thread.");
+        
+        BaseDocument doc        = Utilities.getDocument(editor);
+        int          lineOffset = Utilities.getRowStartFromLineOffset(doc, lineIndex -1);
+        
+        editor.grabFocus();
+        editor.getCaret().setDot(lineOffset);
+        doc.insertString(lineOffset, assign, null);
+        reparseDocument((DataObject) doc.getProperty(doc.StreamDescriptionProperty));
+        completionQuery(out, log, editor, sort, queryType);
     }
     
     public void test(final PrintWriter out, final PrintWriter log,
-                     final String assign, final boolean sort,
-                     final File dataDir, final String projectName,
-                     final String testFileName, final int line) throws Exception {
-                throw new UnsupportedOperationException("Commented out after retouche merge");
-//        try {
-//            log.println("Completion test start.");
-//            log.flush();
-//            
-//            FileObject testFileObject = getTestFile(dataDir, projectName, testFileName, log);
-//            final DataObject testFile       = DataObject.find(testFileObject);
-//            
-//            try {
-//                Runnable test = new Runnable() {
-//                    public void run() {
-//                        try {
-//                            JEditorPane editor  = getAnEditorPane(testFile, log);              
-//                            testPerform(out, log, editor, sort, assign, line);
-//                        } catch (Exception e) {
-//                            e.printStackTrace(log);
-//                        };
-//                    }
-//                };
-//                if (SwingUtilities.isEventDispatchThread()) {
-//                    test.run();
-//                } else {
-//                    SwingUtilities.invokeAndWait(test);
-//                }
-//            } finally {
-//                testFile.setModified(false);
-//                ((CloseCookie) testFile.getCookie(CloseCookie.class)).close();
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace(log);
-//            throw e;
-//        }
+            final String assign, final boolean sort,
+            final File dataDir, final String projectName,
+            final String testFileName, final int line) throws Exception {
+            test(out, log, assign, sort, dataDir, projectName, testFileName, line, CompletionProvider.COMPLETION_QUERY_TYPE);
+    }
+    
+    public void test(final PrintWriter out, final PrintWriter log,
+            final String assign, final boolean sort,
+            final File dataDir, final String projectName,
+            final String testFileName, final int line, final int queryType) throws Exception {
+        try {
+            log.println("Completion test start.");
+            log.flush();
+            
+            FileObject testFileObject = getTestFile(dataDir, projectName, testFileName, log);
+            final DataObject testFile = DataObject.find(testFileObject);
+            
+            try {
+                Runnable test = new Runnable() {
+                    public void run() {
+                        try {
+                            JEditorPane editor  = getAnEditorPane(testFile, log);
+                            testPerform(out, log, editor, sort, assign, line, queryType);
+                        } catch (Exception e) {
+                            e.printStackTrace(log);
+                        };
+                    }
+                };
+                if (SwingUtilities.isEventDispatchThread()) {
+                    test.run();
+                } else {
+                    SwingUtilities.invokeAndWait(test);
+                }
+            } finally {
+                testFile.setModified(false);
+                //((CloseCookie) testFile.getCookie(CloseCookie.class)).close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace(log);
+            throw e;
+        }
     }
     
     private FileObject getTestFile(File dataDir, String projectName, String testFile, PrintWriter log) throws IOException, InterruptedException {
-        throw new UnsupportedOperationException("Commented out after retouche merge");
-//        File projectFile = new File(dataDir, projectName);
-//        FileObject project = FileUtil.toFileObject(projectFile);
-//        Object prj= ProjectSupport.openProject(projectFile);
-//        
-//        if (prj == null)
-//            throw new IllegalStateException("Given directory \"" + project + "\" does not contain a project.");
-//        
-//        log.println("Project found: " + prj);
-//
-//        FileObject test = project.getFileObject("src/" + testFile);
-//        
-//        if (test == null)
-//            throw new IllegalStateException("Given test file does not exist.");
-//        
-//        return test;
+        File projectFile = new File(dataDir, projectName);
+        FileObject project = FileUtil.toFileObject(projectFile);
+        Object prj= ProjectSupport.openProject(projectFile);
+        
+        if (prj == null)
+            throw new IllegalStateException("Given directory \"" + project + "\" does not contain a project.");
+        
+        log.println("Project found: " + prj);
+        
+        FileObject test = project.getFileObject("src/" + testFile);
+        
+        if (test == null)
+            throw new IllegalStateException("Given test file does not exist.");
+        
+        return test;
     }
     
-//    public static void main(String[] args) throws Exception {
-//        PrintWriter out = new PrintWriter(System.out);
-//        PrintWriter log = new PrintWriter(System.err);
-//        new CompletionTest().test(out, log, "int[] a; a.", false, "org/netbeans/test/editor/completion/data/testfiles/CompletionTestPerformer/TestFile.java", 20);
-//        out.flush();
-//        log.flush();
-//    }
+    //    public static void main(String[] args) throws Exception {
+    //        PrintWriter out = new PrintWriter(System.out);
+    //        PrintWriter log = new PrintWriter(System.err);
+    //        new CompletionTest().test(out, log, "int[] a; a.", false, "org/netbeans/test/editor/completion/data/testfiles/CompletionTestPerformer/TestFile.java", 20);
+    //        out.flush();
+    //        log.flush();
+    //    }
     
     //Utility methods:
-//    private static void checkEditorCookie(DataObject od) {
-//        EditorCookie ec =(EditorCookie) od.getCookie(EditorCookie.class);
-//        
-//        if (ec == null)
-//            throw new IllegalStateException("Given file (\"" + od.getName() + "\") does not have EditorCookie.");
-//    }
+    //    private static void checkEditorCookie(DataObject od) {
+    //        EditorCookie ec =(EditorCookie) od.getCookie(EditorCookie.class);
+    //
+    //        if (ec == null)
+    //            throw new IllegalStateException("Given file (\"" + od.getName() + "\") does not have EditorCookie.");
+    //    }
     
-//    private static JEditorPane getAnEditorPane(DataObject file, PrintWriter log) throws Exception {
-//        EditorCookie  cookie = (EditorCookie)file.getCookie(EditorCookie.class);
-//        
-//        if (cookie == null)
-//            throw new IllegalStateException("Given file (\"" + file.getName() + "\") does not have EditorCookie.");
-//        
-//        JEditorPane[] panes = cookie.getOpenedPanes();
-//        long          start = System.currentTimeMillis();
-//        
-//        if (panes == null) {
-//            //Prepare by opening a document. The actual opening into the editor
-//            //should be faster (hopefully...).
-//            cookie.openDocument();
-//            cookie.open();
-//            while ((panes = cookie.getOpenedPanes()) == null && (System.currentTimeMillis() - start) < OPENING_TIMEOUT) {
-//                try {
-//                    Thread.sleep(SLEEP_TIME);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace(log);
-//                }
-//            };
-//            
-//            log.println("Waiting spent: " + (System.currentTimeMillis() - start) + "ms.");
-//        };
-//        
-//        if (panes == null)
-//            throw new IllegalStateException("The editor was not opened. The timeout was: " + OPENING_TIMEOUT + "ms.");
-//        
-//        return panes[0];
-//    }
+    private static JEditorPane getAnEditorPane(DataObject file, PrintWriter log) throws Exception {
+        EditorCookie  cookie = (EditorCookie)file.getCookie(EditorCookie.class);
+        
+        if (cookie == null)
+            throw new IllegalStateException("Given file (\"" + file.getName() + "\") does not have EditorCookie.");
+        
+        JEditorPane[] panes = cookie.getOpenedPanes();
+        long          start = System.currentTimeMillis();
+        
+        if (panes == null) {
+            //Prepare by opening a document. The actual opening into the editor
+            //should be faster (hopefully...).
+            cookie.openDocument();
+            cookie.open();
+            while ((panes = cookie.getOpenedPanes()) == null && (System.currentTimeMillis() - start) < OPENING_TIMEOUT) {
+                try {
+                    Thread.sleep(SLEEP_TIME);
+                } catch (InterruptedException e) {
+                    e.printStackTrace(log);
+                }
+            };
+            
+            log.println("Waiting spent: " + (System.currentTimeMillis() - start) + "ms.");
+        };
+        
+        if (panes == null)
+            throw new IllegalStateException("The editor was not opened. The timeout was: " + OPENING_TIMEOUT + "ms.");
+        
+        return panes[0];
+    }
     
-//    private static boolean isSomePaneOpened(DataObject file) {
-//        EditorCookie cookie = (EditorCookie) file.getCookie(EditorCookie.class);
-//        
-//        if (cookie == null) {
-//            return false;
-//        }
-//        
-//        return cookie.getOpenedPanes() != null;
-//    }
+    //    private static boolean isSomePaneOpened(DataObject file) {
+    //        EditorCookie cookie = (EditorCookie) file.getCookie(EditorCookie.class);
+    //
+    //        if (cookie == null) {
+    //            return false;
+    //        }
+    //
+    //        return cookie.getOpenedPanes() != null;
+    //    }
     
-//    private static void reparseDocument(DataObject file) throws IOException {
-//        saveDocument(file);
-//        SourceCookie sc = (SourceCookie) file.getCookie(SourceCookie.class);
-//        
-//        if (sc != null) {
-//            SourceElement se = sc.getSource();
-//            se.prepare().waitFinished();
-//        } else {
-//            System.err.println("reparseDocument: SourceCookie cookie not found in testFile!");
-//        }
-//    }
+    private static void reparseDocument(DataObject file) throws IOException {
+        saveDocument(file);
+     /*   SourceCookie sc = (SourceCookie) file.getCookie(SourceCookie.class);
+      
+        if (sc != null) {
+            SourceElement se = sc.getSource();
+            se.prepare().waitFinished();
+        } else {
+            System.err.println("reparseDocument: SourceCookie cookie not found in testFile!");
+        }*/
+        // XXX waiting to reparse - should be repalaced by smtg more sofisticated
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            
+        }
+    }
     
-//    private static void saveDocument(DataObject file) throws IOException { //!!!WARNING: if this exception is thrown, the test may be locked (the file in editor may be modified, but not saved. problems with IDE finishing are supposed in this case).
-//        SaveCookie sc = (SaveCookie) file.getCookie(SaveCookie.class);
-//        
-//        if (sc != null) {
-//            sc.save();
-//        }
-//    }
-  
+    private static void saveDocument(DataObject file) throws IOException { //!!!WARNING: if this exception is thrown, the test may be locked (the file in editor may be modified, but not saved. problems with IDE finishing are supposed in this case).
+        SaveCookie sc = (SaveCookie) file.getCookie(SaveCookie.class);
+        
+        if (sc != null) {
+            sc.save();
+        }
+    }
+    
 }

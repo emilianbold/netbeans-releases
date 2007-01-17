@@ -27,5 +27,6 @@ Microsystems, Inc. All Rights Reserved.
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="all"/>
+    <!--<property name="xtest.debug.port" value="8765"/>-->
 
 </project>

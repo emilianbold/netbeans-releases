@@ -344,7 +344,7 @@ public class EditorTestCase extends JellyTestCase {
      *
      *  @return false if the given maxMiliSeconds time elapsed and the requiredValue wasn't obtained
      */
-    protected boolean waitMaxMilisForValue(int maxMiliSeconds, ValueResolver resolver, Object requiredValue){
+    public static boolean waitMaxMilisForValue(int maxMiliSeconds, ValueResolver resolver, Object requiredValue){
         int time = (int) maxMiliSeconds / 100;
         while (time > 0) {
             Object resolvedValue = resolver.getValue();

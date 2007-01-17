@@ -293,7 +293,7 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
 
         //28 collapse One-line InnerClass Javadoc Fold
         // One-line Inn|erClass Javadoc Fold
-        collapseFoldAtCaretPosition(editor, 55, 21);
+        collapseFoldAtCaretPosition(editor, 52, 21);
         compareFoldHierarchyDump();
     
         //29 collapse One-line InnerClass Fold

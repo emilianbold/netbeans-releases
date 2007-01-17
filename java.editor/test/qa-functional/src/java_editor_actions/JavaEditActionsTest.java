@@ -222,14 +222,14 @@ import editor_actions.EditorActionsTest;
             editor.setCaretPosition(19, 12);
             txtOper.typeKey('s');
             txtOper.typeKey('t');
-            txtOper.typeKey(' ');
+            txtOper.pressKey(KeyEvent.VK_TAB);
             compareToGoldenFile(txtOper.getDocument());
             
             // 18 -- test Insert space without expanding abbreviation (SHIFT+SPACE)
             editor.setCaretPosition(20, 9);
             txtOper.typeKey('s');
             txtOper.typeKey('t');
-            txtOper.typeKey(' ', KeyEvent.SHIFT_MASK);
+            txtOper.typeKey(' ');
             compareToGoldenFile(txtOper.getDocument());
             
             /* __________________ Capitlization ___________________ */
