@@ -19,19 +19,33 @@
 
 package org.netbeans.modules.web.core.syntax.completion;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
+import org.netbeans.modules.web.jsps.parserapi.PageInfo.BeanData;
+import org.netbeans.spi.editor.completion.CompletionItem;
 
 /**
  *
  * @author Petr Pisl
  * @author Marek.Fukala@Sun.COM
+ * @author Tomasz.Slota@Sun.COM
  */
 
 
@@ -40,6 +54,7 @@ import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
  *  language.
  */
 public class ELExpression {
+    private static final Logger logger = Logger.getLogger(ELExpression.class.getName());
     
     /** it is not Expession Language */
     public static final int NOT_EL = 0;
@@ -89,7 +104,7 @@ public class ELExpression {
             }
             int diff = ts.move(tunedOffset);
             if(diff == Integer.MAX_VALUE) {
-                return EL_UNKNOWN; //no token found
+                return EL_START; //TODO: why?
             }
             
             // Find the start of the expression. It doesn't have to be an EL delimiter (${ #{)
@@ -120,15 +135,13 @@ public class ELExpression {
             }
             if (token.id() != ELTokenId.IDENTIFIER && token.id() != ELTokenId.TAG_LIB_PREFIX ) {
                 value = null;
-            } else if (token.id() == ELTokenId.WHITESPACE || token.id() == ELTokenId.LPAREN) {
-                result = EL_START;
-            }
-
-//fixme: Retouche
-//                else
-//                   if (value != null){
-//                     result = findContext(value);
-//                   }
+            } else
+                if (token.id() == ELTokenId.WHITESPACE || token.id() == ELTokenId.LPAREN) {
+                    result = EL_START;
+                } else
+                    if (value != null){
+                        result = findContext(value);
+                    }
             
         } finally {
             document.readUnlock();
@@ -136,148 +149,253 @@ public class ELExpression {
         expression = value;
         return result;
     }
-
-//fixme: Retouche
-//    /* Returns the JavaClass of the bean which is in the expression. Returns null, when
-//     *  the appropriate class is not found.
-//     */
-//    public JavaClass getBean(String elExp){
-//        JavaClass javaClass = null;
-//        DataObject obj = NbEditorUtilities.getDataObject(sup.getDocument());
-//
-//        if (elExp != null && !elExp.equals("") && obj != null){
-//            if (elExp.indexOf('.')> -1){
-//                String beanName = elExp.substring(0,elExp.indexOf('.'));
-//                BeanData[] beans = sup.getBeanData();
-//                for (int i = 0; i < beans.length; i++) {
-//                    if (beans[i].getId().equals(beanName)){
-//                        javaClass = JMIUtil.findClass(beans[i].getClassName(), ClassPath.getClassPath(obj.getPrimaryFile(), ClassPath.EXECUTE));
-//                        break;
-//                    }
-//                }
-//            }
-//        }
-//        return javaClass;
-//    }
-//
-//    /* Returns list of strings in form property name1, property type1 .....
-//     */
-//    public List /*<String>*/ getProperties(String elExp, JavaClass bean){
-//        List properties = new ArrayList();
-//        JavaClass javaClass = findLastJavaClass(elExp, bean);
-//
-//        if (javaClass != null && !javaClass.getName().equals("java.lang.String")){
-//            Method methods [] = JMIUtil.getMethods(javaClass);
-//            for (int j = 0; j < methods.length; j++) {
-//                if ((methods[j].getName().startsWith("get") || methods[j].getName().startsWith("is"))
-//                        && methods[j].getParameters().size() == 0
-//                        && ((methods[j].getModifiers() & Modifier.PUBLIC) != 0)) {
-//                    String name = methods[j].getName();
-//                    if (name.startsWith("get"))
-//                        name = name.substring(3);
-//                    else
-//                        name = name.substring(2);
-//
-//                    name = name.substring(0,1).toLowerCase()+name.substring(1);
-//                    properties.add(name);
-//                    properties.add(methods[j].getType().getName());
-//                }
-//            }
-//        }
-//        return properties;
-//    }
-//
-//    /*  Returns a JMI object which corresponds to the property in the source file.
-//     */
-//    public Object getPropertyDeclaration (String elExp, JavaClass bean){
-//        JavaClass javaClass = findLastJavaClass(elExp, bean);;
-//        String property = null;
-//        if (elExp.lastIndexOf('.') > -1)
-//            property = elExp.substring(elExp.lastIndexOf('.')+1);
-//        if (javaClass != null && property != null){
-//            Method methods [] = JMIUtil.getMethods(javaClass);
-//            for (int j = 0; j < methods.length; j++) {
-//                if ((methods[j].getName().startsWith("get") || methods[j].getName().startsWith("is"))
-//                        && methods[j].getParameters().size() == 0
-//                        && ((methods[j].getModifiers() & Modifier.PUBLIC) != 0)) {
-//                    String name = methods[j].getName();
-//                    if (name.startsWith("get"))
-//                        name = name.substring(3);
-//                    else
-//                        name = name.substring(2);
-//                    name = name.substring(0,1).toLowerCase()+name.substring(1);
-//                    if (name.equals(property)){
-//                        return methods[j];
-//                    }
-//                }
-//            }
-//        }
-//        return null;
-//    }
-//
-//    /** Return context, whether the expression is about a bean, implicit object or
-//     *  function.
-//     */
-//    protected int findContext(String expr){
-//        int dotIndex = expr.indexOf('.');
-//        int bracketIndex = expr.indexOf('[');
-//        int value = EL_UNKNOWN;
-//
-//        if (bracketIndex == -1 && dotIndex > -1){
-//            String first = expr.substring(0, dotIndex);
-//            BeanData[] beans = sup.getBeanData();
-//            if (beans != null) {
-//                for (int i = 0; i < beans.length; i++)
-//                    if (beans[i].getId().equals(first)){
-//                        value = EL_BEAN;
-//                        continue;
-//                    }
-//            }
-//            if (value == EL_UNKNOWN && ELImplicitObjects.getELImplicitObjects(first).size()>0)
-//                value = EL_IMPLICIT;
-//        }
-//        else if (bracketIndex == -1 && dotIndex == -1)
-//            value = EL_START;
-//        return value;
-//    }
-//
-//    /*  Returns the last java class which is in the expression.
-//     *  Usefutl for bean.property1.property2
-//     */
-//    protected JavaClass findLastJavaClass(String elExp, JavaClass bean){
-//        JavaClass javaClass = bean;
-//        if (elExp != null && !elExp.equals("") && elExp.indexOf('.')> -1){
-//            String pos = elExp.substring(elExp.indexOf('.')+1);
-//
-//            //find the last known class
-//            if (javaClass != null && pos != null && !pos.equals("") && pos.lastIndexOf('.') > - 1){
-//                StringTokenizer st = new StringTokenizer(pos.substring(0, pos.lastIndexOf('.')), ".");
-//
-//                while(st.hasMoreTokens()){
-//                    String text = st.nextToken();
-//                    if (javaClass != null){
-//                        Method methods [] = JMIUtil.getMethods(javaClass);
-//                        //reset the java class. Will be setup, if the property is found
-//                        javaClass = null;
-//                        for (int j = 0; j < methods.length; j++) {
-//                            if (methods[j].getName().startsWith("get")) {
-//                                String name = methods[j].getName().substring(3);
-//                                name = name.substring(0,1).toLowerCase()+name.substring(1);
-//                                if (name.equals(text)){
-//                                    if (methods[j].getType() instanceof JavaClass)
-//                                        javaClass = (JavaClass)methods[j].getType();
-//                                    else
-//                                        javaClass = null;
-//                                    break;
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        return javaClass;
-//    }
+    
+    public List<CompletionItem> getPropertyCompletionItems(String beanType){
+        ClasspathInfo cpInfo = ClasspathInfo.create(sup.getFileObject());
+        JavaSource source = JavaSource.create(cpInfo, Collections.EMPTY_LIST);
+        
+        PropertyCompletionItemsTask task = new PropertyCompletionItemsTask(beanType);
+        
+        try{
+            source.runUserActionTask(task, true);
+        } catch (IOException e){
+            logger.log(Level.SEVERE, e.getMessage(), e);
+        }
+        
+        return task.getCompletionItems();
+    }
+    
+    public String extractBeanName(){
+        String elExp = getExpression();
+        
+        if (elExp != null && !elExp.equals("")){
+            if (elExp.indexOf('.')> -1){
+                String beanName = elExp.substring(0,elExp.indexOf('.'));
+                return beanName;
+            }
+        }
+        
+        return null;
+    }
+    
+    private String getPropertyBeingTypedName(){
+        String elExp = getExpression();
+        int dotPos = elExp.lastIndexOf(".");
+        
+        return dotPos == -1 ? null : elExp.substring(dotPos + 1);
+    }
+    
+    private class PropertyCompletionItemsTask implements CancellableTask<CompilationController>{
+        private String beanType;
+        private List<CompletionItem> completionItems = new ArrayList<CompletionItem>();
+        
+        public PropertyCompletionItemsTask(String beanType){
+            this.beanType = beanType;
+        }
+        
+        public void cancel() {}
+        
+        public void run(CompilationController parameter) throws Exception {
+            parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            
+            TypeElement bean = getTypePreceedingCaret(parameter);
+            
+            if (bean != null){
+                String prefix = getPropertyBeingTypedName();
+                
+                for (ExecutableElement method : ElementFilter.methodsIn(bean.getEnclosedElements())){
+                    String propertyName = getPropertyName(method.getSimpleName().toString());
+                    
+                    if (propertyName != null && propertyName.startsWith(prefix)){
+                        CompletionItem item = new JspCompletionItem.ELProperty(
+                                propertyName,
+                                method.getReturnType().toString());
+                        
+                        completionItems.add(item);
+                    }
+                }
+            }
+        }
+        
+        /**
+         * bean.prop2... propN.propertyBeingTyped| - returns the type of propN
+         */
+        private TypeElement getTypePreceedingCaret(CompilationController parameter){
+            TypeElement lastKnownType = parameter.getElements().getTypeElement(beanType);
+            
+            String parts[] = getExpression().split(".");
+            // part[0] - the bean
+            // part[parts.length - 1] - the property being typed
+            
+            for (int i = 1; i < parts.length - 1; i ++){
+                String accessorName = getAccessorName(parts[i]);
+                
+                // TODO: implement me
+            }
+            
+            
+            return lastKnownType;
+        }
+        
+        private String getAccessorName(String propertyName){
+            return "get" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
+        }
+        
+        private String getPropertyName(String accessorName){
+            if (accessorName.startsWith("get")){
+                return Character.toLowerCase(accessorName.charAt(3)) + accessorName.substring(4);
+            }
+            
+            return null; // not an accessor name
+        }
+        
+        //
+        //    /*  Returns the last java class which is in the expression.
+        //     *  Usefutl for bean.property1.property2
+        //     */
+        //    protected JavaClass findLastJavaClass(String elExp, JavaClass bean){
+        //        JavaClass javaClass = bean;
+        //        if (elExp != null && !elExp.equals("") && elExp.indexOf('.')> -1){
+        //            String pos = elExp.substring(elExp.indexOf('.')+1);
+        //
+        //            //find the last known class
+        //            if (javaClass != null && pos != null && !pos.equals("") && pos.lastIndexOf('.') > - 1){
+        //                StringTokenizer st = new StringTokenizer(pos.substring(0, pos.lastIndexOf('.')), ".");
+        //
+        //                while(st.hasMoreTokens()){
+        //                    String text = st.nextToken();
+        //                    if (javaClass != null){
+        //                        Method methods [] = JMIUtil.getMethods(javaClass);
+        //                        //reset the java class. Will be setup, if the property is found
+        //                        javaClass = null;
+        //                        for (int j = 0; j < methods.length; j++) {
+        //                            if (methods[j].getName().startsWith("get")) {
+        //                                String name = methods[j].getName().substring(3);
+        //                                name = name.substring(0,1).toLowerCase()+name.substring(1);
+        //                                if (name.equals(text)){
+        //                                    if (methods[j].getType() instanceof JavaClass)
+        //                                        javaClass = (JavaClass)methods[j].getType();
+        //                                    else
+        //                                        javaClass = null;
+        //                                    break;
+        //                                }
+        //                            }
+        //                        }
+        //                    }
+        //                }
+        //            }
+        //        }
+        //        return javaClass;
+        //    }
+        
+        public List<CompletionItem> getCompletionItems(){
+            return completionItems;
+        }
+    }
+    
+    //fixme: Retouche
+    //    /* Returns the JavaClass of the bean which is in the expression. Returns null, when
+    //     *  the appropriate class is not found.
+    //     */
+    //    public JavaClass getBean(String elExp){
+    //        JavaClass javaClass = null;
+    //        DataObject obj = NbEditorUtilities.getDataObject(sup.getDocument());
+    //
+    //        if (elExp != null && !elExp.equals("") && obj != null){
+    //            if (elExp.indexOf('.')> -1){
+    //                String beanName = elExp.substring(0,elExp.indexOf('.'));
+    //                BeanData[] beans = sup.getBeanData();
+    //                for (int i = 0; i < beans.length; i++) {
+    //                    if (beans[i].getId().equals(beanName)){
+    //                        javaClass = JMIUtil.findClass(beans[i].getClassName(), ClassPath.getClassPath(obj.getPrimaryFile(), ClassPath.EXECUTE));
+    //                        break;
+    //                    }
+    //                }
+    //            }
+    //        }
+    //        return javaClass;
+    //    }
+    //
+    //    /* Returns list of strings in form property name1, property type1 .....
+    //     */
+    //    public List /*<String>*/ getProperties(String elExp, JavaClass bean){
+    //        List properties = new ArrayList();
+    //        JavaClass javaClass = findLastJavaClass(elExp, bean);
+    //
+    //        if (javaClass != null && !javaClass.getName().equals("java.lang.String")){
+    //            Method methods [] = JMIUtil.getMethods(javaClass);
+    //            for (int j = 0; j < methods.length; j++) {
+    //                if ((methods[j].getName().startsWith("get") || methods[j].getName().startsWith("is"))
+    //                        && methods[j].getParameters().size() == 0
+    //                        && ((methods[j].getModifiers() & Modifier.PUBLIC) != 0)) {
+    //                    String name = methods[j].getName();
+    //                    if (name.startsWith("get"))
+    //                        name = name.substring(3);
+    //                    else
+    //                        name = name.substring(2);
+    //
+    //                    name = name.substring(0,1).toLowerCase()+name.substring(1);
+    //                    properties.add(name);
+    //                    properties.add(methods[j].getType().getName());
+    //                }
+    //            }
+    //        }
+    //        return properties;
+    //    }
+    //
+    //    /*  Returns a JMI object which corresponds to the property in the source file.
+    //     */
+    //    public Object getPropertyDeclaration (String elExp, JavaClass bean){
+    //        JavaClass javaClass = findLastJavaClass(elExp, bean);;
+    //        String property = null;
+    //        if (elExp.lastIndexOf('.') > -1)
+    //            property = elExp.substring(elExp.lastIndexOf('.')+1);
+    //        if (javaClass != null && property != null){
+    //            Method methods [] = JMIUtil.getMethods(javaClass);
+    //            for (int j = 0; j < methods.length; j++) {
+    //                if ((methods[j].getName().startsWith("get") || methods[j].getName().startsWith("is"))
+    //                        && methods[j].getParameters().size() == 0
+    //                        && ((methods[j].getModifiers() & Modifier.PUBLIC) != 0)) {
+    //                    String name = methods[j].getName();
+    //                    if (name.startsWith("get"))
+    //                        name = name.substring(3);
+    //                    else
+    //                        name = name.substring(2);
+    //                    name = name.substring(0,1).toLowerCase()+name.substring(1);
+    //                    if (name.equals(property)){
+    //                        return methods[j];
+    //                    }
+    //                }
+    //            }
+    //        }
+    //        return null;
+    //    }
+    //
+    /** Return context, whether the expression is about a bean, implicit object or
+     *  function.
+     */
+    protected int findContext(String expr){
+        int dotIndex = expr.indexOf('.');
+        int bracketIndex = expr.indexOf('[');
+        int value = EL_UNKNOWN;
+        
+        if (bracketIndex == -1 && dotIndex > -1){
+            String first = expr.substring(0, dotIndex);
+            BeanData[] beans = sup.getBeanData();
+            if (beans != null) {
+                for (int i = 0; i < beans.length; i++)
+                    if (beans[i].getId().equals(first)){
+                        value = EL_BEAN;
+                        continue;
+                    }
+            }
+            if (value == EL_UNKNOWN && ELImplicitObjects.getELImplicitObjects(first).size()>0)
+                value = EL_IMPLICIT;
+        } else if (bracketIndex == -1 && dotIndex == -1)
+            value = EL_START;
+        return value;
+    }
+    
     
     public String getExpression() {
         return expression;
