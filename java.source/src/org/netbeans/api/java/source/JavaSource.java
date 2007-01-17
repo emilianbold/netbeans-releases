@@ -349,7 +349,7 @@ public final class JavaSource {
     private JavaSource (ClasspathInfo cpInfo, Collection<? extends FileObject> files) throws IOException {
         this.files = Collections.unmodifiableList(new ArrayList<FileObject>(files));   //Create a defensive copy, prevent modification
         this.fileChangeListener = new FileChangeListenerImpl ();
-        boolean multipleSources = this.files.size() > 1;
+        boolean multipleSources = this.files.size() > 1, filterAssigned = false;
         for (Iterator<? extends FileObject> it = this.files.iterator(); it.hasNext();) {
             FileObject file = it.next();
             try {
@@ -357,11 +357,14 @@ public final class JavaSource {
                 if (!multipleSources) {
                     file.addFileChangeListener(FileUtil.weakFileChangeListener(this.fileChangeListener,file));
                     this.assignDocumentListener(file);
-                    this.dataObjectListener = new DataObjectListener(file);
+                    this.dataObjectListener = new DataObjectListener(file);                                        
+                }
+                if (!filterAssigned) {
+                    filterAssigned = true;
                     JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(file);
                     if (filter != null) {
                         this.filterListener = new FilterListener (filter);
-                    }                    
+                    }
                 }
             } catch (DataObjectNotFoundException donf) {
                 if (multipleSources) {
