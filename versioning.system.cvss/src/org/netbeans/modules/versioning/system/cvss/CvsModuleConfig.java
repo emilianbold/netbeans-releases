@@ -23,9 +23,11 @@ import java.util.regex.Pattern;
 import java.util.*;
 import java.lang.String;
 import java.util.prefs.Preferences;
+import java.io.File;
 
 import org.openide.util.NbPreferences;
 import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.modules.versioning.util.FileCollection;
 import org.netbeans.modules.versioning.system.cvss.ui.selectors.ProxyDescriptor;
 import org.netbeans.lib.cvsclient.CVSRoot;
 
@@ -50,36 +52,38 @@ public class CvsModuleConfig {
         return INSTANCE;
     }
 
-    private Set<String> exclusions;
-
-    private Map<String, RootSettings> rootsMap;
+    private FileCollection excludedFiles;
     
+    private Map<String, RootSettings> rootsMap;
+
+
+    public CvsModuleConfig() {
+        excludedFiles = new FileCollection();
+        excludedFiles.load(getPreferences(), PROP_COMMIT_EXCLUSIONS);
+    }
+
     public Pattern [] getIgnoredFilePatterns() {
         return getDefaultFilePatterns();
     }
 
-    public boolean isExcludedFromCommit(String path) {
-        return getCommitExclusions().contains(path);
+    public boolean isExcludedFromCommit(File file) {
+        return excludedFiles.contains(file);
     }
     
     /**
-     * @param paths collection of paths, of File.getAbsolutePath()
+     * @param file file to exclude from commit
      */
-    public void addExclusionPaths(Collection<String> paths) {
-        Set<String> exclusions = getCommitExclusions();
-        if (exclusions.addAll(paths)) {
-            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<String>(exclusions));
-        }
+    public void addExclusion(File file) {
+        excludedFiles.add(file);
+        excludedFiles.save(getPreferences(), PROP_COMMIT_EXCLUSIONS);
     }
 
     /**
-     * @param paths collection of paths, File.getAbsolutePath()
+     * @param file file to include in commit
      */
-    public void removeExclusionPaths(Collection<String> paths) {
-        Set<String> exclusions = getCommitExclusions();
-        if (exclusions.removeAll(paths)) {
-            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<String>(exclusions));
-        }
+    public void removeExclusion(File file) {
+        excludedFiles.remove(file);
+        excludedFiles.save(getPreferences(), PROP_COMMIT_EXCLUSIONS);
     }
     
     // clients code ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -260,13 +264,6 @@ public class CvsModuleConfig {
     
     // private methods ~~~~~~~~~~~~~~~~~~
        
-    private synchronized Set<String> getCommitExclusions() {
-        if (exclusions == null) {
-            exclusions = new HashSet<String>(Utils.getStringList(getPreferences(), PROP_COMMIT_EXCLUSIONS));
-        }
-        return exclusions;
-    }
-            
     private Pattern[] getDefaultFilePatterns() {
         return new Pattern [] {
                         Pattern.compile("cvslog\\..*"),  // NOI18N

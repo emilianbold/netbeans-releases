@@ -148,7 +148,7 @@ class CommitTableModel extends AbstractTableModel {
         commitOptions = new CommitOptions[nodes.length];
         for (int i = 0; i < nodes.length; i++) {
             CvsFileNode node = nodes[i];
-            if (CvsModuleConfig.getDefault().isExcludedFromCommit(node.getFile().getAbsolutePath())) {
+            if (CvsModuleConfig.getDefault().isExcludedFromCommit(node.getFile())) {
                 commitOptions[i] = CommitOptions.EXCLUDE;
             } else {
                 switch (node.getInformation().getStatus()) {

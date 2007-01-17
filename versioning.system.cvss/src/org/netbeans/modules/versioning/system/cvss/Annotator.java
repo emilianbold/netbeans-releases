@@ -368,7 +368,7 @@ public class Annotator {
                             return Utilities.mergeImages(icon, badge, 16, 9);
                         }
                         modified = true;
-                        allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
+                        allExcluded &= config.isExcludedFromCommit(mf);
                     }
                 }
             } else {
@@ -382,7 +382,7 @@ public class Annotator {
                             return Utilities.mergeImages(icon, badge, 16, 9);
                         }
                         modified = true;
-                        allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
+                        allExcluded &= config.isExcludedFromCommit(mf);
                     }
                 }
             }
@@ -570,7 +570,7 @@ public class Annotator {
                             return Utilities.mergeImages(icon, badge, 16, 9);
                         }
                         modified = true;
-                        allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
+                        allExcluded &= config.isExcludedFromCommit(mf);
                     }
                 }
             } else {
@@ -584,7 +584,7 @@ public class Annotator {
                             return Utilities.mergeImages(icon, badge, 16, 9);
                         }
                         modified = true;
-                        allExcluded &= config.isExcludedFromCommit(mf.getAbsolutePath());
+                        allExcluded &= config.isExcludedFromCommit(mf);
                     }
                 }
             }

@@ -116,8 +116,7 @@ public class DiffExecutor {
         List files = new ArrayList();
         for (int i = 0; i < nodes.length; i++) {
             File file = nodes[i].getFile();
-            String path = file.getAbsolutePath();
-            if (CvsModuleConfig.getDefault().isExcludedFromCommit(path) == false) {
+            if (CvsModuleConfig.getDefault().isExcludedFromCommit(file) == false) {
                 files.add(file);
             }
         }

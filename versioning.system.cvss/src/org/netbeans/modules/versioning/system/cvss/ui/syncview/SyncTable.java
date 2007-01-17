@@ -434,7 +434,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
                 if (!isSelected) {
                     value = "<html>" + node.getHtmlDisplayName(); // NOI18N
                 }
-                if (CvsModuleConfig.getDefault().isExcludedFromCommit(node.getFile().getAbsolutePath())) {
+                if (CvsModuleConfig.getDefault().isExcludedFromCommit(node.getFile())) {
                     String nodeName = node.getDisplayName();
                     if (isSelected) {
                         value = "<html><s>" + nodeName + "</s></html>"; // NOI18N

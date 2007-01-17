@@ -51,7 +51,7 @@ import java.util.*;
  */
 public class CommitAction extends AbstractSystemAction {
     
-    private static CommitCommand   commandTemplate = new CommitCommand();
+    static final String RECENT_COMMIT_MESSAGES = "commitAction.commitMessage";
 
     public CommitAction() {
         setIcon(null);
@@ -79,10 +79,8 @@ public class CommitAction extends AbstractSystemAction {
         
         CommitCommand cmd = new CommitCommand();
         cmd.setDisplayName(NbBundle.getMessage(CommitAction.class, "BK0001"));
-        copy (cmd, commandTemplate);
         
         final CommitSettings settings = new CommitSettings();
-        settings.setCommand(cmd);
         final JButton commit = new JButton(loc.getString("CTL_CommitForm_Action_Commit"));
         commit.setToolTipText(NbBundle.getMessage(CommitAction.class, "TT_CommitDialog_Action_Commit"));
         commit.setEnabled(false);
@@ -90,7 +88,7 @@ public class CommitAction extends AbstractSystemAction {
         cancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommitAction.class, "ACSD_CommitDialog_Action_Cancel"));
         DialogDescriptor descriptor = new DialogDescriptor(
                 settings, 
-                MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), new Object [] { contentTitle }),
+                MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), contentTitle),
                 true,
                 new Object [] { commit, cancel },
                 commit,
@@ -114,8 +112,8 @@ public class CommitAction extends AbstractSystemAction {
 
         saveExclusions(settings);
 
-        settings.updateCommand(cmd);
-        copy(commandTemplate, cmd);
+        cmd.setMessage(settings.getCommitMessage());
+        org.netbeans.modules.versioning.util.Utils.insert(CvsModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, cmd.getMessage(), 20);
         if (runningName == null) {
             runningName = NbBundle.getMessage(CommitAction.class, "BK0002");
         }
@@ -128,11 +126,10 @@ public class CommitAction extends AbstractSystemAction {
         CommitSettings.CommitFile [] files = settings.getCommitFiles();
         for (int i = 0; i < files.length; i++) {
             CommitSettings.CommitFile file = files[i];
-            List<String> paths = Arrays.asList(new String[] { file.getNode().getFile().getAbsolutePath() });
             if (file.getOptions() == CommitOptions.EXCLUDE) {
-                CvsModuleConfig.getDefault().addExclusionPaths(paths);
+                CvsModuleConfig.getDefault().addExclusion(file.getNode().getFile());
             } else {
-                CvsModuleConfig.getDefault().removeExclusionPaths(paths);
+                CvsModuleConfig.getDefault().removeExclusion(file.getNode().getFile());
             }
         }
     }
@@ -151,7 +148,7 @@ public class CommitAction extends AbstractSystemAction {
     private static void refreshCommitDialog(CommitSettings settings, JButton commit) {
         ResourceBundle loc = NbBundle.getBundle(CommitAction.class);
         CommitSettings.CommitFile [] files = settings.getCommitFiles();
-        Set stickyTags = new HashSet();
+        Set<String> stickyTags = new HashSet<String>();
         boolean conflicts = false;
         for (int i = 0; i < files.length; i++) {
             CommitSettings.CommitFile file = files[i];
@@ -183,16 +180,16 @@ public class CommitAction extends AbstractSystemAction {
         if (stickyTags.size() <= 1) {
             String stickyTag = stickyTags.size() == 0 ? null : (String) stickyTags.iterator().next(); 
             if (stickyTag == null) {
-                dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), new Object [] { contentTitle }));
+                dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), contentTitle));
                 errorLabel = ""; // NOI18N
             } else {
                 stickyTag = stickyTag.substring(1);
-                dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title_Branch"), new Object [] { contentTitle, stickyTag }));
-                String msg = MessageFormat.format(loc.getString("MSG_CommitForm_InfoBranch"), new Object [] { stickyTag });
+                dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title_Branch"), contentTitle, stickyTag));
+                String msg = MessageFormat.format(loc.getString("MSG_CommitForm_InfoBranch"), stickyTag);
                 errorLabel = "<html><font color=\"#002080\">" + msg + "</font></html>"; // NOI18N
             }
         } else {
-            dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title_Branches"), new Object [] { contentTitle }));
+            dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title_Branches"), contentTitle));
             String msg = loc.getString("MSG_CommitForm_ErrorMultipleBranches");
             errorLabel = "<html><font color=\"#CC0000\">" + msg + "</font></html>"; // NOI18N
         }
@@ -210,16 +207,6 @@ public class CommitAction extends AbstractSystemAction {
         return false;
     }
     
-    private static void copy(CommitCommand c1, CommitCommand c2) {
-        c1.setMessage(c2.getMessage());
-        c1.setRecursive(c2.isRecursive());
-        c1.setForceCommit(c2.isForceCommit());
-        c1.setLogMessageFromFile(c2.getLogMessageFromFile());
-        c1.setNoModuleProgram(c2.isNoModuleProgram());
-        c1.setToRevisionOrBranch(c2.getToRevisionOrBranch());
-        c1.setDisplayName(c2.getDisplayName());
-    }
-
     /**
      * Prepares add/commit actions based on settings in the Commit dialog.
      *
@@ -229,15 +216,15 @@ public class CommitAction extends AbstractSystemAction {
     public static void addCommit(ExecutorGroup group, CommitSettings settings) {
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         CommitSettings.CommitFile [] files = settings.getCommitFiles();
-        List commitBucket = new ArrayList();
-        List addDefaultBucket = new ArrayList();
-        List addKkvBucket = new ArrayList();
-        List addKkvlBucket = new ArrayList();
-        List addKkBucket = new ArrayList();
-        List addKoBucket = new ArrayList();
-        List addKbBucket = new ArrayList();
-        List addKvBucket = new ArrayList();
-        List removeBucket = new ArrayList();
+        List<File> commitBucket = new ArrayList<File>();
+        List<File> addDefaultBucket = new ArrayList<File>();
+        List<File> addKkvBucket = new ArrayList<File>();
+        List<File> addKkvlBucket = new ArrayList<File>();
+        List<File> addKkBucket = new ArrayList<File>();
+        List<File> addKoBucket = new ArrayList<File>();
+        List<File> addKbBucket = new ArrayList<File>();
+        List<File> addKvBucket = new ArrayList<File>();
+        List<File> removeBucket = new ArrayList<File>();
         for (int i = 0; i < files.length; i++) {
             CommitSettings.CommitFile file = files[i];
             if (file.getOptions() == CommitOptions.EXCLUDE) continue;
@@ -266,7 +253,7 @@ public class CommitAction extends AbstractSystemAction {
         group.addExecutors(createCommit(commitBucket, settings.getCommitMessage()));
     }
 
-    private static ExecutorSupport[] createCommit(List bucket, String message) {
+    private static ExecutorSupport[] createCommit(List<File> bucket, String message) {
         if (bucket.size() == 0) return null;
         CommitCommand cmd = new CommitCommand();
         cmd.setFiles((File []) bucket.toArray(new File[bucket.size()]));
@@ -274,14 +261,14 @@ public class CommitAction extends AbstractSystemAction {
         return CommitExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), null);
     }
 
-    private static ExecutorSupport[] createRemove(List bucket) {
+    private static ExecutorSupport[] createRemove(List<File> bucket) {
         if (bucket.size() == 0) return null;
         RemoveCommand cmd = new RemoveCommand();
         cmd.setFiles((File []) bucket.toArray(new File[bucket.size()]));
         return RemoveExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), null);
     }
 
-    private static ExecutorSupport[] createAdd(List bucket, KeywordSubstitutionOptions option) {
+    private static ExecutorSupport[] createAdd(List<File> bucket, KeywordSubstitutionOptions option) {
         if (bucket.size() == 0) return null;
         AddCommand cmd = new AddCommand();
         cmd.setFiles((File []) bucket.toArray(new File[bucket.size()]));
