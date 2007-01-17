@@ -13,14 +13,14 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.editor.overridden;
 
 import java.awt.Point;
 import java.awt.event.ActionEvent;
-import java.lang.ref.Reference;
+import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
@@ -30,12 +30,11 @@ import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.editor.Annotations;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ImplementationProvider;
+import org.netbeans.editor.JumpList;
 import org.netbeans.editor.Utilities;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.text.Annotatable;
-import org.openide.text.Line;
 
 /**
  *
@@ -81,61 +80,65 @@ public final class IsOverriddenAnnotationAction extends AbstractAction {
         return od.getPrimaryFile();
     }
     
-    private IsOverriddenAnnotation findAnnotation(JTextComponent component, AnnotationDesc desc, int lineNum) {
+    private IsOverriddenAnnotation findAnnotation(JTextComponent component, AnnotationDesc desc, int offset) {
         FileObject file = getFile(component);
         
         if (file == null) {
             if (ErrorManager.getDefault().isLoggable(ErrorManager.WARNING)) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "component=" + component + " does not have a file specified in the file.");
+                ErrorManager.getDefault().log(ErrorManager.WARNING, "component=" + component + " does not have a file specified in the document.");
             }
             return null;
         }
         
-        Reference<IsOverriddenAnnotationHandler> handlerRef = IsOverriddenAnnotationHandler.file2Annotations.get(file);
-        IsOverriddenAnnotationHandler handler = handlerRef != null ? handlerRef.get() : null;
+        AnnotationsHolder ah = AnnotationsHolder.get(file);
 
-        if (handler == null) {
-            if (ErrorManager.getDefault().isLoggable(ErrorManager.WARNING)) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "component=" + component + " does not have attached a IsOverriddenAnnotationHandler");
-            }
+        if (ah == null) {
+            IsOverriddenAnnotationHandler.LOG.log(Level.INFO, "component=" + component + " does not have attached a IsOverriddenAnnotationHandler");
 
             return null;
         }
 
-        for(IsOverriddenAnnotation a : handler.annotations) {
-            Annotatable at = a.getAttachedAnnotatable();
-            
-            if (at instanceof Line && lineNum == ((Line) at).getLineNumber()
-                         && desc.getShortDescription().equals(a.getShortDescription())
-                         && a instanceof IsOverriddenAnnotation) {
-                return (IsOverriddenAnnotation) a;
+        for(IsOverriddenAnnotation a : ah.getAnnotations()) {
+            if (   a.getPosition().getOffset() == offset
+                && desc.getShortDescription().equals(a.getShortDescription())) {
+                return a;
             }
         }
         
         return null;
     }
     
-    boolean invokeDefaultAction(JTextComponent comp) {
-        Document doc = comp.getDocument();
+    boolean invokeDefaultAction(final JTextComponent comp) {
+        final Document doc = comp.getDocument();
         
         if (doc instanceof BaseDocument) {
-            Annotations annotations = ((BaseDocument) doc).getAnnotations();
+            final int currentPosition = comp.getCaretPosition();
+            final Annotations annotations = ((BaseDocument) doc).getAnnotations();
+            final IsOverriddenAnnotation[] annotation = new IsOverriddenAnnotation[1];
+            final Point[] p = new Point[1];
             
-            try {
-                int line = Utilities.getLineOffset((BaseDocument) doc, comp.getCaretPosition());
-                AnnotationDesc desc = annotations.getActiveAnnotation(line);
-                Point p = comp.modelToView(Utilities.getRowStartFromLineOffset((BaseDocument) doc, line)).getLocation();
-                IsOverriddenAnnotation annotation = findAnnotation(comp, desc, line);
-                
-                if (annotation == null)
-                    return false;
-                
-                annotation.mouseClicked(comp, p);
-                
-                return true;
-            }  catch (BadLocationException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
+            doc.render(new Runnable() {
+                public void run() {
+                    try {
+                        int line = Utilities.getLineOffset((BaseDocument) doc, currentPosition);
+                        int startOffset = Utilities.getRowStartFromLineOffset((BaseDocument) doc, line);
+                        AnnotationDesc desc = annotations.getActiveAnnotation(line);
+                        p[0] = comp.modelToView(startOffset).getLocation();
+                        annotation[0] = findAnnotation(comp, desc, startOffset);
+                    }  catch (BadLocationException ex) {
+                        ErrorManager.getDefault().notify(ex);
+                    }
+                }
+            });
+            
+            if (annotation[0] == null)
+                return false;
+            
+            JumpList.checkAddEntry(comp, currentPosition);
+            
+            annotation[0].mouseClicked(comp, p[0]);
+            
+            return true;
         }
         
         return false;

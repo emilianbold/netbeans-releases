@@ -1,0 +1,3 @@
+IsOverriddenAnnotation: type=IMPLEMENTS, elements:[org.netbeans.modules.editor.java.Test1.test(), org.netbeans.modules.editor.java.Test2.test()]
+IsOverriddenAnnotation: type=OVERRIDES, elements:[java.lang.Object.toString(), org.netbeans.modules.editor.java.Test2.toString()]
+IsOverriddenAnnotation: type=OVERRIDES, elements:[java.lang.Object.toString()]

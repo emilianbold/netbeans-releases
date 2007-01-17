@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.editor.overridden;
@@ -23,25 +23,15 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import javax.swing.text.Document;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.java.source.TestUtil;
-import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
-import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -144,25 +134,34 @@ public class IsOverriddenAnnotationCreatorTest extends NbTestCase {
         doTest("TestInterfaceImplOverride");
     }
     
-    public void testInterfaceImpl() throws Exception {
-        doTest("TestInterfaceImpl");
+    //the "is overridden" part is currently disabled:
+//    public void testInterfaceImpl() throws Exception {
+//        doTest("TestInterfaceImpl");
+//    }
+//    
+//    public void testInterface2() throws Exception {
+//        doTest("TestInterface2");
+//    }
+    
+    public void testHierarchy1() throws Exception {
+        doTest("TestHierarchy1");
     }
     
-    public void testInterface2() throws Exception {
-        doTest("TestInterface2");
+    public void testHierarchy2() throws Exception {
+        doTest("TestHierarchy2");
     }
     
     private void doTest(String name) throws Exception {
         prepareTest(name);
         
         DataObject testDO = DataObject.find(testSource);
-        EditorCookie ec = (EditorCookie) testDO.getCookie(EditorCookie.class);
+        EditorCookie ec = testDO.getCookie(EditorCookie.class);
         
         assertNotNull(ec);
         
-        Document doc = ec.openDocument();
+        StyledDocument doc = ec.openDocument();
         
-        List<IsOverriddenAnnotation> annotations = IsOverriddenAnnotationHandler.getHandler(testSource).process(info, doc);
+        List<IsOverriddenAnnotation> annotations = new IsOverriddenAnnotationHandler(testSource).process(info, doc);
         List<String> result = new ArrayList<String>();
         
         for (IsOverriddenAnnotation annotation : annotations) {
@@ -183,6 +182,7 @@ public class IsOverriddenAnnotationCreatorTest extends NbTestCase {
      * Will be in /tmp or whatever, and will be empty.
      * If you just need a java.io.File use clearWorkDir + getWorkDir.
      */
+    @SuppressWarnings("deprecation")
     public static FileObject makeScratchDir(NbTestCase test) throws IOException {
         test.clearWorkDir();
         File root = test.getWorkDir();

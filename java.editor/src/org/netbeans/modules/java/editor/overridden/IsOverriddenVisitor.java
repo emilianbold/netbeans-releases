@@ -13,13 +13,12 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.editor.overridden;
 
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
@@ -29,11 +28,11 @@ import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.java.source.ClassIndex;
 
@@ -77,21 +76,24 @@ class IsOverriddenVisitor extends CancellableTreePathScanner<Void, Tree> {
     
     @Override
     public Void visitMethod(MethodTree tree, Tree d) {
-        Element el = info.getTrees().getElement(getCurrentPath());
-        
-        if (el != null && el.getKind()  == ElementKind.METHOD) {
-            ExecutableElement overridee = (ExecutableElement) el;
-            TypeElement declaring = SourceUtils.getEnclosingTypeElement(overridee);
-            List<ElementHandle<ExecutableElement>> methods = type2Declaration.get(getHandle(declaring));
+        if (currentClass != null) {
+            Element el = info.getTrees().getElement(getCurrentPath());
             
-            if (methods == null) {
-                type2Declaration.put(getHandle(declaring), methods = new ArrayList<ElementHandle<ExecutableElement>>());
+            if (el != null && el.getKind()  == ElementKind.METHOD) {
+                if (!el.getModifiers().contains(Modifier.PRIVATE) && !el.getModifiers().contains(Modifier.STATIC)) {
+                    ExecutableElement overridee = (ExecutableElement) el;
+                    List<ElementHandle<ExecutableElement>> methods = type2Declaration.get(currentClass);
+                    
+                    if (methods == null) {
+                        type2Declaration.put(currentClass, methods = new ArrayList<ElementHandle<ExecutableElement>>());
+                    }
+                    
+                    ElementHandle<ExecutableElement> methodHandle = ElementHandle.create(overridee);
+                    
+                    methods.add(methodHandle);
+                    declaration2Tree.put(methodHandle, tree);
+                }
             }
-            
-            ElementHandle<ExecutableElement> methodHandle = ElementHandle.create(overridee);
-            
-            methods.add(methodHandle);
-            declaration2Tree.put(methodHandle, tree);
         }
         
         super.visitMethod(tree, tree);
@@ -102,14 +104,20 @@ class IsOverriddenVisitor extends CancellableTreePathScanner<Void, Tree> {
     public Void visitClass(ClassTree tree, Tree d) {
         Element decl = info.getTrees().getElement(getCurrentPath());
         
-        //TODO: stop using instanceof:
-        if (decl instanceof TypeElement) {
-            declaration2Class.put(getHandle((TypeElement) decl), tree);
+        if (decl != null && (decl.getKind().isClass() || decl.getKind().isInterface())) {
+            ElementHandle<TypeElement> oldCurrentClass = currentClass;
+            
+            currentClass = getHandle((TypeElement) decl);
+            declaration2Class.put(currentClass, tree);
+            super.visitClass(tree, d);
+            currentClass = oldCurrentClass;
+        } else {
+            super.visitClass(tree, d);
         }
-        
-        super.visitClass(tree, d);
         
         return null;
     }
+    
+    private ElementHandle<TypeElement> currentClass;
     
 }

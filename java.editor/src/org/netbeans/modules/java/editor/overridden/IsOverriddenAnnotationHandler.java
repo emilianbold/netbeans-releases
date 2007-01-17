@@ -13,44 +13,44 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.java.editor.overridden;
 
-import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
 import java.io.IOException;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.EnumSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import javax.swing.text.Document;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.ClassPath.Entry;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -58,20 +58,19 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.timers.TimesCollector;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.RequestProcessor;
+import org.openide.util.TopologicalSortException;
+import org.openide.util.Utilities;
 
 
 /**
@@ -79,60 +78,29 @@ import org.openide.util.RequestProcessor;
  * @author Jan Lahoda
  */
 public class IsOverriddenAnnotationHandler implements CancellableTask<CompilationInfo> {
+    
+    private static final boolean enableReverseLookups = Boolean.getBoolean("org.netbeans.java.editor.enableReverseLookups");
+    static final Logger LOG = Logger.getLogger(IsOverriddenAnnotationHandler.class.getName());
 
     private FileObject file;
     
-    final List<IsOverriddenAnnotation> annotations;
-    
-    static final Map<FileObject, Reference<IsOverriddenAnnotationHandler>> file2Annotations = new WeakHashMap<FileObject, Reference<IsOverriddenAnnotationHandler>>();
-    
-    static IsOverriddenAnnotationHandler getHandler(FileObject file) {
-        Reference<IsOverriddenAnnotationHandler> ref = file2Annotations.get(file);
-        IsOverriddenAnnotationHandler handler = ref != null ? ref.get() : null;
-        
-        if (handler == null) {
-            file2Annotations.put(file, new CleaneableReference(handler = new IsOverriddenAnnotationHandler(file), handler.annotations));
-        }
-        
-        return handler;
-    }
-    
-    /** Creates a new instance of SemanticHighlighter */
-    private IsOverriddenAnnotationHandler(FileObject file) {
+    IsOverriddenAnnotationHandler(FileObject file) {
         this.file = file;
-        this.annotations = new ArrayList<IsOverriddenAnnotation>();
+        
+        TimesCollector.getDefault().reportReference(file, IsOverriddenAnnotationHandler.class.getName(), "[M] IsOverriddenAnnotationHandler", this);
     }
     
-    private static class CleaneableReference extends WeakReference implements Runnable {
-        
-        List<IsOverriddenAnnotation> toClear;
-        
-        public CleaneableReference(Object ref, List<IsOverriddenAnnotation> toClear) {
-            super(ref, org.openide.util.Utilities.activeReferenceQueue());
-            this.toClear = toClear;
-        }
-        
-        public void run() {
-            for (IsOverriddenAnnotation a : toClear) {
-                a.detach();
-            }
-            
-            this.toClear = null;
-        }
-        
-    }
-    
-    public Document getDocument() {
+    public StyledDocument getDocument() {
         try {
             DataObject d = DataObject.find(file);
-            EditorCookie ec = (EditorCookie) d.getCookie(EditorCookie.class);
+            EditorCookie ec = d.getCookie(EditorCookie.class);
             
             if (ec == null)
                 return null;
             
             return ec.getDocument();
         } catch (IOException e) {
-            Logger.getLogger(IsOverriddenAnnotationHandler.class.getName()).log(Level.INFO, "SemanticHighlighter: Cannot find DataObject for file: " + FileUtil.getFileDisplayName(file), e);
+            LOG.log(Level.INFO, "Cannot find DataObject for file: " + FileUtil.getFileDisplayName(file), e);
             return null;
         }
     }
@@ -142,10 +110,10 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
     public void run(CompilationInfo info) {
         resume();
         
-        Document doc = getDocument();
+        StyledDocument doc = getDocument();
         
         if (doc == null) {
-            Logger.getLogger(IsOverriddenAnnotationHandler.class.getName()).log(Level.INFO, "SemanticHighlighter: Cannot get document!");
+            LOG.log(Level.INFO, "Cannot get document!");
             return ;
         }
         
@@ -189,7 +157,7 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 long startTime = System.currentTimeMillis();
-                Set<FileObject> reverseSourceRootsInt = new HashSet(ReverseSourceRootsLookup.reverseSourceRootsLookup(thisSourceRoot));
+                Set<FileObject> reverseSourceRootsInt = new HashSet<FileObject>(ReverseSourceRootsLookup.reverseSourceRootsLookup(thisSourceRoot));
                 long endTime = System.currentTimeMillis();
                 
                 TimesCollector.getDefault().reportTime(thisFile, "findReverseSourceRoots", "Find Reverse Source Roots", endTime - startTime);
@@ -211,7 +179,7 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
         return reverseSourceRoots;
     }
     
-    List<IsOverriddenAnnotation> process(CompilationInfo info, Document doc) {
+    List<IsOverriddenAnnotation> process(CompilationInfo info, final StyledDocument doc) {
         IsOverriddenVisitor v;
         
         synchronized (this) {
@@ -223,17 +191,31 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
         
         CompilationUnitTree unit = info.getCompilationUnit();
         
+        long startTime1 = System.currentTimeMillis();
+        
         v.scan(unit, null);
         
-        ClassIndex uq = info.getJavaSource().getClasspathInfo().getClassIndex();
-        FileObject thisSourceRoot = findSourceRoot();
-        if (thisSourceRoot == null) {
-            return null;
-        }
-        Set<FileObject> reverseSourceRoots = findReverseSourceRoots(thisSourceRoot, info.getFileObject());
+        long endTime1 = System.currentTimeMillis();
         
-        //XXX: special case "this" source root (no need to create a new JS and load the classes again for it):
-        reverseSourceRoots.add(thisSourceRoot);
+        TimesCollector.getDefault().reportTime(file, "overridden-scanner", "Overridden Scanner", endTime1 - startTime1);
+        
+        Set<FileObject> reverseSourceRoots;
+        
+        if (enableReverseLookups) {
+            FileObject thisSourceRoot = findSourceRoot();
+            if (thisSourceRoot == null) {
+                return null;
+            }
+            
+            reverseSourceRoots = findReverseSourceRoots(thisSourceRoot, info.getFileObject());
+            
+            //XXX: special case "this" source root (no need to create a new JS and load the classes again for it):
+            reverseSourceRoots.add(thisSourceRoot);
+        } else {
+            reverseSourceRoots = null;
+        }
+        
+        LOG.log(Level.FINE, "reverseSourceRoots: {0}", reverseSourceRoots);
         
         List<IsOverriddenAnnotation> annotations = new ArrayList<IsOverriddenAnnotation>();
         
@@ -241,90 +223,158 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
             if (isCanceled())
                 return null;
             
-            String typeOverridden = null;
-            AnnotationType typeType = null;
-            List<TypeElement> typeImplementors = new ArrayList<TypeElement>();
-            TypeElement resolved = td.resolve(info);
+            LOG.log(Level.FINE, "type: {0}", td.getQualifiedName());
             
+            final Map<Name, List<ExecutableElement>> name2Method = new HashMap<Name, List<ExecutableElement>>();
             
-            if (resolved == null) {
-                Logger.getLogger("global").log(Level.SEVERE, "IsOverriddenAnnotationHandler: resolved == null!");
-                continue;
-            }
+            sortOutMethods(info, name2Method, td.resolve(info), false);
             
-            if (resolved.getKind().isInterface()) {
-                typeOverridden = "Has Implementations";
-                typeType = AnnotationType.HAS_IMPLEMENTATION;
-            }
-            
-            if (resolved.getKind().isClass()) {
-                typeOverridden = "Is Overridden:";
-                typeType = AnnotationType.IS_OVERRIDDEN;
-            }
-            
-            int position = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), v.declaration2Tree.get(resolved));
-            final Map<ElementHandle<ExecutableElement>, Integer> methodsPositions = new HashMap<ElementHandle<ExecutableElement>, Integer>();
-            
-            for (ElementHandle<ExecutableElement> methodHandle : v.declaration2Tree.keySet()) {
+            for (ElementHandle<ExecutableElement> methodHandle : v.type2Declaration.get(td)) {
                 if (isCanceled())
                     return null;
                 
-                Tree t = v.declaration2Tree.get(methodHandle);
-                
-                methodsPositions.put(methodHandle, (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), t));
-                
-                //overrides:
                 ExecutableElement ee = methodHandle.resolve(info);
                 
                 if (ee == null)
                     continue;
                 
-                IsOverriddenAnnotation ann = checkDefines(file, doc, info, (TypeElement) ee.getEnclosingElement(), methodHandle, v, false);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "method: {0}", ee.toString());
+                }
                 
-                if (ann != null) {
+                List<ExecutableElement> lee = name2Method.get(ee.getSimpleName());
+                
+                if (lee == null || lee.isEmpty()) {
+                    continue;
+                }
+                
+                Set<ExecutableElement> seenMethods = new HashSet<ExecutableElement>();
+                List<ElementDescription> overrides = new ArrayList<ElementDescription>();
+                
+                for (ExecutableElement overridee : lee) {
+                    if (info.getElements().overrides(ee, overridee, SourceUtils.getEnclosingTypeElement(ee))) {
+                        if (seenMethods.add(overridee)) {
+                            overrides.add(new ElementDescription(info, overridee));
+                        }
+                    }
+                }
+                
+                if (!overrides.isEmpty()) {
+                    int position = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), v.declaration2Tree.get(methodHandle));
+                    Position pos = getPosition(doc, position);
+                    
+                    if (pos == null) {
+                        //cannot compute the position, skip
+                        continue;
+                    }
+                    
+                    StringBuffer tooltip = new StringBuffer();
+                    boolean wasOverrides = false;
+                    
+                    boolean newline = false;
+                    
+                    for (ElementDescription ed : overrides) {
+                        if (newline) {
+                            tooltip.append("\n");
+                        }
+                        
+                        newline = true;
+                        
+                        if (ed.getModifiers().contains(Modifier.ABSTRACT)) {
+                            tooltip.append("Implements: " + ed.getDisplayName());
+                        } else {
+                            tooltip.append("Overrides: " + ed.getDisplayName());
+                            wasOverrides = true;
+                        }
+                    }
+                    
+                    annotations.add(new IsOverriddenAnnotation(doc, pos, wasOverrides ? AnnotationType.OVERRIDES : AnnotationType.IMPLEMENTS, tooltip.toString(), overrides));
+                }
+            }
+            
+            if (enableReverseLookups) {
+                String typeOverridden = null;
+                AnnotationType typeType = null;
+                TypeElement resolved = td.resolve(info);
+                
+                
+                if (resolved == null) {
+                    Logger.getLogger("global").log(Level.SEVERE, "IsOverriddenAnnotationHandler: resolved == null!");
+                    continue;
+                }
+                
+                if (resolved.getKind().isInterface()) {
+                    typeOverridden = "Has Implementations";
+                    typeType = AnnotationType.HAS_IMPLEMENTATION;
+                }
+                
+                if (resolved.getKind().isClass()) {
+                    typeOverridden = "Is Overridden:";
+                    typeType = AnnotationType.IS_OVERRIDDEN;
+                }
+                
+                final Map<ElementHandle<ExecutableElement>, List<ElementDescription>> overriding = new HashMap<ElementHandle<ExecutableElement>, List<ElementDescription>>();
+                final List<ElementDescription> overridingClasses = new ArrayList<ElementDescription>();
+                
+                long startTime = System.currentTimeMillis();
+                long[] classIndexTime = new long[1];
+                final Map<FileObject, Set<ElementHandle<TypeElement>>> users = computeUsers(reverseSourceRoots, ElementHandle.create(resolved), classIndexTime);
+                long endTime = System.currentTimeMillis();
+                
+                if (users == null) {
+                    return null;
+                }
+                
+                TimesCollector.getDefault().reportTime(file, "overridden-users-classindex", "Overridden Users Class Index", classIndexTime[0]);
+                TimesCollector.getDefault().reportTime(file, "overridden-users", "Overridden Users", endTime - startTime);
+                
+                for (Map.Entry<FileObject, Set<ElementHandle<TypeElement>>> data : users.entrySet()) {
+                    if (isCanceled())
+                        return null;
+                    
+                    findOverriddenAnnotations(data.getKey(), data.getValue(), td, v.type2Declaration.get(td), overriding, overridingClasses);
+                }
+                
+                if (!overridingClasses.isEmpty()) {
+                    Tree t = v.declaration2Class.get(td);
+                    
+                    if (t != null) {
+                        Position pos = getPosition(doc, (int) info.getTrees().getSourcePositions().getStartPosition(unit, t));
+                        
+                        if (pos == null) {
+                            //cannot compute the position, skip
+                            continue;
+                        }
+                        
+                        annotations.add(new IsOverriddenAnnotation(doc, pos, typeType, typeOverridden.toString(), overridingClasses));
+                    }
+                }
+                
+                for (ElementHandle<ExecutableElement> original : overriding.keySet()) {
+                    if (isCanceled())
+                        return null;
+                    
+                    Position pos = getPosition(doc, (int) info.getTrees().getSourcePositions().getStartPosition(unit, v.declaration2Tree.get(original)));
+                    
+                    if (pos == null) {
+                        //cannot compute the position, skip
+                        continue;
+                    }
+                    
+                    Set<Modifier> mods = original.resolve(info).getModifiers();
+                    String tooltip = null;
+                    
+                    if (mods.contains(Modifier.ABSTRACT)) {
+                        tooltip = "Has Implementations";
+                    } else {
+                        tooltip = "Is Overridden";
+                    }
+                    
+                    IsOverriddenAnnotation ann = new IsOverriddenAnnotation(doc, pos, mods.contains(Modifier.ABSTRACT) ? AnnotationType.HAS_IMPLEMENTATION : AnnotationType.IS_OVERRIDDEN, tooltip, overriding.get(original));
+                    
                     annotations.add(ann);
                 }
             }
-            
-            final Map<ElementHandle<ExecutableElement>, List<ElementDescription>> overriding = new HashMap<ElementHandle<ExecutableElement>, List<ElementDescription>>();
-            final List<ElementDescription> overridingClasses = new ArrayList<ElementDescription>();
-            
-            for (FileObject sourceRoot : reverseSourceRoots) {
-                if (isCanceled())
-                    return null;
-                
-                findOverriddenAnnotations(sourceRoot, resolved, td, v.type2Declaration.get(td), overriding, overridingClasses);
-            }
-            
-            if (!overridingClasses.isEmpty()) {
-                Tree t = v.declaration2Class.get(td);
-                
-                if (t != null) {
-                    Line classLine = getLine(doc, (int) info.getTrees().getSourcePositions().getStartPosition(unit, t));
-                    
-                    annotations.add(new IsOverriddenAnnotation(file, typeType, classLine, typeOverridden.toString(), overridingClasses));
-                }
-            }
-            
-            for (ElementHandle<ExecutableElement> original : overriding.keySet()) {
-                if (isCanceled())
-                    return null;
-                
-                Line l = getLine(doc, methodsPositions.get(original));
-                Set<Modifier> mods = original.resolve(info).getModifiers();
-                String tooltip = null;
-                
-                if (mods.contains(Modifier.ABSTRACT)) {
-                    tooltip = "Has Implementations";
-                } else {
-                    tooltip = "Is Overridden";
-                }
-                
-                IsOverriddenAnnotation ann = new IsOverriddenAnnotation(file, mods.contains(Modifier.ABSTRACT) ? AnnotationType.HAS_IMPLEMENTATION : AnnotationType.IS_OVERRIDDEN, l, tooltip, overriding.get(original));
-                
-                annotations.add(ann);
-            }
-            
         }
         
         if (isCanceled())
@@ -333,17 +383,97 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
             return annotations;
     }
     
+    private static final ClassPath EMPTY = ClassPathSupport.createClassPath(new URL[0]);
+    
+    private Set<ElementHandle<TypeElement>> computeUsers(FileObject source, Set<ElementHandle<TypeElement>> base, long[] classIndexCumulative) {
+        ClasspathInfo cpinfo = ClasspathInfo.create(/*source);/*/EMPTY, EMPTY, ClassPathSupport.createClassPath(new FileObject[] {source}));
+        
+        long startTime = System.currentTimeMillis();
+        
+        try {
+            List<ElementHandle<TypeElement>> l = new LinkedList<ElementHandle<TypeElement>>(base);
+            Set<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>();
+            
+            while (!l.isEmpty()) {
+                ElementHandle<TypeElement> eh = l.remove(0);
+                
+                result.add(eh);
+                
+                l.addAll(cpinfo.getClassIndex().getElements(eh, Collections.singleton(SearchKind.IMPLEMENTORS), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+            }
+            return result;
+        } finally {
+            classIndexCumulative[0] += (System.currentTimeMillis() - startTime);
+        }
+    }
+    
+    private Map<FileObject, Set<ElementHandle<TypeElement>>> computeUsers(Set<FileObject> sources, ElementHandle<TypeElement> base, long[] classIndexCumulative) {
+        Map<FileObject, Collection<FileObject>> edges = new HashMap<FileObject, Collection<FileObject>>();
+        Map<FileObject, Collection<FileObject>> dependsOn = new HashMap<FileObject, Collection<FileObject>>();
+        
+        for (FileObject source : sources) {
+            edges.put(source, new ArrayList<FileObject>());
+        }
+        
+        for (FileObject source : sources) {
+            List<FileObject> deps = new ArrayList<FileObject>();
+            
+            dependsOn.put(source, deps);
+            
+            for (Entry entry : ClassPath.getClassPath(source, ClassPath.COMPILE).entries()) { //TODO: should also check BOOT?
+                for (FileObject s : SourceForBinaryQuery.findSourceRoots(entry.getURL()).getRoots()) {
+                    Collection<FileObject> targets = edges.get(s);
+                    
+                    if (targets != null) {
+                        targets.add(source);
+                    }
+                    
+                    deps.add(s);
+                }
+            }
+        }
+        
+        List<FileObject> sourceRoots = new ArrayList<FileObject>(sources);
+        
+        try {
+            Utilities.topologicalSort(sourceRoots, edges);
+        } catch (TopologicalSortException ex) {
+            LOG.log(Level.WARNING, "internal error", ex);
+            return null;
+        }
+        
+        Map<FileObject, Set<ElementHandle<TypeElement>>> result = new HashMap<FileObject, Set<ElementHandle<TypeElement>>>();
+        
+        for (FileObject file : sourceRoots) {
+            Set<ElementHandle<TypeElement>> baseTypes = new HashSet<ElementHandle<TypeElement>>();
+            
+            baseTypes.add(base);
+            
+            for (FileObject dep : dependsOn.get(file)) {
+                Set<ElementHandle<TypeElement>> depTypes = result.get(dep);
+                
+                if (depTypes != null) {
+                    baseTypes.addAll(depTypes);
+                }
+            }
+            
+            Set<ElementHandle<TypeElement>> types = computeUsers(file, baseTypes, classIndexCumulative);
+            
+            types.removeAll(baseTypes);
+            
+            result.put(file, types);
+        }
+        
+        return result;
+    }
     private void findOverriddenAnnotations(
             FileObject sourceRoot,
-            TypeElement resolvedElement,
+            final Set<ElementHandle<TypeElement>> users,
             final ElementHandle<TypeElement> originalType,
             final List<ElementHandle<ExecutableElement>> methods,
             final Map<ElementHandle<ExecutableElement>, List<ElementDescription>> overriding,
             final List<ElementDescription> overridingClasses) {
         ClasspathInfo cpinfo = ClasspathInfo.create(sourceRoot);
-        
-        //XXX:IMPLEMENTORS_RECURSIVE removed
-        final Set<ElementHandle<TypeElement>> users = new HashSet(cpinfo.getClassIndex().getElements(ElementHandle.create(resolvedElement), Collections.singleton(SearchKind.IMPLEMENTORS), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
         
         if (!users.isEmpty()) {
             JavaSource js = JavaSource.create(cpinfo);
@@ -354,11 +484,17 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
                         cancel();
                     }
                     public void run(CompilationController controller) throws Exception {
+                        Set<Element> seenElements = new HashSet<Element>();
+                        
                         for (ElementHandle<TypeElement> typeHandle : users) {
                             if (isCanceled())
                                 return;
                             TypeElement type = typeHandle.resolve(controller);
                             Element resolvedOriginalType = originalType.resolve(controller);
+                            
+                            if (!seenElements.add(resolvedOriginalType))
+                                continue;
+                            
                             if (controller.getTypes().isSubtype(type.asType(), resolvedOriginalType.asType())) {
                                 overridingClasses.add(new ElementDescription(controller, type));
                                 
@@ -366,7 +502,7 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
                                     ExecutableElement originalMethod = originalMethodHandle.resolve(controller);
                                     
                                     if (originalMethod != null) {
-                                        ExecutableElement overrider = (ExecutableElement) /*SourceUtils.*/getImplementationOf(controller, originalMethod, (TypeElement) type);
+                                        ExecutableElement overrider = getImplementationOf(controller, originalMethod, type);
                                         
                                         if (overrider == null)
                                             continue;
@@ -427,73 +563,77 @@ public class IsOverriddenAnnotationHandler implements CancellableTask<Compilatio
     }
     
     private void newAnnotations(List<IsOverriddenAnnotation> as) {
-        if (annotations != null) {
-            for (IsOverriddenAnnotation a : annotations) {
-                a.detach();
-            }
-        }
+        AnnotationsHolder a = AnnotationsHolder.get(file);
         
-        annotations.clear();
-        annotations.addAll(as);
-        
-        for (IsOverriddenAnnotation a : annotations) {
-            a.attach();
+        if (a != null) {
+            a.setNewAnnotations(as);
         }
     }
 
-    private IsOverriddenAnnotation checkDefines(FileObject context, Document doc, CompilationInfo info, TypeElement td, ElementHandle<ExecutableElement> overrider, IsOverriddenVisitor v, boolean useTD) {
-        ExecutableElement overriderResolved = overrider.resolve(info);
-        
-        if (useTD) {
-            for (ExecutableElement overridee : ElementFilter.methodsIn(td.getEnclosedElements())) {
-                if (info.getElements().overrides(overriderResolved, overridee, SourceUtils.getEnclosingTypeElement(overriderResolved))) {
-                    Line l = getLine(doc, (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), v.declaration2Tree.get(overrider)));
-                    StringBuffer tooltip = new StringBuffer();
-                    
-                    if (td.getKind().isInterface()) {
-                        tooltip.append("Implements: " + overridee);
-                    } else {
-                        tooltip.append("Overrides: " + overridee);
+    private void sortOutMethods(CompilationInfo info, Map<Name, List<ExecutableElement>> where, Element td, boolean current) {
+        if (current) {
+            Map<Name, List<ExecutableElement>> newlyAdded = new HashMap<Name, List<ExecutableElement>>();
+            
+            OUTTER: for (ExecutableElement ee : ElementFilter.methodsIn(td.getEnclosedElements())) {
+                Name name = ee.getSimpleName();
+                List<ExecutableElement> alreadySeen = where.get(name);
+                
+                if (alreadySeen != null) {
+                    for (ExecutableElement seen : alreadySeen) {
+                        if (info.getElements().overrides(seen, ee, (TypeElement) seen.getEnclosingElement())) {
+                            continue OUTTER; //a method that overrides this one was already handled, ignore
+                        }
                     }
-                    
-                    tooltip.append(" in ");
-                    tooltip.append(td);
-                    
-                    return new IsOverriddenAnnotation(context, td.getKind().isInterface() ? AnnotationType.IMPLEMENTS : AnnotationType.OVERRIDES, l, tooltip.toString(), Collections.singletonList(new ElementDescription(info, overridee)));
+                }
+                
+                List<ExecutableElement> lee = newlyAdded.get(name);
+                
+                if (lee == null) {
+                    newlyAdded.put(name, lee = new ArrayList<ExecutableElement>());
+                }
+                
+                lee.add(ee);
+            }
+            
+            for (Map.Entry<Name, List<ExecutableElement>> e : newlyAdded.entrySet()) {
+                List<ExecutableElement> lee = where.get(e.getKey());
+                
+                if (lee == null) {
+                    where.put(e.getKey(), e.getValue());
+                } else {
+                    lee.addAll(e.getValue());
                 }
             }
         }
         
-        IsOverriddenAnnotation ann = null;
-        
-        if (td.getKind().isClass()) {
-            TypeMirror superClass = td.getSuperclass();
-            
-            if (superClass.getKind() == TypeKind.DECLARED) {
-                ann = checkDefines(context, doc, info, (TypeElement) ((DeclaredType)superClass).asElement(), overrider, v, true);
+        for (TypeMirror superType : info.getTypes().directSupertypes(td.asType())) {
+            if (superType.getKind() == TypeKind.DECLARED) {
+                sortOutMethods(info, where, ((DeclaredType) superType).asElement(), true);
             }
         }
-        
-        if (ann == null) {
-            for (TypeMirror type : td.getInterfaces()) {
-                ann = checkDefines(context, doc, info, (TypeElement) ((DeclaredType)type).asElement(), overrider, v, true);
-                
-                if (ann != null)
-                    break;
-            }
-        }
-        
-        return ann;
     }
     
-    private static Line getLine(Document doc, int offset) {
-        StyledDocument sdoc = (StyledDocument) doc;
-        DataObject dObj = (DataObject)doc.getProperty(doc.StreamDescriptionProperty );
-        LineCookie lc = (LineCookie) dObj.getCookie(LineCookie.class);
-        int lineNumber = NbDocument.findLineNumber(sdoc, offset);
-        Line line = lc.getLineSet().getCurrent(lineNumber);
+    private static Position getPosition(final StyledDocument doc, final int offset) {
+        class Impl implements Runnable {
+            private Position pos;
+            public void run() {
+                if (offset < 0 || offset >= doc.getLength())
+                    return ;
+                
+                try {
+                    pos = doc.createPosition(offset - NbDocument.findLineColumn(doc, offset));
+                } catch (BadLocationException ex) {
+                    //should not happen?
+                    LOG.log(Level.FINE, null, ex);
+                }
+            }
+        }
         
-        return line;
+        Impl i = new Impl();
+        
+        doc.render(i);
+        
+        return i.pos;
     }
     
 }

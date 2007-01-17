@@ -13,14 +13,13 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.editor.overridden;
 
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
@@ -40,7 +39,7 @@ public class IsOverriddenAnnotationHandlerFactory extends EditorAwareJavaSourceT
     }
 
     public CancellableTask<CompilationInfo> createTask(FileObject file) {
-        return IsOverriddenAnnotationHandler.getHandler(file);
+        return new IsOverriddenAnnotationHandler(file);
     }
 
 }

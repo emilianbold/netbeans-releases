@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.editor.overridden;
@@ -23,16 +23,15 @@ import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtils;
+import javax.swing.text.Position;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.source.UiUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.text.Annotation;
-import org.openide.text.Line;
+import org.openide.text.NbDocument;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -40,14 +39,16 @@ import org.openide.text.Line;
  */
 class IsOverriddenAnnotation extends Annotation {
     
-    private Line line;
+    private StyledDocument document;
+    private Position pos;
     private String shortDescription;
     private AnnotationType type;
     private List<ElementDescription> declarations;
     
-    public IsOverriddenAnnotation(FileObject context, AnnotationType type, Line line, String shortDescription, List<ElementDescription> declarations) {
+    public IsOverriddenAnnotation(StyledDocument document, Position pos, AnnotationType type, String shortDescription, List<ElementDescription> declarations) {
+        this.document = document;
+        this.pos = pos;
         this.type = type;
-        this.line = line;
         this.shortDescription = shortDescription;
         this.declarations = declarations;
     }
@@ -77,15 +78,23 @@ class IsOverriddenAnnotation extends Annotation {
     }
     
     public void attach() {
-        attach(line);
+        NbDocument.addAnnotation(document, pos, -1, this);
+    }
+    
+    public void detachImpl() {
+        NbDocument.removeAnnotation(document, this);
     }
     
     public String toString() {
         return "[IsOverriddenAnnotation: " + shortDescription + "]";
     }
     
+    public Position getPosition() {
+        return pos;
+    }
+    
     public String debugDump() {
-        List<String> elementNames = new ArrayList();
+        List<String> elementNames = new ArrayList<String>();
         
         for(ElementDescription desc : declarations) {
             elementNames.add(desc.getDisplayName());
@@ -107,14 +116,32 @@ class IsOverriddenAnnotation extends Annotation {
                 } else {
                     Toolkit.getDefaultToolkit().beep();
                 }
+                
+                return ;
             }
-            return ;
+        }
+        
+        String caption;
+        
+        switch (type) {
+            case IMPLEMENTS:
+                caption = NbBundle.getMessage(IsOverriddenAnnotation.class, "CAP_Implements");
+                break;
+            case OVERRIDES:
+                caption = NbBundle.getMessage(IsOverriddenAnnotation.class, "CAP_Overrides");
+                break;
+            case HAS_IMPLEMENTATION:
+            case IS_OVERRIDDEN:
+                caption = shortDescription;
+                break;
+            default:
+                throw new IllegalStateException("Currently not implemented: " + type);
         }
         
         Point position = new Point(p);
         
         SwingUtilities.convertPointToScreen(position, c);
         
-        PopupUtil.showPopup(new IsOverriddenPopup(shortDescription, declarations), shortDescription, position.x, position.y, true);
+        PopupUtil.showPopup(new IsOverriddenPopup(caption, declarations), caption, position.x, position.y, true, 0);
     }
 }

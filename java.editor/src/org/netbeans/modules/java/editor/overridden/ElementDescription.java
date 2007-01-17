@@ -13,18 +13,19 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.editor.overridden;
 
+import java.util.Collection;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.SimpleElementVisitor6;
 import javax.swing.Icon;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -41,23 +42,27 @@ import org.openide.filesystems.FileObject;
  */
 public class ElementDescription {
     
-    private FileObject sourceFile;
+    private ClasspathInfo originalCPInfo;
+    
     private ElementHandle<Element> handle;
-    private Icon icon;
+    private ElementHandle<TypeElement> outtermostElement;
+    private Collection<Modifier> modifiers;
     private String displayName;
     
-    /** Creates a new instance of ElementDescription */
     public ElementDescription(CompilationInfo info, Element element) {
-        FileObject file = SourceUtils.getFile(element, info.getClasspathInfo());
-        if (file != null)
-            this.sourceFile = SourceUtils.getFile(element, ClasspathInfo.create(file));
+        this.originalCPInfo = info.getClasspathInfo();
         this.handle = ElementHandle.create(element);
-        this.icon = UiUtils.getDeclarationIcon(element);
+        this.outtermostElement = ElementHandle.create(SourceUtils.getOutermostEnclosingTypeElement(element));
+        this.modifiers = element.getModifiers();
         this.displayName = element.accept(new ElementNameVisitor(), true);
     }
 
     public FileObject getSourceFile() {
-        return sourceFile;
+        FileObject file = SourceUtils.getFile(outtermostElement, originalCPInfo);
+        if (file != null)
+            return SourceUtils.getFile(outtermostElement, ClasspathInfo.create(file));
+        else
+            return null;
     }
 
     public ElementHandle<Element> getHandle() {
@@ -65,11 +70,15 @@ public class ElementDescription {
     }
 
     public Icon getIcon() {
-        return icon;
+        return UiUtils.getElementIcon(handle.getKind(), modifiers);
     }
     
     public String getDisplayName() {
         return displayName;
+    }
+    
+    public Collection<Modifier> getModifiers() {
+        return modifiers;
     }
     
     private static class ElementNameVisitor extends SimpleElementVisitor6<String,Boolean> {
@@ -81,6 +90,10 @@ public class ElementDescription {
 
 	@Override
         public String visitType(TypeElement e, Boolean p) {
+            if (e.getQualifiedName() == null || e.getSimpleName() == null) {
+                return "annonymous inner";
+            }
+            
             return p ? e.getQualifiedName().toString() : e.getSimpleName().toString();
         }
         
