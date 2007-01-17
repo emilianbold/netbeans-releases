@@ -39,20 +39,21 @@ public class DefaultActionsProvider extends ActionsImplementationProvider {
     }
     @Override
     public boolean canDelete(Lookup lookup) {
-        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-        boolean result = false;
-        for (Node node:nodes) {
-            DataObject dob = (DataObject) node.getCookie(DataObject.class);
-            if (dob==null) {
-                return false;
-            } else {
-                if (dob.getPrimaryFile().isFolder()) {
-                    return false;
-                }
-            }
-            result=true;
-        }
-        return result;
+        return false;
+//        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+//        boolean result = false;
+//        for (Node node:nodes) {
+//            DataObject dob = (DataObject) node.getCookie(DataObject.class);
+//            if (dob==null) {
+//                return false;
+//            } else {
+//                if (dob.getPrimaryFile().isFolder()) {
+//                    return false;
+//                }
+//            }
+//            result=true;
+//        }
+//        return result;
     }
 
     @Override
