@@ -1824,6 +1824,10 @@ final class Central implements ControllerHandler {
         Dimension tcSize = tc.getSize();
         SwingUtilities.convertPointToScreen(tcLoc, tc);
         Rectangle bounds = new Rectangle(tcLoc, tcSize);
+        // #89100: update mode kind when undocking view in sliding mode
+        if (modeKind == Constants.MODE_KIND_SLIDING) {
+            modeKind = Constants.MODE_KIND_VIEW;
+        }
         attachTopComponentsIntoNewMode(new TopComponent[] { tc }, bounds, modeKind, Constants.MODE_STATE_SEPARATED);
         updateViewAfterDnD(true);
     }
