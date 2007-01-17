@@ -21,7 +21,6 @@ package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.FlowLayout;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -33,22 +32,15 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JPanel;
 import javax.swing.JTable;
-import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
-import org.netbeans.modules.j2ee.persistence.dd.JavaPersistenceQLKeywords;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.Table.DisabledReason;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *

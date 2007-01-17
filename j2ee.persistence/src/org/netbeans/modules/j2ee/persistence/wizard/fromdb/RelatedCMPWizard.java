@@ -36,7 +36,6 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
-import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;

@@ -24,7 +24,6 @@ import java.awt.Dimension;
 import javax.swing.JComponent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
 
 // XXX remove this class when possible and try to use EventRequestProcessor 
 // instead

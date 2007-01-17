@@ -24,7 +24,6 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.TreeSet;
-import org.netbeans.modules.dbschema.DBElement;
 import org.netbeans.modules.dbschema.DBException;
 import org.netbeans.modules.dbschema.DBIdentifier;
 import org.netbeans.modules.dbschema.SchemaElement;

@@ -28,7 +28,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
-import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
@@ -132,21 +131,6 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
             Logger.getLogger(PersistenceUnitWizard.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NO18N
             return Collections.emptySet();
         }
-    }
-    
-    /**
-     * Constructs an application managed persistence unit.
-     */
-    private PersistenceUnit constructApplicationManagedPU(){
-        Provider provider = null;
-        if (descriptor.getPersistenceLibrary() == null){
-            // probably jboss (see #76738)
-            provider = ProviderUtil.getProvider(descriptor.getNonDefaultProvider(), project);
-        } else {
-            provider = ProviderUtil.getProvider(descriptor.getPersistenceLibrary());
-        }
-        return ProviderUtil.buildPersistenceUnit(descriptor.getPersistenceUnitName(), provider, descriptor.getPersistenceConnection());
-        
     }
     
 }

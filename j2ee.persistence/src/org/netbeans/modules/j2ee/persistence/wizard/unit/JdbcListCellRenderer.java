@@ -20,16 +20,11 @@
 package org.netbeans.modules.j2ee.persistence.wizard.unit;
 
 import java.awt.Component;
-import java.awt.Image;
-import java.sql.Connection;
-import java.sql.SQLException;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *

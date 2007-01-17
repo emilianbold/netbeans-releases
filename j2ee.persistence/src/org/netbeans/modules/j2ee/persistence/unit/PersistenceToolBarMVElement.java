@@ -57,7 +57,6 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
     private PUDataObject puDataObject;
     private PersistenceUnitPanelFactory factory;
     private Action addAction, removeAction;
-    private Persistence persistence;
     private Project project;
     private boolean needInit = true;
     private RequestProcessor.Task repaintingTask;

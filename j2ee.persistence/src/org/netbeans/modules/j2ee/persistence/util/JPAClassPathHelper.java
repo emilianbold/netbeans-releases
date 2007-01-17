@@ -20,18 +20,14 @@
 package org.netbeans.modules.j2ee.persistence.util;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Parameters;
 
 /**

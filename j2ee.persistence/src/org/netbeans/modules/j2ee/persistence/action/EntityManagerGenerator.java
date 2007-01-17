@@ -124,7 +124,8 @@ public class EntityManagerGenerator {
     }
     
     /**
-     * @return the generation strategy based on the project type of our target file.
+     * @return an appropriate generation strategy based on the project type of 
+     * our target Java source file.
      */ 
     protected EntityManagerGenerationStrategy getStrategy(CompilationUnitTree compilationUnit, WorkingCopy workingCopy, TreeMaker make, ClassTree clazz, GenerationOptions options){
 

@@ -77,9 +77,9 @@ public abstract class EntityMember {
      */
     public static String makeRelationshipFieldName(String fieldName, 
             boolean isCollection) {
-        if (isCollection)
+        if (isCollection){
             fieldName += "Collection";  // NOI18N
-        
+        }
         return makeFieldName(fieldName);
     }
 

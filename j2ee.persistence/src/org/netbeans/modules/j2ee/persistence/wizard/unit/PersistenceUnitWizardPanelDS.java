@@ -29,7 +29,6 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.common.DatasourceUIHelper;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
@@ -71,9 +70,6 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         }
         
         PersistenceProviderComboboxHelper.connect(j2eeModuleProvider, providerCombo);
-        
-        String serverId = j2eeModuleProvider != null ? j2eeModuleProvider.getServerID() : null;
-        String serverDisplayName = serverId != null ? Deployment.getDefault().getServerDisplayName(serverId) : null;
         
         unitNameTextField.setText(ProjectUtils.getInformation(project).getName() + "PU"); //NOI18N
         // unit name editing is not available when adding first PU

@@ -343,12 +343,14 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
             Object item = dsCombo.getSelectedItem();
             if (item instanceof Datasource)
                 jndiName = ((Datasource)item).getJndiName();
-            else if (itemIndex == -1 && item != null) // user input
+            else if (itemIndex == -1 && item != null){ // user input
                 jndiName = item.toString();
+            }
         }
         
-        if (jndiName == null)
+        if (jndiName == null){
             return;
+        }
         
         if (isJta()){
             persistenceUnit.setJtaDataSource(jndiName);
