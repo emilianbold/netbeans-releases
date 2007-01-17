@@ -27,6 +27,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -223,16 +225,40 @@ public class ELExpression {
         private TypeElement getTypePreceedingCaret(CompilationController parameter){
             TypeElement lastKnownType = parameter.getElements().getTypeElement(beanType);
             
-            String parts[] = getExpression().split(".");
+            String parts[] = getExpression().split("\\.");
             // part[0] - the bean
-            // part[parts.length - 1] - the property being typed
+            // part[parts.length - 1] - the property being typed (if not empty)
             
-            for (int i = 1; i < parts.length - 1; i ++){
-                String accessorName = getAccessorName(parts[i]);
-                
-                // TODO: implement me
+            int limit = parts.length - 1;
+            
+            if (getPropertyBeingTypedName().length() == 0){
+                limit += 1;
             }
             
+            for (int i = 1; i < limit; i ++){
+                if (lastKnownType == null){
+                    logger.fine("EL CC: Could not resolve type for property " //NOI18N
+                            + parts[i] + " in " + getExpression()); //NOI18N
+                    
+                    return null;
+                }
+                
+                String accessorName = getAccessorName(parts[i]);
+                List<ExecutableElement> allMethods = ElementFilter.methodsIn(lastKnownType.getEnclosedElements());
+                lastKnownType = null;
+                
+                for (ExecutableElement method : allMethods){
+                    if (accessorName.equals(method.getSimpleName().toString())){
+                        TypeMirror returnType = method.getReturnType();
+                        
+                        if (returnType.getKind() == TypeKind.DECLARED){ // should always be true
+                            lastKnownType = (TypeElement) parameter.getTypes().asElement(returnType);
+                            break;
+                        }
+                    }
+                    
+                }
+            }
             
             return lastKnownType;
         }
@@ -248,46 +274,7 @@ public class ELExpression {
             
             return null; // not an accessor name
         }
-        
-        //
-        //    /*  Returns the last java class which is in the expression.
-        //     *  Usefutl for bean.property1.property2
-        //     */
-        //    protected JavaClass findLastJavaClass(String elExp, JavaClass bean){
-        //        JavaClass javaClass = bean;
-        //        if (elExp != null && !elExp.equals("") && elExp.indexOf('.')> -1){
-        //            String pos = elExp.substring(elExp.indexOf('.')+1);
-        //
-        //            //find the last known class
-        //            if (javaClass != null && pos != null && !pos.equals("") && pos.lastIndexOf('.') > - 1){
-        //                StringTokenizer st = new StringTokenizer(pos.substring(0, pos.lastIndexOf('.')), ".");
-        //
-        //                while(st.hasMoreTokens()){
-        //                    String text = st.nextToken();
-        //                    if (javaClass != null){
-        //                        Method methods [] = JMIUtil.getMethods(javaClass);
-        //                        //reset the java class. Will be setup, if the property is found
-        //                        javaClass = null;
-        //                        for (int j = 0; j < methods.length; j++) {
-        //                            if (methods[j].getName().startsWith("get")) {
-        //                                String name = methods[j].getName().substring(3);
-        //                                name = name.substring(0,1).toLowerCase()+name.substring(1);
-        //                                if (name.equals(text)){
-        //                                    if (methods[j].getType() instanceof JavaClass)
-        //                                        javaClass = (JavaClass)methods[j].getType();
-        //                                    else
-        //                                        javaClass = null;
-        //                                    break;
-        //                                }
-        //                            }
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //        }
-        //        return javaClass;
-        //    }
-        
+       
         public List<CompletionItem> getCompletionItems(){
             return completionItems;
         }
