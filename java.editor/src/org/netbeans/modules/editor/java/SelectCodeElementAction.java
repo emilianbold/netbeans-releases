@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,7 +22,6 @@ package org.netbeans.modules.editor.java;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
-import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -114,26 +113,22 @@ final class SelectCodeElementAction extends BaseAction {
         private SelectionInfo[] selectionInfos;
         private int selIndex = -1;
         private boolean ignoreNextCaretUpdate;
-        private boolean isRunning = false; // indexes processing
 
         SelectionHandler(JTextComponent target) {
             this.target = target;
         }
 
-        public synchronized void selectNext() {
-            if (isRunning) {
-                return; // ignore
-            } else if (selectionInfos == null) {
+        public void selectNext() {
+            if (selectionInfos == null) {
                 JavaSource js = JavaSource.forDocument(target.getDocument());
                 try {
                     js.runUserActionTask(this, true);
-                    isRunning = true;
                 } catch (IOException ex) {
                     ErrorManager.getDefault().notify(ex);
                 }
-            } else {
-                run();
             }
+            
+            run();
         }
 
         public synchronized void selectPrevious() {
@@ -170,14 +165,9 @@ final class SelectCodeElementAction extends BaseAction {
         public void run(CompilationController cc) {
             try {
                 cc.toPhase(Phase.RESOLVED);
-                synchronized (this) {
-                    selectionInfos = initSelectionPath(target, cc);
-                }
-                EventQueue.invokeLater(this);
+                selectionInfos = initSelectionPath(target, cc);
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
-            } finally {
-                isRunning = false;
             }
         }
         
@@ -193,7 +183,7 @@ final class SelectCodeElementAction extends BaseAction {
             return positions.toArray(new SelectionInfo[positions.size()]);
         }
 
-        public synchronized void run() {
+        public void run() {
             if (selIndex < selectionInfos.length - 1) {
                 select(selectionInfos[++selIndex]);
             }
