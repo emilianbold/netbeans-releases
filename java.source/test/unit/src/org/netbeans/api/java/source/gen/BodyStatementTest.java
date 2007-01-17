@@ -76,7 +76,8 @@ public class BodyStatementTest extends GeneratorTest {
 //        suite.addTest(new BodyStatementTest("testRenameInLabelled"));
 //        suite.addTest(new BodyStatementTest("testRenameInContinue"));
 //        suite.addTest(new BodyStatementTest("testRenameInBreak"));
-        return suite;
+//        suite.addTest(new BodyStatementTest("testRenameLocVarTypePar"));
+          return suite;
     }
     
     /**
@@ -1567,6 +1568,74 @@ public class BodyStatementTest extends GeneratorTest {
                 BlockTree forTree = (BlockTree)flt.getStatement();
                 BreakTree bt = (BreakTree)forTree.getStatements().get(0);
                 workingCopy.rewrite(bt, make.setLabel(bt, "zacatek_smycky"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * #88073: Test rename in loc. var type param.
+     */
+    public void testRenameLocVarTypePar() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n\n" +
+            "import java.util.*;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method(int a) {\n" +
+            "        Map<String,Data> map1 = new HashMap<String,Data>();\n" +
+            "        Map<Data,String> map2 = new TreeMap<Data, String>();\n" +
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n\n" +
+            "import java.util.*;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method(int a) {\n" +
+            "        Map<String,DataRen> map1 = new HashMap<String,DataRen>();\n" +
+            "        Map<DataRen,String> map2 = new TreeMap<DataRen, String>();\n" +
+            "    }\n" +
+            "}\n";
+         
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy)
+                    throws IOException {
+                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                BlockTree block = method.getBody();
+                
+                VariableTree vt = (VariableTree) block.getStatements().get(0);
+                ParameterizedTypeTree ptt = (ParameterizedTypeTree) vt.getType();
+                IdentifierTree it = (IdentifierTree) ptt.getTypeArguments().get(1);
+                workingCopy.rewrite(it, make.setLabel(it, "DataRen"));
+                
+                NewClassTree nct = (NewClassTree) vt.getInitializer();
+                ptt = (ParameterizedTypeTree) nct.getIdentifier();
+                it = (IdentifierTree) ptt.getTypeArguments().get(1);
+                workingCopy.rewrite(it, make.setLabel(it, "DataRen"));
+                
+                vt = (VariableTree) block.getStatements().get(1);
+                ptt = (ParameterizedTypeTree) vt.getType();
+                it = (IdentifierTree) ptt.getTypeArguments().get(0);
+                workingCopy.rewrite(it, make.setLabel(it, "DataRen"));
+                nct = (NewClassTree) vt.getInitializer();
+                ptt = (ParameterizedTypeTree) nct.getIdentifier();
+                it = (IdentifierTree) ptt.getTypeArguments().get(0);
+                workingCopy.rewrite(it, make.setLabel(it, "DataRen"));
             }
             
             public void cancel() {

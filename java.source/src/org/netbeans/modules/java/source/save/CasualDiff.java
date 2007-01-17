@@ -547,16 +547,19 @@ public class CasualDiff {
 
     protected int diffVarDef(JCVariableDecl oldT, JCVariableDecl newT, int[] bounds) {
        int localPointer = bounds[0];
-        if (oldT.mods != newT.mods) {
-            if (newT.mods.toString().length() > 0) {
+        if (!matchModifiers(oldT.mods, newT.mods)) {
+            // if new tree has modifiers, print them
+            if (hasModifiers(newT.mods)) {
                 localPointer = diffModifiers(oldT.mods, newT.mods, oldT, localPointer);
             } else {
                 int oldPos = getOldPos(oldT.mods);
-                printer.print(origText.substring(localPointer, oldPos));
-                localPointer = oldT.vartype.pos;
+                copyTo(localPointer, oldPos);
+                localPointer = getOldPos(oldT.vartype);
             }
         }
-        localPointer = diffTree(oldT.vartype, newT.vartype, new int[] { localPointer, getOldPos(oldT.vartype) });
+        int[] vartypeBounds = getBounds(oldT.vartype);
+        copyTo(localPointer, vartypeBounds[0]);
+        localPointer = diffTree(oldT.vartype, newT.vartype, vartypeBounds);
         if (nameChanged(oldT.name, newT.name)) {
             printer.print(origText.substring(localPointer, oldT.pos));
             printer.print(newT.name);
@@ -564,12 +567,12 @@ public class CasualDiff {
             localPointer = oldT.pos + oldT.name.length();
         }
         if (newT.init != null && oldT.init != null) {
-            printer.print(origText.substring(localPointer, localPointer = getOldPos(oldT.init)));
+            copyTo(localPointer, localPointer = getOldPos(oldT.init));
             localPointer = diffTree(oldT.init, newT.init, new int[] { localPointer, endPos(oldT.init) });
         } else {
             diffTreeToken("=", endPos(oldT.init), oldT.init, newT.init, "");
         }
-        printer.print(origText.substring(localPointer, bounds[1]));
+        copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
 
@@ -872,9 +875,14 @@ public class CasualDiff {
     
     protected int diffNewClass(JCNewClass oldT, JCNewClass newT, int[] bounds) {
         int localPointer = bounds[0];
-        diffTree(oldT.encl, newT.encl);
+        if (oldT.encl != null) {
+            int[] enclBounds = getBounds(oldT.encl);
+            localPointer = diffTree(oldT.encl, newT.encl, enclBounds);
+        }
         diffParameterList(oldT.typeargs, newT.typeargs, localPointer);
-        localPointer = diffTree(oldT.clazz, newT.clazz, localPointer);
+        int[] clazzBounds = getBounds(oldT.clazz);
+        copyTo(localPointer, clazzBounds[0]);
+        localPointer = diffTree(oldT.clazz, newT.clazz, clazzBounds );
         localPointer = diffParameterList(oldT.args, newT.args, localPointer);
         // let diffClassDef() method notified that anonymous class is printed.
         if (oldT.def != null) {
@@ -1038,9 +1046,27 @@ public class CasualDiff {
         diffTree(oldT.elemtype, newT.elemtype);
     }
 
-    protected void diffTypeApply(JCTypeApply oldT, JCTypeApply newT) {
-        diffTree(oldT.clazz, newT.clazz);
-        diffParameterList(oldT.arguments, newT.arguments, -1);
+    protected int diffTypeApply(JCTypeApply oldT, JCTypeApply newT, int[] bounds) {
+        int localPointer = bounds[0];
+        int[] clazzBounds = getBounds(oldT.clazz);
+        copyTo(localPointer, clazzBounds[0]);
+        localPointer = diffTree(oldT.clazz, newT.clazz, clazzBounds);
+        if (!listsMatch(oldT.arguments, newT.arguments)) {
+            int pos = oldT.arguments.nonEmpty() ? getOldPos(oldT.arguments.head) : endPos(oldT.clazz);
+            if (newT.arguments.nonEmpty()) 
+                copyTo(localPointer, pos);
+            VeryPretty locBuf = new VeryPretty(context);
+            localPointer = diffParameterList(
+                    oldT.arguments,
+                    newT.arguments,
+                    oldT.arguments.isEmpty() || newT.arguments.isEmpty(),
+                    pos,
+                    locBuf
+            );
+            printer.print(locBuf.toString());
+        }
+        copyTo(localPointer, bounds[1]);
+        return bounds[1];
     }
 
     protected int diffTypeParameter(JCTypeParameter oldT, JCTypeParameter newT, int[] bounds) {
@@ -2126,7 +2152,7 @@ public class CasualDiff {
               diffTypeArray((JCArrayTypeTree)oldT, (JCArrayTypeTree)newT);
               break;
           case JCTree.TYPEAPPLY:
-              diffTypeApply((JCTypeApply)oldT, (JCTypeApply)newT);
+              retVal = diffTypeApply((JCTypeApply)oldT, (JCTypeApply)newT, elementBounds);
               break;
           case JCTree.TYPEPARAMETER:
               retVal = diffTypeParameter((JCTypeParameter)oldT, (JCTypeParameter)newT, elementBounds);
