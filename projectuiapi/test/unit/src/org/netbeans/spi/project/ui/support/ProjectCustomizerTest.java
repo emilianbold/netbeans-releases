@@ -22,8 +22,10 @@ package org.netbeans.spi.project.ui.support;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -32,7 +34,14 @@ import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.CategoryComponentProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.InstanceDataObject;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
 /**
  * @author Jan Lahoda
@@ -123,6 +132,67 @@ public class ProjectCustomizerTest extends NbTestCase {
             return new JPanel();
         }
         
+    }
+    
+    public void testReadCategories() {
+        FileSystem sysFS = Repository.getDefault().getDefaultFileSystem();
+        // creating direcotry structure on System FileSystem
+        FileObject projectFO = sysFS.findResource("Projects");
+        if (projectFO == null) {
+            FileObject rootFO = sysFS.getRoot();
+            try {
+                projectFO = rootFO.createFolder("Projects");
+            } catch (IOException ex) {
+                fail("Cannot create 'Projects' folder.");
+            }
+        }
+        FileObject j2seprojectFO = projectFO.getFileObject("org-netbeans-modules-java-j2seproject");
+        if (j2seprojectFO == null) {
+            try {
+                j2seprojectFO = projectFO.createFolder("org-netbeans-modules-java-j2seproject");
+            } catch (IOException ex) {
+                fail("Cannot create 'org-netbeans-modules-java-j2seproject' folder.");
+            }
+        }
+        FileObject customizerFO = j2seprojectFO.getFileObject("Customizer");
+        if (customizerFO == null) {
+            try {
+                customizerFO = j2seprojectFO.createFolder("Customizer");
+            } catch (IOException ex) {
+                fail("Cannot create 'Customizer' folder.");
+            }
+        }
+        try {
+            // category folder
+            FileObject testFO = customizerFO.createFolder("TestCategory");
+            DataFolder testDataFolder = DataFolder.findFolder(testFO);
+            // category instance file
+            DataObject instance = InstanceDataObject.create(testDataFolder, "Self", 
+                    "org.netbeans.spi.project.ui.support.ProjectCustomizerTest$TestCompositeCategoryProvider");
+        } catch (IOException ex) {
+            fail("Cannot create category folder.");
+        }
+        ProjectCustomizer.DelegateCategoryProvider dcp = new ProjectCustomizer.DelegateCategoryProvider(DataFolder.findFolder(customizerFO), null);
+        ProjectCustomizer.Category categories[] = null;
+        try {
+            categories = dcp.readCategories(DataFolder.findFolder(customizerFO));
+        } catch (Exception ex) {
+            fail("Reading of categories failed.");
+        }
+        assertNotNull(categories);
+        assertEquals(1, categories.length);
+        assertEquals("TestCategory", categories[0].getDisplayName());
+        JComponent jc = dcp.create(categories[0]);
+        assertTrue(jc instanceof JButton);
+    }
+    
+    public static class TestCompositeCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
+        public ProjectCustomizer.Category createCategory(Lookup context) {
+            return ProjectCustomizer.Category.create("testCategory", "TestCategory", null, null);
+        }
+        public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
+            return new JButton();
+        }
     }
     
 }

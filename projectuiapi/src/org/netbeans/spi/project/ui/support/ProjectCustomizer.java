@@ -198,7 +198,10 @@ public final class ProjectCustomizer {
      * The panel/category created by the provider can get notified that the customizer got
      * closed by setting an <code>ActionListener</code> to 
      * {@link org.netbeans.spi.project.ui.support.ProjectCustomizer.Category#setOkButtonListener} .
-     * @since org.netbeans.modules.projectuiapi/1 1.15
+     * UI Component can be defined for category folder that is repesented as node with subnodes in the category
+     * tree of project customizer. Name of the file that defines the instance class in layer for such category 
+     * must be named "Self". For details and usage see issue #91276.
+     * @since org.netbeans.modules.projectuiapi/1 1.22
      */
     public static interface CompositeCategoryProvider {
 
@@ -365,20 +368,26 @@ public final class ProjectCustomizer {
         
     }
 
-    private static class DelegateCategoryProvider implements CategoryComponentProvider, CompositeCategoryProvider {
+    /*private*/ static class DelegateCategoryProvider implements CategoryComponentProvider, CompositeCategoryProvider {
 
         private final Lookup context;
         private final Map<ProjectCustomizer.Category,CompositeCategoryProvider> category2provider;
         private final DataFolder folder;
+        private final CompositeCategoryProvider selfProvider;
 
         public DelegateCategoryProvider(DataFolder folder, Lookup context) {
             this(folder, context, new HashMap<ProjectCustomizer.Category,CompositeCategoryProvider>());
         }
 
         private DelegateCategoryProvider(DataFolder folder, Lookup context, Map<ProjectCustomizer.Category,CompositeCategoryProvider> cat2Provider) {
+            this(folder, context, cat2Provider, null);
+        }
+        
+        private DelegateCategoryProvider(DataFolder folder, Lookup context, Map<ProjectCustomizer.Category,CompositeCategoryProvider> cat2Provider, CompositeCategoryProvider sProv) {
             this.context = context;
             this.folder = folder;
             category2provider = cat2Provider;
+            selfProvider = sProv;
         }
 
         public JComponent create(ProjectCustomizer.Category category) {
@@ -400,24 +409,41 @@ public final class ProjectCustomizer {
         }
 
 
-        private ProjectCustomizer.Category[] readCategories(DataFolder folder) throws IOException, ClassNotFoundException {
+        /*private*/ ProjectCustomizer.Category[] readCategories(DataFolder folder) throws IOException, ClassNotFoundException {
             List<ProjectCustomizer.Category> toRet = new ArrayList<ProjectCustomizer.Category>();
             for (DataObject dob : folder.getChildren()) {
                 if (dob instanceof DataFolder) {
-                    CompositeCategoryProvider prov = new DelegateCategoryProvider((DataFolder) dob, context, category2provider);
+                    CompositeCategoryProvider sProvider = null;
+                    DataObject subDobs[] = ((DataFolder) dob).getChildren();
+                    for (DataObject subDob : subDobs) {
+                        if (subDob.getName().equals("Self")) { // NOI18N
+                            InstanceCookie cookie = subDob.getCookie(InstanceCookie.class);
+                            if (cookie != null && CompositeCategoryProvider.class.isAssignableFrom(cookie.instanceClass())) {
+                                sProvider = (CompositeCategoryProvider) cookie.instanceCreate();
+                            }
+                        }
+                    }
+                    CompositeCategoryProvider prov = null;
+                    if (sProvider != null) {
+                        prov = new DelegateCategoryProvider((DataFolder) dob, context, category2provider, sProvider);
+                    } else {
+                        prov = new DelegateCategoryProvider((DataFolder) dob, context, category2provider);
+                    }
                     ProjectCustomizer.Category cat = prov.createCategory(context);
                     toRet.add(cat);
                     category2provider.put(cat, prov);
                 }
-                InstanceCookie cook = dob.getCookie(InstanceCookie.class);
-                if (cook != null && CompositeCategoryProvider.class.isAssignableFrom(cook.instanceClass())) {
-                    CompositeCategoryProvider provider = (CompositeCategoryProvider)cook.instanceCreate();
-                    ProjectCustomizer.Category cat = provider.createCategory(context);
-                    if (cat != null) {
-                        assert cat.getSubcategories() == null || cat.getSubcategories().length == 0
+                if (!dob.getName().equals("Self")) { // NOI18N
+                    InstanceCookie cook = dob.getCookie(InstanceCookie.class);
+                    if (cook != null && CompositeCategoryProvider.class.isAssignableFrom(cook.instanceClass())) {
+                        CompositeCategoryProvider provider = (CompositeCategoryProvider)cook.instanceCreate();
+                        ProjectCustomizer.Category cat = provider.createCategory(context);
+                        if (cat != null) {
+                            assert cat.getSubcategories() == null || cat.getSubcategories().length == 0
                                : "Cannot have subcategories for declaratively added category. Please declare the subcategories as well."; //NOI18N
-                        toRet.add(cat);
-                        category2provider.put(cat, provider);
+                            toRet.add(cat);
+                            category2provider.put(cat, provider);
+                        }
                     }
                 }
             }
@@ -442,6 +468,9 @@ public final class ProjectCustomizer {
          * provides component for folder category
          */
         public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
+            if (selfProvider != null) {
+                return selfProvider.createComponent(category, context);
+            }
             return new JPanel();
         }
     }

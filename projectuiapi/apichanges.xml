@@ -81,6 +81,27 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="non-leaf-category-node-customizer">
+            <api name="general"/>
+            <summary>Added a way how to define UI component for non-leaf category node in project customizer</summary>
+            <version major="1" minor="22"/>
+            <date day="5" month="1" year="2007"/>
+            <author login="mkubec"/>
+            <compatibility addition="no" binary="compatible" deletion="no" deprecation="no" modification="yes" semantic="incompatible" source="compatible">
+                Semantic change of handling files according to location and name on layer filesystem - File of particular filename 
+                under category folder is handled differently.
+            </compatibility>
+            <description>
+                Allow to define UI component for non-leaf category node in project customizer by setting name of the 
+                file in folder on layer filesystem. If there is a category with some subcategories and 
+                UI component is needed for the category, the folder that defines the category in layer needs 
+                to contain file with name 'Self.instance'. Instance of the file will be used to create 
+                customizer component for the category.
+            </description>
+            <class package="org.netbeans.spi.project.ui.support" name="ProjectCustomizer"/>
+            <issue number="91276"/>
+        </change>
+        
         <change id="ProjectCustomizer.Category.buttonListener">
             <api name="general"/>
             <summary>Ability to attach a ok button listener on single customizer category.</summary>
