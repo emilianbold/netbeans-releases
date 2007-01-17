@@ -124,7 +124,7 @@ public class CompletionTest extends java.lang.Object {
     private void completionQuery(PrintWriter  out,
             PrintWriter  log,
             JEditorPane  editor,
-            boolean      sort,
+            boolean      unsorted,
             int queryType
             ) {
         BaseDocument doc = Utilities.getDocument(editor);
@@ -146,7 +146,7 @@ public class CompletionTest extends java.lang.Object {
         EditorTestCase.waitMaxMilisForValue(5000, new ResultReadyResolver(result), Boolean.TRUE);
         List<? extends  CompletionItem> list = result.getItems();
         CompletionItem[] array = list.toArray(new CompletionItem[]{});
-        if(sort) {
+        if(!unsorted) {
             Arrays.sort(array);
         }
         for (int i = 0; i < array.length; i++) {
@@ -204,7 +204,7 @@ public class CompletionTest extends java.lang.Object {
      */
     private void testPerform(PrintWriter out, PrintWriter log,
             JEditorPane editor,
-            boolean sort,
+            boolean unsorted,
             String assign,
             int lineIndex,
             int queryType) throws BadLocationException, IOException {
@@ -218,18 +218,18 @@ public class CompletionTest extends java.lang.Object {
         editor.getCaret().setDot(lineOffset);
         doc.insertString(lineOffset, assign, null);
         reparseDocument((DataObject) doc.getProperty(doc.StreamDescriptionProperty));
-        completionQuery(out, log, editor, sort, queryType);
+        completionQuery(out, log, editor, unsorted, queryType);
     }
     
     public void test(final PrintWriter out, final PrintWriter log,
-            final String assign, final boolean sort,
+            final String assign, final boolean unsorted,
             final File dataDir, final String projectName,
             final String testFileName, final int line) throws Exception {
-            test(out, log, assign, sort, dataDir, projectName, testFileName, line, CompletionProvider.COMPLETION_QUERY_TYPE);
+            test(out, log, assign, unsorted, dataDir, projectName, testFileName, line, CompletionProvider.COMPLETION_QUERY_TYPE);
     }
     
     public void test(final PrintWriter out, final PrintWriter log,
-            final String assign, final boolean sort,
+            final String assign, final boolean unsorted,
             final File dataDir, final String projectName,
             final String testFileName, final int line, final int queryType) throws Exception {
         try {
@@ -244,7 +244,7 @@ public class CompletionTest extends java.lang.Object {
                     public void run() {
                         try {
                             JEditorPane editor  = getAnEditorPane(testFile, log);
-                            testPerform(out, log, editor, sort, assign, line, queryType);
+                            testPerform(out, log, editor, unsorted, assign, line, queryType);
                         } catch (Exception e) {
                             e.printStackTrace(log);
                         };

@@ -29,6 +29,7 @@ import java.io.FileReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import org.netbeans.spi.editor.completion.CompletionProvider;
 
 /**This class is automatically generated from <I>config.txt</I> using bash
  * script <I>create</I>. For any changes, change the code generating script
@@ -44,7 +45,7 @@ public class CompletionTestPerformer extends NbTestCase {
     
     
     // automatic generation of golden files
-    protected boolean generateGoledFiles = false;
+    protected boolean generateGoledFiles = true;
     
     protected PrintWriter outputWriter  = null;
     
@@ -813,4 +814,22 @@ public class CompletionTestPerformer extends NbTestCase {
         new CompletionTest().test(outputWriter, logWriter, " new ArrayList<String[]>(", false, getDataDir(), "CC15Tests", "ctorstest/Test.java", 6);        
     }
     
+    /**
+     * ----------------------------------------------- Smart codecompletion ---------------------------------------------------------------------------
+     */ 
+    public void testsmartassign() throws Exception {
+        new CompletionTest().test(outputWriter, logWriter, "Double x = ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Assign.java", 11,CompletionProvider.COMPLETION_SMART_QUERY_TYPE);        
+    }
+    
+    public void testsmartassign2() throws Exception {
+        new CompletionTest().test(outputWriter, logWriter, "Number x = ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Assign.java", 11,CompletionProvider.COMPLETION_SMART_QUERY_TYPE);        
+    }
+    
+    public void testsmartassign3() throws Exception {
+        new CompletionTest().test(outputWriter, logWriter, "Number x = new", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Assign.java", 11,CompletionProvider.COMPLETION_SMART_QUERY_TYPE);        
+    }
+    
+    public void testsmartassign4() throws Exception {
+        new CompletionTest().test(outputWriter, logWriter, "List x = new ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Assign.java", 11,CompletionProvider.COMPLETION_SMART_QUERY_TYPE);        
+    }
 }
