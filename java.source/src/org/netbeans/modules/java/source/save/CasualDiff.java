@@ -460,17 +460,21 @@ public class CasualDiff {
                 oldT.pos : 
             getOldPos(oldT.typarams.head);
         
-        if (newT.typarams.nonEmpty() || listsMatch(oldT.typarams, newT.typarams)) {
-            copyTo(localPointer, pos);
+        if (!listsMatch(oldT.typarams, newT.typarams)) {
+            if (newT.typarams.nonEmpty()) 
+                copyTo(localPointer, pos);
+            else
+                if (hasModifiers(oldT.mods))
+                    copyTo(localPointer, endPos(oldT.mods));
+            VeryPretty locBuf = new VeryPretty(context);
+            localPointer = diffParameterList(oldT.typarams,
+                    newT.typarams,
+                    oldT.typarams.isEmpty() || newT.typarams.isEmpty(),
+                    pos,
+                    locBuf
+            );
+            printer.print(locBuf.toString());
         }
-        VeryPretty locBuf = new VeryPretty(context);
-        localPointer = diffParameterList(oldT.typarams,
-                newT.typarams,
-                oldT.typarams.isEmpty() || newT.typarams.isEmpty(),
-                pos,
-                locBuf
-        );
-        printer.print(locBuf.toString());
         if (oldT.restype != null) { // means constructor, skip return type gen.
             int[] restypeBounds = getBounds(oldT.restype);
             copyTo(localPointer, restypeBounds[0]);
@@ -1039,10 +1043,17 @@ public class CasualDiff {
         diffParameterList(oldT.arguments, newT.arguments, -1);
     }
 
-    protected void diffTypeParameter(JCTypeParameter oldT, JCTypeParameter newT) {
-        if (nameChanged(oldT.name, newT.name))
-            append(Diff.name(oldT.pos, oldT.name, newT.name));
-        diffParameterList(oldT.bounds, newT.bounds, -1);
+    protected int diffTypeParameter(JCTypeParameter oldT, JCTypeParameter newT, int[] bounds) {
+        int localPointer = bounds[0];
+        copyTo(localPointer, getOldPos(oldT));
+        if (nameChanged(oldT.name, newT.name)) {
+            printer.print(newT.name);
+            localPointer += oldT.name.length();
+        }
+        // todo: finish parameters!
+        // diffParameterList(oldT.bounds, newT.bounds, -1);
+        copyTo(localPointer, bounds[1]);
+        return bounds[1];
     }
     
     protected void diffWildcard(JCWildcard oldT, JCWildcard newT) {
@@ -1579,26 +1590,37 @@ public class CasualDiff {
             }
             return endPos;
         }
-        ListMatcher<JCExpression> matcher = ListMatcher.<JCExpression>instance(
-                (List<JCExpression>) oldList, 
-                (List<JCExpression>) newList
+        ListMatcher<JCTree> matcher = ListMatcher.<JCTree>instance(
+                (List<JCTree>) oldList, 
+                (List<JCTree>) newList
         );
         if (!matcher.match()) {
             // nothing in the list, no need to print and nothing was printed
             return pos; 
         }
-        ResultItem<JCExpression>[] result = matcher.getResult();
+        ResultItem<JCTree>[] result = matcher.getResult();
         if (printParen && oldList.isEmpty()) {
             buf.print(JavaTokenId.LT.fixedText());
         }
-        
+        JCTree lastDeleted = null;
         for (int index = 0, j = 0; j < result.length; j++) {
-            ResultItem<JCExpression> item = result[j];
+            ResultItem<JCTree> item = result[j];
             switch (item.operation) {
                 // insert new element
                 case INSERT:
                     if (index++ > 0) buf.print(",");
-                    buf.print(item.element);
+                    if (lastDeleted != null && treesMatch(lastDeleted, item.element, false)) {
+                        VeryPretty mainPrint = this.printer;
+                        this.printer = buf;
+                        diffTree(lastDeleted, item.element, getBounds(lastDeleted));
+                        this.printer = mainPrint;
+                    } else {
+                        buf.print(item.element);
+                    }
+                    lastDeleted = null;
+                    break;
+                case DELETE:
+                    lastDeleted = item.element;
                     break;
                 // just copy existing element
                 case NOCHANGE:
@@ -1611,8 +1633,8 @@ public class CasualDiff {
                     TokenUtilities.moveNext(tokenSequence, bounds[1]);
                     int end = tokenSequence.offset();
                     copyTo(start, end, buf);
+                    lastDeleted = null;
                     break;
-                // modification and deletion are ignored.
                 default: 
                     break;
             }
@@ -1983,7 +2005,8 @@ public class CasualDiff {
              oldT.tag != JCTree.IDENT &&
              oldT.tag != JCTree.EXEC &&
              oldT.tag != JCTree.NEWCLASS &&
-             oldT.getKind() != Kind.MEMBER_SELECT) &&
+             oldT.getKind() != Kind.MEMBER_SELECT &&
+             oldT.getKind() != Kind.TYPE_PARAMETER) &&
             (oldT.tag != newT.tag || newT.pos == Query.NOPOS || oldT.type != newT.type)) {
             append(Diff.modify(oldT, oldPos, newT));
             return oldPos;
@@ -2106,7 +2129,7 @@ public class CasualDiff {
               diffTypeApply((JCTypeApply)oldT, (JCTypeApply)newT);
               break;
           case JCTree.TYPEPARAMETER:
-              diffTypeParameter((JCTypeParameter)oldT, (JCTypeParameter)newT);
+              retVal = diffTypeParameter((JCTypeParameter)oldT, (JCTypeParameter)newT, elementBounds);
               break;
           case JCTree.WILDCARD:
               diffWildcard((JCWildcard)oldT, (JCWildcard)newT);
