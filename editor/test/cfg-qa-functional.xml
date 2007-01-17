@@ -140,7 +140,10 @@ executor="ide-nogui">
     <testbag testattribs="all,full,abbrevs" name="abbrev-gui">
         <testset dir="qa-functional/src">
             <patternset>
-		<include name="org/netbeans/test/editor/suites/abbrevs/*Performer.class"/>
+		<!-- 
+                <include name="org/netbeans/test/editor/suites/abbrevs/*Performer.class"/>
+                -->
+                <include name="org/netbeans/test/editor/suites/abbrevs/AbbreviationsAddRemovePerformer.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -155,7 +158,7 @@ executor="ide-nogui">
     
     
     <!-- Formatting tests -->
-    <testbag testattribs="formatting" name="FormattingTests">
+    <testbag testattribs="all,full,formatting" name="FormattingTests">
         <testset dir="qa-functional/src">
             <patternset>            
                 <include name="org/netbeans/test/editor/formatting/*.class"/>            

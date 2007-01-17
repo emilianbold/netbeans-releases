@@ -32,10 +32,12 @@ import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.*;
 
-/** Class implementing all necessary methods for handling "Abbreviations" NbDialog.
+/**
+ * Class implementing all necessary methods for handling "Abbreviations" NbDialog.
  *
  * @author  Jan Lahoda
- * @version 1.0
+ * @author Max Sauer
+ * @version 1.1
  */
 public class Abbreviations extends JDialogOperator {
     
@@ -223,6 +225,7 @@ public class Abbreviations extends JDialogOperator {
     }
     
     public void addAbbreviation(String abbreviation, String expansion) {
+        new EventTool().waitNoEvent(500);
         btAdd().pushNoBlock();
         EnterAbbreviation enter = new EnterAbbreviation();
         enter.fillAbbreviation(abbreviation, expansion);
@@ -253,7 +256,7 @@ public class Abbreviations extends JDialogOperator {
     
     public boolean removeAbbreviation(String abbreviation) {
         int row = tabAbbreviations().findCellRow(abbreviation,
-        new Operator.DefaultStringComparator(true, true));
+                new Operator.DefaultStringComparator(true, true));
         
         if (row == (-1)) {
             System.out.println("Didn't find "+abbreviation);
@@ -285,17 +288,17 @@ public class Abbreviations extends JDialogOperator {
     
     public static Abbreviations invoke(String editorName) {
         OptionsOperator options = OptionsOperator.invoke();
-        
+        options.switchToClassicView(); //use switchToClassic, do not push the button
         options.selectOption(ResourceBundle.getBundle("org/netbeans/core/Bundle").getString("UI/Services/Editing")+
-        "|"+ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("OPTIONS_all")+
-        "|" + editorName);
+                "|"+ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("OPTIONS_all")+
+                "|" + editorName);
         new EventTool().waitNoEvent(500);
         PropertySheetOperator pso = new PropertySheetOperator(options);
         new Property(pso,ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("PROP_Abbreviations")).openEditor();
         
         Abbreviations abbs = new Abbreviations();
         
-        options.close(); /*??? not sure whether this is assured to work*/
+        options.btClose().push();
         return abbs;
     }
     

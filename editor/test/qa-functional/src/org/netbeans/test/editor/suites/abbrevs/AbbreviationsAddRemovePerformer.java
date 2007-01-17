@@ -23,21 +23,23 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.editor.Abbreviations;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.test.editor.LineDiff;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 
-/**This is test in very development stage. I put it into the CVS mainly because
- * it simplifies testing on different platforms. This test may or may not
- * be reliable and may or may not work at all.
- *
- * @author  Jan Lahoda
+/**
+ * Test adding/removing of abbreviation via advanced options panel
+ * @author Jan Lahoda
+ * @author Max Sauer
  */
 public class AbbreviationsAddRemovePerformer extends JellyTestCase {
+    
+    /** 'Source Packages' string from j2se project bundle */
+    public static final String SRC_PACKAGES_PATH =
+            Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle",
+            "NAME_src.dir");
     
     private static final String editor = "Java Editor";
     private boolean isInFramework;
@@ -49,26 +51,21 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
     }
     
     public EditorOperator openFile() {
-        FileObject fo = Repository.getDefault().findResource("org/netbeans/test/editor/suites/abbrevs/data/testfiles/AbbreviationsAddRemovePerformer/Test.java");
+        Node pn = new ProjectsTabOperator().getProjectRootNode(
+                "editor_test");
+        pn.select();
+        //Open Test.java from editor_test project
+        Node n = new Node(pn, SRC_PACKAGES_PATH + "|" + "abbrev" + "|" + "Test");
+        n.select();
+        new OpenAction().perform();
+        new EventTool().waitNoEvent(500);
         
-        try {
-            DataObject od = DataObject.find(fo);
-            EditorCookie ec = (EditorCookie) od.getCookie(EditorCookie.class);
-            
-            ec.open();
-            
-            return new EditorOperator("Test");
-        } catch (DataObjectNotFoundException e) {
-            assertTrue(false);
-            return null;
-        }
-        
-/*        assertTrue(false);
-        return null;*/
+        return new EditorOperator("Test");
     }
     
     private void checkAbbreviation(String abbreviation) throws Exception {
         //Open an editor:
+        System.out.println("### Checking abbreviation \"" + abbreviation + "\"");
         EditorOperator editor = openFile();
         
         //This line is reserved for testing. All previous content is destroyed
@@ -78,7 +75,7 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
         //Write abbreviation:
         editor.txtEditorPane().typeText(abbreviation);
         //Expand abbreviation:
-        editor.txtEditorPane().typeKey(' ');
+        editor.pushTabKey();
         //Flush current line to output (ref output!)
         ref(editor.getText(editor.getLineNumber()));
         //Delete what we have written:
@@ -102,12 +99,21 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
             
             checkAbbreviation("ts");
             checkAbbreviation("tst");
-            System.out.println("remove1: "+Abbreviations.removeAbbreviation(editor, "ts"));
-            System.out.println("remove2: "+Abbreviations.removeAbbreviation(editor, "ts"));
+            
+            //remove "ts"
+            boolean remove0 = Abbreviations.removeAbbreviation(editor, "ts");
+            System.out.println("remove0: " + remove0);
+            assertTrue("Previously added \"ts\" abbrev could not be removed.", remove0);
+            
+            //try to remove "ts" again -- should not be possible
+            boolean remove1 = Abbreviations.removeAbbreviation(editor, "ts");
+            System.out.println("remove1: "+ remove1);
+            assertFalse("Previously removed \"ts\" abbrev should not be aviable.", remove1);
+            
             checkAbbreviation("ts");
             checkAbbreviation("tst");
+            System.out.println("remove0: "+Abbreviations.removeAbbreviation(editor, "tst"));
             System.out.println("remove1: "+Abbreviations.removeAbbreviation(editor, "tst"));
-            System.out.println("remove2: "+Abbreviations.removeAbbreviation(editor, "tst"));
             checkAbbreviation("ts");
             checkAbbreviation("tst");
             
