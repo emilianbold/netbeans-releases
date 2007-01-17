@@ -77,7 +77,7 @@ public class DownloadManager {
   }
   
   public File getWd() {
-    return  wd;
+    return wd;
   }
   
   public File defaultFolder() {

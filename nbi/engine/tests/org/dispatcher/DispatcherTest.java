@@ -60,12 +60,12 @@ public class DispatcherTest extends MyTestCase {
     assertEquals(1, dispatcher.waitingCount());
     assertFalse(dummy.isProcessed());
     dispatcher.start();
-    longSleep();
+    shortSleep();
     assertTrue(dummy.isProcessed());
     assertEquals(1, dispatcher.activeCount());
     assertEquals(0, dispatcher.waitingCount());
     dummy.terminate();
-    longSleep();
+    shortSleep();
     assertFalse(dummy.isProcessed());
     assertEquals(0, dispatcher.activeCount());
     assertEquals(0, dispatcher.waitingCount());
@@ -77,7 +77,7 @@ public class DispatcherTest extends MyTestCase {
     final DummyProcess dummy = new DummyProcess();
     dispatcher.schedule(dummy);
     dispatcher.start();
-    longSleep();
+    shortSleep();
     assertTrue(dummy.isProcessed());
     assertEquals(1, dispatcher.activeCount());
     assertEquals(0, dispatcher.waitingCount());
@@ -93,9 +93,7 @@ public class DispatcherTest extends MyTestCase {
     final DummyProcess dummy2 = new DummyProcess();
     dispatcher.schedule(dummy);
     dispatcher.start();
-    longSleep();
-    longSleep();
-    longSleep();
+    shortSleep();
     dummy.terminate();
     shortSleep();
     assertEquals(0, dispatcher.activeCount());
@@ -106,9 +104,8 @@ public class DispatcherTest extends MyTestCase {
     assertTrue(dispatcher.isActive());
     assertTrue(dispatcher.schedule(dummy2));
     assertEquals(1, dispatcher.waitingCount() + dispatcher.activeCount());
-    longSleep();
+    shortSleep();
     assertEquals(1, dispatcher.activeCount());
-    longSleep();
     assertTrue(dummy2.isProcessed());
     assertEquals(worker, dummy2.getWorker());//key line in this test
     dispatcher.stop();
@@ -121,7 +118,6 @@ public class DispatcherTest extends MyTestCase {
     final DummyProcess dummy2 = new DummyProcess();
     dispatcher.start();
     dispatcher.schedule(dummy);
-    longSleep();
     dispatcher.schedule(dummy2);
     shortSleep();
     assertTrue(dummy.isProcessed());
@@ -132,7 +128,6 @@ public class DispatcherTest extends MyTestCase {
     dummy.terminate();
     shortSleep();
     assertFalse(dummy.isProcessed());
-    longSleep();
     assertTrue(dummy2.isProcessed());
     assertEquals(1, dispatcher.activeCount());
     assertEquals(0, dispatcher.waitingCount());
@@ -148,10 +143,10 @@ public class DispatcherTest extends MyTestCase {
     final DummyProcess dummy = new DummyProcess();
     dispatcher.schedule(dummy);
     dispatcher.start();
-    longSleep();
+    shortSleep();
     assertTrue(dummy.isProcessed());
     dummy.terminate();
-    longSleep();
+    shortSleep();
     assertTrue(dispatcher.schedule(dummy));
     assertEquals(1, dispatcher.activeCount() + dispatcher.waitingCount());
     dispatcher.stop();
@@ -178,12 +173,12 @@ public class DispatcherTest extends MyTestCase {
     };
     dispatcher.schedule(goodDummy);
     dispatcher.start();
-    longSleep();
+    shortSleep();
     assertTrue(goodDummy.isProcessed());
     final Thread worker = goodDummy.getWorker();
     dispatcher.terminate(goodDummy);
     dispatcher.schedule(badDummy);
-    longSleep();
+    shortSleep();
     assertTrue(badDummy.isProcessed());
     assertEquals(worker, badDummy.getWorker());
     dispatcher.terminate(badDummy);
@@ -191,7 +186,7 @@ public class DispatcherTest extends MyTestCase {
     assertEquals(0, dispatcher.waitingCount());
     dispatcher.schedule(goodDummy);
     assertEquals(1, dispatcher.activeCount() + dispatcher.waitingCount());
-    longSleep();
+    shortSleep();
     assertEquals(1, dispatcher.activeCount());
     assertEquals(0, dispatcher.waitingCount());
     assertTrue(goodDummy.isProcessed());
@@ -210,7 +205,7 @@ public class DispatcherTest extends MyTestCase {
     }
     assertEquals(5, dispatcher.waitingCount());
     dispatcher.start();
-    longSleep();
+    shortSleep();
     assertEquals(5, dispatcher.activeCount());
     for (int i = 5 ; i < 10; i++) {
       dispatcher.schedule(dummies[i]);
@@ -218,7 +213,6 @@ public class DispatcherTest extends MyTestCase {
       assertEquals(i + 1, dispatcher.activeCount());
       assertEquals(0, dispatcher.waitingCount());
     }
-    longSleep();
     longSleep();
     for (int i = 0 ; i < 10; i++) {
       assertTrue(dummies[i].isProcessed());
@@ -230,7 +224,7 @@ public class DispatcherTest extends MyTestCase {
     dummies[5].terminate();
     //dispatcher.terminate(dummies[5]);
     longSleep();
-    longSleep();
+    //longSleep();
     assertEquals(10, dispatcher.activeCount());
     assertEquals(1, dispatcher.waitingCount());
     dispatcher.schedule(dummies[12]);
@@ -246,7 +240,7 @@ public class DispatcherTest extends MyTestCase {
     //  dummies[2].terminate();
     //  dummies[3].terminate();
     longSleep();
-    longSleep();
+   // longSleep();
     assertEquals(10, dispatcher.activeCount());
     assertEquals(0, dispatcher.waitingCount());
     for (int i = 6; i < 15; i++) {

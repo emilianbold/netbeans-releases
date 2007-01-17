@@ -46,7 +46,7 @@ public class RedirectTest extends WithServerTestCase {
     } catch (MalformedURLException ex) {
       fail();
     }
-    System.out.println(redirURL);
+ //   System.out.println(redirURL);
     queue.invoke();
     synchronized (this) {
       queue.add(redirURL, MyTestCase.testOutput);

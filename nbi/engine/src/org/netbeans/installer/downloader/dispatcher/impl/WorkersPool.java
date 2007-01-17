@@ -32,22 +32,26 @@ public class WorkersPool {
   /////////////////////////////////////////////////////////////////////////////////
   // Instance
   
-  private final int size;
+  private final int capacity;
   
   private int inUse;
   private Queue<Worker> freeWorkers = new LinkedList<Worker>();
   
-  public WorkersPool(int poolSize) {
-    this.size = poolSize;
+  public WorkersPool(int poolCapacity) {
+    this.capacity = poolCapacity;
   }
   
-  public int size() {
-    return size;
+  public int capacity() {
+    return capacity;
+  }
+  
+  public synchronized int remaining() {
+    return capacity - inUse;
   }
   
   //noblocking
   public synchronized Worker tryAcquire() {
-    if (inUse == size) return null;
+    if (inUse == capacity) return null;
     inUse++;
     final Worker worker = freeWorkers.poll();
     return worker != null && worker.isAlive() ? worker : new Worker();

@@ -72,7 +72,7 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
     if (quantum < 10 || poolSize < 1)
       throw new IllegalArgumentException();
     this.timeQuantum = quantum;
-    this.pollingTime = timeQuantum * 5 < 1000 ? timeQuantum * 5: 1000;
+    this.pollingTime = timeQuantum * 5 < 500 ? timeQuantum * 5: 500;
     this.pool = new WorkersPool(poolSize);
     workingQueue = new ArrayBlockingQueue<Worker>(poolSize);
     waitingQueue = new LinkedList<Process>();
@@ -83,6 +83,7 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
   public synchronized boolean schedule(Process process) {
     synchronized (waitingQueue) {
       waitingQueue.offer(process);
+      waitingQueue.notify();
     }
     return true;
   }
@@ -146,7 +147,7 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
     if (!isActive) return;
     dispatcherThread.interrupt();
     try {
-      dispatcherThread.join(timeQuantum * pool.size() + pollingTime);
+      dispatcherThread.join(timeQuantum * pool.capacity() + pollingTime);
     } catch (InterruptedException exit) {
     } finally {
       //this condition mustn't happens to true
@@ -157,7 +158,7 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
   }
   
   /////////////////////////////////////////////////////////////////////////////////
-  // Inner Classes 
+  // Inner Classes
   private class DispatcherWorker implements Runnable {
     Worker current;
     
@@ -165,8 +166,11 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
       while (true) {
         if (Thread.interrupted()) break;
         try {
-          current = workingQueue.poll(pollingTime, TimeUnit.MILLISECONDS);
+          current = workingQueue.poll();
           if (current == null || makedToStop.contains(current)) {
+            synchronized (waitingQueue) {
+              if (waitingQueue.isEmpty()) waitingQueue.wait();
+            }
             filWorkingQueue();
             continue;
           }
@@ -219,12 +223,12 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
     }
     
     private void filWorkingQueue() {
-      if (waitingQueue.size() == 0 || workingQueue.remainingCapacity() == 0) return;
+      if (waitingQueue.size() == 0 || pool.remaining() == 0) return;
       synchronized (waitingQueue) {
         while (workingQueue.remainingCapacity() > 0) {
-          final Process process = waitingQueue.poll();
-          if (process == null) return;
+          if (waitingQueue.isEmpty()) return;
           final Worker worker = pool.tryAcquire();
+          final Process process = waitingQueue.poll();
           worker.setCurrent(process);
           proc2Worker.put(process, worker);
           makedToStop.remove(worker);
