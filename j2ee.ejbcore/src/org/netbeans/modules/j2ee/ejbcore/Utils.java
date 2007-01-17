@@ -19,9 +19,6 @@
 
 package org.netbeans.modules.j2ee.ejbcore;
 
-import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
-import java.net.URI;
 import java.util.ArrayList;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -36,7 +33,6 @@ import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -47,11 +43,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -292,12 +288,14 @@ public class Utils {
         AntArtifact target = ref.getClientJarTarget();
         boolean differentProject = target != null && !enterpriseProject.equals(target.getProject());
         if (differentProject) {
-            ProjectClassPathExtender pcpe = (ProjectClassPathExtender) enterpriseProject.getLookup().lookup(ProjectClassPathExtender.class);
-            if (pcpe != null) {
-                URI locations[] = target.getArtifactLocations();
-                for (int i = 0; i < locations.length; i++) {
-                    pcpe.addAntArtifact(target, locations[i]);
-                }
+            ProjectClassPathModifier cpModifier = enterpriseProject.getLookup().lookup(ProjectClassPathModifier.class);
+            if (cpModifier != null) {
+                cpModifier.addAntArtifacts(
+                        new AntArtifact[] {target},
+                        target.getArtifactLocations(),
+                        enterpriseProject.getProjectDirectory(),
+                        ClassPath.COMPILE
+                        );
             }
         }
     }
