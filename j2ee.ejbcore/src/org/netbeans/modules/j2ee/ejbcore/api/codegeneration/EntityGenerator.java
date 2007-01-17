@@ -290,7 +290,7 @@ public class EntityGenerator {
                 null,
                 Collections.<MethodModel.Variable>emptyList(),
                 Collections.<String>emptyList(),
-                new HashSet(Arrays.asList(modifiers))
+                new HashSet<Modifier>(Arrays.asList(modifiers))
                 );
     }
     
@@ -302,7 +302,7 @@ public class EntityGenerator {
                 null,
                 Collections.singletonList(MethodModel.Variable.create(primaryKeyClassName, "key")),
                 Collections.<String>emptyList(),
-                new HashSet(Arrays.asList(modifiers))
+                new HashSet<Modifier>(Arrays.asList(modifiers))
                 );
     }
 
