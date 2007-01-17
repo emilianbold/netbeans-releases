@@ -98,6 +98,7 @@ public abstract class OffsetGapList<E> extends GapList<E> {
      *
      * @param index of the element in the list.
      * @return offset of the element.
+     * @throws IndexOutOfBoundsException if index >= size() or lower than zero
      */
     protected int elementOffset(int index) {
         return elementOffset(get(index));

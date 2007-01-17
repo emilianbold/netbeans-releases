@@ -105,6 +105,7 @@ public abstract class FlyOffsetGapList<E> extends GapList<E> {
      *
      * @param index of the element in the list.
      * @return offset of the element.
+     * @throws IndexOutOfBoundsException if index >= size() or lower than zero
      */
     protected final int elementOffset(int index) {
         E elem = get(index);
@@ -113,6 +114,38 @@ public abstract class FlyOffsetGapList<E> extends GapList<E> {
             offset = 0;
             while (--index >= 0) {
                 elem = get(index);
+                offset += elementLength(elem);
+                if (!isElementFlyweight(elem)) {
+                    // non-flyweight element
+                    offset += raw2RelOffset(elementRawOffset(elem));
+                    break;
+                }
+            }
+            
+        } else { // non-flyweight
+            offset = raw2RelOffset(elementRawOffset(elem));
+        }
+        return startOffset() + offset;
+    }
+    
+    /**
+     * Get the offset of an element stored in the list at the given index
+     * like {@link #elementOffset(int)} does or get end offset of the last element
+     * if {@link #size()} is passed as index parameter.
+     *
+     * @param index of the element in the list.
+     *  Index equal to <code>size()</code> can be used 
+     * @return offset of the element.
+     * @throws IndexOutOfBoundsException if index > size() or lower than zero
+     */
+    protected final int elementOrEndOffset(int indexOrSize) {
+        E elem;
+        int offset;
+        // Fail for index > size() and for == size() use end of the last element
+        if (indexOrSize == size() || isElementFlyweight(elem = get(indexOrSize))) {
+            offset = 0;
+            while (--indexOrSize >= 0) {
+                elem = get(indexOrSize);
                 offset += elementLength(elem);
                 if (!isElementFlyweight(elem)) {
                     // non-flyweight element
