@@ -56,7 +56,6 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
   // Instance
   
   private final int timeQuantum;
-  private final int pollingTime;
   private final WorkersPool pool;
   private final BlockingQueue<Worker> workingQueue;
   private final Queue<Process> waitingQueue;
@@ -72,7 +71,6 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
     if (quantum < 10 || poolSize < 1)
       throw new IllegalArgumentException();
     this.timeQuantum = quantum;
-    this.pollingTime = timeQuantum * 5 < 500 ? timeQuantum * 5: 500;
     this.pool = new WorkersPool(poolSize);
     workingQueue = new ArrayBlockingQueue<Worker>(poolSize);
     waitingQueue = new LinkedList<Process>();
@@ -147,7 +145,7 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
     if (!isActive) return;
     dispatcherThread.interrupt();
     try {
-      dispatcherThread.join(timeQuantum * pool.capacity() + pollingTime);
+      dispatcherThread.join((timeQuantum + 1) * pool.capacity());
     } catch (InterruptedException exit) {
     } finally {
       //this condition mustn't happens to true
