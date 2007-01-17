@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.util.Enumeration;
 import javax.swing.Icon;
 import javax.swing.tree.*;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 //[retouche]import org.netbeans.jmi.javamodel.Element;
 //[retouche]import org.netbeans.jmi.javamodel.JavaPackage;
@@ -68,12 +67,12 @@ public class CheckNode extends DefaultMutableTreeNode {
                     return;
                 }
             }
-            ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-            if (cp != null) {
-                resourceName = cp.getResourceName(fo);
-            } else {
-                resourceName = null;
-            }
+//            ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+//            if (cp != null) {
+//                resourceName = cp.getResourceName(fo);
+//            } else {
+//                resourceName = null;
+//            }
         }
     }
     

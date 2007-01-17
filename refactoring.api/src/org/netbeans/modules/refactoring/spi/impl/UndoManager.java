@@ -34,10 +34,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.java.classpath.GlobalPathRegistryEvent;
-import org.netbeans.api.java.classpath.GlobalPathRegistryListener;
 import org.netbeans.modules.refactoring.spi.BackupFacility;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.ProgressListener;
@@ -57,7 +53,7 @@ import org.openide.text.NbDocument;
  *
  * @author Jan Becicka
  */
-public class UndoManager extends FileChangeAdapter implements DocumentListener, ChangeListener, GlobalPathRegistryListener {
+public class UndoManager extends FileChangeAdapter implements DocumentListener, ChangeListener/*, GlobalPathRegistryListener */{
     
     /** stack of undo items */
     private LinkedList<LinkedList<UndoItem>> undoList;
@@ -323,19 +319,21 @@ public class UndoManager extends FileChangeAdapter implements DocumentListener, 
         //}
     }
     
-    public void pathsAdded(GlobalPathRegistryEvent event) {
-    }
-
-    public void pathsRemoved(GlobalPathRegistryEvent event) {
-        assert event != null : "event == null"; // NOI18N
-        if (event.getId().equals(ClassPath.SOURCE)) {
-            clear();
-        }
-    }
+//    TODO: 
+//    public void pathsAdded(GlobalPathRegistryEvent event) {
+//    }
+//
+//    public void pathsRemoved(GlobalPathRegistryEvent event) {
+//        assert event != null : "event == null"; // NOI18N
+//        if (event.getId().equals(ClassPath.SOURCE)) {
+//            clear();
+//        }
+//    }
 
     private void registerListeners() {
         if (listenersRegistered) return;
-        GlobalPathRegistry.getDefault().addGlobalPathRegistryListener(this);
+        // TODO: 
+        // GlobalPathRegistry.getDefault().addGlobalPathRegistryListener(this);
         Util.addFileSystemsListener(this);
         for (CloneableEditorSupport ces:allCES) {
             ces.addChangeListener(this);
@@ -349,7 +347,8 @@ public class UndoManager extends FileChangeAdapter implements DocumentListener, 
     private void unregisterListeners() {
         if (!listenersRegistered) return;
         Util.removeFileSystemsListener(this);
-        GlobalPathRegistry.getDefault().removeGlobalPathRegistryListener(this);
+        //TODO: 
+        //GlobalPathRegistry.getDefault().removeGlobalPathRegistryListener(this);
         for (CloneableEditorSupport ces:allCES) {
             ces.removeChangeListener(this);
         }
