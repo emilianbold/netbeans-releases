@@ -121,10 +121,12 @@ final class StatusLine extends JLabel implements ChangeListener, Runnable {
         String currentMsg = d.getStatusText ();
         setForeground(UIManager.getColor("Label.foreground"));
         setText (currentMsg);
-        if (!"".equals(currentMsg) && SURVIVING_TIME != 0) {
+        if (SURVIVING_TIME != 0) {
             Object token = new Object();
             clearing = token;
-            new Updater(token).schedule();
+            if (!"".equals(currentMsg)) {
+                new Updater(token).schedule();
+            }
         }
     }
     
