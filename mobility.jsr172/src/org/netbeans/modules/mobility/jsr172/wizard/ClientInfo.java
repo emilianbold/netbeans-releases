@@ -49,6 +49,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -404,7 +405,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
     // </editor-fold>//GEN-END:initComponents
     
     private void jBtnProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnProxyActionPerformed
-        ProxySettingsDlg.showProxyDlg();
+        OptionsDisplayer.getDefault().open( "General" );//NOI18N
     }//GEN-LAST:event_jBtnProxyActionPerformed
     
     private void jBtnGetWsdlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnGetWsdlActionPerformed
