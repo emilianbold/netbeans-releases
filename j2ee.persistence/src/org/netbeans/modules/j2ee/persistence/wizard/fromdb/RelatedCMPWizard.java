@@ -32,7 +32,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -164,15 +163,7 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator implements 
         Project project = Templates.getProject(wiz);
         generator = createPersistenceGenerator(type);
         
-        FileObject configFilesFolder = null;
-        if (isCMP()) {
-            EjbJar[] ejbJars = EjbJar.getEjbJars(project);
-            if (ejbJars.length == 1) {
-                configFilesFolder = ejbJars[0].getMetaInf();
-            }
-        } else {
-            configFilesFolder = PersistenceLocation.getLocation(project);
-        }
+        FileObject configFilesFolder = PersistenceLocation.getLocation(project);
         
         helper = new RelatedCMPHelper(project, configFilesFolder, generator);
         
