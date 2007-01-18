@@ -19,19 +19,11 @@
 
 package org.netbeans.modules.uihandler;
 
-import java.awt.Dialog;
-import java.awt.EventQueue;
-import java.io.IOException;
-import java.util.Locale;
+import java.util.concurrent.Callable;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JDialog;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 
 /**
  *
@@ -49,73 +41,18 @@ public class BugTriggersTest extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
-        if (o == null) {
-            Locale.setDefault(new Locale("te", "ST"));
-            o = Installer.findObject(Installer.class, true);
-            o.restored();
-        }
-        
-        assertNotNull("Installer created", o);
-        MockServices.setServices(DD.class);
-        
-        MemoryURL.registerURL("memory://error.html", getClass().getResourceAsStream("error.html"));
+        Installer.findObject(Installer.class, true).restored();
     }
 
     protected void tearDown() throws Exception {
     }
     
-    public void testErrorMgrShowsDialogOnException() throws Exception {
-        DD.toReturn = 0;
-        IOException ex = new IOException("Chyba");
-        ErrorManager.getDefault().notify(ex);
-        
-        waitRP();
-        assertNotNull("Descriptor called", DD.d);
-    }
-    
-    public void testLoggerShowsDialogOnException() throws Exception {
-        DD.toReturn = 0;
-        IOException ex = new IOException("Chyba");
-        Logger.getAnonymousLogger().log(Level.WARNING, null, ex);
-        
-        waitRP();
-        assertNotNull("Descriptor called", DD.d);
-    }
-    
-    private void waitRP() throws Exception {
-        class R implements java.lang.Runnable {
-            public void run() {
+    public void testRootLoggerHasHandler() throws Exception {
+        for (Handler h : Logger.getLogger("").getHandlers()) {
+            if (h instanceof Callable) {
+                return;
             }
         }
-        R run = new R();
-
-        Installer.RP.post(run, 1000, Thread.MIN_PRIORITY).waitFinished();
+        fail("No handler which implements Callable");
     }
-    
-    public static final class DD extends DialogDisplayer {
-        public static int toReturn = -1;
-        public static NotifyDescriptor d;
-        
-        public Object notify(NotifyDescriptor descriptor) {
-            fail("Not implemented");
-            return null;
-        }
-
-        public Dialog createDialog(DialogDescriptor descriptor) {
-            assertTrue("Invoked only in AWT thread", EventQueue.isDispatchThread());
-            
-            d = descriptor;
-            if (toReturn == -1) {
-                fail("There should be something to return");
-            }
-            Object r = descriptor.getOptions()[toReturn];
-            toReturn = -1;
-            return new JDialog() {
-                @Deprecated
-                public void show() {
-                }
-            };
-        }
-        
-    }
-}
+ }

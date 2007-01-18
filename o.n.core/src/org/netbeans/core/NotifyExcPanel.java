@@ -30,9 +30,14 @@ import java.awt.Window;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
+import java.util.concurrent.Callable;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -47,6 +52,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
@@ -133,11 +139,7 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
         descriptor = new DialogDescriptor ("", ""); // NOI18N
 
         descriptor.setMessageType (DialogDescriptor.ERROR_MESSAGE);
-        descriptor.setOptions (new Object[] {
-                                   previous,
-                                   next,
-                                   DialogDescriptor.OK_OPTION
-                               });
+        descriptor.setOptions (computeOptions(previous, next));
         descriptor.setAdditionalOptions (new Object[] {
                                              details
                                          });
@@ -160,6 +162,43 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
         dialog.getAccessibleContext().setAccessibleDescription(bundle.getString("ACD_NotifyExcPanel_Dialog")); // NOI18N
     }
 
+    static Object[] computeOptions(Object previous, Object next) {
+        ArrayList<Object> arr = new ArrayList<java.lang.Object>();
+        arr.add(previous);
+        arr.add(next);
+        
+        for (Handler h : Logger.getLogger("").getHandlers()) {
+            if (h instanceof Callable<?>) {
+                boolean foundCallableForJButton = false;
+                for (Type t : h.getClass().getGenericInterfaces()) {
+                    if (t instanceof ParameterizedType) {
+                        ParameterizedType p = (ParameterizedType)t;
+                        Type[] params = p.getActualTypeArguments();
+                        if (params.length == 1 && params[0] == JButton.class) {
+                            foundCallableForJButton = true;
+                            break;
+                        }
+                    }
+                }
+                if (!foundCallableForJButton) {
+                    continue;
+                }
+                
+                
+                try {
+                    Object o = ((Callable<?>)h).call();
+                    assert o instanceof JButton;
+                    arr.add(o);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        
+        arr.add(DialogDescriptor.OK_OPTION);
+        return arr.toArray();
+    }
+    
     private static boolean isModalDialogPresent() {
         return hasModalDialog(WindowManager.getDefault().getMainWindow())
             // XXX Trick to get the shared frame instance.

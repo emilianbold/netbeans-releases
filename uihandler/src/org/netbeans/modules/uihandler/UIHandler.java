@@ -19,18 +19,25 @@
 
 package org.netbeans.modules.uihandler;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Queue;
+import java.util.concurrent.Callable;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import javax.swing.JButton;
+import org.openide.awt.Mnemonics;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jaroslav Tulach
  */
-public class UIHandler extends Handler implements Runnable {
+public class UIHandler extends Handler 
+implements ActionListener, Runnable, Callable<JButton> {
     private final Queue<LogRecord> logs;
     private final boolean exceptionOnly;
     static final PropertyChangeSupport SUPPORT = new PropertyChangeSupport(UIHandler.class);
@@ -64,16 +71,6 @@ public class UIHandler extends Handler implements Runnable {
         }
         
         SUPPORT.firePropertyChange(null, null, null);
-
-        /*
-        if (
-            exceptionOnly &&
-            record.getLevel().intValue() >= Level.WARNING.intValue() &&
-            record.getThrown() != null
-        ) {
-            Installer.RP.post(this);
-        }
-         */
     }
 
     public void flush() {
@@ -84,5 +81,19 @@ public class UIHandler extends Handler implements Runnable {
     
     public void run() {
         Installer.displaySummary("ERROR_URL", false); // NOI18N
+    }
+
+    private JButton button;
+    public JButton call() throws Exception {
+        if (button == null) {
+            button = new JButton();
+            Mnemonics.setLocalizedText(button, NbBundle.getMessage(UIHandler.class, "MSG_SubmitButton")); // NOI18N
+            button.addActionListener(this);
+        }
+        return button;
+    }
+
+    public void actionPerformed(ActionEvent ev) {
+        run();
     }
 }

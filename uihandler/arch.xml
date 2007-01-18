@@ -376,6 +376,14 @@ Microsystems, Inc. All Rights Reserved.
             the analysis server.
             </api>
         </li>            
+        <li><api type='import' group='java' category='friend' name='uihandler-hooks' >
+                This module makes on of its <code>Handler</code> implement
+                <code>Callable&lt;JButton&gt;</code> which is a signal for
+                core providing the exception dialog to include such a 
+                <code>JButton</code> in its list of options. That way this 
+                module can enhance the dialog with "Report..." button.
+            </api>
+        </li>            
     </ul>
   
  </answer>
