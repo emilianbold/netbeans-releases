@@ -201,10 +201,12 @@ public class ParserManagerImpl extends ParserManager {
             TokenHierarchy th = TokenHierarchy.get (doc);
             TokenSequence ts = th.tokenSequence ();
 
+            String mt = mimeType;
             while (ts.moveNext ()) {
                 Token t = ts.token ();
                 String type = t.id ().name ();
-                String mt = Hack.getMimeType (mimeType, type);
+                if (!type.equals("error"))
+                    mt = Hack.getMimeType (mimeType, type);
                 tokens.add (SToken.create (
                     mt, 
                     type, 
