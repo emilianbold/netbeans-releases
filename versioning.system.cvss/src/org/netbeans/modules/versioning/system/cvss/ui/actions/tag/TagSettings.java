@@ -23,7 +23,6 @@ import org.netbeans.lib.cvsclient.command.tag.TagCommand;
 import org.netbeans.lib.cvsclient.CVSRoot;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.ui.selectors.BranchSelector;
-import org.openide.util.NbBundle;
 
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
@@ -52,7 +51,6 @@ public class TagSettings extends javax.swing.JPanel implements DocumentListener 
         cbCheckModified.setEnabled(!cbDeleteTag.isSelected());
         JButton okButton = (JButton) getClientProperty("OKButton"); // NOI18N
         if (okButton != null) {
-            okButton.setText(cbDeleteTag.isSelected() ? NbBundle.getMessage(TagAction.class, "CTL_TagDialog_Action_DeleteTag") : NbBundle.getMessage(TagAction.class, "CTL_TagDialog_Action_Tag"));  // NOI18N
             okButton.setEnabled(Utils.isTagValid(tfName.getText()));
         }
     }
