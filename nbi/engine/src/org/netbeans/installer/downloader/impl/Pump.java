@@ -20,22 +20,18 @@
  */
 package org.netbeans.installer.downloader.impl;
 
-import java.security.NoSuchAlgorithmException;
-import org.netbeans.installer.downloader.DownloadConfig;
-import org.netbeans.installer.downloader.Pumping;
-import org.netbeans.installer.downloader.connector.URLConnector;
-import org.netbeans.installer.downloader.dispatcher.Process;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Date;
-import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.downloader.DownloadConfig;
+import org.netbeans.installer.downloader.Pumping;
+import org.netbeans.installer.downloader.connector.URLConnector;
+import org.netbeans.installer.downloader.dispatcher.Process;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.StreamUtils;
-import org.netbeans.installer.utils.helper.URLUtil;
 
 /**
  * @author Danila_Dugurov

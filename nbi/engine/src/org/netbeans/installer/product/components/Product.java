@@ -22,7 +22,7 @@ package org.netbeans.installer.product.components;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -192,7 +192,7 @@ public final class Product extends RegistryNode {
         }
         
         // initialize the local cache directory
-        File cache = getCacheDirectory();
+        final File cache = getCacheDirectory();
         if (!cache.exists()) {
             if (!cache.mkdirs()) {
                 throw new InstallationException(
@@ -203,8 +203,8 @@ public final class Product extends RegistryNode {
                     "The local cache directory for the product is not a directory");
         }
         
-        // intialize the files list
-        filesList = new FilesList(getInstallationLocation());
+        // initialize the files list
+        filesList = new FilesList();
         
         // check for cancel status
         if (progress.isCanceled()) return;
@@ -216,23 +216,24 @@ public final class Product extends RegistryNode {
         
         // extract each of the defined installation data files
         for (ExtendedURI uri: installationDataUris) {
-            File data = new File(uri.getLocal());
-            if (!data.exists()) {
+            final URI dataUri = uri.getLocal();
+            if (dataUri == null) {
+                throw new InstallationException("Installation data is not cached");
+            }
+            
+            final File dataFile = new File(uri.getLocal());
+            if (!dataFile.exists()) {
                 throw new InstallationException("Installation data is not cached");
             }
             
             try {
-                FilesList list = FileUtils.unjarWithList(
-                        data, 
-                        getInstallationLocation(), 
-                        unjarProgress);
-                
-                filesList.add(list);
+                filesList.add(FileUtils.unjar(
+                        dataFile,
+                        getInstallationLocation(),
+                        unjarProgress));
             } catch (IOException e) {
                 throw new InstallationException("Cannot extract installation data", e);
             } catch (XMLException e) {
-                throw new InstallationException("Cannot extract installation data", e);
-            } catch (NoSuchAlgorithmException e) {
                 throw new InstallationException("Cannot extract installation data", e);
             }
         }
@@ -242,8 +243,6 @@ public final class Product extends RegistryNode {
         try {
             saveLegalArtifacts(configurationLogic);
         } catch (IOException e) {
-            addInstallationWarning(e);
-        } catch (NoSuchAlgorithmException e) {
             addInstallationWarning(e);
         }
         
@@ -278,7 +277,7 @@ public final class Product extends RegistryNode {
         // save the installed files list
         progress.setDetail("Saving installed files list");
         try {
-            filesList.saveTo(getInstalledFilesList());
+            filesList.saveXmlGz(getInstalledFilesList());
         } catch (XMLException e) {
             throw new InstallationException("Cannot save installed files list", e);
         }
@@ -334,22 +333,22 @@ public final class Product extends RegistryNode {
                 logicProgress.setPercentage(Progress.COMPLETE);
                 
                 // remove installation files
-                int total   = filesList.getEntries().size();
+                int total   = filesList.getSize();
                 int current = 0;
                 
-                try {
-                    for (FileEntry entry: filesList.getEntries()) {
-                        current++;
-                        
-                        File file = filesList.getFile(entry);
-                        
-                        eraseProgress.setDetail("Deleting " + file);
-                        eraseProgress.setPercentage(Progress.COMPLETE * current / total);
-                        
+                for (FileEntry entry: filesList) {
+                    current++;
+                    
+                    File file = entry.getFile();
+                    
+                    eraseProgress.setDetail("Deleting " + file);
+                    eraseProgress.setPercentage(Progress.COMPLETE * current / total);
+                    
+                    try {
                         FileUtils.deleteFile(file);
+                    } catch (IOException e) {
+                        ErrorManager.notify(ErrorLevel.WARNING, "Cannot delete file", e);
                     }
-                } catch (IOException e) {
-                    ErrorManager.notify(ErrorLevel.WARNING, "Cannot delete file", e);
                 }
                 
             case INITIALIZATION:
@@ -375,7 +374,7 @@ public final class Product extends RegistryNode {
         
         // load the installed files list
         try {
-            filesList = new FilesList(getInstallationLocation(), getInstalledFilesList());
+            filesList = new FilesList().loadXmlGz(getInstalledFilesList());
         } catch (XMLException e) {
             throw new UninstallationException("Cannot get the files list", e);
         }
@@ -396,22 +395,22 @@ public final class Product extends RegistryNode {
         progress.setTitle("Uninstalling " + getDisplayName());
         
         // remove installation files
-        int total   = filesList.getEntries().size();
+        int total   = filesList.getSize();
         int current = 0;
         
-        try {
-            for (FileEntry entry: filesList.getEntries()) {
-                current++;
-                
-                File file = filesList.getFile(entry);
-                
-                eraseProgress.setDetail("Deleting " + file);
-                eraseProgress.setPercentage(Progress.COMPLETE * current / total);
-                
+        for (FileEntry entry: filesList) {
+            current++;
+            
+            File file = entry.getFile();
+            
+            eraseProgress.setDetail("Deleting " + file);
+            eraseProgress.setPercentage(Progress.COMPLETE * current / total);
+            
+            try {
                 FileUtils.deleteFile(file);
+            } catch (IOException e) {
+                addUninstallationWarning(new UninstallationException("Cannot delete the file", e));
             }
-        } catch (IOException e) {
-            addUninstallationWarning(new UninstallationException("Cannot delete the file", e));
         }
         
         // remove the component from the native install manager
@@ -434,7 +433,7 @@ public final class Product extends RegistryNode {
         setStatus(Status.NOT_INSTALLED);
     }
     
-    private void saveLegalArtifacts(ProductConfigurationLogic configurationLogic) throws IOException, NoSuchAlgorithmException {
+    private void saveLegalArtifacts(ProductConfigurationLogic configurationLogic) throws IOException {
         Text license = configurationLogic.getLicense();
         if (license != null) {
             File file = new File(
@@ -905,10 +904,10 @@ public final class Product extends RegistryNode {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String INSTALLATION_LOCATION_PROPERTY = 
+    public static final String INSTALLATION_LOCATION_PROPERTY =
             "installation.location"; // NOI18N
-    public static final String INSTALLED_FILES_LIST_FILE_NAME = 
-            "installed-files.xml"; // NOI18N
-    public static final String MANIFEST_LOGIC_CLASS = 
+    public static final String INSTALLED_FILES_LIST_FILE_NAME =
+            "installed-files.xml.gz"; // NOI18N
+    public static final String MANIFEST_LOGIC_CLASS =
             "Configuration-Logic-Class"; // NOI18N
 }

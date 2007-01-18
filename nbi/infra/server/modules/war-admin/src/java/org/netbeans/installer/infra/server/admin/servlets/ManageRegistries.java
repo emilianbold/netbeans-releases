@@ -56,7 +56,7 @@ public class ManageRegistries extends HttpServlet {
                 platform = Platform.SOLARIS_X86;
             }
             if (userAgent.contains("SunOS sun4u")) {
-                platform = Platform.SOLARIS_X86;
+                platform = Platform.SOLARIS_SPARC;
             }
             
             if (request.getParameter("platform") != null) {

@@ -21,174 +21,195 @@
 package org.netbeans.installer.utils.helper;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import org.netbeans.installer.utils.FileUtils;
-import org.netbeans.installer.utils.XMLUtils;
-import org.netbeans.installer.utils.exceptions.ParseException;
-import org.w3c.dom.Element;
+import org.netbeans.installer.utils.StringUtils;
 
 public class FileEntry {
-    private long    size          = 0;
-    private String  md5           = "";
+    private File    file          = null;
+    private String  name          = null;
+    
+    private boolean metaDataReady = false;
     
     private boolean directory     = false;
     private boolean empty         = false;
     
-    private boolean jarFile       = false;
-    private boolean packedJarFile = false;
-    private boolean signedJarFile = false;
+    private long    size          = 0;
+    private String  md5           = null;
     
-    private long    lastModified  = 0;
+    private boolean jar           = false;
+    private boolean packed        = false;
+    private boolean signed        = false;
+    
+    private long    modified  = 0;
     
     private int     permissions   = 0;
     
-    private String  name          = null;
+    // constructors /////////////////////////////////////////////////////////////////
+    public FileEntry(
+            final File file) {
+        this.file = file;
+        this.name = file.
+                getAbsolutePath().
+                replace(FileUtils.BACKSLASH, FileUtils.SLASH);
+
+        this.metaDataReady = false;
+    }
     
-    public FileEntry(Element element) {
-        String type = element.getAttribute("type");
+    public FileEntry(
+            final File file,
+            final boolean empty,
+            final long modified,
+            final int permissions) {
+        this(file);
         
-        if (type.equals("directory")) {
-            directory = true;
-            empty = new Boolean(element.getAttribute("is-empty"));
-        } else {
-            directory = false;
-            
-            size  = new Long(element.getAttribute("size"));
-            md5   = element.getAttribute("md5");
-            
-            lastModified = new Long(element.getAttribute("modified"));
-            
-            jarFile = new Boolean(element.getAttribute("jar"));
-            if (jarFile) {
-                packedJarFile = new Boolean(element.getAttribute("packed-jar"));
-                signedJarFile = new Boolean(element.getAttribute("signed-jar"));
-            }
-        }
+        this.directory   = true;
+        this.empty       = empty;
+        this.modified    = modified;
+        this.permissions = permissions;
         
-        setName(element.getTextContent());
+        this.metaDataReady = true;
     }
     
-    public FileEntry(File file, String name) throws IOException, NoSuchAlgorithmException {
-        if (file.exists()) {
-            directory = file.isDirectory();
-            
-            if (!directory) {
-                size    = file.length();
-                md5     = FileUtils.getMd5(file);
-                jarFile = FileUtils.isJarFile(file);
-                
-                if (jarFile) {
-                    packedJarFile = false; // we cannot determine this
-                    signedJarFile = FileUtils.isSigned(file);
-                }
-            }  else {
-                empty = FileUtils.isEmpty(file);
-            }
-            
-            lastModified = file.lastModified();
-        }
+    public FileEntry(
+            final File file,
+            final long size,
+            final String md5,
+            final boolean jar,
+            final boolean packed,
+            final boolean signed,
+            final long modified,
+            final int permissions) {
+        this(file);
         
-        this.name = name;
+        this.directory   = false;
+        this.size        = size;
+        this.md5         = md5;
+        this.jar         = jar;
+        this.packed      = packed;
+        this.signed      = signed;
+        this.modified    = modified;
+        this.permissions = permissions;
+        
+        this.metaDataReady = true;
     }
     
-    public long getSize() {
-        return size;
+    // getters/setters //////////////////////////////////////////////////////////////
+    public String getName() {
+        return name;
     }
     
-    public void setSize(long size) {
-        this.size = size;
+    public File getFile() {
+        return file;
     }
     
-    public String getMd5() {
-        return md5;
-    }
-    
-    public void setMd5(String md5) {
-        this.md5 = md5;
+    public boolean isMetaDataReady() {
+        return metaDataReady;
     }
     
     public boolean isDirectory() {
         return directory;
     }
     
-    public void setDirectory(boolean directory) {
-        this.directory = directory;
-    }
-    
     public boolean isEmpty() {
         return empty;
     }
     
-    public void setEmpty(boolean empty) {
-        this.empty = empty;
+    public long getSize() {
+        return size;
+    }
+    
+    public String getMd5() {
+        return md5;
     }
     
     public boolean isJarFile() {
-        return jarFile;
-    }
-    
-    public void setJarFile(boolean jarFile) {
-        this.jarFile = jarFile;
+        return jar;
     }
     
     public boolean isPackedJarFile() {
-        return packedJarFile;
-    }
-    
-    public void setPackedJarFile(boolean packedJarFile) {
-        this.packedJarFile = packedJarFile;
+        return packed;
     }
     
     public boolean isSignedJarFile() {
-        return signedJarFile;
-    }
-    
-    public void setSignedJarFile(boolean signedJarFile) {
-        this.signedJarFile = signedJarFile;
+        return signed;
     }
     
     public long getLastModified() {
-        return lastModified;
-    }
-    
-    public void setLastModified(long lastModified) {
-        this.lastModified = lastModified;
+        return modified;
     }
     
     public int getPermissions() {
         return permissions;
     }
     
-    public void setPermissions(int permissions) {
-        this.permissions = permissions;
-    }
-    
-    public String getName() {
-        return name;
-    }
-    
-    public void setName(String name) {
-        this.name = name;
-    }
-    
-    public Element saveToDom(Element element) {
-        if (isDirectory()) {
-            element.setAttribute("type", "directory");
-            element.setAttribute("empty", "" + empty);
+    // object -> string /////////////////////////////////////////////////////////////
+    public String toString() {
+        if (directory) {
+            return
+                    name + StringUtils.LF +
+                    directory + StringUtils.LF +
+                    empty + StringUtils.LF +
+                    modified + StringUtils.LF +
+                    permissions + StringUtils.LF;
         } else {
-            element.setAttribute("type", "file");
-            
-            element.setAttribute("size",       "" + size);
-            element.setAttribute("modified",   "" + lastModified);
-            element.setAttribute("md5",        "" + md5);
-            element.setAttribute("jar",        "" + jarFile);
-            element.setAttribute("packed-jar", "" + packedJarFile);
-            element.setAttribute("signed-jar", "" + signedJarFile);
+            return
+                    name + StringUtils.LF +
+                    directory + StringUtils.LF +
+                    size + StringUtils.LF +
+                    md5 + StringUtils.LF +
+                    jar + StringUtils.LF +
+                    packed + StringUtils.LF +
+                    signed + StringUtils.LF +
+                    modified + StringUtils.LF +
+                    permissions + StringUtils.LF;
         }
-        
-        element.setTextContent(name);
-        
-        return element;
+    }
+    
+    public String toXml() {
+        if (directory) {
+            return "<entry " +
+                    "type=\"directory\" " +
+                    "empty=\"" + empty + "\" " +
+                    "modified=\"" + modified + "\" " +
+                    "permissions=\"" + permissions + "\">" + name + "</entry>";
+        } else {
+            return "<entry " +
+                    "type=\"file\" " +
+                    "size=\"" + size + "\" " +
+                    "md5=\"" + md5 + "\" " +
+                    "jar=\"" + jar + "\" " +
+                    "packed=\"" + packed + "\" " +
+                    "signed=\"" + signed + "\" " +
+                    "modified=\"" + modified + "\" " +
+                    "permissions=\"" + permissions + "\">" + name + "</entry>";
+        }
+    }
+    
+    // miscellanea //////////////////////////////////////////////////////////////////
+    public void calculateMetaData() throws IOException {
+        if (file.exists()) {
+            directory = file.isDirectory();
+            
+            if (!directory) {
+                size = file.length();
+                md5  = FileUtils.getMd5(file);
+                jar  = FileUtils.isJarFile(file);
+                
+                if (jar) {
+                    packed = false; // we cannot determine this
+                    signed = FileUtils.isSigned(file);
+                }
+            } else {
+                empty = FileUtils.isEmpty(file);
+            }
+            
+            modified = file.lastModified();
+            
+            metaDataReady = true;
+        } else {
+            throw new FileNotFoundException(file.getAbsolutePath());
+        }
     }
 }

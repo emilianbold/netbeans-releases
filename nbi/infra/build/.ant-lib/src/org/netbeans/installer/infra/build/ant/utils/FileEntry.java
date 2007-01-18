@@ -52,12 +52,11 @@ public class FileEntry {
                 this.packedJarFile = false; // we cannot determine this
                 this.signedJarFile = AntUtils.isSigned(file);
             }
-            
-            this.lastModified  = file.lastModified();
         }  else {
             this.empty = AntUtils.isEmpty(file);
         }
         
+        this.lastModified  = file.lastModified();
         this.name          = name;
     }
     
@@ -116,27 +115,27 @@ public class FileEntry {
     public void setSignedJarFile(boolean signedJarFile) {
         this.signedJarFile = signedJarFile;
     }
-
+    
     public long getLastModified() {
         return lastModified;
     }
-
+    
     public void setLastModified(long lastModified) {
         this.lastModified = lastModified;
     }
-
+    
     public int getPermissions() {
         return permissions;
     }
-
+    
     public void setPermissions(int permissions) {
         this.permissions = permissions;
     }
-
+    
     public String getName() {
         return name;
     }
-
+    
     public void setName(String name) {
         this.name = name;
     }

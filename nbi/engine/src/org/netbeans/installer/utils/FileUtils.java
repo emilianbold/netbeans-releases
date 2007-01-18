@@ -50,9 +50,8 @@ import java.util.zip.ZipFile;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.ErrorLevel;
-import org.netbeans.installer.utils.helper.FileEntry;
 import org.netbeans.installer.utils.helper.FilesList;
-import org.netbeans.installer.utils.progress.CompositeProgress;
+import org.netbeans.installer.utils.helper.FileEntry;
 import org.netbeans.installer.utils.progress.Progress;
 
 /**
@@ -62,15 +61,19 @@ import org.netbeans.installer.utils.progress.Progress;
 public final class FileUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final int    BUFFER_SIZE    = 4096;
+    public static final int BUFFER_SIZE = 4096;
     
-    public static final String SLASH          = "/";
-    public static final String METAINF_MASK   = "META-INF.*";
+    public static final String SLASH = "/";
+    public static final String BACKSLASH = "\\";
+    public static final String METAINF_MASK = "META-INF.*";
     
     public static final String JAR_EXTENSION = ".jar";
     
-    public static final String SUN_MICR_RSA  = "META-INF/SUN_MICR.RSA";
-    public static final String SUN_MICR_SF   = "META-INF/SUN_MICR.SF";
+    public static final String SUN_MICR_RSA = "META-INF/SUN_MICR.RSA";
+    public static final String SUN_MICR_SF = "META-INF/SUN_MICR.SF";
+    
+    public static final String CURRENT = ".";
+    public static final String PARENT = "..";
     
     /////////////////////////////////////////////////////////////////////////////////
     // Static
@@ -91,23 +94,23 @@ public final class FileUtils {
         }
     }
     
-    public static List<File> writeFile(File file, CharSequence string) throws IOException {
+    public static FilesList writeFile(File file, CharSequence string) throws IOException {
         return writeFile(file, string, Charset.defaultCharset().name(), false);
     }
     
-    public static List<File> writeFile(File file, CharSequence string, String charset) throws IOException {
+    public static FilesList writeFile(File file, CharSequence string, String charset) throws IOException {
         return writeFile(file, string, charset, false);
     }
     
-    public static List<File> appendFile(File file, CharSequence string) throws IOException {
+    public static FilesList appendFile(File file, CharSequence string) throws IOException {
         return writeFile(file, string, Charset.defaultCharset().name(), true);
     }
     
-    public static List<File> appendFile(File file, CharSequence string, String charset) throws IOException {
+    public static FilesList appendFile(File file, CharSequence string, String charset) throws IOException {
         return writeFile(file, string, charset, true);
     }
     
-    public static List<File> writeFile(File file, CharSequence string, boolean append) throws IOException {
+    public static FilesList writeFile(File file, CharSequence string, boolean append) throws IOException {
         return writeFile(
                 file,
                 string,
@@ -115,27 +118,27 @@ public final class FileUtils {
                 append);
     }
     
-    public static List<File> writeFile(File file, CharSequence string, String charset, boolean append) throws IOException {
+    public static FilesList writeFile(File file, CharSequence string, String charset, boolean append) throws IOException {
         return writeFile(
                 file,
                 new ByteArrayInputStream(string.toString().getBytes(charset)),
                 append);
     }
     
-    public static List<File> writeFile(File file, InputStream input) throws IOException {
+    public static FilesList writeFile(File file, InputStream input) throws IOException {
         return writeFile(file, input, false);
     }
     
-    public static List<File> appendFile(File file, InputStream input) throws IOException {
+    public static FilesList appendFile(File file, InputStream input) throws IOException {
         return writeFile(file, input, true);
     }
     
-    public static List<File> writeFile(File file, InputStream input, boolean append) throws IOException {
-        List<File> list = new LinkedList<File>();
+    public static FilesList writeFile(File file, InputStream input, boolean append) throws IOException {
+        FilesList list = new FilesList();
         
         if (!file.exists()) {
             if (!file.getParentFile().exists()) {
-                list.addAll(mkdirs(file.getParentFile()));
+                list.add(mkdirs(file.getParentFile()));
             }
             
             file.createNewFile();
@@ -221,23 +224,35 @@ public final class FileUtils {
         return crc.getValue();
     }
     
-    public static String getMd5(File file) throws IOException, NoSuchAlgorithmException {
+    public static String getMd5(File file) throws IOException {
         return StringUtils.asHexString(getMd5Bytes(file));
     }
     
-    public static byte[] getMd5Bytes(File file) throws IOException, NoSuchAlgorithmException {
-        return getDigest(file, "MD5");
+    public static byte[] getMd5Bytes(File file) throws IOException {
+        try {
+            return getDigestBytes(file, "MD5");
+        } catch (NoSuchAlgorithmException e) {
+            ErrorManager.notifyCritical("Holy crap, this jvm does not support MD5", e);
+        }
+        
+        return null;
     }
     
-    public static String getSha1(File file) throws IOException, NoSuchAlgorithmException {
+    public static String getSha1(File file) throws IOException {
         return StringUtils.asHexString(getSha1Bytes(file));
     }
     
-    public static byte[] getSha1Bytes(File file) throws IOException, NoSuchAlgorithmException {
-        return getDigest(file, "SHA1");
+    public static byte[] getSha1Bytes(File file) throws IOException {
+        try {
+            return getDigestBytes(file, "SHA1");
+        } catch (NoSuchAlgorithmException e) {
+            ErrorManager.notifyCritical("Holy crap, this jvm does not support SHA1", e);
+        }
+        
+        return null;
     }
     
-    public static byte[] getDigest(File file, String algorithm) throws IOException, NoSuchAlgorithmException {
+    public static byte[] getDigestBytes(File file, String algorithm) throws IOException, NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance(algorithm);
         md.reset();
         
@@ -279,19 +294,19 @@ public final class FileUtils {
         return list;
     }
     
-    public static List<File> writeStringList(File file, List<String> list) throws IOException {
+    public static FilesList writeStringList(File file, List<String> list) throws IOException {
         return writeStringList(file, list, Charset.defaultCharset().name(), false);
     }
     
-    public static List<File> writeStringList(File file, List<String> list, String charset) throws IOException {
+    public static FilesList writeStringList(File file, List<String> list, String charset) throws IOException {
         return writeStringList(file, list, charset, false);
     }
     
-    public static List<File> writeStringList(File file, List<String> list, boolean append) throws IOException {
+    public static FilesList writeStringList(File file, List<String> list, boolean append) throws IOException {
         return writeStringList(file, list, Charset.defaultCharset().name(), append);
     }
     
-    public static List<File> writeStringList(File file, List<String> list, String charset, boolean append) throws IOException {
+    public static FilesList writeStringList(File file, List<String> list, String charset, boolean append) throws IOException {
         StringBuilder builder = new StringBuilder();
         
         for(String string : list) {
@@ -351,8 +366,20 @@ public final class FileUtils {
     }
     
     public static void deleteFiles(List<File> files) throws IOException {
-        for(File file : files) {
+        for (File file : files) {
             deleteFile(file);
+        }
+    }
+    
+    public static void deleteFiles(File... files) throws IOException {
+        for (File file : files) {
+            deleteFile(file);
+        }
+    }
+    
+    public static void deleteFiles(FilesList files) throws IOException {
+        for (FileEntry entry: files) {
+            deleteFile(entry.getFile());
         }
     }
     
@@ -453,8 +480,8 @@ public final class FileUtils {
         }
     }
     
-    public static List<File> moveFile(File source, File target) throws IOException {
-        List<File> list = new LinkedList<File>();
+    public static FilesList moveFile(File source, File target) throws IOException {
+        FilesList list = new FilesList();
         
         if (!source.renameTo(target)) {
             list = copyFile(source, target);
@@ -464,12 +491,12 @@ public final class FileUtils {
         return list;
     }
     
-    public static List<File> copyFile(File source, File target) throws IOException {
+    public static FilesList copyFile(File source, File target) throws IOException {
         return copyFile(source, target, false);
     }
     
-    public static List<File> copyFile(File source, File target, boolean recurse) throws IOException {
-        List<File> list = new LinkedList<File>();
+    public static FilesList copyFile(File source, File target, boolean recurse) throws IOException {
+        FilesList list = new FilesList();
         
         if (!source.exists()) {
             LogManager.log("    ... " + source + " does not exist");
@@ -489,7 +516,7 @@ public final class FileUtils {
             
             File parent = target.getParentFile();
             if (!parent.exists()) {
-                list.addAll(mkdirs(parent));
+                list.add(mkdirs(parent));
             }
             
             if (!target.exists() && !target.createNewFile()) {
@@ -520,7 +547,7 @@ public final class FileUtils {
         }  else {
             LogManager.log("    copying directory: " + source + " to: " + target + (recurse ? " with recursion" : ""));
             
-            list.addAll(mkdirs(target));
+            list.add(mkdirs(target));
             if (recurse) {
                 for (File file: source.listFiles()) {
                     copyFile(file, new File(target, file.getName()), recurse);
@@ -598,99 +625,57 @@ public final class FileUtils {
         }
     }
     
-    public static List<File> unzip(File source, File target) throws IOException {
-        final ZipFile zip = new ZipFile(source);
+    public static FilesList unzip(File source, File target) throws IOException {
+        return extract(source, target, null, new Progress());
+    }
+    
+    public static FilesList unzip(File source, File target, Progress progress) throws IOException {
+        return extract(source, target, null, progress);
+    }
+    
+    public static FilesList unjar(File source, File target) throws IOException, XMLException {
+        return unjar(source, target, new Progress());
+    }
+    
+    public static FilesList unjar(File source, File target, Progress progress) throws IOException, XMLException {
+        return extract(source, target, METAINF_MASK, progress);
+    }
+    
+    public static boolean zipEntryExists(File file, String entry) throws IOException {
+        ZipFile zip = new ZipFile(file);
         
         try {
-            return extract(zip, target, null, new Progress());
+            return zip.getEntry(entry) != null;
         } finally {
             zip.close();
         }
     }
     
-    public static List<File> unjar(File source, File target) throws IOException {
-        final JarFile jar = new JarFile(source);
+    public static boolean jarEntryExists(File file, String entry) throws IOException {
+        JarFile jar = new JarFile(file);
         
         try {
-            return extract(jar, target, METAINF_MASK, new Progress());
+            return jar.getEntry(entry) != null;
         } finally {
             jar.close();
         }
     }
     
-    public static FilesList unjarWithList(File source, File target, Progress progress) throws IOException, XMLException, NoSuchAlgorithmException {
-        LogManager.logIndent("unjarring file " + source.getAbsolutePath());
-        
-        final JarFile jar      = new JarFile(source);
-        final File    metaInf  = new File(target, "META-INF");
-        final File    listFile = new File(metaInf, "files.list");
-        
-        final CompositeProgress overallProgress     = new CompositeProgress();
-        final Progress          extractionProgress  = new Progress();
-        final Progress          decompressProgress  = new Progress();
-        
-        overallProgress.addChild(extractionProgress, 60);
-        overallProgress.addChild(decompressProgress, 40);
-        overallProgress.synchronizeTo(progress);
-        overallProgress.synchronizeDetails(true);
+    public static File extractJarEntry(String entry, File source) throws IOException {
+        return extractJarEntry(entry, source, FileUtils.createTempFile());
+    }
+    
+    public static File extractJarEntry(String entry, File source, File target) throws IOException {
+        JarFile jar = new JarFile(source);
+        FileOutputStream out = new FileOutputStream(target);
         
         try {
-            List<File> extracted = extract(
-                    jar,
-                    target,
-                    "META-INF/(?!files.list$).*",
-                    extractionProgress);
+            StreamUtils.transferData(jar.getInputStream(jar.getEntry(entry)), out);
             
-            if (listFile.exists()) {
-                final FilesList list = new FilesList(target, listFile);
-                
-                for (File file: extracted) {
-                    if (!list.contains(file)) {
-                        list.add(file);
-                    }
-                }
-                
-                if (list.contains(listFile)) {
-                    list.remove(listFile);
-                    deleteFile(listFile);
-                }
-                if (list.contains(metaInf)) {
-                    list.remove(metaInf);
-                    deleteFile(metaInf);
-                }
-                
-                int total   = list.getEntries().size();
-                int current = 0;
-                
-                for (FileEntry entry: list.getEntries()) {
-                    current++;
-                    decompressProgress.setPercentage(Progress.COMPLETE * current / total);
-                    
-                    if (entry.isPackedJarFile()) {
-                        File packed   = list.getFile(entry).getAbsoluteFile();
-                        File unpacked = null;
-                        
-                        decompressProgress.setDetail("Decompressing " + packed);
-                        
-                        LogManager.log("decompressing " + packed);
-                        
-                        unpacked = unpack(packed);
-                        
-                        entry.setPackedJarFile(false);
-                        entry.setName(list.getName(unpacked));
-                        
-                        deleteFile(packed);
-                    }
-                }
-                
-                return list;
-            } else {
-                return new FilesList(target, extracted);
-            }
+            return target;
         } finally {
             jar.close();
-            
-            LogManager.unindent();
+            out.close();
         }
     }
     
@@ -725,24 +710,93 @@ public final class FileUtils {
         try {
             return jar.getManifest().getMainAttributes().getValue(name);
         } finally {
-            jar.close();
+            try {
+                jar.close();
+            } catch (IOException e) {
+                ErrorManager.notifyDebug("Cannot close jar", e);
+            }
         }
     }
     
-    public static List<File> mkdirs(File file) throws IOException {
-        List<File> list = new LinkedList<File>();
+    public static FilesList mkdirs(File file) throws IOException {
+        FilesList list = new FilesList();
         
         if (!file.getParentFile().exists()) {
-            list.addAll(mkdirs(file.getParentFile()));
+            list.add(mkdirs(file.getParentFile()));
         }
         
-        if (file.mkdir()) {
-            list.add(file);
-        } else {
-            throw new IOException("Cannot create directory " + file);
+        if (file.exists() && file.isFile()) {
+            throw new IOException("Cannot create directory " + file + " it is an existing file");
+        }
+        
+        if (!file.exists()) {
+            if (file.mkdir()) {
+                list.add(file);
+            } else {
+                throw new IOException("Cannot create directory " + file);
+            }
         }
         
         return list;
+    }
+    
+    public static String getRelativePath(File source, File target) {
+        // simplest - source equals target //////////////////////////////////////////
+        if (source.equals(target)) {
+            return CURRENT;
+        }
+        
+        // simple - source is a parent of target ////////////////////////////////////
+        if (isParent(source, target)) {
+            String sourcePath = source.getAbsolutePath().replace(BACKSLASH, SLASH);
+            String targetPath = target.getAbsolutePath().replace(BACKSLASH, SLASH);
+            
+            if (sourcePath.endsWith(SLASH)) {
+                return targetPath.substring(sourcePath.length());
+            } else {
+                return targetPath.substring(sourcePath.length() + 1);
+            }
+        }
+        
+        // simple - target is a parent of source ////////////////////////////////////
+        if (isParent(target, source)) {
+            String path = PARENT;
+            
+            File parent = source.getParentFile();
+            while (!parent.equals(target)) {
+                path  += SLASH + PARENT;
+                parent = parent.getParentFile();
+            }
+            
+            return path;
+        }
+        
+        // tricky - the files are unrelated /////////////////////////////////////////
+        
+        // first we need to find a common parent for the files
+        File parent = source.getParentFile();
+        while ((parent != null) && !isParent(parent, target)) {
+            parent = parent.getParentFile();
+        }
+        
+        // if there is no common parent, we cannot deduct a relative path
+        if (parent == null) {
+            return null;
+        }
+        
+        return getRelativePath(source, parent) +
+                SLASH +
+                getRelativePath(parent, target);
+    }
+    
+    public static boolean isParent(File candidate, File file) {
+        File parent = file.getParentFile();
+        
+        while ((parent != null) && !candidate.equals(parent)) {
+            parent = parent.getParentFile();
+        }
+        
+        return (parent != null) && candidate.equals(parent);
     }
     
     // private //////////////////////////////////////////////////////////////////////
@@ -855,16 +909,128 @@ public final class FileUtils {
         }
     }
     
-    private static List<File> extract(ZipFile zip, File target, String excludes, Progress progress) throws IOException {
-        final List<File> list = new LinkedList<File>();
+    private static FilesList extract(File file, File target, String excludes, Progress progress) throws IOException {
+        FilesList list = new FilesList();
         
         // first some basic validation of the destination directory
         if (target.exists() && target.isFile()) {
             throw new IOException("Directory is an existing file, cannot unjar.");
+        } else if (!target.exists()) {
+            list.add(mkdirs(target));
         }
-        if (!target.exists()) {
-            list.addAll(mkdirs(target));
+        
+        ZipFile zip = new ZipFile(file);
+        
+        try {
+            FilesList extracted = null;
+            boolean extractedWithList = false;
+            
+            // first we try to extract with the given list
+            if (zipEntryExists(file, "META-INF/files.list")) {
+                try {
+                    final File initialList = 
+                            extractJarEntry("META-INF/files.list", file);
+                    final FilesList toExtract = 
+                            new FilesList().loadXml(initialList, target);
+                    
+                    deleteFile(initialList);
+                    extracted = extractList(zip, target, toExtract, progress);
+                    toExtract.clear();
+                    
+                    extractedWithList = true;
+                } catch (XMLException e) {
+                    ErrorManager.notifyDebug("Could not load xml files list for extraction", e);
+                }
+            }
+            
+            if (!extractedWithList) {
+                extracted = extractNormal(zip, target, excludes, progress);
+            }
+            
+            list.add(extracted);
+            extracted.clear();
+        } finally {
+            zip.close();
         }
+        
+        return list;
+    }
+    
+    private static FilesList extractList(ZipFile zip, File target, FilesList list, Progress progress) throws IOException {
+        FilesList newList = new FilesList();
+        
+        String targetPath = target.getAbsolutePath();
+        
+        int total     = list.getSize();
+        int extracted = 0;
+        
+        for (FileEntry listEntry: list) {
+            final String listEntryName = listEntry.getName();
+            final File listEntryFile = listEntry.getFile();
+            
+            final String zipEntryName = 
+                    listEntryName.substring(targetPath.length() + 1);
+            
+            // increase the extracted files count and update the progress percentage
+            extracted++;
+            progress.setPercentage(Progress.COMPLETE * extracted / total);
+            
+            // set the progress detail and add a log entry
+            progress.setDetail("Extracting " + listEntryFile);
+            LogManager.log("extracting " + listEntryFile);
+            
+            if (listEntry.isDirectory()) {
+                newList.add(mkdirs(listEntryFile));
+            } else {
+                final ZipEntry zipEntry = zip.getEntry(zipEntryName);
+                
+                newList.add(mkdirs(listEntryFile.getParentFile()));
+                
+                // actual data transfer
+                InputStream  in  = null;
+                OutputStream out = null;
+                try {
+                    in  = zip.getInputStream(zipEntry);
+                    out = new FileOutputStream(listEntryFile);
+                    
+                    StreamUtils.transferData(in, out);
+                } finally {
+                    if (in != null) {
+                        in.close();
+                    }
+                    if (out != null) {
+                        out.close();
+                    }
+                }
+                
+                if (listEntry.isPackedJarFile()) {
+                    final File packed   = listEntry.getFile();;
+                    final File unpacked = unpack(packed);
+                    
+                    deleteFile(packed);
+                    
+                    listEntry = new FileEntry(
+                            unpacked,
+                            listEntry.getSize(),
+                            listEntry.getMd5(),
+                            listEntry.isJarFile(),
+                            false,
+                            listEntry.isSignedJarFile(),
+                            listEntry.getLastModified(),
+                            listEntry.getPermissions());
+                }
+                
+                listEntryFile.setLastModified(listEntry.getLastModified());
+            }
+            
+            newList.add(listEntry);
+        }
+        
+        return newList;
+    }
+    
+    private static FilesList extractNormal(ZipFile zip, File target, String excludes, Progress progress) throws IOException {
+        final FilesList list = new FilesList();
         
         Enumeration<? extends ZipEntry> entries;
         
@@ -881,7 +1047,7 @@ public final class FileUtils {
         // and only after that we actually extract them
         entries = (Enumeration<? extends ZipEntry>) zip.entries();
         while (entries.hasMoreElements()) {
-            ZipEntry entry = entries.nextElement();
+            final ZipEntry entry = entries.nextElement();
             
             // increase the extracted files count and update the progress percentage
             extracted++;
@@ -893,37 +1059,36 @@ public final class FileUtils {
             }
             
             // create the target file for this entry
-            File file = new File(target, entry.getName()).getAbsoluteFile();
+            final File file = new File(target, entry.getName()).getAbsoluteFile();
             
-            // set the progress detail (only if the entry will be actually
-            // extracted)
+            // set the progress detail and add a log entry
             progress.setDetail("Extracting " + file);
-            
             LogManager.log("extracting " + file);
+            
             if (entry.getName().endsWith(SLASH)) {
                 // some validation (this is a directory entry and thus an existing
                 // file will definitely break things)
                 if (file.exists() && !file.isDirectory()) {
                     throw new IOException(
-                            "An entry directory exists and is not a directory");
+                            "An directory entry exists and is not a directory");
                 }
                 
                 // if the directory does not exist, it will be created and added to
                 // the extracted files list (if it exists already, it will not
                 // appear in the list)
                 if (!file.exists()) {
-                    list.addAll(mkdirs(file));
+                    list.add(mkdirs(file));
                 }
             } else {
                 // some validation of the file's parent directory
-                File parent = file.getParentFile();
+                final File parent = file.getParentFile();
                 if (!parent.exists()) {
-                    list.addAll(mkdirs(parent));
+                    list.add(mkdirs(parent));
                 }
                 
                 // some validation of the file itself
                 if (file.exists() && !file.isFile()) {
-                    throw new IOException("An entry file exists and is not a file");
+                    throw new IOException("An file entry exists and is not a file");
                 }
                 
                 // actual data transfer
@@ -952,8 +1117,6 @@ public final class FileUtils {
             // time of the file in archive
             file.setLastModified(entry.getTime());
         }
-        
-        zip.close();
         
         return list;
     }

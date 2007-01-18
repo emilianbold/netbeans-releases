@@ -96,19 +96,25 @@ public class Package extends Task {
                 writer.write("    <entry ");
                 if (entry.isDirectory()) {
                     writer.write("type=\"directory\" ");
-                    writer.write("is-empty=\"" + entry.isEmpty() + "\"");
+                    writer.write("empty=\"" + entry.isEmpty() + "\" ");
+                    writer.write("modified=\"" + entry.getLastModified() + "\" ");
+                    writer.write("permissions=\"" + entry.getPermissions() + "\"");
                 } else {
                     writer.write("type=\"file\" ");
                     writer.write("size=\"" + entry.getSize() + "\" ");
-                    writer.write("modified=\"" + entry.getLastModified() + "\" ");
                     writer.write("md5=\"" + entry.getMd5() + "\" ");
-                    writer.write("jar=\"" + entry.isJarFile() + "\"");
-                    if (entry.isJarFile()) {
-                        writer.write(" packed-jar=\"" + entry.isPackedJarFile() + "\" ");
-                        writer.write("signed-jar=\"" + entry.isSignedJarFile() + "\"");
-                    }
+                    writer.write("jar=\"" + entry.isJarFile() + "\" ");
+                    writer.write("packed=\"" + entry.isPackedJarFile() + "\" ");
+                    writer.write("signed=\"" + entry.isSignedJarFile() + "\" ");
+                    writer.write("modified=\"" + entry.getLastModified() + "\" ");
+                    writer.write("permissions=\"" + entry.getPermissions() + "\"");
                 }
-                writer.write(">" + entry.getName() + "</entry>\n");
+                
+                writer.write(">" + entry.
+                        getName().
+                        replace("&", "&amp;").
+                        replace("<", "&lt;").
+                        replace(">", "&gt;") + "</entry>\n");
             }
             writer.write("</files-list>\n");
             

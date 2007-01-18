@@ -42,7 +42,6 @@ public class Install extends HttpServlet {
             "</jnlp>";
     
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        
         String[] names = request.getParameterValues("registry");
         if ((names == null) || (names.length == 0)) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

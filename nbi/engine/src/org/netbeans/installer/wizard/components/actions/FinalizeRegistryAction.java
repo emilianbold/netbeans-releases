@@ -34,12 +34,13 @@ import org.netbeans.installer.wizard.components.WizardAction;
 public class FinalizeRegistryAction extends WizardAction {
     public void execute() {
         try {
-            final Progress progress = new Progress();
-            
-            getWizardUi().setProgress(progress);
-            Registry.getInstance().finalizeRegistry(progress);
+            Registry.getInstance().finalizeRegistry(new Progress());
         } catch (FinalizationException e) {
             ErrorManager.notifyError("Cannot finalize registry", e);
         }
+    }
+    
+    public WizardActionUi getWizardUi() {
+        return null; // this action does not have a ui
     }
 }

@@ -188,7 +188,7 @@ public class ManagerBean implements Manager {
                     nodes.offer(existing);
                 }
                 
-                while(nodes.peek() != null) {
+                while (nodes.peek() != null) {
                     RegistryNode node = nodes.poll();
                     
                     if (node instanceof Product) {
