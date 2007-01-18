@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -206,7 +207,7 @@ public class ELExpression {
                 String prefix = getPropertyBeingTypedName();
                 
                 for (ExecutableElement method : ElementFilter.methodsIn(bean.getEnclosedElements())){
-                    String propertyName = getPropertyName(method.getSimpleName().toString());
+                    String propertyName = getPropertyName(method);
                     
                     if (propertyName != null && propertyName.startsWith(prefix)){
                         CompletionItem item = new JspCompletionItem.ELProperty(
@@ -264,15 +265,29 @@ public class ELExpression {
         }
         
         private String getAccessorName(String propertyName){
+            // we do not have to handle "is" type accessors here
             return "get" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
         }
         
-        private String getPropertyName(String accessorName){
-            if (accessorName.startsWith("get")){
-                return Character.toLowerCase(accessorName.charAt(3)) + accessorName.substring(4);
+        /**
+         * @return property name is <code>accessorMethod<code> is property accessor, otherwise null 
+         */
+        private String getPropertyName(ExecutableElement accessorMethod){
+            
+            if (accessorMethod.getModifiers().contains(Modifier.PUBLIC) 
+                    && accessorMethod.getParameters().size() == 0){
+                String accessorName = accessorMethod.getSimpleName().toString();
+                
+                if (accessorName.startsWith("get")){ //NOI18N
+                    return Character.toLowerCase(accessorName.charAt(3)) + accessorName.substring(4);
+                }
+                
+                if (accessorName.startsWith("is")){ //NOI18N
+                    return Character.toLowerCase(accessorName.charAt(2)) + accessorName.substring(3);
+                }
             }
             
-            return null; // not an accessor name
+            return null; // not a property accessor
         }
        
         public List<CompletionItem> getCompletionItems(){
@@ -280,84 +295,6 @@ public class ELExpression {
         }
     }
     
-    //fixme: Retouche
-    //    /* Returns the JavaClass of the bean which is in the expression. Returns null, when
-    //     *  the appropriate class is not found.
-    //     */
-    //    public JavaClass getBean(String elExp){
-    //        JavaClass javaClass = null;
-    //        DataObject obj = NbEditorUtilities.getDataObject(sup.getDocument());
-    //
-    //        if (elExp != null && !elExp.equals("") && obj != null){
-    //            if (elExp.indexOf('.')> -1){
-    //                String beanName = elExp.substring(0,elExp.indexOf('.'));
-    //                BeanData[] beans = sup.getBeanData();
-    //                for (int i = 0; i < beans.length; i++) {
-    //                    if (beans[i].getId().equals(beanName)){
-    //                        javaClass = JMIUtil.findClass(beans[i].getClassName(), ClassPath.getClassPath(obj.getPrimaryFile(), ClassPath.EXECUTE));
-    //                        break;
-    //                    }
-    //                }
-    //            }
-    //        }
-    //        return javaClass;
-    //    }
-    //
-    //    /* Returns list of strings in form property name1, property type1 .....
-    //     */
-    //    public List /*<String>*/ getProperties(String elExp, JavaClass bean){
-    //        List properties = new ArrayList();
-    //        JavaClass javaClass = findLastJavaClass(elExp, bean);
-    //
-    //        if (javaClass != null && !javaClass.getName().equals("java.lang.String")){
-    //            Method methods [] = JMIUtil.getMethods(javaClass);
-    //            for (int j = 0; j < methods.length; j++) {
-    //                if ((methods[j].getName().startsWith("get") || methods[j].getName().startsWith("is"))
-    //                        && methods[j].getParameters().size() == 0
-    //                        && ((methods[j].getModifiers() & Modifier.PUBLIC) != 0)) {
-    //                    String name = methods[j].getName();
-    //                    if (name.startsWith("get"))
-    //                        name = name.substring(3);
-    //                    else
-    //                        name = name.substring(2);
-    //
-    //                    name = name.substring(0,1).toLowerCase()+name.substring(1);
-    //                    properties.add(name);
-    //                    properties.add(methods[j].getType().getName());
-    //                }
-    //            }
-    //        }
-    //        return properties;
-    //    }
-    //
-    //    /*  Returns a JMI object which corresponds to the property in the source file.
-    //     */
-    //    public Object getPropertyDeclaration (String elExp, JavaClass bean){
-    //        JavaClass javaClass = findLastJavaClass(elExp, bean);;
-    //        String property = null;
-    //        if (elExp.lastIndexOf('.') > -1)
-    //            property = elExp.substring(elExp.lastIndexOf('.')+1);
-    //        if (javaClass != null && property != null){
-    //            Method methods [] = JMIUtil.getMethods(javaClass);
-    //            for (int j = 0; j < methods.length; j++) {
-    //                if ((methods[j].getName().startsWith("get") || methods[j].getName().startsWith("is"))
-    //                        && methods[j].getParameters().size() == 0
-    //                        && ((methods[j].getModifiers() & Modifier.PUBLIC) != 0)) {
-    //                    String name = methods[j].getName();
-    //                    if (name.startsWith("get"))
-    //                        name = name.substring(3);
-    //                    else
-    //                        name = name.substring(2);
-    //                    name = name.substring(0,1).toLowerCase()+name.substring(1);
-    //                    if (name.equals(property)){
-    //                        return methods[j];
-    //                    }
-    //                }
-    //            }
-    //        }
-    //        return null;
-    //    }
-    //
     /** Return context, whether the expression is about a bean, implicit object or
      *  function.
      */
