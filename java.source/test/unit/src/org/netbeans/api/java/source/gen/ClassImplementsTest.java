@@ -20,6 +20,7 @@ package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
 import java.io.File;
 import java.io.IOException;
@@ -59,6 +60,8 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ClassImplementsTest("testRemoveAllImplTypeParam"));
 //        suite.addTest(new ClassImplementsTest("testAddFirstImplExtends"));
 //        suite.addTest(new ClassImplementsTest("testRemoveAllImplExtends"));
+//        suite.addTest(new ClassImplementsTest("testRenameInImpl"));
+//        suite.addTest(new ClassImplementsTest("testRenameInImpl2"));
         return suite;
     }
     
@@ -630,6 +633,92 @@ public class ClassImplementsTest extends GeneratorTestMDRCompat {
                         clazz, 0
                     );
                     workingCopy.rewrite(clazz, copy);
+                }
+            }
+        
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRenameInImpl() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "import java.util.*;\n\n" +
+            "public class Test<E> extends Object implements List {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "import java.util.*;\n\n" +
+            "public class Test<E> extends Object implements Seznam {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n";
+        
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    IdentifierTree ident = (IdentifierTree) clazz.getImplementsClause().get(0);
+                    workingCopy.rewrite(ident, make.setLabel(ident, "Seznam"));
+                }
+            }
+        
+            public void cancel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRenameInImpl2() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "import java.util.*;\n\n" +
+            "public class Test<E> extends Object implements PropertyChangeListener, List {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "import java.util.*;\n\n" +
+            "public class Test<E> extends Object implements PropertyChangeListener, Seznam {\n" +
+            "    public void taragui() {\n" +
+            "    }\n" +
+            "}\n";
+        
+        JavaSource src = getJavaSource(testFile);
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    IdentifierTree ident = (IdentifierTree) clazz.getImplementsClause().get(1);
+                    workingCopy.rewrite(ident, make.setLabel(ident, "Seznam"));
                 }
             }
         

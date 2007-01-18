@@ -1443,10 +1443,9 @@ public class CasualDiff {
                             testPos += JavaTokenId.COMMA.fixedText().length();
                     }
                     oldT = oldIter.next(); ++i;
-                    //append(Diff.modify("", lastOldPos, oldT, item.element, "", ListType.PARAMETER));
-                    printer.print(origText.substring(lastOldPos, lastOldPos = endPos(oldT)));
+                    printer.print(origText.substring(lastOldPos, getOldPos(oldT)));
                     printer.print(item.element);
-                    //lastOldPos = endPos(oldT);
+                    lastOldPos = endPos(oldT);
                     break;
                 }
                 case INSERT: {
