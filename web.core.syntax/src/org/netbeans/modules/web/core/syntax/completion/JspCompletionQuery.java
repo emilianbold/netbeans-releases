@@ -396,14 +396,8 @@ public class JspCompletionQuery implements CompletionQuery {
             case ELExpression.EL_IMPLICIT:
                 ELImplicitObjects.ELImplicitObject implObj = ELImplicitObjects.getELImplicitObject(elExpr.getExpression());
                 if (implObj != null){
-                    List<ELImplicitObjects.Property> properties = implObj.getPossibbleValues(elExpr.getExpression(), sup);
-                    if (properties != null){
-                        for (ELImplicitObjects.Property prop : properties) {
-                            if (prop.getName().startsWith(elExpr.getReplace())){
-                                complItems.add(new JspCompletionItem.ELProperty(prop.getName(), prop.getType())); 
-                            }
-                        }
-                    }
+                    List<CompletionItem> items = elExpr.getPropertyCompletionItems(implObj.getClazz());
+                    complItems.addAll(items);
                 }
                 break;
         }

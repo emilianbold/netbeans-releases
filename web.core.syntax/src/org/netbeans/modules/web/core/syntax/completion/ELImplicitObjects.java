@@ -45,6 +45,7 @@ public class ELImplicitObjects {
     public static class ELImplicitObject {
         private String name;
         private int type;
+        private String clazz; 
                 
         /** Creates a new instance of ELImplicitObject */
         public ELImplicitObject(String name) {
@@ -64,94 +65,21 @@ public class ELImplicitObjects {
             this.type = type;
         }
         
-        public List<Property> getPossibbleValues(String exp, JspSyntaxSupport sup){
-            return null;
-        }
-
-    }
-    
-    public static class Property{
-        
-        private String name;
-        private String type;
-
-        public Property(String name, String type){
-            this.name = name;
-            this.type = type;
+        public String getClazz(){
+            return clazz;
         }
         
-        public String getName() {
-            return name;
+        public void setClazz(String clazz){
+            this.clazz = clazz;
         }
-
-        public String getType() {
-            return type;
-        }
-        
     }
     
     public static class PageContextObject extends ELImplicitObject{
-        
-        private static List <Property> property;
-        
         public PageContextObject(String name){
             super(name);
             setType(ELImplicitObjects.OBJECT_TYPE);
-            property = null;
+            setClazz("javax.servlet.jsp.PageContext"); //NOI18N
         }
-        
-        public List<Property> getPossibbleValues(String exp, JspSyntaxSupport sup){
-            List <Property> prop = null;
-            String text = exp.substring(0, exp.lastIndexOf('.'));
-            if(text.endsWith("pageContext")){                                           //NOI18N
-                if (property == null){
-                    property = new ArrayList();
-                    property.add(new Property("request", "javax.servlet.ServletRequest"));            //NOI18N
-                    property.add(new Property("response", "javax.servlet.ServletResponse"));          //NOI18N
-                    property.add(new Property("servletConfig", "javax.servlet.ServletConfig"));       //NOI18N
-                    property.add(new Property("servletContext", "javax.servlet.ServletContext"));     //NOI18N
-                    property.add(new Property("session", "javax.servlet.HttpSession"));               //NOI18N
-                }
-                prop = property;
-            }
-//            else {
-//                DataObject obj = NbEditorUtilities.getDataObject(sup.getDocument());
-//                JavaClass javaClass = null;
-//                if (obj != null){
-//                    if (text.endsWith("request"))
-//                        javaClass = JMIUtil.findClass("javax.servlet.ServletRequest", ClassPath.getClassPath(obj.getPrimaryFile(), ClassPath.COMPILE));
-//                    else if (text.endsWith("response"))
-//                        javaClass = JMIUtil.findClass("javax.servlet.ServletResponse", ClassPath.getClassPath(obj.getPrimaryFile(), ClassPath.COMPILE));
-//                    else if (text.endsWith("session"))
-//                        javaClass = JMIUtil.findClass("javax.servlet.http.HttpSession", ClassPath.getClassPath(obj.getPrimaryFile(), ClassPath.COMPILE));
-//                    else if (text.endsWith("servletConfig"))
-//                        javaClass = JMIUtil.findClass("javax.servlet.ServletConfig", ClassPath.getClassPath(obj.getPrimaryFile(), ClassPath.COMPILE));
-//                    else if (text.endsWith("servletContext"))
-//                        javaClass = JMIUtil.findClass("javax.servlet.ServletContext", ClassPath.getClassPath(obj.getPrimaryFile(), ClassPath.COMPILE));
-//                }
-//                if (javaClass != null)
-//                    addProperties(prop = new ArrayList(), javaClass);
-//            }
-            return prop;
-        }
-        
-//        private void addProperties (List<Property> prop, JavaClass javaClass){
-//            Method methods [] = JMIUtil.getMethods(javaClass);
-//            for (int j = 0; j < methods.length; j++) {
-//                if ((methods[j].getName().startsWith("get") || methods[j].getName().startsWith("is"))
-//                        && methods[j].getParameters().size() == 0
-//                        && ((methods[j].getModifiers() & Modifier.PUBLIC) != 0)) {
-//                    String name = methods[j].getName();
-//                    if (name.startsWith("get"))
-//                        name = name.substring(3);
-//                    else
-//                        name = name.substring(2);
-//
-//                    name = name.substring(0,1).toLowerCase()+name.substring(1);
-//                    prop.add(new Property(name, methods[j].getType().getName()));
-//                }
-//            }
-//        }
     }
     
     private static Collection <ELImplicitObject> implicitELObjects = null;
@@ -159,17 +87,17 @@ public class ELImplicitObjects {
     private static void initImplicitObjects() {
         if (implicitELObjects == null){
             implicitELObjects = new ArrayList();
-            implicitELObjects.add(new PageContextObject("pageContext"));
-            implicitELObjects.add(new ELImplicitObject("pageScope"));
-            implicitELObjects.add(new ELImplicitObject("requestScope"));
-            implicitELObjects.add(new ELImplicitObject("sessionScope"));
-            implicitELObjects.add(new ELImplicitObject("applicationScope"));
-            implicitELObjects.add(new ELImplicitObject("param"));
-            implicitELObjects.add(new ELImplicitObject("paramValues"));
-            implicitELObjects.add(new ELImplicitObject("header"));
-            implicitELObjects.add(new ELImplicitObject("headerValues"));
-            implicitELObjects.add(new ELImplicitObject("initParam"));
-            implicitELObjects.add(new ELImplicitObject("cookie"));
+            implicitELObjects.add(new PageContextObject("pageContext")); //NOI18N
+            implicitELObjects.add(new ELImplicitObject("pageScope")); //NOI18N
+            implicitELObjects.add(new ELImplicitObject("requestScope")); //NOI18N
+            implicitELObjects.add(new ELImplicitObject("sessionScope")); //NOI18N
+            implicitELObjects.add(new ELImplicitObject("applicationScope")); //NOI18N
+            implicitELObjects.add(new ELImplicitObject("param")); //NOI18N
+            implicitELObjects.add(new ELImplicitObject("paramValues")); //NOI18N
+            implicitELObjects.add(new ELImplicitObject("header")); //NOI18N
+            implicitELObjects.add(new ELImplicitObject("headerValues")); //NOI18N
+            implicitELObjects.add(new ELImplicitObject("initParam")); //NOI18N
+            implicitELObjects.add(new ELImplicitObject("cookie")); //NOI18N
         }
     }
     
