@@ -75,6 +75,14 @@ class CheckNodeListener implements MouseListener, KeyListener {
                         else
                             tree.collapseRow(row);
                     }
+                } else if (e.getClickCount() == 1) {
+                    Object o = node.getUserObject();
+                    if (o instanceof TreeElement) {
+                        o = ((TreeElement) o).getUserObject();
+                        if (o instanceof RefactoringElement) {
+                            openDiff(node);
+                        }
+                    }
                 }
             } else {
                 Rectangle chRect = CheckRenderer.getCheckBoxRectangle();

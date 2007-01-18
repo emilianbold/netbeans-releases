@@ -133,6 +133,9 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         left.setLayout(new BorderLayout());
         setLayout(new BorderLayout());
         add(splitPane, BorderLayout.CENTER);
+        if (!isQuery) {
+            splitPane.setRightComponent(new JLabel("<Preview not Available>", SwingConstants.CENTER));
+        }
         // add panel with buttons
         JButton[] buttons = getButtons();
         //if (buttons.length != 0) {
