@@ -614,4 +614,14 @@ public final class ActionFactory {
         return (InplaceEditorProvider.EditorController) inplaceEditorAction;
     }
 
+    /**
+     * Creates a action that controls a zoom factor of a scene where the action is assigned.
+     * During zooming the view will be centered still.  
+     * @param zoomMultiplier the zoom multiplier
+     * @return the zoom action
+     */
+    public static WidgetAction createCenteredZoomAction (double zoomMultiplier) {
+        return new CenteredZoomAction (zoomMultiplier);
+    }
+
 }
