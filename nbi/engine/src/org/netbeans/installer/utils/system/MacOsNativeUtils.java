@@ -294,12 +294,12 @@ public class MacOsNativeUtils extends UnixNativeUtils {
                         "    Total dict/dict/dict/string items = " + dcts.size());
                 LogManager.log(ErrorLevel.DEBUG,
                         "        location = " + location);
-                while(dcts.get(index)!=null) {
+                while(index < dcts.size() && dcts.get(index)!=null) {
                     Node item = dcts.get(index);
                     LogManager.log(ErrorLevel.DEBUG,
                             "        content = " + item.getTextContent());
                     
-                    if(item.getTextContent().equals(location)) {
+                    if(location.equals(item.getTextContent())) {
                         dct = item;
                         break;
                     }
@@ -310,6 +310,9 @@ public class MacOsNativeUtils extends UnixNativeUtils {
                     LogManager.log(ErrorLevel.DEBUG,
                             "    Shortcut exists in the dock.plist");
                     array.removeChild(dct.getParentNode().getParentNode().getParentNode());
+                } else {
+                    LogManager.log(ErrorLevel.DEBUG,
+                            "    Shortcut doesn`t exist in the dock.plist");
                 }
             }
             LogManager.log(ErrorLevel.DEBUG,
@@ -333,7 +336,11 @@ public class MacOsNativeUtils extends UnixNativeUtils {
         } catch (IOException e) {
             LogManager.log(ErrorLevel.WARNING,e);
             return false;
-        } finally {
+        } catch (NullPointerException e) {
+            LogManager.log(ErrorLevel.WARNING,e);
+            return false;
+        }
+        finally {
             if (outputStream!=null) {
                 try {
                     outputStream.close();
@@ -357,15 +364,16 @@ public class MacOsNativeUtils extends UnixNativeUtils {
     private int convertDockProperties(boolean decode) {
         File dockFile = getDockPropertiesFile();
         int returnResult = 0;
-        try {
+        try {            
             if(!isCheetah() && !isPuma()) {
                 if((!decode && (isTiger() || isLeopard())) || decode) {
                     // decode for all except Cheetah and Puma
-                    // code only for Tiger and Leopars
+                    // code only for Tiger and Leopard
+                    
                     ExecutionResults result = SystemUtils.executeCommand(null,
                             new String[] { PLUTILS,PLUTILS_CONVERT,(decode)? PLUTILS_CONVERT_XML :
                                 PLUTILS_CONVERT_BINARY,dockFile.getPath()});
-                    returnResult = result.getErrorCode();
+                    returnResult = result.getErrorCode();                    
                 }
             }
         } catch (IOException ex) {
