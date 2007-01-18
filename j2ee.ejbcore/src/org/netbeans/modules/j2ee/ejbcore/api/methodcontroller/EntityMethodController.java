@@ -484,10 +484,6 @@ public final class EntityMethodController extends AbstractMethodController {
         return findInClass(javaClass, method) ? method : null;
     }
 
-//    public static MethodModel getSetterMethod(TypeElement classElement, String fieldName, MethodModel getterMethod) {
-//        return getSetterMethod(classElement, fieldName, getterMethod.getReturnType());
-//    }
-
     public MethodModel getGetterMethod(String fieldName, boolean local) {
         return getGetterMethod(getBeanInterface(local, true), fieldName);
     }
