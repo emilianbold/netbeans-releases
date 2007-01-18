@@ -30,7 +30,6 @@ import org.openide.filesystems.FileObject;
  * @author blaha
  */
 public class DTOGenerator {
-    private EjbGenerationUtil genUtil = new EjbGenerationUtil();
     private static final String DTO_SUFIX = "DTO"; //NOI18N
     private int indexField;
     private DTOHelper dtoHelp;

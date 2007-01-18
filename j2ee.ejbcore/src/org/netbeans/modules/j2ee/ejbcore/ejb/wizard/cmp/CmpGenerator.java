@@ -53,11 +53,9 @@ public class CmpGenerator implements PersistenceGenerator {
     private HashMap genDataCache = new HashMap(13);
     private Project project;
     private org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule;
-    private EjbGenerationUtil genHelper;
     private EjbJar dd;
     
     public CmpGenerator() {
-        genHelper = new EjbGenerationUtil();
     }
     
     private String generateLocal(String pkg, FileObject foPkg, String className, String ejbName) throws IOException {
@@ -647,7 +645,7 @@ public class CmpGenerator implements PersistenceGenerator {
     }
 
     public String generateEntityName(String name) {
-        return genHelper.getBaseName(name) + "Bean"; //NOI18N
+        return EjbGenerationUtil.getBaseName(name) + "Bean"; //NOI18N
     }
 
     public Set createdObjects() {

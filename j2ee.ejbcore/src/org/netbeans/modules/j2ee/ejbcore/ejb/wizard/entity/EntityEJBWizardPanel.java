@@ -18,6 +18,7 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.entity;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.SwingUtilities;
@@ -32,11 +33,6 @@ import javax.swing.event.DocumentListener;
  * @author Martin Adamek
  */
 public class EntityEJBWizardPanel extends javax.swing.JPanel {
-
-    public static final String[] PK_TYPES = {
-        "Boolean", "Character", "Double", "Float", "Integer", "Long", "Short", "String", //NOI18N
-        "Object", "java.math.BigDecimal" // NOI18N
-    };
 
     private ChangeListener listener;
 
