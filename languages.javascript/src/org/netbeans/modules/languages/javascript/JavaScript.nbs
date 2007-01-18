@@ -351,17 +351,18 @@ MARK:error {
 
 COMPLETION:js_identifier {
     text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems; 
-    description1:org.netbeans.modules.languages.javascript.JavaScript.completionDescriptions; 
 }
 
 COMPLETION:js_keyword {
     text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems; 
-    description1:org.netbeans.modules.languages.javascript.JavaScript.completionDescriptions; 
 }
 
 COMPLETION:js_whitespace {
     text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems; 
-    description1:org.netbeans.modules.languages.javascript.JavaScript.completionDescriptions; 
+}
+
+COMPLETION:js_operator {
+    text1:org.netbeans.modules.languages.javascript.JavaScript.completionItems; 
 }
 
 STORE:VariableDeclaration {

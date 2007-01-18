@@ -25,6 +25,8 @@ import org.netbeans.api.languages.LibrarySupport;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.PTPath;
 import org.netbeans.api.languages.SyntaxCookie;
+import org.netbeans.api.languages.support.CompletionSupport;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.NbEditorDocument;
@@ -177,72 +179,139 @@ public class JavaScript {
         return "?";
     }
     
-    private static List completionItems;
+    
+    // code completion .........................................................
     
     public static List completionItems (Cookie cookie) {
-        if (completionItems == null) {
-            completionItems = new ArrayList ();
-            completionItems.addAll (getLibrary ().getItems ("keyword"));
-            completionItems.addAll (getLibrary ().getItems ("root"));
+        List result = new ArrayList ();
+        if (cookie instanceof SyntaxCookie) {
+            PTPath path = ((SyntaxCookie) cookie).getPTPath ();
+            DatabaseManager databaseManager = DatabaseManager.getDefault ();
+            Collection c = databaseManager.getIds ((ASTNode) path.get (path.size () - 2), true);
+            result.addAll (c);
+            c = databaseManager.getIds (DatabaseManager.FOLDER);
+            result.addAll (c);
+            return result;
         }
-        if (!(cookie instanceof SyntaxCookie)) return completionItems;
-        PTPath path = ((SyntaxCookie) cookie).getPTPath ();
-        ArrayList l = new ArrayList ();
-        DatabaseManager databaseManager = DatabaseManager.getDefault ();
-        Collection c = databaseManager.getIds ((ASTNode) path.get (path.size () - 2), true);
-        l.addAll (c);
-        c = databaseManager.getIds (DatabaseManager.FOLDER);
-        l.addAll (c);
-        return l;
+        
+        TokenSequence ts = cookie.getTokenSequence ();
+        Token token = ts.token ();
+        String tokenText = token.text ().toString ();
+        String context = null;
+        if (tokenText.equals (".")) {
+            token = previousToken (ts);
+            if (token.id ().name ().endsWith ("identifier"))
+                context = token.text ().toString ();
+        } else
+        if (token.id ().name ().endsWith ("identifier") ) {
+            token = previousToken (ts);
+            if (token.text ().toString ().equals (".")) {
+                token = previousToken (ts);
+                if (token.id ().name ().endsWith ("identifier"))
+                    context = token.text ().toString ();
+            }
+        }
+        
+        if (context != null) {
+            result.addAll (getFromLibrary (context, 1, "black"));
+            result.addAll (getFromLibrary ("member", 2, "black"));
+        } else
+            result.addAll (getFromLibrary ("keyword", 2, "blue"));
+        result.addAll (getFromLibrary ("root",2, "black"));
+        return result;
+    }
+    
+    private static Token previousToken (TokenSequence ts) {
+        do {
+            if (!ts.movePrevious ()) return ts.token ();
+        } while (ts.token ().id ().name ().endsWith ("whitespace"));
+        return ts.token ();
+    }
+    
+    private static List getFromLibrary (
+        String context, 
+        int priority,
+        String color
+    ) {
+        List l = getLibrary ().getItems (context);
+        List result = new ArrayList ();
+        if (l == null) return result;
+        Iterator it = l.iterator ();
+        while (it.hasNext ()) {
+            String item = (String) it.next ();
+            String description = getLibrary ().getProperty 
+                (context, item, "description");
+            if (description == null)
+                result.add (CompletionSupport.createCompletionItem (
+                    item,
+                    "<html><b><font color=" + color + ">" + item + 
+                        "</font></b></html>",
+                    null,
+                    priority
+                ));
+            else
+                result.add (CompletionSupport.createCompletionItem (
+                    item,
+                    "<html><b><font color=" + color + ">" + item + 
+                        ": </font></b><font color=black> " + 
+                        description + "</font></html>",
+                    null,
+                    priority
+                ));
+        }
+        return result;
     }
 
     private static List completionDescriptions;
 
     public static List completionDescriptions (Cookie cookie) {
-        if (completionDescriptions == null) {
-            List tags = completionItems (cookie);
-            tags = completionItems;
-            completionDescriptions = new ArrayList (tags.size ());
-            Iterator it = tags.iterator ();
-            while (it.hasNext ()) {
-                String tag = (String) it.next ();
-                String description = getLibrary ().getProperty 
-                    ("keyword", tag, "description");
-                if (description != null) {
-                    completionDescriptions.add (
-                        "<html><b><font color=blue>" + tag + 
-                        ": </font></b><font color=black> " + 
-                        description + "</font></html>"
-                    );
-                } else {
-                    description = getLibrary ().getProperty 
-                        ("root", tag, "description");
-                    if (description == null) 
-                        completionDescriptions.add (
-                            "<html><b><font color=black>" + tag + 
-                            "</font></b></html>"
-                        );
-                    else
-                        completionDescriptions.add (
-                            "<html><b><font color=black>" + tag + 
-                            ": </font></b><font color=black> " + 
-                            description + "</font></html>"
-                        );
-                }
-            }
-        }
-        if (!(cookie instanceof SyntaxCookie)) return completionDescriptions;
-        PTPath path = ((SyntaxCookie) cookie).getPTPath ();
-        ArrayList l = new ArrayList ();
-        DatabaseManager databaseManager = DatabaseManager.getDefault ();
-        Collection c = databaseManager.getIds ((ASTNode) path.get (path.size () - 2), true);
-        l.addAll (c);
-        c = databaseManager.getIds (DatabaseManager.FOLDER);
-        l.addAll (c);
-        l.addAll (completionDescriptions);
-        return l;
+        return completionItems (cookie);
+//        if (completionDescriptions == null) {
+//            List tags = completionItems (cookie);
+//            tags = completionItems;
+//            completionDescriptions = new ArrayList (tags.size ());
+//            Iterator it = tags.iterator ();
+//            while (it.hasNext ()) {
+//                String tag = (String) it.next ();
+//                String description = getLibrary ().getProperty 
+//                    ("keyword", tag, "description");
+//                if (description != null) {
+//                    completionDescriptions.add (
+//                        "<html><b><font color=blue>" + tag + 
+//                        ": </font></b><font color=black> " + 
+//                        description + "</font></html>"
+//                    );
+//                } else {
+//                    description = getLibrary ().getProperty 
+//                        ("root", tag, "description");
+//                    if (description == null) 
+//                        completionDescriptions.add (
+//                            "<html><b><font color=black>" + tag + 
+//                            "</font></b></html>"
+//                        );
+//                    else
+//                        completionDescriptions.add (
+//                            "<html><b><font color=black>" + tag + 
+//                            ": </font></b><font color=black> " + 
+//                            description + "</font></html>"
+//                        );
+//                }
+//            }
+//        }
+//        if (!(cookie instanceof SyntaxCookie)) return completionDescriptions;
+//        PTPath path = ((SyntaxCookie) cookie).getPTPath ();
+//        ArrayList l = new ArrayList ();
+//        DatabaseManager databaseManager = DatabaseManager.getDefault ();
+//        Collection c = databaseManager.getIds ((ASTNode) path.get (path.size () - 2), true);
+//        l.addAll (c);
+//        c = databaseManager.getIds (DatabaseManager.FOLDER);
+//        l.addAll (c);
+//        l.addAll (completionDescriptions);
+//        return l;
     }
     
+    
+    // actions .................................................................
     
     public static void performDeleteCurrentMethod (ASTNode node, JTextComponent comp) {
         NbEditorDocument doc = (NbEditorDocument)comp.getDocument();

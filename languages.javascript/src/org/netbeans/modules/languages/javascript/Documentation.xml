@@ -78,85 +78,84 @@ Microsystems, Inc. All Rights Reserved.
     <node key="while"       context="keyword" description="JavaScript keyword."/>
     <node key="with"       context="keyword" description="JavaScript keyword."/>
     
-    <node key="arguments"       context="root"/>
+    <node key="arguments[]"       context="root"/>
         <node key="callee"      context="member"/>
-        <node key="length"      context="member"/>
     <node key="Array"           context="root"/>
-        <node key="concat"      context="member"/>
-        <node key="join"        context="member"/>
-        <node key="pop"         context="member"/>
-        <node key="push"        context="member"/>
-        <node key="reverse"     context="member"/>
-        <node key="shift"       context="member"/>
-        <node key="slice"       context="member"/>
-        <node key="sort"        context="member"/>
-        <node key="splice"      context="member"/>
-        <node key="toLocaleString" context="member"/>
-        <node key="toString"    context="member"/>
-        <node key="unshift"     context="member"/>
+        <node key="concat()"      context="member"/>
+        <node key="join()"        context="member"/>
+        <node key="pop()"         context="member"/>
+        <node key="push()"        context="member"/>
+        <node key="reverse()"     context="member"/>
+        <node key="shift()"       context="member"/>
+        <node key="slice()"       context="member"/>
+        <node key="sort()"        context="member"/>
+        <node key="splice()"      context="member"/>
+        <node key="unshift()"     context="member"/>
     <node key="Boolean"         context="root"/>
         <node key="value"       context="member"/>
-        <node key="valueOf"     context="member"/>
+        <node key="valueOf()"     context="member"/>
     <node key="Date"            context="root"/>
-        <node key="parse"       context="Date"/>
-        <node key="UTC"         context="Date"/>
-        <node key="getDate"     context="member"/>
-        <node key="getDay"      context="member"/>
-        <node key="getFullYear" context="member"/>
-        <node key="getHours"    context="member"/>
-        <node key="getMilliseconds" context="member"/>
-        <node key="getMinutes"  context="member"/>
-        <node key="getMonth"    context="member"/>
-        <node key="getSeconds"  context="member"/>
-        <node key="getUTCDate"  context="member"/>
-        <node key="getUTCDay"   context="member"/>
-        <node key="getUTCFullYear" context="member"/>
-        <node key="getUTCHours" context="member"/>
-        <node key="getUTCMilliseconds" context="member"/>
-        <node key="getUTCMinutes"   context="member"/>
-        <node key="getUTCMonth" context="member"/>
-        <node key="getUTCSeconds" context="member"/>
-        <node key="getTime"     context="member"/>
-        <node key="getTimezoneOffset" context="member"/>
-        <node key="getYear"     context="member"/>        
-        <node key="setDate"     context="member"/>
-        <node key="setFullYear" context="member"/>
-        <node key="setHours"    context="member"/>
-        <node key="setMilliseconds" context="member"/>
-        <node key="setMinutes"  context="member"/>
-        <node key="setMonth"    context="member"/>
-        <node key="setSeconds"  context="member"/>
-        <node key="setUTCDate"  context="member"/>
-        <node key="setUTCFullYear" context="member"/>
-        <node key="setUTCHours" context="member"/>
-        <node key="setUTCMilliseconds"  context="member"/>
-        <node key="setUTCMinutes"   context="member"/>
-        <node key="setUTCMonth" context="member"/>
-        <node key="setUTCSeconds"   context="member"/>
-        <node key="setTime"     context="member"/>
-        <node key="setYear"     context="member"/>
-        <node key="toDateString"    context="member"/>
-        <node key="toGMTString" context="member"/>
-        <node key="toLocaleDateString" context="member"/>
-        <node key="toLocaleTimeString" context="member"/>
-        <node key="toTimeString"    context="member"/>
-        <node key="toUTCString" context="member"/>
-    <node key="decodeURI"       context="root"/>
-    <node key="decodeURIComponent" context="root"/>
-    <node key="encodeURI"       context="root"/>
-    <node key="encodeURIComponent" context="root"/>
+        <node key="parse()"       context="Date"/>
+        <node key="UTC()"         context="Date"/>
+        <node key="getDate()"     context="member"/>
+        <node key="getDay()"      context="member"/>
+        <node key="getFullYear()" context="member"/>
+        <node key="getHours()"    context="member"/>
+        <node key="getMilliseconds()" context="member"/>
+        <node key="getMinutes()"  context="member"/>
+        <node key="getMonth()"    context="member"/>
+        <node key="getSeconds()"  context="member"/>
+        <node key="getUTCDate()"  context="member"/>
+        <node key="getUTCDay()"   context="member"/>
+        <node key="getUTCFullYear()" context="member"/>
+        <node key="getUTCHours()" context="member"/>
+        <node key="getUTCMilliseconds()" context="member"/>
+        <node key="getUTCMinutes()"   context="member"/>
+        <node key="getUTCMonth()" context="member"/>
+        <node key="getUTCSeconds()" context="member"/>
+        <node key="getTime()"     context="member"/>
+        <node key="getTimezoneOffset()" context="member"/>
+        <node key="getYear()"     context="member"/>        
+        <node key="setDate()"     context="member"/>
+        <node key="setFullYear()" context="member"/>
+        <node key="setHours()"    context="member"/>
+        <node key="setMilliseconds()" context="member"/>
+        <node key="setMinutes()"  context="member"/>
+        <node key="setMonth()"    context="member"/>
+        <node key="setSeconds()"  context="member"/>
+        <node key="setUTCDate()"  context="member"/>
+        <node key="setUTCFullYear()" context="member"/>
+        <node key="setUTCHours()" context="member"/>
+        <node key="setUTCMilliseconds()"  context="member"/>
+        <node key="setUTCMinutes()"   context="member"/>
+        <node key="setUTCMonth()" context="member"/>
+        <node key="setUTCSeconds()"   context="member"/>
+        <node key="setTime()"     context="member"/>
+        <node key="setYear()"     context="member"/>
+        <node key="toDateString()"    context="member"/>
+        <node key="toGMTString()" context="member"/>
+        <node key="toLocaleDateString()" context="member"/>
+        <node key="toLocaleTimeString()" context="member"/>
+        <node key="toTimeString()"    context="member"/>
+        <node key="toUTCString()" context="member"/>
+    <node key="decodeURI()"       context="root"/>
+    <node key="decodeURIComponent()" context="root"/>
+    <node key="encodeURI()"       context="root"/>
+    <node key="encodeURIComponent()" context="root"/>
     <node key="Error"           context="root"/>
         <node key="message"     context="member"/>
         <node key="name"        context="member"/>
-    <node key="escape"          context="root"/>
-    <node key="eval"            context="root"/>
+    <node key="escape()"          context="root"/>
+    <node key="eval()"            context="root"/>
     <node key="Function"        context="root"/>
-        <node key="apply"       context="member"/>
-        <node key="call"        context="member"/>
+        <node key="apply()"     context="member"/>
+        <node key="call()"      context="member"/>
+        <node key="arguments"   context="member"/>
+        <node key="caller"      context="member"/>
         <node key="prototype"   context="member"/>
     <node key="Infinity"        context="root"/>
-    <node key="isFinite"        context="root"/>
-    <node key="isNaN"           context="root"/>
+    <node key="isFinite()"        context="root"/>
+    <node key="isNaN()"           context="root"/>
     <node key="Math"            context="root"/>
         <node key="E"           context="Math"/>
         <node key="LN10"        context="Math"/>
@@ -166,24 +165,24 @@ Microsystems, Inc. All Rights Reserved.
         <node key="PI"          context="Math"/>
         <node key="SQRT1_2"     context="Math"/>
         <node key="SQRT2"       context="Math"/>
-        <node key="abs"         context="Math"/>
-        <node key="acos"        context="Math"/>
-        <node key="asin"        context="Math"/>
-        <node key="atan"        context="Math"/>
-        <node key="atan2"       context="Math"/>
-        <node key="ceil"        context="Math"/>
-        <node key="cos"         context="Math"/>
-        <node key="exp"         context="Math"/>
-        <node key="floor"       context="Math"/>
-        <node key="log"         context="Math"/>
-        <node key="max"         context="Math"/>
-        <node key="min"         context="Math"/>
-        <node key="pow"         context="Math"/>
-        <node key="random"      context="Math"/>
-        <node key="round"       context="Math"/>
-        <node key="sin"         context="Math"/>
-        <node key="sqrt"        context="Math"/>
-        <node key="tan"         context="Math"/>
+        <node key="abs()"         context="Math"/>
+        <node key="acos()"        context="Math"/>
+        <node key="asin()"        context="Math"/>
+        <node key="atan()"        context="Math"/>
+        <node key="atan2()"       context="Math"/>
+        <node key="ceil()"        context="Math"/>
+        <node key="cos()"         context="Math"/>
+        <node key="exp()"         context="Math"/>
+        <node key="floor()"       context="Math"/>
+        <node key="log()"         context="Math"/>
+        <node key="max()"         context="Math"/>
+        <node key="min()"         context="Math"/>
+        <node key="pow()"         context="Math"/>
+        <node key="random()"      context="Math"/>
+        <node key="round()"       context="Math"/>
+        <node key="sin()"         context="Math"/>
+        <node key="sqrt()"        context="Math"/>
+        <node key="tan()"         context="Math"/>
     <node key="NaN"             context="root"/>
     <node key="Number"          context="root"/>
         <node key="MAX_VALUE"   context="Number"/>
@@ -191,16 +190,18 @@ Microsystems, Inc. All Rights Reserved.
         <node key="NaN"         context="Number"/>
         <node key="NEGATIVE_INFINITY" context="Number"/>
         <node key="POSITIVE_INFINITY" context="Number"/>
-        <node key="toFixed"     context="member"/>
-        <node key="toExponential"   context="member"/>
-        <node key="toPrecision" context="member"/>
+        <node key="toFixed()"     context="member"/>
+        <node key="toExponential()"   context="member"/>
+        <node key="toPrecision()" context="member"/>
     <node key="Object"          context="root"/>
         <node key="constructor" context="member"/>
-        <node key="hasOwnProperty"  context="member"/>
-        <node key="isPrototypeOf"   context="member"/>
-        <node key="propertyIsEnumerable" context="member"/>
-    <node key="parseFloat"      context="root"/>
-    <node key="parseInt"        context="root"/>
+        <node key="hasOwnProperty()"  context="member"/>
+        <node key="isPrototypeOf()"   context="member"/>
+        <node key="propertyIsEnumerable()" context="member"/>
+        <node key="toLocaleString()" context="member"/>
+        <node key="toString()"  context="member"/>
+    <node key="parseFloat()"      context="root"/>
+    <node key="parseInt()"        context="root"/>
     <node key="RangeError"      context="root"/>
     <node key="ReferenceError"  context="root"/>
     <node key="RegExp"          context="root"/>
@@ -209,39 +210,40 @@ Microsystems, Inc. All Rights Reserved.
         <node key="lastIndex"   context="member"/>
         <node key="multiline"   context="member"/>
         <node key="source"      context="member"/>
-        <node key="exec"        context="member"/>
-        <node key="test"        context="member"/>
+        <node key="exec()"        context="member"/>
+        <node key="test()"        context="member"/>
     <node key="String"          context="root"/>
         <node key="fromCharCode" context="String"/>
-        <node key="charAt"      context="member"/>
-        <node key="charCodeAt"  context="member"/>
-        <node key="indexOf"     context="member"/>
-        <node key="lastIndexOf" context="member"/>
-        <node key="match"       context="member"/>
-        <node key="replace"     context="member"/>
-        <node key="search"      context="member"/>
-        <node key="split"       context="member"/>
-        <node key="substring"   context="member"/>
-        <node key="substr"      context="member"/>
-        <node key="toLowerCase" context="member"/>
-        <node key="toUpperCase" context="member"/>
+        <node key="length"      context="member"/>
+        <node key="charAt()"      context="member"/>
+        <node key="charCodeAt()"  context="member"/>
+        <node key="indexOf()"     context="member"/>
+        <node key="lastIndexOf()" context="member"/>
+        <node key="match()"       context="member"/>
+        <node key="replace()"     context="member"/>
+        <node key="search()"      context="member"/>
+        <node key="split()"       context="member"/>
+        <node key="substring()"   context="member"/>
+        <node key="substr()"      context="member"/>
+        <node key="toLowerCase()" context="member"/>
+        <node key="toUpperCase()" context="member"/>
 
-        <node key="anchor"      context="member"/>
-        <node key="big"         context="member"/>
-        <node key="blink"       context="member"/>
-        <node key="bold"        context="member"/>
-        <node key="fixed"       context="member"/>
-        <node key="fontcolor"   context="member"/>
-        <node key="fontsize"    context="member"/>
-        <node key="italics"     context="member"/>
-        <node key="link"        context="member"/>
-        <node key="small"       context="member"/>
-        <node key="strike"      context="member"/>
-        <node key="sub"         context="member"/>
-        <node key="sup"         context="member"/>
+        <node key="anchor()"      context="member"/>
+        <node key="big()"         context="member"/>
+        <node key="blink()"       context="member"/>
+        <node key="bold()"        context="member"/>
+        <node key="fixed()"       context="member"/>
+        <node key="fontcolor()"   context="member"/>
+        <node key="fontsize()"    context="member"/>
+        <node key="italics()"     context="member"/>
+        <node key="link()"        context="member"/>
+        <node key="small()"       context="member"/>
+        <node key="strike()"      context="member"/>
+        <node key="sub()"         context="member"/>
+        <node key="sup()"         context="member"/>
     <node key="SyntaxError"     context="root"/>
     <node key="TypeError"       context="root"/>
     <node key="undefined"       context="root"/>
-    <node key="unescape"        context="root"/>
+    <node key="unescape()"        context="root"/>
     <node key="URIError"        context="root"/>
 </documentation>
