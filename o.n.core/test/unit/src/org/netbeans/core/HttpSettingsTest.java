@@ -198,6 +198,7 @@ public class HttpSettingsTest extends NbTestCase {
                 sync.wait ();
             }
         }
+        Thread.sleep (1000); // XXX: tunning test on Windows platform, other platforms are passing
         assertEquals ("System.getProperty() doesn't return new value if DIRECT_CONNECTION set.", null, System.getProperty ("http.nonProxyHosts"));
         
         // switch proxy type back to MANUAL_SET_PROXY
