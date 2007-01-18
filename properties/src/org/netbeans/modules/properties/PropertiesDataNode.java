@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -125,7 +125,7 @@ public class PropertiesDataNode extends DataNode {
     /** Creates paste types for this node. Overrides superclass method. 
      * @param transferable transferable in clipboard 
      * @param types <code>PasteType</code>'s valid for this node. */
-    public void createPasteTypes(Transferable transferable, List types) {
+    public void createPasteTypes(Transferable transferable, List<PasteType> types) {
         super.createPasteTypes(transferable, types);
 
         // Copy/paste mode?

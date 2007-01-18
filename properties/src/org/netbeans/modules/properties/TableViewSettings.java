@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -64,7 +64,7 @@ public abstract class TableViewSettings {
     private static DelegatingSettings delegatingSettings;
 
     // active registrations
-    private static Lookup.Result registrations;
+    private static Lookup.Result<TableViewSettings> registrations;
     
     /** 
      * Reserved for subclasses 
@@ -81,7 +81,7 @@ public abstract class TableViewSettings {
         
         if (delegatingSettings == null) {
             Lookup lookup = Lookup.getDefault();
-            Lookup.Template template = new Lookup.Template(TableViewSettings.class);
+            Lookup.Template<TableViewSettings> template = new Lookup.Template<TableViewSettings>(TableViewSettings.class);
             registrations = lookup.lookup(template);
             registrations.addLookupListener(new LookupListener() {
                 public void resultChanged(LookupEvent e) {
@@ -89,7 +89,7 @@ public abstract class TableViewSettings {
                     if (registrations.allInstances().isEmpty()) {
                         peer = new HardcodedSettings();
                     } else {
-                        peer = (TableViewSettings) registrations.allInstances().iterator().next();
+                        peer = registrations.allInstances().iterator().next();
                     }
                     delegatingSettings.setPeer(peer);
                 }
@@ -98,7 +98,7 @@ public abstract class TableViewSettings {
             if (registrations.allInstances().isEmpty()) {
                 peer = new HardcodedSettings();
             } else {
-                peer = (TableViewSettings) registrations.allInstances().iterator().next();
+                peer = registrations.allInstances().iterator().next();
             }            
             delegatingSettings = new DelegatingSettings(peer);
         }

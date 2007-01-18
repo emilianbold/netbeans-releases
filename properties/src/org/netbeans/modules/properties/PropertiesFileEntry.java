@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,8 +26,8 @@ import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.TreeSet;
-
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
@@ -135,9 +135,10 @@ public class PropertiesFileEntry extends PresentableFileEntry
     }
     
     /** Implements <code>CookieSet.Factory</code> interface method. */
-    public Node.Cookie createCookie(Class clazz) {
+    @SuppressWarnings("unchecked")
+    public <T extends Node.Cookie> T createCookie(Class<T> clazz) {
         if (clazz.isAssignableFrom(PropertiesEditorSupport.class)) {
-            return getPropertiesEditor();
+            return (T) getPropertiesEditor();
         } else {
             return null;
         }
@@ -337,7 +338,7 @@ public class PropertiesFileEntry extends PresentableFileEntry
     
     /** Children of a node representing single properties file.
      * Contains nodes representing individual properties (key-value pairs with comments). */
-    private class PropKeysChildren extends Children.Keys {
+    private class PropKeysChildren extends Children.Keys<String> {
 
         /** Listens to changes on the property bundle structure. */
         private PropertyBundleListener bundleListener = null;
@@ -353,13 +354,14 @@ public class PropertiesFileEntry extends PresentableFileEntry
          * @see org.openide.nodes.Children.Keys#setKeys(java.util.Collection) */
         private void mySetKeys() {
             // Use TreeSet because its iterator iterates in ascending order.
-            TreeSet keys = new TreeSet(new KeyComparator());
+            Set<String> keys = new TreeSet<String>(new KeyComparator());
             PropertiesStructure propStructure = getHandler().getStructure();
-            if(propStructure != null) {
-                for(Iterator iterator = propStructure.allItems(); iterator.hasNext(); ) {
-                    Element.ItemElem item = (Element.ItemElem)iterator.next();
-                    if(item != null && item.getKey() != null)
+            if (propStructure != null) {
+                for (Iterator<Element.ItemElem> iterator = propStructure.allItems(); iterator.hasNext(); ) {
+                    Element.ItemElem item = iterator.next();
+                    if (item != null && item.getKey() != null) {
                         keys.add(item.getKey());
+                    }
                 }
             }
             
@@ -397,12 +399,11 @@ public class PropertiesFileEntry extends PresentableFileEntry
          */
         protected void removeNotify () {
             bundleStructure().removePropertyBundleListener(bundleListener);
-            setKeys(new ArrayList());
+            setKeys(new ArrayList<String>());
         }
 
         /** Create nodes. Implements superclass abstract method. */
-        protected Node[] createNodes (Object key) {
-            String itemKey = (String)key;
+        protected Node[] createNodes (String itemKey) {
             return new Node[] { new KeyNode(getHandler().getStructure(), itemKey) };
         }
 

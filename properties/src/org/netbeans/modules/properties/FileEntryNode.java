@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -154,8 +154,8 @@ public class FileEntryNode extends AbstractNode {
      * Otherwise the superclass is tried.
      * @return the cookie or <code>null</code>
      */
-    public Node.Cookie getCookie (Class cl) {
-        Node.Cookie c = entry.getCookie (cl);
+    public <T extends Node.Cookie> T getCookie(Class<T> cl) {
+        T c = entry.getCookie(cl);
         if (c != null) {
             return c;
         } else {
@@ -173,25 +173,22 @@ public class FileEntryNode extends AbstractNode {
 
         Node.Property p;
 
-        p = new PropertySupport.ReadWrite (
+        p = new PropertySupport.ReadWrite<String>(
                 PROP_NAME,
                 String.class,
                 getBundleString("PROP_name"),
                 getBundleString("HINT_name")
             ) {
-                public Object getValue () {
+                public String getValue() {
                     return entry.getName();
                 }
 
-                public void setValue (Object val) throws IllegalAccessException,
+                public void setValue(String val) throws IllegalAccessException,
                     IllegalArgumentException, InvocationTargetException {
                     if (!canWrite()) {
                         throw new IllegalAccessException();
                     }
-                    if (!(val instanceof String)) {
-                        throw new IllegalArgumentException();
-                    }
-                    FileEntryNode.this.setName ((String)val);
+                    FileEntryNode.this.setName(val);
                 }
 
                 public boolean canWrite () {
@@ -202,7 +199,7 @@ public class FileEntryNode extends AbstractNode {
         ss.put (p);
 
         try {
-            p = new PropertySupport.Reflection (
+            p = new PropertySupport.Reflection<Boolean>(
                     entry, Boolean.TYPE, "isTemplate", "setTemplate" // NOI18N
                 );
             p.setName (DataObject.PROP_TEMPLATE);

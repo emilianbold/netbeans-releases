@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,6 +25,7 @@ import java.awt.Component;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
@@ -32,7 +33,6 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -75,7 +75,7 @@ public class BundleNodeCustomizer extends JPanel {
     /** Retrieves entry locales. Utility method.
      * @param propDataObject properties data object to retrieve entry names for */
     private static Locale[] retrieveLocales(PropertiesDataObject propDataObject) {
-        ArrayList entryList = new ArrayList();
+        List<Locale> entryList = new ArrayList<Locale>();
 
         entryList.add(LocaleNodeCustomizer.getLocale((PropertiesFileEntry)propDataObject.getPrimaryEntry()));
         

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -96,7 +96,7 @@ public class PropertiesOpen extends CloneableOpenSupport
      * @return <code>true</code> if everything can be closed
      */
     protected boolean canClose() {
-        Node.Cookie saveCookie = propDataObject.getCookie(SaveCookie.class);
+        SaveCookie saveCookie = propDataObject.getCookie(SaveCookie.class);
         if (saveCookie == null) {
             return true;
         }
@@ -132,7 +132,7 @@ public class PropertiesOpen extends CloneableOpenSupport
         /* Save the file if the answer was "Save": */
         if (answer == optionSave) {
             try {
-                ((SaveCookie) saveCookie).save();
+                saveCookie.save();
                 propDataObject.updateModificationStatus();
             }
             catch (IOException e) {
@@ -676,9 +676,7 @@ public class PropertiesOpen extends CloneableOpenSupport
                 }
                 
                 boolean thisChanged = false;
-                Iterator it = propDataObject.files().iterator();
-                while (it.hasNext()) {
-                    FileObject fo = (FileObject)it.next();
+                for (FileObject fo : propDataObject.files()) {
                     if (ev.hasChanged(fo)) {
                         thisChanged = true;
                         break;
@@ -737,8 +735,7 @@ public class PropertiesOpen extends CloneableOpenSupport
          */
         private void setupActions() {
             JTable bundleTable = ((BundleEditPanel) getComponent(0)).getTable();
-            CallbackSystemAction findAction
-                    = (CallbackSystemAction) SystemAction.get(FindAction.class);
+            FindAction findAction = SystemAction.get(FindAction.class);
             Action action = FindPerformer.getFindPerformer(bundleTable);
             getActionMap().put(findAction.getActionMapKey(), action);
         }
@@ -753,9 +750,9 @@ public class PropertiesOpen extends CloneableOpenSupport
             final String htmlDisplayName = htmlDisplayName();
             final String toolTip = messageToolTip();
             
-            Enumeration en = getReference().getComponents();
+            Enumeration<CloneableTopComponent> en = getReference().getComponents();
             while (en.hasMoreElements()) {
-                TopComponent tc = (TopComponent) en.nextElement();
+                CloneableTopComponent tc = en.nextElement();
                 tc.setName(name);
                 tc.setDisplayName(displayName);
                 tc.setHtmlDisplayName(htmlDisplayName);
@@ -771,9 +768,9 @@ public class PropertiesOpen extends CloneableOpenSupport
             final String displayName = displayName();
             final String htmlDisplayName = htmlDisplayName();
             
-            Enumeration en = getReference().getComponents();
+            Enumeration<CloneableTopComponent> en = getReference().getComponents();
             while (en.hasMoreElements()) {
-                TopComponent tc = (TopComponent) en.nextElement();
+                CloneableTopComponent tc = en.nextElement();
                 tc.setDisplayName(displayName);
                 tc.setHtmlDisplayName(htmlDisplayName);
             }
@@ -934,7 +931,7 @@ public class PropertiesOpen extends CloneableOpenSupport
     private static class CompoundUndoRedoManager implements UndoRedo {
         
         /** Set of weak references to all "underlying" editor support undoredo managers. */
-        private WeakSet managers = new WeakSet(5);
+        private WeakSet<Manager> managers = new WeakSet<Manager>(5);
         
         // Constructor
         
@@ -963,7 +960,7 @@ public class PropertiesOpen extends CloneableOpenSupport
             long time = 0L; // time to compare with
             long timeManager; // time of next undo of actual manager
             
-            for (Iterator it = managers.iterator(); it.hasNext(); ) {
+            for (Iterator<Manager> it = managers.iterator(); it.hasNext(); ) {
                 PropertiesEditorSupport.UndoRedoStampFlagManager manager = (PropertiesEditorSupport.UndoRedoStampFlagManager)it.next();
                 timeManager = manager.getTimeStampOfEditToBeUndone();
                 if(timeManager > time) {
@@ -980,7 +977,7 @@ public class PropertiesOpen extends CloneableOpenSupport
             long time = 0L; // time to compare with
             long timeManager; // time of next redo of actual manager
             
-            for (Iterator it = managers.iterator(); it.hasNext(); ) {
+            for (Iterator<Manager> it = managers.iterator(); it.hasNext(); ) {
                 PropertiesEditorSupport.UndoRedoStampFlagManager manager = (PropertiesEditorSupport.UndoRedoStampFlagManager)it.next();
                 timeManager = manager.getTimeStampOfEditToBeRedone();
                 if(timeManager > time) {
@@ -995,9 +992,10 @@ public class PropertiesOpen extends CloneableOpenSupport
          * @return <code>true</code> if undo is allowed
          */
         public synchronized boolean canUndo () {
-            for (Iterator it = managers.iterator(); it.hasNext(); ) {
-                if( ((UndoRedo)it.next()).canUndo() )
+            for (Manager manager : managers) {
+                if (manager.canUndo()) {
                     return true;
+                }
             }
             return false;
         }
@@ -1006,9 +1004,10 @@ public class PropertiesOpen extends CloneableOpenSupport
          * @return <code>true</code> if redo is allowed
          */
         public synchronized boolean canRedo () {
-            for (Iterator it = managers.iterator(); it.hasNext(); ) {
-                if( ((UndoRedo)it.next()).canRedo() )
+            for (Manager manager : managers) {
+                if (manager.canRedo()) {
                     return true;
+                }
             }
             return false;
         }
@@ -1030,7 +1029,7 @@ public class PropertiesOpen extends CloneableOpenSupport
                     boolean undone;
                     do { // the atomic action can consists from more undo edits from same manager
                         undone = false;
-                        for (Iterator it = managers.iterator(); it.hasNext(); ) {
+                        for (Iterator<Manager> it = managers.iterator(); it.hasNext(); ) {
                             PropertiesEditorSupport.UndoRedoStampFlagManager manager = (PropertiesEditorSupport.UndoRedoStampFlagManager)it.next();
                             if(atomicFlag.equals(manager.getAtomicFlagOfEditToBeUndone())) {
                                 manager.undo();
@@ -1059,7 +1058,7 @@ public class PropertiesOpen extends CloneableOpenSupport
                     boolean redone;
                     do { // the atomic action can consists from more redo edits from same manager
                         redone = false;
-                        for (Iterator it = managers.iterator(); it.hasNext(); ) {
+                        for (Iterator<Manager> it = managers.iterator(); it.hasNext(); ) {
                             PropertiesEditorSupport.UndoRedoStampFlagManager manager = (PropertiesEditorSupport.UndoRedoStampFlagManager)it.next();
                             if(atomicFlag.equals(manager.getAtomicFlagOfEditToBeRedone())) {
                                 manager.redo();

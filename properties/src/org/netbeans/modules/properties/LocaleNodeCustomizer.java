@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,6 +28,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
@@ -36,7 +37,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -122,16 +122,17 @@ public class LocaleNodeCustomizer extends JPanel {
     /** Retrievs keys in entry. Utility method.
      * @param entry entry which keys to get */
     private static String[] retrieveKeys(PropertiesFileEntry entry) {
-        ArrayList keysList = new ArrayList();
+        List<String> keysList = new ArrayList<String>();
         
         if(entry == null) {
             return new String[0];
         }
         
-        for (Iterator it = entry.getHandler().getStructure().allItems(); it.hasNext(); ) {
-            String key = ((Element.ItemElem)it.next()).getKey();
-            if(key != null && !(keysList.contains(key)))
+        for (Iterator<Element.ItemElem> it = entry.getHandler().getStructure().allItems(); it.hasNext(); ) {
+            String key = it.next().getKey();
+            if (key != null && !(keysList.contains(key))) {
                 keysList.add(key);
+            }
         }
         
         String[] keys = new String[keysList.size()];

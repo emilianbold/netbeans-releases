@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 
-import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
 
@@ -41,13 +40,16 @@ public class StructHandler {
     private PropertiesFileEntry propFileEntry;
 
     /** Weak reference to parsing task. */
-    private WeakReference parsingTaskWRef = new WeakReference(null);
+    private WeakReference<Task> parsingTaskWRef
+            = new WeakReference<Task>(null);
 
     /** Soft reference to the underlying properties structure. */
-    private SoftReference propStructureSRef = new SoftReference(null);
+    private SoftReference<PropertiesStructure> propStructureSRef
+            = new SoftReference<PropertiesStructure>(null);
 
     /** Parser performing actual parsing task. */
-    private WeakReference parserWRef = new WeakReference(null);
+    private WeakReference<PropertiesParser> parserWRef
+            = new WeakReference<PropertiesParser>(null);
     
     /** Flag indicating if parsing isAllowed. */
     private boolean parsingAllowed = true;
@@ -84,7 +86,7 @@ public class StructHandler {
         PropertiesParser parser = new PropertiesParser(propFileEntry);
 
         try {
-            parserWRef = new WeakReference(parser);
+            parserWRef = new WeakReference<PropertiesParser>(parser);
 
             parser.initParser();
             PropertiesStructure propStructure = parser.parseFile();
@@ -108,7 +110,7 @@ public class StructHandler {
     synchronized void stopParsing() {
         parsingAllowed = false;
         
-        PropertiesParser parser = (PropertiesParser) parserWRef.get();
+        PropertiesParser parser = parserWRef.get();
         
         if (parser != null) {
             parser.stop();
@@ -138,13 +140,13 @@ public class StructHandler {
         if (false == isStructureLoaded()) {
             return;
         }
-        Task previousTask = (Task) parsingTaskWRef.get();
+        Task previousTask = parsingTaskWRef.get();
         if (previousTask != null) {
             // There was previous task already, reschedule it 500 ms later.
             previousTask.schedule(500);
         } else {
             // Create a new task, and schedule it immediatelly.
-            parsingTaskWRef = new WeakReference(
+            parsingTaskWRef = new WeakReference<Task>(
                 PropertiesRequestProcessor.getInstance().post(
                     new Runnable() {
                         public void run() {
@@ -165,18 +167,17 @@ public class StructHandler {
     private void updatePropertiesStructure(PropertiesStructure newPropStructure,
                                            boolean fire) {
         if (newPropStructure == null) {
-            propStructureSRef = new SoftReference(null);
+            propStructureSRef = new SoftReference<PropertiesStructure>(null);
             return;
         }
         
-        PropertiesStructure propStructure = (PropertiesStructure)
-                                            propStructureSRef.get();
+        PropertiesStructure propStructure = propStructureSRef.get();
 
         if (propStructure == null) {
             // Set the parent.
             newPropStructure.setParent(this);
             propStructure = newPropStructure;
-            propStructureSRef = new SoftReference(propStructure);
+            propStructureSRef = new SoftReference<PropertiesStructure>(propStructure);
             
             if (fire) {
                 propStructure.structureChanged();
@@ -189,8 +190,7 @@ public class StructHandler {
 
     /** Gets properties structure handled by this handler. */
     public PropertiesStructure getStructure() {
-        PropertiesStructure propStructure = (PropertiesStructure)
-                                            propStructureSRef.get();
+        PropertiesStructure propStructure = propStructureSRef.get();
         
         if (propStructure != null) {
             return propStructure;

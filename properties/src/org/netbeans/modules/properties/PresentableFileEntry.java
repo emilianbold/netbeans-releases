@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -361,17 +361,18 @@ public abstract class PresentableFileEntry extends FileEntry
      * @return an instance of that class, or <code>null</code> if this class of cookie
      *    is not supported
      */
-    public Node.Cookie getCookie (Class type) {
+    @SuppressWarnings("unchecked")
+    public <T extends Node.Cookie> T getCookie(Class<T> type) {
         CookieSet c = cookieSet;
         if (c != null) {
-            Node.Cookie cookie = c.getCookie (type);
+            T cookie = c.getCookie(type);
             if (cookie != null) {
                 return cookie;
             }
         }
         
         if (type.isInstance (this)) {
-            return this;
+            return (T) this;
         }
         return null;
     }

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -411,7 +411,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         try {
             FileSystem.Status status = entry.getFileSystem().getStatus();
             if (status != null) {
-                Set files = Collections.singleton(entry);
+                Set<FileObject> files = Collections.singleton(entry);
                 if (status instanceof FileSystem.HtmlStatus) {
                     FileSystem.HtmlStatus hStatus = (FileSystem.HtmlStatus)
                                                     status;
@@ -822,19 +822,19 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     private static final class EnvironmentListener extends FileChangeAdapter {
         
         /** Reference of <code>Environment</code> */
-        private Reference reference;
+        private Reference<Environment> reference;
         
         /** @param environment <code>Environment<code> to use
          */
         public EnvironmentListener(Environment environment) {
-            reference = new WeakReference(environment);
+            reference = new WeakReference<Environment>(environment);
         }
         
         /** Fired when a file is changed.
          * @param fe the event describing context where action has taken place
          */
         public void fileChanged(FileEvent evt) {
-            Environment environment = (Environment)reference.get();
+            Environment environment = reference.get();
             if (environment != null) {
                 if(!environment.entry.getFile().equals(evt.getFile()) ) {
                     // If the FileObject was changed.
@@ -1157,7 +1157,8 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     class UndoRedoStampFlagManager extends UndoRedo.Manager {
         
         /** Hash map of weak reference keys (UndoableEdit's) to their StampFlag's. */
-        WeakHashMap stampFlags =  new WeakHashMap(5);
+        WeakHashMap<UndoableEdit,StampFlag> stampFlags
+                = new WeakHashMap<UndoableEdit,StampFlag>(5);
         
         /** Overrides superclass method. Adds StampFlag to UndoableEdit. */
         public synchronized boolean addEdit(UndoableEdit anEdit) {
@@ -1177,7 +1178,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         public synchronized void undo() throws CannotUndoException {
             UndoableEdit anEdit = editToBeUndone();
             if(anEdit != null) {
-                Object atomicFlag = ((StampFlag)stampFlags.get(anEdit)).getAtomicFlag(); // atomic flag remains
+                Object atomicFlag = stampFlags.get(anEdit).getAtomicFlag(); // atomic flag remains
                 super.undo();
                 stampFlags.put(anEdit, new StampFlag(System.currentTimeMillis(), atomicFlag));
             }
@@ -1187,7 +1188,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         public synchronized void redo() throws CannotRedoException {
             UndoableEdit anEdit = editToBeRedone();
             if(anEdit != null) {
-                Object atomicFlag = ((StampFlag)stampFlags.get(anEdit)).getAtomicFlag(); // atomic flag remains
+                Object atomicFlag = stampFlags.get(anEdit).getAtomicFlag(); // atomic flag remains
                 super.redo();
                 stampFlags.put(anEdit, new StampFlag(System.currentTimeMillis(), atomicFlag));
             }
@@ -1197,40 +1198,44 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
          * @ return time stamp in milliseconds or 0 (if don't exit edit to be undone). */
         public long getTimeStampOfEditToBeUndone() {
             UndoableEdit nextUndo = editToBeUndone();
-            if(nextUndo == null)
+            if (nextUndo == null) {
                 return 0L;
-            else
-                return ((StampFlag)stampFlags.get(nextUndo)).getTimeStamp();
+            } else {
+                return stampFlags.get(nextUndo).getTimeStamp();
+            }
         }
         
         /** Method which gets time stamp of next Undoable edit to be redone.
          * @ return time stamp in milliseconds or 0 (if don't exit edit to be redone). */
         public long getTimeStampOfEditToBeRedone() {
             UndoableEdit nextRedo = editToBeRedone();
-            if(nextRedo == null)
+            if (nextRedo == null) {
                 return 0L;
-            else
-                return ((StampFlag)stampFlags.get(nextRedo)).getTimeStamp();
+            } else {
+                return stampFlags.get(nextRedo).getTimeStamp();
+            }
         }
         
         /** Method which gets atomic flag of next Undoable edit to be undone. 
          * @ return atomic flag in milliseconds or 0 (if don't exit edit to be undone). */
         public Object getAtomicFlagOfEditToBeUndone() {
             UndoableEdit nextUndo = editToBeUndone();
-            if(nextUndo == null)
+            if (nextUndo == null) {
                 return null;
-            else
-                return ((StampFlag)stampFlags.get(nextUndo)).getAtomicFlag();
+            } else {
+                return (stampFlags.get(nextUndo)).getAtomicFlag();
+            }
         }
         
         /** Method which gets atomic flag of next Undoable edit to be redone.
          * @ return time stamp in milliseconds or 0 (if don't exit edit to be redone). */
         public Object getAtomicFlagOfEditToBeRedone() {
             UndoableEdit nextRedo = editToBeRedone();
-            if(nextRedo == null)
+            if (nextRedo == null) {
                 return null;
-            else
-                return ((StampFlag)stampFlags.get(nextRedo)).getAtomicFlag();
+            } else {
+                return (stampFlags.get(nextRedo)).getAtomicFlag();
+            }
         }
         
     } // End of inner class UndoRedoTimeStampManager.

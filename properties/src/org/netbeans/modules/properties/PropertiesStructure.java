@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -42,7 +42,7 @@ public class PropertiesStructure extends Element {
     /**
      * Map&lt;<code>String</code> to <code>Element.ItemElem</code>&gt;.
      */
-    private Map items;
+    private Map<String,Element.ItemElem> items;
 
     /** If active, contains link to its handler (parent) */
     private StructHandler handler;
@@ -52,11 +52,11 @@ public class PropertiesStructure extends Element {
     
     
     /** Constructs a new PropertiesStructure for the given bounds and items. */
-    public PropertiesStructure(PositionBounds bounds, Map items) {
+    public PropertiesStructure(PositionBounds bounds, Map<String,Element.ItemElem> items) {
         super(bounds);
         // set this structure as a parent for all elements
-        for (Iterator it = items.values().iterator(); it.hasNext(); ) {
-            ((Element.ItemElem) it.next()).setParent(this);
+        for (Element.ItemElem itemElem : items.values()) {
+            itemElem.setParent(this);
         }
         this.items = items;
     }
@@ -69,16 +69,14 @@ public class PropertiesStructure extends Element {
         synchronized(getParent()) {
         synchronized(getParentBundleStructure()) {
             boolean structChanged = false;
-            Element.ItemElem curItem;
             Element.ItemElem oldItem;
 
-            Map new_items = struct.items;
-            Map changed  = new HashMap();
-            Map inserted = new HashMap();
-            Map deleted  = new HashMap();
+            Map<String,Element.ItemElem> new_items = struct.items;
+            Map<String,Element.ItemElem> changed  = new HashMap<String,Element.ItemElem>();
+            Map<String,Element.ItemElem> inserted = new HashMap<String,Element.ItemElem>();
+            Map<String,Element.ItemElem> deleted  = new HashMap<String,Element.ItemElem>();
 
-            for (Iterator it = new_items.values().iterator(); it.hasNext(); ) {
-                curItem = (Element.ItemElem)it.next();
+            for (Element.ItemElem curItem : new_items.values()) {
                 curItem.setParent(this);
                 oldItem = getItem(curItem.getKey());
                 if (oldItem == null) {
@@ -106,8 +104,8 @@ public class PropertiesStructure extends Element {
                 structureChanged(changed, inserted, deleted);
             } else {
                 // notify about changes in all items
-                for (Iterator it = changed.values().iterator(); it.hasNext();) {
-                    itemChanged((Element.ItemElem) it.next());
+                for (Element.ItemElem itemElem : changed.values()) {
+                    itemChanged(itemElem);
                 }
             }
         }
@@ -138,10 +136,8 @@ public class PropertiesStructure extends Element {
     /** Prints all structure to document.
      * @return the structure dump */
     public String getDocumentString() {
-        StringBuffer sb = new StringBuffer();
-        Element.ItemElem item;
-        for (Iterator it = items.values().iterator(); it.hasNext(); ) {
-            item = (Element.ItemElem) it.next();
+        StringBuilder sb = new StringBuilder();
+        for (Element.ItemElem item : items.values()) {
             sb.append(item.getDocumentString());
         }
         
@@ -151,10 +147,8 @@ public class PropertiesStructure extends Element {
     /** Overrides superclass method.
      * @return the formatted structure dump */
     public String toString() {
-        StringBuffer sb = new StringBuffer();
-        Element.ItemElem item;
-        for (Iterator it = items.values().iterator(); it.hasNext(); ) {
-            item = (Element.ItemElem) it.next();
+        StringBuilder sb = new StringBuilder();
+        for (Element.ItemElem item : items.values()) {
             sb.append(item.toString());
             sb.append("- - -\n");                                       //NOI18N
         }
@@ -167,7 +161,7 @@ public class PropertiesStructure extends Element {
      * @param key Java string (unescaped)
      */
     public Element.ItemElem getItem(String key) {
-        return (Element.ItemElem) items.get(key);
+        return items.get(key);
     }
 
     /**
@@ -266,7 +260,7 @@ public class PropertiesStructure extends Element {
     }
 
     /** Returns iterator thropugh all items, including empty ones */
-    public Iterator allItems() {
+    public Iterator<Element.ItemElem> allItems() {
         return items.values().iterator();
     }
 
@@ -282,7 +276,9 @@ public class PropertiesStructure extends Element {
 
     /** Notification that the structure has changed (items have been added or
      * deleted, also includes changing an item's key). */
-    void structureChanged(Map changed, Map inserted, Map deleted) {
+    void structureChanged(Map<String,Element.ItemElem> changed,
+                          Map<String,Element.ItemElem> inserted,
+                          Map<String,Element.ItemElem> deleted) {
         getParentBundleStructure().notifyOneFileChanged(
                 getParent(),
                 changed,
@@ -297,9 +293,9 @@ public class PropertiesStructure extends Element {
     void itemKeyChanged(String oldKey, Element.ItemElem newElem) {
         // structural change information - watch: there may be two properties of the same name !
         // maybe this is unnecessary
-        Map changed  = new HashMap();
-        Map inserted = new HashMap();
-        Map deleted  = new HashMap();
+        Map<String,Element.ItemElem> changed  = new HashMap<String,Element.ItemElem>();
+        Map<String,Element.ItemElem> inserted = new HashMap<String,Element.ItemElem>();
+        Map<String,Element.ItemElem> deleted  = new HashMap<String,Element.ItemElem>();
 
         // old key
         Element.ItemElem item = getItem(oldKey);

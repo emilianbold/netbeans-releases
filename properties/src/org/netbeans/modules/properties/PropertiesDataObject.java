@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -35,7 +35,6 @@ import org.openide.loaders.*;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.openide.util.WeakListeners;
 
 
@@ -89,18 +88,22 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
     /** Initializes the object. Used by construction and deserialized. */
     private void initialize() {
         bundleStructure = null;
-        
-        getCookieSet().add(new Class[] {PropertiesOpen.class, PropertiesEditorSupport.class}, this);
+        Class<? extends Node.Cookie>[] arr = (Class<Node.Cookie>[]) new Class[2];
+        arr[0] = PropertiesOpen.class;
+        arr[1] = PropertiesEditorSupport.class;
+        getCookieSet().add(arr, this);
     }
 
     /** Implements <code>CookieSet.Factory</code> interface method. */
-    public Node.Cookie createCookie(Class clazz) {
+    @SuppressWarnings("unchecked")
+    public <T extends Node.Cookie> T createCookie(Class<T> clazz) {
         if(clazz.isAssignableFrom(PropertiesOpen.class)) {
-            return getOpenSupport();
+            return (T) getOpenSupport();
         } else if(clazz.isAssignableFrom(PropertiesEditorSupport.class)) {
-            return ((PropertiesFileEntry)getPrimaryEntry()).getPropertiesEditor();
-        } else
+            return (T) ((PropertiesFileEntry)getPrimaryEntry()).getPropertiesEditor();
+        } else {
             return null;
+        }
     }
 
     // Accessibility from PropertiesOpen:
@@ -164,11 +167,11 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
         for(int i = 0; ; i++) {
             String newName;
             
-            if(i == 0)
+            if (i == 0) {
                 newName = basicName;
-            else
+            } else {
                 newName = basicName + i;
-            
+            }
             boolean exist = false;
             
             for(int j = 0; j < children.length; j++) {
@@ -179,10 +182,11 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
             }
                 
             if(!exist) {
-                if(i == 0)
+                if (i == 0) {
                     return ""; // NOI18N
-                else
+                } else {
                     return "" + i; // NOI18N
+                }
             }
         }
     }
@@ -204,11 +208,12 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
         if (((PresentableFileEntry)getPrimaryEntry()).isModified())
             modif = true;
         else {
-            for (Iterator it = secondaryEntries().iterator(); it.hasNext(); )
+            for (Iterator it = secondaryEntries().iterator(); it.hasNext(); ) {
                 if (((PresentableFileEntry)it.next()).isModified()) {
                     modif = true;
                     break;
                 }
+            }
         }
 
         super.setModified(modif);
@@ -240,7 +245,7 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
     }
 
     /** Comparator used for ordering secondary files, works over file names */
-    public static Comparator getSecondaryFilesComparator() {
+    public static Comparator<String> getSecondaryFilesComparator() {
         return new KeyComparator();
     }
 
@@ -258,7 +263,7 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
 
     
     /** Children of this <code>PropertiesDataObject</code>. */
-    private class PropertiesChildren extends Children.Keys {
+    private class PropertiesChildren extends Children.Keys<String> {
 
         /** Listens to changes on the dataobject */
         private PropertyChangeListener propertyListener = null;
@@ -272,8 +277,8 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
         
         /** Sets all keys in the correct order */
         protected void mySetKeys() {
-            TreeSet newKeys = new TreeSet(new Comparator() {
-                public int compare(Object o1, Object o2) {
+            TreeSet<String> newKeys = new TreeSet<String>(new Comparator<String>() {
+                public int compare(String o1, String o2) {
                     if (o1 == o2) {
                         return 0;
                     }
@@ -283,18 +288,14 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
                     if (o2 == null) {
                         return 1;
                     }
-                    if (o1 instanceof String) {
-                        return ((String) o1).compareTo((String) o2);
-                    }
-                    return -1;
+                    return o1.compareTo(o2);
                 }
             });
 
             newKeys.add(getPrimaryEntry().getFile().getName());
             
-            for (Iterator it = secondaryEntries().iterator(); it.hasNext(); ) {
-                FileEntry fe = (FileEntry) it.next();
-                newKeys.add(fe.getFile().getName());
+            for (Entry entry : secondaryEntries()) {
+                newKeys.add(entry.getFile().getName());
             }
 
             setKeys(newKeys);
@@ -325,29 +326,26 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
          * affecting any nodes (because nobody listens to that nodes). 
          * Overrides superclass method. */
         protected void removeNotify () {
-            setKeys(new ArrayList());
+            setKeys(new ArrayList<String>());
         }
 
         /** Creates nodes for specified key. Implements superclass abstract method. */
-        protected Node[] createNodes(Object key) {
-            if(key == null)
+        protected Node[] createNodes(String entryName) {
+            if (entryName == null) {
                 return null;
-            
-            if(!(key instanceof String))
-                return null;
-            
-            String entryName = (String)key;
+            }
             
             PropertiesFileEntry entry = (PropertiesFileEntry)getPrimaryEntry();
             
-            if(entryName.equals(entry.getFile().getName()))
+            if(entryName.equals(entry.getFile().getName())) {
                 return new Node[] {entry.getNodeDelegate()};
-            
-            for(Iterator it = secondaryEntries().iterator();it.hasNext();) {
+            }
+            for(Iterator<Entry> it = secondaryEntries().iterator();it.hasNext();) {
                 entry = (PropertiesFileEntry)it.next();
                 
-                if(entryName.equals(entry.getFile().getName()))
+                if (entryName.equals(entry.getFile().getName())) {
                     return new Node[] {entry.getNodeDelegate()};
+                }
             }
                 
             return null;

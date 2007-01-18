@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -155,16 +155,18 @@ public class PropertiesTableModel extends AbstractTableModel {
     /** Sets the value at rowIndex and columnIndex. Overrides superclass method. */
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         // If values equals -> no change was made -> return immediatelly.
-        if(aValue.equals(getValueAt(rowIndex, columnIndex)))
+        if (aValue.equals(getValueAt(rowIndex, columnIndex))) {
             return;
+        }
         
         // PENDING - set comment for all files
         // Is key.
         if (columnIndex == 0) {
             BundleStructure bs = structure;
             String oldValue = (String)bs.keyAt(rowIndex);
-            if (oldValue == null)
+            if (oldValue == null) {
                 return;
+            }
             String newValue = ((StringPair)aValue).getValue();
             if (newValue == null) { // Key can be an empty string
                 // Remove from all files.

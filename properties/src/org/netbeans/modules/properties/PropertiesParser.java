@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,10 +28,10 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
-
 import org.openide.text.PositionRef;
 import org.openide.text.PositionBounds;
 
@@ -145,24 +145,24 @@ class PropertiesParser {
     /** Parses .properties file and creates <code>PropertiesStruture</code>. */
     private PropertiesStructure parseFileMain() throws IOException {
 
-        Map items = new HashMap(25, 1.0F);
+        Map<String,Element.ItemElem> items = new HashMap<String,Element.ItemElem>(25, 1.0F);
 
         PropertiesReader reader = null;
         
-        while(true) {
-            if(stop) {
+        while (true) {
+            if (stop) {
                 // Parsing stopped -> return immediatelly.
                 return null;
             }
             
             reader = propertiesReader;
-            if(reader == null)
+            if (reader == null) {
                 // Parsing was stopped.
                 return null;
-            
+            }
             Element.ItemElem element = readNextElem(reader);
             
-            if(element == null) {
+            if (element == null) {
                 break;
             } else {
                 // add at the end of the list
@@ -202,8 +202,9 @@ class PropertiesParser {
         }
 
         // exit completely if null is returned the very first time
-        if(firstNull)
+        if (firstNull) {
             return null;
+        }
 
         String comHelp;
         comHelp = comment.toString();
@@ -221,7 +222,7 @@ class PropertiesParser {
         } else {
             // read the key and the value
             // list of
-            ArrayList lines = new ArrayList(2);
+            ArrayList<FlaggedLine> lines = new ArrayList<FlaggedLine>(2);
             fl.startPosition = keyPos;
             fl.stringValue = fl.line.toString();
             lines.add(fl);
@@ -479,20 +480,21 @@ class PropertiesParser {
     private static class PositionMap {
 
         /** List of <code>FlaggedLine</code>'s. */
-        private ArrayList list;
+        private List<FlaggedLine> list;
         
         
         /** Constructor - expects a list of FlaggedLine */
-        PositionMap(ArrayList lines) {
+        PositionMap(List<FlaggedLine> lines) {
             list = lines;
         }
         
 
         /** Returns the string represented by the object */
         public String getString() {
-            String allLines = ((FlaggedLine)list.get(0)).stringValue;
-            for (int part=1; part<list.size(); part++)
-                allLines += ((FlaggedLine)list.get(part)).stringValue;
+            String allLines = list.get(0).stringValue;
+            for (int part=1; part<list.size(); part++) {
+                allLines += list.get(part).stringValue;
+            }
             return allLines;
         }
 
@@ -509,20 +511,22 @@ class PropertiesParser {
             int lastLengthSoFar = 0;
             for (part=0; part < list.size(); part++) {
                 lastLengthSoFar = lengthSoFar;
-                lengthSoFar += ((FlaggedLine)list.get(part)).stringValue.length();
+                lengthSoFar += list.get(part).stringValue.length();
                 // brute patch - last (cr)lf should not be the part of the thing, other should
-                if(part == list.size() - 1)
-                    if(lengthSoFar >= posString)
+                if (part == list.size() - 1) {
+                    if (lengthSoFar >= posString) {
                         break;
-                    else;
-                else
-                    if(lengthSoFar > posString)
+                    }
+                } else {
+                    if (lengthSoFar > posString) {
                         break;
+                    }
+                }
             }
-            if(posString > lengthSoFar)
+            if (posString > lengthSoFar) {
                 throw new ArrayIndexOutOfBoundsException("not in scope"); // NOI18N
-
-            return ((FlaggedLine)list.get(part)).startPosition + posString - lastLengthSoFar;
+            }
+            return list.get(part).startPosition + posString - lastLengthSoFar;
         }
     } // End of nested class PositionMap.
 

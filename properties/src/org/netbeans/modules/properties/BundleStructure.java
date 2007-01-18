@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,6 +29,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
+import org.openide.loaders.MultiDataObject.Entry;
 import org.openide.util.WeakListeners;
 
 
@@ -68,7 +69,7 @@ public class BundleStructure {
      *
      * @see  #buildKeySet
      */
-    private List keyList;
+    private List<String> keyList;
     
     /**
      * Compartor which sorts keylist.
@@ -199,7 +200,7 @@ public class BundleStructure {
         if (keyList == null) {
             notifyKeyListNotInitialized();
         }
-        return (String[]) keyList.toArray(new String[0]);
+        return keyList.toArray(new String[0]);
     }
 
     /**
@@ -218,7 +219,7 @@ public class BundleStructure {
         if (keyIndex < 0 || keyIndex >= keyList.size()) {
             return null;
         } else {
-            return (String) keyList.get(keyIndex);
+            return keyList.get(keyIndex);
         }
     }
 
@@ -340,7 +341,7 @@ public class BundleStructure {
      * @return String[] array of strings - repeating: locale, value, comments
      */
     public String[] getAllData(String key) {
-        List list = null;
+        List<String> list = null;
         for (int i=0; i < getEntryCount(); i++) {
             PropertiesFileEntry pfe = getNthEntry(i);
             if (pfe != null) {
@@ -350,7 +351,7 @@ public class BundleStructure {
                     if (item != null) {
                         String locale = Util.getLocaleSuffix(pfe);
                         if (list == null) {
-                            list = new ArrayList();
+                            list = new ArrayList<String>();
                         }
                         list.add(locale);
                         list.add(item.getValue());
@@ -359,7 +360,7 @@ public class BundleStructure {
                 }
             }
         }
-        return list != null ? (String[]) list.toArray(new String[list.size()]) : null;
+        return list != null ? list.toArray(new String[list.size()]) : null;
     }
 
     public void setAllData(String key, String[] data) {
@@ -529,11 +530,10 @@ public class BundleStructure {
      * @see  #keyList
      */
     private void updateEntries() {
-        TreeMap tm = new TreeMap(
+        Map<String,PropertiesFileEntry> tm = new TreeMap<String,PropertiesFileEntry>(
                 PropertiesDataObject.getSecondaryFilesComparator());
-        for (Iterator it = obj.secondaryEntries().iterator(); it.hasNext(); ) {
-            PropertiesFileEntry entry = (PropertiesFileEntry) it.next();
-            tm.put(entry.getFile().getName(), entry);
+        for (Entry entry : obj.secondaryEntries()) {
+            tm.put(entry.getFile().getName(), (PropertiesFileEntry) entry);
         }
 
         synchronized (this) {
@@ -543,9 +543,8 @@ public class BundleStructure {
             entries[0] = (PropertiesFileEntry) obj.getPrimaryEntry();
             
             int index = 0;
-            for (Iterator i = tm.entrySet().iterator(); i.hasNext(); ) {
-                entries[++index] = (PropertiesFileEntry)
-                                   ((Map.Entry) i.next()).getValue();
+            for (Map.Entry<String,PropertiesFileEntry> mapEntry : tm.entrySet()) {
+                entries[++index] = mapEntry.getValue();
             }
         }
         buildKeySet();
@@ -557,7 +556,7 @@ public class BundleStructure {
      * @see  #keyList
      */
     private synchronized void buildKeySet() {
-        List keyList = new ArrayList() {
+        List<String> keyList = new ArrayList<String>() {
             public boolean equals(Object obj) {
                 if (!(obj instanceof ArrayList)) {
                     return false;
@@ -583,8 +582,8 @@ public class BundleStructure {
             PropertiesFileEntry entry = getNthEntry(index);
             PropertiesStructure ps = entry.getHandler().getStructure();
             if (ps != null) {
-                for (Iterator it = ps.allItems(); it.hasNext(); ) {
-                    Element.ItemElem item = (Element.ItemElem) it.next();
+                for (Iterator<Element.ItemElem> it = ps.allItems(); it.hasNext(); ) {
+                    Element.ItemElem item = it.next();
                     if (item == null) {
                         continue;
                     }
@@ -607,32 +606,31 @@ public class BundleStructure {
      * @param localizationFile name of specific file entry (without extension)
      */
     private PropertiesStructure[] getRelatedStructures(String localizationFile) {
-        List list = null;
+        List<PropertiesFileEntry> list = null;
         for (int i=0; i < getEntryCount(); i++) {
             PropertiesFileEntry pfe = getNthEntry(i);
             if (pfe != null) {
                 if (localizationFile.startsWith(pfe.getFile().getName())
                         && pfe.getHandler().getStructure() != null) {
-                    if (list == null)
-                        list = new ArrayList(4);
+                    if (list == null) {
+                        list = new ArrayList<PropertiesFileEntry>(4);
+                    }
                     list.add(pfe);
                 }
             }
         }
-        if (list == null)
+        if (list == null) {
             return new PropertiesStructure[] {};
-
-        Collections.sort(list, new Comparator() {
-            public int compare(Object o1, Object o2) {
-                PropertiesFileEntry pfe1 = (PropertiesFileEntry) o1;
-                PropertiesFileEntry pfe2 = (PropertiesFileEntry) o2;
+        }
+        Collections.sort(list, new Comparator<PropertiesFileEntry>() {
+            public int compare(PropertiesFileEntry pfe1, PropertiesFileEntry pfe2) {
                 return pfe2.getFile().getName().length() - pfe1.getFile().getName().length();
             }
         });
 
         PropertiesStructure[] array = new PropertiesStructure[list.size()];
         for (int i=0, n=list.size(); i < n; i++) {
-            array[i] = ((PropertiesFileEntry)list.get(i)).getHandler().getStructure();
+            array[i] = list.get(i).getHandler().getStructure();
         }
         return array;
     }
@@ -723,9 +721,9 @@ public class BundleStructure {
      * @param  itemsDeleted  list of items removed from the entry
      */
     void notifyOneFileChanged(StructHandler handler,
-                              Map itemsChanged,
-                              Map itemsAdded,
-                              Map itemsDeleted) {
+                              Map<String,Element.ItemElem> itemsChanged,
+                              Map<String,Element.ItemElem> itemsAdded,
+                              Map<String,Element.ItemElem> itemsDeleted) {
         // PENDING - events should be finer
         // find out whether global key table has changed
         // should use a faster algorithm of building the keyset
@@ -760,7 +758,7 @@ public class BundleStructure {
     /**
      * Comparator which compares keys according which locale (column in table was selected).
      */
-    private final class KeyComparator implements Comparator {
+    private final class KeyComparator implements Comparator<String> {
 
         /** Index of column to compare with. */
         private int index;
@@ -818,14 +816,14 @@ public class BundleStructure {
         /**
          * It's strange as it access just being compared list
          */
-        public int compare(Object o1, Object o2) {
+        public int compare(String o1, String o2) {
             String str1;
             String str2;
             
             // sort as in default properties file
             if (index < 0) {
-                Element.ItemElem item1 = getItem(0, (String) o1);
-                Element.ItemElem item2 = getItem(0, (String) o2);
+                Element.ItemElem item1 = getItem(0, o1);
+                Element.ItemElem item2 = getItem(0, o2);
                 if (item1 != null && item2 != null) {
                     int i1 = item1.getBounds().getBegin().getOffset();
                     int i2 = item2.getBounds().getBegin().getOffset();
@@ -839,17 +837,17 @@ public class BundleStructure {
                      * None of the keys is in the default (primary) properties
                      * file. Order the files by name.
                      */
-                    str1 = (String) o1;
-                    str2 = (String) o2;
+                    str1 = o1;
+                    str2 = o2;
                 }
             }
             // key column
             if (index == 0) {
-                str1 = (String) o1;
-                str2 = (String) o2;
+                str1 = o1;
+                str2 = o2;
             } else {
-                Element.ItemElem item1 = getItem(index - 1, (String) o1);
-                Element.ItemElem item2 = getItem(index - 1, (String) o2);
+                Element.ItemElem item1 = getItem(index - 1, o1);
+                Element.ItemElem item2 = getItem(index - 1, o2);
                 if (item1 == null) {
                     if (item2 == null) {
                         return 0;

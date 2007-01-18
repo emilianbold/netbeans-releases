@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -73,11 +73,13 @@ public final class PropertiesLocaleNode extends FileEntryNode
     }
             
     /** Implements <code>CookieSet.Factory</code> interface method. */
-    public Node.Cookie createCookie(Class clazz) {
-        if(clazz.isAssignableFrom(PropertiesOpen.class))
-            return ((PropertiesDataObject)getFileEntry().getDataObject()).getOpenSupport();
-        else
+    @SuppressWarnings("unchecked")
+    public <T extends Node.Cookie> T createCookie(Class<T> clazz) {
+        if(clazz.isAssignableFrom(PropertiesOpen.class)) {
+            return (T) ((PropertiesDataObject) getFileEntry().getDataObject()).getOpenSupport();
+        } else {
             return null;
+        }
     }
     
     /** Lazily initialize set of node's actions.
@@ -156,9 +158,10 @@ public final class PropertiesLocaleNode extends FileEntryNode
     }
 
     /** Returns all the item in addition to "normal" cookies. Overrides superclass method. */
-    public Node.Cookie getCookie(Class cls) {
-        if (cls.isInstance(getFileEntry())) return getFileEntry();
-        if (cls == PropertiesLocaleNode.class) return this;
+    @SuppressWarnings("unchecked")
+    public <T extends Node.Cookie> T getCookie(Class<T> cls) {
+        if (cls.isInstance(getFileEntry())) return (T) getFileEntry();
+        if (cls == PropertiesLocaleNode.class) return (T) this;
         return super.getCookie(cls);
     }
 
@@ -258,18 +261,19 @@ public final class PropertiesLocaleNode extends FileEntryNode
     }
     
     /** Creates paste types for this node. Overrides superclass method. */
-    protected void createPasteTypes(Transferable t, List s) {
+    protected void createPasteTypes(Transferable t, List<PasteType> s) {
         super.createPasteTypes(t, s);
         Element.ItemElem item;
         Node n = NodeTransfer.node(t, NodeTransfer.MOVE);
         // cut
         if (n != null && n.canDestroy ()) {
-            item = (Element.ItemElem)n.getCookie(Element.ItemElem.class);
+            item = n.getCookie(Element.ItemElem.class);
             if (item != null) {
                 // are we pasting into the same node
                 Node n2 = getChildren().findChild(item.getKey());
-                if (n == n2)
+                if (n == n2) {
                     return;
+                }
                 s.add(new KeyPasteType(item, n, KeyPasteType.MODE_PASTE_WITH_VALUE));
                 s.add(new KeyPasteType(item, n, KeyPasteType.MODE_PASTE_WITHOUT_VALUE));
                 return;
@@ -277,7 +281,7 @@ public final class PropertiesLocaleNode extends FileEntryNode
         }
         // copy
         else {
-            item = (Element.ItemElem)NodeTransfer.cookie(t, NodeTransfer.COPY, Element.ItemElem.class);
+            item = NodeTransfer.cookie(t, NodeTransfer.COPY, Element.ItemElem.class);
             if (item != null) {
                 s.add(new KeyPasteType(item, null, KeyPasteType.MODE_PASTE_WITH_VALUE));
                 s.add(new KeyPasteType(item, null, KeyPasteType.MODE_PASTE_WITHOUT_VALUE));

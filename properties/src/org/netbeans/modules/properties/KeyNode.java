@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -184,68 +184,56 @@ public class KeyNode extends AbstractNode implements PropertyChangeListener {
         Node.Property property;
 
         // Key property.
-        property = new PropertySupport.ReadWrite (
+        property = new PropertySupport.ReadWrite<String>(
                 PROP_NAME,
                 String.class,
                 NbBundle.getBundle(KeyNode.class).getString("PROP_item_key"),
                 NbBundle.getBundle(KeyNode.class).getString("HINT_item_key")
             ) {
-                public Object getValue () {
+                public String getValue() {
                     return itemKey;
                 }
 
-                public void setValue (Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                    if (false == (val instanceof String)) {
-                        throw new IllegalArgumentException();
-                    } else {
-                        KeyNode.this.setName((String)val);
-                    }
+                public void setValue(String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                    KeyNode.this.setName(val);
                 }
             };
         property.setName(Element.ItemElem.PROP_ITEM_KEY);
         sheetSet.put (property);
 
         // Value property
-        property = new PropertySupport.ReadWrite (
+        property = new PropertySupport.ReadWrite<String>(
                 Element.ItemElem.PROP_ITEM_VALUE,
                 String.class,
                 NbBundle.getBundle(KeyNode.class).getString("PROP_item_value"),
                 NbBundle.getBundle(KeyNode.class).getString("HINT_item_value")
             ) {
-                public Object getValue () {
+                public String getValue() {
                     return getItem().getValue();
                 }
 
-                public void setValue (Object val) throws IllegalAccessException,
+                public void setValue(String val) throws IllegalAccessException,
                     IllegalArgumentException, InvocationTargetException {
-                    if (false == (val instanceof String)) {
-                        throw new IllegalArgumentException();
-                    } else {
-                        getItem().setValue((String)val);
-                    }
+                    getItem().setValue(val);
                 }
             };
         property.setName(Element.ItemElem.PROP_ITEM_VALUE);
         sheetSet.put (property);
 
         // Comment property
-        property = new PropertySupport.ReadWrite (
+        property = new PropertySupport.ReadWrite<String>(
                 Element.ItemElem.PROP_ITEM_COMMENT,
                 String.class,
                 NbBundle.getBundle(KeyNode.class).getString("PROP_item_comment"),
                 NbBundle.getBundle(KeyNode.class).getString("HINT_item_comment")
             ) {
-                public Object getValue () {
+                public String getValue() {
                     return getItem().getComment();
                 }
 
-                public void setValue (Object val) throws IllegalAccessException,
+                public void setValue(String val) throws IllegalAccessException,
                     IllegalArgumentException, InvocationTargetException {
-                    if (!(val instanceof String)) {
-                        throw new IllegalArgumentException();
-                    } else {
-                        getItem().setComment((String)val);
-                    }
+                    getItem().setComment(val);
                 }
             };
         property.setName(Element.ItemElem.PROP_ITEM_COMMENT);
@@ -255,13 +243,14 @@ public class KeyNode extends AbstractNode implements PropertyChangeListener {
     }
 
     /** Returns item as cookie in addition to "normal" cookies. Overrides superclass method. */
-    public Node.Cookie getCookie(Class clazz) {
-        if (clazz.isInstance(getItem())) 
-            return getItem();
-        
-        if (clazz.equals(SaveCookie.class)) 
+    @SuppressWarnings("unchecked")
+    public <T extends Node.Cookie> T getCookie(Class<T> clazz) {
+        if (clazz.isInstance(getItem())) {
+            return (T) getItem();
+        }
+        if (clazz.equals(SaveCookie.class)) {
             return propStructure.getParent().getEntry().getCookie(clazz);
-        
+        }
         return super.getCookie(clazz);
     }
 

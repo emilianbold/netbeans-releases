@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,18 +26,14 @@ import java.util.Comparator;
  *
  * @author Petr Jiricka
  */
-public final class KeyComparator implements Comparator {
+public final class KeyComparator implements Comparator<String> {
 
-    public int compare(Object o1, Object o2) {
+    public int compare(String o1, String o2) {
         int res1 = String.CASE_INSENSITIVE_ORDER.compare(o1, o2);
         if (res1 != 0) {
             return res1;
         }
-        if (o1 instanceof String) {
-            return ((String) o1).compareTo(o2);
-        } else {
-            throw new ClassCastException(o1.getClass().getName());
-        }
+        return o1.compareTo(o2);
     }
 
 }

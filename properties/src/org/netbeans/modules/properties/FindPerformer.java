@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,6 +27,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.SoftReference;
 import java.util.HashSet;
+import java.util.Set;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -35,7 +36,6 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.actions.SystemAction;
@@ -93,7 +93,7 @@ public class FindPerformer extends javax.swing.AbstractAction
     private final ActionListener toggleHighlightListener;
     
     /** Keeps history of found strings. */
-    private HashSet history = new HashSet();
+    private Set<String> history = new HashSet<String>();
 
     /** Helper variable keeping <code>settings</code>. */
     private TableViewSettings settings;
@@ -133,7 +133,7 @@ public class FindPerformer extends javax.swing.AbstractAction
     } // end of initializer
     
     /** Soft reference for caching singleton find performer on last table view. */
-    private static SoftReference softRef;
+    private static SoftReference<FindPerformer> softRef;
     
     /** Dialog for perform search. */
     private static JDialog findDialog;
@@ -166,9 +166,8 @@ public class FindPerformer extends javax.swing.AbstractAction
     /** Gets find performer. */
     public static FindPerformer getFindPerformer(JTable table) {
         if(softRef != null) {
-            Object ob = softRef.get();
-            if(ob != null) {
-                FindPerformer fp = (FindPerformer)ob;
+            FindPerformer fp = softRef.get();
+            if(fp != null) {
                 if(!fp.validateTable(table)) {
                     fp.resetTable(table);
                     fp.registerKeyStrokes();
@@ -178,7 +177,7 @@ public class FindPerformer extends javax.swing.AbstractAction
         }
         
         FindPerformer fp = new FindPerformer(table);
-        softRef = new SoftReference(fp);
+        softRef = new SoftReference<FindPerformer>(fp);
         
         return fp;
     }
