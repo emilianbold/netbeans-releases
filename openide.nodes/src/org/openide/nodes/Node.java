@@ -418,10 +418,8 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
      * @param ch New children to be set on the node.
      * @since 3.1
      */
-    protected final void setChildren(Children ch) {
-        try {
-            Children.PR.enterWriteAccess();
-
+    protected final void setChildren(final Children ch) {
+        Children.MUTEX.postWriteRequest(new Runnable() { public void run() {
             Node[] oldNodes = null;
 
             if (hierarchy.isInitialized()) {
@@ -432,7 +430,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
             boolean wasLeaf = hierarchy == Children.LEAF;
 
             hierarchy = ch;
-            hierarchy.attachTo(this);
+            hierarchy.attachTo(Node.this);
 
             if (wasLeaf != (hierarchy == Children.LEAF)) {
                 fireOwnPropertyChange(PROP_LEAF, wasLeaf, hierarchy == Children.LEAF);
@@ -445,9 +443,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
                     fireSubNodesChange(true, arr, null);
                 }
             }
-        } finally {
-            Children.PR.exitWriteAccess();
-        }
+        }});
     }
 
     /** Test whether the node is a leaf, or may contain children.
