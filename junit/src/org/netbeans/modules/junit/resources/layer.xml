@@ -78,6 +78,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
                 <folder name="Popup">
                     <folder name="goto">
                         <attr name="goto-super-implementation/GoToOppositeAction.shadow" boolvalue="true"/>
+                        <attr name="goto-declaration/GoToOppositeAction.shadow" boolvalue="true"/>
                         <file name="GoToOppositeAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-GoToOppositeAction.instance"/>
                         </file>

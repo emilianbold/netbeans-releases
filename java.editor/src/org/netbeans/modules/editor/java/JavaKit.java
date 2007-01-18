@@ -590,6 +590,14 @@ public class JavaKit extends LexerEditorKit {
                 GoToSupport.goTo((BaseDocument) target.getDocument(), target.getCaretPosition(), true);
             }
         }
+        
+        public String getPopupMenuText(JTextComponent target) {
+            return NbBundle.getBundle(JavaKit.class).getString("goto_source_open_source_not_formatted"); //NOI18N
+        }
+        
+        protected Class getShortDescriptionBundleClass() {
+            return BaseKit.class;
+        }
     }
     
     private static class JavaFixImports extends BaseAction {
@@ -599,7 +607,9 @@ public class JavaKit extends LexerEditorKit {
                   ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET
                   | SAVE_POSITION
                  );
-            putValue(TRIMMED_TEXT, "Fix Imports");
+            putValue(TRIMMED_TEXT, NbBundle.getBundle(JavaKit.class).getString("fix-imports-trimmed"));
+            putValue(SHORT_DESCRIPTION, NbBundle.getBundle(JavaKit.class).getString("desc-fix-imports")); // NOI18N
+            putValue(POPUP_MENU_TEXT, NbBundle.getBundle(JavaKit.class).getString("popup-fix-imports")); // NOI18N
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {

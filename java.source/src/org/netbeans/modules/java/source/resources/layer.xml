@@ -110,12 +110,20 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
   </folder>
 
-<!--  <folder name="Editors">
-    <folder name="AnnotationTypes">
-      <file name="org-netbeans-modules-java-parser_annotation_err.xml" url="/org/netbeans/modules/java/resources/parser_annotation_err.xml"/>
-      <file name="org-netbeans-modules-java-parser_annotation_warn.xml" url="/org/netbeans/modules/java/resources/parser_annotation_warn.xml"/>
-    </folder>
-  </folder>-->
+  <folder name="Editors">
+      <folder name="text">
+          <folder name="x-java">
+              <folder name="Popup">
+                  <folder name="goto">
+                      <file name="org-netbeans-modules-java-actions-GoToType.shadow">
+                          <attr name="originalFile" stringvalue="Actions/Navigation/org-netbeans-modules-java-actions-GoToType.instance"/>
+                      </file>
+                      <attr name="goto/org-netbeans-modules-java-actions-GoToType.shadow" boolvalue="true" />
+                  </folder>
+              </folder>
+          </folder>
+      </folder>
+  </folder>
   
   <folder name="Menu">
      

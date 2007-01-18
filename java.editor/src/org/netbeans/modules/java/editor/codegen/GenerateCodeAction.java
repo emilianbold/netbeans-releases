@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.editor.codegen;
@@ -26,14 +26,14 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.editor.BaseAction;
-import org.netbeans.modules.java.editor.codegen.DelegateData;
-import org.netbeans.modules.java.editor.codegen.EqualsHashCodeData;
+import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.java.editor.codegen.ui.GenerateCodePanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -45,6 +45,9 @@ public class GenerateCodeAction extends BaseAction {
 
     public GenerateCodeAction(){
         super(generateCode);
+        putValue(ExtKit.TRIMMED_TEXT, NbBundle.getBundle(GenerateCodeAction.class).getString("generate-code-trimmed")); // NOI18N
+        putValue(SHORT_DESCRIPTION, NbBundle.getBundle(GenerateCodeAction.class).getString("desc-generate-code")); // NOI18N
+        putValue(POPUP_MENU_TEXT, NbBundle.getBundle(GenerateCodeAction.class).getString("popup-generate-code")); // NOI18N
     }
     
     public void actionPerformed(ActionEvent evt, final JTextComponent target) {

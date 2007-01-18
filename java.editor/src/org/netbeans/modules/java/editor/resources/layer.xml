@@ -107,9 +107,18 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
                 
                 <folder name="Popup">
-                    <file name="generate-goto-popup"/>
+                    <folder name="goto">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.editor.Bundle"/>
+                        <file name="goto-source"/>
+                        <file name="goto-declaration"/>
+                        <attr name="goto-source/goto-declaration" boolvalue="true"/>
+                        <file name="goto"/>
+                        <attr name="goto-declaration/goto" boolvalue="true"/>
+                    </folder>
+                    
+                    <attr name="goto/org-netbeans-modules-editor-NbSelectInPopupAction.instance" boolvalue="true"/>
+                    
                     <file name="goto-help"/>
-                    <attr name="generate-goto-popup/goto-help" boolvalue="true"/>
 
                     <file name="SeparatorAfterGoToHelp.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
