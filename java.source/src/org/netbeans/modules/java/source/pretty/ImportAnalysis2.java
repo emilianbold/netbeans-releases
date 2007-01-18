@@ -28,6 +28,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import java.util.ArrayList;
@@ -69,6 +70,7 @@ public class ImportAnalysis2 {
     private Set<Element> imported;
     private Stack<Set<Element>> visibleThroughClasses;
     private Map<String, Element> simpleNames2Elements;
+    private PackageElement unnamedPackage;
     private PackageElement pack;
     
     private ChangeSet changes;
@@ -80,11 +82,14 @@ public class ImportAnalysis2 {
         model = ((EngineEnvironment)env).getModel();
         make = env.getTreeMaker();
         trees = env.getTrees();
+        
+        unnamedPackage = Symtab.instance(((EngineEnvironment) env).getContext()).unnamedPackage;
     }
     
     public void setPackage(ExpressionTree packageNameTree) {
         if (packageNameTree == null) {
-            this.pack = null;
+            //if there is no package declaration in the code, unnamedPackage should be used:
+            this.pack = unnamedPackage;
             return ;
         }
         

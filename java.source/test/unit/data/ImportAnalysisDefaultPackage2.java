@@ -1,0 +1,2 @@
+public class ImportAnalysisDefaultPackage2 {
+}

@@ -528,7 +528,29 @@ public class ImportAnalysisTest extends GeneratorTest {
         assertFiles("testAddImportSamePackage.pass");
     }
     
-    //XXX: test default package
+    //XXX: more tests default package
+    public void testDefaultPackage1() throws IOException {
+        testFile = getFile(getSourceDir(), "ImportAnalysisDefaultPackage1.java");
+        process(
+                new Transformer<Void, Object>() {
+            public Void visitMethod(MethodTree node, Object p) {
+                if ("<init>".contentEquals(node.getName())) {
+                    BlockTree body = node.getBody();
+                    List<StatementTree> stats = new ArrayList<StatementTree>();
+                    for(StatementTree st : body.getStatements())
+                        stats.add(st);
+                    TypeElement exc = env.getElements().getTypeElement("ImportAnalysisDefaultPackage2");
+                    
+                    stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "s", make.QualIdent(exc), null));
+                    
+                    changes.rewrite(body, make.Block(stats, false));
+                }
+                return null;
+            }
+        }
+        );
+        assertFiles("testDefaultPackage1.pass");
+    }
     
     public void testImportAddedAfterThrows() throws IOException {
         testFile = getFile(getSourceDir(), getSourcePckg() + "ImportsTest7.java");
@@ -658,7 +680,11 @@ public class ImportAnalysisTest extends GeneratorTest {
     }
     
     String getSourcePckg() {
-        return "org/netbeans/test/codegen/";
+        if ("testDefaultPackage1".equals(getName())) {
+            return "";
+        } else {
+            return "org/netbeans/test/codegen/";
+        }
     }
 
     String getGoldenPckg() {
