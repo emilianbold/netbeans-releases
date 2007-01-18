@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmrField;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
@@ -485,9 +484,9 @@ public final class EntityMethodController extends AbstractMethodController {
         return findInClass(javaClass, method) ? method : null;
     }
 
-    public static MethodModel getSetterMethod(TypeElement classElement, String fieldName, MethodModel getterMethod) {
-        return getSetterMethod(classElement, fieldName, getterMethod);
-    }
+//    public static MethodModel getSetterMethod(TypeElement classElement, String fieldName, MethodModel getterMethod) {
+//        return getSetterMethod(classElement, fieldName, getterMethod.getReturnType());
+//    }
 
     public MethodModel getGetterMethod(String fieldName, boolean local) {
         return getGetterMethod(getBeanInterface(local, true), fieldName);
