@@ -135,7 +135,6 @@ public class DispatcherTest extends MyTestCase {
     dispatcher.stop();
     assertEquals(0, dispatcher.activeCount());
     assertEquals(0, dispatcher.waitingCount());
-    dispatcher.stop();
   }
   
   public void testTwicetheSameProcess() {
@@ -224,7 +223,7 @@ public class DispatcherTest extends MyTestCase {
     dummies[5].terminate();
     //dispatcher.terminate(dummies[5]);
     longSleep();
-    //longSleep();
+    longSleep();
     assertEquals(10, dispatcher.activeCount());
     assertEquals(1, dispatcher.waitingCount());
     dispatcher.schedule(dummies[12]);
@@ -240,7 +239,6 @@ public class DispatcherTest extends MyTestCase {
     //  dummies[2].terminate();
     //  dummies[3].terminate();
     longSleep();
-   // longSleep();
     assertEquals(10, dispatcher.activeCount());
     assertEquals(0, dispatcher.waitingCount());
     for (int i = 6; i < 15; i++) {

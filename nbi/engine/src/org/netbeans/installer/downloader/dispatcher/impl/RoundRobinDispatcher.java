@@ -117,6 +117,7 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
     if (!worker.isFree()) worker.stop();
     proc2Worker.remove(process);
     pool.release(worker);
+    workingQueue.remove(worker);
   }
   
   public synchronized boolean isActive() {
@@ -145,7 +146,7 @@ public class RoundRobinDispatcher implements ProcessDispatcher {
     if (!isActive) return;
     dispatcherThread.interrupt();
     try {
-      dispatcherThread.join((timeQuantum + 1) * pool.capacity());
+      dispatcherThread.join((timeQuantum) * (pool.capacity() + 3));
     } catch (InterruptedException exit) {
     } finally {
       //this condition mustn't happens to true
