@@ -34,7 +34,7 @@ import java.io.IOException;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
 import org.netbeans.modules.j2ee.common.DDEditorNavigator;
-//import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -52,9 +52,9 @@ public class CMPFieldNode extends AbstractNode implements PropertyChangeListener
         this(field, controller, ddFile, new InstanceContent());
     }
 
-    private CMPFieldNode(CmpField field, EntityMethodController controller, FileObject ddFile, InstanceContent ic) {
-        super(Children.LEAF, new AbstractLookup(ic));
-        ic.add(this); // for enabling Open action
+    private CMPFieldNode(CmpField field, EntityMethodController controller, FileObject ddFile, InstanceContent instanceContent) {
+        super(Children.LEAF, new AbstractLookup(instanceContent));
+        instanceContent.add(this); // for enabling Open action
         
         //TODO: RETOUCHE
 //        try {
@@ -110,12 +110,12 @@ public class CMPFieldNode extends AbstractNode implements PropertyChangeListener
     public void open() {
         try {
             DataObject ddFileDO = DataObject.find(ddFile);
-            Object c = ddFileDO.getCookie(DDEditorNavigator.class);
-            if (c != null) {
-                ((DDEditorNavigator) c).showElement(field);
+            Object cookie = ddFileDO.getCookie(DDEditorNavigator.class);
+            if (cookie != null) {
+                ((DDEditorNavigator) cookie).showElement(field);
             }
         } catch (DataObjectNotFoundException donf) {
-            // do nothing
+            ErrorManager.getDefault().notify(donf);
         }
     }
     

@@ -22,7 +22,6 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.lang.SuppressWarnings;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;

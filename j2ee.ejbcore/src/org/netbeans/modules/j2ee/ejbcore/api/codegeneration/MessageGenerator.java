@@ -37,7 +37,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.util.RequestProcessor;
 
 /**
  * Generator of MessageDriven EJBs for EJB 2.1 and 3.0

@@ -19,11 +19,8 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.session;
 
-import java.awt.Image;
 import java.util.Collection;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.SessionMethodController;
-import org.openide.cookies.OpenCookie;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -35,8 +32,8 @@ import org.openide.util.Utilities;
 
 public class MethodChildren /*extends ComponentMethodModel */{
 //    private ComponentMethodViewStrategy mvs;
-    private SessionMethodController controller;
-    private boolean local;
+    private final SessionMethodController controller;
+    private final boolean local;
     
     public MethodChildren(SessionMethodController smc, Collection interfaces, boolean local) {
 //        super(smc.getBeanClass(), interfaces);

@@ -47,7 +47,7 @@ public class EjbJarXmlWizardPanel1 implements WizardDescriptor.Panel {
      * component from this class, just use getComponent().
      */
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
-    private EjbJarXmlVisualPanel1 component = new EjbJarXmlVisualPanel1();
+    private final EjbJarXmlVisualPanel1 component = new EjbJarXmlVisualPanel1();
     private WizardDescriptor wizardDescriptor;
     private Project project;
     
@@ -83,26 +83,26 @@ public class EjbJarXmlWizardPanel1 implements WizardDescriptor.Panel {
         return true;
     }
     
-    public final void addChangeListener(ChangeListener l) {
+    public final void addChangeListener(ChangeListener listener) {
         synchronized (listeners) {
-            listeners.add(l);
+            listeners.add(listener);
         }
     }
     
-    public final void removeChangeListener(ChangeListener l) {
+    public final void removeChangeListener(ChangeListener listener) {
         synchronized (listeners) {
-            listeners.remove(l);
+            listeners.remove(listener);
         }
     }
 
     protected final void fireChangeEvent() {
-        Iterator<ChangeListener> it;
+        Iterator<ChangeListener> listenersIterator;
         synchronized (listeners) {
-            it = new HashSet<ChangeListener>(listeners).iterator();
+            listenersIterator = new HashSet<ChangeListener>(listeners).iterator();
         }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            it.next().stateChanged(ev);
+        ChangeEvent changeEvent = new ChangeEvent(this);
+        while (listenersIterator.hasNext()) {
+            listenersIterator.next().stateChanged(changeEvent);
         }
     }
     

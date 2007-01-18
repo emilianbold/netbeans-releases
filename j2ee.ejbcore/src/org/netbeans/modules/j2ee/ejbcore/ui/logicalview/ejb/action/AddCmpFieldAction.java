@@ -53,18 +53,18 @@ public class AddCmpFieldAction extends NodeAction {
         if (activatedNodes == null || activatedNodes.length < 1) {
             return false;
         }
-        EjbMethodController c;
-        TypeElement jc = Utils.getJavaClassFromNode(activatedNodes[0]);
-        if (jc == null) {
+        EjbMethodController ejbMethodController;
+        TypeElement typeElement = Utils.getJavaClassFromNode(activatedNodes[0]);
+        if (typeElement == null) {
             return false;
         }
         //TODO: RETOUCHE
         return false;
 //        return activatedNodes.length == 1 &&
 //               isCallable(activatedNodes[0]) &&
-//               (c = EjbMethodController.create(jc)) != null &&
-//               c instanceof EntityMethodController &&
-//               ((EntityMethodController) c).isCMP();
+//               (ejbMethodController = EjbMethodController.create(jc)) != null &&
+//               ejbMethodController instanceof EntityMethodController &&
+//               ((EntityMethodController) ejbMethodController).isCMP();
     }
 
     protected void performAction(org.openide.nodes.Node[] activatedNodes) {

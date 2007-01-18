@@ -115,9 +115,9 @@ public class MessageNode extends AbstractNode implements OpenCookie {
     }
     
     public void open() {
-        DataObject ce = controller.getBeanDo();
-        if (ce != null) {
-            OpenCookie cookie = (OpenCookie) ce.getCookie(OpenCookie.class);
+        DataObject dataObject = controller.getBeanDo();
+        if (dataObject != null) {
+            OpenCookie cookie = (OpenCookie) dataObject.getCookie(OpenCookie.class);
             if(cookie != null){
                 cookie.open();
             }

@@ -33,8 +33,8 @@ import org.openide.nodes.Node;
  * @author ChrisWebster
  */
 public class NodeDisplayPanel extends JPanel implements ExplorerManager.Provider {
-    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    private ExplorerManager manager = new ExplorerManager();
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private final ExplorerManager manager = new ExplorerManager();
     
     /** Creates a new instance of NodeDisplayPanel */
     public NodeDisplayPanel(Node rootNode) {
@@ -58,8 +58,8 @@ public class NodeDisplayPanel extends JPanel implements ExplorerManager.Provider
         btv.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NodeDisplayPanel.class, "ACSD_NodeTreeView"));
     }
     
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        pcs.addPropertyChangeListener(l);
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(listener);
     }
     
     private void firePropertyChange() {

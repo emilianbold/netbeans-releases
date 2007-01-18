@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
 
-import java.lang.reflect.Modifier;
 import java.util.Collections;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -41,12 +40,12 @@ import org.openide.filesystems.FileObject;
  */
 public class ServiceLocatorStrategy {
     private static final String CREATE = ".create()"; //NOI18N
-    private ClassPath cp;
-    private String cName;
+    private final ClassPath classPath;
+    private final String cName;
     
-    private ServiceLocatorStrategy(ClassPath cp, String s) {
-        this.cp = cp;
-        cName = s;
+    private ServiceLocatorStrategy(ClassPath classPath, String name) {
+        this.classPath = classPath;
+        cName = name;
     }
     
 //    public String genLocalEjbStringLookup(String jndiName, String homeName, JavaClass targetClass, boolean create) {
@@ -75,38 +74,36 @@ public class ServiceLocatorStrategy {
 //        return initString("getSession", jndiName, targetClass, ""); //NOI18N
 //    }
     
-    public static ServiceLocatorStrategy create(Project p, FileObject srcFile, String serviceLocator) {
+    public static ServiceLocatorStrategy create(Project project, FileObject srcFile, String serviceLocator) {
         ClassPathProvider cpp = (ClassPathProvider)
-        p.getLookup().lookup(ClassPathProvider.class);
+        project.getLookup().lookup(ClassPathProvider.class);
         assert cpp != null: "project doesn't have class path provider";
-        ClassPath cp = cpp.findClassPath(srcFile, ClassPath.SOURCE);
-        assert cp != null: "project doesn't have a source classpath";
+        ClassPath classPath = cpp.findClassPath(srcFile, ClassPath.SOURCE);
+        assert classPath != null: "project doesn't have a source classpath";
         ClassPath ccp = cpp.findClassPath(srcFile, ClassPath.COMPILE);
         assert cpp != null: "project doesn't have a compile classpath";
         ClassPath aggregate  =
-                ClassPathSupport.createProxyClassPath(new ClassPath[] {cp, ccp});
+                ClassPathSupport.createProxyClassPath(new ClassPath[] {classPath, ccp});
         return new ServiceLocatorStrategy(aggregate,serviceLocator);
     }
     
-    private ClassPath buildClassPathFromImportedProject(FileObject fo) {
-        Project p = FileOwnerQuery.getOwner(fo);
-        assert p != null : "cannot find project for file";
+    private ClassPath buildClassPathFromImportedProject(FileObject fileObject) {
+        Project project = FileOwnerQuery.getOwner(fileObject);
+        assert project != null : "cannot find project for file";
         ClassPathProvider cpp = (ClassPathProvider)
-            p.getLookup().lookup(ClassPathProvider.class);
+            project.getLookup().lookup(ClassPathProvider.class);
         assert cpp != null: "project doesn't have class path provider";
-        Sources s = ProjectUtils.getSources(p);
-        SourceGroup[] groups = 
-                s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        ClassPath cp = ClassPathSupport.createClassPath(Collections.<PathResourceImplementation>emptyList());
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        ClassPath classPath = ClassPathSupport.createClassPath(Collections.<PathResourceImplementation>emptyList());
         for (int i = 0; i < groups.length; i++) {
             FileObject root = groups[i].getRootFolder();
             if (root.getChildren().length > 0) {
-                ClassPath tcp = cpp.findClassPath(root.getChildren()[0], 
-                                                  ClassPath.SOURCE);
-                cp = ClassPathSupport.createProxyClassPath(new ClassPath[]{tcp,cp});
+                ClassPath tcp = cpp.findClassPath(root.getChildren()[0], ClassPath.SOURCE);
+                classPath = ClassPathSupport.createProxyClassPath(new ClassPath[]{tcp,classPath});
             }
         }
-        return cp;
+        return classPath;
     }
     
     private String addCast(boolean cast, String clName, String current, String inv) {

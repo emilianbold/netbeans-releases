@@ -31,7 +31,7 @@ import org.openide.nodes.Node;
  * @author ChrisWebster
  */
 public class EjbChildren extends Children.Array {
-    private Node projectNode;
+    private final Node projectNode;
 
     /** Creates a new instance of EjbChildren */
     public EjbChildren(Node projectNode) {

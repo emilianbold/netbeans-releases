@@ -19,10 +19,6 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
-import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
-import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
-import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
-import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;

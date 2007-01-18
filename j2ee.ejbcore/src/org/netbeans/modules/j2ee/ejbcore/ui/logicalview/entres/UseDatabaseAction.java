@@ -19,30 +19,12 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.lang.reflect.Modifier;
-import java.text.MessageFormat;
-import java.util.Collections;
 import javax.swing.Action;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.db.explorer.ConnectionManager;
-import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
-import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
-import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.util.actions.NodeAction;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.ejbcore.Utils;
-import org.openide.DialogDescriptor;
 
 
 /**

@@ -21,11 +21,7 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
 
 import javax.lang.model.element.Element;
-import org.netbeans.modules.j2ee.ejbcore.patterns.DTOGenerator;
-import org.netbeans.modules.j2ee.ejbcore.patterns.DTOHelper;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
-import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -55,7 +51,7 @@ public class GenerateDTOAction extends NodeAction {
         if (nodes == null || nodes.length < 1) {
             return false;
         }
-        EjbMethodController c;
+        EjbMethodController ejbMethodController;
         Element feature = getMemberElement(nodes[0]);
         if (feature == null) {
             return false;
@@ -64,9 +60,9 @@ public class GenerateDTOAction extends NodeAction {
         return false;
 //        return nodes.length == 1 &&
 //                isMemberElement(nodes[0]) &&
-//                (c = EjbMethodController.create(feature)) != null &&
-//                c instanceof EntityMethodController &&
-//                ((EntityMethodController) c).isCMP();
+//                (ejbMethodController = EjbMethodController.create(feature)) != null &&
+//                ejbMethodController instanceof EntityMethodController &&
+//                ((EntityMethodController) ejbMethodController).isCMP();
     }
     
     public String getName() {

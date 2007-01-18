@@ -20,6 +20,7 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -37,9 +38,9 @@ import org.openide.util.actions.Presenter;
  */
 public class GoToSourceAction extends AbstractAction implements Presenter.Popup {
 
-    private String className;
-    private ClassPath classPath;
-    private String actionName;
+    private final String className;
+    private final ClassPath classPath;
+    private final String actionName;
     
     public GoToSourceAction(ClassPath classPath, String className, String actionName) {
         this.classPath = classPath;
@@ -47,7 +48,7 @@ public class GoToSourceAction extends AbstractAction implements Presenter.Popup 
         this.actionName = actionName;
     }
 
-    public void actionPerformed(java.awt.event.ActionEvent e) {
+    public void actionPerformed(ActionEvent actionEvent) {
         openSourceFO(getFileObject());
     }
 
@@ -74,26 +75,26 @@ public class GoToSourceAction extends AbstractAction implements Presenter.Popup 
     /*
      * from NbJavaFastOpen
      */
-    private void openSourceFO(FileObject fo){
-        if (fo == null) {
+    private void openSourceFO(FileObject fileObject){
+        if (fileObject == null) {
             return;
         }
         DataObject dob;
         try {
-            dob = DataObject.find(fo);
+            dob = DataObject.find(fileObject);
         } catch (DataObjectNotFoundException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             dob = null;
         }
         
         if (dob != null) {
-            EditCookie ec = (EditCookie)dob.getCookie(EditCookie.class);
-            if (ec != null) {
-                ec.edit();
+            EditCookie editCookie = (EditCookie)dob.getCookie(EditCookie.class);
+            if (editCookie != null) {
+                editCookie.edit();
             } else {
-                OpenCookie oc = (OpenCookie)dob.getCookie(OpenCookie.class);
-                if (oc != null) {
-                    oc.open();
+                OpenCookie openCookie = (OpenCookie)dob.getCookie(OpenCookie.class);
+                if (openCookie != null) {
+                    openCookie.open();
                 } else {
                     Toolkit.getDefaultToolkit().beep();
                 }

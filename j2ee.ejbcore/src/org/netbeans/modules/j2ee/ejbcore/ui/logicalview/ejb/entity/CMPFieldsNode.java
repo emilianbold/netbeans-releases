@@ -30,6 +30,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddCmpFieldAction;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
 import org.netbeans.modules.j2ee.common.DDEditorNavigator;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.lookup.AbstractLookup;
@@ -76,12 +77,12 @@ public class CMPFieldsNode extends AbstractNode implements OpenCookie {
     public void open() {
         try {
             DataObject ddFileDO = DataObject.find(ddFile);
-            Object c = ddFileDO.getCookie(DDEditorNavigator.class);
-            if (c != null) {
-                ((DDEditorNavigator) c).showElement(entity.getCmpField());
+            Object cookie = ddFileDO.getCookie(DDEditorNavigator.class);
+            if (cookie != null) {
+                ((DDEditorNavigator) cookie).showElement(entity.getCmpField());
             }
         } catch (DataObjectNotFoundException donf) {
-            // do nothing
+            ErrorManager.getDefault().notify(donf);
         }
     }
 }

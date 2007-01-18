@@ -73,14 +73,14 @@ public class Utils {
         for (int i = 0; i < classpathEntries.length; i++) {
             classpath.append(classpathEntries[i].getAbsolutePath());
             if (i + 1 < classpathEntries.length) {
-                classpath.append(":"); // NOI18N
+                classpath.append(':');
             }
         }
         return classpath.toString();
     }
     
-    public static void notifyError(Exception ex) {
-        NotifyDescriptor ndd = new NotifyDescriptor.Message(ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
+    public static void notifyError(Exception exception) {
+        NotifyDescriptor ndd = new NotifyDescriptor.Message(exception.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
         DialogDisplayer.getDefault().notify(ndd);
     }
     
@@ -99,22 +99,20 @@ public class Utils {
             offset = 0;
         }
         String[] resultSteps = new String[ (offset) + panels.length];
-        for (int i = 0; i < offset; i++) {
-            resultSteps[i] = beforeSteps[i];
-        }
+        System.arraycopy(beforeSteps, 0, resultSteps, 0, offset);
         setSteps(panels, steps, resultSteps, offset);
     }
     
     private static void setSteps(WizardDescriptor.Panel[] panels, String[] steps, String[] resultSteps, int offset) {
-        int n = steps == null ? 0 : steps.length;
+        int numberOfSteps = steps == null ? 0 : steps.length;
         for (int i = 0; i < panels.length; i++) {
             final JComponent component = (JComponent) panels[i].getComponent();
-            String step = i < n ? steps[i] : null;
+            String step = i < numberOfSteps ? steps[i] : null;
             if (step == null) {
                 step = component.getName();
             }
             component.putClientProperty(WIZARD_PANEL_CONTENT_DATA, resultSteps);
-            component.putClientProperty(WIZARD_PANEL_CONTENT_SELECTED_INDEX, new Integer(i));
+            component.putClientProperty(WIZARD_PANEL_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
             component.getAccessibleContext().setAccessibleDescription(step);
             resultSteps[i + offset] = step;
         }
@@ -124,7 +122,7 @@ public class Utils {
         setSteps(panels, steps, steps, 0);
     }
     
-    public static boolean areInSameJ2EEApp(Project p1, Project p2) {
+    public static boolean areInSameJ2EEApp(Project project1, Project project2) {
         Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i < openProjects.length; i++) {
             Project project = openProjects[i];
@@ -134,9 +132,9 @@ public class Utils {
                 J2eeModuleProvider[] j2eeModules = j2eeApp.getChildModuleProviders();
                 if ((j2eeModules != null) && (j2eeModules.length > 0)) { // == there are some modules in the j2ee app
                     J2eeModuleProvider affectedPrjProvider1 =
-                            (J2eeModuleProvider)p1.getLookup().lookup(J2eeModuleProvider.class);
+                            (J2eeModuleProvider)project1.getLookup().lookup(J2eeModuleProvider.class);
                     J2eeModuleProvider affectedPrjProvider2 =
-                            (J2eeModuleProvider)p2.getLookup().lookup(J2eeModuleProvider.class);
+                            (J2eeModuleProvider)project2.getLookup().lookup(J2eeModuleProvider.class);
                     if (affectedPrjProvider1 != null && affectedPrjProvider2 != null) {
                         List childModules = Arrays.asList(j2eeModules);
                         if (childModules.contains(affectedPrjProvider1) &&
@@ -159,21 +157,21 @@ public class Utils {
         final String[] ejbClassName = new String[1];
         final MethodModel[] methodModel = new MethodModel[1];
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
-            public void run(WorkingCopy workingCopy) throws Exception {
+            public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
-                ExecutableElement me = methodHandle.resolve(workingCopy);
-                Set<Modifier> modifiers = me.getModifiers();
+                ExecutableElement executableElement = methodHandle.resolve(workingCopy);
+                Set<Modifier> modifiers = executableElement.getModifiers();
                 boolean signatureOk = modifiers.contains(Modifier.PUBLIC) && !modifiers.contains(Modifier.STATIC);
                 if (signatureOk) {
-                    Element enclosingElement = me.getEnclosingElement();
+                    Element enclosingElement = executableElement.getEnclosingElement();
                     ejbClassName[0] = ((TypeElement) enclosingElement).getQualifiedName().toString();
-                    methodModel[0] = MethodModelSupport.createMethodModel(workingCopy, me);
+                    methodModel[0] = MethodModelSupport.createMethodModel(workingCopy, executableElement);
                 }
             }
         });
         if (methodModel[0] != null) {
-            EjbMethodController c = EjbMethodController.createFromClass(ejbClassFO, ejbClassName[0]);
-            return c != null && c.hasLocal() && !c.hasMethodInInterface(methodModel[0], c.getMethodTypeFromImpl(methodModel[0]), true);
+            EjbMethodController ejbMethodController = EjbMethodController.createFromClass(ejbClassFO, ejbClassName[0]);
+            return ejbMethodController != null && ejbMethodController.hasLocal() && !ejbMethodController.hasMethodInInterface(methodModel[0], ejbMethodController.getMethodTypeFromImpl(methodModel[0]), true);
         }
         return false;
     }
@@ -183,7 +181,7 @@ public class Utils {
         final String[] ejbClassName = new String[1];
         final MethodModel[] methodModel = new MethodModel[1];
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
-            public void run(WorkingCopy workingCopy) throws Exception {
+            public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
                 ExecutableElement method = methodHandle.resolve(workingCopy);
                 Element enclosingElement = method.getEnclosingElement();
@@ -191,8 +189,8 @@ public class Utils {
                 methodModel[0] = MethodModelSupport.createMethodModel(workingCopy, method);
             }
         });
-        EjbMethodController c = EjbMethodController.createFromClass(ejbClassFO, ejbClassName[0]);
-        c.createAndAddInterface(methodModel[0], true);
+        EjbMethodController ejbMethodController = EjbMethodController.createFromClass(ejbClassFO, ejbClassName[0]);
+        ejbMethodController.createAndAddInterface(methodModel[0], true);
     }
     
     public static boolean canExposeInRemote(FileObject ejbClassFO, final ElementHandle<ExecutableElement> methodHandle) throws IOException {
@@ -200,21 +198,21 @@ public class Utils {
         final String[] ejbClassName = new String[1];
         final MethodModel[] methodModel = new MethodModel[1];
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
-            public void run(WorkingCopy workingCopy) throws Exception {
+            public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
-                ExecutableElement me = methodHandle.resolve(workingCopy);
-                Set<Modifier> modifiers = me.getModifiers();
+                ExecutableElement executableElement = methodHandle.resolve(workingCopy);
+                Set<Modifier> modifiers = executableElement.getModifiers();
                 boolean signatureOk = modifiers.contains(Modifier.PUBLIC) && !modifiers.contains(Modifier.STATIC);
                 if (signatureOk) {
-                    Element enclosingElement = me.getEnclosingElement();
+                    Element enclosingElement = executableElement.getEnclosingElement();
                     ejbClassName[0] = ((TypeElement) enclosingElement).getQualifiedName().toString();
-                    methodModel[0] = MethodModelSupport.createMethodModel(workingCopy, me);
+                    methodModel[0] = MethodModelSupport.createMethodModel(workingCopy, executableElement);
                 }
             }
         });
         if (methodModel[0] != null) {
-            EjbMethodController c = EjbMethodController.createFromClass(ejbClassFO, ejbClassName[0]);
-            return c != null && c.hasRemote() && !c.hasMethodInInterface(methodModel[0], c.getMethodTypeFromImpl(methodModel[0]), true);
+            EjbMethodController ejbMethodController = EjbMethodController.createFromClass(ejbClassFO, ejbClassName[0]);
+            return ejbMethodController != null && ejbMethodController.hasRemote() && !ejbMethodController.hasMethodInInterface(methodModel[0], ejbMethodController.getMethodTypeFromImpl(methodModel[0]), true);
         }
         return false;
     }
@@ -224,7 +222,7 @@ public class Utils {
         final String[] ejbClassName = new String[1];
         final MethodModel[] methodModel = new MethodModel[1];
         javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
-            public void run(WorkingCopy workingCopy) throws Exception {
+            public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
                 ExecutableElement method = methodHandle.resolve(workingCopy);
                 Element enclosingElement = method.getEnclosingElement();
@@ -232,8 +230,8 @@ public class Utils {
                 methodModel[0] = MethodModelSupport.createMethodModel(workingCopy, method);
             }
         });
-        EjbMethodController c = EjbMethodController.createFromClass(ejbClassFO, ejbClassName[0]);
-        c.createAndAddInterface(methodModel[0], false);
+        EjbMethodController ejbMethodController = EjbMethodController.createFromClass(ejbClassFO, ejbClassName[0]);
+        ejbMethodController.createAndAddInterface(methodModel[0], false);
     }
     
     public static void addReference(WorkingCopy workingCopy, TypeElement beanClass, EjbReference ref, String serviceLocator, boolean remote,
@@ -258,8 +256,7 @@ public class Utils {
                 erc.addEjbReference(ejbRef, srcFile, beanClass.getQualifiedName().toString(), ref.getClientJarTarget());
             }
             if (serviceLocator == null) {
-                //TODO: RETOUCHE fix this api, what should be returned?
-                Element f = (Element) ref.generateReferenceCode(beanClass, ejbRef, throwExceptions);
+                ref.generateReferenceCode(beanClass, ejbRef, throwExceptions);
             } else {
                 ref.generateServiceLocatorLookup(beanClass, ejbRef, serviceLocator, throwExceptions);
             }
@@ -274,8 +271,7 @@ public class Utils {
                 erc.addEjbLocalReference(ejbLocalRef, srcFile, beanClass.getQualifiedName().toString(), ref.getClientJarTarget());
             }
             if (serviceLocator == null) {
-                //TODO: RETOUCHE fix this api, what should be returned?
-                Element f = (Element) ref.generateReferenceCode(beanClass, ejbLocalRef, throwExceptions);
+                ref.generateReferenceCode(beanClass, ejbLocalRef, throwExceptions);
             } else {
                 ref.generateServiceLocatorLookup(beanClass, ejbLocalRef, serviceLocator, throwExceptions);
             }
@@ -308,13 +304,6 @@ public class Utils {
     public static Project [] getCallableEjbProjects(Project enterpriseProject) {
         Project[] allProjects = OpenProjects.getDefault().getOpenProjects();
         
-        boolean isCallerEJBModule = false;
-        J2eeModuleProvider callerJ2eeModuleProvider = (J2eeModuleProvider) enterpriseProject.getLookup().lookup(J2eeModuleProvider.class);
-        if (callerJ2eeModuleProvider != null && callerJ2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.EJB)) {
-            // TODO: HACK - this should be set by calling AntArtifactQuery.findArtifactsByType(p, EjbProjectConstants.ARTIFACT_TYPE_EJBJAR)
-            // but now freeform doesn't implement this correctly
-            isCallerEJBModule = true;
-        }
         // TODO: HACK - this must be solved by freeform's own implementation of EnterpriseReferenceContainer, see issue 57003
         // call ejb should not make this check, all should be handled in EnterpriseReferenceContainer
         boolean isCallerFreeform = enterpriseProject.getClass().getName().equals("org.netbeans.modules.ant.freeform.FreeformProject");
@@ -348,7 +337,7 @@ public class Utils {
                 double version = Double.parseDouble(j2eeModule.getModuleVersion());
                 if (J2eeModule.EJB.equals(type) && (version > 2.1)) {
                     return true;
-                };
+                }
                 if (J2eeModule.WAR.equals(type) && (version > 2.4)) {
                     return true;
                 }
@@ -368,19 +357,19 @@ public class Utils {
     /**
      * @return true if given <code>target</code> is defined in a Java SE environment.
      */
-    public static boolean isTargetJavaSE(CompilationController cc, TypeElement target){
-        Project owner = FileOwnerQuery.getOwner(cc.getFileObject());
+    public static boolean isTargetJavaSE(CompilationController controller, TypeElement target){
+        Project owner = FileOwnerQuery.getOwner(controller.getFileObject());
         if (owner.getLookup().lookup(J2eeModuleProvider.class) == null){
             return true;
         }
-        return extendsTestCase(cc, target);
+        return extendsTestCase(controller, target);
     }
     
     /**
      * @return true if given <code>javaClass</code> is a subtype (direct or
      * indirect) of <code>junit.framework.TestCase</code>.
      */
-    private static boolean extendsTestCase(CompilationController cc, TypeElement typeElement){
+    private static boolean extendsTestCase(CompilationController controller, TypeElement typeElement){
         if (typeElement == null){
             return false;
         }
@@ -388,7 +377,7 @@ public class Utils {
             return true;
         }
         DeclaredType superClassType = (DeclaredType) typeElement.getSuperclass();
-        return extendsTestCase(cc, (TypeElement) superClassType.asElement());
+        return extendsTestCase(controller, (TypeElement) superClassType.asElement());
     }
     
     /**
@@ -407,13 +396,14 @@ public class Utils {
      */
     public static String jndiNameToCamelCase(String jndiName, boolean lowerCaseFirstChar, String prefixToStrip){
         
+        String strippedJndiName = jndiName;
         if (prefixToStrip != null && jndiName.startsWith(prefixToStrip)){
-            jndiName = jndiName.substring(jndiName.indexOf(prefixToStrip) + prefixToStrip.length());
+            strippedJndiName = jndiName.substring(jndiName.indexOf(prefixToStrip) + prefixToStrip.length());
         }
         
         StringBuilder result = new StringBuilder();
         
-        for (String token : jndiName.split("/")){
+        for (String token : strippedJndiName.split("/")){
             if (token.length() == 0){
                 continue;
             }

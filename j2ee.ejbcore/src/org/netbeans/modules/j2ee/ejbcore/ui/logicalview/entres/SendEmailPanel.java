@@ -34,7 +34,7 @@ public class SendEmailPanel extends javax.swing.JPanel {
 
     public static final String IS_VALID = "SendEmailPanel_isValid"; //NOI18N
 
-    private ServiceLocatorStrategyPanel slcPanel;
+    private final ServiceLocatorStrategyPanel slcPanel;
 
     /** Creates new form SendEmailPanel */
     public SendEmailPanel(String lastLocator) {
@@ -57,13 +57,13 @@ public class SendEmailPanel extends javax.swing.JPanel {
             }
         });
         jndiName.getDocument().addDocumentListener(new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) {
+            public void changedUpdate(DocumentEvent documentEvent) {
                 checkJndiName();
             }
-            public void insertUpdate(DocumentEvent e) {
+            public void insertUpdate(DocumentEvent documentEvent) {
                 checkJndiName();
             }
-            public void removeUpdate(DocumentEvent e) {
+            public void removeUpdate(DocumentEvent documentEvent) {
                 checkJndiName();
             }
         });

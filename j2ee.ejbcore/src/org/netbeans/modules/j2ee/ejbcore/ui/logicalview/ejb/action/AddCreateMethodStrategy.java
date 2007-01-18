@@ -19,18 +19,14 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
-import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
-import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
-import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
-import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
-import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
-import org.netbeans.modules.j2ee.common.method.MethodModel;
 import java.io.IOException;
 import java.util.Collections;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
+import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
+import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;

@@ -34,7 +34,7 @@ import javax.swing.event.DocumentListener;
  */
 public class EntityEJBWizardPanel extends javax.swing.JPanel {
 
-    private ChangeListener listener;
+    private final ChangeListener listener;
 
     /** Creates new form EntityEJBWizardPanel */
     public EntityEJBWizardPanel(ChangeListener changeListener) {
@@ -42,25 +42,25 @@ public class EntityEJBWizardPanel extends javax.swing.JPanel {
         initComponents();
 
         localCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent actionEvent) {
                 listener.stateChanged(null);
             }
         });
 
         remoteCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent actionEvent) {
                 listener.stateChanged(null);
             }
         });
 
         primaryKeyTextField.getDocument().addDocumentListener(new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) {
+            public void changedUpdate(DocumentEvent documentEvent) {
                 listener.stateChanged(null);
             }
-            public void insertUpdate(DocumentEvent e) {
+            public void insertUpdate(DocumentEvent documentEvent) {
                 listener.stateChanged(null);
             }
-            public void removeUpdate(DocumentEvent e) {
+            public void removeUpdate(DocumentEvent documentEvent) {
                 listener.stateChanged(null);
             }
         });

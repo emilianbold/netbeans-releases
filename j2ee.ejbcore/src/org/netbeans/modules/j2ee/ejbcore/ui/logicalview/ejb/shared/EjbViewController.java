@@ -144,7 +144,7 @@ public final class EjbViewController {
             JavaSource javaSource = JavaSource.forFileObject(findBeanFo());
             final TypeElement[] result = new TypeElement[1];
             javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
-                public void run(CompilationController compilationController) throws Exception {
+                public void run(CompilationController compilationController) throws IOException {
                     compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
                     result[0] = compilationController.getElements().getTypeElement(ejb.getEjbClass());
                 }

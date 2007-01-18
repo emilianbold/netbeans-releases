@@ -58,25 +58,25 @@ public final class EjbJarXmlWizardIterator implements WizardDescriptor.Instantia
             };
             String[] steps = createSteps();
             for (int i = 0; i < panels.length; i++) {
-                Component c = panels[i].getComponent();
+                Component component = panels[i].getComponent();
                 if (steps[i] == null) {
                     // Default step name to component name of panel. Mainly
                     // useful for getting the name of the target chooser to
                     // appear in the list of steps.
-                    steps[i] = c.getName();
+                    steps[i] = component.getName();
                 }
-                if (c instanceof JComponent) { // assume Swing components
-                    JComponent jc = (JComponent) c;
+                if (component instanceof JComponent) { // assume Swing components
+                    JComponent jComponent = (JComponent) component;
                     // Sets step number of a component
-                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+                    jComponent.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
                     // Sets steps names for a panel
-                    jc.putClientProperty("WizardPanel_contentData", steps);
+                    jComponent.putClientProperty("WizardPanel_contentData", steps);
                     // Turn on subtitle creation on each step
-                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
+                    jComponent.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
                     // Show steps on the left side with the image on the background
-                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
+                    jComponent.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
                     // Turn on numbering of all steps
-                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
+                    jComponent.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
                 }
             }
         }
@@ -135,8 +135,8 @@ public final class EjbJarXmlWizardIterator implements WizardDescriptor.Instantia
     }
     
     // If nothing unusual changes in the middle of the wizard, simply:
-    public void addChangeListener(ChangeListener l) {}
-    public void removeChangeListener(ChangeListener l) {}
+    public void addChangeListener(ChangeListener listener) {}
+    public void removeChangeListener(ChangeListener listener) {}
     
     // If something changes dynamically (besides moving between panels), e.g.
     // the number of panels changes in response to user input, then uncomment

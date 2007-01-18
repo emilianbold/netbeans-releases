@@ -22,7 +22,6 @@ package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.event.ChangeListener;
-import org.openide.WizardDescriptor;
 
 /**
  *
@@ -31,7 +30,7 @@ import org.openide.WizardDescriptor;
  */
 public class SessionEJBWizardPanel extends javax.swing.JPanel {
 
-    private ChangeListener listener;
+    private final ChangeListener listener;
 
     /** Creates new form SingleEJBWizardPanel */
     public SessionEJBWizardPanel(ChangeListener changeListener) {
@@ -39,13 +38,13 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
         initComponents();
 
         localCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent actionEvent) {
                 listener.stateChanged(null);
             }
         });
 
         remoteCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent actionEvent) {
                 listener.stateChanged(null);
             }
         });

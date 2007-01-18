@@ -36,8 +36,8 @@ public class IconVisitor implements MethodType.MethodTypeVisitor {
     private static final String HOME = BASE+"HomeMethodIcon.gif"; //NOI18N
     private static final String FINDER = BASE+"FinderMethodIcon.gif"; //NOI18N
     
-    public String getIconUrl(MethodType mt) {
-        mt.accept(this);
+    public String getIconUrl(MethodType methodType) {
+        methodType.accept(this);
         return iconURL;
     }
     

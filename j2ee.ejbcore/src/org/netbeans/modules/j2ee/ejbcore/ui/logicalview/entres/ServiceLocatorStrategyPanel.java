@@ -45,13 +45,13 @@ public class ServiceLocatorStrategyPanel extends javax.swing.JPanel {
             noServiceLocator.doClick();
         }
         className.getDocument().addDocumentListener(new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) {
+            public void changedUpdate(DocumentEvent documentEvent) {
                 validateClass();
             }
-            public void insertUpdate(DocumentEvent e) {
+            public void insertUpdate(DocumentEvent documentEvent) {
                 validateClass();
             }
-            public void removeUpdate(DocumentEvent e) {
+            public void removeUpdate(DocumentEvent documentEvent) {
                 validateClass();
             }
         });

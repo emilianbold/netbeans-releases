@@ -19,23 +19,14 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
-import java.io.IOException;
-import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.openide.nodes.Node;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
-import org.netbeans.modules.j2ee.common.source.SourceUtils;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;

@@ -66,20 +66,20 @@ public class MethodsNode extends AbstractNode implements OpenCookie {
     public Action[] getActions(boolean context) {
         return new Action[] {
                 new GoToSourceAction(srcPath, local ? model.getLocal() : model.getRemote(), 
-                        NbBundle.getMessage(GoToSourceAction.class, "LBL_GoToSourceGroup")),
+                        NbBundle.getMessage(MethodsNode.class, "LBL_GoToSourceGroup")),
             SystemAction.get(AddActionGroup.class),
         };
     }
 
     public Action getPreferredAction() {
         return new GoToSourceAction(srcPath, local ? model.getLocal() : model.getRemote(), 
-                        NbBundle.getMessage(GoToSourceAction.class, "LBL_GoToSourceGroup"));
+                        NbBundle.getMessage(MethodsNode.class, "LBL_GoToSourceGroup"));
     }
 
     public void open() {
-        DataObject ce = controller.getBeanDo();
-        if (ce != null) {
-            OpenCookie cookie = (OpenCookie) ce.getCookie(OpenCookie.class);
+        DataObject dataObject = controller.getBeanDo();
+        if (dataObject != null) {
+            OpenCookie cookie = (OpenCookie) dataObject.getCookie(OpenCookie.class);
             if(cookie != null){
                 cookie.open();
             }

@@ -45,12 +45,11 @@ import org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPHelper;
  */
 public class CmpGenerator implements PersistenceGenerator {
     
-//    private static final Identifier FINDER_EXCEPTION = Identifier.create("javax.ejb.FinderException"); //NOI18N
     private static final String FINDER_EXCEPTION_CLASS = "javax.ejb.FinderException"; //NOI18N
     private static final List PRIMITIVE_CLASS_NAMES = Arrays.asList(
             "boolean", "byte", "char", "short", "int", "long", "float", "double"); //NOI18N
      
-    private HashMap genDataCache = new HashMap(13);
+    private final HashMap genDataCache = new HashMap(13);
     private Project project;
     private org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule;
     private EjbJar dd;
@@ -635,8 +634,8 @@ public class CmpGenerator implements PersistenceGenerator {
         try {
             dd = provider.getMergedDDRoot(ejbModule.getMetadataUnit());
         } catch (IOException ioe) {
-            NotifyDescriptor nb = new NotifyDescriptor.Message(ioe.getLocalizedMessage(),NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(nb);
+            NotifyDescriptor notifyDescriptor = new NotifyDescriptor.Message(ioe.getLocalizedMessage(),NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(notifyDescriptor);
         }
     }
 

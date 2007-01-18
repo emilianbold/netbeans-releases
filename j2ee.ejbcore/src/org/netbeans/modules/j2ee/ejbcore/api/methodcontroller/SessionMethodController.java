@@ -30,12 +30,10 @@ import org.openide.filesystems.FileObject;
  */
 public final class SessionMethodController extends AbstractMethodController {
 
-    private final FileObject ejbClassFO;
     private final Session model;
 
     public SessionMethodController(FileObject ejbClassFO, Session model) {
         super(ejbClassFO, model);
-        this.ejbClassFO = ejbClassFO;
         this.model = model;
     }
 

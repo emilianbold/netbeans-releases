@@ -19,19 +19,10 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.entity;
 
-import java.awt.Image;
 import java.util.Collection;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
-import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
-import org.netbeans.modules.j2ee.common.DDEditorNavigator;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.IconVisitor;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -43,10 +34,10 @@ import org.openide.util.Utilities;
 
 public class MethodChildren /*extends ComponentMethodModel*/ {
 //    private ComponentMethodViewStrategy mvs;
-    private EntityMethodController controller;
-    private boolean local;
-    private FileObject ddFile;
-    private Entity entity;
+    private final EntityMethodController controller;
+    private final boolean local;
+    private final FileObject ddFile;
+    private final Entity entity;
     
     public MethodChildren(EntityMethodController smc, Entity model, Collection interfaces, boolean local, FileObject ddFile) {
 //        super(smc.getBeanClass(), interfaces);

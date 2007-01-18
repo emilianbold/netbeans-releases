@@ -68,8 +68,7 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
     
     public void visit(BusinessMethodType bmt) {
         implMethod = bmt.getMethodElement();
-        String body = TODO + implMethod.getName();
-        body += implMethod.getReturnType();
+        String body = TODO + implMethod.getName() + implMethod.getReturnType();
         implMethod = MethodModel.create(
                 implMethod.getName(), 
                 implMethod.getReturnType(),
@@ -150,7 +149,7 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
         JavaSource javaSource = JavaSource.forFileObject(ejbClassFO);
         final boolean[] result = new boolean[] {false};
         javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
-            public void run(CompilationController controller) throws Exception {
+            public void run(CompilationController controller) throws IOException {
                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement1 = controller.getElements().getTypeElement(className1);
                 TypeElement typeElement2 = controller.getElements().getTypeElement(className2);
@@ -168,9 +167,7 @@ class EntityGenerateFromIntfVisitor implements MethodType.MethodTypeVisitor, Abs
     
     public static String getReturnStatement(String type) {
         String result = "";
-        if ("void".equals(type)) {
-            
-        } else if ("boolean".equals(type)) {
+        if ("boolean".equals(type)) {
             result = "\nreturn false;";
         } else if ("byte".equals(type)) {
             result = "\nreturn 0;";

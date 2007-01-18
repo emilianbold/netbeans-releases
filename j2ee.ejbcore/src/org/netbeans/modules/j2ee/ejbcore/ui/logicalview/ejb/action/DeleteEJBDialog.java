@@ -34,7 +34,7 @@ public class DeleteEJBDialog extends javax.swing.JPanel {
     public static final String DELETE_ONLY_DD = "deleteOnlyDD";
     public static final String DELETE_ALL = "deleteAll";
 
-    private String ejbDisplayName;
+    private final String ejbDisplayName;
     private final EJBPreferences ejbPreferences;
     
     private DeleteEJBDialog(String ejbDisplayName) {

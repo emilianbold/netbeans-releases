@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
@@ -66,11 +67,11 @@ public final class MessageEJBWizard implements WizardDescriptor.InstantiatingIte
         Project project = Templates.getProject(wiz);
         SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);
         ejbPanel = new MessageEJBWizardPanel(wiz);
-        WizardDescriptor.Panel p = new ValidatingPanel(JavaTemplates.createPackageChooser(project,sourceGroups, ejbPanel, true));
-        JComponent c = (JComponent) p.getComponent ();
-        Util.changeLabelInComponent(c, NbBundle.getMessage(MessageEJBWizard.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"), NbBundle.getMessage(MessageEJBWizard.class, "LBL_EJB_Name") );
-        Util.hideLabelAndLabelFor(c, NbBundle.getMessage(MessageEJBWizard.class, "LBL_JavaTargetChooserPanelGUI_CreatedFile_Label"));
-        panels = new WizardDescriptor.Panel[] {p};
+        WizardDescriptor.Panel wizardPanel = new ValidatingPanel(JavaTemplates.createPackageChooser(project,sourceGroups, ejbPanel, true));
+        JComponent jComponent = (JComponent) wizardPanel.getComponent ();
+        Util.changeLabelInComponent(jComponent, NbBundle.getMessage(MessageEJBWizard.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"), NbBundle.getMessage(MessageEJBWizard.class, "LBL_EJB_Name") );
+        Util.hideLabelAndLabelFor(jComponent, NbBundle.getMessage(MessageEJBWizard.class, "LBL_JavaTargetChooserPanelGUI_CreatedFile_Label"));
+        panels = new WizardDescriptor.Panel[] {wizardPanel};
         Utils.mergeSteps(wiz, panels, SESSION_STEPS);
     }
 
@@ -91,10 +92,10 @@ public final class MessageEJBWizard implements WizardDescriptor.InstantiatingIte
         return result == null ? Collections.EMPTY_SET : Collections.singleton(result);
     }
 
-    public void addChangeListener(javax.swing.event.ChangeListener l) {
+    public void addChangeListener(ChangeListener listener) {
     }
 
-    public void removeChangeListener(javax.swing.event.ChangeListener l) {
+    public void removeChangeListener(ChangeListener listener) {
     }
 
     public boolean hasPrevious () {

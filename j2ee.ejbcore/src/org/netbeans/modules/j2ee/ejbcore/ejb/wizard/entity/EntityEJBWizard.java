@@ -64,12 +64,12 @@ public final class EntityEJBWizard implements WizardDescriptor.InstantiatingIter
         Project project = Templates.getProject(wiz);
         SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);
         ejbPanel = new EntityEJBWizardDescriptor();
-        WizardDescriptor.Panel p = JavaTemplates.createPackageChooser(project,sourceGroups, ejbPanel, true);
+        WizardDescriptor.Panel wizardPanel = JavaTemplates.createPackageChooser(project,sourceGroups, ejbPanel, true);
 
-        JComponent c = (JComponent) p.getComponent();
-        Util.changeLabelInComponent(c, NbBundle.getMessage(EntityEJBWizard.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"), NbBundle.getMessage(EntityEJBWizard.class, "LBL_EJB_Name") );
-        Util.hideLabelAndLabelFor(c, NbBundle.getMessage(EntityEJBWizard.class, "LBL_JavaTargetChooserPanelGUI_CreatedFile_Label"));
-        panels = new WizardDescriptor.Panel[] {p};
+        JComponent jComponent = (JComponent) wizardPanel.getComponent();
+        Util.changeLabelInComponent(jComponent, NbBundle.getMessage(EntityEJBWizard.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"), NbBundle.getMessage(EntityEJBWizard.class, "LBL_EJB_Name") );
+        Util.hideLabelAndLabelFor(jComponent, NbBundle.getMessage(EntityEJBWizard.class, "LBL_JavaTargetChooserPanelGUI_CreatedFile_Label"));
+        panels = new WizardDescriptor.Panel[] {wizardPanel};
         Utils.mergeSteps(wiz, panels, null);
 
     }
@@ -93,10 +93,10 @@ public final class EntityEJBWizard implements WizardDescriptor.InstantiatingIter
         return result == null ? Collections.<FileObject>emptySet() : Collections.singleton(result);
     }
 
-    public void addChangeListener(ChangeListener l) {
+    public void addChangeListener(ChangeListener listener) {
     }
 
-    public void removeChangeListener(ChangeListener l) {
+    public void removeChangeListener(ChangeListener listener) {
     }
 
     public boolean hasPrevious () {

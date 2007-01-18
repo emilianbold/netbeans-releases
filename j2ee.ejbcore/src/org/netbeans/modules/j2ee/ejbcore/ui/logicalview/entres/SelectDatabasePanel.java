@@ -47,8 +47,8 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
     
     private Node driverNode;
     private static String PROTOTYPE_VALUE = "jdbc:pointbase://localhost/sample [pbpublic on PBPUBLIC] "; //NOI18N
-    private ServiceLocatorStrategyPanel slPanel;
-    private DatasourceComboBoxHelper comboHelper;
+    private final ServiceLocatorStrategyPanel slPanel;
+    private final DatasourceComboBoxHelper comboHelper;
     private final EJBPreferences ejbPreferences;
 
     public SelectDatabasePanel(J2eeModuleProvider provider, String lastLocator) {
@@ -72,13 +72,13 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
                 errorLabel.setForeground(nbErrorForeground);
                 errorLabel.setText(NbBundle.getMessage(SelectDatabasePanel.class, "ERR_MissingServer"));
             }
-        }
-        else {
+            comboHelper = null;
+        } else {
             comboHelper = new DatasourceComboBoxHelper(dsCombo);
         }
         
         dsCombo.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent actionEvent) {
                 checkDatasource();
             }
         });

@@ -23,11 +23,11 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.openide.*;
 import org.openide.util.*;
-
 import java.io.*;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
@@ -37,7 +37,6 @@ import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileObject;
-
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 
@@ -79,10 +78,10 @@ public final class ServiceLocatorWizard implements WizardDescriptor.Instantiatin
         FileObject pkg = Templates.getTargetFolder(wiz);
         String clsName = Templates.getTargetName(wiz);
         Project project = Templates.getProject(wiz);
-        DataFolder df = DataFolder.findFolder(pkg);
+        DataFolder dataFolder = DataFolder.findFolder(pkg);
         FileObject template = Templates.getTemplate(wiz);
         DataObject dTemplate = DataObject.find( template );                
-        DataObject dobj = dTemplate.createFromTemplate( df, clsName);
+        DataObject dobj = dTemplate.createFromTemplate( dataFolder, clsName);
         String pkgName = EjbGenerationUtil.getSelectedPackageName(pkg);
         String fullName = (pkgName.length()>0?pkgName+'.':"")+clsName;
         EnterpriseReferenceContainer erc = (EnterpriseReferenceContainer)
@@ -95,10 +94,10 @@ public final class ServiceLocatorWizard implements WizardDescriptor.Instantiatin
         return Collections.singleton(createdFile); 
     }
     
-    public void addChangeListener(javax.swing.event.ChangeListener l) {
+    public void addChangeListener(ChangeListener listener) {
     }
     
-    public void removeChangeListener(javax.swing.event.ChangeListener l) {
+    public void removeChangeListener(ChangeListener listener) {
     }
     
     public boolean hasPrevious () {

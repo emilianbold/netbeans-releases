@@ -23,8 +23,6 @@ import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
@@ -37,7 +35,6 @@ import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -53,7 +50,7 @@ final class DatasourceComboBoxCustomizer extends javax.swing.JPanel {
     private DialogDescriptor descriptor = null;
     private boolean dialogOK = false;
     
-    private HashMap<String, Datasource> datasources;
+    private final HashMap<String, Datasource> datasources;
     
     private String jndiName;
     private String url;
@@ -62,12 +59,12 @@ final class DatasourceComboBoxCustomizer extends javax.swing.JPanel {
     private String driverClassName;
 
     public DatasourceComboBoxCustomizer(Set<Datasource> datasources) {
+        this.datasources = new HashMap<String, Datasource>();
         if (datasources != null) { // transform Set to Map for faster searching
-            this.datasources = new HashMap<String, Datasource>();
             for (Iterator it = datasources.iterator(); it.hasNext();) {
-                Datasource ds = (Datasource) it.next();
-                if (ds.getJndiName() != null)
-                    this.datasources.put(ds.getJndiName(), ds);
+                Datasource datasource = (Datasource) it.next();
+                if (datasource.getJndiName() != null)
+                    this.datasources.put(datasource.getJndiName(), datasource);
             }
         }
         initComponents();
@@ -75,19 +72,19 @@ final class DatasourceComboBoxCustomizer extends javax.swing.JPanel {
         DatabaseExplorerUIs.connect(connCombo, ConnectionManager.getDefault());
 
         connCombo.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent actionEvent) {
                 verify();
             }
         });
         
         jndiNameField.getDocument().addDocumentListener(new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) {
+            public void changedUpdate(DocumentEvent documentEvent) {
                 verify();
             }
-            public void insertUpdate(DocumentEvent e) {
+            public void insertUpdate(DocumentEvent documentEvent) {
                 verify();
             }
-            public void removeUpdate(DocumentEvent e) {
+            public void removeUpdate(DocumentEvent documentEvent) {
                 verify();
             }
         });
@@ -108,7 +105,7 @@ final class DatasourceComboBoxCustomizer extends javax.swing.JPanel {
              DialogDescriptor.DEFAULT_ALIGN,
              new HelpCtx("DatasourceUIHelper_DatasourceCustomizer"), // NOI18N
              new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(ActionEvent actionEvent) {
                     boolean close = true;
                     if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
                         boolean valid = handleConfirmation();

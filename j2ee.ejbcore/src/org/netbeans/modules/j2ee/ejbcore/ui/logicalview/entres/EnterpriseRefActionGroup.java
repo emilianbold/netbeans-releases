@@ -55,9 +55,9 @@ public class EnterpriseRefActionGroup extends NodeAction implements Presenter.Po
         if (oneNodeSelected && hasEnterpriseRefStrategy()) {
             return new LazyMenu();
         }
-        JMenuItem i = super.getPopupPresenter();
-        i.setVisible(false);
-        return i;
+        JMenuItem jMenuItem = super.getPopupPresenter();
+        jMenuItem.setVisible(false);
+        return jMenuItem;
     }
     
     public HelpCtx getHelpCtx() {
@@ -84,9 +84,9 @@ public class EnterpriseRefActionGroup extends NodeAction implements Presenter.Po
     }
     
     private boolean hasEnterpriseRefStrategy() {
-        Project p = getSelectedProject();
-        return p != null &&
-            p.getLookup().lookup(EnterpriseReferenceContainer.class) != null;
+        Project project = getSelectedProject();
+        return project != null &&
+            project.getLookup().lookup(EnterpriseReferenceContainer.class) != null;
     }
 
     /**

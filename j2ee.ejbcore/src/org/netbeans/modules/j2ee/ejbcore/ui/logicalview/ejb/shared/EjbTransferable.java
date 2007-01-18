@@ -35,8 +35,8 @@ public class EjbTransferable implements Transferable {
     public static final DataFlavor EJB_FLAVOR =
         new DataFlavor(EjbReference.class, "ejb ref");
     
-    private String stringRep;
-    private EjbReference ref;
+    private final String stringRep;
+    private final EjbReference ref;
     
     public EjbTransferable(String stringRep, EjbReference ref) {
         this.stringRep = stringRep;

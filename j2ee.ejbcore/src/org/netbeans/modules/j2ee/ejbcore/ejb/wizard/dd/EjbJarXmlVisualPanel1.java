@@ -61,7 +61,7 @@ public final class EjbJarXmlVisualPanel1 extends JPanel {
         }
         refreshLocation();
         locationCombo.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent actionEvent) {
                 refreshLocation();
             }
         });
@@ -77,9 +77,9 @@ public final class EjbJarXmlVisualPanel1 extends JPanel {
     }
     
     private void refreshLocation() {
-        FileObject fo = (FileObject) locationCombo.getSelectedItem();
-        if (fo != null) {
-            createdFileText.setText(FileUtil.getFileDisplayName(fo) + File.separator + "ejb-jar.xml");
+        FileObject fileObject = (FileObject) locationCombo.getSelectedItem();
+        if (fileObject != null) {
+            createdFileText.setText(FileUtil.getFileDisplayName(fileObject) + File.separator + "ejb-jar.xml");
         }
         firePropertyChange("", null, null);
     }
@@ -87,8 +87,8 @@ public final class EjbJarXmlVisualPanel1 extends JPanel {
     private class FileObjectListCellRenderer extends DefaultListCellRenderer {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if (value instanceof FileObject) {
-                FileObject fo = (FileObject) value;
-                setText(FileUtil.getFileDisplayName(fo));
+                FileObject fileObject = (FileObject) value;
+                setText(FileUtil.getFileDisplayName(fileObject));
             }
             return this;
         }
