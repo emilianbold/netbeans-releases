@@ -126,6 +126,6 @@ Microsystems, Inc. All Rights Reserved.
     <executor name="ide" antfile="build-unit.xml" target="runidetest"/>
     <executor name="platform" antfile="build-unit.xml" target="runplatformtest"/>
 
-    <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
+    <compiler name="unit-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
 
 </mconfig>
