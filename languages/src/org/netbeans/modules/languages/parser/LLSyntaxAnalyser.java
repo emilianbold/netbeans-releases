@@ -106,7 +106,7 @@ public class LLSyntaxAnalyser {
         int offset = input.getOffset ();
         do {
             List initialWhitespaces = readWhitespaces (node, input, mimeType, embeded, skipErrors);
-//            S ystem.out.println(input.getIndex () + ":" + input.next (1));
+            //S ystem.out.println(input.getIndex () + ":" + input.next (1));
             if ((!input.eof ()) &&
                 input.next (1).getMimeType () != mimeType
             ) {
@@ -136,7 +136,7 @@ public class LLSyntaxAnalyser {
                         throw new ParseException ("No rule for " + input.next (1) + " in " + input, root.createASTNode ());
                     if (input.eof ()) {
                         if (node == null)
-                            root = node = new Node (mimeType, "Root", -1, input.getOffset (), null);
+                            root = node = new Node (mimeType, "Root", -1, input.getOffset (), initialWhitespaces);
                         createErrorNode (node, input.getOffset ());
                         //S ystem.out.println(input.getIndex () + ": unexpected eof " + nt);
                         return root.createASTNode ();
@@ -201,6 +201,13 @@ public class LLSyntaxAnalyser {
                 }
             }
         } while (true);
+        if (embeded) {
+            while (
+                !input.eof () && 
+                input.next (1).getMimeType () == mimeType
+            )
+                createErrorNode (node, input.getOffset ()).addToken (input.read ());
+        }
         return root.createASTNode ();
     }
     
