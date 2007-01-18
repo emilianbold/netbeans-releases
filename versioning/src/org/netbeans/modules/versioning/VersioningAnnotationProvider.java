@@ -24,6 +24,7 @@ import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.FlatFolder;
+import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.openide.filesystems.*;
 import org.openide.util.actions.SystemAction;
@@ -183,8 +184,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                         if (action == null) {
                             add(new JSeparator());    // workaround openide bug
                         } else {
-                            JMenuItem item = new JMenuItem(actions[i]);
-                            Mnemonics.setLocalizedText(item, item.getText());
+                            JMenuItem item = Utils.toMenuItem(action);
                             add(item);
                         }
                     }

@@ -19,12 +19,12 @@
 package org.netbeans.modules.versioning;
 
 import org.openide.awt.DynamicMenuContent;
-import org.openide.awt.Actions;
 import org.openide.awt.Mnemonics;
 import org.openide.windows.TopComponent;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.util.Utils;
 
 import javax.swing.*;
 import javax.swing.event.MenuListener;
@@ -113,8 +113,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
                     JComponent [] components = dmc.getMenuPresenters();
                     items.addAll(Arrays.asList(components));
                 } else {
-                    JMenuItem item = new JMenuItem();
-                    Actions.connect(item, action, false);
+                    JMenuItem item = Utils.toMenuItem(action);
                     items.add(item);
                 }
             }

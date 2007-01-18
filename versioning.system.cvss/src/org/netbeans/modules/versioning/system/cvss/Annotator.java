@@ -41,6 +41,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.ExportDiffAct
 import org.netbeans.modules.versioning.system.cvss.ui.actions.tag.*;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitProjectsAction;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.ExcludeFromCommitAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateProjectsAction;
@@ -441,6 +442,7 @@ public class Annotator {
             actions.add(SystemAction.get(GetCleanAction.class));
             actions.add(SystemAction.get(ResolveConflictsAction.class));
             actions.add(SystemAction.get(IgnoreAction.class));
+            actions.add(new ExcludeFromCommitAction(ctx));
         } else {
             if (noneVersioned) {
                 actions.add(SystemActionBridge.createAction(SystemAction.get(AddToRepositoryAction.class).createContextAwareInstance(context), loc.getString("CTL_PopupMenuItem_Import"), context));
@@ -475,6 +477,7 @@ public class Annotator {
                                                                         loc.getString("CTL_PopupMenuItem_Unignore") : 
                                                                         loc.getString("CTL_PopupMenuItem_Ignore"), context));
                 }
+                actions.add(new ExcludeFromCommitAction(ctx));
             }
         }
         return actions.toArray(new Action[actions.size()]);

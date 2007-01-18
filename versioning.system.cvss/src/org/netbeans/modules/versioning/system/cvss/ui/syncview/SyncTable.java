@@ -39,6 +39,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryA
 import org.netbeans.modules.versioning.system.cvss.ui.actions.tag.TagAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.tag.BranchAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitAction;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.ExcludeFromCommitAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffAction;
@@ -65,6 +66,7 @@ import java.awt.Point;
 import java.util.*;
 import java.io.File;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.netbeans.modules.versioning.spi.VCSContext;
 
 /**
  * Table that displays nodes in the Versioning view. 
@@ -294,6 +296,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
      */
     private JPopupMenu getPopup() {
 
+        File [] files = Utils.getCurrentContext(null).getFiles();
         JPopupMenu menu = new JPopupMenu();
         JMenuItem item;
         
@@ -320,14 +323,13 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         item = menu.add(new SystemActionBridge(SystemAction.get(SearchHistoryAction.class), actionString("CTL_PopupMenuItem_SearchHistory"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         menu.add(new JSeparator());
-        item = menu.add(new ExcludeFromCommitAction());
-        Mnemonics.setLocalizedText(item, item.getText());
+        item = org.netbeans.modules.versioning.util.Utils.toMenuItem(new ExcludeFromCommitAction(VCSContext.forFiles(new HashSet(Arrays.asList(files)))));
+        menu.add(item);
 
         Action revertAction;
         boolean allLocallyNew = true;
         boolean allLocallyDeleted = true;
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
-        File [] files = Utils.getCurrentContext(null).getFiles();
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             FileInformation info = cache.getStatus(file);
