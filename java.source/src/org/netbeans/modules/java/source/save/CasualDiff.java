@@ -1521,82 +1521,11 @@ public class CasualDiff {
     }
     
     /**
-     * Diff a ordered list for differences.
-     * REMOVE - use printing 
-     */
-    private void diffParameterList(List<? extends JCTree> oldList, 
-                                     List<? extends JCTree> newList,
-                                     int where, ListType type) 
-    {
-        if (oldList == newList)
-            return;
-        assert oldList != null && newList != null;
-        int lastOldPos = where;
-        
-        ListMatcher<JCExpression> matcher = ListMatcher.<JCExpression>instance(
-                (List<JCExpression>) oldList, 
-                (List<JCExpression>) newList
-        );
-        if (!matcher.match()) {
-            return;
-        }
-        Iterator<? extends JCTree> oldIter = oldList.iterator();
-        ResultItem<JCExpression>[] result = matcher.getTransformedResult();
-        Separator s = matcher.separatorInstance();
-        s.compute();
-        for (int j = 0; j < result.length; j++) {
-            JCTree oldT;
-            ResultItem<JCExpression> item = result[j];
-            switch (item.operation) {
-                case MODIFY:
-                    oldT = oldIter.next();
-                    append(Diff.modify("", lastOldPos, oldT, item.element, "", ListType.PARAMETER));
-                    lastOldPos = endPos(oldT);
-                    break;
-                case INSERT: {
-                    String prec = s.head(j) ? type.head() : s.prev(j) ? type.sep() : null;
-                    String tail = s.tail(j) ? type.tail() : s.next(j) ? type.sep() : null;
-                    // XXX: todo (#pf): strange, should be solved better. Used for
-                    // move position after last available separator. In case there
-                    // is no available separator, use lastOldPos immediately for
-                    // diff.
-                    //if (type.sep().equals(tail)) {
-                    // is there any next element in old list and we do not
-                    // insert the first element.
-                    int pos = lastOldPos;
-                    if (oldIter.hasNext() && lastOldPos != where) {
-                        pos = TokenUtilities.moveFwdToToken(tokenSequence, lastOldPos, type.sep);
-                        if (pos > 0) {
-                            pos += type.sep.fixedText().length();
-                        }
-                    }
-                    append(Diff.insert(prec, item.element, pos, tail, ListType.PARAMETER));
-                    break;
-                }
-                case DELETE: {
-                    // XXX: todo (#pf): use tokens around. Should be refactored to JavaTokenId and
-                    // some formatting policy
-                    String prec = s.head(j) ? type.headToken() : s.prev(j) ? type.sepToken() : null;
-                    String tail = s.tail(j) ? type.tailToken() : s.next(j) ? type.sepToken() : null;
-                    append(Diff.delete(prec, item.element, lastOldPos, tail));
-                    oldT = oldIter.next();
-                    lastOldPos = endPos(item.element);
-                    break;
-                }
-                case NOCHANGE:
-                    oldT = oldIter.next();
-                    lastOldPos = endPos(oldT);
-                    break;
-            }
-        }
-    }
-    
-    /**
      * Diff two lists of parameters separated by comma. It is used e.g.
      * from type parameters and method parameters.
      * 
      */
-    protected int diffParameterList(
+    private int diffParameterList(
             List<? extends JCTree> oldList,
             List<? extends JCTree> newList,
             boolean printParen,
@@ -1680,7 +1609,7 @@ public class CasualDiff {
      * Used for diffing lists which does not contain any separator.
      * (Currently for imports and members diffing.)
      */
-    protected int[] diffList(
+    private int[] diffList(
             List<? extends JCTree> oldList, 
             List<? extends JCTree> newList,
             int initialPos, 
