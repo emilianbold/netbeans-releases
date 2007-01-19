@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.localhistory
+OpenIDE-Module-Layer: org/netbeans/modules/localhistory/resources/layer.xml
+OpenIDE-Module-Install: org/netbeans/modules/localhistory/ModuleLifecycleManager.class
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/localhistory/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.1.1

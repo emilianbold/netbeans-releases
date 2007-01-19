@@ -20,6 +20,7 @@ package org.netbeans.modules.versioning;
 
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.spi.LocalHistory;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.openide.util.Lookup;
@@ -61,6 +62,16 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      * What folder is versioned by what versioning system. 
      */
     private Map<File, VersioningSystem> folderOwners = new WeakHashMap<File, VersioningSystem>(100);
+
+    /**
+     * Holds registered local history system.
+     */
+    private VersioningSystem localHistory;
+    
+    /**
+     * What folders are managed by local history. 
+     */
+    private Map<File, Boolean> localHistoryFolders = new WeakHashMap<File, Boolean>(100);
     
     private final VersioningSystem NULL_OWNER = new VersioningSystem() {
         public String getDisplayName() {
@@ -96,8 +107,13 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     }
 
     private void loadVersioningSystems(Collection<? extends VersioningSystem> systems) {
+        assert versioningSystems.size() == 0;
+        assert localHistory == null;
         versioningSystems.addAll(systems);
         for (VersioningSystem system : versioningSystems) {
+            if (localHistory == null && system instanceof LocalHistory) {
+                localHistory = system;
+            }
             system.addPropertyChangeListener(this);
         }
     }
@@ -107,6 +123,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             system.removePropertyChangeListener(this);
         }
         versioningSystems.clear();
+        localHistory = null;
     }
 
     InterceptionListener getInterceptionListener() {
@@ -115,6 +132,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
 
     private synchronized void flushFileOwnerCache() {
         folderOwners.clear();
+        localHistoryFolders.clear();
     }
 
     synchronized VersioningSystem[] getVersioningSystems() {
@@ -122,11 +140,12 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     }
 
     /**
+     * Determines versioning systems that manage files in given context.
      * 
      * @param ctx VCSContext to examine
      * @return VersioningSystem systems that manage this context or an empty array if the context is not versioned
      */
-    public VersioningSystem[] getOwners(VCSContext ctx) {
+    VersioningSystem[] getOwners(VCSContext ctx) {
         Set<File> files = ctx.getRootFiles();
         Set<VersioningSystem> owners = new HashSet<VersioningSystem>();
         for (File file : files) {
@@ -140,6 +159,13 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
 
     /**
      * Determines the versioning system that manages given file.
+     * Owner of a file:
+     * - annotates its label in explorers, editor tab, etc.
+     * - provides menu actions for it
+     * - supplies "original" content of the file
+     * 
+     * Owner of a file may change over time (one common example is the Import command). In such case, the appropriate 
+     * Versioning System is expected to fire the PROP_VERSIONED_ROOTS property change. 
      * 
      * @param file a file
      * @return VersioningSystem owner of the file or null if the file is not under version control
@@ -157,8 +183,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         
         File closestParent = null;
             for (VersioningSystem system : versioningSystems) {
-                // XXX HACK! ignore local history
-                if(!system.getClass().getName().equals("org.netbeans.modules.localhistory.LocalHistoryVCS")) {
+                if (system != localHistory) {    // currently, local history is never an owner of a file
                     File topmost = system.getTopmostManagedParent(folder);                
                     if (topmost != null && (closestParent == null || Utils.isParentOrEqual(closestParent, topmost))) {
                         owner = system;
@@ -175,41 +200,33 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         return owner;
     }
 
-    private VersioningSystem localHistory;
-    private Map<File, VersioningSystem> localHistoryFiles = new WeakHashMap<File, VersioningSystem>(100);
-    
-    public synchronized VersioningSystem getLocalHistory(File file) {
+    /**
+     * Returns local history module that handles the given file.
+     * 
+     * @param file the file to examine
+     * @return VersioningSystem local history versioning system or null if there is no local history for the file
+     */
+    synchronized VersioningSystem getLocalHistory(File file) {
+        if (localHistory == null) return null;
         File folder = file;
         if (file.isFile()) {
             folder = file.getParentFile();
             if (folder == null) return null;
         }
         
-        if(localHistory == null) {
-            // XXX HACK!
-            for (VersioningSystem system : versioningSystems) {
-                if(system.getClass().getName().equals("org.netbeans.modules.localhistory.LocalHistoryVCS")) {
-                    localHistory = system;
-                    break;
-                }
-            }            
+        Boolean isManagedByLocalHistory = localHistoryFolders.get(folder);
+        if (isManagedByLocalHistory != null) {
+            return isManagedByLocalHistory.booleanValue() ? localHistory : null;
         }
-        if(localHistory == null) return null;     
-        
-        VersioningSystem owner = localHistoryFiles.get(folder);
-        if (owner == NULL_OWNER) return null;
-        if (owner != null) return owner;
                 
         boolean isManaged = localHistory.getTopmostManagedParent(folder) != null;            
-        
         if (isManaged) {
-            localHistoryFiles.put(folder, localHistory);
-            owner = localHistory;
+            localHistoryFolders.put(folder, Boolean.TRUE);
+            return localHistory;
         } else {
-            localHistoryFiles.put(folder, NULL_OWNER);
-            owner = null;
+            localHistoryFolders.put(folder, Boolean.FALSE);
+            return null;
         }        
-        return owner;
     }
     
     public void resultChanged(LookupEvent ev) {
