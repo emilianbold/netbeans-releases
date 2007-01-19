@@ -801,8 +801,9 @@ public final class FileUtils {
         return (parent != null) && candidate.equals(parent);
     }
     
-    public static File createLauncher(NativeLauncher nl, Platform platform) throws IOException {
-        return nl.createLauncher(platform);
+    public static File createLauncher(NativeLauncher nl, Platform platform, Progress progress) throws IOException {
+        return nl.createLauncher(platform, 
+                (progress==null) ? new Progress() : progress);
     }
     
     // private //////////////////////////////////////////////////////////////////////
