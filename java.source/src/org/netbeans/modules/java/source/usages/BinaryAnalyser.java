@@ -82,6 +82,7 @@ public class BinaryAnalyser implements LowMemoryListener {
     private final Map<String,List<String>> refs = new HashMap<String,List<String>>();
     private final Set<String> toDelete = new HashSet<String> ();
     private final AtomicBoolean lowMemory;
+    private boolean cacheCleared;
 
     public BinaryAnalyser (Index index) {
        assert index != null;
@@ -96,8 +97,7 @@ public class BinaryAnalyser implements LowMemoryListener {
     public final void analyse (final URL root, final ProgressHandle handle) throws IOException, IllegalArgumentException  {
         assert root != null;        
             ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void> () {
-                public Void run () throws IOException {
-                index.clear();
+                public Void run () throws IOException {                
                 LowMemoryNotifier.getDefault().addLowMemoryListener (BinaryAnalyser.this);
                 try {
                     String mainP = root.getProtocol();
@@ -110,7 +110,8 @@ public class BinaryAnalyser implements LowMemoryListener {
                                 if (handle != null) {
                                     handle.setDisplayName(String.format (NbBundle.getMessage(BinaryAnalyser.class,"MSG_Scannig"),archive.getAbsolutePath()));
                                 }
-                                if (!isUpToDate(null,archive.lastModified())) {                                
+                                if (!isUpToDate(null,archive.lastModified())) {
+                                    index.clear();
                                     if (handle != null) { //Tests don't provide handle
                                         handle.setDisplayName (String.format(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing"),archive.getAbsolutePath()));
                                     }
@@ -131,6 +132,7 @@ public class BinaryAnalyser implements LowMemoryListener {
                                     handle.setDisplayName(String.format (NbBundle.getMessage(BinaryAnalyser.class,"MSG_Scannig"),FileUtil.getFileDisplayName(rootFo)));
                                 }
                                 if (!isUpToDate(null,rootFo.lastModified().getTime())) {
+                                    index.clear();
                                     if (handle != null) { //Tests don't provide handle
                                         handle.setDisplayName (String.format(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing"),FileUtil.getFileDisplayName(rootFo)));
                                     }
@@ -150,6 +152,7 @@ public class BinaryAnalyser implements LowMemoryListener {
                             if (handle != null) { //Tests don't provide handle
                                 handle.setDisplayName (String.format(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing"),rootFile.getAbsolutePath()));
                             }
+                            cacheCleared = false;
                             analyseFolder(rootFile, path);
                         }
                     }
@@ -159,6 +162,7 @@ public class BinaryAnalyser implements LowMemoryListener {
                             if (handle != null) { //Tests don't provide handle
                                 handle.setDisplayName (String.format(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing"),FileUtil.getFileDisplayName(rootFo)));
                             }
+                            index.clear();
                             analyseFileObjects(rootFo);
                         }
                     }
@@ -197,6 +201,10 @@ public class BinaryAnalyser implements LowMemoryListener {
                     }
                     String relativePath = FileObjects.convertFolder2Package (filePath.substring(rootPath.length(), endPos));
                     if (this.accepts(file.getName()) && !isUpToDate (relativePath, fileMTime)) {                        
+                        if (!cacheCleared) {
+                            this.index.clear();                            
+                            cacheCleared = true;
+                        }
                         InputStream in = new BufferedInputStream (new FileInputStream (file));
                         try {
                             analyse (in);
