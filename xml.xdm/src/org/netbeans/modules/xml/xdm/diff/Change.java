@@ -90,7 +90,7 @@ public class Change extends Difference {
                                 new AttributeDelete((Attribute) oldAttr, oldAttrPos);
                             addAttrChanges(delete);
                         } else {
-                            boolean tokenChange = DiffFinder.checkChange(
+                            boolean tokenChange = new DiffFinder().checkChange(
                                     oldAttr, currAttr).size() > 0;
                             boolean posChange = oldAttrPos != newAttrPos;
                             if(tokenChange || posChange) {

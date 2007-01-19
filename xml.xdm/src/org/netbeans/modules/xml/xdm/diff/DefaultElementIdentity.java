@@ -69,7 +69,7 @@ public class DefaultElementIdentity implements ElementIdentity {
         return compareAttr( n1, n2);
     }
     
-    private boolean compareAttr(org.w3c.dom.Element n1, org.w3c.dom.Element n2) {
+    protected boolean compareAttr(org.w3c.dom.Element n1, org.w3c.dom.Element n2) {
         NamedNodeMap attrs1 = n1.getAttributes();
         NamedNodeMap attrs2 = n2.getAttributes();
         

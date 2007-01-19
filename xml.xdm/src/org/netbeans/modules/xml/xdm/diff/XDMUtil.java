@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- *
+ * 
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -23,12 +23,13 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.dom.ElementIdentity;
 import org.netbeans.modules.xml.xdm.XDMModel;
 import org.netbeans.modules.xml.xdm.nodes.Attribute;
 import org.netbeans.modules.xml.xdm.nodes.Element;
@@ -36,11 +37,11 @@ import org.netbeans.modules.xml.xdm.nodes.Node;
 import org.netbeans.modules.xml.xdm.nodes.NodeImpl;
 import org.netbeans.modules.xml.xdm.nodes.Text;
 import org.netbeans.modules.xml.xdm.diff.Change.AttributeChange;
-import org.netbeans.modules.xml.xdm.diff.Change.AttributeDiff;
 import org.netbeans.modules.xml.xdm.visitor.PositionFinderVisitor;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import javax.swing.text.Document;
+import org.netbeans.modules.xml.xdm.nodes.Token;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 
@@ -122,12 +123,7 @@ public class XDMUtil {
     public List<Difference> compareXML(String xml1, String xml2,
             XDMUtil.ComparisonCriteria criteria)
             throws Exception {
-        XDMUtil util = new XDMUtil();
-        List<Difference> diffs = compareXML(xml1, xml2, criteria, true);
-        filterNSAttrDiffs(diffs);
-        filterNSPrefixDiffs(diffs);
-        filterAttrWhitespaceDiffs(diffs);
-        return diffs;
+        return compareXML(xml1, xml2, criteria, true);
     }
     
     /*
@@ -152,20 +148,21 @@ public class XDMUtil {
         sd1.remove(0, XML_PROLOG.length());
         sd1.insertString(0, firstDoc, null);
         m1.sync();
+        fDoc = m1.getDocument();        
         
         Document sd2 = new BaseDocument(XMLKit.class, false);
         sd2.getText(0, sd2.getLength());
-        XDMModel m2 = createXDMModel(sd2);
+        XDMModel m2 = createXDMModel(sd2);        
         sd2.remove(0, XML_PROLOG.length());
         sd2.insertString(0, secondDoc, null);
         m2.setPretty(true);
         m2.sync();
+        sDoc = m2.getDocument();
         
-        XDMTreeDiff dif = new XDMTreeDiff(m1.getElementIdentity());
-        List<Difference> diffs = 
-                dif.performDiff(m1.getDocument(), m2.getDocument());
+        XDUDiffFinder dif = new XDUDiffFinder(createElementIdentity());
+        List<Difference> diffs = dif.findDiff(m1.getDocument(), m2.getDocument());
         if(filterWhiteSpace)
-            diffs = filterWhitespace(diffs);//filter whitespace diffs
+            diffs = XDUDiffFinder.filterWhitespace(diffs);//filter whitespace diffs
         if(type == ComparisonCriteria.EQUAL) {//remove order change diffs
             List<Difference> filteredDiffs = new ArrayList<Difference>();
             for(Difference d:diffs) {
@@ -196,9 +193,26 @@ public class XDMUtil {
             }
             return filteredDiffs;
         }
+        
+        //remove pseudo attr position changes
+        removePseudoAttrPosChanges(diffs);
+        
+        filterSchemaLocationDiffs(diffs);
+        
         return diffs;
     }
 
+    private ElementIdentity createElementIdentity() {
+        //Establish DOM element identities
+        ElementIdentity eID = new XDElementIdentity();
+        //Following values are suitable for Schema and WSDL documents
+        //these default values can be reset by eID.reset() call
+        eID.addIdentifier( "id" );
+        eID.addIdentifier( "name" );
+        eID.addIdentifier( "ref" );
+        return eID;
+    }
+    
     private XDMModel createXDMModel(Document sd)
     throws BadLocationException, IOException {
         return createXDMModel(sd, "");
@@ -269,14 +283,8 @@ public class XDMUtil {
         return false;
     }
     
-    public static boolean isPossibleWhiteSpace(String text) {
-        return text.length() > 0 &&
-                Character.isWhitespace(text.charAt(0)) &&
-                Character.isWhitespace(text.charAt(text.length()-1));
-    }
-    
     public static boolean isWhitespaceOnly(String tn) {
-        return isPossibleWhiteSpace(tn) &&
+        return XDUDiffFinder.isPossibleWhiteSpace(tn) &&
                 tn.trim().length() == 0;
     }
     
@@ -287,10 +295,46 @@ public class XDMUtil {
     }
     
     /*
-     * filters or removes diffs that are whitespace changes only
+     * filters or removes diffs that are attr position changes
      */
-    public static List<Difference> filterWhitespace(final List<Difference> diffs) {
-        return DiffFinder.filterWhitespace(diffs);
+    public static void removePseudoAttrPosChanges(final List<Difference> diffs) {
+        List<Difference> removeDiffs = new ArrayList<Difference>();
+        for(Difference dif:diffs) {
+            if(dif instanceof Change) {
+                Change c = (Change)dif;
+                //filter attibute position changes only
+                if(c.isAttributeChanged() && !c.isPositionChanged() && !c.isTokenChanged()) {
+                    List<Change.AttributeDiff> attrdiffs = c.getAttrChanges();
+                    int size = attrdiffs.size();
+                    List<Change.AttributeDiff> removeAttrs = new ArrayList<Change.AttributeDiff>();
+                    int delCount = 0;
+                    int addCount = 0;
+                    for(Change.AttributeDiff attrdif:attrdiffs) {
+                        if(attrdif instanceof Change.AttributeDelete)
+                            delCount++;
+                        else if(attrdif instanceof Change.AttributeAdd)
+                            addCount++;
+                        else if(attrdif instanceof Change.AttributeChange) {
+                            Change.AttributeChange attrChange =
+                                    (AttributeChange) attrdif;
+                            if(attrChange.isPositionChanged() && !attrChange.isTokenChanged()) {
+                                if((attrChange.getOldAttributePosition() - delCount + addCount) == 
+                                        attrChange.getNewAttributePosition())
+                                    removeAttrs.add(attrdif);
+                            }
+                        }
+                    }
+                    for(Change.AttributeDiff attrdif:removeAttrs) {
+                        c.removeAttrChanges(attrdif);
+                    }
+                    if(size > 0 && c.getAttrChanges().size() == 0)
+                        removeDiffs.add(dif);
+                }
+            }
+        }
+        for(Difference dif:removeDiffs) {
+            diffs.remove(dif);
+        }
     }
     
     /*
@@ -326,36 +370,18 @@ public class XDMUtil {
             diffs.remove(dif);
         }
     }
-    
+        
     /*
-     * filters or removes diffs that are ns attr "xmlns:prefix='some url'"
+     * filters or removes diffs that are schemalocation attr "xsi:schemaLocation='some url'"
      */
-    public static void filterNSAttrDiffs(final List<Difference> diffs) {
+    public static void filterSchemaLocationDiffs(final List<Difference> diffs) {
         List<Difference> removeDiffs = new ArrayList<Difference>();
         for(Difference dif:diffs) {
             if(dif instanceof Change) {
-                //Add, Delete, Change types of differences apply to Nodes [Element, Text, CData] in
-                //xml.
-                //Add, Delete diffs indicates add or delete of nodes (element, text, cdata)
-                //Change has a bigger role in xml diff, it contains three types of changes
-                //related to an element (and 1,2 types for text, cdata). They are
-                //1) element/text/cdata token change, ie., <test x="x"/> is diff from <test  x="x"/>
-                //there is a extra space before attribute x, and is counted as token diff for element 'test'
-                // usage:  Change.isTokenChanged() returns true if there is a token change
-                //2) element/text/cdata position change within a parent element.
-                // usage:  Change.isPositionChanged() returns true if there is a position change
-                //3) element attribute changes. They are further classified into 3
-                //   Change.AttributeAdd, Change.AttributeDelete, Change.AttributeChange
-                // usage:  Change.getAttrChanges() returns list of all (Change.AttributeDiff) attribute changes,
-                //iterate through the list and do a instanceof to Change.AttributeAdd, Change.AttributeDelete,
-                //Change.AttributeChange, to process each one. Change.AttributeChange futher
-                //tells you if there is position and/or token change involved.
-                //usage: Change.AttributeChange.isTokenChanged(), Change.AttributeChange.isPositionChanged()
                 Change c = (Change)dif;
                 //filter namespace attibute changes only
                 if(c.isAttributeChanged() && !c.isPositionChanged() &&
-                        !c.isTokenChanged() && (removeNSAttrDiffs(c) ||
-                        removeSchemaLocationAttrDiffs(c))) {
+                        !c.isTokenChanged() && removeSchemaLocationAttrDiffs(c)) {
                     removeDiffs.add(dif);
                 }
             }
@@ -363,94 +389,6 @@ public class XDMUtil {
         for(Difference dif:removeDiffs) {
             diffs.remove(dif);
         }
-    }
-    
-    /*
-     * filters or removes diffs that are token changes <h:somename> -> <a:somename>
-     */
-    public static void filterNSPrefixDiffs(final List<Difference> diffs) {
-        List<Difference> removeDiffs = new ArrayList<Difference>();
-        for(Difference dif:diffs) {
-            if(dif instanceof Change) {
-                Change c = (Change)dif;
-                if(c.isTokenChanged() && !c.isPositionChanged()) {
-                    String oName = c.getOldNodeInfo().getNode().getNodeName().trim();
-                    oName = oName.substring(oName.indexOf(':')!=-1?oName.indexOf(':')+1:0);
-                    String nName = c.getNewNodeInfo().getNode().getNodeName().trim();
-                    nName = nName.substring(nName.indexOf(':')!=-1?nName.indexOf(':')+1:0);
-                    if(oName.equals(nName) && (!c.isAttributeChanged() ||
-                            c.isAttributeChanged() && (removeNSAttrDiffs(c) ||
-                            removeSchemaLocationAttrDiffs(c))))
-                        removeDiffs.add(dif);
-                }
-            }
-        }
-        for(Difference dif:removeDiffs) {
-            diffs.remove(dif);
-        }
-    }
-    
-    /*
-     * filters or removes diffs that are attr whitespace changes x="y" -> x ="y" or x= "y"
-     */
-    public static void filterAttrWhitespaceDiffs(final List<Difference> diffs) {
-        List<Difference> removeDiffs = new ArrayList<Difference>();
-        for(Difference dif:diffs) {
-            if(dif instanceof Change) {
-                Change c = (Change)dif;
-                //filter whitespace between attibute changes only
-                if(c.isAttributeChanged() && !c.isPositionChanged() && !c.isTokenChanged()) {
-                    List<Change.AttributeDiff> attrdiffs = c.getAttrChanges();
-                    int size = attrdiffs.size();
-                    List<Change.AttributeDiff> removeAttrs = new ArrayList<Change.AttributeDiff>();
-                    for(Change.AttributeDiff attrdif:attrdiffs) {
-                        if(attrdif instanceof Change.AttributeChange) {
-                            Change.AttributeChange attrChange =
-                                    (AttributeChange) attrdif;
-                            if(!attrChange.isPositionChanged()) {
-                                Attribute oldAttr = attrdif.getOldAttribute();
-                                Attribute newAttr = attrdif.getNewAttribute();
-                                if(oldAttr != null && newAttr != null &&
-                                        oldAttr.getNodeValue().trim().equals(
-                                        newAttr.getNodeValue().trim()))
-                                    removeAttrs.add(attrdif);
-                            }
-                        }
-                    }
-                    for(Change.AttributeDiff attrdif:removeAttrs) {
-                        c.removeAttrChanges(attrdif);
-                    }
-                    if(size > 0 && attrdiffs.size() == 0)
-                        removeDiffs.add(dif);
-                }
-            }
-        }
-        for(Difference dif:removeDiffs) {
-            diffs.remove(dif);
-        }
-    }
-    
-    /*
-     * removes attr diffs that are ns attr "xmlns:prefix='some url'"
-     */
-    public static boolean removeNSAttrDiffs(Change c) {
-        List<Change.AttributeDiff> attrdiffs = c.getAttrChanges();
-        int size = attrdiffs.size();
-        List<Change.AttributeDiff> removeAttrs = new ArrayList<Change.AttributeDiff>();
-        for(Change.AttributeDiff attrdif:attrdiffs) {
-            Attribute oldAttr = attrdif.getOldAttribute();
-            Attribute newAttr = attrdif.getNewAttribute();
-            if(oldAttr != null && oldAttr.getName().startsWith(NS_PREFIX))
-                removeAttrs.add(attrdif);
-            else if(newAttr != null && newAttr.getName().startsWith(NS_PREFIX))
-                removeAttrs.add(attrdif);
-        }
-        for(Change.AttributeDiff attrdif:removeAttrs) {
-            c.removeAttrChanges(attrdif);
-        }
-        if(size > 0 && attrdiffs.size() == 0)
-            return true;
-        return false;
     }
     
     /*
@@ -475,6 +413,78 @@ public class XDMUtil {
             return true;
         return false;
     }
+    
+    public class XDElementIdentity extends DefaultElementIdentity {
+
+        /**
+         * Creates a new instance of DefaultElementIdentity
+         */
+        public XDElementIdentity() {
+            super();
+        }
+
+        protected boolean compareElement(org.w3c.dom.Element n1, org.w3c.dom.Element n2, org.w3c.dom.Node parent1, org.w3c.dom.Document doc1, org.w3c.dom.Document doc2) {
+            String qName1 = n1.getLocalName();
+            String qName2 = n2.getLocalName();
+            String ns1 = ((Node)n1).getNamespaceURI((org.netbeans.modules.xml.xdm.nodes.Document) doc1);
+            String ns2 = ((Node)n2).getNamespaceURI((org.netbeans.modules.xml.xdm.nodes.Document) doc2);
+
+            if ( qName1.intern() !=  qName2.intern() )
+                return false;
+            if(!((ns1 == null || ns1.equals("")) && (ns2 == null || ns2.equals("")))) {//can determine ns
+                if ( !(ns1 == null && ns2 == null) &&
+                        !(ns1 != null && ns2 != null && ns1.intern() == ns2.intern() ) )
+                    return false;
+            }
+
+            if(parent1 == doc1) return true; //if root no need to compare other identifiers
+
+            return compareAttr( n1, n2);
+        }
+    }
+    
+    public class XDUDiffFinder extends DiffFinder {
+
+        public XDUDiffFinder(ElementIdentity eID) {
+            super(eID);
+        }
+
+        public List<Change.Type> checkChange(final Node p1, final Node p2) {
+            List<Change.Type> changes = new ArrayList<Change.Type>();
+            if (p1 instanceof Element && p2 instanceof Element) {
+                if ( ! checkAttributesEqual((Element)p1, (Element)p2)) {
+                    changes.add(Change.Type.ATTRIBUTE);
+                }
+            }
+            return changes;
+        }
+
+        protected boolean checkAttributesEqual(final Element p1, final Element p2) {
+            if (p1 == null || p2 == null) return false;
+            NamedNodeMap nm1 = p1.getAttributes();
+            NamedNodeMap nm2 = p2.getAttributes();
+            //if( nm1.getLength() != nm2.getLength() ) return false;
+
+            for ( int i = 0; i < nm1.getLength(); i++ ) {
+                Node attr1 = (Node) nm1.item(i);
+                if(attr1.getNodeName().startsWith("xmlns"))
+                    continue;
+                Node attr2 = (Node) nm2.getNamedItem(attr1.getNodeName());
+                if ( attr2 == null ) return false;
+                if(nm2.item(i) != attr2) return false;
+                if(!attr1.getNodeValue().equals(attr2.getNodeValue()))
+                    return false;
+            }
+            return true;
+        } 
+
+        protected boolean compareTextByValue(Text n1, Text n2) {
+            return n1.getNodeValue().equals(n2.getNodeValue());
+        }    
+    }
+    
+    static org.netbeans.modules.xml.xdm.nodes.Document fDoc;
+    static org.netbeans.modules.xml.xdm.nodes.Document sDoc;
     
     public final static String NS_PREFIX = "xmlns";
     public final static String SCHEMA_LOCATION = "schemaLocation";    

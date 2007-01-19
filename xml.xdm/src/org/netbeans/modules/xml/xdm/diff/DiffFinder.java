@@ -212,7 +212,7 @@ public class DiffFinder {
         return nodeType;
     }
     
-    public static List<Change.Type> checkChange(final Node n1, final Node n2,
+    protected List<Change.Type> checkChange(final Node n1, final Node n2,
             final int p1, final int p2) {
         List<Change.Type> changes = checkChange(n1, n2);
         if(p1 != p2)
@@ -220,7 +220,7 @@ public class DiffFinder {
         return changes;
     }
     
-    public static List<Change.Type> checkChange(final Node p1, final Node p2) {
+    protected List<Change.Type> checkChange(final Node p1, final Node p2) {
         List<Change.Type> changes = new ArrayList<Change.Type>();
         if ( ! checkTokensEqual(p1, p2)) {
             changes.add(Change.Type.TOKEN);
@@ -236,7 +236,7 @@ public class DiffFinder {
         return changes;
     }
     
-    public static boolean checkTokensEqual(final Node p1, final Node p2) {
+    protected boolean checkTokensEqual(final Node p1, final Node p2) {
         if (p1 instanceof NodeImpl && p2 instanceof NodeImpl) {
             List<Token> t1List = ((NodeImpl)p1).getTokens();
             List<Token> t2List = ((NodeImpl)p2).getTokens();
@@ -245,7 +245,7 @@ public class DiffFinder {
         return false;
     }
     
-    public static boolean checkAttributesEqual(final Element p1, final Element p2) {
+    protected boolean checkAttributesEqual(final Element p1, final Element p2) {
         if (p1 == null || p2 == null) return false;
         NamedNodeMap nm1 = p1.getAttributes();
         NamedNodeMap nm2 = p2.getAttributes();
@@ -263,7 +263,7 @@ public class DiffFinder {
         return true;
     }
     
-    private static boolean compareTokenEquals(List<Token> t1List, 
+    protected boolean compareTokenEquals(List<Token> t1List, 
             List<Token> t2List) {
         if( t1List.size() != t2List.size() )
             return false;
@@ -300,20 +300,20 @@ public class DiffFinder {
         return null;
     }
     
-    private static Difference createAddEvent(List<Node> ancestors1, Node n, 
+    protected Difference createAddEvent(List<Node> ancestors1, Node n, 
             int absolutePos,
             List<Node> ancestors2) {
         assert n != null : "add node null";
         return new Add( getNodeType( n ), ancestors1, ancestors2, n, absolutePos);
     }
     
-    private static Difference createDeleteEvent(List<Node> ancestors1, Node n, int pos,
+    protected Difference createDeleteEvent(List<Node> ancestors1, Node n, int pos,
             List<Node> ancestors2) {
         assert n != null : "delete node null";
         return new Delete( getNodeType( n ), ancestors1, ancestors2, n, pos) ;
     }
     
-    private static Difference createChangeEvent(List<Node> ancestors1, Node n1, Node n2,
+    protected Difference createChangeEvent(List<Node> ancestors1, Node n1, Node n2,
             int n1Pos, int n2Pos, List<Change.Type> changes, List<Node> ancestors2) {
         assert n1 != null && n2 != null : "change nodes null";
         if(n1 instanceof Element)
@@ -423,7 +423,7 @@ public class DiffFinder {
         }
     }
     
-    private static void modifyPositionFromIndex(int index,
+    protected void modifyPositionFromIndex(int index,
             List<Difference> childDeList, Difference de,
             HashMap<Difference, Integer> oldPosMap) {
 //        int x = de.getOldNodeInfo().getPosition();
@@ -453,13 +453,13 @@ public class DiffFinder {
         }
     }
     
-    static boolean isPossibleWhiteSpace(String text) {
+    public static boolean isPossibleWhiteSpace(String text) {
         return text.length() > 0 &&
                 Character.isWhitespace(text.charAt(0)) &&
                 Character.isWhitespace(text.charAt(text.length()-1));
     }
     
-    static boolean isWhiteSpaceOnly(Text txt) {
+    public static boolean isWhiteSpaceOnly(Text txt) {
         String tn = "";
         if(((NodeImpl)txt).getTokens().size() == 1)
             tn = ((NodeImpl)txt).getTokens().get(0).getValue();
@@ -476,7 +476,7 @@ public class DiffFinder {
             return compareTextByValue( n1, n2 );
     }
     
-    private boolean compareWhiteSpaces(Text n1, Text n2) {
+    protected boolean compareWhiteSpaces(Text n1, Text n2) {
         Node nodeBefore1 = cInfo1.getSiblingBefore( n1 );
         Node nodeBefore2 = cInfo2.getSiblingBefore( n2 );
         boolean siblingCompare = false;
@@ -499,7 +499,7 @@ public class DiffFinder {
         return false;
     }
     
-    private boolean compareTextByValue(Text n1, Text n2) {
+    protected boolean compareTextByValue(Text n1, Text n2) {
         return n1.getNodeValue().intern() == n2.getNodeValue().intern();
     }
     
