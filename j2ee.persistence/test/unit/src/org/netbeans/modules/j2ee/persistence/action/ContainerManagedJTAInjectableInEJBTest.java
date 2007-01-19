@@ -19,11 +19,10 @@
 
 package org.netbeans.modules.j2ee.persistence.action;
 
+import org.netbeans.modules.j2ee.persistence.action.spi.ContainerManagedJTAInjectableInEJB;
+import org.netbeans.modules.j2ee.persistence.action.spi.EntityManagerGenerationStrategy;
 import java.io.File;
 import junit.framework.*;
-import com.sun.source.tree.ClassTree;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.jackpot.test.TestUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -60,8 +59,8 @@ public class ContainerManagedJTAInjectableInEJBTest extends EntityManagerGenerat
         assertFile(result);
     }
     
-    protected EntityManagerGenerationStrategy getStrategy(WorkingCopy workingCopy, TreeMaker make, ClassTree clazz, GenerationOptions options){
-        return new ContainerManagedJTAInjectableInEJB(workingCopy, make, clazz, getPersistenceUnit(), options);
+    protected Class<? extends EntityManagerGenerationStrategy> getStrategyClass() {
+        return ContainerManagedJTAInjectableInEJB.class;
     }
 }
 

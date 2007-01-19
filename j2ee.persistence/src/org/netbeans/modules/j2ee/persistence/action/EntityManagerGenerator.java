@@ -19,22 +19,19 @@
 
 package org.netbeans.modules.j2ee.persistence.action;
 
+import org.netbeans.modules.j2ee.persistence.action.spi.EntityManagerGenerationStrategyResolver;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
 import java.io.IOException;
-import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.persistence.action.spi.EntityManagerGenerationStrategy;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
@@ -53,7 +50,7 @@ import org.openide.util.NbBundle;
  * @author Martin Adamek, Erno Mononen
  */
 
-public class EntityManagerGenerator {
+public final class EntityManagerGenerator {
     
     /**
      * The fully qualified name of the target class.
@@ -69,6 +66,11 @@ public class EntityManagerGenerator {
     private final FileObject targetFo;
     
     /**
+     * The project to which the target file belongs.
+     */
+    private final Project project;
+    
+    /**
      * Creates a new EntityManagerGenerator.
      * @param targetFo the file object of the target java source file.
      * @param fqn the fully qualified name of the target java class.
@@ -77,6 +79,7 @@ public class EntityManagerGenerator {
         this.fqn = fqn;
         this.targetFo = targetFo;
         this.targetSource = JavaSource.forFileObject(targetFo);
+        this.project = FileOwnerQuery.getOwner(targetFo);
     }
     
     /**
@@ -88,7 +91,15 @@ public class EntityManagerGenerator {
      */
     public FileObject generate(final GenerationOptions options) throws IOException{
         
-        final boolean[] supportedUseCase = new boolean[1];
+        final Class<? extends EntityManagerGenerationStrategy> strategyClass = getStrategy();
+        
+        if (strategyClass == null){
+            NotifyDescriptor d = new NotifyDescriptor.Message(
+                    NbBundle.getMessage(EntityManagerGenerator.class, "ERR_NotSupportedAMJTA"), NotifyDescriptor.INFORMATION_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+            
+            return targetFo;
+        }
         
         AbstractTask task = new AbstractTask<WorkingCopy>() {
             
@@ -101,12 +112,8 @@ public class EntityManagerGenerator {
                 for (Tree typeDeclaration : cut.getTypeDecls()){
                     if (Tree.Kind.CLASS == typeDeclaration.getKind()){
                         ClassTree clazz = (ClassTree) typeDeclaration;
-                        EntityManagerGenerationStrategy strategy = getStrategy(cut, workingCopy, make, clazz, options);
-                        if (strategy != null){
-                            supportedUseCase[0] = true;
-                            ClassTree modifiedClazz = strategy.generate();
-                            workingCopy.rewrite(clazz, modifiedClazz);
-                        }
+                        EntityManagerGenerationStrategy strategy = instantiateStrategy(strategyClass, workingCopy, make, clazz, options);
+                        workingCopy.rewrite(clazz, strategy.generate());
                     }
                 }
             }
@@ -114,115 +121,41 @@ public class EntityManagerGenerator {
         
         targetSource.runModificationTask(task).commit();
         
-        if (!supportedUseCase[0]){
-            NotifyDescriptor d = new NotifyDescriptor.Message(
-                    NbBundle.getMessage(EntityManagerGenerator.class, "ERR_NotSupportedAMJTA"), NotifyDescriptor.INFORMATION_MESSAGE);
-            DialogDisplayer.getDefault().notify(d);
-        }
-        
         return targetFo;
     }
     
-    /**
-     * @return an appropriate generation strategy based on the project type of 
-     * our target Java source file.
-     */ 
-    protected EntityManagerGenerationStrategy getStrategy(CompilationUnitTree compilationUnit, WorkingCopy workingCopy, TreeMaker make, ClassTree clazz, GenerationOptions options){
+    private Class<? extends EntityManagerGenerationStrategy> getStrategy(){
 
-        Object j2eeModuleType = getJ2eeModuleType();
-        PersistenceUnit persistenceUnit = getPersistenceUnit();
-        
-        if (j2eeModuleType == null) {
-            // Application-managed persistence context in J2SE project (Resource-transaction)
-            return new ApplicationManagedResourceTransactionInJ2SE(workingCopy, make, clazz,persistenceUnit, options);
-        } else {
-            // it is Web or EJB, let's get all needed information
-            String jtaDataSource = persistenceUnit.getJtaDataSource();
-            String nonJtaDataSource = persistenceUnit.getNonJtaDataSource();
-            String transactionType = persistenceUnit.getTransactionType();
-            TreePath treePath = workingCopy.getTrees().getPath(compilationUnit, clazz);
-            boolean isInjectionTarget = isInjectionTarget(workingCopy, (TypeElement) workingCopy.getTrees().getElement(treePath));
-            boolean isContainerManaged = (jtaDataSource != null && !jtaDataSource.equals("")) && (transactionType != null && transactionType.equals("JTA"));
-            boolean isJTA = (transactionType == null || transactionType.equals("JTA")); // JTA is default value for transaction type in non-J2SE projects
-            
-            if (j2eeModuleType.equals(J2eeModule.WAR)) { // Web project
-                if (isContainerManaged) { // Container-managed persistence context
-                    if (isInjectionTarget) { // servlet, JSF managed bean ...
-                        return new ContainerManagedJTAInjectableInEJB(workingCopy, make, clazz,persistenceUnit, options);
-                    } else { // other classes
-                        return new ContainerManagedJTAInjectableInWeb(workingCopy, make, clazz, persistenceUnit, options);
-                    }
-                } else { // Application-managed persistence context (Resource-transaction)
-                    if (isJTA) { // JTA
-                        if (isInjectionTarget) { // servlet, JSF managed bean ...
-                            // not supported
-                            return null;
-                        } else { // other classes
-                            // not supported
-                            return null;
-                        }
-                    } else { // Resource-transaction
-                        if (isInjectionTarget) { // servlet, JSF managed bean ...
-                            return new ApplicationManagedResourceTransactionInjectableInWeb(workingCopy, make, clazz, persistenceUnit, options);
-                        } else { // other classes
-                            return new ApplicationManagedResourceTransactionNonInjectableInWeb(workingCopy, make, clazz,persistenceUnit, options);
-                        }
-                    }
-                }
-            } else if (j2eeModuleType.equals(J2eeModule.EJB)) { // EJB project
-                if (isContainerManaged) { // Container-managed persistence context
-                    if (isInjectionTarget) { // session, MessageDriven
-                        return new ContainerManagedJTAInjectableInEJB(workingCopy, make, clazz, persistenceUnit, options);
-                    } else { // other classes
-                        // ???
-                        return null;
-                    }
-                } else { // Application-managed persistence context
-                    if (isJTA) { // JTA
-                        if (isInjectionTarget) { // session, MDB
-                            // not supported
-                            return null;
-                        } else { // other classes
-                            // not supported
-                            return null;
-                        }
-                    } else { // Resource-transaction
-                        if (isInjectionTarget) { // session, MDB
-                            return new ApplicationManagedResourceTransactionInjectableInEJB(workingCopy, make, clazz, persistenceUnit, options);
-                        } else { // other classes
-                            return new ApplicationManagedResourceTransactionNonInjectableInEJB(workingCopy, make,clazz, persistenceUnit, options);
-                        }
-                    }
-                }
-            }
+        EntityManagerGenerationStrategyResolver resolver = project.getLookup().lookup(EntityManagerGenerationStrategyResolver.class);
+        if (resolver != null){
+            return resolver.resolveStrategy(targetFo);
         }
-        // not supported
+
         return null;
     }
     
-    protected boolean isInjectionTarget(WorkingCopy workingCopy, TypeElement element){
-        return InjectionTargetQuery.isInjectionTarget(workingCopy, element);
-    }
-    
-    /**
-     * @return the J2eeModule associated with the project of our target file or 
-     *  null if there was no associated J2eeModule.
-     */ 
-    protected Object getJ2eeModuleType(){
-        J2eeModule result = null;
-        Project project = FileOwnerQuery.getOwner(targetFo);
-        J2eeModuleProvider j2eeModuleProvider = null;
-        if (project != null){
-            j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-        }
-        if (j2eeModuleProvider != null) {
-            result = j2eeModuleProvider.getJ2eeModule();
-        }
-        return result != null ? result.getModuleType() : null;
+    private EntityManagerGenerationStrategy instantiateStrategy(Class<? extends EntityManagerGenerationStrategy> strategy, WorkingCopy workingCopy,
+            TreeMaker make, ClassTree clazz, GenerationOptions options){
         
+        EntityManagerGenerationStrategy result = null;
+        
+        try{
+            result = strategy.newInstance();
+            result.setClassTree(clazz);
+            result.setWorkingCopy(workingCopy);
+            result.setGenerationOptions(options);
+            result.setTreeMaker(make);
+            result.setPersistenceUnit(getPersistenceUnit());
+        } catch (IllegalAccessException iae){
+            throw new RuntimeException(iae); //TODO
+        } catch (InstantiationException ie){
+            throw new RuntimeException(ie); //TODO
+        }
+        
+        return result;
     }
     
-    protected PersistenceUnit getPersistenceUnit() {
+    private  PersistenceUnit getPersistenceUnit() {
         PersistenceScope persistenceScope = PersistenceScope.getPersistenceScope(targetFo);
         
         if (persistenceScope == null){
@@ -241,8 +174,4 @@ public class EntityManagerGenerator {
         return null;
     }
     
-    // for tests
-    protected final JavaSource getTargetSource(){
-        return this.targetSource;
-    }
 }

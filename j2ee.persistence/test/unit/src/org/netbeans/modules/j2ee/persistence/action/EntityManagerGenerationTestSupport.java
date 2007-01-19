@@ -7,6 +7,7 @@
 
 package org.netbeans.modules.j2ee.persistence.action;
 
+import org.netbeans.modules.j2ee.persistence.action.spi.EntityManagerGenerationStrategy;
 import junit.framework.*;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -20,7 +21,6 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.sourcetestsupport.SourceTestSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -73,7 +73,29 @@ public abstract class EntityManagerGenerationTestSupport  extends SourceTestSupp
         return punit;
     }
     
-    protected abstract EntityManagerGenerationStrategy getStrategy(WorkingCopy workingCopy, TreeMaker make, ClassTree clazz, GenerationOptions options);
+    protected EntityManagerGenerationStrategy getStrategy(WorkingCopy workingCopy, TreeMaker make, ClassTree clazz, GenerationOptions options){
+        
+        EntityManagerGenerationStrategy result = null;
+        
+        try{
+            result = getStrategyClass().newInstance();
+            result.setClassTree(clazz);
+            result.setWorkingCopy(workingCopy);
+            result.setGenerationOptions(options);
+            result.setTreeMaker(make);
+            result.setPersistenceUnit(getPersistenceUnit());
+        } catch (IllegalAccessException iae){
+            throw new RuntimeException(iae);
+        } catch (InstantiationException ie){
+            throw new RuntimeException(ie);
+        }
+        
+        return result;
+    }
 
+    
+    protected abstract Class<? extends EntityManagerGenerationStrategy> getStrategyClass();
+
+    
 }
 

@@ -20,12 +20,12 @@
 package org.netbeans.modules.j2ee.persistence.action;
 
 /**
- * This class represents code generations options for invoking
+ * This class represents code generation options for invoking
  * <code>javax.persistence.EntityManager</code> .
  *
  * @author Erno Mononen
  */
-public class GenerationOptions {
+public final class GenerationOptions {
     
     public enum Operation {
         PERSIST("em.persist({0});"),
@@ -48,7 +48,6 @@ public class GenerationOptions {
     private Operation operation;
     private String methodName;
     private String returnType;
-//    private Parameter parameter;
     private String parameterName;
     private String parameterType;
     private String queryAttribute;
