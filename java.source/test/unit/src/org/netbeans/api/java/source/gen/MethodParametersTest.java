@@ -42,7 +42,16 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(MethodParametersTest.class);
-        //suite.addTest(new MethodParametersTest("testAddToIndex0"));
+//        suite.addTest(new MethodParametersTest("testAddInsertReplaceParameters"));
+//        suite.addTest(new MethodParametersTest("testAddFirst"));
+//        suite.addTest(new MethodParametersTest("testAddToIndex0"));
+//        suite.addTest(new MethodParametersTest("testRemoveFirstTwo"));
+//        suite.addTest(new MethodParametersTest("testRemoveLast"));
+//        suite.addTest(new MethodParametersTest("testRemoveLastTwo"));
+//        suite.addTest(new MethodParametersTest("testRemoveMid"));
+//        suite.addTest(new MethodParametersTest("testSwap"));
+//        suite.addTest(new MethodParametersTest("testRenameInTypePar"));
+//        suite.addTest(new MethodParametersTest("testRenameInParameterizedType"));
         return suite;
     }
     
@@ -305,7 +314,7 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
             "package hierbas.del.litoral;\n\n" +
             "import java.io.File;\n\n" +
             "public class Test {\n" +
-            "    public void taragui(int para,  int sugerimos) {\n" +
+            "    public void taragui(int para, int sugerimos) {\n" +
             "    }\n" +
             "}\n";
 
@@ -353,7 +362,7 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
             "package hierbas.del.litoral;\n\n" +
             "import java.io.File;\n\n" +
             "public class Test {\n" +
-            "    public void taragui(int para ) {\n" +
+            "    public void taragui(int para) {\n" +
             "    }\n" +
             "}\n";
 
@@ -400,7 +409,7 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
             "package hierbas.del.litoral;\n\n" +
             "import java.io.File;\n\n" +
             "public class Test {\n" +
-            "    public void taragui(  int sugerimos) {\n" +
+            "    public void taragui( int sugerimos) {\n" +
             "    }\n" +
             "}\n";
 
@@ -481,6 +490,107 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    /**
+     * #89746: Rename in type parameter/parameterized type
+     */
+    public void testRenameInTypePar() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.File;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui(List<Something> empezar, int sugerimos) {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.File;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui(List<Neco> empezar, int sugerimos) {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree clazz = (ClassTree) typeDecl;
+                        MethodTree node = (MethodTree) clazz.getMembers().get(1);
+                        VariableTree vt = node.getParameters().get(0);
+                        ParameterizedTypeTree ptt = (ParameterizedTypeTree) vt.getType();
+                        IdentifierTree it = (IdentifierTree) ptt.getTypeArguments().get(0);
+                        workingCopy.rewrite(it, make.Identifier("Neco"));
+                    }
+                }
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    /**
+     * #89746: Rename in type parameter/parameterized type
+     */
+    public void testRenameInParameterizedType() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.File;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui(List<Something> empezar, int sugerimos) {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.File;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui(Seznam<Something> empezar, int sugerimos) {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        ClassTree clazz = (ClassTree) typeDecl;
+                        MethodTree node = (MethodTree) clazz.getMembers().get(1);
+                        VariableTree vt = node.getParameters().get(0);
+                        ParameterizedTypeTree ptt = (ParameterizedTypeTree) vt.getType();
+                        workingCopy.rewrite(ptt.getType(), make.Identifier("Seznam"));
+                    }
+                }
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     protected void setUp() throws Exception {
         super.setUp();
         testFile = getFile(getSourceDir(), getSourcePckg() + "Test.java");
