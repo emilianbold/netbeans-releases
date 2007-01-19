@@ -82,6 +82,22 @@ is the proper place.
 
     <changes>
 
+        <change id="draw-layers-disabled">
+            <summary>Deprecating the use of <code>DrawLayer</code></summary>
+            <version major="1" minor="12"/>
+            <date day="8" month="1" year="2007"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" />
+            <description>
+                <p>
+                    Using <code>DrawLayer</code> and related classes and methods
+                    has been deprecated in favor of the new Highlighting SPI in
+                    the editor/lib2 module. For more details see
+                    <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Highlighting SPI</a>.
+                </p>
+            </description>
+        </change>
+        
         <change id="Coloring.fromAttributeSet">
             <summary>Adding Coloring.fromAttributeSet method</summary>
             <version major="1" minor="11"/>

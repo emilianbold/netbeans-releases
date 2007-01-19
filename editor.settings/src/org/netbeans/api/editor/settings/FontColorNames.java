@@ -63,7 +63,10 @@ public final class FontColorNames {
 
     /** Coloring used to mark important text in the status bar */
     public static final String STATUS_BAR_BOLD_COLORING = "status-bar-bold"; // NOI18N
- 
+    
+    /** Coloring used to highlight the row where the caret resides */
+    public static final String CARET_ROW_COLORING = "highlight-caret-row"; // NOI18N
+    
     private FontColorNames() {
         // to prevent instantialization
     }

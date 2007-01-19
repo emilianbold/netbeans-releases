@@ -84,8 +84,8 @@ class DiffTooltipContentPanel extends JComponent {
         if (maxWidth < 50) maxWidth = 50;   // too thin component causes repaint problems
         originalTextPane.setPreferredSize(new Dimension(maxWidth * 7 / 6, height));
 
-        if (eui != null && !originalTextPane.isEditable()) {
-            eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+        if (!originalTextPane.isEditable()) {
+            originalTextPane.putClientProperty("HighlightsLayerExcludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$"); //NOI18N
         }
 
         JScrollPane jsp = new JScrollPane(originalTextPane);

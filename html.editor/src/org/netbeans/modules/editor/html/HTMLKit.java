@@ -50,11 +50,14 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 
 import org.netbeans.editor.*;
+import org.netbeans.editor.BaseKit.DeleteCharAction;
 import org.netbeans.editor.ext.*;
+import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.html.*;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.editor.NbEditorKit;
+import org.netbeans.modules.editor.NbEditorKit.GenerateFoldPopupAction;
 import org.netbeans.modules.html.editor.folding.HTMLFoldTypes;
-import org.netbeans.modules.lexer.editorbridge.LexerEditorKit;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,7 +67,7 @@ import org.openide.util.NbBundle;
  * @version 1.00
  */
 
-public class HTMLKit extends LexerEditorKit implements org.openide.util.HelpCtx.Provider {
+public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Provider {
     
     public org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx(HTMLKit.class);

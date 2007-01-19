@@ -91,11 +91,6 @@ public class EditorModule extends ModuleInstall {
         LocaleSupport.addLocalizer(new NbLocalizer(AllOptions.class));
         LocaleSupport.addLocalizer(new NbLocalizer(BaseKit.class));
 
-        // Initializations
-        DialogSupport.setDialogFactory( new NbDialogSupport() );
-        
-        ImplementationProvider.registerDefault(new NbImplementationProvider());
-        
         // register loader for annotation types
         AnnotationTypes.getTypes().registerLoader( new AnnotationTypes.Loader() {
                 public void loadTypes() {

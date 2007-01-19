@@ -369,11 +369,24 @@ public final class ColorModel {
          */
         private void updateMimeType (String language) {
             String internalMimeType = languageToInternalMimeType(language, true);
+
+            // XXX: There is several hacks in the few lines of code below.
+            // First, the 'mimeType' property on a Document is abused for
+            // injecting the name of a profile used for previewing changes in
+            // colors. This by itself causes several problems in other parts of
+            // the IDE that had to be worked around. Second, Document properties
+            // are normally not supposed to be changed during a lifetime of a Document
+            // and there is no way how to listen for those changes. Which means
+            // that we have to fire a property change on the JTextComponent containing
+            // the Document, so that the layers can get recalculated.
+            
             Document document = editorPane.getDocument ();
             document.putProperty ("mimeType", internalMimeType);
             editorPane.setEditorKit (CloneableEditorSupport.getEditorKit(internalMimeType));
             document = editorPane.getDocument ();
             document.putProperty ("mimeType", internalMimeType);
+            editorPane.firePropertyChange(null, 0, 1);
+            
             editorPane.addCaretListener (new CaretListener () {
                 public void caretUpdate (CaretEvent e) {
                     int position = e.getDot ();

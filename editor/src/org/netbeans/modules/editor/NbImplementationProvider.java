@@ -24,8 +24,6 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.openide.util.NbBundle;
 import org.netbeans.editor.ImplementationProvider;
 
 import javax.swing.*;
@@ -33,59 +31,40 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.impl.NbEditorImplementationProvider;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.openide.cookies.InstanceCookie;
 import org.openide.loaders.DataObject;
-
-import org.openide.windows.TopComponent;
 
 /** This is NetBeans specific provider of functionality.
  * See base class for detailed comments.
  *
  * @author David Konecny
  * @since 10/2001
+ * @deprecated Without any replacement.
  */
-
 public class NbImplementationProvider extends ImplementationProvider {
 
-    public static final String GLYPH_GUTTER_ACTIONS_FOLDER_NAME = "GlyphGutterActions"; //NOI18N    
+    public static final String GLYPH_GUTTER_ACTIONS_FOLDER_NAME = 
+        NbEditorImplementationProvider.GLYPH_GUTTER_ACTIONS_FOLDER_NAME;
+    
+    private transient NbEditorImplementationProvider provider;
+    
+    public NbImplementationProvider() {
+        provider = new NbEditorImplementationProvider();
+    }
     
     /** Ask NbBundle for the resource bundle */
     public ResourceBundle getResourceBundle(String localizer) {
-        return NbBundle.getBundle(localizer);
+        return provider.getResourceBundle(localizer);
     }
 
-    
     public Action[] getGlyphGutterActions(JTextComponent target) {
-        Class kitClass = Utilities.getKitClass(target);
-        List retList = new ArrayList();
-        List icList = getInstanceCookiesPerKitClass(kitClass);
-        try{
-            for (int i = 0; i<icList.size(); i++){
-                InstanceCookie ic = (InstanceCookie)icList.get(i);
-                Object obj = ic.instanceCreate();
-                retList.add(obj);
-            }
-        }catch(IOException ioe){
-            ioe.printStackTrace();
-        }catch(ClassNotFoundException cnfe){
-            cnfe.printStackTrace();
-        }
-        
-        Action ret[] = new Action[retList.size()];
-        retList.toArray(ret);
-        return ret;
-        
+        return provider.getGlyphGutterActions(target);
     }
     
     public boolean activateComponent(JTextComponent c) {
-        Container container = SwingUtilities.getAncestorOfClass(TopComponent.class, c);
-        if (container != null) {
-            ((TopComponent)container).requestActive();
-            return true;
-        }
-        return false;
+        return provider.activateComponent(c);
     }
 
     

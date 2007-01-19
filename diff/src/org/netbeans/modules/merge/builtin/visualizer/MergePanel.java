@@ -132,12 +132,10 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
 
     public void addNotify() {
         super.addNotify();
-        EditorUI ui1 = org.netbeans.editor.Utilities.getEditorUI(jEditorPane1);
-        ui1.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
-        EditorUI ui2 = org.netbeans.editor.Utilities.getEditorUI(jEditorPane2);
-        ui2.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
-        EditorUI ui3 = org.netbeans.editor.Utilities.getEditorUI(jEditorPane3);
-        ui3.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+
+        jEditorPane1.putClientProperty("HighlightsLayerExcludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$"); //NOI18N
+        jEditorPane2.putClientProperty("HighlightsLayerExcludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$"); //NOI18N
+        jEditorPane3.putClientProperty("HighlightsLayerExcludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$"); //NOI18N
     }
 
 

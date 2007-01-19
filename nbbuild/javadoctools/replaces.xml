@@ -117,3 +117,4 @@ Microsystems, Inc. All Rights Reserved.
 <replacefilter token="@org-netbeans-modules-uihandler@" value="${javadoc.docs.org-netbeans-modules-uihandler}"/>
 <replacefilter token="@org-netbeans-lib-uihandler@" value="${javadoc.docs.org-netbeans-lib-uihandler}"/>
 <replacefilter token="@org-netbeans-modules-j2ee-metadata@" value="${javadoc.docs.org-netbeans-modules-j2ee-metadata}"/>
+<replacefilter token="@org-netbeans-modules-editor-lib2@" value="${javadoc.docs.org-netbeans-modules-editor-lib2}"/>

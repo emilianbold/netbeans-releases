@@ -31,7 +31,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.*;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.xml.lexer.XMLTokenId;
-import org.netbeans.modules.lexer.editorbridge.LexerEditorKit;
 import org.openide.awt.StatusDisplayer;
 
 // we depend on NetBeans editor stuff
@@ -53,7 +52,7 @@ import org.netbeans.modules.xml.text.completion.XMLCompletion;
  * @author Petr Kuzel
  * @author Sandeep
  */
-public class XMLKit extends LexerEditorKit implements org.openide.util.HelpCtx.Provider {
+public class XMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Provider {
 
     /** Serial Version UID */
     private static final long serialVersionUID =5326735092324267367L;

@@ -100,13 +100,12 @@ public class DiffPanel extends javax.swing.JPanel implements javax.swing.event.C
 
     public void addNotify() {
         super.addNotify();
-        EditorUI ui1 = org.netbeans.editor.Utilities.getEditorUI(jEditorPane1);
-        ui1.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
-        EditorUI ui2 = org.netbeans.editor.Utilities.getEditorUI(jEditorPane2);
-        ui2.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
 
+        jEditorPane1.putClientProperty("HighlightsLayerExcludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$"); //NOI18N
+        jEditorPane2.putClientProperty("HighlightsLayerExcludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$"); //NOI18N
+        
         JComponent parent = (JComponent) getParent();
-
+        
         Action nextAction = new ButtonAction(nextButton);
         Action prevAction = new ButtonAction(prevButton);
         parent.getActionMap().put("jumpNext", nextAction);  // NOI18N

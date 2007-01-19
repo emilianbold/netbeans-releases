@@ -19,23 +19,13 @@
 
 package org.netbeans.modules.editor.java;
 
-import com.sun.source.tree.Tree;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.Stack;
 //import javax.jmi.reflect.JmiException;
 import javax.swing.*;
 import javax.swing.text.*;
 import javax.swing.text.BadLocationException;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.editor.*;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.*;
@@ -46,22 +36,13 @@ import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.editor.ext.ExtKit.CommentAction;
 import org.netbeans.editor.ext.ExtKit.PrefixMakerAction;
 import org.netbeans.editor.ext.ExtKit.UncommentAction;
-import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
-//import org.netbeans.jmi.javamodel.ClassDefinition;
-//import org.netbeans.jmi.javamodel.Element;
-//import org.netbeans.jmi.javamodel.JavaPackage;
-//import org.netbeans.jmi.javamodel.Method;
-//import org.netbeans.jmi.javamodel.Parameter;
-import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.java.editor.codegen.GenerateCodeAction;
 import org.netbeans.modules.java.editor.imports.FastImportAction;
 import org.netbeans.modules.java.editor.imports.JavaFixAllImports;
 import org.netbeans.modules.java.editor.rename.InstantRenameAction;
-import org.netbeans.modules.lexer.editorbridge.LexerEditorKit;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.awt.Mnemonics;
@@ -74,7 +55,7 @@ import org.openide.util.*;
 * @version 1.00
 */
 
-public class JavaKit extends LexerEditorKit {
+public class JavaKit extends NbEditorKit {
 
     public static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
 

@@ -47,7 +47,6 @@ import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.ext.java.JavaSyntax;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.lexer.editorbridge.LexerEditorKit;
 import org.netbeans.modules.web.core.syntax.folding.JspFoldTypes;
 import org.netbeans.spi.jsp.lexer.JspParseData;
 import org.netbeans.spi.lexer.TokenHierarchyControl;
@@ -71,6 +70,11 @@ import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.editor.BaseKit.InsertBreakAction;
+import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
+import org.netbeans.editor.ext.ExtKit.ExtDeleteCharAction;
+import org.netbeans.modules.editor.NbEditorKit;
+import org.netbeans.modules.editor.NbEditorKit.GenerateFoldPopupAction;
 
 /**
  * Editor kit implementation for JSP content type
@@ -79,7 +83,7 @@ import org.netbeans.api.lexer.InputAttributes;
  * @author Marek.Fukala@Sun.COM
  * @version 1.5
  */
-public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.Provider{
+public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Provider{
     
     public static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
     public static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N

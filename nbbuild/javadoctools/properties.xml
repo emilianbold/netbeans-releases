@@ -117,3 +117,4 @@ Microsystems, Inc. All Rights Reserved.
 <property name="javadoc.docs.org-netbeans-modules-uihandler" value="${javadoc.web.root}/org-netbeans-modules-uihandler"/>
 <property name="javadoc.docs.org-netbeans-lib-uihandler" value="${javadoc.web.root}/org-netbeans-lib-uihandler"/>
 <property name="javadoc.docs.org-netbeans-modules-j2ee-metadata" value="${javadoc.web.root}/org-netbeans-modules-j2ee-metadata"/>
+<property name="javadoc.docs.org-netbeans-modules-editor-lib2" value="${javadoc.web.root}/org-netbeans-modules-editor-lib2"/>

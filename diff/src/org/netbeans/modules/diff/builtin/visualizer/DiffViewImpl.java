@@ -413,15 +413,10 @@ public class DiffViewImpl extends javax.swing.JPanel implements org.netbeans.api
 
     public void addNotify() {
         super.addNotify();
-        EditorUI ui1 = org.netbeans.editor.Utilities.getEditorUI(jEditorPane1);
-        if (ui1 != null) {  // null happens fpr unregistered MIME types
-            ui1.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
-        }
-        EditorUI ui2 = org.netbeans.editor.Utilities.getEditorUI(jEditorPane2);
-        if (ui2 != null) {  // null happens fpr unregistered MIME types
-            ui2.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
-        }
 
+        jEditorPane1.putClientProperty("HighlightsLayerExcludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$"); //NOI18N
+        jEditorPane2.putClientProperty("HighlightsLayerExcludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$"); //NOI18N
+        
         List<Action> actions = new ArrayList<Action>(2);
         actions.add(getActionMap().get("jumpNext"));  // NOI18N
         actions.add(getActionMap().get("jumpPrev"));  // NOI18N

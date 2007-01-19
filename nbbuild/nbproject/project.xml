@@ -227,6 +227,8 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../editor/hints</project>
                 <project>../editor/hints/highlights</project>
                 <project>../editor/lib</project>
+                <project>../editor/lib/bridge</project>
+                <project>../editor/lib2</project>
                 <project>../editor/mimelookup</project>
                 <project>../editor/mimelookup/impl</project>
                 <project>../editor/options</project>
@@ -293,7 +295,6 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../javadoc</project>
                 <project>../junit</project>
                 <project>../lexer</project>
-                <project>../lexer/editorbridge</project>
                 <project>../lexer/nbbridge</project>
                 <project>../libs/commons_logging</project>
                 <project>../libs/jsch</project>

@@ -2,4 +2,4 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.editor.lib/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/editor/lib/Bundle.properties
 OpenIDE-Module-Implementation-Version: 1
-
+OpenIDE-Module-Needs: org.netbeans.modules.editor.oldlibbridge
