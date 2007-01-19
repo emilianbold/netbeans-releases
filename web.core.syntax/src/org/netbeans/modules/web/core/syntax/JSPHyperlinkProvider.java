@@ -20,14 +20,26 @@
 package org.netbeans.modules.web.core.syntax;
 
 
+import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.lang.model.element.TypeElement;
 import javax.servlet.jsp.tagext.TagFileInfo;
 import javax.servlet.jsp.tagext.TagInfo;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -35,13 +47,10 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.Utilities;
-//import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
-//import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.modules.web.core.syntax.completion.ELExpression;
-//import org.netbeans.modules.web.core.syntax.completion.JMIUtil;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
@@ -54,13 +63,10 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Pisl
  * @author Marek.Fukala@Sun.COM
+ * @author Tomasz.Slota@Sun.COM
  */
 public class JSPHyperlinkProvider implements HyperlinkProvider {
-    
-    /** Creates a new instance of JSPHyperlinkProvider */
-    public JSPHyperlinkProvider() {
-    }
-    
+    private static final Logger logger = Logger.getLogger(JSPHyperlinkProvider.class.getName());
     /**
      * Should determine whether there should be a hyperlink on the given offset
      * in the given document. May be called any number of times for given parameters.
@@ -255,12 +261,9 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
                     navigateToUserBeanDef(doc, jspSup, target, token.text().toString());
                     return;
                 }
-//                if (res == ELExpression.EL_BEAN){
-//                    JavaClass bean = exp.getBean(exp.getExpression());
-//                    Object property = exp.getPropertyDeclaration(exp.getExpression(), bean);
-//                    Runnable run = new OpenJavaItem(property, sup);
-//                    JavaMetamodel.getManager().invokeAfterScanFinished(run, NbBundle.getMessage(JSPHyperlinkProvider.class, "MSG_goto-source"));
-//                }
+                if (res == ELExpression.EL_BEAN){
+                    exp.gotoPropertyDeclaration(exp.getObjectClass());
+                }
                 return;
             }
             
@@ -270,13 +273,16 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             if (tokenSequence.index() != -1 && tokenSequence.token().id() == JspTokenId.TAG){
                 //we are in useBean
                 String className = token.text().toString().substring(1, token.length()-1).trim();
-                DataObject obj = NbEditorUtilities.getDataObject(sup.getDocument());
-                if (obj != null){
-//                    JavaClass bean= JMIUtil.findClass(className, ClassPath.getClassPath(obj.getPrimaryFile(), ClassPath.EXECUTE));
-//                    if (bean != null){
-//                        Runnable run = new OpenJavaItem(bean, sup);
-//                        JavaMetamodel.getManager().invokeAfterScanFinished(run, NbBundle.getMessage(JSPHyperlinkProvider.class, "MSG_goto-source"));
-//                    }
+                
+                GoToTypeDefTask gotoTask = new GoToTypeDefTask(className);
+                
+                ClasspathInfo cpInfo = ClasspathInfo.create(jspSup.getFileObject());
+                JavaSource source = JavaSource.create(cpInfo, Collections.EMPTY_LIST);
+                
+                try{
+                    source.runUserActionTask(gotoTask, true);
+                } catch (IOException e){
+                    logger.log(Level.SEVERE, e.getMessage(), e);
                 }
             }
             
@@ -398,7 +404,7 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
     /* Move the cursor to the user bean definition.
      */
     private void navigateToUserBeanDef(Document doc, JspSyntaxSupport jspSup, JTextComponent target, String bean)
-    throws BadLocationException {
+            throws BadLocationException {
         String text = doc.getText(0, doc.getLength());
         int index = text.indexOf(bean);
         TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
@@ -443,27 +449,25 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
         }
     }
     
-    /* This thread open a java element in the editor
-     */
-//    public static class OpenJavaItem implements Runnable{
-//        private Object item;
-//        private SyntaxSupport sup;
-//
-//        OpenJavaItem(Object item, SyntaxSupport sup){
-//            super();
-//            this.item = item;
-//            this.sup = sup;
-//        }
-//
-//        public void run() {
-//            JspJavaSyntaxSupport javaSup = (JspJavaSyntaxSupport)sup.get(JspJavaSyntaxSupport.class);
-//            if (item != null && javaSup != null) {
-//                String itemDesc = null;
-//                if ((itemDesc = javaSup.openSource(item, true)) != null){
-//                    String msg = NbBundle.getBundle(JSPHyperlinkProvider.class).getString("MSG_source_not_found");
-//                    org.openide.awt.StatusDisplayer.getDefault().setStatusText(msg);
-//                }
-//            }
-//        }
-//    }
+    private class GoToTypeDefTask implements CancellableTask<CompilationController>{
+        private String className;
+        
+        GoToTypeDefTask(String className){
+            this.className = className;
+        }
+        
+        public void run(CompilationController parameter) throws Exception {
+            parameter.toPhase(Phase.ELEMENTS_RESOLVED);
+            TypeElement type = parameter.getElements().getTypeElement(className);
+            
+            if (type != null){
+                UiUtils.open(parameter.getClasspathInfo(), type);
+            }
+            else{
+                logger.fine("could not resolve " + className); //NOI18N
+            }
+        }
+        
+        public void cancel(){};
+    }
 }

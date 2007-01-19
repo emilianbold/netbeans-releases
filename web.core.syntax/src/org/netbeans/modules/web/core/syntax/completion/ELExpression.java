@@ -34,7 +34,10 @@ import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -154,18 +157,49 @@ public class ELExpression {
     }
     
     public List<CompletionItem> getPropertyCompletionItems(String beanType){
+        PropertyCompletionItemsTask task = new PropertyCompletionItemsTask(beanType);
+        runTask(task);
+        
+        return task.getCompletionItems();
+    }
+    
+    public void gotoPropertyDeclaration(String beanType){
+        GoToSourceTask task = new GoToSourceTask(beanType);
+        runTask(task);
+    }
+    
+    /**
+     *  @return the class of the top-level object used in the expression
+     */
+    public String getObjectClass(){
+        String beanName = extractBeanName();
+        
+        BeanData[] allBeans = sup.getBeanData();
+        for (BeanData beanData : allBeans) {
+            if (beanData.getId().equals(beanName)){
+                return beanData.getClassName();
+            }
+        }
+        
+        // not found within declared beans, try implicit objects
+        ELImplicitObjects.ELImplicitObject implObj = ELImplicitObjects.getELImplicitObject(beanName);
+        
+        if (implObj != null){
+            return implObj.getClazz();
+        }
+        
+        return null;
+    }
+    
+    private void runTask(CancellableTask task){
         ClasspathInfo cpInfo = ClasspathInfo.create(sup.getFileObject());
         JavaSource source = JavaSource.create(cpInfo, Collections.EMPTY_LIST);
-        
-        PropertyCompletionItemsTask task = new PropertyCompletionItemsTask(beanType);
         
         try{
             source.runUserActionTask(task, true);
         } catch (IOException e){
             logger.log(Level.SEVERE, e.getMessage(), e);
         }
-        
-        return task.getCompletionItems();
     }
     
     public String extractBeanName(){
@@ -188,42 +222,17 @@ public class ELExpression {
         return dotPos == -1 ? null : elExp.substring(dotPos + 1);
     }
     
-    private class PropertyCompletionItemsTask implements CancellableTask<CompilationController>{
-        private String beanType;
-        private List<CompletionItem> completionItems = new ArrayList<CompletionItem>();
+    private abstract class BaseELTaskClass{
+        protected String beanType;
         
-        public PropertyCompletionItemsTask(String beanType){
+        BaseELTaskClass(String beanType){
             this.beanType = beanType;
-        }
-        
-        public void cancel() {}
-        
-        public void run(CompilationController parameter) throws Exception {
-            parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-            
-            TypeElement bean = getTypePreceedingCaret(parameter);
-            
-            if (bean != null){
-                String prefix = getPropertyBeingTypedName();
-                
-                for (ExecutableElement method : ElementFilter.methodsIn(bean.getEnclosedElements())){
-                    String propertyName = getPropertyName(method);
-                    
-                    if (propertyName != null && propertyName.startsWith(prefix)){
-                        CompletionItem item = new JspCompletionItem.ELProperty(
-                                propertyName,
-                                method.getReturnType().toString());
-                        
-                        completionItems.add(item);
-                    }
-                }
-            }
         }
         
         /**
          * bean.prop2... propN.propertyBeingTyped| - returns the type of propN
          */
-        private TypeElement getTypePreceedingCaret(CompilationController parameter){
+        protected TypeElement getTypePreceedingCaret(CompilationInfo parameter){
             TypeElement lastKnownType = parameter.getElements().getTypeElement(beanType);
             
             String parts[] = getExpression().split("\\.");
@@ -264,17 +273,17 @@ public class ELExpression {
             return lastKnownType;
         }
         
-        private String getAccessorName(String propertyName){
+        protected String getAccessorName(String propertyName){
             // we do not have to handle "is" type accessors here
             return "get" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
         }
         
         /**
-         * @return property name is <code>accessorMethod<code> is property accessor, otherwise null 
+         * @return property name is <code>accessorMethod<code> is property accessor, otherwise null
          */
-        private String getPropertyName(ExecutableElement accessorMethod){
+        protected String getPropertyName(ExecutableElement accessorMethod){
             
-            if (accessorMethod.getModifiers().contains(Modifier.PUBLIC) 
+            if (accessorMethod.getModifiers().contains(Modifier.PUBLIC)
                     && accessorMethod.getParameters().size() == 0){
                 String accessorName = accessorMethod.getSimpleName().toString();
                 
@@ -289,7 +298,64 @@ public class ELExpression {
             
             return null; // not a property accessor
         }
-       
+        
+        public void cancel() {}
+    }
+    
+    private class GoToSourceTask extends BaseELTaskClass implements CancellableTask<CompilationController>{
+        GoToSourceTask(String beanType){
+            super(beanType);
+        }
+        
+        public void run(CompilationController parameter) throws Exception {
+            parameter.toPhase(Phase.ELEMENTS_RESOLVED);
+            TypeElement bean = getTypePreceedingCaret(parameter);
+            
+            if (bean != null){
+                String prefix = getPropertyBeingTypedName();
+                
+                for (ExecutableElement method : ElementFilter.methodsIn(bean.getEnclosedElements())){
+                    String propertyName = getPropertyName(method);
+                    
+                    if (propertyName != null && propertyName.startsWith(prefix)){
+                        UiUtils.open(parameter.getClasspathInfo(), method);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    
+    private class PropertyCompletionItemsTask extends BaseELTaskClass implements CancellableTask<CompilationController>{
+        
+        private List<CompletionItem> completionItems = new ArrayList<CompletionItem>();
+        
+        PropertyCompletionItemsTask(String beanType){
+            super(beanType);
+        }
+        
+        public void run(CompilationController parameter) throws Exception {
+            parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            
+            TypeElement bean = getTypePreceedingCaret(parameter);
+            
+            if (bean != null){
+                String prefix = getPropertyBeingTypedName();
+                
+                for (ExecutableElement method : ElementFilter.methodsIn(bean.getEnclosedElements())){
+                    String propertyName = getPropertyName(method);
+                    
+                    if (propertyName != null && propertyName.startsWith(prefix)){
+                        CompletionItem item = new JspCompletionItem.ELProperty(
+                                propertyName,
+                                method.getReturnType().toString());
+                        
+                        completionItems.add(item);
+                    }
+                }
+            }
+        }
+        
         public List<CompletionItem> getCompletionItems(){
             return completionItems;
         }
