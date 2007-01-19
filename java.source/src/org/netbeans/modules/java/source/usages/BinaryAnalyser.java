@@ -24,6 +24,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -59,6 +61,9 @@ import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.util.LowMemoryEvent;
 import org.netbeans.modules.java.source.util.LowMemoryListener;
 import org.netbeans.modules.java.source.util.LowMemoryNotifier;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -77,7 +82,6 @@ public class BinaryAnalyser implements LowMemoryListener {
     private final Map<String,List<String>> refs = new HashMap<String,List<String>>();
     private final Set<String> toDelete = new HashSet<String> ();
     private final AtomicBoolean lowMemory;
-    private boolean cacheCleared;
 
     public BinaryAnalyser (Index index) {
        assert index != null;
@@ -89,35 +93,73 @@ public class BinaryAnalyser implements LowMemoryListener {
      * @param URL the classpath root, either a folder or an archive file.
      *     
      */
-    public final void analyse (final File root, final ProgressHandle handle) throws IOException, IllegalArgumentException  {
+    public final void analyse (final URL root, final ProgressHandle handle) throws IOException, IllegalArgumentException  {
         assert root != null;        
             ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void> () {
                 public Void run () throws IOException {
+                index.clear();
                 LowMemoryNotifier.getDefault().addLowMemoryListener (BinaryAnalyser.this);
                 try {
-                    if (root.isDirectory()) {        //NOI18N                    
-                        String path = root.getAbsolutePath ();
-                        if (path.charAt(path.length()-1) != File.separatorChar) {
-                            path = path + File.separatorChar;
-                        }                    
-                        cacheCleared = false;
-                        analyseFolder(root, path);                    
-                    }
-                    else {
-                        if (root.exists() && root.canRead()) {
-                            if (!isUpToDate(null,root.lastModified())) {
-                                index.clear();
-                                if (handle != null) { //Tests don't provide handle
-                                    handle.setDisplayName (String.format(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing"),root.getAbsolutePath()));
+                    String mainP = root.getProtocol();
+                    if ("jar".equals(mainP)) {          //NOI18N
+                        URL innerURL = FileUtil.getArchiveFile(root);
+                        if ("file".equals(innerURL.getProtocol())) {  //NOI18N
+                            //Fast way
+                            File archive = new File (URI.create(innerURL.toExternalForm()));
+                            if (archive.exists() && archive.canRead()) {
+                                if (handle != null) {
+                                    handle.setDisplayName(String.format (NbBundle.getMessage(BinaryAnalyser.class,"MSG_Scannig"),archive.getAbsolutePath()));
                                 }
-                                final ZipFile zipFile = new ZipFile(root);
-                                try {
-                                    analyseArchive( zipFile );
-                                }
-                                finally {
-                                    zipFile.close();
+                                if (!isUpToDate(null,archive.lastModified())) {                                
+                                    if (handle != null) { //Tests don't provide handle
+                                        handle.setDisplayName (String.format(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing"),archive.getAbsolutePath()));
+                                    }
+                                    final ZipFile zipFile = new ZipFile(archive);
+                                    try {
+                                        analyseArchive( zipFile );
+                                    }
+                                    finally {
+                                        zipFile.close();
+                                    }
                                 }
                             }
+                        }
+                        else {
+                            FileObject rootFo =  URLMapper.findFileObject(root);
+                            if (rootFo != null) {
+                                if (handle != null) {
+                                    handle.setDisplayName(String.format (NbBundle.getMessage(BinaryAnalyser.class,"MSG_Scannig"),FileUtil.getFileDisplayName(rootFo)));
+                                }
+                                if (!isUpToDate(null,rootFo.lastModified().getTime())) {
+                                    if (handle != null) { //Tests don't provide handle
+                                        handle.setDisplayName (String.format(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing"),FileUtil.getFileDisplayName(rootFo)));
+                                    }
+                                    analyseFileObjects(rootFo);
+                                }
+                            }
+                        }
+                    }
+                    else if ("file".equals(mainP)) {    //NOI18N
+                        //Fast way
+                        File rootFile = new File (URI.create(root.toExternalForm()));
+                        if (rootFile.isDirectory()) {
+                            String path = rootFile.getAbsolutePath ();
+                            if (path.charAt(path.length()-1) != File.separatorChar) {
+                                path = path + File.separatorChar;
+                            }
+                            if (handle != null) { //Tests don't provide handle
+                                handle.setDisplayName (String.format(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing"),rootFile.getAbsolutePath()));
+                            }
+                            analyseFolder(rootFile, path);
+                        }
+                    }
+                    else {
+                        FileObject rootFo =  URLMapper.findFileObject(root);
+                        if (rootFo != null) {
+                            if (handle != null) { //Tests don't provide handle
+                                handle.setDisplayName (String.format(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing"),FileUtil.getFileDisplayName(rootFo)));
+                            }
+                            analyseFileObjects(rootFo);
                         }
                     }
                 } finally {
@@ -154,16 +196,15 @@ public class BinaryAnalyser implements LowMemoryListener {
                         endPos = filePath.length();
                     }
                     String relativePath = FileObjects.convertFolder2Package (filePath.substring(rootPath.length(), endPos));
-                    if (!isUpToDate (relativePath, fileMTime)) {
-                        if (!cacheCleared) {
-                            this.index.clear();                            
-                            cacheCleared = true;
-                        }
+                    if (this.accepts(file.getName()) && !isUpToDate (relativePath, fileMTime)) {                        
                         InputStream in = new BufferedInputStream (new FileInputStream (file));
                         try {
                             analyse (in);
                         } catch (InvalidClassFormatException icf) {
                             Logger.getLogger(BinaryAnalyser.class.getName()).info("Invalid class file format: "+file.getAbsolutePath());      //NOI18N
+                        }
+                        finally {
+                            in.close();
                         }
                         if (this.lowMemory.getAndSet(false)) {
                             this.store();
@@ -180,20 +221,46 @@ public class BinaryAnalyser implements LowMemoryListener {
         for( Enumeration e = zipFile.entries(); e.hasMoreElements(); ) {
             ZipEntry ze = (ZipEntry)e.nextElement();
             if ( !ze.isDirectory()  && this.accepts(ze.getName()))  {
-                try {
-                    analyse( zipFile.getInputStream( ze ) );
+                InputStream in = zipFile.getInputStream( ze );
+                try {                                        
+                    analyse(in);
                 } catch (InvalidClassFormatException icf) {
                     Logger.getLogger(BinaryAnalyser.class.getName()).info("Invalid class file format: "+ new File(zipFile.getName()).toURI() + "!/" + ze.getName());     //NOI18N
                 } catch (IOException x) {
                     Exceptions.attachMessage(x, "While scanning: " + ze.getName());                                         //NOI18N
                     throw x;
                 }
+                finally {
+                    in.close();
+                }
                 if (this.lowMemory.getAndSet(false)) {
                     this.store();
                 }
             }
         }        
-    }    
+    }
+    
+    private void analyseFileObjects (FileObject folder) throws IOException {
+        for (FileObject fo : folder.getChildren()) {
+            if (fo.isFolder()) {
+                analyseFileObjects (fo);
+            }
+            else if (this.accepts(fo.getName())) {
+                InputStream in = new BufferedInputStream (fo.getInputStream());
+                try {
+                    analyse (in);
+                } catch (InvalidClassFormatException icf) {
+                    Logger.getLogger(BinaryAnalyser.class.getName()).info("Invalid class file format: "+FileUtil.getFileDisplayName(fo));      //NOI18N
+                }
+                finally {
+                    in.close();
+                }
+                if (this.lowMemory.getAndSet(false)) {
+                    this.store();
+                }
+            }
+        }
+    }
     
     //Cleans up usages of deleted class
     private final void delete (final String className) throws IOException {

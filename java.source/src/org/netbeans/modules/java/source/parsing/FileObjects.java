@@ -326,19 +326,7 @@ public class FileObjects {
                 className.substring(index+1)
             };
         }
-    }
-    
-    
-    public static File getRootFile (final URL url) {
-        File rootFile;
-        if ("jar".equals(url.getProtocol())) {  //NOI18N
-            rootFile = new File (URI.create(FileUtil.getArchiveFile(url).toExternalForm()));
-        }
-        else {
-            rootFile = new File (URI.create(url.toExternalForm()));
-        }
-        return rootFile;
-    }
+    }            
     
     
     // Private methods ---------------------------------------------------------

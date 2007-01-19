@@ -861,24 +861,19 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 final URL rootURL = it.next();
                 try {
                     it.remove();
-                    final ClassIndexImpl ci = ClassIndexManager.getDefault().createUsagesQuery(rootURL,false);
-                    final File rootFile = FileObjects.getRootFile(rootURL);
-                    final String message = String.format (NbBundle.getMessage(RepositoryUpdater.class,"MSG_Scannig"),rootFile.getAbsolutePath());
-                    handle.setDisplayName(message);
-                    RepositoryUpdater.this.scannedBinaries.add (rootURL);
-                    if (rootFile.canRead()) {                        
-                        long startT = System.currentTimeMillis();
-                        ci.getBinaryAnalyser().analyse(rootFile, handle);
-                        long endT = System.currentTimeMillis();
-                        if (PERF_TEST) {
-                            try {
-                                Class c = Class.forName("org.netbeans.performance.test.utilities.LoggingScanClasspath",true,Thread.currentThread().getContextClassLoader()); // NOI18N
-                                java.lang.reflect.Method m = c.getMethod("reportScanOfFile", new Class[] {String.class, Long.class}); // NOI18N
-                                m.invoke(c.newInstance(), new Object[] {rootURL.toExternalForm(), new Long(endT - startT)});
-                            } catch (Exception e) {
-                                    Exceptions.printStackTrace(e);
-                            }                            
-                        }
+                    final ClassIndexImpl ci = ClassIndexManager.getDefault().createUsagesQuery(rootURL,false);                                        
+                    RepositoryUpdater.this.scannedBinaries.add (rootURL);                    
+                    long startT = System.currentTimeMillis();
+                    ci.getBinaryAnalyser().analyse(rootURL, handle);
+                    long endT = System.currentTimeMillis();
+                    if (PERF_TEST) {
+                        try {
+                            Class c = Class.forName("org.netbeans.performance.test.utilities.LoggingScanClasspath",true,Thread.currentThread().getContextClassLoader()); // NOI18N
+                            java.lang.reflect.Method m = c.getMethod("reportScanOfFile", new Class[] {String.class, Long.class}); // NOI18N
+                            m.invoke(c.newInstance(), new Object[] {rootURL.toExternalForm(), new Long(endT - startT)});
+                        } catch (Exception e) {
+                                Exceptions.printStackTrace(e);
+                        }                            
                     }
                 } catch (Throwable e) {
                     if (e instanceof ThreadDeath) {
@@ -1152,13 +1147,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
         
         private void updateBinary (final URL file, final URL root) throws IOException {            
-            CachingArchiveProvider.getDefault().clearArchive(root);            
-            File rootFile = FileObjects.getRootFile(root);
-            if (rootFile.exists()) {
-                final BinaryAnalyser ba = ClassIndexManager.getDefault().createUsagesQuery(root, false).getBinaryAnalyser();
-                ba.analyse(rootFile, handle);
-            }
-        }                
+            CachingArchiveProvider.getDefault().clearArchive(root);                       
+            final BinaryAnalyser ba = ClassIndexManager.getDefault().createUsagesQuery(root, false).getBinaryAnalyser();
+            ba.analyse(root, handle);
+        }
     }        
     
     static class LazyFileList implements Iterable<File> {
