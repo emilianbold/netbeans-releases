@@ -161,9 +161,9 @@ Microsystems, Inc. All Rights Reserved.
    customization of the most commonly needed project parameters. Provides code
    completion and other services for editing Java sources. Classpaths can include
    other projects, raw JARs, or configured libraries. Specific J2SE platforms may
-   be configured. <a
-   href="http://projects.netbeans.org/buildsys/j2se-project-ui-spec-promoe.html">Full UI
-   specification</a>
+   be configured. 
+   <!-- <a href="http://projects.netbeans.org/buildsys/j2se-project-ui-spec-promoe.html">Full UI
+   specification</a> -->
   </p>
  </answer>
 
@@ -266,6 +266,7 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="dep-nb">
+  <defaultanswer generate="none"/>
   <ul>
    <li>
     <api group="java" name="AntModuleAPI" type="import" category="devel">

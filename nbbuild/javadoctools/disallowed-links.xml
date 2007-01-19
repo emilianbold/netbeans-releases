@@ -54,6 +54,10 @@ Microsystems, Inc. All Rights Reserved.
     <filter pattern="http://openide\.netbeans\.org/proposals/.*" accept="true"/>        
     <!-- logger module uses references to real website pages -->
     <filter pattern="http://logger\.netbeans\.org/nonav/welcome/.*" accept="true"/>        
+    <!-- allow xsd files -->
+    <filter pattern="http://www\.netbeans\.org/ns/.*" accept="true"/>
+    <!-- allow Project Design document -->
+    <filter pattern="http://projects\.netbeans\.org/buildsys/design\.html" accept="true"/>
     
     <!-- forbid the rest of NetBeans sites -->
     <filter pattern="http://.*netbeans\.org/.*" accept="false"/>

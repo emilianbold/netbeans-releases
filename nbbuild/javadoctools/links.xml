@@ -119,3 +119,4 @@ Microsystems, Inc. All Rights Reserved.
 <link href="${javadoc.docs.org-netbeans-lib-uihandler}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-lib-uihandler"/>
 <link href="${javadoc.docs.org-netbeans-modules-j2ee-metadata}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-j2ee-metadata"/>
 <link href="${javadoc.docs.org-netbeans-modules-editor-lib2}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-editor-lib2"/>
+<link href="${javadoc.docs.org-netbeans-modules-java-j2seproject}" offline="true" packagelistloc="${netbeans.javadoc.dir}\org-netbeans-modules-java-j2seproject"/>
