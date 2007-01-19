@@ -25,14 +25,14 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Compilers -->
     <!-- ========= -->
 
-<!--    <target name="unit-compiler" depends="init,init-cp">
+    <target name="unit-compiler" depends="init,init-cp">
         <ant dir="unit/src/org/netbeans/core/projects"/>
         <ant dir="unit/src/org/netbeans/core/lookup/data"/>
         <buildTests srcdir="unit/src" compileexcludes="**/jars/**,**/data/**">
             <classpath refid="test.unit.compile.cp"/>
         </buildTests>
     </target>
--->
+
     <!-- ================ -->
     <!-- Global Executors -->
     <!-- ================ -->
