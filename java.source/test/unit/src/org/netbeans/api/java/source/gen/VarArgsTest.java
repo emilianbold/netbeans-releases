@@ -18,12 +18,11 @@
  */
 package org.netbeans.api.java.source.gen;
 
-import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.VariableTree;
-import java.io.File;
+import com.sun.source.tree.*;
+import java.io.*;
 import java.util.Collections;
-import org.netbeans.api.java.source.TestUtilities;
-import org.netbeans.api.java.source.transform.Transformer;
+import org.netbeans.api.java.source.*;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -63,24 +62,29 @@ public class VarArgsTest extends GeneratorTestMDRCompat {
             "    }\n\n" +
             "}\n";
 
-        process(
-            new Transformer<Void, Object>() {
-              
-                public Void visitVariable(VariableTree node, Object p) {
-                    super.visitVariable(node, p);
-                    long VARARGS = 1L<<34;
-                    VariableTree tCopy = make.Variable(
-                            make.Modifiers(VARARGS, Collections.<AnnotationTree>emptyList()),
-                            node.getName(),
-                            node.getType(),
-                            null
-                    );
-                    changes.rewrite(node, tCopy);
-                    return null;
-                }
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                VariableTree parameter = method.getParameters().get(0);
+                long VARARGS = 1L<<34;
+                ModifiersTree newMods = make.Modifiers(VARARGS, Collections.<AnnotationTree>emptyList());
+                workingCopy.rewrite(parameter.getModifiers(), newMods);
             }
-        );
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
         assertEquals(golden, res);
     }
     
