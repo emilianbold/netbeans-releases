@@ -343,9 +343,8 @@ public class CasualDiff {
                 printer.print(origText.substring(localPointer, localPointer = insertHint));
                 break;
             case MODIFY:
-                printer.print(origText.substring(localPointer, getOldPos(oldT.extending)));
-                printer.print(newT.extending);
-                localPointer = endPos(oldT.extending);
+                copyTo(localPointer, getOldPos(oldT.extending));
+                localPointer = diffTree(oldT.extending, newT.extending, getBounds(oldT.extending));
                 break;
                 
             case INSERT:
@@ -1442,15 +1441,20 @@ public class CasualDiff {
             ResultItem<JCTree> item = result[j];
             switch (item.operation) {
                 case MODIFY: {
+                // perhaps I shouldn't support this!
                     if (tokenSequence.moveIndex(matrix[i][4])) {
                         testPos = tokenSequence.offset();
                         if (JavaTokenId.COMMA == tokenSequence.token().id())
                             testPos += JavaTokenId.COMMA.fixedText().length();
                     }
                     oldT = oldIter.next(); ++i;
-                    printer.print(origText.substring(lastOldPos, getOldPos(oldT)));
-                    printer.print(item.element);
-                    lastOldPos = endPos(oldT);
+                    copyTo(lastOldPos, getOldPos(oldT));
+                    if (treesMatch(oldT, item.element, false)) {
+                        lastOldPos = diffTree(oldT, item.element, getBounds(oldT));
+                    } else {
+                        printer.print(item.element);
+                        lastOldPos = endPos(oldT);
+                    }
                     break;
                 }
                 case INSERT: {
