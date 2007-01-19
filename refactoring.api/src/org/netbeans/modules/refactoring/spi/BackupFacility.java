@@ -32,7 +32,7 @@ import org.openide.filesystems.FileUtil;
  * can be used to backup files and implement undo
  * @author Jan Becicka
  */
-public class BackupFacility {
+public final class BackupFacility {
     
     private static BackupFacility instance;
     private long currentId = 0;
