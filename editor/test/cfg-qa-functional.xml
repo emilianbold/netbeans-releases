@@ -45,6 +45,29 @@ executor="ide-nogui">
          </testset>
      </testbag>
 
+    <!-- Pre-commit validation -->
+    <testbag testattribs="commit,stable" name="Pre Commit Validation">
+         <testset dir="qa-functional/src">
+             <patternset>
+               <include name="lib/DummyTest.class"/>
+               <include name="keyboard_shortcuts/*Test.class"/>
+               <include name="general/*Test.class"/>
+               <include name="popup_menus/MainMenuTest.class"/>    
+             </patternset>
+         </testset>
+     </testbag>
+
+    <!-- Stable -->
+    <testbag testattribs="stable" name="Stable Tests">
+         <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/test/editor/suites/abbrevs/AbbreviationsAddRemovePerformer.class"/>
+                <include name="org/netbeans/test/editor/formatting/*.class"/>            
+                <exclude name="org/netbeans/test/editor/formatting/BasicTest.class/testReformat2"/>            
+             </patternset>
+         </testset>
+     </testbag>     
+
     <!-- Search and Replace -->
     <testbag testattribs="search_replace" name="Search and Replace">
          <testset dir="qa-functional/src">
@@ -53,7 +76,8 @@ executor="ide-nogui">
              </patternset>
          </testset>
      </testbag>
-     
+    
+
     <testbag testattribs="all,full,apps" name="TestApplication">
         <testset dir="qa-functional/src">
             <patternset>
@@ -91,42 +115,7 @@ executor="ide-nogui">
             </patternset>
         </testset>
     </testbag>    
-        
-    <testbag testattribs="all,failing,apps" name="TestApplicationFailings">
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testDoWhile" />
-                <include name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testTwoBrackets" />
-                <include name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testTernary" />                
-                <include name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testPackageCC" />
-                <include name="org/netbeans/test/editor/app/tests/CompletionPerformer.class/testInstantSubstitution" />
-            </patternset>
-        </testset>
-    </testbag>    
-                        
-    <!-- Code completion non-validation tests: (and three from test editor application) -->
-    
-    <testbag testattribs="all,failing" name="completion-failing" compiler="qa-functional-compiler-completion">
-        <testset dir="qa-functional/src">
-            <patternset>
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testcomplexsorted" />
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testcomplexsorted" />                
-            </patternset>
-        </testset>
-    </testbag>
-
-    <testbag testattribs="all,experimental" name="completion-experimental" compiler="qa-functional-compiler-completion">
-        <testset dir="qa-functional/src">
-            <patternset>
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testequalSignIunsorted" />
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testequalSignIsorted" />
-            </patternset>
-        </testset>
-    </testbag>
-
-
-    <!-- Programmatic indentation tests: -->
-    
+                
     <testbag testattribs="all,full" name="indentation-programmatic">
         <testset dir="qa-functional/src">
             <patternset>
@@ -166,21 +155,18 @@ executor="ide-nogui">
         </testset>
     </testbag>
             
-    <!-- Key bindings tests -->
-    
-    <testbag testattribs="all,full" name="KeyBindings-Actions">
+    <!-- Key bindings tests  - should be fixed with BasicOptionsOperator, keybindings were removed from Advanced options -->    
+    <testbag testattribs="all,full,keybindings" name="KeyBindings-Actions">
         <testset dir="qa-functional/src">
             <patternset>            
                 <include name="org/netbeans/test/editor/suites/keybindings/*Performer.class"/>            
             </patternset>
         </testset>
     </testbag>
-    
-    <!-- Experimental tests (not to be runned automaticaly): -->
+        
         
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
-    <executor name="ide-nogui" antfile="build-qa-functional.xml"
-target="runidetest-nogui"/>
+    <executor name="ide-nogui" antfile="build-qa-functional.xml" target="runidetest-nogui"/>
     
     <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true" />
     <compiler name="qa-functional-compiler-completion" antfile="build-qa-functional.xml" target="qa-functional-compiler-completion" default="false" />
