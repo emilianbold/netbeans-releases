@@ -44,7 +44,6 @@ import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Position;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -517,7 +516,13 @@ public class CasualDiff {
             // take the position of the first old parameter
             posHint = oldT.params.iterator().next().getStartPosition();
         }
-        diffParameterList(oldT.params, newT.params, posHint, ListType.PARAMETER);
+        if (!listsMatch(oldT.params, newT.params)) {
+            copyTo(localPointer, posHint);
+            VeryPretty locBuf = new VeryPretty(context);
+            locBuf.setPrec(TreeInfo.noPrec);
+            localPointer = diffParameterList(oldT.params, newT.params, false, posHint, locBuf);
+            printer.print(locBuf.toString());
+        }
         // temporary
         tokenSequence.moveNext();
         posHint = tokenSequence.offset();
@@ -1519,7 +1524,7 @@ public class CasualDiff {
      * Diff a ordered list for differences.
      * REMOVE - use printing 
      */
-    protected void diffParameterList(List<? extends JCTree> oldList, 
+    private void diffParameterList(List<? extends JCTree> oldList, 
                                      List<? extends JCTree> newList,
                                      int where, ListType type) 
     {

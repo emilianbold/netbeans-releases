@@ -113,6 +113,10 @@ public class VeryPretty extends JCTree.Visitor {
     public void undent(int old) {
 	out.leftMargin = old;
     }
+
+    public void setPrec(int prec) {
+        this.prec = prec;
+    }
     
     public void setSelection(JCTree tree) {
         selection = tree;
@@ -1109,8 +1113,10 @@ public class VeryPretty extends JCTree.Visitor {
 
     public void visitVarDef(JCVariableDecl tree) {
 	if (commentHandler != null && commentHandler.hasComments(tree)) {
-	    newline();
-	    out.toLeftMargin();
+            if (prec == TreeInfo.notExpression) { // ignore for parameters.
+                newline();
+                out.toLeftMargin();
+            }
 	}
 	if ((tree.mods.flags & ENUM) != 0)
 	    print(tree.name);
