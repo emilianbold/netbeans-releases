@@ -25,6 +25,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="Error.xml" url="Error.xml"/>
             <file name="Warning.xml" url="Warning.xml"/>
             <file name="Deprecation.xml" url="Deprecation.xml"/>
+            <file name="Deprecation2.xml" url="Deprecation2.xml"/>
         </folder>
         <folder name="text">
             <folder name="x-nbs">
