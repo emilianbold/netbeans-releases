@@ -23,9 +23,21 @@ import java.io.IOException;
 
 /**
  * @author Jan Becicka
- * XXX this should be improved
+ * This was historicaly intended to enhance RefactoringUI.
+ * RefactoringUI must support "bypass" of refactoring for common 
+ * operations Copy/Move/Rename for users to be able to do 
+ * regular operation (Copy/Move/Rename) instead of refactoring operation
+ * (Refactor | Copy, Refactor | Move, Refactor | Rename)
  */
 public interface RefactoringUIBypass {
+    
+    /**
+     * @return true if user want to bypass refactoring
+     */
     boolean isRefactoringBypassRequired();
+    
+    /**
+     * do regular operation, bypass refactoring
+     */
     void doRefactoringBypass() throws IOException;
 }

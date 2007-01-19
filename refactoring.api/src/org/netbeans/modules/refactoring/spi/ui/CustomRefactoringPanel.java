@@ -22,9 +22,8 @@ package org.netbeans.modules.refactoring.spi.ui;
 import javax.swing.JPanel;
 
 /**
- * Instances of CustomRefactoringPanel are required not to do any MDR transaction
- * inside it's constructors.
- * If you need to display MDR elements, do initialization in method initialize()
+ * Instances of CustomRefactoringPanel can do their initialization in 
+ * init() method. 
  * @author Jan Becicka
  */
 public abstract class CustomRefactoringPanel extends JPanel {

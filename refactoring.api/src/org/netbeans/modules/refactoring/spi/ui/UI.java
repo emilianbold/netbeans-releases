@@ -20,14 +20,6 @@
 package org.netbeans.modules.refactoring.spi.ui;
 
 import java.awt.Component;
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
@@ -35,9 +27,6 @@ import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.impl.RefactoringPanel;
 import org.netbeans.modules.refactoring.spi.impl.RefactoringPanelContainer;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.windows.TopComponent;
 
 /**
