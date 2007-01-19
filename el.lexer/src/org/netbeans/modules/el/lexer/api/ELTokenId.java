@@ -78,42 +78,42 @@ public enum ELTokenId implements TokenId {
     TRUE_KEYWORD("true", ELTokenCategories.KEYWORDS.categoryName),
     
     //literals
-    WHITESPACE(null, "el-whitespace"),
-    EOL("\n", "el-eol"),
-    STRING_LITERAL(null, "el-string"),
-    TAG_LIB_PREFIX(null, "el-tag-lib-prefix"),
-    IDENTIFIER(null, "el-identifier"),
-    CHAR_LITERAL(null, "el-char-literal"),
+    WHITESPACE(null, "whitespace"),
+    EOL("\n", "eol"),
+    STRING_LITERAL(null, "string"),
+    TAG_LIB_PREFIX(null, "tag-lib-prefix"),
+    IDENTIFIER(null, "identifier"),
+    CHAR_LITERAL(null, "char-literal"),
     
     //numeric literals
     /** Java integer literal e.g. 1234 */
-    INT_LITERAL(null, "el-int-literal"),
+    INT_LITERAL(null, "int-literal"),
     /** Java long literal e.g. 12L */
-    LONG_LITERAL(null, "el-long-literal"),
+    LONG_LITERAL(null, "long-literal"),
     /** Java hexadecimal literal e.g. 0x5a */
-    HEX_LITERAL(null, "el-hex-literal"),
+    HEX_LITERAL(null, "hex-literal"),
     /** Java octal literal e.g. 0123 */
-    OCTAL_LITERAL(null, "el-octal-literal"),
+    OCTAL_LITERAL(null, "octal-literal"),
     /** Java float literal e.g. 1.5e+20f */
-    FLOAT_LITERAL(null, "el-float-literal"),
+    FLOAT_LITERAL(null, "float-literal"),
     /** Java double literal e.g. 1.5e+20 */
-    DOUBLE_LITERAL(null, "el-double-literal"),
+    DOUBLE_LITERAL(null, "double-literal"),
     // Incomplete and error token-ids
-    INVALID_OCTAL_LITERAL(null, "el-invalid-octal-literal"),
-    INVALID_CHAR(null, "el-invalid-char");
+    INVALID_OCTAL_LITERAL(null, "invalid-octal-literal"),
+    INVALID_CHAR(null, "invalid-char");
     
     
     /** EL token categories enum.*/
     public static enum ELTokenCategories {
         
         /** Token category for EL keywords like and, false etc. */
-        KEYWORDS("el-keyword"),
+        KEYWORDS("keyword"),
         /** Token category for EL operators like ==, => etc. */
-        OPERATORS("el-operators"),
+        OPERATORS("operators"),
         /** Token category for EL numeric literals. */
-        NUMERIC_LITERALS("el-numeric-literals"),
+        NUMERIC_LITERALS("numeric-literals"),
         /** Token category for EL errors. */
-        ERRORS("el-error");
+        ERRORS("error");
         
         private final String categoryName;
         

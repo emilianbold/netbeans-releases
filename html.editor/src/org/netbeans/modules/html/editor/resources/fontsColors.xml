@@ -20,15 +20,15 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-    <fontcolor name="html-argument" foreColor="ff007c00" default="default"/>
-    <fontcolor name="html-block-comment" foreColor="gray" default="comment"/>
-    <fontcolor name="html-character" foreColor="ffb20000" default="char"/>
-    <fontcolor name="html-error" foreColor="black" bgColor="pink" default="error"/>
-    <fontcolor name="html-operator" foreColor="ff007c00" default="default"/>
-    <fontcolor name="html-sgml-comment" foreColor="gray" default="comment"/>
-    <fontcolor name="html-sgml-declaration" foreColor="ffbf9221" default="default"/>
-    <fontcolor name="html-tag" foreColor="blue" default="default"/>
-    <fontcolor name="html-text" default="default"/>
-    <fontcolor name="html-value" foreColor="ff99006b" default="default"/>
-    <fontcolor name="html-ws" default="default"/>
+    <fontcolor name="argument" foreColor="ff007c00" default="default"/>
+    <fontcolor name="block-comment" foreColor="gray" default="comment"/>
+    <fontcolor name="character" foreColor="ffb20000" default="char"/>
+    <fontcolor name="error" foreColor="black" bgColor="pink" default="error"/>
+    <fontcolor name="operator" foreColor="ff007c00" default="default"/>
+    <fontcolor name="sgml-comment" foreColor="gray" default="comment"/>
+    <fontcolor name="sgml-declaration" foreColor="ffbf9221" default="default"/>
+    <fontcolor name="tag" foreColor="blue" default="default"/>
+    <fontcolor name="text" default="default"/>
+    <fontcolor name="value" foreColor="ff99006b" default="default"/>
+    <fontcolor name="ws" default="default"/>
 </fontscolors>

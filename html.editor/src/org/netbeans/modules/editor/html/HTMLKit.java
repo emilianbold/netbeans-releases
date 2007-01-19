@@ -86,10 +86,6 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
     
     private static boolean setupReadersInitialized = false;
     
-    //temporary - will be removed when lexer is stabilized
-//    private static final boolean J2EE_LEXER_COLORING = Boolean.getBoolean("j2ee_lexer_coloring"); //NOI18N
-    private static final boolean J2EE_LEXER_COLORING = true;
-    
     public HTMLKit(){
         if (!setupReadersInitialized){
             NbReaderProvider.setupReaders();
@@ -127,32 +123,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         return null;
     }
     
-//    /** used to create completion instance from completion provider
-//     * @deprecated
-//     */
-//    public Completion createCompletionForProvider(ExtEditorUI extEditorUI) {
-//        return new HTMLCompletion(extEditorUI);
-//    }
-    
-    /*
-     * @Override()
-     */
-    public Document createDefaultDocument() {
-        if(J2EE_LEXER_COLORING) {
-            Document doc = new HTMLEditorDocument(this.getClass());
-            Object mimeType = doc.getProperty("mimeType"); //NOI18N
-            if (mimeType == null){
-                doc.putProperty("mimeType", getContentType()); //NOI18N
-            }
-            doc.putProperty(Language.class, HTMLTokenId.language());
-            return doc;
-        } else {
-            return super.createDefaultDocument();
-        }
-    }
-    
     public Formatter createFormatter() {
-        //return new LineWrapFormatter(this.getClass());
         return new HTMLFormatter(this.getClass());
     }
     
@@ -954,22 +925,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
     }
     
     // END of fix of issue #43309
-    
-    public class HTMLEditorDocument extends NbEditorDocument {
-        public HTMLEditorDocument(Class kitClass) {
-            super(kitClass);
-        }
-        
-        public boolean addLayer(DrawLayer layer, int visibility) {
-            //filter out the syntax layer adding
-            if(!(layer instanceof DrawLayerFactory.SyntaxLayer)) {
-                return super.addLayer(layer, visibility);
-            } else {
-                return false;
-            }
-        }
-    }
-    
+       
     
 }
 

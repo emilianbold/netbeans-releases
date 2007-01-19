@@ -17,6 +17,7 @@ import java.util.EnumSet;
 import java.util.Map;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
@@ -34,40 +35,42 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 public enum HTMLTokenId implements TokenId {
     
     /** HTML text */
-    TEXT("html-text"), 
+    TEXT("text"), 
     /** HTML script e.g. javascript. */
-    SCRIPT("html-script"), 
+    SCRIPT("script"), 
     /** Whitespace in a tag: <code> &lt;BODY" "bgcolor=red&gt;</code>. */
-    WS("html-ws"),
+    WS("ws"),
     /** Error token - returned in various erroneous situations. */
-    ERROR("html-error"),
+    ERROR("error"),
     /** HTML open tag name: <code>&lt;"BODY"/&gt;</code>.*/
-    TAG_OPEN("html-tag"),
+    TAG_OPEN("tag"),
     /** HTML close tag name: <code>&lt;/"BODY"&gt;</code>.*/
-    TAG_CLOSE("html-tag"),
+    TAG_CLOSE("tag"),
     /** HTML tag attribute name: <code> &lt;BODY "bgcolor"=red&gt;</code>.*/
-    ARGUMENT("html-argument"),
+    ARGUMENT("argument"),
     /** Equals sign in HTML tag: <code> &lt;BODY bgcolor"="red&gt;</code>.*/
-    OPERATOR("html-operator"),
+    OPERATOR("operator"),
     /** Attribute value in HTML tag: <code> &lt;BODY bgcolor="red"&gt;</code>.*/
-    VALUE("html-value"),
+    VALUE("value"),
     /** HTML block comment: <code> &lt;!-- xxx --&gt; </code>.*/
-    BLOCK_COMMENT("html-block-comment"),
+    BLOCK_COMMENT("block-comment"),
     /** HTML/SGML comment.*/
-    SGML_COMMENT("html-sgml-comment"),
+    SGML_COMMENT("sgml-comment"),
     /** HTML/SGML declaration: <code> &lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"&gt; </code>.*/
-    DECLARATION("html-sgml-declaration"),
+    DECLARATION("sgml-declaration"),
     /** Character reference: <code> &amp;amp; </code>.*/
-    CHARACTER("html-character"),
+    CHARACTER("character"),
     /** End of line.*/
-    EOL("html-text"),
+    EOL("text"),
     /** HTML open tag symbol: <code> "&lt;"BODY&gt; </code>.*/
-    TAG_OPEN_SYMBOL("html-tag"),
+    TAG_OPEN_SYMBOL("tag"),
     /** HTML close tag symbol: <code> "&lt;/"BODY&gt; </code>.*/
-    TAG_CLOSE_SYMBOL("html-tag");
+    TAG_CLOSE_SYMBOL("tag");
     
     private final String primaryCategory;
 
+    private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
+    
     HTMLTokenId(String primaryCategory) {
         this.primaryCategory = primaryCategory;
     }
@@ -94,7 +97,16 @@ public enum HTMLTokenId implements TokenId {
         @Override
         protected LanguageEmbedding embedding(
         Token<HTMLTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
-            return null; // No embedding
+            if(token.id() == HTMLTokenId.SCRIPT) {
+                Language lang = Language.find(JAVASCRIPT_MIMETYPE);
+                if(lang == null) {
+                    return null; //no javascript language found
+                } else {
+                    return LanguageEmbedding.create(lang, 0, 0);
+                }
+            } else {
+                return null;
+            }
         }
         
         @Override
