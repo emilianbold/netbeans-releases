@@ -73,7 +73,7 @@ The Refactoring module provides:
 -->
  <answer id="arch-quality">
   <p>
-Refactoring module functionality is covered by Refactoring Unit tests. 
+Refactoring module functionality will be covered by Refactoring Unit tests. 
   </p>
  </answer>
 
@@ -92,7 +92,7 @@ Refactoring module functionality is covered by Refactoring Unit tests.
 -->
  <answer id="arch-time">
   <p>
-   Target Milestone for this task is NetBeans 6.0
+   Target Milestone for this task is NetBeans 6.0Dev, M7
   </p>
  </answer>
 
@@ -142,19 +142,19 @@ Refactoring module functionality is covered by Refactoring Unit tests.
  (specific pre-conditions checks, parameters checks, implementation of changes, etc.) and leave the
  functionality that is common for all refactorings (implementation of the flow) up to the framework.
  <p/>
- It is quite common that some modules need to be able to affect the behavior of a refactoring. There are three typical use-cases when this is desirable:
+ It is quite common that some modules need to be able to affect the behavior of a refactoring. There are 4 typical use-cases when this is desirable:
  <ol>
+     <li>A module wants to implement refactoring features for their own elements. For instance Java Refactoring module wants to implement Refactoring for Java elements.</li>
      <li>A module wants to participate in existing refactoring. E.g. refactoring of java files requires refactoring of non-java files in J2EE area. When a code is refactored, these non-java files need to be refactored too.
 We can mention JSP files or deployment descriptors as an example.</li>
      <li>A module introduces some hidden relationships between several elements. E.g. a single logical EJB consists of several physical classes. When one of these classes are refactored,
      the other classes need to be refactored as well.</li>
      <li>A module generates some derived code into the guarded blocks. In such case it is desirable that the provider of the guarded block refactors the guarded code, since
      the refactoring module itself has no knowledge of where the guarded code comes from.</li>
-     <li>A module wants to implement refactoring features for their own elements</li>
  </ol>
  The refactoring module provides hooks for other modules - an SPI that allows other modules to participate in refactorings. The modules can participate on all refactoring
  phases from "preCheck" (checking preconditions), through "checkParameters" (checking validity of refactoring parameters) to "prepare" (collecting changes).
- Use-cases number 1) and 2) are covered by the same SPI (interfaces RefactoringPluginFactory and RefactoringPlugin). The third use-case (guarded blocks) will be covered by
+ Use-cases number 1), 2) and 3) are covered by the same SPI (interfaces RefactoringPluginFactory and RefactoringPlugin). The forth use-case (guarded blocks) are covered by
  a separate set of interfaces, since for this use-case the module does not need to participate in all refactoring phases. The refactoring framework itself automatically detects
  that a given change points to a code in guarded blocks and requests all registered guarded block providers to handle that situation.
  <p/>
@@ -293,7 +293,20 @@ public class MyProvider extends ActionsImplementationProvider {
   }
 }
 </pre>
-And of course your own RefactoringPlugin and RefactoringPluginFactory see Refactoring SPI Example 1.
+And of course your own RefactoringPlugin and RefactoringPluginFactory see 
+<i><b>Refactoring SPI Example 1</b></i> and
+<i><b>Refactoring SPI Example 2</b></i>
+
+<br></br>
+Other usecases are docummented in javadoc.
+<ul>
+    <li>Module wants to implement it's own refactoring preview tree. <br></br>
+        See <a href="org/netbeans/modules/refactoring/spi/ui/TreeElementFactoryImplementation.html">TreeElementFactoryImplementation</a>
+    </li>
+    <li>Module wants to add common Refactoring Action into popup. <br></br>
+        See <a href="org/netbeans/modules/refactoring/api/ui/RefactoringActionsFactory.html">RefactoringActionsFactory</a>
+    </li>
+</ul>
 
  </answer>
 
@@ -312,8 +325,6 @@ And of course your own RefactoringPlugin and RefactoringPluginFactory see Refact
  <answer id="arch-what">
   <p>
 Refactoring module allows developer to do high level code transformations aka refactorings.
-<a href="http://ui.netbeans.org/docs/hi/javamdr/refactoring_design.html">UI design of refactoring features</a>
-<a href="http://ui.netbeans.org/docs/hi/javamdr/ui_framework.html">UI Framework for new features based on MDR</a>
   </p>
  </answer>
 
@@ -341,9 +352,10 @@ Refactoring module allows developer to do high level code transformations aka re
  <answer id="dep-nb">
     <defaultanswer generate="none"/>
     <ul>
-    <li><api name="jbrowse" category="official" type="import" group="java">Retouche</api></li>
     <li><api name="openide" type="import" category="official" group="java">Lookup, Filesystems API, Modules API, Datasystems API, Window System API.</api></li>
     <li><api name="ProjectAPI" type="import" category="official" group="java">Project API</api></li>
+    <li><api name="DiffAPI" type="import" category="official" group="java">Diff API</api></li>
+    <li><api name="GeneralQueriesAPI" type="import" category="official" group="java">General Queries API</api></li>
     </ul>
  </answer>
 
@@ -430,7 +442,6 @@ Refactoring module allows developer to do high level code transformations aka re
 Yes. We search for:
 <ul>
 <li><api group="lookup" name="org.netbeans.api.javahelp.Help" type="import" category="official"/></li>
-<li><code>org.openide.nodes.Node</code> - listens to <api group="lookup" name="org.openide.util.ContextGlobalProvider" type="import" category="official" /> (resp. <code>org.openide.util.Utilities.actionsGlobalContext()</code> lookup) to look for active node in <code>RefactoringSubMenuAction</code></li>
 <li>all instances of <api group="lookup" name="org.netbeans.modules.refactoring.spi.RefactoringPluginFactory" type="export" category="devel" /></li>
 <li>all instances of <api group="lookup" name="org.netbeans.modules.refactoring.spi.GuardedBlockHandlerFactory" type="export" category="devel" /></li>
 <li>an instance of  <api group="lookup" name="org.netbeans.modules.refactoring.spi.ReadOnlyFilesHandler" type="export" category="devel" /></li>
@@ -540,7 +551,7 @@ Yes. We search for:
 -->
  <answer id="dep-jre">
   <p>
-   Refactoring module doesn't have any special requirements on JDK version. It runs on JDK 1.4+
+   Refactoring module doesn't have any special requirements on JDK version. It runs on JDK 1.5+
   </p>
  </answer>
 
@@ -683,7 +694,10 @@ Nothing.
 -->
  <answer id="exec-introspection">
   <p>
-   Yes. Typically when JMI Element or MDR RefObject is passes as an argument, behavior usually depends on type of given argument.
+   Yes. Introspection is important part of Refactoring API. 
+   Refactoring API itself works in many cases just with "Objects" not knowing the type of object.
+   API users are required to implement Refactorings only for objects, which are known to them.
+  
   </p>
  </answer>
 
@@ -704,9 +718,6 @@ Nothing.
    No
   </p>
  </answer>
-
-
-
 <!--
         <question id="exec-process" when="impl">
             Do you execute an external process from your module? How do you ensure
@@ -722,8 +733,6 @@ Nothing.
    No
   </p>
  </answer>
-
-
 
 <!--
         <question id="exec-property" when="impl">
@@ -748,8 +757,6 @@ Nothing.
    No
   </p>
  </answer>
-
-
 
 <!--
         <question id="exec-reflection" when="impl">
@@ -791,7 +798,7 @@ Nothing.
 -->
  <answer id="exec-threading">
   <p>
-   Refactoring adhere threading model of javacore module (MDR transactions).
+   Refactoring adhere threading model of java/source module.
   </p>
  </answer>
 
@@ -810,7 +817,8 @@ Nothing.
 -->
  <answer id="format-clipboard">
   <p>
-   We read data flavors corresponding to DataObject's node operation "LoaderTransfer.MOVE". We do not call any methods on <code>java.awt.datatransfer.Transferable</code> directly. We use utility method <code>LoaderTransfer.getDataObjects()</code>
+   We register our own ClipboardConvertor and we wrap each refactorable Node Transferables with Refactoring Transferables
+   in order to handle move/cut/copy actions as refactoring actions.
   </p>
  </answer>
 
@@ -828,7 +836,7 @@ Nothing.
 -->
  <answer id="format-dnd">
   <p>
-   N/A
+   We don't override Node.drag. We have our own ClipboardConvertor. See above.
   </p>
  </answer>
 
@@ -859,7 +867,12 @@ Nothing.
 -->
  <answer id="lookup-register">
   <p>
-   No
+   We register classes into META-INF/services:
+   <code>
+       org.openide.loaders.FolderRenameHandle to handle rename action on folders
+       org.openide.util.actions.ExtendedDelete to handle delete on multiple nodes
+       org.openide.util.datatransfer.ExClipboard$Convertor to register ClipboardConvertor
+    </code>
   </p>
  </answer>
 
@@ -917,7 +930,7 @@ Nothing.
 -->
  <answer id="perf-mem">
   <p>
-    
+    I don't know.
   </p>
  </answer>
 
@@ -976,7 +989,7 @@ Nothing.
 -->
  <answer id="perf-startup">
   <p>
-   It just registers OperationalListener.
+   No.
   </p>
  </answer>
 
@@ -1038,9 +1051,7 @@ Nothing.
      <li>Menu items into <api name="Menu" group="layer" type="import" category="official"/> folder</li>
      <li>Shrtcuts into <api name="Shortcuts" group="layer" type="import" category="official"/> folder</li>
      <li>Actions into <api name="Actions" group="layer" type="import" category="official"/> folder</li>
-     <li>Actions into Editor popup menu <api name="Popup" group="layer" type="import" category="official">Editors/text/x-java/Popup</api></li>
-     <li>DataObject's Actions (<api name="Loaders-Actions" group="layer" type="import" category="official">Loaders/folder/any/Actions</api> and <api name="Loaders-Actions" group="layer" type="import" category="friend">Loaders/text/x-java/Actions</api>)</li>
-     <li>Node actions via RefactoringFilterFactory (<api name="NodeFactories" group="layer" type="import" category="official">NodeFactories/java/explorer</api> )</li>
+     <li>DataObject's Actions (<api name="Loaders-Actions" group="layer" type="import" category="official">Loaders/folder/any/Actions</api></li>
      <li>New file Services/org-netbeans-modules-refactoring/options which is used for storing settings of checkbox 'Preview All' and 'Search In Comments'</li>
      </ul>
  </answer>
@@ -1062,7 +1073,7 @@ Nothing.
 -->
  <answer id="resources-mask">
   <p>
-    We hide regular RenameAction (in Loaders/folder/any/Actions and Loaders/text/x-java/Actions)
+    We hide regular RenameAction (in Loaders/folder/any/Actions)
    </p>
  </answer>
 
