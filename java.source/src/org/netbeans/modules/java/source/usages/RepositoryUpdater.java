@@ -1337,7 +1337,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             if (sym.sourcefile == null) {
                                 sym.sourcefile = event.getSourceFile();
                             }
-                            this.justEntered.add(sym);
+                            if (!(sym.sourcefile instanceof FileObjects.ZipFileBase)) {
+                                this.justEntered.add(sym);
+                            }
                         }
                     }          
                 }

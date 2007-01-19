@@ -562,7 +562,7 @@ public class FileObjects {
     /** A subclass of FileObject representing zip entries.
      * XXX: What happens when the archive is deleted or rebuilt?
      */
-    private abstract static class ZipFileBase extends Base {
+    public abstract static class ZipFileBase extends Base {
         
         protected final long mtime;
         protected final String resName;
@@ -586,7 +586,12 @@ public class FileObjects {
 	}
 
 	public Reader openReader(boolean b) throws IOException {
-	    throw new UnsupportedOperationException();
+            if (this.getKind() == JavaFileObject.Kind.CLASS) {
+                throw new UnsupportedOperationException();
+            }
+            else {
+                return new InputStreamReader (openInputStream(),FileObjects.encodingName);
+            }
 	}
 
         public Writer openWriter() throws IOException {
@@ -601,8 +606,31 @@ public class FileObjects {
 	    throw new UnsupportedOperationException();
 	}
 
-	public CharBuffer getCharContent(boolean ignoreEncodingErrors) {
-	    throw new UnsupportedOperationException();
+	public CharBuffer getCharContent(boolean ignoreEncodingErrors) throws IOException {
+	    Reader r = openReader(ignoreEncodingErrors);
+            try {
+                int red = 0, rv;
+
+                int len = (int)this.getSize();
+                char[] result = new char [len+1];
+                while ((rv=r.read(result,red,len-red))>0 && (red=red+rv)<len);
+
+                int j=0;
+                for (int i=0; i<red;i++) {
+                    if (result[i] =='\r') {                                          //NOI18N
+                        if (i+1>=red || result[i+1]!='\n') {                         //NOI18N
+                            result[j++] = '\n';                                      //NOI18N
+                        }
+                    }
+                    else {
+                        result[j++] = result[i];
+                    }
+                }
+                result[j]='\n';                                                      //NOI18N
+                return CharBuffer.wrap (result,0,j);
+            } finally {
+                r.close();
+            }
 	}
         
         public final URI toUri () {
@@ -624,6 +652,8 @@ public class FileObjects {
 	}
         
         protected abstract URI getArchiveURI ();
+        
+        protected abstract long getSize() throws IOException;
         
     }
     
@@ -682,6 +712,16 @@ public class FileObjects {
         public URI getArchiveURI () {
             return this.archiveFile.toURI();
         }
+        
+        protected long getSize () throws IOException {
+            ZipFile zf = new ZipFile (archiveFile);
+            try {
+                ZipEntry ze = zf.getEntry(this.resName);
+                return ze == null ? 0L : ze.getSize();
+            } finally {
+                zf.close();
+            }
+        }
     }
     
     private static class CachedZipFileObject extends ZipFileBase {
@@ -700,6 +740,11 @@ public class FileObjects {
         
         public URI getArchiveURI () {
             return new File (this.zipFile.getName()).toURI();
+        }
+        
+        protected long getSize() throws IOException {
+            ZipEntry ze = this.zipFile.getEntry(this.resName);
+            return ze == null ? 0L : ze.getSize();
         }
     }
     
