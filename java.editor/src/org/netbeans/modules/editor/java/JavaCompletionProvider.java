@@ -846,7 +846,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 if (parEnd > parStart) {
                     headerText = headerText.substring(parEnd + 1).trim();
                     if (THROWS_KEYWORD.equals(headerText)) {
-                        if (queryType == COMPLETION_SMART_QUERY_TYPE) {
+                        if (queryType == COMPLETION_SMART_QUERY_TYPE && mth.getBody() != null) {
                             controller.toPhase(Phase.RESOLVED);
                             Set<TypeMirror> exs = controller.getTreeUtilities().getUncaughtExceptions(new TreePath(path, mth.getBody()));
                             Elements elements = controller.getElements();
