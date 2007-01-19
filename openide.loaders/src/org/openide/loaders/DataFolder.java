@@ -1328,7 +1328,10 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             try {
                 if( t.isDataFlavorSupported( DataFlavor.javaFileListFlavor ) ) {
                     //windows & mac
-                    return NbCollections.checkedListByCopy((List) t.getTransferData(DataFlavor.javaFileListFlavor), File.class, true);
+                    List fileList = (List) t.getTransferData(DataFlavor.javaFileListFlavor);
+                    //#92812 - make sure mac os does not return null value
+                    if( null != fileList )
+                        return NbCollections.checkedListByCopy((List) t.getTransferData(DataFlavor.javaFileListFlavor), File.class, true);
                 } else if( t.isDataFlavorSupported( getUriListDataFlavor() ) ) {
                     //linux
                     String uriList = (String)t.getTransferData( getUriListDataFlavor() );
