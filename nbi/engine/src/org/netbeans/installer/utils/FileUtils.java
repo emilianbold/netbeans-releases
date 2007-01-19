@@ -52,6 +52,8 @@ import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.helper.FileEntry;
+import org.netbeans.installer.utils.helper.NativeLauncher;
+import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.progress.Progress;
 
 /**
@@ -799,6 +801,10 @@ public final class FileUtils {
         return (parent != null) && candidate.equals(parent);
     }
     
+    public static File createLauncher(NativeLauncher nl, Platform platform) throws IOException {
+        return nl.createLauncher(platform);
+    }
+    
     // private //////////////////////////////////////////////////////////////////////
     private static boolean canAccessDirectoryReal(File file, boolean isReadNotWrite) {
         if(isReadNotWrite) {
@@ -928,9 +934,9 @@ public final class FileUtils {
             // first we try to extract with the given list
             if (zipEntryExists(file, "META-INF/files.list")) {
                 try {
-                    final File initialList = 
+                    final File initialList =
                             extractJarEntry("META-INF/files.list", file);
-                    final FilesList toExtract = 
+                    final FilesList toExtract =
                             new FilesList().loadXml(initialList, target);
                     
                     deleteFile(initialList);
@@ -968,7 +974,7 @@ public final class FileUtils {
             final String listEntryName = listEntry.getName();
             final File listEntryFile = listEntry.getFile();
             
-            final String zipEntryName = 
+            final String zipEntryName =
                     listEntryName.substring(targetPath.length() + 1);
             
             // increase the extracted files count and update the progress percentage

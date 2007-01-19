@@ -29,7 +29,7 @@ $Id$
         Target overrides
     ======================================================================== -->
     <target name="-post-clean" depends="native-clean"/>
-    <target name="-pre-jar" depends="native-build,create-jar-contents-list"/>
+    <target name="-pre-jar" depends="native-build,create-jar-contents-list,copy-launchers"/>
     
     <!-- =======================================================================
         NetBeans Installer engine specific targets
@@ -102,23 +102,7 @@ $Id$
         <property name="native.file" value="${native.file.macosx}"/>
     </target>
     
-    <target name="create-launcher-windows">
-        <create-native-launcher 
-            launcherStub="${basedir}/${native.launcher.windows.stub}"
-            jar="${basedir}/${dist.jar}"
-            output="${basedir}/${dist.dir}/${native.launcher.windows.file}"
-            jvmArguments="${native.launcher.windows.jvmargs}"
-            i18nDir="${basedir}/${native.launcher.windows.i18n.dir}"
-            testJVM="${basedir}/${test.jvm.file}"
-            javaVersionMin="${native.launcher.windows.java.version.min}"
-            javaVersionMax="${native.launcher.windows.java.version.max}"/>
-    </target>
-    
     <target name="init-custom-tasks" depends="build-custom-tasks">
-        <taskdef 
-            name="create-native-launcher" 
-            classname="org.netbeans.installer.infra.build.ant.launchers.Build" 
-            classpath="${custom.tasks.cls}"/>
         
         <taskdef 
             name="write-jar-content-list" 
@@ -137,11 +121,6 @@ $Id$
             classpath="${javac.classpath.ant}"/>
     </target>
     
-    <target name="init-create-launchers" depends="init-custom-tasks"/>
-    
-    <target name="create-launchers" depends="jar,init-create-launchers">
-        <antcall target="create-launcher-windows"/>
-    </target>
     
     <target name="create-jar-contents-list" depends="init-custom-tasks">
         <write-jar-content-list 
@@ -149,4 +128,22 @@ $Id$
             output="${basedir}/${build.classes.dir}/${jar.contents.list}"
             mask="(?!^data/).*"/>                                
     </target>
+
+    <target name="copy-launchers" >
+
+        <mkdir dir="${basedir}/${build.classes.dir}/${native.launcher.windows.stub.dst.dir}"/>
+
+        <!-- copy windows launcher stub -->
+	<copy file="${basedir}/${native.launcher.windows.stub.src}" 
+              todir="${basedir}/${build.classes.dir}/${native.launcher.windows.stub.dst.dir}"/>
+
+        <!-- copy windows launcher i18n messages -->
+        <copy  todir="${basedir}/${build.classes.dir}/${native.launcher.windows.i18n.dir}">
+            <fileset dir="${native.launcher.windows.i18n.dir}">
+                <include name="*"/>
+             </fileset>
+       </copy>
+
+    </target>
+
 </project>
