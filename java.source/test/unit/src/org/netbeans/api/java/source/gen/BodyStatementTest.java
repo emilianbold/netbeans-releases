@@ -39,7 +39,7 @@ import org.openide.filesystems.FileUtil;
  * 
  * @author Pavel Flaska
  */
-public class BodyStatementTest extends GeneratorTest {
+public class BodyStatementTest extends GeneratorTestMDRCompat {
     
     /** Creates a new instance of BodyStatementTest */
     public BodyStatementTest(String name) {
