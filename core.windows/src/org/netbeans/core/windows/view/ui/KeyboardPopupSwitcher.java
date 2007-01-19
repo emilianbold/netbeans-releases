@@ -20,10 +20,8 @@
 package org.netbeans.core.windows.view.ui;
 
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -32,8 +30,6 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import javax.swing.AbstractAction;
 import javax.swing.JWindow;
-import javax.swing.Popup;
-import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.netbeans.core.windows.WindowManagerImpl;
@@ -41,7 +37,6 @@ import org.netbeans.core.windows.actions.RecentViewListAction;
 import org.netbeans.swing.popupswitcher.SwitcherTable;
 import org.netbeans.swing.popupswitcher.SwitcherTableItem;
 import org.openide.awt.StatusDisplayer;
-import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 
@@ -84,7 +79,8 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
     
     /**
      * Counts the number of <code>triggerKey</code> hits before the popup is
-     * shown. If the <code>triggerKey</code> is pressed more than twice the
+     * shown (without first <code>triggerKey</code> press).
+     * If the <code>triggerKey</code> is pressed more than twice the
      * popup will be shown immediately.
      */
     private static int hits;
@@ -196,7 +192,7 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
         public void actionPerformed(ActionEvent e) {
             if (invokerTimerRunning) {
                 cleanupInterrupter();
-                instance = new KeyboardPopupSwitcher(hits);
+                instance = new KeyboardPopupSwitcher(hits + 1);
                 instance.showPopup();
             }
         }
@@ -269,11 +265,8 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
      * default).
      */
     private static void processInterruption(KeyEvent kev) {
-        if (kev.getID() != KeyEvent.KEY_RELEASED && invokerTimerRunning) {
-            return;
-        }
         int keyCode = kev.getKeyCode();
-        if (keyCode == releaseKey) {
+        if (keyCode == releaseKey && kev.getID() == KeyEvent.KEY_RELEASED) {
             // if an user releases Ctrl-Tab before the time to show
             // popup expires, don't show the popup at all and switch to
             // the last used document immediately
@@ -284,16 +277,16 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
                     ActionEvent.ACTION_PERFORMED,
                     "immediately")); // NOI18N
             kev.consume();
+        // #88931: Need to react to KEY_PRESSED, not KEY_RELEASED, to not miss the hit    
         } else if (keyCode == triggerKey
-                && kev.getModifiers() == InputEvent.CTRL_MASK) {
+                && kev.getModifiers() == InputEvent.CTRL_MASK
+                && kev.getID() == KeyEvent.KEY_PRESSED) {
             // count number of trigger key hits before popup is shown
             hits++;
             kev.consume();
-            if (hits > 1) {
-                cleanupInterrupter();
-                instance = new KeyboardPopupSwitcher(hits);
-                instance.showPopup();
-            }
+            cleanupInterrupter();
+            instance = new KeyboardPopupSwitcher(hits + 1);
+            instance.showPopup();
         }
     }
     
