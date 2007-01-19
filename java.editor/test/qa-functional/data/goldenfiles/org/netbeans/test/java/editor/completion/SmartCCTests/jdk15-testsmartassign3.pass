@@ -1,0 +1,11 @@
+AtomicInteger
+AtomicLong
+BigDecimal
+BigInteger
+Byte
+Double
+Float
+Integer
+Long
+Number
+Short

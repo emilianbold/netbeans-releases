@@ -19,71 +19,57 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <mconfig name="qa-functional tests config">
-
+    
     <!-- Java Editor Test Application's Tests -->
 
     <!-- Validation tests-->
-   <testbag testattribs="validation,all" name="Editor Validation">
-         <testset dir="qa-functional/src">
-             <patternset>
-               
-               <include name="java_editor_actions/JavaEditorActionsTestSuite.class"/>
-               <include name="java_code_folding/JavaCodeFoldingTestSuite.class"/>
-               <include name="java_smart_bracket/SmartBracketTestSuite.class"/>
-               <include name="java_smart_enter/SmartEnterTestSuite.class"/>
-               
-             </patternset>
-         </testset>
-     </testbag>
+    <testbag testattribs="validation,all" name="Java/Editor Validation">
+        <testset dir="qa-functional/src">
+            <patternset>               
+                <include name="java_editor_actions/JavaEditorActionsTestSuite.class"/>
+                <include name="java_code_folding/JavaCodeFoldingTestSuite.class"/>
+                <include name="java_smart_bracket/SmartBracketTestSuite.class"/>
+                <include name="java_smart_enter/SmartEnterTestSuite.class"/>               
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="commit" name="Java/Editor Pre-commit Talidation">
+        <testset dir="qa-functional/src">
+            <patternset>                               
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="stable" name="Java/Editor Stable Testcases">
+        <testset dir="qa-functional/src">
+            <patternset>                               
+            </patternset>
+        </testset>
+    </testbag>
+    
     
     
     <!--
     // Had to remove comments - nested not allowed by xml
     //Code completion Validation tests:
     -->
-    <testbag testattribs="all,full,completion" name="Completion-Validation" compiler="qa-functional-compiler-completion" >
+    <testbag testattribs="completion,all" name="Completion-Validation" compiler="qa-functional-compiler-completion" >
         <testset dir="qa-functional/src">
             <patternset>
-		<include name="org/netbeans/test/java/editor/completion/*Performer.class"/>
-		<!--<exclude name="org/netbeans/test/java/editor/completion/*Performer.class/testcomplexsorted" />
-		<exclude name="org/netbeans/test/java/editor/completion/*Performer.class/testcomplexunsorted" />
-		<exclude name="org/netbeans/test/java/editor/completion/*Performer.class/testequalSignIunsorted" />
-		<exclude name="org/netbeans/test/java/editor/completion/*Performer.class/testequalSignIsorted" />
-		<exclude name="org/netbeans/test/java/editor/completion/*Performer.class/testjdk15*" />-->
-            </patternset>
-        </testset>
-    </testbag>
-
-    <testbag testattribs="all,completion-15" name="JDK1.5 Completion" compiler="qa-functional-compiler-completion">
-        <testset dir="qa-functional/src">
-            <patternset>
-		<include name="org/netbeans/test/java/editor/completion/*Performer.class/testjdk15*" />
+                <include name="org/netbeans/test/java/editor/completion/*CCTests.class"/>		
             </patternset>
         </testset>
     </testbag>
     
-    <!--
-    //Java Editor Application non-validation tests
-    //Code completion non-validation tests: (and three from test editor application)
-    -->
-    <testbag testattribs="all,failing" name="completion-failing" compiler="qa-functional-compiler-completion">
+    <testbag testattribs="all,experimental" name="Testcases under development" compiler="qa-functional-compiler-completion">
         <testset dir="qa-functional/src">
             <patternset>
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testcomplexsorted" />
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testcomplexsorted" />                
+                <include name="org/netbeans/test/java/editor/completion/SmartCCTests.class"/>
             </patternset>
         </testset>
     </testbag>
-
-    <testbag testattribs="all,experimental" name="completion-experimental" compiler="qa-functional-compiler-completion">
-        <testset dir="qa-functional/src">
-            <patternset>
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testequalSignIunsorted" />
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testequalSignIsorted" />
-            </patternset>
-        </testset>
-    </testbag>
-
+    
     <!--//Experimental tests (not to be runned automaticaly): -->
         
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>

@@ -1,0 +1,7 @@
+class
+public static CCTest9a valueOf(String name)
+public static CCTest9a[] values()
+public static T valueOf(Class<T> arg0, String arg1)
+public static final CCTest9a A
+public static final CCTest9a B
+public static final CCTest9a C

@@ -1,0 +1,18 @@
+protected native Object clone()
+protected void finalize()
+public Integer getElement()
+public Integer op(Integer param)
+public Integer[] elements
+public MyGenericClass<Integer> instance()
+public String toString()
+public boolean equals(Object arg0)
+public final native Class<? extends Object> getClass()
+public final native void notify()
+public final native void notifyAll()
+public final native void wait(long arg0)
+public final void wait()
+public final void wait(long arg0, int arg1)
+public native int hashCode()
+public static final String CONST
+public static void main(String... args)
+public void setElement(Integer element)

@@ -1,0 +1,6 @@
+Double
+Double d1
+Double d2
+Double p1
+public static Double Double.valueOf(String arg0)
+public static Double Double.valueOf(double arg0)

@@ -22,6 +22,7 @@ import java.io.*;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JEditorPane;
@@ -140,14 +141,19 @@ public class CompletionTest extends java.lang.Object {
             if(completionProvider instanceof JavaCompletionProvider) jcp = (JavaCompletionProvider) completionProvider;
         }
         if(jcp==null) log.println("JavaCompletionProvider not found");
-        CompletionTask task = jcp.createTask(queryType, editor);                                                
+        CompletionTask task = jcp.createTask(queryType, editor);                                                        
         CompletionResultSetImpl result =  completion.createTestResultSet(task,queryType);        
         task.query(result.getResultSet());                
         EditorTestCase.waitMaxMilisForValue(5000, new ResultReadyResolver(result), Boolean.TRUE);
+        if(!result.isFinished()) log.println("Result is not finished");
         List<? extends  CompletionItem> list = result.getItems();
         CompletionItem[] array = list.toArray(new CompletionItem[]{});
         if(!unsorted) {
-            Arrays.sort(array);
+            Arrays.sort(array, new Comparator<CompletionItem>(){
+                public int compare(CompletionItem arg0, CompletionItem arg1) {
+                    return arg0.toString().compareTo(arg1.toString());
+                }
+            });
         }
         for (int i = 0; i < array.length; i++) {
             CompletionItem completionItem = array[i];

@@ -1,0 +1,19 @@
+public String toString()
+public final Class<InnerEnum> getDeclaringClass()
+public final String name()
+public final boolean equals(Object arg0)
+public final int compareTo(InnerEnum arg0)
+public final int hashCode()
+public final int ordinal()
+public final native Class<? extends Object> getClass()
+public final native void notify()
+public final native void notifyAll()
+public final native void wait(long arg0)
+public final void wait()
+public final void wait(long arg0, int arg1)
+public static InnerEnum valueOf(String name)
+public static InnerEnum[] values()
+public static T valueOf(Class<T> arg0, String arg1)
+public static final InnerEnum A
+public static final InnerEnum B
+public static final InnerEnum C

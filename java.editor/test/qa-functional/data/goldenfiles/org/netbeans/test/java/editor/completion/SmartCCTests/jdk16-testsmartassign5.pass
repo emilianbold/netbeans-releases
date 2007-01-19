@@ -1,0 +1,17 @@
+String
+String s1
+public String getName()
+public String toString()
+public static String String.copyValueOf(char[] arg0)
+public static String String.copyValueOf(char[] arg0, int arg1, int arg2)
+public static String String.format(Locale arg0, String arg1, Object... arg2)
+public static String String.format(String arg0, Object... arg1)
+public static String String.valueOf(Object arg0)
+public static String String.valueOf(boolean arg0)
+public static String String.valueOf(char arg0)
+public static String String.valueOf(char[] arg0)
+public static String String.valueOf(char[] arg0, int arg1, int arg2)
+public static String String.valueOf(double arg0)
+public static String String.valueOf(float arg0)
+public static String String.valueOf(int arg0)
+public static String String.valueOf(long arg0)

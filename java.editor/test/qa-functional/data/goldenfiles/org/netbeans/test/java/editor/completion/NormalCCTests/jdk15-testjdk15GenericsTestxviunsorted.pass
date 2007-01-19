@@ -1,0 +1,14 @@
+public MyGenericClass instance()
+public Number getElement()
+public Number[] elements
+public String toString()
+public boolean equals(Object arg0)
+public final native Class<? extends Object> getClass()
+public final native void notify()
+public final native void notifyAll()
+public final native void wait(long arg0)
+public final void wait()
+public final void wait(long arg0, int arg1)
+public native int hashCode()
+public static final String CONST
+public void setElement(Number element)

@@ -1,0 +1,40 @@
+public String toString()
+public boolean equals(Object arg0)
+public boolean isInfinite()
+public boolean isNaN()
+public byte byteValue()
+public double doubleValue()
+public final native Class getClass()
+public final native void notify()
+public final native void notifyAll()
+public final native void wait(long arg0)
+public final void wait()
+public final void wait(long arg0, int arg1)
+public float floatValue()
+public int compareTo(Float arg0)
+public int compareTo(Object arg0)
+public int hashCode()
+public int intValue()
+public long longValue()
+public short shortValue()
+public static Float valueOf(String arg0)
+public static Float valueOf(float arg0)
+public static String toHexString(float arg0)
+public static String toString(float arg0)
+public static boolean isInfinite(float arg0)
+public static boolean isNaN(float arg0)
+public static final Class TYPE
+public static final float MAX_VALUE
+public static final float MIN_NORMAL
+public static final float MIN_VALUE
+public static final float NEGATIVE_INFINITY
+public static final float NaN
+public static final float POSITIVE_INFINITY
+public static final int MAX_EXPONENT
+public static final int MIN_EXPONENT
+public static final int SIZE
+public static float parseFloat(String arg0)
+public static int compare(float arg0, float arg1)
+public static int floatToIntBits(float arg0)
+public static native float intBitsToFloat(int arg0)
+public static native int floatToRawIntBits(float arg0)
