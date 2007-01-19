@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -90,6 +90,7 @@ public interface Project extends Lookup.Provider {
      * <li><a href="@org-netbeans-api-java@/org/netbeans/spi/java/queries/MultipleRootsUnitTestForSourceQueryImplementation.html"><code>MultipleRootsUnitTestForSourceQueryImplementation</code></a></li>
      * <li><a href="@org-netbeans-modules-project-ant@/org/netbeans/spi/project/support/ant/ProjectXmlSavedHook.html"><code>ProjectXmlSavedHook</code></a></li>
      * <li><a href="@org-netbeans-modules-project-ant@/org/netbeans/spi/project/ant/AntArtifactProvider.html"><code>AntArtifactProvider</code></a></li>
+     * <li><a href="@org-openidex-util@/org/openidex/search/SearchInfo.html"><code>SearchInfo</code></a></li>
      * </ol>
      * <p>Typical implementation:</p>
      * <pre>

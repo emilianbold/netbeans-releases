@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,9 +25,22 @@ import java.util.Iterator;
  * Defines which <code>DataObject</code>s should be searched.
  * Iterator returned by this interface's method enumerates
  * <code>DataObject</code>s that should be searched.
+ * <p>
+ * <code>SearchInfo</code> objects are used by module User Utilities
+ * &ndash; in actions <em>Find</em> (since User Utilities 1.16)
+ * and <em>Find in Projects</em> (since User Utilities 1.23).
+ * Action <em>Find</em> obtains <code>SearchInfo</code> from
+ * <a href="@org-openide-nodes@/org/openide/nodes/Node.html#getLookup()"><code>Lookup</code> of nodes</a>
+ * the action was invoked on. Action <em>Find in Projects</em> obtains
+ * <code>SearchInfo</code> from
+ * <a href="@org-netbeans-modules-projectapi@/org/netbeans/api/project/Project.html#getLookup()"><code>Lookup</code>
+ * of the projects</a>.
+ * </p>
  *
  * @see  SearchInfoFactory
- * @see  DataObject
+ * @see  <a href="@org-openide-loaders@/org/openide/loaders/DataObject.html"><code>DataObject</code></a>
+ * @see  <a href="@org-openide-nodes@/org/openide/nodes/Node.html#getLookup()"><code>Node.getLookup()</code></a>
+ * @see  <a href="@org-netbeans-modules-projectapi@/org/netbeans/api/project/Project.html#getLookup()"><code>Project.getLookup()</code></a>
  * @since  org.openidex.util/3 3.2
  * @author  Marian Petras
  */

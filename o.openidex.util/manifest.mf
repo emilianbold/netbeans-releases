@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.openidex.util/3
 OpenIDE-Module-Localizing-Bundle: org/openidex/Bundle.properties
-OpenIDE-Module-Specification-Version: 3.10
+OpenIDE-Module-Specification-Version: 3.11
 OpenIDE-Module-Layer: org/openidex/resources/mf-layer.xml
 
