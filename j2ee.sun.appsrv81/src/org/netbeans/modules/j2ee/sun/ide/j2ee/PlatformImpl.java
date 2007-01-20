@@ -185,7 +185,7 @@ public class PlatformImpl extends J2eePlatformImpl {
                 List<URL> javadoc = dmProps.getJavadocs();
                 J2eeLibraryTypeProvider lp = new J2eeLibraryTypeProvider();
                 LibraryImplementation lib = lp.createLibrary();
-                lib.setName(NbBundle.getMessage(PlatformFactory.class, "j2ee14")); // NOI18N
+                lib.setName(NbBundle.getMessage(PlatformImpl.class, "j2ee14")); // NOI18N
                 List l = new ArrayList();
                 File ff = (new File(root, JAVA_EE_JAR));
                 if (!ff.exists()){
