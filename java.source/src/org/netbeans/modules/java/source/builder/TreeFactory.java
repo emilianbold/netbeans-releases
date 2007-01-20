@@ -24,7 +24,6 @@ import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.java.source.engine.TreeMakerInt;
 import org.netbeans.api.java.source.query.Query;
-import org.netbeans.jackpot.tree.*;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;

@@ -263,7 +263,7 @@ public final class ASTService implements ASTModel {
      * either on trees created by TreeMaker or clone(), and never on original
      * trees.
      *
-     * @see org.netbeans.jackpot.tree.TreeMaker
+     * @see org.netbeans.api.java.source.TreeMaker
      * @see #clone
      */
     public void setElement(Tree tree, Element element) {
@@ -299,7 +299,7 @@ public final class ASTService implements ASTModel {
      * either on trees created by TreeMaker or clone(), and never on original
      * trees.
      *
-     * @see org.netbeans.jackpot.tree.TreeMaker
+     * @see org.netbeans.api.java.source.TreeMaker
      * @see #clone
      */
     public void setType(Tree tree, TypeMirror type) {
