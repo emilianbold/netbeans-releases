@@ -56,7 +56,7 @@ public class StringSourceRewriter implements SourceRewriter {
             out.write(buf, 0, i);
     }
 
-    public void close(boolean save) {
+    public void close(boolean save) throws IOException {
         out.flush();
     }
 

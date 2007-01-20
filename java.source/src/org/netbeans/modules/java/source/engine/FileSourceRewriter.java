@@ -55,7 +55,7 @@ public class FileSourceRewriter implements SourceRewriter {
             throw new IOException("cannot write to " + srcFile);
 
         outFile = new File(sourcefile.toUri().getPath() + ".tmp");
-        Writer fileWriter = (encoding != null) ?
+        Writer fileWriter = (encoding != null && encoding.length() > 0) ?
             new OutputStreamWriter(new FileOutputStream(outFile), encoding) :
             new FileWriter(outFile);
         out = new PrintWriter(new BufferedWriter(fileWriter));
@@ -81,16 +81,23 @@ public class FileSourceRewriter implements SourceRewriter {
             out.write(buf, 0, i);
     }
 
-    public void close(boolean save) {
+    public void close(boolean save) throws IOException {
         out.close();
         out = null;
         if (save) {
             String path = sourcefile.toUri().getPath();
             File f = new File(path);
             File old = new File(path + '~');
-            f.renameTo(old);
+            if (old.exists())
+                if (!old.delete())
+                    throw new IOException("failed deleting backup file: " + old);
+            if (!f.renameTo(old))
+                throw new IOException("failed renaming (" + path + 
+                                      ") to backup (" + old + ")");
             f = new File(path);
-            outFile.renameTo(f);
+            if (!outFile.renameTo(f))
+                throw new IOException("failed renaming new output file (" + outFile + 
+                                      ") to path (" + path + ")");
             outFile = f;
 
             FileObject fo = FileUtil.toFileObject(outFile);

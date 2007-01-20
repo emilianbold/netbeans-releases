@@ -74,5 +74,5 @@ public interface SourceRewriter {
      * 
      * @param save flush the SourceRewriter before closing.
      */
-    void close(boolean save);
+    void close(boolean save) throws IOException;
 }
