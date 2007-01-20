@@ -85,7 +85,9 @@ public class Progress {
     
     public void setPercentage(final int percentage) {
         if ((percentage < START) || (percentage > COMPLETE)) {
-            throw new IllegalArgumentException("The percentage should be between 0 and 100 inclusive");
+            throw new IllegalArgumentException("The percentage " + percentage + 
+                    " is not appropriate." + 
+                    "It should be between 0 and 100 inclusive");
         }
         
         this.percentage = percentage;
@@ -97,7 +99,9 @@ public class Progress {
         int result = percentage + addition;
         
         if ((result < START) || (result> COMPLETE)) {
-            throw new IllegalArgumentException("The percentage should be between 0 and 100 inclusive");
+            throw new IllegalArgumentException("The percentage " + percentage + 
+                    " is not appropriate." + 
+                    "It should be between 0 and 100 inclusive");
         }
         
         percentage = result;
