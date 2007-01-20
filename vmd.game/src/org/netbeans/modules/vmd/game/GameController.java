@@ -92,7 +92,6 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 	private DataObjectContext context;
 	private JComponent loadingPanel;
 	private JPanel panel = new JPanel(new BorderLayout());
-	private JComponent view; //either loadingPanel or game editor
 	
 	private DesignDocument document;
 	
@@ -111,34 +110,43 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 	
 	public void setDesignDocument(final DesignDocument designDocument) {
 		this.panel.removeAll();
-				
+		
 		this.document = designDocument;
 		
-		if (this.document == null) {
-			this.view = this.loadingPanel;
-			return;
-		}
-		this.view = MainView.getInstance().getRootComponent();
-		this.document.getTransactionManager().readAccess(new Runnable() {
-			public void run() {
-				if (true) {
-					GlobalRepository.getInstance().removeGlobalRepositoryListener(GameController.this);
-					
-					//clean my internal model - remove all scenes, layers, and image resources
-					GlobalRepository.getInstance().removeAllComponents();
+		JComponent view = null;
 
-					//add all components in the document
-					DesignComponent root = designDocument.getRootComponent();
-					GameController.this.modelComponent(root);
-					
-					GlobalRepository.getInstance().addGlobalRepositoryListener(GameController.this);
+		if (designDocument == null) {
+			view = this.loadingPanel;
+		}
+		else {
+			view = MainView.getInstance().getRootComponent();
+			designDocument.getTransactionManager().readAccess(new Runnable() {
+				public void run() {
+					if (true) {
+						GlobalRepository.getInstance().removeGlobalRepositoryListener(GameController.this);
+
+						//clean my internal model - remove all scenes, layers, and image resources
+						GlobalRepository.getInstance().removeAllComponents();
+
+						//add all components in the document
+						DesignComponent root = designDocument.getRootComponent();
+						GameController.this.modelComponent(root);
+
+						GlobalRepository.getInstance().addGlobalRepositoryListener(GameController.this);
+					}
 				}
-			}
-		});
+			});
+		}
 		this.panel.add(view);
+		this.panel.validate();
 	}
 	
 	private void modelComponent(DesignComponent designComponent) {
+		//this is sometimes null when i close and open the same project :(
+		if (designComponent == null) {
+			return;
+		}
+		
 		Collection<DesignComponent> children = designComponent.getComponents();
 		if (children.size() > 0) {
 			for (DesignComponent child : children) {
@@ -178,6 +186,8 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 			designIdMap.put(animatedTile, designComponent);
 		}
 	}
+	
+	//These methods create game model from design components
 	
 	private AnimatedTile constructAnimatedTile(DesignComponent animatedTiledDC) {
 		String name = (String) animatedTiledDC.readProperty(AnimatedTileCD.PROPERTY_NAME).getPrimitiveValue();
@@ -240,7 +250,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		ImageResource imgRes = this.constructImageResource(imgResDC);
 		int[][]  grid = (int[][]) tiledLayerDC.readProperty(TiledLayerCD.PROPERTY_TILES).getPrimitiveValue();
 		
-		GlobalRepository.getInstance().createTiledLayer(name, imgRes, grid);
+		tiledLayer = GlobalRepository.getInstance().createTiledLayer(name, imgRes, grid);
 		return tiledLayer;
 	}
 	
@@ -316,6 +326,9 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		return scene;
 	}
 	
+	
+	//These methods create design components from game model
+	
 	public static DesignComponent createSceneDCFromScene(DesignDocument doc, Scene scene) {
 		DesignComponent dcScene = doc.createComponent(SceneCD.TYPEID);
 		dcScene.writeProperty(SceneCD.PROPERTY_NAME, MidpTypes.createStringValue(scene.getName()));		
@@ -324,19 +337,33 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 	}
 	
 	private static void writeSceneItemsToSceneDC(DesignDocument doc, DesignComponent dcScene, Scene scene) {
+		//fist remove all scene items
+		List<PropertyValue> sceneItemProps = dcScene.readProperty(SceneCD.PROPERTY_SCENE_ITEMS).getArray();
+		for (Iterator<PropertyValue> it = sceneItemProps.iterator(); it.hasNext();) {
+			PropertyValue propertyValue = it.next();
+			DesignComponent dcSceneItemComp = propertyValue.getComponent();
+			dcSceneItemComp.removeFromParentComponent();
+		}
+		dcScene.writeProperty(SceneCD.PROPERTY_SCENE_ITEMS, PropertyValue.createEmptyArray(SceneItemCD.TYPEID));
+
+		//them add scene items according to the current state of the scene
 		List<Layer> layers = scene.getLayers();
 		List<PropertyValue> sceneItems = new ArrayList<PropertyValue>();
+		assert(sceneItems.isEmpty());
+		
 		for (Iterator<Layer> it = layers.iterator(); it.hasNext();) {
-			DesignComponent sceneItemDC = doc.createComponent(SceneItemCD.TYPEID);			
+			DesignComponent sceneItemDC = doc.createComponent(SceneItemCD.TYPEID);
 
 			Layer layer = it.next();
-			DesignComponent layerDC = designIdMap.get(layer);		
+			DesignComponent layerDC = designIdMap.get(layer);
 			assert (layerDC != null);
 
 			sceneItemDC.writeProperty(SceneItemCD.PROPERTY_LAYER, PropertyValue.createComponentReference(layerDC));
 			sceneItemDC.writeProperty(SceneItemCD.PROPERTY_LOCK, MidpTypes.createBooleanValue(scene.isLayerLocked(layer)));
-			sceneItemDC.writeProperty(SceneItemCD.PROPERTY_VISIBLE, MidpTypes.createBooleanValue(scene.isLayerLocked(layer)));
+			sceneItemDC.writeProperty(SceneItemCD.PROPERTY_VISIBLE, MidpTypes.createBooleanValue(scene.isLayerVisible(layer)));
 			sceneItemDC.writeProperty(SceneItemCD.PROPERTY_POSITION, GameTypes.createPointProperty(scene.getLayerPosition(layer)));
+			
+			dcScene.addComponent(sceneItemDC);
 			
 			PropertyValue sceneItemPropVal = PropertyValue.createComponentReference(sceneItemDC);
 			sceneItems.add(sceneItemPropVal);
@@ -399,9 +426,13 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 
     public void sceneRemoved(Scene scene, int index) {
 		scene.removeSceneListener(this);
-		DesignComponent dcScene = designIdMap.remove(scene);
+		final DesignComponent dcScene = designIdMap.remove(scene);
 		assert (dcScene != null);
-		this.document.deleteComponent(dcScene);
+		this.document.getTransactionManager().writeAccess(new Runnable() {
+            public void run() {
+				document.deleteComponent(dcScene);
+            }			
+		});
     }
 
     public void tiledLayerAdded(final TiledLayer tiledLayer, int index) {
@@ -418,9 +449,13 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 
     public void tiledLayerRemoved(TiledLayer tiledLayer, int index) {
 		tiledLayer.removeTiledLayerListener(this);
-		DesignComponent dcLayer = designIdMap.remove(tiledLayer);
+		final DesignComponent dcLayer = designIdMap.remove(tiledLayer);
 		assert (dcLayer != null);
-		this.document.deleteComponent(dcLayer);
+		this.document.getTransactionManager().writeAccess(new Runnable() {
+            public void run() {
+				document.deleteComponent(dcLayer);
+            }			
+		});
     }
 
     public void spriteAdded(final Sprite sprite, int index) {
@@ -435,9 +470,13 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 
     public void spriteRemoved(Sprite sprite, int index) {
 		sprite.removeSequenceContainerListener(this);
-		DesignComponent dcLayer = designIdMap.remove(sprite);
+		final DesignComponent dcLayer = designIdMap.remove(sprite);
 		assert (dcLayer != null);
-		this.document.deleteComponent(dcLayer);
+		this.document.getTransactionManager().writeAccess(new Runnable() {
+            public void run() {
+				document.deleteComponent(dcLayer);
+            }			
+		});
     }
 
     public void imageResourceAdded(final ImageResource imageResource) {
@@ -612,9 +651,13 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 
     public void animatedTileRemoved(ImageResource source, AnimatedTile tile) {
 		tile.removeSequenceContainerListener(this);
-		DesignComponent dcTile = designIdMap.remove(tile);
+		final DesignComponent dcTile = designIdMap.remove(tile);
 		assert(dcTile != null);
-		this.document.deleteComponent(dcTile);
+		this.document.getTransactionManager().writeAccess(new Runnable() {
+            public void run() {
+				document.deleteComponent(dcTile);
+            }			
+		});
     }
 
     public void sequenceAdded(ImageResource source, Sequence sequence) {
@@ -622,9 +665,13 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 
     public void sequenceRemoved(ImageResource source, Sequence sequence) {
 		sequence.removeSequenceListener(this);
-		DesignComponent dcSequence = designIdMap.remove(sequence);
+		final DesignComponent dcSequence = designIdMap.remove(sequence);
 		assert(dcSequence != null);
-		this.document.deleteComponent(dcSequence);
+		this.document.getTransactionManager().writeAccess(new Runnable() {
+            public void run() {
+				document.deleteComponent(dcSequence);
+            }			
+		});
     }
 
 	//----------------------- SequenceListener ----------------------------
