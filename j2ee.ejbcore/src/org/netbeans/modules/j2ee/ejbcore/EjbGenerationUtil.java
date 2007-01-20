@@ -108,32 +108,6 @@ public class EjbGenerationUtil {
         return beans != null && ejb != null;
     }
     
-    /**
-     * Generates the basic part of EJB component name which is used for other
-     * generations, like <component-name>LocalHome ...<br>
-     * If <component-name> contains suffix "Bean", it will be removed.<br>
-     * If <component-name> equals "Bean", then generated name will be "Bean"<br>
-     * If component with such name already exists in EJB deployment descriptor,
-     * name will be extended with number suffix: <component-name>1 ... n<br>
-     *
-     * @param componentName name in form: <component-name> or <component-name>Bean
-     * @param dd deployment descriptor
-     * @return unique name for EJB component which is used as base for other names
-     */
-    public static String uniqueSingleEjbName(String componentName, EjbJar ejbJar) {
-        throw new UnsupportedOperationException("not implemented");
-        //TODO: RETOUCHE
-//        int uniquifier = 1;
-//        if (!componentName.equalsIgnoreCase("Bean") && componentName.endsWith("Bean")) {
-//            componentName = componentName.substring(0, componentName.length() - 4);
-//        }
-//        String newName = componentName;
-//        while(isEjbNameInDD(newName + "Bean", dd)) {
-//            newName = componentName + String.valueOf(uniquifier++);
-//        }
-//        return newName;
-    }
-
     public static FileObject getPackageFileObject(SourceGroup location, String pkgName, Project project) {
         String relativePkgName = pkgName.replace('.', '/');
         FileObject fileObject = null;
