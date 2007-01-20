@@ -931,6 +931,10 @@ public class Registry {
         return localProductCache;
     }
     
+    public Platform getTargetPlatform() {
+        return targetPlatform;
+    }
+    
     // state file methods ///////////////////////////////////////////////////////////
     public void loadStateFile(File stateFile, Progress progress) throws InitializationException {
         try {
@@ -1169,6 +1173,7 @@ public class Registry {
     // Constants
     public static final String DEFAULT_LOCAL_PRODUCT_CACHE_DIRECTORY_NAME =
             "product-cache";
+
     
     public static final String LOCAL_PRODUCT_CACHE_DIRECTORY_NAME_PROPERTY =
             "nbi.product.local.cache.directory.name";
