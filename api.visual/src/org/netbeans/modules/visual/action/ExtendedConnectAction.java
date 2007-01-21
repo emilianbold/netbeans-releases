@@ -18,53 +18,34 @@
  */
 package org.netbeans.modules.visual.action;
 
-import java.awt.event.KeyEvent;
-import org.netbeans.api.visual.action.*;
-import org.netbeans.api.visual.action.WidgetAction.State;
-import org.netbeans.api.visual.action.WidgetAction.WidgetKeyEvent;
+import org.netbeans.api.visual.action.ConnectDecorator;
+import org.netbeans.api.visual.action.ConnectProvider;
+import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.widget.Widget;
+
+import java.awt.event.MouseEvent;
 
 /**
  *
  * @author alex
  */
 public class ExtendedConnectAction extends ConnectAction{
-    
-    private boolean ctrl=false;
-    private int keyCode=KeyEvent.VK_CONTROL;//TODO
-    
+
     public ExtendedConnectAction(ConnectDecorator decorator, Widget interractionLayer, ConnectProvider provider) {
         super(decorator,interractionLayer,provider);
     }
-    
+
     public WidgetAction.State mousePressed(Widget widget, WidgetAction.WidgetMouseEvent event) {
-        if (ctrl) {
-            return  super.mousePressed(widget,event);
-        }else return State.REJECTED;
-    }
-    
-    public WidgetAction.State mouseReleased(Widget widget, WidgetAction.WidgetMouseEvent event) {
-        if (ctrl) {
-            return  super.mouseReleased(widget,event);
-        }else return State.REJECTED;
-    }
-    
-    public WidgetAction.State keyPressed(Widget widget, WidgetKeyEvent event) {
-        if (keyCode==event.getKeyCode()) {
-            ctrl=true;
-        }
-        return State.CONSUMED;
-    }
-    
-    public WidgetAction.State keyReleased(Widget widget, WidgetKeyEvent event) {
-        if (keyCode==event.getKeyCode()) {
-            ctrl=false;
-        }
+        if ((event.getModifiers () & MouseEvent.CTRL_MASK) != 0)
+            return super.mousePressed(widget,event);
         return State.REJECTED;
     }
-    
-    public void setKeyCode(int keyCode){
-        this.keyCode=keyCode;
+
+    public WidgetAction.State mouseReleased(Widget widget, WidgetAction.WidgetMouseEvent event) {
+        if (isLocked ())
+            return super.mouseReleased(widget,event);
+        else
+            return State.REJECTED;
     }
-    
+
 }
