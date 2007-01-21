@@ -153,6 +153,10 @@ public final class ConnectionWidgetLayout implements Layout {
     }
 
     private void layoutChildAt (Widget childWidget, Point linePoint) {
+        if (! childWidget.isVisible ()) {
+            childWidget.resolveBounds (new Point (linePoint.x, linePoint.y), new Rectangle ());
+            return;
+        }
         Rectangle preferredBounds = childWidget.getPreferredBounds ();
         Point referencePoint = getReferencePoint (alignments.get (childWidget), preferredBounds);
         Point location = childWidget.getPreferredLocation ();

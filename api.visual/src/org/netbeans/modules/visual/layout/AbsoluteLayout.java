@@ -18,10 +18,11 @@
  */
 package org.netbeans.modules.visual.layout;
 
-import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.layout.Layout;
+import org.netbeans.api.visual.widget.Widget;
 
 import java.util.Collection;
+import java.awt.*;
 
 /**
  * @author David Kaspar
@@ -30,8 +31,12 @@ public final class AbsoluteLayout implements Layout {
 
     public void layout (Widget widget) {
         Collection<Widget> children = widget.getChildren ();
-        for (Widget child : children)
-            child.resolveBounds (child.getPreferredLocation (), null);
+        for (Widget child : children) {
+            if (child.isVisible ())
+                child.resolveBounds (child.getPreferredLocation (), null);
+            else
+                child.resolveBounds (null, new Rectangle ());
+        }
     }
 
     public boolean requiresJustification (Widget widget) {

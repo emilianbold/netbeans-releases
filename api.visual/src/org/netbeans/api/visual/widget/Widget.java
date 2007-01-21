@@ -81,6 +81,8 @@ public class Widget {
 
     private ArrayList<Widget.Dependency> dependencies;
 
+    private boolean visible = true;
+
     private boolean opaque;
     private Paint background;
     private Color foreground;
@@ -329,6 +331,23 @@ public class Widget {
         if (constraints == null)
             constraints = new HashMap<Widget, Object> ();
         constraints.put (child, constraint);
+    }
+
+    /**
+     * Returns whether the widget is visible.
+     * @return true if the widget is visible
+     */
+    public final boolean isVisible () {
+        return visible;
+    }
+
+    /**
+     * Sets whether the widget is visible.
+     * @param visible if true, then the widget is visible
+     */
+    public final void setVisible (boolean visible) {
+        this.visible = visible;
+        revalidate ();
     }
 
     /**
@@ -873,7 +892,7 @@ public class Widget {
      * @return true, if the location belong to the widget
      */
     public boolean isHitAt (Point localLocation) {
-        return getBounds ().contains (localLocation);
+        return visible  &&  getBounds ().contains (localLocation);
     }
 
     /**
@@ -992,6 +1011,9 @@ public class Widget {
      * Paints the widget with its children widget into the Graphics2D instance acquired from Scene.getGraphics method.
      */
     public final void paint () {
+        if (! visible)
+            return;
+
         assert bounds != null : MESSAGE_NULL_BOUNDS; // NOI18N
         Graphics2D gr = scene.getGraphics ();
 

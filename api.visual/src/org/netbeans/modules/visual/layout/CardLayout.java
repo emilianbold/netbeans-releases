@@ -55,7 +55,7 @@ public final class CardLayout implements Layout {
         Point preferredLocation = null;
         Rectangle preferredBounds = null;
 
-        if (activeChildWidget != null)
+        if (activeChildWidget != null  &&  activeChildWidget.isVisible ())
             for (Widget child : cardLayoutWidget.getChildren ())
                 if (child == activeChildWidget) {
                     preferredLocation = child.getPreferredLocation ();
@@ -80,7 +80,7 @@ public final class CardLayout implements Layout {
     public void justify (Widget widget) {
         assert widget == cardLayoutWidget;
 
-        if (activeChildWidget != null)
+        if (activeChildWidget != null  &&  activeChildWidget.isVisible ())
             for (Widget child : cardLayoutWidget.getChildren ())
                 if (child == activeChildWidget) {
                     Rectangle bounds = widget.getClientArea ();

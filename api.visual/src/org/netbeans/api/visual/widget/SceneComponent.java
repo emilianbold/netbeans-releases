@@ -243,7 +243,7 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
     }
 
     private WidgetAction.State processLocationOperator (Operator operator, String tool, Widget widget, WidgetAction.WidgetLocationEvent event) {
-        if (! widget.isEnabled ())
+        if (! widget.isVisible ()  ||  ! widget.isEnabled ())
             return WidgetAction.State.REJECTED;
 
         Point location = widget.getLocation ();
@@ -311,7 +311,7 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
     }
 
     private WidgetAction.State processOperator (Operator operator, String tool, Widget widget, WidgetAction.WidgetEvent event) {
-        if (! widget.isEnabled ())
+        if (! widget.isVisible ()  ||  ! widget.isEnabled ())
             return WidgetAction.State.REJECTED;
 
         WidgetAction.State state;
@@ -382,7 +382,7 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
         Widget disabledWidget = null;
         Widget tempWidget = widget;
         while (tempWidget != null) {
-            if (! tempWidget.isEnabled ())
+            if (! ! tempWidget.isVisible ()  ||  ! tempWidget.isEnabled ())
                 disabledWidget = tempWidget;
             tempWidget = tempWidget.getParentWidget ();
         }
