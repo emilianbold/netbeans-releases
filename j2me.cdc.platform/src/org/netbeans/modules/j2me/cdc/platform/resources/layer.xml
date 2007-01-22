@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+
+<filesystem>
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="LibraryTypeProviders">
+            <file name="cdc_library_provider.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.project.libraries.LibraryTypeProvider"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.j2me.cdc.platform.libraries.CDCLibraryTypeProvider" />
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2me.cdc.platform.libraries.CDCLibraryTypeProvider.create"/>
+            </file>
+        </folder>
+    </folder>
+
+    <folder name="org-netbeans-api-java">
+        <folder name="platform">
+            <folder name="installers">
+                <file name="semc_cdc1.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.java.platform.PlatformInstall"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2me.cdc.platform.CDCInstallImpl.create"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
+
+<!--    <folder name="Services">-->
+<!--        <folder name="Platforms">-->
+<!--            <folder name="org-netbeans-api-java-Platform">-->
+<!--                 <file name="default_platform.xml" url="templates/defaultPlatform.xml"/>-->
+<!--            </folder>-->
+<!--        </folder>-->
+<!--    </folder>-->
+
+    <folder name="Templates">
+        <folder name="Services">
+            <folder name="Platforms">
+                <folder name="org-netbeans-api-java-Platform">
+                    <file name="cdcplatform.xml" url="templates/cdcplatform.xml">
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.platform.resources.Bundle"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/platform/resources/cdcPlatform.png"/>
+                        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/platform/resources/templates/cdcplatformdefinition.html"/>
+                        <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.platform.wizard.PlatformInstallIterator.create" />
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
+
+    <folder name="xml">
+        <folder name="entities">
+            <folder name="NetBeans" >
+                <file name="DTD_CDC_PlatformDefinition_1_0" url="nbresloc:/org/netbeans/modules/j2me/cdc/platform/platformdefinition/cdcplatformdefinition.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD CDC PlatformDefinition 1.0//EN"/>
+                </file>
+                <file name="DTD_CDC_PlatformDefinition_1_1" url="nbresloc:/org/netbeans/modules/j2me/cdc/platform/platformdefinition/cdc-platformdefinition-1_1.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD CDC PlatformDefinition 1.1//EN"/>
+                </file>
+            </folder>
+        </folder>
+
+        <folder name="lookups">
+            <folder name="NetBeans">
+                <file name="DTD_CDC_PlatformDefinition_1_0.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2me.cdc.platform.platformdefinition.PlatformConvertor"/>
+                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment.Provider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2me.cdc.platform.platformdefinition.PlatformConvertor.createProvider"/>
+                </file>
+                <file name="DTD_CDC_PlatformDefinition_1_1.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2me.cdc.platform.platformdefinition.PlatformConvertor"/>
+                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment.Provider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2me.cdc.platform.platformdefinition.PlatformConvertor.createProvider"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
+</filesystem>

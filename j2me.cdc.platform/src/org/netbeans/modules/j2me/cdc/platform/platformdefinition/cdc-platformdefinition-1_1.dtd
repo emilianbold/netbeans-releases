@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!-- "-//NetBeans//DTD Java PlatformDefinition 1.0//EN" "http://www.netbeans.org/dtds/java-platformdefinition-1_0.dtd" -->
+
+<!--
+    DTD to describe a standard JDK/JRE installation
+-->
+
+<!-- 
+attributes: 
+    name = displayed name of the platform
+-->    
+<!ELEMENT platform (device+,platformhome?,sourcepath?,javadoc?)>
+<!ATTLIST platform 
+    name CDATA #REQUIRED
+    antname CDATA #REQUIRED
+    type CDATA #REQUIRED
+    classversion CDATA #IMPLIED
+    displayname CDATA #IMPLIED
+    fatjar (true|false) "false"
+>
+
+<!ELEMENT device (profile+,screen+)>
+<!ATTLIST device
+    name CDATA #REQUIRED
+    description CDATA #IMPLIED
+  >
+  
+<!ELEMENT profile (execution*) >
+<!ATTLIST profile
+    name CDATA #REQUIRED
+    description CDATA #IMPLIED
+    version CDATA #REQUIRED
+    classpath CDATA #REQUIRED
+    runclasspath CDATA #IMPLIED
+    isDefault (true|false) "false"
+  >
+  
+<!ELEMENT screen EMPTY>
+<!ATTLIST screen
+    width CDATA #IMPLIED
+    height CDATA #IMPLIED
+    bitDepth CDATA #IMPLIED
+    isColor (true|false) "true"
+    isTouch (true|false) "false"
+    isMain (true|false)  "true"    
+ >
+<!ELEMENT execution EMPTY>
+<!ATTLIST execution
+    type  CDATA #REQUIRED
+    class CDATA #IMPLIED
+ >
+
+<!ELEMENT classpath (resource)*>
+
+<!ELEMENT runclasspath (resource)*>
+  
+<!--Holds the platform root-->
+<!ELEMENT platformhome (resource)*>
+
+<!--Holds the source roots of the jdk-->
+<!ELEMENT sources (resource)*>
+
+<!--Holds the roots of the jdk's javadoc-->
+<!ELEMENT javadoc (resource)*>
+
+<!--Represents a root of a path, holds a stringified URL-->
+<!ELEMENT resource (#PCDATA)>
