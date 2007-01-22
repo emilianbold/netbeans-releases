@@ -106,7 +106,7 @@ public class GarbageCollectAction extends CallableSystemAction {
         }
         
         public Dimension calcPreferredSize() {
-            Dimension pref = getHeapView().getPreferredSize();
+            Dimension pref = getHeapView().heapViewPreferredSize();
             pref.height += 1;
             pref.width += 6;
             return pref;

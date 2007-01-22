@@ -24,6 +24,7 @@ import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Composite;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -100,7 +101,7 @@ class HeapView extends JComponent {
     private static final Color BORDER1_COLOR = new Color(0xA6A295);
 
     /**
-     * Border color of line elow the top.
+     * Border color of line below the top.
      */
     private static final Color BORDER2_COLOR = new Color(0xC0BCAD);
     
@@ -367,38 +368,9 @@ class HeapView extends JComponent {
         updateTextWidth();
     }
     
-    /**
-     * Returns the minimum size.
-     *
-     * @return the minimum size
-     */
-    public Dimension getMinimumSize() {
-        if (isMinimumSizeSet()) {
-            return super.getMinimumSize();
-        }
-        return getPreferredSize0();
-    }
-    
-    /**
-     * Returns the preferred size.
-     *
-     * @return the preferred size
-     */
-    public Dimension getPreferredSize() {
-        if (isPreferredSizeSet()) {
-            return super.getPreferredSize();
-        }
-        return getPreferredSize0();
-    }
-    
-    private Dimension getPreferredSize0() {
+    Dimension heapViewPreferredSize() {
         Dimension size = new Dimension(maxTextWidth + 8, getFontMetrics(
                 getFont()).getHeight() + 8);
-        Component parent = getParent();
-        if (parent != null) {
-            Insets insets = getInsets();
-            size.height = parent.getHeight() - (insets.top + insets.bottom);
-        }
         return size;
     }
 
@@ -534,9 +506,6 @@ class HeapView extends JComponent {
     }
     
     private void paintTicks(Graphics2D g, int width, int height) {
-        int numCells = GRID_COLORS.length / 2;
-        int cellSize = (height - numCells - 1) / numCells;
-        
         if (graphIndex > 0 || graphFilled) {
             int index = getGraphStartIndex();
             int x = 0;
