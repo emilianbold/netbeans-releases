@@ -233,6 +233,10 @@ public class ELExpression {
          * bean.prop2... propN.propertyBeingTyped| - returns the type of propN
          */
         protected TypeElement getTypePreceedingCaret(CompilationInfo parameter){
+            if (beanType == null){
+                return null;
+            }
+            
             TypeElement lastKnownType = parameter.getElements().getTypeElement(beanType);
             
             String parts[] = getExpression().split("\\.");
