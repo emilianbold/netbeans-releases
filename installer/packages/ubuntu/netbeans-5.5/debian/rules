@@ -67,8 +67,8 @@ install: build
 	# platform
 	mkdir -p $(CURDIR)/debian/netbeans5.5-platform$(NBROOT)
 	cp -r $(BUILD)/platform6 $(CURDIR)/debian/netbeans5.5-platform$(NBROOT)/
-	mkdir -p $(CURDIR)/debian/netbeans5.5-platform/usr/share/doc/netbeans-platform/
-	mv $(CURDIR)/debian/netbeans5.5-platform$(NBROOT)/platform6/*.txt $(CURDIR)/debian/netbeans5.5-platform/usr/share/doc/netbeans-platform/
+	mkdir -p $(CURDIR)/debian/netbeans5.5-platform/usr/share/doc/netbeans5.5-platform/
+	mv $(CURDIR)/debian/netbeans5.5-platform$(NBROOT)/platform6/*.txt $(CURDIR)/debian/netbeans5.5-platform/usr/share/doc/netbeans5.5-platform/
 	#for x in `find $(CURDIR)/debian/netbeans5.5-platform/$(NBROOT) -name \*.jar` ; do \
 	#	echo "Packing $$x" ; \
 	#	pack200 --no-gzip $$x.pack $$x ; \
@@ -79,10 +79,10 @@ install: build
 	mkdir -p $(CURDIR)/debian/netbeans5.5$(NBROOT)
 	cp -r $(BUILD)/* $(CURDIR)/debian/netbeans5.5$(NBROOT)/
 	rm -r $(CURDIR)/debian/netbeans5.5$(NBROOT)/platform6
-	mkdir -p $(CURDIR)/debian/netbeans5.5/usr/share/doc/netbeans/
-	mv $(CURDIR)/debian/netbeans5.5$(NBROOT)/*.txt $(CURDIR)/debian/netbeans5.5/usr/share/doc/netbeans/
-	mv $(CURDIR)/debian/netbeans5.5$(NBROOT)/*.html $(CURDIR)/debian/netbeans5.5/usr/share/doc/netbeans/	
-	mv $(CURDIR)/debian/netbeans5.5$(NBROOT)/*.css $(CURDIR)/debian/netbeans5.5/usr/share/doc/netbeans/
+	mkdir -p $(CURDIR)/debian/netbeans5.5/usr/share/doc/netbeans5.5/
+	mv $(CURDIR)/debian/netbeans5.5$(NBROOT)/*.txt $(CURDIR)/debian/netbeans5.5/usr/share/doc/netbeans5.5/
+	mv $(CURDIR)/debian/netbeans5.5$(NBROOT)/*.html $(CURDIR)/debian/netbeans5.5/usr/share/doc/netbeans5.5/
+	mv $(CURDIR)/debian/netbeans5.5$(NBROOT)/*.css $(CURDIR)/debian/netbeans5.5/usr/share/doc/netbeans5.5/
 
 	mkdir -p $(CURDIR)/debian/netbeans5.5/usr/share/applications
 	cp $(CURDIR)/debian/extra/netbeans.desktop $(CURDIR)/debian/netbeans5.5/usr/share/applications/netbeans.desktop
