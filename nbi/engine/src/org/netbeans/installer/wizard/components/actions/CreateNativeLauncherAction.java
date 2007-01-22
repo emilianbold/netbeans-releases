@@ -68,7 +68,7 @@ public class CreateNativeLauncherAction extends WizardAction {
             NativeLauncher nl = new NativeLauncher();
             nl.setJavaVersionMin("1.5.0_01");            
             nl.setJar(new File(targetPath));
-            nl.setJvmArguments("-Xmx256m -Xms64m");
+            nl.setJvmArguments(new String [] {"-Xmx256m", "-Xms64m"});
             Platform platform = Registry.getInstance().getTargetPlatform();
             File f = nl.createLauncher(platform, progress);
             if ( !targetFile.equals(f)) {
