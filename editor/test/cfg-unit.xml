@@ -38,7 +38,6 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/modules/editor/AnnotationsUnitTestSuite.class"/>
                 <include name="org/netbeans/modules/editor/DocumentUnitTestSuite.class"/>
                 <include name="org/netbeans/modules/editor/openide/*.class"/>
-                <include name="org/netbeans/modules/editor/options/BaseOptionsDeadlock92449Test.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -62,6 +61,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="failing" executor="code" name="testbag_2">
         <testset dir="unit/src">
             <patternset>
+                <include name="org/netbeans/modules/editor/options/BaseOptionsDeadlock92449Test.class"/>
             </patternset>
         </testset>
     </testbag>
