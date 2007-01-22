@@ -1070,18 +1070,24 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         actionMap.put(COMPLETION_SHOW, new CompletionShowAction(CompletionProvider.COMPLETION_QUERY_TYPE));
 
         // Register smart completion show
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, (InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)), COMPLETION_SMART_SHOW);
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SLASH, (InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)), COMPLETION_SMART_SHOW);
+        keys = findEditorKeys(ExtKit.smartCompletionShowAction, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, (InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)));
+        for (int i = 0; i < keys.length; i++) {
+            inputMap.put(keys[i], COMPLETION_SMART_SHOW);
+        }
         actionMap.put(COMPLETION_SMART_SHOW, new CompletionShowAction(CompletionProvider.COMPLETION_SMART_QUERY_TYPE));
         
         // Register all completion show
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, (InputEvent.CTRL_MASK | InputEvent.ALT_MASK)), COMPLETION_ALL_SHOW);
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SLASH, (InputEvent.CTRL_MASK | InputEvent.ALT_MASK)), COMPLETION_ALL_SHOW);
+        keys = findEditorKeys(ExtKit.allCompletionShowAction, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, (InputEvent.CTRL_MASK | InputEvent.ALT_MASK)));
+        for (int i = 0; i < keys.length; i++) {
+            inputMap.put(keys[i], COMPLETION_ALL_SHOW);
+        }
         actionMap.put(COMPLETION_ALL_SHOW, new CompletionShowAction(CompletionProvider.COMPLETION_ALL_QUERY_TYPE));
 
         // Register documentation show
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, (InputEvent.ALT_MASK | InputEvent.SHIFT_MASK)), DOC_SHOW);
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SLASH, (InputEvent.ALT_MASK | InputEvent.SHIFT_MASK)), DOC_SHOW);
+        keys = findEditorKeys(ExtKit.documentationShowAction, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, (InputEvent.ALT_MASK | InputEvent.SHIFT_MASK)));
+        for (int i = 0; i < keys.length; i++) {
+            inputMap.put(keys[i], DOC_SHOW);
+        }
         actionMap.put(DOC_SHOW, new DocShowAction());
         
         // Register tooltip show

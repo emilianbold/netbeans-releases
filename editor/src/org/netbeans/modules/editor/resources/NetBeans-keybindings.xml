@@ -13,6 +13,8 @@
     <bind actionName="adjust-window-bottom" key="O-U$B"/>
     <bind actionName="adjust-window-center" key="O-U$M"/>
     <bind actionName="adjust-window-top" key="O-U$T"/>
+    <bind actionName="all-completion-show" key="DO-SPACE"/>
+    <bind actionName="all-completion-show" key="DO-BACK_SLASH"/>
     <bind actionName="annotations-cycling" key="DS-C"/>
     <bind actionName="caret-backward" key="LEFT"/>
     <bind actionName="caret-backward" key="KP_LEFT"/>
@@ -44,7 +46,8 @@
     <bind actionName="delete-next" key="DELETE"/>
     <bind actionName="delete-previous" key="S-BACK_SPACE"/>
     <bind actionName="delete-previous" key="BACK_SPACE"/>
-    <bind actionName="documentation-show" key="DS-SPACE"/>
+    <bind actionName="documentation-show" key="OS-SPACE"/>
+    <bind actionName="documentation-show" key="OS-BACK_SLASH"/>
     <bind actionName="expand-all-folds" key="DS-ADD"/>
     <bind actionName="expand-all-folds" key="DS-EQUALS"/>
     <bind actionName="expand-all-folds" key="DS-PLUS"/>
@@ -101,6 +104,8 @@
     <bind actionName="shift-line-left" key="D-D"/>
     <bind actionName="shift-line-right" key="D-T"/>
     <bind actionName="show-popup-menu" key="S-F10"/>
+    <bind actionName="smart-completion-show" key="DS-SPACE"/>
+    <bind actionName="smart-completion-show" key="DS-BACK_SLASH"/>
     <bind actionName="split-line" key="D-ENTER"/>
     <bind actionName="start-macro-recording" key="D-J$S"/>
     <bind actionName="start-new-line" key="S-ENTER"/>
