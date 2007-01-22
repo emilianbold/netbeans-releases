@@ -141,7 +141,7 @@ public final class LogRecords {
         String msg = content(s, "message", true);
         String key = content(s, "key", false);
         
-        LogRecord r = new LogRecord(Level.parse(lev), msg);
+        LogRecord r = new LogRecord(parseLevel(lev), msg);
         r.setThreadID(Integer.parseInt(thread));
         r.setSequenceNumber(Long.parseLong(seq));
         r.setMillis(Long.parseLong(millis));
@@ -149,7 +149,10 @@ public final class LogRecords {
         
         return r;
     }
-    
+
+    static Level parseLevel(String lev) {
+        return "USER".equals(lev) ? Level.SEVERE : Level.parse(lev);
+    }
     private static String content(String where, String what, boolean fail) throws IOException {
         int indx = where.indexOf("<" + what + ">");
         if (indx == -1) {
@@ -316,7 +319,7 @@ public final class LogRecords {
                 String msg = Elem.MESSAGE.parse(values);
                 String key = Elem.KEY.parse(values);
                 
-                LogRecord r = new LogRecord(Level.parse(lev), msg);
+                LogRecord r = new LogRecord(parseLevel(lev), msg);
                 r.setThreadID(Integer.parseInt(thread));
                 r.setSequenceNumber(Long.parseLong(seq));
                 r.setMillis(Long.parseLong(millis));
