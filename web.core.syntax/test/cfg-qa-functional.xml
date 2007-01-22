@@ -37,7 +37,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>   
     
     <!-- Validation suite for my module -->
-    <testbag testattribs="completion" executor="ide_as" name="JSP Syntax validation">
+    <testbag testattribs="validation, completion" executor="ide_as" name="JSP Syntax validation">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="**/JspColoringTest.class"/>

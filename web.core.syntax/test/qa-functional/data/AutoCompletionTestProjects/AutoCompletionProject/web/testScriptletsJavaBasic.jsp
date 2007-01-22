@@ -27,7 +27,7 @@
 --%>
 
 <%-- Java completion for variables methods and fields between more sriptlets --%>
-<%--CC
+<%--
 <% tBean.setN|
 ...
 <% tBean.setName(name)
