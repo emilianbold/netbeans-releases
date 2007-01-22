@@ -162,7 +162,7 @@ public class DateFieldCD extends ComponentDescriptor {
         public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
             PropertyValue propertyValue = component.readProperty (PROP_TIME_ZONE);
             if (propertyValue.getKind () == PropertyValue.Kind.VALUE) {
-                section.getWriter ().write ("TimeZone.getTimeZone ("); // NOI18N
+                section.getWriter ().write ("java.util.TimeZone.getTimeZone ("); // NOI18N
                 MidpCodeSupport.generateCodeForPropertyValue (section.getWriter (), propertyValue);
                 section.getWriter ().write (")"); // NOI18N
             } else
