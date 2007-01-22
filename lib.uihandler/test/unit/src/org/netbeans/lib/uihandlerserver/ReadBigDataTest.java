@@ -93,6 +93,7 @@ public class ReadBigDataTest extends NbTestCase {
         
         int i = -1;
         for (File f : arr) {
+            LOG.log(Level.WARNING, "scanning {0}", f.getPath());
             i++;
             InputStream is = new BufferedInputStream(new FileInputStream(f));
             H h = new H();
@@ -114,6 +115,7 @@ public class ReadBigDataTest extends NbTestCase {
     private int readAsAStream(final int[] cnts, final File[] arr, int err) throws IOException, FileNotFoundException {
         int i = -1;
         for (File f : arr) {
+            LOG.log(Level.WARNING, "reading {0}", f.getPath());
             i++;
             InputStream is = new BufferedInputStream(new FileInputStream(f));
             int cnt = 0;

@@ -19,6 +19,7 @@ package org.netbeans.lib.uihandlerserver;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -155,6 +156,49 @@ public class LogRecordsTest extends NbTestCase {
         for (;;) {
             LOG.log(Level.INFO, "Reading {0}th record", cnt);
             LogRecord r = LogRecords.read(is);
+            if (r == null) {
+                break;
+            }
+            LOG.log(Level.INFO, "Read {0}th record", cnt);
+            cnt++;
+        }
+        is.close();
+        
+        H h = new H();
+        is = getClass().getResourceAsStream(what);
+        LogRecords.scan(is, h);
+        is.close();
+        
+        assertEquals("The same amount of records", cnt, h.cnt);
+    }
+    public void testNotFinishedFiles() throws Exception {
+        String what = "eof.xml";
+        InputStream is = getClass().getResourceAsStream(what);
+        int cnt = 0;
+        
+        class H extends Handler {
+            int cnt;
+            
+            public void publish(LogRecord record) {
+                cnt++;
+            }
+
+            public void flush() {
+            }
+
+            public void close() throws SecurityException {
+            }
+        }
+        
+        for (;;) {
+            LOG.log(Level.INFO, "Reading {0}th record", cnt);
+            LogRecord r;
+            try {
+                r = LogRecords.read(is);
+            } catch (EOFException ex) {
+                assertNull("Next read is null", LogRecords.read(is));
+                break;
+            }
             if (r == null) {
                 break;
             }
