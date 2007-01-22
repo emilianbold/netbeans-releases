@@ -19,7 +19,6 @@
 
 package org.netbeans.lib.jsp.lexer;
 
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.jsp.lexer.JspTokenId;
@@ -31,6 +30,7 @@ import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
+import org.netbeans.spi.lexer.TokenPropertyProvider;
 
 /**
  * Syntax class for JSP tags.
@@ -57,7 +57,7 @@ public class JspLexer implements Lexer<JspTokenId> {
     private final TokenFactory<JspTokenId> tokenFactory;
     
     public Object state() {
-        return lexerState + lexerStateBeforeEL * 1000;
+        return lexerState + lexerStateBeforeEL * 1000 + lexerStateJspScriptlet * 1000000;
     }
     
     //main internal lexer state
@@ -68,6 +68,9 @@ public class JspLexer implements Lexer<JspTokenId> {
     //we have 8 states just in attribute value so I would have to copy the EL
     //recognition code eight-times.
     private int lexerStateBeforeEL = INIT;
+    
+    //internal state signalling whether the lexer is in <jsp:scriptlet> tag
+    private int lexerStateJspScriptlet = INIT;
     
     // Internal analyzer states
     // general
@@ -117,7 +120,7 @@ public class JspLexer implements Lexer<JspTokenId> {
     
     private static final int ISI_SCRIPTLET       = 36; // inside java scriptlet/declaration/expression
     private static final int ISP_SCRIPTLET_PC   = 37; // just after % in scriptlet
-    
+
     //expression language
     
     //EL in content language
@@ -126,15 +129,30 @@ public class JspLexer implements Lexer<JspTokenId> {
     
     private static final int ISA_BS             = 40; //after backslash in text - needed to disable EL by scaping # or $
     
+    //scriptlet substate states
+    //in standart syntax jsp
+    private static final int JAVA_SCRITPLET = 1; //java scriptlet
+    private static final int JAVA_DECLARATION = 2; //java declaration
+    private static final int JAVA_EXPRESSION = 3; //java expression
+    //in xml syntax jsp (jsp document)
+    private static final int JAVA_SCRITPLET_DOCUMENT = 4; //java scriptlet in JSP document
+    private static final int JAVA_DECLARATION_DOCUMENT = 5; //java declaration in JSP document
+    private static final int JAVA_EXPRESSION_DOCUMENT = 6; //java expression in JSP document
+    
+   
     public JspLexer(LexerRestartInfo<JspTokenId> info) {
         this.input = info.input();
         this.inputAttributes = info.inputAttributes();
         this.tokenFactory = info.tokenFactory();
         if (info.state() == null) {
-            this.lexerState = INIT;
+            lexerState = INIT;
+            lexerStateBeforeEL = INIT;
+            lexerStateJspScriptlet = INIT;
         } else {
             int encoded = ((Integer) info.state()).intValue();
-            lexerStateBeforeEL = encoded / 1000;
+            lexerStateJspScriptlet = encoded / 1000000;
+            int reminder = encoded % 1000000;
+            lexerStateBeforeEL = reminder / 1000;
             lexerState = encoded % 1000;
         }
         if(inputAttributes != null) {
@@ -170,8 +188,11 @@ public class JspLexer implements Lexer<JspTokenId> {
         return jspParseData == null ? false : jspParseData.isELIgnored();
     }
     
-    /** Looks ahead into the character buffer and checks if a jsp tag name follows. */
-    private boolean followsJspTag() {
+    private boolean isXMLSyntax() {
+        return jspParseData == null ? false: jspParseData.isXMLSyntax();
+    }
+    
+    private String getPossibleTagName() {
         int actChar;
         int prev_read = input.readLength(); //remember the size of the read sequence
         int read = 0;
@@ -183,14 +204,20 @@ public class JspLexer implements Lexer<JspTokenId> {
                     (actChar == '_') ||
                     (actChar == '-') ||
                     (actChar == ':') ||
-                    (actChar == '.')) ||
+                    (actChar == '.') ||
+                    (actChar == '/')) ||
                     (actChar == EOF)) { // EOL or not alpha
                 //end of tagname
-                String tagName = input.readText().toString().substring(prev_read);
+                String tagName = input.readText().toString().substring(prev_read, prev_read + read - 1);
                 input.backup(read); //put the lookahead text back to the buffer
-                return isJspTag(tagName);
+                return tagName;
             }
         }
+    }
+    
+    /** Looks ahead into the character buffer and checks if a jsp tag name follows. */
+    private boolean followsJspTag() {
+        return isJspTag(getPossibleTagName());
     }
     
     public Token<JspTokenId> nextToken() {
@@ -208,8 +235,6 @@ public class JspLexer implements Lexer<JspTokenId> {
                     break;
                 }
             }
-            
-            
             
             switch (lexerState) {
                 case INIT:
@@ -278,13 +303,24 @@ public class JspLexer implements Lexer<JspTokenId> {
                             (actChar == '_')
                             ) { // possible tag begining
                         input.backup(1); //backup the read letter
-                        if(followsJspTag()) { //test if a jsp tag follows
+                        String tagName = getPossibleTagName();
+                        if(isJspTag(tagName)) { //test if a jsp tag follows
                             if(input.readLength() > 1) {
                                 //we have something read except the '<' => it's content language
                                 input.backup(1); //backup the '<'
                                 lexerState = INIT; //we will read the '<' again
                                 return token(JspTokenId.TEXT); //return the content language token
                             }
+                            //possibly switch to scriptlet when <jsp:scriptlet> found
+                            
+                            if("jsp:scriptlet".equals(tagName)) { //NOI18N
+                                lexerStateJspScriptlet = JAVA_SCRITPLET_DOCUMENT;
+                            } else if("jsp:declaration".equals(tagName)) { //NOI18N
+                                lexerStateJspScriptlet = JAVA_DECLARATION_DOCUMENT;
+                            } else if("jsp:expression".equals(tagName)) { //NOI18N
+                                lexerStateJspScriptlet = JAVA_EXPRESSION_DOCUMENT;
+                            }
+                            
                             lexerState = ISI_TAGNAME;
                             break;
                         } else {
@@ -359,7 +395,12 @@ public class JspLexer implements Lexer<JspTokenId> {
                                 lexerState = ((lexerState == ISI_TAGNAME) ? ISP_TAG : ISP_DIR);
                                 break;
                             case '>':
-                                lexerState = INIT;
+                                if(lexerStateJspScriptlet != INIT) {
+                                    //switch to java scriptlet
+                                    lexerState = ISI_SCRIPTLET;
+                                } else {
+                                    lexerState = INIT;
+                                }
                                 break;
                             case ' ':
                                 input.backup(1);
@@ -661,6 +702,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                         case '=': // java expression
                             if(input.readLength() == 3) {
                                 // just <%! or <%= read
+                                lexerStateJspScriptlet = actChar == '!' ? JAVA_DECLARATION : JAVA_EXPRESSION;
                                 lexerState = ISI_SCRIPTLET;
                                 return token(JspTokenId.SYMBOL2);
                             } else {
@@ -672,6 +714,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                         default:  //java scriptlet delimiter '<%'
                             if(input.readLength() == 3) {
                                 // just <% + something != [-,!,=,@] read
+                                lexerStateJspScriptlet = JAVA_SCRITPLET;
                                 lexerState = ISI_SCRIPTLET;
                                 input.backup(1); //backup the third character, it is a part of the java scriptlet
                                 return token(JspTokenId.SYMBOL2);
@@ -689,6 +732,24 @@ public class JspLexer implements Lexer<JspTokenId> {
                         case '%':
                             lexerState = ISP_SCRIPTLET_PC;
                             break;
+                        case '<':
+                            //may be end of scriptlet section in JSP document
+                            String tagName = getPossibleTagName();
+                            if("/jsp:scriptlet".equals(tagName) || //NOI18N
+                                    "/jsp:declaration".equals(tagName) || //NOI18N
+                                    "/jsp:expression".equals(tagName)) { //NOI18N
+                                if(input.readLength() == 1) {
+                                    //just the '<' symbol read
+                                    input.backup(1);
+                                    lexerState = INIT;
+                                } else {
+                                    //return the scriptlet content
+                                    input.backup(1); // backup '<' we will read it again
+                                    int lxs = lexerStateJspScriptlet;
+                                    lexerStateJspScriptlet = INIT;
+                                    return scriptletToken(JspTokenId.SCRIPTLET, lxs);
+                                }
+                            }
                     }
                     break;
                     
@@ -703,7 +764,9 @@ public class JspLexer implements Lexer<JspTokenId> {
                                 //return the scriptlet content
                                 input.backup(2); // backup '%>' we will read JUST them again
                                 lexerState = ISI_SCRIPTLET;
-                                return token(JspTokenId.SCRIPTLET);
+                                int lxs = lexerStateJspScriptlet;
+                                lexerStateJspScriptlet = INIT;
+                                return scriptletToken(JspTokenId.SCRIPTLET, lxs);
                             }
                         default:
                             lexerState = ISI_SCRIPTLET;
@@ -1011,7 +1074,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                 return token(JspTokenId.SYMBOL2);
             case ISI_SCRIPTLET:
                 lexerState = INIT;
-                return token(JspTokenId.SCRIPTLET);
+                return scriptletToken(JspTokenId.SCRIPTLET, lexerStateJspScriptlet);
             default:
                 break;
         }
@@ -1022,16 +1085,61 @@ public class JspLexer implements Lexer<JspTokenId> {
     
     private Token<JspTokenId> token(JspTokenId tokenId) {
         if(LOG) {
-            if(input.readLength() == 0) {
-                LOGGER.log(Level.INFO, "Found zero length token: ");
-            }
-            LOGGER.log(Level.INFO, "[" + this.getClass().getSimpleName() + "] token ('" + input.readText().toString() + "'; id=" + tokenId + "; state=" + state() + ")\n");
+            checkToken(tokenId);
         }
         return tokenFactory.createToken(tokenId);
     }
     
+    private Token<JspTokenId> scriptletToken(JspTokenId tokenId, int javaCodeType) {
+        if(LOG) {
+            checkToken(tokenId);
+        }
+        JspTokenId.JavaCodeType scriptletType;
+        switch(javaCodeType) {
+            case JAVA_SCRITPLET:
+            case JAVA_SCRITPLET_DOCUMENT:
+                scriptletType = JspTokenId.JavaCodeType.SCRIPTLET;
+                break;
+            case JAVA_DECLARATION:
+            case JAVA_DECLARATION_DOCUMENT:
+                scriptletType = JspTokenId.JavaCodeType.DECLARATION;
+                break;
+            case JAVA_EXPRESSION:
+            case JAVA_EXPRESSION_DOCUMENT:
+                scriptletType = JspTokenId.JavaCodeType.EXPRESSION;
+                break;
+            default:
+                throw new IllegalStateException("Unsupported scriptlet type " + lexerStateJspScriptlet);
+        }
+        
+        return tokenFactory.createPropertyToken(tokenId, input.readLength(), new JspTokenPropertyProvider(), scriptletType);
+    }
+    
+    private void checkToken(JspTokenId tokenId) {
+            if(input.readLength() == 0) {
+                LOGGER.log(Level.INFO, "Found zero length token: ");
+            }
+            LOGGER.log(Level.INFO, "[" + this.getClass().getSimpleName() + "] token ('" + input.readText().toString() + "'; id=" + tokenId + "; state=" + state() + ")\n");
+    }
+    
     public void release() {
     }
+    
+    private static class JspTokenPropertyProvider implements TokenPropertyProvider {
+        
+        public Object getValue(Token token, Object key) {
+            return null;
+        }
+
+        public Object getValue(Token token, Object tokenStoreKey,
+                               Object tokenStoreValue) {
+            return tokenStoreValue;
+        }
+
+        public Object tokenStoreKey() {
+            return JspTokenId.SCRIPTLET_TOKEN_TYPE_PROPERTY;
+        }
+}
     
 }
 

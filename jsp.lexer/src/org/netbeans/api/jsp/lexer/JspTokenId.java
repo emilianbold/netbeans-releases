@@ -57,6 +57,21 @@ public enum JspTokenId implements TokenId {
     WHITESPACE("jsp-whitespace"), //coloring workaround - prefix must be removed once the coloring is fully constructed based on language path
     EL("expression-language");
     
+   /** Java code in JSP types.*/
+    public static enum JavaCodeType {
+        SCRIPTLET("scriptlet"),
+        DECLARATION("declaration"),
+        EXPRESSION("expression");
+        
+        private final String type;
+        
+        JavaCodeType(String type) {
+            this.type = type;
+        }
+    }
+    
+    /** Use this property for jsp scriptlet token get the information about the type of the code. See {@JavaCodeType} */
+    public static final String SCRIPTLET_TOKEN_TYPE_PROPERTY = "JAVA_CODE_TYPE";
 
     private final String primaryCategory;
 
