@@ -1079,6 +1079,14 @@ public class Widget {
     }
 
     /**
+     * Returns the object hash code.
+     * @return the object hash code
+     */
+    public final int hashCode () {
+        return super.hashCode ();
+    }
+
+    /**
      * Returns whether a specified object is the same as the widget.
      * @param object the object
      * @return true if the object reference is the same as the widget
