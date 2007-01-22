@@ -258,7 +258,8 @@ public final class LogRecords {
         private Handler callback;
         private static enum Elem {
             UIGESTURES, RECORD, DATE, MILLIS, SEQUENCE, LEVEL, THREAD, 
-            MESSAGE, KEY;
+            MESSAGE, KEY, PARAM, FRAME, CLASS, METHOD, LOGGER, EXCEPTION, LINE,
+            CATALOG;
                 
             public String parse(Map<Elem,String> values) {
                 String v = values.get(this);
