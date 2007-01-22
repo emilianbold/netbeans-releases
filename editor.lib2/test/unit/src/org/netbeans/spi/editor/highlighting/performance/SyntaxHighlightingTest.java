@@ -29,7 +29,11 @@ import org.netbeans.spi.editor.highlighting.HighlightsSequence;
  * @author vita
  */
 public class SyntaxHighlightingTest extends NbTestCase {
-    
+
+    public static void main(String [] args) {
+        junit.textui.TestRunner.run(SyntaxHighlightingTest.class);
+    }
+
     /** Creates a new instance of SyntaxHighlightingTest */
     public SyntaxHighlightingTest(String name) {
         super(name);
@@ -120,4 +124,26 @@ public class SyntaxHighlightingTest extends NbTestCase {
         }
     }
 
+    public void testLexerEmbedding() {
+        TokenHierarchy th = TokenHierarchy.get(document);
+        
+        TokenSequence embeddedSeq = null;
+        TokenSequence ts = th.tokenSequence();
+        for( ; ts.moveNext(); ) {
+            String name = ts.token().id().name();
+            assertNotNull("Token name must not be null", name);
+            
+            embeddedSeq = ts.embedded();
+            if (embeddedSeq != null) {
+                // found embedded
+                break;
+            }
+        }
+        
+        assertNotNull("Can't find embedded sequence", embeddedSeq);
+        
+        TokenSequence embeddedSeq2 = ts.embedded();
+        assertNotNull("Second call to TS.embedded() produced null", embeddedSeq2);
+        assertSame("Second call to TS.embedded() produced different sequence", embeddedSeq, embeddedSeq2);
+    }
 }

@@ -21,6 +21,7 @@ package org.netbeans.modules.editor.lib2.highlighting;
 
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.WeakHashMap;
@@ -53,10 +54,11 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
     
     public static final String LAYER_TYPE_ID = "org.netbeans.modules.editor.lib2.highlighting.SyntaxHighlighting"; //NOI18N
     
-    private static WeakHashMap<TokenId, AttributeSet> attribsCache = new WeakHashMap<TokenId, AttributeSet>();
+    private final HashMap<String, WeakHashMap<TokenId, AttributeSet>> attribsCache = new HashMap<String, WeakHashMap<TokenId, AttributeSet>>();
     
     private final Document document;
     private final String mimeType;
+    private final boolean needsHack;
     private TokenHierarchy<? extends Document> hierarchy = null;
     private long version = 0;
     
@@ -64,6 +66,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
     public SyntaxHighlighting(Document document) {
         this.document = document;
         this.mimeType = (String) document.getProperty("mimeType"); //NOI18N
+        this.needsHack = mimeType.startsWith("test"); //NOI18N
     }
 
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
@@ -165,175 +168,200 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
         }
         
         public boolean moveNext() {
-            checkVersion();
-            
-            if (sequences == null) {
-                // initialize
-                TokenSequence<? extends TokenId> seq = scanner.tokenSequence().subSequence(startOffset, endOffset);
-                sequences = new ArrayList<TokenSequence<? extends TokenId>>();
-                sequences.add(seq);
-                state = S_NORMAL;
-            }
+            synchronized (SyntaxHighlighting.this) {
+                checkVersion();
 
-            switch (state) {
-                case S_NORMAL:
-                    // The current token is a normal one
-                    state = moveTheSequence();
-                    break;
-
-                case S_EMBEDDED_HEAD:
-                    // The current token contains embedded language and we have processed it's head
-                    TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
-                    if (seq.moveFirst()) {
-                        state = S_NORMAL;
-                    } else {
-                        throw new IllegalStateException("Invalid state");
-                    }
-                    break;
-
-                case S_EMBEDDED_TAIL:
-                    // The current token contains embedded language and we have processed it's tail
-                    sequences.remove(sequences.size() - 1);
-                    state = moveTheSequence();
-                    break;
-                
-                case S_DONE:
-                    // We have gone through all the tokens in all sequences
-                    break;
-                    
-                default:
-                    throw new IllegalStateException("Invalid state: " + state);
-            }
-
-            if (state == S_NORMAL) {
-                // We have moved to the next normal token, so look what it is
-                TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
-                TokenSequence<? extends TokenId> embeddedSeq = seq.embedded();
-                while (embeddedSeq != null && embeddedSeq.moveFirst()) {
-                    sequences.add(sequences.size(), embeddedSeq);
-                    if (embeddedSeq.offset() > seq.offset()) {
-                        state = S_EMBEDDED_HEAD;
-                        break;
-                    } else {
-                        seq = embeddedSeq;
-                        embeddedSeq = seq.embedded();
-                    }
+                if (sequences == null) {
+                    // initialize
+                    TokenSequence<? extends TokenId> seq = scanner.tokenSequence().subSequence(startOffset, endOffset);
+                    sequences = new ArrayList<TokenSequence<? extends TokenId>>();
+                    sequences.add(seq);
+                    state = S_NORMAL;
                 }
-            } else if (state == S_DONE) {
-                attribsCache.clear();
+
+                switch (state) {
+                    case S_NORMAL:
+                        // The current token is a normal one
+                        state = moveTheSequence();
+                        break;
+
+                    case S_EMBEDDED_HEAD:
+                        // The current token contains embedded language and we have processed it's head
+                        TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
+                        if (seq.moveFirst()) {
+                            state = S_NORMAL;
+                        } else {
+                            throw new IllegalStateException("Invalid state");
+                        }
+                        break;
+
+                    case S_EMBEDDED_TAIL:
+                        // The current token contains embedded language and we have processed it's tail
+                        sequences.remove(sequences.size() - 1);
+                        state = moveTheSequence();
+                        break;
+
+                    case S_DONE:
+                        // We have gone through all the tokens in all sequences
+                        break;
+
+                    default:
+                        throw new IllegalStateException("Invalid state: " + state);
+                }
+
+                if (state == S_NORMAL) {
+                    // We have moved to the next normal token, so look what it is
+                    TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
+                    TokenSequence<? extends TokenId> embeddedSeq = seq.embedded();
+                    while (embeddedSeq != null && embeddedSeq.moveFirst()) {
+                        sequences.add(sequences.size(), embeddedSeq);
+                        if (embeddedSeq.offset() > seq.offset()) {
+                            state = S_EMBEDDED_HEAD;
+                            break;
+                        } else {
+                            seq = embeddedSeq;
+                            embeddedSeq = seq.embedded();
+                        }
+                    }
+                } else if (state == S_DONE) {
+                    attribsCache.clear();
+                }
+
+                return state != S_DONE;
             }
-            
-            return state != S_DONE;
         }
 
         public int getStartOffset() {
-            checkVersion();
-            
-            if (sequences == null) {
-                throw new NoSuchElementException("Call moveNext() first.");
-            }
-            
-            switch (state) {
-                case S_NORMAL: {
-                    TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
-                    return seq.offset();
+            synchronized (SyntaxHighlighting.this) {
+                checkVersion();
+
+                if (sequences == null) {
+                    throw new NoSuchElementException("Call moveNext() first.");
                 }
-                case S_EMBEDDED_HEAD: {
-                    TokenSequence<? extends TokenId> embeddingSeq = sequences.get(sequences.size() - 2);
-                    return embeddingSeq.offset();
-                }
-                case S_EMBEDDED_TAIL: {
-                    TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
-                    if (seq.moveLast()) {
-                        return seq.offset() + seq.token().length();
-                    } else {
-                        throw new IllegalStateException("Invalid state");
+
+                switch (state) {
+                    case S_NORMAL: {
+                        TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
+                        return seq.offset();
                     }
+                    case S_EMBEDDED_HEAD: {
+                        TokenSequence<? extends TokenId> embeddingSeq = sequences.get(sequences.size() - 2);
+                        return embeddingSeq.offset();
+                    }
+                    case S_EMBEDDED_TAIL: {
+                        TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
+                        if (seq.moveLast()) {
+                            return seq.offset() + seq.token().length();
+                        } else {
+                            throw new IllegalStateException("Invalid state");
+                        }
+                    }
+                    case S_DONE:
+                        throw new NoSuchElementException();
+
+                    default:
+                        throw new IllegalStateException("Invalid state: " + state);
                 }
-                case S_DONE:
-                    throw new NoSuchElementException();
-                    
-                default:
-                    throw new IllegalStateException("Invalid state: " + state);
             }
         }
 
         public int getEndOffset() {
-            checkVersion();
-            
-            if (sequences == null) {
-                throw new NoSuchElementException("Call moveNext() first.");
-            }
-            
-            switch (state) {
-                case S_NORMAL: {
-                    TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
-                    return seq.offset() + seq.token().length();
+            synchronized (SyntaxHighlighting.this) {
+                checkVersion();
+
+                if (sequences == null) {
+                    throw new NoSuchElementException("Call moveNext() first.");
                 }
-                case S_EMBEDDED_HEAD: {
-                    TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
-                    if (seq.moveFirst()) {
-                        return seq.offset();
-                    } else {
+
+                switch (state) {
+                    case S_NORMAL: {
+                        TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
+                        return seq.offset() + seq.token().length();
+                    }
+                    case S_EMBEDDED_HEAD: {
+                        TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
+                        if (seq.moveFirst()) {
+                            return seq.offset();
+                        } else {
+                            TokenSequence<? extends TokenId> embeddingSeq = sequences.get(sequences.size() - 2);
+                            return embeddingSeq.offset() + embeddingSeq.token().length();
+                        }
+                    }
+                    case S_EMBEDDED_TAIL:
                         TokenSequence<? extends TokenId> embeddingSeq = sequences.get(sequences.size() - 2);
                         return embeddingSeq.offset() + embeddingSeq.token().length();
-                    }
+
+                    case S_DONE:
+                        throw new NoSuchElementException();
+
+                    default:
+                        throw new IllegalStateException("Invalid state: " + state);
                 }
-                case S_EMBEDDED_TAIL:
-                    TokenSequence<? extends TokenId> embeddingSeq = sequences.get(sequences.size() - 2);
-                    return embeddingSeq.offset() + embeddingSeq.token().length();
-                 
-                case S_DONE:
-                    throw new NoSuchElementException();
-                    
-                default:
-                    throw new IllegalStateException("Invalid state: " + state);
             }
         }
 
         public AttributeSet getAttributes() {
-            checkVersion();
-            
-            if (sequences == null) {
-                throw new NoSuchElementException("Call moveNext() first.");
-            }
-            
-            switch (state) {
-                case S_NORMAL:
-                    return findAttribs(sequences.size() - 1);
-                    
-                case S_EMBEDDED_HEAD:
-                case S_EMBEDDED_TAIL:
-                    return findAttribs(sequences.size() - 2);
-                    
-                case S_DONE:
-                    throw new NoSuchElementException();
-                    
-                default:
-                    throw new IllegalStateException("Invalid state: " + state);
+            synchronized (SyntaxHighlighting.this) {
+                checkVersion();
+
+                if (sequences == null) {
+                    throw new NoSuchElementException("Call moveNext() first.");
+                }
+
+                switch (state) {
+                    case S_NORMAL:
+                        return findAttribs(sequences.size() - 1);
+
+                    case S_EMBEDDED_HEAD:
+                    case S_EMBEDDED_TAIL:
+                        return findAttribs(sequences.size() - 2);
+
+                    case S_DONE:
+                        throw new NoSuchElementException();
+
+                    default:
+                        throw new IllegalStateException("Invalid state: " + state);
+                }
             }
         }
         
         private AttributeSet findAttribs(int seqIdx) {
             TokenSequence<? extends TokenId> seq = sequences.get(seqIdx);
             TokenId tokenId = seq.token().id();
-
-            AttributeSet tokenAttribs = findTokenAttribs(tokenId, seq.languagePath());
-
-            if (seqIdx > 0) {
-                AttributeSet embeddingTokenAttribs = findAttribs(seqIdx - 1);
-                return AttributesUtilities.createComposite(
-                    tokenAttribs, embeddingTokenAttribs);
+            String mimePath;
+            
+            if (needsHack) {
+                mimePath = languagePathToMimePathHack(seq.languagePath());
             } else {
-                return tokenAttribs;
+                mimePath = seq.languagePath().mimePath();
             }
+
+            WeakHashMap<TokenId, AttributeSet> token2attribs = attribsCache.get(mimePath);
+            if (token2attribs == null) {
+                token2attribs = new WeakHashMap<TokenId, AttributeSet>();
+                attribsCache.put(mimePath, token2attribs);
+            }
+            
+            AttributeSet tokenAttribs = token2attribs.get(tokenId);
+            if (tokenAttribs == null) {
+                tokenAttribs = findTokenAttribs(tokenId, mimePath, seq.languagePath().innerLanguage());
+
+                if (seqIdx > 0) {
+                    AttributeSet embeddingTokenAttribs = findAttribs(seqIdx - 1);
+                    tokenAttribs = AttributesUtilities.createComposite(
+                        tokenAttribs, embeddingTokenAttribs);
+                }
+                
+                token2attribs.put(tokenId, tokenAttribs);
+            }
+            
+            return tokenAttribs;
         }
 
-        private AttributeSet findTokenAttribs(TokenId tokenId, LanguagePath lang) {
-            MimePath mimePath = languagePathToMimePathHack(lang);
-            Lookup lookup = MimeLookup.getLookup(mimePath);
+        private AttributeSet findTokenAttribs(TokenId tokenId, String mimePath, Language<? extends TokenId> innerLanguage) {
+            Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimePath));
             FontColorSettings fcs = lookup.lookup(FontColorSettings.class);
-            AttributeSet attribs = findFontAndColors(fcs, tokenId, lang.innerLanguage());
+            AttributeSet attribs = findFontAndColors(fcs, tokenId, innerLanguage);
             return attribs != null ? attribs : SimpleAttributeSet.EMPTY;
         }
 
@@ -360,11 +388,11 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
         // normally be a standard MimeLookup as you know it, but in special cases it
         // could be modified by the client code that created the component - e.g. Tools-Options
         // panel.
-        private MimePath languagePathToMimePathHack(LanguagePath languagePath) {
+        private String languagePathToMimePathHack(LanguagePath languagePath) {
             if (languagePath.size() == 1) {
-                return MimePath.parse(mimeType);
+                return mimeType;
             } else if (languagePath.size() > 1) {
-                return MimePath.parse(mimeType + "/" + languagePath.subPath(1).mimePath()); //NOI18N
+                return mimeType + "/" + languagePath.subPath(1).mimePath(); //NOI18N
             } else {
                 throw new IllegalStateException("LanguagePath should not be empty."); //NOI18N
             }
@@ -424,10 +452,8 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
         }
         
         private void checkVersion() {
-            synchronized (SyntaxHighlighting.this) {
-                if (this.version != SyntaxHighlighting.this.version) {
-                    throw new ConcurrentModificationException();
-                }
+            if (this.version != SyntaxHighlighting.this.version) {
+                throw new ConcurrentModificationException();
             }
         }
     } // End of HSImpl class

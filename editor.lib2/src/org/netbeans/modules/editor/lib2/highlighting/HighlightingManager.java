@@ -116,7 +116,7 @@ public final class HighlightingManager {
         private LookupListener settingsTracker = new LookupListener() {
             public void resultChanged(LookupEvent ev) {
 //                System.out.println("Settings tracker for '" + (lastKnownMimePaths == null ? "null" : lastKnownMimePaths[0].getPath()) + "'");
-                resetAllContainers();
+                rebuildAllContainers();
             }
         };
 
