@@ -186,7 +186,7 @@ final public class ExitDialog extends JPanel implements ActionListener {
         }
     }
  
-    private static void doSave (DataObject dataObject) {
+    public static void doSave (DataObject dataObject) {
         try {
             SaveCookie sc = (SaveCookie)dataObject.getCookie(SaveCookie.class);
             if (sc != null) {

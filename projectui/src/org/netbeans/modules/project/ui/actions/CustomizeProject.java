@@ -19,16 +19,26 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.project.ui.ExitDialog;
+import org.netbeans.spi.project.support.ProjectOperations;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /** Action for invoking project customizer
  */
@@ -75,10 +85,51 @@ public class CustomizeProject extends ProjectAction implements Presenter.Popup {
             if ( cp != null ) {
                 if (!DataObject.getRegistry().getModifiedSet().isEmpty()) {
                     // #50992: danger! Project properties dialog may try to write to the same config files.
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                            NbBundle.getMessage(CustomizeProject.class, "CustomizeProject.save_modified_files"),
-                            NotifyDescriptor.WARNING_MESSAGE));
-                    return;
+                    
+                    //#92011 - reducing the frequency of the dialog popping up.
+                    Set<DataObject> candidates = new HashSet<DataObject>();
+                    List<FileObject> dataFiles = ProjectOperations.getDataFiles(projects[0]);
+                    boolean opSupported = ProjectOperations.isCopyOperationSupported(projects[0]) ||
+                                          ProjectOperations.isMoveOperationSupported(projects[0]) ||
+                                          ProjectOperations.isDeleteOperationSupported(projects[0]);
+                                          
+                    for (DataObject dobj : DataObject.getRegistry().getModifiedSet()) {
+                        // only consider files from our project
+                        if (projects[0] == FileOwnerQuery.getOwner(dobj.getPrimaryFile())) {
+                            // now check if it's metadata or data - not 100% bulletproof, but should reduce the probability significantly
+                            boolean found = false;
+                            for (FileObject df : dataFiles) {
+                                if (df.equals(dobj.getPrimaryFile()) || 
+                                        (df.isFolder() && FileUtil.isParentOf(df, dobj.getPrimaryFile()))) {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found || !opSupported) {
+                                candidates.add(dobj);
+                            }
+                        }
+                    }
+                    if (!candidates.isEmpty()) {
+                        String saveAll = NbBundle.getMessage(CustomizeProject.class, "CustomizeProject.saveAll");
+                        Object ret = DialogDisplayer.getDefault().notify(new NotifyDescriptor(
+                                NbBundle.getMessage(CustomizeProject.class, "CustomizeProject.save_modified_files"), 
+                                NbBundle.getMessage(CustomizeProject.class, "CustomizeProject.save_modified_title"),
+                                NotifyDescriptor.OK_CANCEL_OPTION,
+                                NotifyDescriptor.WARNING_MESSAGE,
+                                new Object[] {
+                                    saveAll,
+                                    NotifyDescriptor.CANCEL_OPTION
+                                }, 
+                                saveAll));
+                        if (ret != saveAll) {
+                            return;
+                        } else {
+                            for (DataObject dobj : candidates) {
+                                ExitDialog.doSave(dobj);
+                            }
+                        }
+                    }
                 }
                 cp.showCustomizer();
             }
