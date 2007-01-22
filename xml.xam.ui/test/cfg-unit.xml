@@ -23,7 +23,9 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" executor="unit-executor" name="Unit tests">
         <testset dir="unit/src">
             <patternset>
-                <include name="**/*Test.class"/>
+                <!-- todo add -->
+                <!--include name="**/*Test.class"/-->
+                <include name="**/DefaultCategoryPaneTest.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -31,7 +33,9 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="ide" executor="ide-executor" name="IDE tests">
         <testset dir="unit/src">
             <patternset>
-                <include name="**/*Test.class"/>
+                <!-- todo add -->
+                <!--include name="**/*Test.class"/-->
+                <include name="**/DefaultCategoryPaneTest.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -39,5 +43,4 @@ Microsystems, Inc. All Rights Reserved.
     <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
     <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
     <executor name="ide-executor" antfile="build-unit.xml" target="run-ide-test"/>
-
 </mconfig>
