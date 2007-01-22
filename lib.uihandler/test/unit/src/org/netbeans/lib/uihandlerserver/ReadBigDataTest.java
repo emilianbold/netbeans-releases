@@ -128,10 +128,10 @@ public class ReadBigDataTest extends NbTestCase {
                 err++;
                 continue;
             } finally {
+                cnts[i] = cnt;
                 is.close();
             }
             is.close();
-            cnts[i] = cnt;
         }
         return err;
     }
