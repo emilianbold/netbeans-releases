@@ -17,8 +17,8 @@ Description: Platform for building rich desktop applications in Java
 
 Package: netbeans5.5
 Architecture: all
-Depends: sun-java5-jdk | sun-java6-jdk, netbeans5.5-platform (=5.5)
-Suggests: sun-java5-src
+Depends: sun-java5-jdk | sun-java6-jdk, netbeans5.5-platform (=5.5-1)
+Suggests: sun-java5-source, sun-java6-source
 Description: IDE to support development of applications in Java
  NetBeans is a modern IDE which supports development of applications in the
  Java programming language.  The distinctive feature of this IDE is it tries
