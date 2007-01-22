@@ -814,19 +814,32 @@ public class JavaModelHelper {
             TypeElement retTypeElement = w.getElements().getTypeElement(attribute.getTypeName());
             System.out.println("ATTRIBUTE RETURN TYPE " + retType);
             System.out.println("ATTRIBUTE ISCLASS " + isClass);
-            Set<Modifier> njuMods = new HashSet<Modifier>();
-            njuMods.add(Modifier.PUBLIC);
-            njuMods.add(Modifier.ABSTRACT);
-            MethodTree newMethod = make.Method(
-                    isClass ? make.Modifiers(Collections.singleton(Modifier.PUBLIC)) : make.Modifiers(njuMods), // modifiers and annotations
-                    prefix + attribute.getName(), // name
+            
+            MethodTree newMethod = null;
+            String operationName = prefix + attribute.getName();
+            if(isClass) {
+                newMethod = make.Method(
+                    make.Modifiers(Collections.singleton(Modifier.PUBLIC)), // modifiers and annotations
+                    operationName, // name
                     retType, // ret type
                     Collections.<TypeParameterTree>emptyList(), // type parameters for parameters
                     Collections.<VariableTree>emptyList(), // parameters
                     exceptions, // throws
-                    isClass ? methodBody : null, //body
+                    methodBody,//body
                     null // default value - not applicable here, used by annotations
                     );
+            } else {
+                 newMethod = make.Method(
+                    make.Modifiers(Collections.singleton(Modifier.PUBLIC)), // modifiers and annotations
+                    operationName, // name
+                    retType, // ret type
+                    Collections.<TypeParameterTree>emptyList(), // type parameters for parameters
+                    Collections.<VariableTree>emptyList(), // parameters
+                    exceptions, // throws
+                    (BlockTree)null, //body
+                    null // default value - not applicable here, used by annotations
+                    );
+            }
             Comment c = Comment.create(Style.JAVADOC, -2, -2, -2, "Get " + attribute.getDescription() + "\n" + doc.toString()); // NOI18N
             make.addComment(newMethod, c, true);
             return newMethod;
@@ -861,20 +874,33 @@ public class JavaModelHelper {
             VariableTree par1 = make.Variable(parMods, "value", t, null);
             List<VariableTree> parList = new ArrayList<VariableTree>(1);
             parList.add(par1);
-            Set<Modifier> njuMods = new HashSet<Modifier>();
-            njuMods.add(Modifier.PUBLIC);
-            njuMods.add(Modifier.ABSTRACT);
+         
             // now, start the method creation
-            MethodTree newMethod = make.Method(
-                    isClass ? make.Modifiers(Collections.singleton(Modifier.PUBLIC)) : make.Modifiers(njuMods), // modifiers and annotations
-                    "set" + attribute.getName(), // name
-                    make.PrimitiveType(TypeKind.VOID), // return type
-                    Collections.<TypeParameterTree>emptyList(), // type parameters for parameters
-                    parList, // parameters
-                    exceptions, // throws
-                    isClass ? methodBody : null, //body
-                    null // default value - not applicable here, used by annotations
-                    );
+            MethodTree newMethod = null;
+            String opName = "set" + attribute.getName();
+            if(isClass) {
+                 newMethod = make.Method(
+                        make.Modifiers(Collections.singleton(Modifier.PUBLIC)), // modifiers and annotations
+                        opName, // name
+                        make.PrimitiveType(TypeKind.VOID), // return type
+                        Collections.<TypeParameterTree>emptyList(), // type parameters for parameters
+                        parList, // parameters
+                        exceptions, // throws
+                        methodBody, //body
+                        null // default value - not applicable here, used by annotations
+                        );
+            } else {
+                 newMethod = make.Method(
+                        make.Modifiers(Collections.singleton(Modifier.PUBLIC)), // modifiers and annotations
+                        opName, // name
+                        make.PrimitiveType(TypeKind.VOID), // return type
+                        Collections.<TypeParameterTree>emptyList(), // type parameters for parameters
+                        parList, // parameters
+                        exceptions, // throws
+                        (BlockTree) null, //body
+                        null // default value - not applicable here, used by annotations
+                        );
+            }
             Comment c = Comment.create(Style.JAVADOC, -2, -2, -2, "Set " + attribute.getDescription() + "\n" + doc.toString()); // NOI18N
             make.addComment(newMethod, c, true);
             return newMethod;
@@ -972,17 +998,31 @@ public class JavaModelHelper {
                 doc.append("@return " + operation.getReturnTypeName() +  "\n"); // NOI18N
             }
             ExpressionTree t = getType(w, operation.getReturnTypeName());
-            
-            MethodTree newMethod = make.Method(
-                    make.Modifiers(Collections.singleton(Modifier.PUBLIC)), // modifiers and annotations
-                    operation.getName(), // name
-                    t, // return type
-                    Collections.<TypeParameterTree>emptyList(), // type parameters for parameters
-                    params, // parameters
-                    exceptions, // throws
-                    isClass ? body.toString() : null, //body
-                    null // default value - not applicable here, used by annotations
-                    );
+            String opName = operation.getName();
+            MethodTree newMethod = null;
+            if(isClass) {
+                newMethod = make.Method(
+                        make.Modifiers(Collections.singleton(Modifier.PUBLIC)), // modifiers and annotations
+                        opName, // name
+                        t, // return type
+                        Collections.<TypeParameterTree>emptyList(), // type parameters for parameters
+                        params, // parameters
+                        exceptions, // throws
+                        body.toString(), //body
+                        null // default value - not applicable here, used by annotations
+                        );
+            } else {
+                newMethod = make.Method(
+                        make.Modifiers(Collections.singleton(Modifier.PUBLIC)), // modifiers and annotations
+                        opName, // name
+                        t, // return type
+                        Collections.<TypeParameterTree>emptyList(), // type parameters for parameters
+                        params, // parameters
+                        exceptions, // throws
+                        (BlockTree)null, //body
+                        null // default value - not applicable here, used by annotations
+                        );
+            }
             Comment c = Comment.create(Style.JAVADOC, -2, -2, -2, doc.toString());
             make.addComment(newMethod, c, true);
             return newMethod;
