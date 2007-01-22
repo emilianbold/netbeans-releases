@@ -46,6 +46,12 @@ import java.util.List;
  * <p>
  * For speed optimalization, the connection widget are usually placed in the a separate layer widget that is rendered after
  * the main layer with widgets (that used anchors depends on) is rendered.
+ * <p>
+ * Line color is defined by foregroundColor property. Note: If you are changing a state of the ConnectionWidget
+ * (e.g. using it as a representation of an object in ObjectScene, GraphScene or GraphPinScene classes,
+ * then the ConnectionWidget.notifyStateChanged method is automatically called.
+ * The built-in implementation of this method overrides foregroundColor based on a new state of the widget
+ * (the particular color is resolved by the LookFeel of the scene).
  *
  * @author David Kaspar
  */
