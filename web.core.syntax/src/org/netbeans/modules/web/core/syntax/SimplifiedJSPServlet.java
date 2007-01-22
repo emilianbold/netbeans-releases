@@ -42,6 +42,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 
+import static org.netbeans.api.jsp.lexer.JspTokenId.JavaCodeType;
+
 /**
  * Utility class for generating a simplified <em>JSP servlet</em> class from a JSP file.
  * Using a full featured JSP parser would be too resource demanding,
@@ -54,7 +56,6 @@ import org.openide.filesystems.FileUtil;
  * @author Tomasz.Slota@Sun.COM
  */
 public class SimplifiedJSPServlet {
-    private enum CodeBlockType {SCRIPTLET, JSP_DECLARATION, EXPRESSION};
     private static final String CLASS_HEADER = "\nclass SimplifiedJSPServlet extends HttpServlet {\n" + //NOI18N
             "\tHttpServletRequest request;\n" + //NOI18N
             "\tHttpServletResponse response;\n" + //NOI18N
@@ -101,37 +102,24 @@ public class SimplifiedJSPServlet {
             return ; //no tokens in token sequence
         }
         
-        CodeBlockType blockType = null;
         /**
          * process java code blocks one by one
          * note: We count on the fact the scripting language in JSP is Java
          */
         do{
             Token token = tokenSequence.token();
-            if(token.id() == JspTokenId.SYMBOL2) {
-                String tokenTxt = token.text().toString();
-                
-                // TODO: handle JSP document
-                
-                if ("<%!".equals(tokenTxt)) { //NOI18N
-                    blockType = CodeBlockType.JSP_DECLARATION;
-                } else if ("<%".equals(tokenTxt)) { //NOI18N
-                    blockType = CodeBlockType.SCRIPTLET;
-                }else if ("<%=".equals(tokenTxt)) { //NOI18N
-                    blockType = CodeBlockType.EXPRESSION;
-                    // consume ending delimiter
-                } else if (!"%>".equals(tokenTxt)) { //NOI18N
-                    logger.log(Level.SEVERE,
-                            "Unknown scriptlet delimiter: '" +  tokenTxt + "'"); //NOI18N
-                }
-            } else if (token.id() == JspTokenId.SCRIPTLET){
+            
+            if (token.id() == JspTokenId.SCRIPTLET){
                 int blockStart = token.offset(tokenHierarchy);
                 int blockEnd = blockStart + token.length();
+                
+                JavaCodeType blockType = (JavaCodeType)token.getProperty(JspTokenId.SCRIPTLET_TOKEN_TYPE_PROPERTY);;
+                
                 String blockBody = doc.getText(blockStart, blockEnd - blockStart);
-                StringBuilder buff = blockType == CodeBlockType.JSP_DECLARATION ? buffDeclarations : buffScriplets;
+                StringBuilder buff = blockType == JavaCodeType.DECLARATION ? buffDeclarations : buffScriplets;
                 int newBlockStart = buff.length();
                 
-                if (blockType == CodeBlockType.EXPRESSION){
+                if (blockType == JavaCodeType.EXPRESSION){
                     String exprPrefix = String.format("\t\tObject expr%1$d = ", expressionIndex ++); //NOI18N
                     newBlockStart += exprPrefix.length();
                     buff.append(exprPrefix + blockBody + ";\n");
@@ -257,9 +245,9 @@ public class SimplifiedJSPServlet {
         private int startOffset;
         private int endOffset;
         private int newRelativeBlockStart; // offset in created java class
-        private CodeBlockType type;
+        private JavaCodeType type;
         
-        public CodeBlockData(int startOffset, int newRelativeBlockStart, int endOffset, CodeBlockType type){
+        public CodeBlockData(int startOffset, int newRelativeBlockStart, int endOffset, JavaCodeType type){
             this.startOffset = startOffset;
             this.newRelativeBlockStart = newRelativeBlockStart;
             this.endOffset = endOffset;
@@ -274,14 +262,14 @@ public class SimplifiedJSPServlet {
             return endOffset;
         }
         
-        public CodeBlockType getType(){
+        public JavaCodeType getType(){
             return type;
         }
         
         public int getNewBlockStart(){
             int newBlockStart = newRelativeBlockStart + CLASS_HEADER.length() + importStatements.length();
             
-            if (getType() != CodeBlockType.JSP_DECLARATION){
+            if (getType() != JavaCodeType.DECLARATION){
                 newBlockStart += mergedDeclarations.length() + METHOD_HEADER.length();
             }
             
