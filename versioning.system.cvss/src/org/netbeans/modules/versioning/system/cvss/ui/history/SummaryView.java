@@ -28,6 +28,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAct
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecutor;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
+import org.netbeans.modules.versioning.system.cvss.VersionsCache;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -113,7 +114,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 SearchHistoryPanel.ResultsContainer container = (SearchHistoryPanel.ResultsContainer) o;
                 for (Iterator j = container.getRevisions().iterator(); j.hasNext();) {
                     SearchHistoryPanel.DispRevision revision = (SearchHistoryPanel.DispRevision) j.next();
-                    if (!revision.isBranchRoot()) {
+                    if (revision.getRevision().getNumber() != VersionsCache.REVISION_CURRENT && !revision.isBranchRoot()) {
                         newResults.add(revision);
                     }
                 }
@@ -123,7 +124,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 }
             } else {
                 SearchHistoryPanel.DispRevision revision = (SearchHistoryPanel.DispRevision) o;
-                if (!revision.isBranchRoot()) {
+                if (revision.getRevision().getNumber() != VersionsCache.REVISION_CURRENT && !revision.isBranchRoot()) {
                     newResults.add(revision);
                 }
                 addResults(newResults, revision, 0);

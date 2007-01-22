@@ -32,6 +32,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryA
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
+import org.netbeans.modules.versioning.system.cvss.VersionsCache;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -77,7 +78,9 @@ class RevisionNode extends AbstractNode {
         super(revision.getChildren() == null ? Children.LEAF : new RevisionNodeChildren(revision), Lookups.fixed(revision));
         this.path = revision.getPath();
         this.revision = revision;
-        if (revision.isBranchRoot()) {
+        if (revision.getRevision().getNumber() == VersionsCache.REVISION_CURRENT) {
+            setName(NbBundle.getMessage(DiffResultsView.class, "LBL_DiffPanel_LocalCopy"));
+        } else if (revision.isBranchRoot()) {
             if (revision.getBranchName() != null) {
                 setName(revision.getRevision().getNumber() + " - " + revision.getBranchName());
             } else {
@@ -104,7 +107,7 @@ class RevisionNode extends AbstractNode {
     public Action[] getActions(boolean context) {
         if (context) return null;
         // TODO: reuse action code from SummaryView
-        if (revision == null) {
+        if (revision == null || revision.getRevision().getNumber() == VersionsCache.REVISION_CURRENT) {
             return new Action [0];
         } else {
             return new Action [] {

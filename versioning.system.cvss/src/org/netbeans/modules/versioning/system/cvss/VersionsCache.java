@@ -92,6 +92,9 @@ public class VersionsCache {
     public synchronized File getRemoteFile(File baseFile, String revision, ExecutorGroup group, boolean quiet) throws IOException,
                 IllegalCommandException, CommandException, AuthenticationException, NotVersionedException {
         String resolvedRevision = resolveRevision(baseFile, revision);
+        if (revision == REVISION_CURRENT) {
+            return baseFile.canRead() ? baseFile : null;
+        }
         File file = getCachedRevision(baseFile, resolvedRevision);
         if (file != null) return file;
         file = checkoutRemoteFile(baseFile, revision, group, quiet);
@@ -155,9 +158,6 @@ public class VersionsCache {
     }
 
     private File getCachedRevision(File baseFile, String revision) {
-        if (revision == REVISION_CURRENT) {
-            return baseFile;
-        }
         File cachedCopy = new File(baseFile.getParentFile(), CACHE_DIR + cachedName(baseFile, revision));
         if (isVolatile(revision)) {
             if (cachedCopy.lastModified() < purgeTimestamp) {

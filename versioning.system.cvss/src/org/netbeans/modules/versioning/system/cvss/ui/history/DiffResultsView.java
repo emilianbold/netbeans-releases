@@ -22,6 +22,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.history;
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffStreamSource;
+import org.netbeans.modules.versioning.system.cvss.VersionsCache;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.Diff;
@@ -35,7 +36,6 @@ import org.openide.ErrorManager;
 import javax.swing.*;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.AncestorEvent;
-import java.util.*;
 import java.util.List;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
@@ -50,7 +50,6 @@ import java.awt.*;
 class DiffResultsView implements AncestorListener, PropertyChangeListener {
 
     private final SearchHistoryPanel parent;
-    private final List              results;
 
     private DiffTreeTable treeView;
     private JSplitPane    diffView;
@@ -65,7 +64,6 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
 
     public DiffResultsView(SearchHistoryPanel parent, List results) {
         this.parent = parent;
-        this.results = results;
         treeView = new DiffTreeTable();
         treeView.setResults(results);
         treeView.addAncestorListener(this);
@@ -119,7 +117,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                     SearchHistoryPanel.ResultsContainer container1 = (SearchHistoryPanel.ResultsContainer) nodes[0].getLookup().lookup(SearchHistoryPanel.ResultsContainer.class);
                     SearchHistoryPanel.DispRevision r1 = (SearchHistoryPanel.DispRevision) nodes[0].getLookup().lookup(SearchHistoryPanel.DispRevision.class);
                     try {
-                        if (!r1.isBranchRoot()) {
+                        if (r1 == null || !r1.isBranchRoot()) {
                             currentIndex = treeView.getSelection()[0];
                             if (nodes.length == 1) {
                                 if (container1 != null) {
@@ -188,13 +186,31 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
 
     private void showRevisionDiff(SearchHistoryPanel.DispRevision rev, boolean showLastDifference) {
         String revision2 = rev.getRevision().getNumber();
-        String revision1 = Utils.previousRevision(revision2);
+        String revision1;
+        if (revision2 == VersionsCache.REVISION_CURRENT) {
+            SearchHistoryPanel.ResultsContainer container = findParent(rev);
+            SearchHistoryPanel.DispRevision newest = (SearchHistoryPanel.DispRevision) container.getRevisions().get(1);
+            revision1 = newest.getRevision().getNumber();
+        } else {
+            revision1 = Utils.previousRevision(revision2);
+        }
         showDiff(rev.getRevision().getLogInfoHeader(), revision1, revision2, showLastDifference);
+    }
+
+    private SearchHistoryPanel.ResultsContainer findParent(SearchHistoryPanel.DispRevision rev) {
+        List results = parent.getDispResults();
+        for (Object o : results) {
+            if (o instanceof SearchHistoryPanel.ResultsContainer) {
+                SearchHistoryPanel.ResultsContainer container = (SearchHistoryPanel.ResultsContainer) o;
+                if (container.getRevisions().contains(rev)) return container;
+            }
+        }
+        return null;
     }
 
     private void showContainerDiff(SearchHistoryPanel.ResultsContainer container, boolean showLastDifference) {
         List revs = container.getRevisions();
-        SearchHistoryPanel.DispRevision newest = (SearchHistoryPanel.DispRevision) revs.get(0);
+        SearchHistoryPanel.DispRevision newest = (SearchHistoryPanel.DispRevision) revs.get(1);
         showDiff(newest.getRevision().getLogInfoHeader(), container.getEldestRevision(), newest.getRevision().getNumber(), showLastDifference);
     }
 
@@ -272,8 +288,10 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
         public void run() {
             thread = Thread.currentThread();
             final Diff diff = Diff.getDefault();
-            final DiffStreamSource s1 = new DiffStreamSource(header.getFile(), revision1, revision1);
-            final DiffStreamSource s2 = new DiffStreamSource(header.getFile(), revision2, revision2);
+            final DiffStreamSource s1 = new DiffStreamSource(header.getFile(), revision1, revision1 == VersionsCache.REVISION_CURRENT ? 
+                    NbBundle.getMessage(DiffResultsView.class, "LBL_DiffPanel_LocalCopy") : revision1);
+            final DiffStreamSource s2 = new DiffStreamSource(header.getFile(), revision2, revision2 == VersionsCache.REVISION_CURRENT ? 
+                    NbBundle.getMessage(DiffResultsView.class, "LBL_DiffPanel_LocalCopy") : revision2);
 
             // it's enqueued at ClientRuntime queue and does not return until previous request handled
             s1.getMIMEType();  // triggers s1.init()

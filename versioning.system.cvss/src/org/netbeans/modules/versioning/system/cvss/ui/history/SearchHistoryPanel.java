@@ -29,6 +29,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
+import org.netbeans.modules.versioning.system.cvss.VersionsCache;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffSetupSource;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.Setup;
 import org.netbeans.modules.versioning.util.NoContentPanel;
@@ -56,7 +57,6 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private final SearchCriteriaPanel   criteria;
     
     private Divider                 divider;
-    private Action                  searchAction;
     private SearchExecutor          currentSearch;
     private RequestProcessor.Task   currentSearchTask;
 
@@ -97,7 +97,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         add(divider, gridBagConstraints);
 
         searchCriteriaPanel.add(criteria);
-        searchAction = new AbstractAction(NbBundle.getMessage(SearchHistoryPanel.class,  "CTL_Search")) {
+        Action searchAction = new AbstractAction(NbBundle.getMessage(SearchHistoryPanel.class,  "CTL_Search")) {
             {
                 putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(SearchHistoryPanel.class, "TT_Search"));
             }
@@ -146,6 +146,11 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             criteriaVisible = !criteriaVisible;
             refreshComponents(false);
         }
+    }
+    
+    void setSearchCriteriaVisible(boolean visible) {
+        criteriaVisible = visible;
+        refreshComponents(false);
     }
 
     private ExplorerManager             explorerManager;
@@ -229,6 +234,10 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         });
     }
     
+    List getDispResults() {
+        return dispResults;
+    }
+
     private final Project NULL_PROJECT = new Project() {
             
         public FileObject getProjectDirectory() {
@@ -311,6 +320,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         ResultsContainer currentContainer = null;
         
         currentContainer = new ResultsContainer(((DispRevision) rs.get(0)).getRevision().getLogInfoHeader());
+        currentContainer.add(createLocalRevision((rs.get(0)).getRevision().getLogInfoHeader()));
         dispResults.add(currentContainer);
         
         for (DispRevision revision : rs) {
@@ -323,6 +333,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                     }
                 }
                 currentContainer = new ResultsContainer(revision.getRevision().getLogInfoHeader());
+                currentContainer.add(createLocalRevision(revision.getRevision().getLogInfoHeader()));
                 dispResults.add(currentContainer);
             }
             DispRevision parent = getParentRevision(rs, revision);
@@ -341,6 +352,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         return dispResults;
     }
 
+    private DispRevision createLocalRevision(LogInformation logInfo) {
+        LogInformation.Revision currentRevision = logInfo.new Revision();
+        currentRevision.setNumber(VersionsCache.REVISION_CURRENT);
+        return new DispRevision(currentRevision, null, null);
+    }
+    
     private String getBranchName(LogInformation.Revision rev) {
         String number = rev.getNumber();          
         int idx = number.lastIndexOf('.', number.lastIndexOf('.') - 1); // NOI18N
@@ -431,7 +448,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
     static class ResultsContainer {
         
-        private List revisions = new ArrayList(2);
+        private List<DispRevision> revisions = new ArrayList<DispRevision>(2);
         private String name;
         private String path;
         private final LogInformation header;
@@ -461,17 +478,17 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             return name;
         }
 
-        public List getRevisions() {
+        public List<DispRevision> getRevisions() {
             return revisions;
         }
 
         public String getEldestRevision() {
-            DispRevision rev = (DispRevision) revisions.get(revisions.size() - 1);
+            DispRevision rev = revisions.get(revisions.size() - 1);
             return Utils.previousRevision(rev.getRevision().getNumber());
         }
 
         public String getNewestRevision() {
-            return ((DispRevision) revisions.get(0)).getRevision().getNumber();
+            return revisions.get(0).getRevision().getNumber();
         }
         
         public String getPath() {
