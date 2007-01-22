@@ -46,7 +46,8 @@ import org.openide.windows.TopComponent;
 
 public class ToolTipAnnotation extends Annotation implements Runnable {
 
-    private String expression;
+    private Part lp;
+    private EditorCookie ec;
 
     public String getShortDescription () {
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
@@ -66,27 +67,32 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             (EditorCookie.class);
 
         if (ec == null) return null;
-        try {
-            StyledDocument doc = ec.openDocument ();                    
-            JEditorPane ep = getCurrentEditor ();
-            if (ep == null) return null;
-            expression = getIdentifier (
-                doc, 
-                ep,
-                NbDocument.findLineOffset (
-                    doc,
-                    lp.getLine ().getLineNumber ()
-                ) + lp.getColumn ()
-            );
-            if (expression == null) return null;
-            RequestProcessor.getDefault ().post (this);                    
-        } catch (IOException e) {
-        }
+        this.lp = lp;
+        this.ec = ec;
+        RequestProcessor.getDefault ().post (this);
         return null;
     }
 
     public void run () {
-        if (expression == null) return;
+        //if (expression == null) return;
+        if (lp == null || ec == null) return ;
+        StyledDocument doc;
+        try {
+            doc = ec.openDocument();
+        } catch (IOException ex) {
+            return ;
+        }                    
+        JEditorPane ep = getCurrentEditor ();
+        if (ep == null) return ;
+        String expression = getIdentifier (
+            doc, 
+            ep,
+            NbDocument.findLineOffset (
+                doc,
+                lp.getLine ().getLineNumber ()
+            ) + lp.getColumn ()
+        );
+        if (expression == null) return ;
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
             getCurrentEngine ();
         if (currentEngine == null) return;
