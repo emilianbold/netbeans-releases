@@ -19,18 +19,11 @@
 
 package org.netbeans.modules.web.jsf.editor.jspel;
 
-import java.util.ArrayList;
 import java.util.List;
-import javax.swing.text.BadLocationException;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.editor.TokenItem;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.completion.ELExpression;
-import org.netbeans.modules.web.core.syntax.deprecated.ELTokenContext;
 import org.netbeans.modules.web.jsf.config.model.ManagedBean;
-import org.openide.loaders.DataObject;
 
 /**
  *
@@ -42,7 +35,7 @@ public class JSFELExpression extends ELExpression{
     
     private WebModule wm;
     
-    public JSFELExpression (WebModule wm, JspSyntaxSupport sup){
+    public JSFELExpression(WebModule wm, JspSyntaxSupport sup){
         super(sup);
         this.wm = wm;
     }
@@ -53,97 +46,29 @@ public class JSFELExpression extends ELExpression{
         
         if (dotIndex > -1){
             String first = expr.substring(0, dotIndex);
-            List /*<JSFBean>*/beans = JSFBeanCache.getBeans(wm);
+            List <ManagedBean>beans = JSFBeanCache.getBeans(wm);
             
             for (int i = 0; i < beans.size(); i++)
-                if (((ManagedBean)beans.get(i)).getManagedBeanName().equals(first)){
+                if (beans.get(i).getManagedBeanName().equals(first)){
                     value = EL_JSF_BEAN;
                     continue;
                 }
-        }
-        else if (dotIndex == -1)
+        } else if (dotIndex == -1)
             value = EL_START;
         return value;
     }
     
-    public boolean onlyJSFExpression(int offset){
-        boolean value = false;
-        try {
-            TokenItem token = sup.getTokenChain(offset-1, offset);
-            if (token != null && token.getTokenContextPath().contains(ELTokenContext.contextPath)){
-                while (token != null && token.getTokenID().getNumericID() != ELTokenContext.EL_DELIM_ID)
-                    token = token.getPrevious();
-                if (token != null)
-                    value = token.getImage().startsWith("#{");
-            }
-        } catch (BadLocationException ex) {
-            // TODO
-        }
-        return value;
-    }
-//TODO: RETOUCHE    
-    /*public JavaClass getBean(String elExp){
-        JavaClass javaClass = null;
-        DataObject obj = NbEditorUtilities.getDataObject(sup.getDocument());
+    @Override public String getObjectClass(){
+        String beanName = extractBeanName();
         
-        if (elExp != null && !elExp.equals("") && obj != null){
-            if (elExp.indexOf('.')> -1){
-                String beanName = elExp.substring(0,elExp.indexOf('.'));
-                List <JSFBean>beans = JSFBeanCache.getBeans(wm);
-                ManagedBean bean;
-                for (int i = 0; i < beans.size(); i++) {
-                    bean = (ManagedBean) beans.get(i);
-                    if (bean.getManagedBeanName().equals(beanName)){
-                        javaClass = JMIUtil.findClass(bean.getManagedBeanClass(), ClassPath.getClassPath(obj.getPrimaryFile(), ClassPath.EXECUTE));
-                        continue;
-                    }
-                }
-            }  
-        }
-        return javaClass;
-    }
-  */  
-    //TODO: RETOUCHE
-    /*public List <String> getMethods(String elExp, JavaClass bean){
-        List methodList = new ArrayList();
-        JavaClass javaClass = findLastJavaClass(elExp, bean);
+        List <ManagedBean>beans = JSFBeanCache.getBeans(wm);
         
-        
-        // don't include methods that doesn't returns String                           
-        if (javaClass != null && !javaClass.getName().equals("java.lang.String")){
-            Method methods [] = JMIUtil.getMethods(javaClass);
-            for (int j = 0; j < methods.length; j++) {
-                String name = methods[j].getName();
-                if (!(name.startsWith("set") || name.startsWith("get"))
-                        && (methods[j].getType() instanceof JavaClass
-                        && ((JavaClass)methods[j].getType()).getName().equals("java.lang.String"))
-                        && methods[j].getParameters().size() == 0){
-                    methodList.add(name);
-                    methodList.add(methods[j].getType().getName());
-                }
+        for (ManagedBean bean : beans){
+            if (beanName.equals(bean.getManagedBeanName())){
+                return bean.getManagedBeanClass();
             }
         }
-        return methodList;
-    }*/
-    
-//TODO: RETOUCHE
-    /*  Returns a JMI object which corresponds to the property in the source file. 
-     */
-    /*public Object getMethodDeclaration (String elExp, JavaClass bean){
-      JavaClass javaClass = findLastJavaClass(elExp, bean);;
-        String method = null;
-        if (elExp.lastIndexOf('.') > -1)
-            method = elExp.substring(elExp.lastIndexOf('.')+1);
-        if (javaClass != null && method != null){
-            Method methods [] = JMIUtil.getMethods(javaClass);
-            for (int j = 0; j < methods.length; j++) {
-                if (methods[j].getName().equals(method) && methods[j].getParameters().size() == 0
-                        && methods[j].getType() instanceof JavaClass 
-                        && ((JavaClass)methods[j].getType()).getName().equals("java.lang.String")) {
-                    return methods[j];
-                }
-            }
-        }
+        
         return null;
-    }*/
+    }
 }

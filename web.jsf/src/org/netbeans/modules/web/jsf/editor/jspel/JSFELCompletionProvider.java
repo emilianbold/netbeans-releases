@@ -20,30 +20,20 @@
 package org.netbeans.modules.web.jsf.editor.jspel;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.StringTokenizer;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.Project;
-import org.netbeans.editor.SyntaxSupport;
-import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.completion.JspCompletionItem;
-import org.netbeans.modules.web.core.syntax.deprecated.ELLayerTokenContext;
-import org.netbeans.modules.web.core.syntax.deprecated.ELTokenContext;
 import org.netbeans.modules.web.jsf.config.model.ManagedBean;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 /**
  *
  * @author Petr Pisl
@@ -86,32 +76,17 @@ public class JSFELCompletionProvider implements CompletionProvider{
 
                 switch (elExpr.parse(offset)){
                     case JSFELExpression.EL_START:
-                        List /*<JSFBean>*/beans = JSFBeanCache.getBeans(wm);
-                        ManagedBean bean;
-                        for (int i = 0; i < beans.size(); i++){
-                            bean = (ManagedBean)beans.get(i);
-                            if (bean.getManagedBeanName().startsWith(elExpr.getReplace()))
+                        List <ManagedBean>beans = JSFBeanCache.getBeans(wm);
+                        
+                        for (ManagedBean bean : beans){
+                            if (bean.getManagedBeanName().startsWith(elExpr.getReplace())){
                                 complItems.add(new JSFResultItem.JSFBean(bean.getManagedBeanName(), bean.getManagedBeanClass()));
+                            }
                         }
                         break;
                     case JSFELExpression.EL_JSF_BEAN:
-//TODO: RETOUCHE                        
-/*                        JavaClass mbean = elExpr.getBean(elExpr.getExpression());
-                        // add property
-                        Iterator iter = elExpr.getProperties(elExpr.getExpression(), mbean).iterator();
-                        while (iter.hasNext()) {
-                            String name = (String)iter.next();
-                            if (name.startsWith(elExpr.getReplace()))
-                                complItems.add(new JspCompletionItem.ELProperty(name, (String)iter.next()));
-                        }
-                        if (elExpr.onlyJSFExpression(offset)){
-                            iter = elExpr.getMethods(elExpr.getExpression(), mbean).iterator();
-                            while (iter.hasNext()) {
-                                String name = (String)iter.next();
-                                if (name.startsWith(elExpr.getReplace()))
-                                    complItems.add(new JSFResultItem.JSFMethod(name, (String)iter.next()));
-                            }
-                        }*/
+                        List<CompletionItem> items = elExpr.getPropertyCompletionItems(elExpr.getObjectClass());
+                        complItems.addAll(items);
                         break;
                 }
                 for (int i = 0; i < complItems.size(); i++)

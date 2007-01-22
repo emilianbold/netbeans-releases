@@ -80,6 +80,7 @@ public class ELExpression {
     
     protected JspSyntaxSupport sup;
     private String replace;
+    private boolean isDefferedExecution = false;
     
     public ELExpression(JspSyntaxSupport sup) {
         this.sup = sup;
@@ -149,6 +150,13 @@ public class ELExpression {
                         result = findContext(value);
                     }
             
+            // move to the beginning 
+            TokenSequence jspTokenSequence = hi.tokenSequence();
+            
+            if (jspTokenSequence.move(token.offset(hi)) != Integer.MAX_VALUE){
+                isDefferedExecution = jspTokenSequence.token().text().toString().startsWith("#{"); //NOI18N
+            }
+            
         } finally {
             document.readUnlock();
         }
@@ -215,9 +223,13 @@ public class ELExpression {
         return null;
     }
     
+    public boolean isDefferedExecution(){
+        return isDefferedExecution;
+    }
+    
     private String getPropertyBeingTypedName(){
         String elExp = getExpression();
-        int dotPos = elExp.lastIndexOf(".");
+        int dotPos = elExp.lastIndexOf('.');
         
         return dotPos == -1 ? null : elExp.substring(dotPos + 1);
     }
@@ -285,18 +297,26 @@ public class ELExpression {
         /**
          * @return property name is <code>accessorMethod<code> is property accessor, otherwise null
          */
-        protected String getPropertyName(ExecutableElement accessorMethod){
+        protected String getExpressionSuffix(ExecutableElement method){
             
-            if (accessorMethod.getModifiers().contains(Modifier.PUBLIC)
-                    && accessorMethod.getParameters().size() == 0){
-                String accessorName = accessorMethod.getSimpleName().toString();
+            if (method.getModifiers().contains(Modifier.PUBLIC)
+                    && method.getParameters().size() == 0){
+                String methodName = method.getSimpleName().toString();
                 
-                if (accessorName.startsWith("get")){ //NOI18N
-                    return Character.toLowerCase(accessorName.charAt(3)) + accessorName.substring(4);
+                if (methodName.startsWith("get")){ //NOI18N
+                    return Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4);
                 }
                 
-                if (accessorName.startsWith("is")){ //NOI18N
-                    return Character.toLowerCase(accessorName.charAt(2)) + accessorName.substring(3);
+                if (methodName.startsWith("is")){ //NOI18N
+                    return Character.toLowerCase(methodName.charAt(2)) + methodName.substring(3);
+                }
+                
+                if (isDefferedExecution()){
+                    //  also return values for method expressions
+                    
+                    if ("java.lang.String".equals(method.getReturnType().toString())){ //NOI18N
+                        return methodName;
+                    }
                 }
             }
             
@@ -306,6 +326,10 @@ public class ELExpression {
         public void cancel() {}
     }
     
+    /**
+     * Go to the java source code of expression
+     * - a getter in case of 
+     */
     private class GoToSourceTask extends BaseELTaskClass implements CancellableTask<CompilationController>{
         GoToSourceTask(String beanType){
             super(beanType);
@@ -316,12 +340,12 @@ public class ELExpression {
             TypeElement bean = getTypePreceedingCaret(parameter);
             
             if (bean != null){
-                String prefix = getPropertyBeingTypedName();
+                String suffix = getPropertyBeingTypedName();
                 
                 for (ExecutableElement method : ElementFilter.methodsIn(bean.getEnclosedElements())){
-                    String propertyName = getPropertyName(method);
+                    String propertyName = getExpressionSuffix(method);
                     
-                    if (propertyName != null && propertyName.startsWith(prefix)){
+                    if (propertyName != null && propertyName.equals(suffix)){
                         UiUtils.open(parameter.getClasspathInfo(), method);
                         break;
                     }
@@ -347,12 +371,14 @@ public class ELExpression {
                 String prefix = getPropertyBeingTypedName();
                 
                 for (ExecutableElement method : ElementFilter.methodsIn(bean.getEnclosedElements())){
-                    String propertyName = getPropertyName(method);
+                    String propertyName = getExpressionSuffix(method);
                     
                     if (propertyName != null && propertyName.startsWith(prefix)){
+                        boolean isMethod = propertyName.equals(method.getSimpleName().toString());
+                        String type = isMethod ? "" : method.getReturnType().toString(); //NOI18N
+                        
                         CompletionItem item = new JspCompletionItem.ELProperty(
-                                propertyName,
-                                method.getReturnType().toString());
+                                propertyName, type);
                         
                         completionItems.add(item);
                     }
