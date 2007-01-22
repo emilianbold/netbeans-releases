@@ -20,8 +20,7 @@
 
 package org.netbeans.installer.wizard.components.actions;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.ErrorManager;
@@ -59,32 +58,26 @@ public class CreateNativeLauncherAction extends WizardAction {
     
     public void execute() {
         LogManager.log("Create native launcher...");
-//        LogManager.indent();
-//        final String targetPath = System.getProperty(Installer.CREATE_BUNDLE_PATH_PROPERTY);
-//        final File   targetFile = new File(targetPath);
-//        
-//        Progress progress = new Progress();        
-//        getWizardUi().setProgress(progress);
-//        try {
-//            NativeLauncher nl = new NativeLauncher();
-//            nl.setBundleJRE(false);
-//            nl.setI18nDir(new File("D:/work/nbi/engine/launcher/windows/i18n"));
-//            nl.setJavaVersionMin("1.5.0");            
-//            nl.setJar(new File(targetPath));
-//            nl.setJvmArguments("-Xmx256m -Xms64m");
-//            nl.setTestJVM(FileProxy.getInstance().getFile(JDKUtils.TEST_JDK_URI));
-//            nl.setLauncherStub(FileProxy.getInstance().getFile("resource:launcher/windows/nlw.exe"));
-//            Platform platform = Registry.getInstance().getTargetPlatform();
-//            File f = nl.createLauncher(platform, progress);
-//            if ( !targetFile.equals(f)) {
-//                FileUtils.deleteFile(targetFile);
-//                System.setProperty(Installer.CREATE_BUNDLE_PATH_PROPERTY, f.getPath());
-//            }            
-//        } catch (IOException e) {
-//            ErrorManager.notifyError("Failed to create the launcher", e);
-//        } catch (DownloadException e) {
-//            ErrorManager.notifyError("Failed to create the launcher", e);
-//        }
-//        LogManager.unindent();
+        LogManager.indent();
+        final String targetPath = System.getProperty(Installer.CREATE_BUNDLE_PATH_PROPERTY);
+        final File   targetFile = new File(targetPath);
+        
+        Progress progress = new Progress();        
+        getWizardUi().setProgress(progress);
+        try {
+            NativeLauncher nl = new NativeLauncher();
+            nl.setJavaVersionMin("1.5.0_01");            
+            nl.setJar(new File(targetPath));
+            nl.setJvmArguments("-Xmx256m -Xms64m");
+            Platform platform = Registry.getInstance().getTargetPlatform();
+            File f = nl.createLauncher(platform, progress);
+            if ( !targetFile.equals(f)) {
+                FileUtils.deleteFile(targetFile);
+                System.setProperty(Installer.CREATE_BUNDLE_PATH_PROPERTY, f.getPath());
+            }            
+        } catch (IOException e) {
+            ErrorManager.notifyError("Failed to create the launcher", e);
+        } 
+        LogManager.unindent();
     }
 }
