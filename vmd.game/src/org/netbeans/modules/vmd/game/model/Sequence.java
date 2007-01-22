@@ -167,6 +167,14 @@ public class Sequence implements Previewable, Editable, CodeGenerator {
 		return Collections.unmodifiableList(this.frames);
 	}
 	
+	public int[] getFramesAsArray() {
+		int[] a = new int[this.frames.size()];
+		for (int i = 0; i < a.length; i++) {
+			a[i] = this.frames.get(i).getIndex();	
+		}
+		return a;
+	}
+	
 	private void fireFrameAdded(StaticTile frame, int index) {
 		Object[] listeners = listenerList.getListenerList();
 		for (int i = listeners.length - 2; i >= 0; i -= 2) {
