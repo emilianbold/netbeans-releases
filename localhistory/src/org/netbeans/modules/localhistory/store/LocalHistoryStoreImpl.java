@@ -98,7 +98,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                         return providers.iterator();
                     }
                 }, 
-                20, 100);                                  
+                20, -1);                                  
     }    
 
     public synchronized void fileCreate(File file, long ts) {
@@ -127,7 +127,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         touch(file, new StoreDataFile(file.getAbsolutePath(), TOUCHED, ts, file.isFile()));
         File parent = file.getParentFile();
         if(parent != null) {
-            writeHistory(parent, new HistoryEntry(ts, from, to, TOUCHED));                        
+            writeHistory(parent, new HistoryEntry[] {new HistoryEntry(ts, from, to, TOUCHED)});                        
         }
         fireChanged(file);        
     }
@@ -186,7 +186,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         touch(file, new StoreDataFile(file.getAbsolutePath(), DELETED, lastModified, isFile));        
         File parent = file.getParentFile();
         if(parent != null) {
-            writeHistory(parent, new HistoryEntry(ts, from, to, DELETED));                     
+            writeHistory(parent, new HistoryEntry[] {new HistoryEntry(ts, from, to, DELETED)});                     
         }
     }
     
@@ -378,67 +378,67 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     public void cleanUp(final long ttl) {        
         // XXX run only once a day - use the top folder metadata for version and cleanup flag
         RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                while(!cleanUpImpl(ttl)) {
-                    try {
-                        java.lang.Thread.sleep(200);
-                    } catch (InterruptedException ex) { }
-                }           
+            public void run() {              
+                if(Diagnostics.ON) {
+                    Diagnostics.println("Cleanup Start");
+                }
+                
+                cleanUpImpl(ttl);
+                
+                if(Diagnostics.ON) {
+                    Diagnostics.println("Cleanup End");
+                }                
             }
         });
     }
     
-    private synchronized boolean cleanUpImpl(long ttl) {        
+    private void cleanUpImpl(long ttl) {        
                         
-        // XXX fire events
-           
-        if(Diagnostics.ON) {
-            Diagnostics.println("Cleanup Start");
-        }
+        // XXX fire events         
         
         long now = System.currentTimeMillis();        
         
         File[] topLevelFiles = storage.listFiles();                
-        
-        int i = 0;
+                
         for(File topLevelFile : topLevelFiles) {                        
             File[] secondLevelFiles = topLevelFile.listFiles();
-            boolean skipped = false;
+            boolean allEmpty = true;
             for(File secondLevelFile : secondLevelFiles) {       
                                                             
-                try {
+//                try {
                     boolean empty = cleanUpFolder(secondLevelFile, ttl, now);    
                     if(empty) {                        
                         if(secondLevelFile.exists()) {
                             FileUtils.deleteRecursively(secondLevelFile);
                         }
                     } else {
-                        skipped = true;
+                        allEmpty = false;
                     }
-                } /*catch (FileNotFoundException e) {
-                    // ignore
-                } */catch (IOException e) {   
-                    // XXX why?
-                    ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
-                }                
+//                } catch (FileNotFoundException e) {
+//                    // ignore 
+//                    // XXX ignore and delete
+//                } catch (IOException e) {   
+//                    // XXX why? ignore and delete
+//                    ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+//                }                
             }
-            if(!skipped) {
+            if(allEmpty) {
                 FileUtils.deleteRecursively(topLevelFile);
             }        
             
             if( System.currentTimeMillis() - now > 200 ) {
-                // it took you to long, get out
-                Diagnostics.println("Cleanup End " + i);
-                return false; // run in chunks
+                // it took you to long, get out                
+                try {
+                    if(Diagnostics.ON) {
+                        Diagnostics.println("Cleanup Sleep 200");
+                    }                
+                    java.lang.Thread.sleep(200);
+                } catch (InterruptedException ex) { }                    
             }                                
-            i++;            
-        }     
-        
-        Diagnostics.println("Cleanup End"  + i);
-        return true;
+        }                     
     }
     
-    private boolean cleanUpFolder(File folder, long ttl, long now) throws IOException {
+    private synchronized boolean cleanUpFolder(File folder, long ttl, long now) {
         File dataFile = new File(folder, DATA_FILE);
         
         if(!dataFile.exists()) {
@@ -459,13 +459,24 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
     
     private boolean cleanUpStoredFile(File store, long ttl, long now) {
-         File[] files = store.listFiles(fileEntriesFilter);            
+        File dataFile = new File(store, DATA_FILE);
+        
+        if(!dataFile.exists()) {
+            return true;
+        }        
+        if(dataFile.lastModified() < now - ttl) {
+            dataFile.delete();            
+            return true;
+        }
+        
+        File[] files = store.listFiles(fileEntriesFilter);            
         boolean skipped = false;
         
         for(File f : files) {                
             long ts = Long.parseLong(f.getName());
             if(ts < now - ttl) {
-                f.delete();
+                // XXX remove labels
+                f.delete(); 
             } else {
                 skipped = true;
             }
@@ -473,15 +484,14 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         
         if(!skipped) {
             // if all entries are gone then remove also the metadata             
-            File file = new File(store, LABELS_FILE);
-            file.delete();
-            file = new File(store, DATA_FILE);
-            writeStoreData(file, null);                                  
+            File labelsFile = new File(store, LABELS_FILE);
+            labelsFile.delete();            
+            writeStoreData(dataFile, null);                                  
         }                        
         return !skipped;
     }
     
-    private boolean cleanUpStoredFolder(File store, long ttl, long now)  throws IOException {
+    private boolean cleanUpStoredFolder(File store, long ttl, long now) {
         File historyFile = new File(store, HISTORY_FILE);
 
         if(!historyFile.exists()) {
@@ -502,9 +512,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             }                                
         }
         if(newEntries.size() > 0) {
-            for(HistoryEntry entry : entries) {
-                writeHistory(historyFile, entry);
-            }    
+            writeHistory(historyFile, newEntries.toArray(new HistoryEntry[newEntries.size()]));                        
         }
         return newEntries.size() < 1;
     }
@@ -629,15 +637,17 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         return emptyLabels;
     }
             
-    private void writeHistory(File file, HistoryEntry entry) throws IOException { // XXX int action
+    private void writeHistory(File file, HistoryEntry[] entries) { // XXX int action
         File history = getHistoryFile(file);
         DataOutputStream dos = null;
         try {
-            dos = getOutputStream(history, true);
-            dos.writeLong(entry.getTimestamp());                        
-            writeString(dos, entry.getFrom());        
-            writeString(dos, entry.getTo());            
-            dos.writeInt(entry.getAction());
+            dos = getOutputStream(history, true);            
+            for(HistoryEntry entry : entries) {
+                dos.writeLong(entry.getTimestamp());                        
+                writeString(dos, entry.getFrom());        
+                writeString(dos, entry.getTo());            
+                dos.writeInt(entry.getAction());
+            }
             dos.flush();            
         } catch (Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -772,17 +782,17 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }
     }
     
-    private synchronized StoreDataFile readStoreData(File file) {
-        if(Diagnostics.ON) {
-            Diagnostics.println("readStoreData:" + file);
-        }    
+    private StoreDataFile readStoreData(File file) {
+//        if(Diagnostics.ON) {
+//            Diagnostics.println("readStoreData:" + file);
+//        }    
         return (StoreDataFile) turbo.readEntry(file, DataFilesTurboProvider.ATTR_DATA_FILES);
     }
 
-    private synchronized void writeStoreData(File file, StoreDataFile data) {        
-        if(Diagnostics.ON) {
-            Diagnostics.println("writeStoreData:" + file);
-        }            
+    private void writeStoreData(File file, StoreDataFile data) {        
+//        if(Diagnostics.ON) {
+//            Diagnostics.println("writeStoreData:" + file);
+//        }            
         turbo.writeEntry(file, DataFilesTurboProvider.ATTR_DATA_FILES, data);        
     }    
     
@@ -815,7 +825,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             return isFile;
         }
         
-        static StoreDataFile read(File storeFile) {
+        static synchronized StoreDataFile read(File storeFile) {
             DataInputStream dis = null;
             try {
                 dis = getInputStream(storeFile);
@@ -834,7 +844,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             return null;
         }
         
-        static void write(File storeFile, StoreDataFile value) {
+        static synchronized void write(File storeFile, StoreDataFile value) {
             DataOutputStream dos = null;
             try {
                 dos = getOutputStream(storeFile, false);
