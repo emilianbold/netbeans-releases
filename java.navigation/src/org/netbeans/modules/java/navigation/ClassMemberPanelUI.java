@@ -104,14 +104,17 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         return new ElementScanningTask(this);
         
     }
-               public void
-               showWaitNode() {
-                  SwingUtilities.invokeLater(new Runnable() {
-                                                public void
-                                                run() {
-                                                   elementView.setRootVisible(true);
-                                                   manager.setRootContext(ElementNode.getWaitNode()); } }); }
-               
+    
+    
+    public void showWaitNode() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+               elementView.setRootVisible(true);
+               manager.setRootContext(ElementNode.getWaitNode());
+            } 
+        });
+    }
+
     public void refresh( final Description description ) {
         
         ElementNode rootNode = getRootNode();
