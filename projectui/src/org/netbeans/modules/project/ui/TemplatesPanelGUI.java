@@ -112,7 +112,13 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
 
     public void setSelectedCategoryByName (final String categoryName) {
         if (categoryName != null) {
-            ((ExplorerProviderPanel)this.categoriesPanel).setSelectedNode (categoryName);
+            try {
+                ((org.netbeans.modules.project.ui.TemplatesPanelGUI.ExplorerProviderPanel) this.categoriesPanel).setSelectedNode(categoryName);
+            }
+            catch (NodeNotFoundException ex) {
+                // if categoryName is null then select first category leastwise
+                ((CategoriesPanel)this.categoriesPanel).selectFirstCategory ();
+            }
         } else {
             // if categoryName is null then select first category leastwise
             ((CategoriesPanel)this.categoriesPanel).selectFirstCategory ();
@@ -130,11 +136,15 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 if (templateName != null) {
-                    tempExplorer.setSelectedNode (templateName);
-                    if (tempExplorer.getSelectionPath () == null) {
-                        // null presetTemplateName if cannot be set
+                    try {
+                        tempExplorer.setSelectedNode(templateName);
+                    }
+                    catch (NodeNotFoundException ex) {
+                        //ignore here..
+                    }
+                    if (tempExplorer.getSelectionPath() == null) {
                         presetTemplateName = null;
-                        tempExplorer.selectFirstTemplate ();                        
+                        tempExplorer.selectFirstTemplate();
                     }
                 } else {
                     tempExplorer.selectFirstTemplate ();
@@ -381,7 +391,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             this.manager.setSelectedNodes(nodes);
         }
         
-        public void setSelectedNode (String path) {
+        public void setSelectedNode (String path) throws NodeNotFoundException {
             if (path == null) {
                 return;
             }
@@ -396,10 +406,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                     this.manager.setSelectedNodes(new Node[] {node});
                 }
             } catch (PropertyVetoException e) {
-                //Skeep it, not important
-            }
-            catch (NodeNotFoundException e) {
-                //Skeep it, not important
+                //Skip it, not important
             }
         }
         
