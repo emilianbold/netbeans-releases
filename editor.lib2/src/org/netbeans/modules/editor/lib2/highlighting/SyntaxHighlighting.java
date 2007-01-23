@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
@@ -51,6 +53,8 @@ import org.openide.util.WeakListeners;
  * @author Vita Stejskal
  */
 public final class SyntaxHighlighting extends AbstractHighlightsContainer implements TokenHierarchyListener {
+    
+    private static final Logger LOG = Logger.getLogger(SyntaxHighlighting.class.getName());
     
     public static final String LAYER_TYPE_ID = "org.netbeans.modules.editor.lib2.highlighting.SyntaxHighlighting"; //NOI18N
     
@@ -362,6 +366,11 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
             Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimePath));
             FontColorSettings fcs = lookup.lookup(FontColorSettings.class);
             AttributeSet attribs = findFontAndColors(fcs, tokenId, innerLanguage);
+            
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine(mimePath + ":" + tokenId.name() + " -> " + attribs); //NOI18N
+            }
+            
             return attribs != null ? attribs : SimpleAttributeSet.EMPTY;
         }
 
