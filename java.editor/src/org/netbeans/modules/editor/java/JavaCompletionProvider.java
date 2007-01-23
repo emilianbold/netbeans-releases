@@ -963,6 +963,20 @@ public class JavaCompletionProvider implements CompletionProvider {
                 TreePath parentPath = path.getParentPath();
                 if (Utilities.startsWith(INTERFACE_KEYWORD, prefix) && parentPath.getLeaf().getKind() == Tree.Kind.MODIFIERS)
                     addKeyword(env, INTERFACE_KEYWORD, SPACE);
+                if (queryType == CompletionProvider.COMPLETION_SMART_QUERY_TYPE) {
+                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                    Set<? extends TypeMirror> smarts = getSmartTypes(env);
+                    if (smarts != null) {
+                        Elements elements = controller.getElements();
+                        for (TypeMirror smart : smarts) {
+                            if (smart.getKind() == TypeKind.DECLARED) {
+                                TypeElement elem = (TypeElement)((DeclaredType)smart).asElement();
+                                if (elem.getKind() == ANNOTATION_TYPE)
+                                    results.add(JavaCompletionItem.createTypeItem(elem, (DeclaredType)smart, anchorOffset, true, elements.isDeprecated(elem)));
+                            }
+                        }
+                    }
+                }
                 addTypes(env, EnumSet.of(ANNOTATION_TYPE), null, null);
                 return;
             }
@@ -2033,6 +2047,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (st.getKind() == TypeKind.DECLARED) {
                         final DeclaredType type = (DeclaredType)st;
                         final TypeElement element = (TypeElement)type.asElement();
+                        if (element.getKind() == ANNOTATION_TYPE)
+                            results.add(JavaCompletionItem.createAnnotationItem(element, (DeclaredType)type, anchorOffset, elements.isDeprecated(element)));                            
                         final boolean isStatic = element.getKind().isClass() || element.getKind().isInterface();
                         ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                             public boolean accept(Element e, TypeMirror t) {
@@ -3371,7 +3387,13 @@ public class JavaCompletionProvider implements CompletionProvider {
                         return null;
                     case ANNOTATION:
                         AnnotationTree ann = (AnnotationTree)tree;
-                        text = controller.getText().substring((int)env.getSourcePositions().getEndPosition(env.getRoot(), ann.getAnnotationType()), offset).trim();
+                        int pos = (int)env.getSourcePositions().getStartPosition(env.getRoot(), ann.getAnnotationType());
+                        if (offset <= pos)
+                            break;
+                        pos = (int)env.getSourcePositions().getEndPosition(env.getRoot(), ann.getAnnotationType());
+                        if (offset < pos)
+                            break;
+                        text = controller.getText().substring(pos, offset).trim();
                         if ("(".equals(text) || text.endsWith("{") || text.endsWith(",")) { //NOI18N
                             TypeElement el = (TypeElement)controller.getTrees().getElement(new TreePath(path, ann.getAnnotationType()));
                             for (Element ee : el.getEnclosedElements()) {

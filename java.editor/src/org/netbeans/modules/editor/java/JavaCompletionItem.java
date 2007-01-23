@@ -21,7 +21,6 @@ package org.netbeans.modules.editor.java;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
-
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -37,7 +36,6 @@ import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
-
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.*;
@@ -74,7 +72,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             case ENUM:
                 return new EnumItem(elem, type, 0, substitutionOffset, displayPkgName, isDeprecated);
             case ANNOTATION_TYPE:
-                return new AnnotationItem(elem, type, 0, substitutionOffset, displayPkgName, isDeprecated);
+                return new AnnotationTypeItem(elem, type, 0, substitutionOffset, displayPkgName, isDeprecated);
             default:
                 throw new IllegalArgumentException("kind=" + elem.getKind());
         }
@@ -100,7 +98,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 case ENUM:
                     return new EnumItem(elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem));
                 case ANNOTATION_TYPE:
-                    return new AnnotationItem(elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem));
+                    return new AnnotationTypeItem(elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem));
             }
         }
         throw new IllegalArgumentException("array element kind=" + tm.getKind());
@@ -150,6 +148,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
     public static final JavaCompletionItem createDefaultConstructorItem(TypeElement elem, int substitutionOffset) {
         return new DefaultConstructorItem(elem, substitutionOffset);
+    }
+    
+    public static final JavaCompletionItem createAnnotationItem(TypeElement elem, DeclaredType type, int substitutionOffset, boolean isDeprecated) {
+        return new AnnotationItem(elem, type, substitutionOffset, isDeprecated);
     }
     
     public static final JavaCompletionItem createAttributeItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated) {
@@ -468,7 +470,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String PKG_COLOR = "<font color=#808080>"; //NOI18N
         private static ImageIcon icon;
         
-        private TypeElement elem;
+        protected TypeElement elem;
         private DeclaredType type;
         private int dim;
         private boolean displayPkgName;
@@ -710,12 +712,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
     }
     
-    private static class AnnotationItem extends ClassItem {
+    private static class AnnotationTypeItem extends ClassItem {
         
         private static final String ANNOTATION = "org/netbeans/modules/editor/resources/completion/annotation_type.png"; // NOI18N
         private static ImageIcon icon;
         
-        private AnnotationItem(TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated) {
+        private AnnotationTypeItem(TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated) {
             super(elem, type, dim, substitutionOffset, displayPkgName, isDeprecated);
         }
 
@@ -1648,6 +1650,83 @@ public abstract class JavaCompletionItem implements CompletionItem {
         public String toString() {
             return elem.getSimpleName() + "()";
         }        
+    }
+    
+    private static class AnnotationItem extends AnnotationTypeItem {
+        
+        private AnnotationItem(TypeElement elem, DeclaredType type, int substitutionOffset, boolean isDeprecated) {
+            super(elem, type, 0, substitutionOffset, true, isDeprecated);
+        }
+
+        public CharSequence getInsertPrefix() {
+            return "@" + super.getInsertPrefix(); //NOI18N
+        }
+
+        protected void substituteText(final JTextComponent c, int offset, int len, String toAdd) {
+            BaseDocument doc = (BaseDocument)c.getDocument();
+            final StringBuilder text = new StringBuilder();
+            if (toAdd != null && !toAdd.equals("\n")) {//NOI18N
+                TokenSequence<JavaTokenId> sequence = Utilities.getJavaTokenSequence(c, offset + len);
+                if (sequence == null) {
+                    text.append(toAdd);
+                    toAdd = null;
+                }
+                boolean added = false;
+                while(toAdd != null && toAdd.length() > 0) {
+                    String tokenText = sequence.token().text().toString();
+                    if (tokenText.startsWith(toAdd)) {
+                        len = sequence.offset() - offset + toAdd.length();
+                        text.append(toAdd);
+                        toAdd = null;
+                    } else if (toAdd.startsWith(tokenText)) {
+                        sequence.moveNext();
+                        len = sequence.offset() - offset;
+                        text.append(toAdd.substring(0, tokenText.length()));
+                        toAdd = toAdd.substring(tokenText.length());
+                        added = true;
+                    } else if (sequence.token().id() == JavaTokenId.WHITESPACE && sequence.token().text().toString().indexOf('\n') < 0) {//NOI18N
+                        if (!sequence.moveNext()) {
+                            text.append(toAdd);
+                            toAdd = null;
+                        }
+                    } else {
+                        if (!added)
+                            text.append(toAdd);
+                        toAdd = null;
+                    }
+                }
+            }
+            Position position = null;
+            try {
+                position = doc.createPosition(offset);
+                JavaSource js = JavaSource.forDocument(doc);
+                js.runModificationTask(new CancellableTask<WorkingCopy>() {
+                    public void cancel() {
+                    }
+                    public void run(WorkingCopy copy) throws IOException {
+                        copy.toPhase(JavaSource.Phase.RESOLVED);
+                        TreePath tp = copy.getTreeUtilities().pathFor(substitutionOffset);
+                        text.insert(0, "@" + AutoImport.resolveImport(copy, tp, copy.getTypes().getDeclaredType(elem))); //NOI18N
+                    }
+                }).commit();
+            } catch (Exception ex) {
+            }
+            // Update the text
+            doc.atomicLock();
+            try {
+                if (position != null)
+                    offset = position.getOffset();
+                String textToReplace = doc.getText(offset, len);
+                if (textToReplace.contentEquals(text)) return;
+                
+                doc.remove(offset, len);
+                doc.insertString(offset, text.toString(), null);
+            } catch (BadLocationException e) {
+                // Can't update
+            } finally {
+                doc.atomicUnlock();
+            }
+        }
     }
     
     private static class AttributeItem extends JavaCompletionItem {
