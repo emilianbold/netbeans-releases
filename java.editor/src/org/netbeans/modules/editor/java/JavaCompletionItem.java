@@ -1692,15 +1692,16 @@ public abstract class JavaCompletionItem implements CompletionItem {
             StringBuilder sb = new StringBuilder();
             sb.append(ATTRIBUTE_COLOR);
             AnnotationValue value = elem.getDefaultValue();
-            if (value != null)
+            if (value == null)
                 sb.append(BOLD);
             if (isDeprecated)
                 sb.append(STRIKE);
             sb.append(elem.getSimpleName());
             if (isDeprecated)
                 sb.append(STRIKE_END);
-            if (value != null) {                
+            if (value == null) {
                 sb.append(BOLD_END);
+            } else {
                 sb.append(" = "); //NOI18N
                 sb.append(value);
             }

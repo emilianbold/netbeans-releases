@@ -28,7 +28,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -119,12 +118,8 @@ public class CompletionTestBase extends NbTestCase {
         final ClassPath bootPath = createClassPath(System.getProperty("sun.boot.class.path"));
         for (ClassPath.Entry entry : bootPath.entries()) {
             URL url = entry.getURL();
-            ClassIndexImpl cii = mgr.createUsagesQuery(url, false);
-            if ("jar".equals(url.getProtocol())) {
-                url = FileUtil.getArchiveFile(url);
-            }
-            File root = new File (URI.create(url.toExternalForm()));
-            cii.getBinaryAnalyser().analyse(root, null);
+            ClassIndexImpl cii = mgr.createUsagesQuery(url, false);            
+            cii.getBinaryAnalyser().analyse(url, null);
             
         }                
         ClassPathProvider cpp = new ClassPathProvider() {

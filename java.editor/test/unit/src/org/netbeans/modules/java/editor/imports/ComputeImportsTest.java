@@ -52,7 +52,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 
 /**
@@ -91,24 +90,9 @@ public class ComputeImportsTest extends NbTestCase {
             IndexUtil.setCacheFolder(cache);
             
             for (URL u : SourceUtilsTestUtil.getBootClassPath()) {
-                FileObject file = URLMapper.findFileObject(u);
-                
-                if (file == null)
-                    continue;
-                
-                file = FileUtil.getArchiveFile(file);
-                
-                if (file == null)
-                    continue;
-                
-                File jioFile = FileUtil.toFile(file);
-                
-                if (jioFile == null)
-                    continue;
-                
                 final ClassIndexImpl ci = ClassIndexManager.getDefault().createUsagesQuery(u, false);
                 ProgressHandle handle = ProgressHandleFactory.createHandle("cache creation");
-                ci.getBinaryAnalyser().analyse(jioFile, handle);
+                ci.getBinaryAnalyser().analyse(u, handle);
             }
         }
     }
