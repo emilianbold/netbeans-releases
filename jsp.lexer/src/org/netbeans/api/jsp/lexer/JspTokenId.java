@@ -129,7 +129,7 @@ public enum JspTokenId implements TokenId {
         
         @Override
         protected String mimeType() {
-            return "text/html";
+            return "text/x-jsp";
         }
     }.language();
     

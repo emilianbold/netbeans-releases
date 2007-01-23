@@ -285,7 +285,6 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
             if (mimeType == null){
                 doc.putProperty("mimeType", getContentType()); //NOI18N
             }
-            doc.putProperty(Language.class, JspTokenId.language());
             return doc;
         } else {
             return super.createDefaultDocument();
