@@ -70,26 +70,10 @@ public class WsdlModeler {
                 synchronized (this) {
                     listenersSize = modelListeners.size();
                     fireModelCreated(wsdlModel,listenersSize);
+                    removeListeners();
                 }
             }
         },true);
-        task.addTaskListener(new TaskListener(){
-            public void taskFinished(Task task) {
-                // remove all listeners or reschedule task for listeners that were added at the at last moment
-                synchronized (this) {
-                    int size = modelListeners.size();
-                    if (size>0) {
-                        if (size==listenersSize) removeListeners();
-                        else {
-                            for (int i=listenersSize-1;i>=0;i--) {
-                                modelListeners.remove(i);
-                            }
-                            ((RequestProcessor.Task)task).schedule(0);
-                        }
-                    }
-                }
-            }
-        });
     }
     
     public void setPackageName(String packageName) {
