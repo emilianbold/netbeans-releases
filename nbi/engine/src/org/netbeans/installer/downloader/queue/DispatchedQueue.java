@@ -42,7 +42,7 @@ import java.util.Map;
 public class DispatchedQueue extends QueueBase {
   
   /////////////////////////////////////////////////////////////////////////////////
-  // Instance  
+  // Instance
   private final ProcessDispatcher dispatcher = new RoundRobinDispatcher(DISPATCHER_QUANTUM, DISPATCHER_POOL);
   
   private final Map<String, Pump> pId2p = new LinkedHashMap<String, Pump>();
@@ -89,7 +89,15 @@ public class DispatchedQueue extends QueueBase {
     return oldOne;
   }
   
-  public synchronized void invoke() {
+  public synchronized void delete(URL url) {
+    for (Pumping pumping: toArray()) {
+      if (pumping.declaredURL() == url) {
+        delete(pumping.getId());
+      }
+    }
+  }
+    
+    public synchronized void invoke() {
     if (dispatcher.isActive()) return;
     fire("pumpsInvoke");
     for (Pumping pumping : toArray()) {

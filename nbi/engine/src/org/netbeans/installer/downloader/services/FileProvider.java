@@ -27,6 +27,7 @@ import org.netbeans.installer.downloader.DownloadListener;
 import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.downloader.Pumping;
 import org.netbeans.installer.downloader.Pumping.State;
+import org.netbeans.installer.utils.exceptions.DownloadException;
 /**
  *
  * @author Danila_Dugurov
@@ -74,19 +75,19 @@ public class FileProvider {
     downloadManager.queue().add(url, folder != null ? folder: downloadManager.defaultFolder());
   }
   
-  public synchronized File get(URL url) throws InterruptedException {
+  public synchronized File get(URL url) throws DownloadException {
     return get(url, null, true);
   }
   
-  public synchronized File get(URL url, File folder) throws InterruptedException {
+  public synchronized File get(URL url, File folder) throws DownloadException {
     return get(url, folder, true);
   }
   
-  public synchronized File get(URL url, boolean useCache) throws InterruptedException {
+  public synchronized File get(URL url, boolean useCache) throws DownloadException {
     return get(url, null, useCache);
   }
   
-  public synchronized File get(URL url, File folder, boolean useCache) throws InterruptedException {
+  public synchronized File get(URL url, File folder, boolean useCache) throws DownloadException {
     while (true) {
       final File file = tryGet(url);
       if (file != null) {
@@ -94,12 +95,24 @@ public class FileProvider {
         cache.delete(url);
         useCache = true;
       }
-      asynchDownload(url, folder);
-      wait();
-      //todo: refactor this agly pice of code below
-      if (scheduledURL2State.containsKey(url) && scheduledURL2State.get(url) == State.FAILED) {
-        scheduledURL2State.remove(url);
-        return null;// this temporary. unlike good reaction to return null if faild to load!
+      synchronized (url) {
+        asynchDownload(url, folder);
+        try {
+          url.wait();
+        } catch (InterruptedException interrupt) {
+          throw new DownloadException("download faild " + url, interrupt);
+        }
+      }
+      switch(scheduledURL2State.get(url)) {
+        case FAILED: {
+          scheduledURL2State.remove(url);
+          throw new DownloadException("download faild " + url);
+        }
+        case DELETED: {
+          scheduledURL2State.remove(url);
+          throw new DownloadException("download faild - externaly deleted " + url);
+        }
+        case FINISHED: scheduledURL2State.remove(url);
       }
     }
   }
@@ -109,9 +122,10 @@ public class FileProvider {
     return null;
   }
   
-  public synchronized boolean manuallyDelete(URL url) {
-    return cache.delete(url);
-  }  
+  public synchronized void manuallyDelete(URL url) {
+    downloadManager.queue().delete(url);
+    cache.delete(url);
+  }
   
   /////////////////////////////////////////////////////////////////////////////////
   // Inner Classes
@@ -121,13 +135,12 @@ public class FileProvider {
       final URL url = pumping.declaredURL();
       scheduledURL2State.put(url, pumping.state());
       switch(pumping.state()) {
-        case FINISHED: {
+        case FINISHED:
           cache.put(url, pumping.outputFile());
-          scheduledURL2State.remove(url);
-        }
+        case DELETED:
         case FAILED:
-          synchronized(FileProvider.this) {
-            FileProvider.this.notifyAll();
+          synchronized(url) {
+            url.notifyAll();
           }
       }
     }

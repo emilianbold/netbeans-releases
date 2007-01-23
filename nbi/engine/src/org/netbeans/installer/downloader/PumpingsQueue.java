@@ -64,4 +64,6 @@ public interface PumpingsQueue {
   Pumping add(URL url, File folder);
   
   Pumping delete(String id);
+  
+  void delete(URL url);
 }

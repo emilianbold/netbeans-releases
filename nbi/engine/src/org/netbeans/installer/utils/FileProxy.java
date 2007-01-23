@@ -138,7 +138,7 @@ public class FileProxy {
         }
         file.createNewFile();
         if (deleteOnExit) {
-            file.deleteOnExit();
+          file.deleteOnExit();
         }
         final InputStream resource = (loader != null ? loader: getClass().getClassLoader()).getResourceAsStream(uri.getSchemeSpecificPart());
         out = new FileOutputStream(file);
@@ -170,12 +170,7 @@ public class FileProxy {
     final DownloadProgress dlProgress = new DownloadProgress(progress);
     DownloadManager.instance.registerListener(dlProgress);
     File file = null;
-    try {
-      file = FileProvider.getProvider().get(url);
-    } catch (InterruptedException interupt) {
-      LogManager.log("interrupted externaly.");
-    }
-    if (file == null) throw new DownloadException("faild to download" + url);
+    file = FileProvider.getProvider().get(url);
     if (deleteOnExit) file.deleteOnExit();
     return file;
   }
