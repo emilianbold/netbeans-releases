@@ -14,12 +14,15 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="xtest-qa-functional" basedir="." default="all">
 
+    <!-- Imports init-parse-project-xml target which also initializes all project properties. -->
+    <import file="init.xml"/>
+    
     <property name="jellytools.home" location="${netbeans.user}/modules/ext/"/>
     <property name="jemmy.home" location="${netbeans.user}/modules/ext/"/>
     <path id="jemmy.and.jelly.path">
@@ -27,9 +30,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${jellytools.home}/jelly2-nb.jar"/>
     </path>
 
-    <target name="init">
-        <property file="../nbproject/private/private.properties"/>
-        <property file="../nbproject/project.properties"/>
+    <target name="init" depends="init-nb-properties,init-system-properties">
         <property name="build.compiler.debug" value="true"/>
         <property name="build.compiler.source" value="${ant.java.version}"/>
         <property name="build.compiler.deprecation" value="true"/>

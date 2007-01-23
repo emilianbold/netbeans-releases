@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -27,9 +27,9 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ============= -->
     <!-- IDE test part -->
     <!-- ============= -->
-    <target name="ide_execution" depends="init,extra-classpath,prepare-testdata,prepare-projects">
+    <target name="ide_execution" depends="init,extra-classpath,prepare-testdata,prepare-projects,init-branding">
 
-    <xtest executeAction="prepare-tests"/>
+        <xtest executeAction="prepare-tests"/>
         <!-- BEGIN this has to be here, though it should be rather only in module_harness !!! -->
         <property name="_ideplugin.test.propertyfile" location="${xtest.workdir}/sys/userdata.properties"/>
         <!-- END -->    
@@ -81,6 +81,8 @@ Microsystems, Inc. All Rights Reserved.
         <!-- #52385 - added property java.io.tmpdir.default which points to original system value of java.io.tmpdir property. 
              It has to be translated through location to strip ending backslash. -->
         <property name="java.io.tmpdir.default" location="${java.io.tmpdir}"/>
+        <!-- Used to run tests against platform application. -->
+        <property name="xtest.ide.branding" value=""/>
         
         <property name="xtest.ide.use.classloader" value=""/>
         
@@ -248,6 +250,7 @@ Microsystems, Inc. All Rights Reserved.
 -J-Dxtest.userdir=&quot;${xtest.userdir}&quot;
 -J-Dxtest.ide.use.classloader=${xtest.ide.use.classloader}
 -J-Dprebuilt.storage.dir=&quot;${xtest.ide.mdrstorage}&quot;
+${xtest.ide.branding}
 ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}
 ${xtest.ide.coverage.args}"/>
 
@@ -295,17 +298,25 @@ It can cause problems when temp files are not deleted if test crashes
     
     <!-- Stops watchdog or prints a message when IDE was killed by watchdog -->
     <target name="finishWatchdog">
-        <java classname="org.netbeans.xtest.plugin.ide.IdeWatchdog" 
+        <java classname="org.netbeans.xtest.plugin.ide.IdeWatchdog" fork="true"
               classpath="${xtest.plugin.home}/lib/xtest-ide-plugin.jar:${xtest.home}/lib/xtest.jar">
             <arg value="${xtest.workdir}"/>
         </java>
     </target>
-    
+
     <target name="ideRunnerWindows" if="is.windows">
         <!-- If nb.exe is available, run it because it prints log messages to the 
-             console. Otherwise run netbeans.exe launcher. -->
+             console. Otherwise run netbeans.exe launcher. If none of them is found,
+             try to find application exe launcher (e.g. paintit.exe). -->
         <available file="${netbeans.dest.dir}/bin/nb.exe" property="xtest.ide.launcher" value="nb.exe"/>
-        <property name="xtest.ide.launcher" value="netbeans.exe"/>
+        <condition property="xtest.ide.launcher" value="netbeans.exe">
+            <available file="${netbeans.dest.dir}/bin/netbeans.exe"/>
+        </condition>
+        <fileset dir="${netbeans.dest.dir}/bin" id="exe.launcher">
+            <include name="*.exe"/>
+            <exclude name="*_w.exe"/>
+        </fileset>
+        <property name="xtest.ide.launcher" refid="exe.launcher"/>
         <ideTestRunner dir="${netbeans.dest.dir}/bin" executable="${netbeans.dest.dir}/bin/${xtest.ide.launcher}"
                 workdir="${xtest.workdir}/sys"
                 failonerror="no" timeout="${xtest.ide.timeout}" ideuserdir="${xtest.userdir}"
@@ -316,7 +327,13 @@ It can cause problems when temp files are not deleted if test crashes
     </target>
     
     <target name="ideRunner" unless="is.windows">
-        <property name="xtest.ide.launcher" value="netbeans"/>
+        <!-- If bin/netbeans is available, run it. Otherwise try to find application 
+             unix launcher (e.g. paintit). -->
+        <available file="${netbeans.dest.dir}/bin/netbeans" property="xtest.ide.launcher" value="netbeans"/>
+        <fileset dir="${netbeans.dest.dir}/bin" id="unix.launcher">
+            <exclude name="*.*"/>
+        </fileset>
+        <property name="xtest.ide.launcher" refid="unix.launcher"/>
         <ideTestRunner dir="${netbeans.dest.dir}/bin" executable="sh"  workdir="${xtest.workdir}/sys"
                 failonerror="no" timeout="${xtest.ide.timeout}" ideuserdir="${xtest.userdir}"
                 enableAssertions="${xtest.enable.assertions}" debugPort="${xtest.debug.port}" debugSuspend="${xtest.debug.suspend}">
@@ -448,7 +465,18 @@ It can cause problems when temp files are not deleted if test crashes
                    property="test.extra.classpath"/>
     </target>
     
-
+    <!-- Inits property xtest.ide.branding when we run tests in module of branded application. -->
+    <target name="init-branding" if="branding.token">
+        <pathconvert property="run.platform.clusters">
+            <path>
+                <pathelement location="${cluster}"/>
+                <dirset dir="${netbeans.dest.dir}" includes="${enabled.clusters}" excludes="platform*"/>
+            </path>
+        </pathconvert>
+        <!-- branding.token is defined in ${suite.dir}/nbproject/project.properties. -->
+        <property name="xtest.ide.branding" value='--branding "${branding.token}" --clusters "${run.platform.clusters}"'/>
+    </target>
+    
     <!-- ====================================================================== -->
     <!-- These targets prepare test data to be extracted to xtest data directory-->
     <!-- ====================================================================== -->
