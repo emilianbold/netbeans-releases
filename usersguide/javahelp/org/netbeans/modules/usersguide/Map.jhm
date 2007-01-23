@@ -407,6 +407,10 @@ under Print Settings in the Options window)
 <!-- Web freeform project node -->
 <mapID target="freeform.node.java.web" url="project/csh/proj_project_window.html" />
 
+<!--Source Packages node-->
+<!--TODO - create specific topic-->
+<mapID target="org.netbeans.spi.java.project.support.ui.PackageView" url="project/csh/proj_project_window.html" />
+
 <!-- EJB standard project node -->
 <mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarLogicalViewProvider$WebLogicalViewRootNode" url="project/csh/proj_project_window.html" />
 
