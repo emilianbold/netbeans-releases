@@ -69,7 +69,7 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
                 if(localHistory != null) {
                     JMenu localHistoryMenu = createVersioningSystemPopup(localHistory, nodes);
                     if(localHistoryMenu != null) {
-                        popups.add(menu);    
+                        popups.add(localHistoryMenu);    
                     }                                    
                 }
             } else {                
