@@ -248,14 +248,15 @@ public class LogTestCase extends NbTestCase {
         list.add(element.getDisplayText());
     }
     
-    protected void dumpRefactoredFiles(PrintWriter out) {
+    protected void dumpRefactoredFiles() {
         
         for (String fileName: refactoredFiles.keySet()) {
-            out.println(fileName);
-            out.println("--------------------");
+            ref(fileName);
+            ref("--------------------");
             for(String text : refactoredFiles.get(fileName)) {
-                out.println(text);
+                ref(text);
             }
+            ref("\n");
         }
     }                
     
