@@ -40,6 +40,12 @@ public final class Problem {
         this.message = message;
     }
     
+    /** Creates new instance of Problem class.
+     * @param fatal Indicates whether the problem is fatal.
+     * @param message Textual description of the problem.
+     * @param details Problem details
+     * @see ProblemDetails
+     */
     public Problem(boolean fatal, String message, ProblemDetails details) {
         this(fatal, message);
         this.details = details;

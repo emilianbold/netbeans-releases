@@ -54,6 +54,7 @@ import org.openide.util.lookup.InstanceContent;
  *  <li>checkParameters() (full check of parameters)
  *  <li>prepare() (collects usages)
  * </ul>
+ * @see RefactoringSession
  * @author Martin Matula, Jan Becicka
  */
 public abstract class AbstractRefactoring {

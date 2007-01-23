@@ -25,6 +25,7 @@ import org.openide.util.lookup.InstanceContent;
 /**
  * Context contains "enviroment" in which the refactoring was invoked
  * e.g. Java refactoring might put instance of ClasspathInfo here
+ * @see AbstractRefactoring
  * @author Jan Becicka
  */
 public final class Context extends AbstractLookup {

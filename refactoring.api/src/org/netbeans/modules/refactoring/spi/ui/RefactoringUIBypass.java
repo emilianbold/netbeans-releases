@@ -28,6 +28,14 @@ import java.io.IOException;
  * operations Copy/Move/Rename for users to be able to do 
  * regular operation (Copy/Move/Rename) instead of refactoring operation
  * (Refactor | Copy, Refactor | Move, Refactor | Rename)
+ * 
+ * For instance UI for Java Rename Refactoring has checkbox 
+ * [ ] Rename Without Refactoring
+ *  
+ * isRefactoringBypassRequired() should return true if and only if
+ * this checkbox is checked.
+ * doRefactoringBypass() implementation does only regular file rename
+ * 
  */
 public interface RefactoringUIBypass {
     

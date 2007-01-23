@@ -30,7 +30,7 @@ import org.netbeans.modules.refactoring.spi.impl.RefactoringPanelContainer;
 import org.openide.windows.TopComponent;
 
 /**
- * Various UI helper methods
+ * Various static UI helper methods
  * @see RefactoringUI
  * @author Jan Becicka
  */
@@ -40,7 +40,8 @@ public final class UI {
     }
 
     /**
-     * Open Refactoring UI for specufied RefactoringUI
+     * Open Refactoring UI for specified RefactoringUI
+     * @see RefactoringUI
      */
     public static void openRefactoringUI(RefactoringUI ui) {
         new RefactoringPanel(ui);
@@ -49,6 +50,7 @@ public final class UI {
     /**
      * Open Refactoring UI for specufied RefactoringUI from specified TopComponent. 
      * callerTC will get focus when refactoring is finished.
+     * @see RefactoringUI
      */
     public static void openRefactoringUI(RefactoringUI ui, TopComponent callerTC) {
         new RefactoringPanel(ui, callerTC);
@@ -60,6 +62,8 @@ public final class UI {
      * @param callback this action will be called when user clicks refresh button
      * @param callerTC which component will get focus when refactoring is finished
      * @param ui this RefactoringUI will open
+     * @see RefactoringUI
+     * @see RefactoringSession
      */
     public static void openRefactoringUI(RefactoringUI ui, RefactoringSession callerTC, Action callback) {
         new RefactoringPanel(ui, callerTC, callback).setVisible(true);

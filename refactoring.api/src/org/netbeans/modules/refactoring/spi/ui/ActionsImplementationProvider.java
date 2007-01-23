@@ -32,7 +32,7 @@ import org.openide.util.Lookup;
  *   if (..one node selected and the node belongs to java...)
  *      return true;
  *   else 
- *      return fals;
+ *      return false;
  * }
  *
  * public Runnable renameImpl(Lookup selectedNodes) {
