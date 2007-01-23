@@ -290,10 +290,15 @@ public final class MimePath {
                             + "\" does not contain '/' character"); //NOI18N
                 }
                 if (mimeType.indexOf('/', slashIndex + 1) != -1) { // more than one slash
-                    throw new IllegalArgumentException("mimeType=\"" + mimeType // NOI18N"
+                    throw new IllegalArgumentException("mimeType=\"" + mimeType // NOI18N
                             + "\" contains more than one '/' character"); //NOI18N
                 }
-
+                if (size() > 0 && getMimeType(size() - 1).equals(mimeType)) {
+                    throw new IllegalArgumentException("Won't create MimePath with " + // NOI18N
+                        "the same consecutive mime types. mimePath=\"" + getPath() + // NOI18N
+                        "\", trying to append mimeType=\"" + mimeType + "\""); //NOI18N
+                }
+                
                 // Construct the mimePath
                 mimePath = new MimePath(this, mimeType);
                 mimeType2mimePathRef.put(mimeType, new SoftReference<MimePath>(mimePath));
