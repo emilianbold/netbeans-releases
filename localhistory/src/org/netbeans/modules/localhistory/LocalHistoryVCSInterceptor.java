@@ -81,7 +81,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     }
 
     public void afterDelete(File file) {      
-        if(!accept(file)) {
+        if(!accept(file, false)) {
             return;
         }
                 
@@ -197,9 +197,15 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     }
 
     private boolean accept(File file) {
-        long now = System.currentTimeMillis();
-        if(file.lastModified() < now - LocalHistorySettings.getTTL()) {
-            return false;
+        return accept(file, true);
+    }    
+    
+    private boolean accept(File file, boolean checkTimestamp) {
+        if(checkTimestamp ) {
+            long now = System.currentTimeMillis();
+            if(file.lastModified() < now - LocalHistorySettings.getTTL()) {
+                return false;
+            }
         }
         
         if(!LocalHistory.getInstance().isManagedByName(file)) {
