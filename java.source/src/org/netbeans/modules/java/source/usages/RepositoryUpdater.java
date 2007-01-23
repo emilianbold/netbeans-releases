@@ -64,6 +64,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ErrorType;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.tools.DiagnosticListener;
@@ -1568,6 +1569,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 rsList = new HashSet<String>();
             }
             final JavaFileObject fobj = fileManager.getJavaFileForOutput(StandardLocation.CLASS_OUTPUT, binaryName, JavaFileObject.Kind.CLASS, source);
+            if ((classSym.asType() instanceof ErrorType) && ((FileObjects.FileBase)fobj).getFile().exists()) {
+                return;
+            }
             final PrintWriter out = new PrintWriter (new OutputStreamWriter(fobj.openOutputStream()));
             try {               
                 SymbolDumper.dump(out,types,classSym,null);
