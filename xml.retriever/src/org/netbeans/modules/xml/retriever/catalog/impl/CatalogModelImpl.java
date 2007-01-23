@@ -37,6 +37,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,12 +54,14 @@ import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel;
+import org.netbeans.modules.xml.retriever.catalog.ProjectCatalogSupport;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Lookup;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSInput;
@@ -70,16 +73,14 @@ import org.xml.sax.SAXException;
  * @author girix
  */
 public class CatalogModelImpl implements CatalogModel {
-    
     protected FileObject catalogFileObject = null;
-    
     private static final Logger logger = Utilities.getLogger();
-    
     /** Creates a new instance of CatalogModelImpl */
     public CatalogModelImpl(Project myProject) throws IOException{
         assert(myProject != null);
         this.catalogFileObject = Utilities.getProjectCatalogFileObject(myProject);
     }
+    
     
     /** Creates a new instance of CatalogModelImpl */
     public CatalogModelImpl(FileObject catalogFileObject) throws IOException{
@@ -87,9 +88,10 @@ public class CatalogModelImpl implements CatalogModel {
         this.catalogFileObject = catalogFileObject;
     }
     
+    
     public CatalogModelImpl(){
-        
     }
+    
     
     /**
      * This constructor is for unit testing purpose only
@@ -102,25 +104,50 @@ public class CatalogModelImpl implements CatalogModel {
         this.catalogFileObject = FileUtil.createData(fo, fileName);
     }
     
-    public ModelSource getModelSource(URI locationURI, ModelSource modelSourceOfSourceDocument) throws CatalogModelException {
+    public synchronized ModelSource getModelSource(URI locationURI,
+            ModelSource modelSourceOfSourceDocument) throws CatalogModelException {
         logger.entering("CatalogModelImpl", "getModelSource", locationURI);
+        Exception exn = null;
+        ModelSource result = null;
+        //selects the correct cataog for use.
         useSuitableCatalogFile(modelSourceOfSourceDocument);
         if(isOrphan())
             return tryOrphanResolution(locationURI, modelSourceOfSourceDocument);
         File absResourceFile = null;
+        FileObject fob = null;
+        if(modelSourceOfSourceDocument != null)
+            fob = (FileObject) modelSourceOfSourceDocument.getLookup().lookup(FileObject.class);
         try {
-            FileObject fob = null;
-            if(modelSourceOfSourceDocument != null)
-                fob = (FileObject) modelSourceOfSourceDocument.getLookup().lookup(FileObject.class);
+            //try to resolve using project wide catalog
             absResourceFile = resolveUsingCatalog(locationURI, fob);
         } catch (IOException ex) {
-            throw new CatalogModelException(ex);
+            exn = ex;
+        } catch(CatalogModelException ex){
+            exn = ex;
         }
-        logger.finer("Found  abs file res:"+absResourceFile);
-        File normalizedFile = org.openide.filesystems.FileUtil.normalizeFile(absResourceFile);
-        FileObject thisFileObj = org.openide.filesystems.FileUtil.toFileObject(normalizedFile);
-        boolean editable = isEditable(absResourceFile);
-        ModelSource result = createModelSource(thisFileObj, editable);
+        if( (absResourceFile == null) || (exn != null) ){
+            //means there was no entry found in catalog or relative path resolution
+            
+            //check in the system wide catalog (Runtime tab), if entry found, return that
+            ModelSource rms = getModelSourceFromSystemWideCatalog(locationURI, modelSourceOfSourceDocument);
+            if(rms != null)
+                return rms;
+            try {
+                //we did not get any matching entry by conventional way..So try retrieve and cache
+                absResourceFile = retrieveCacheAndLookup(locationURI, fob);
+            } catch (IOException ex) {
+                throw new CatalogModelException(ex);
+            }
+        }
+        if(absResourceFile != null){
+            logger.finer("Found  abs file res:"+absResourceFile);
+            File normalizedFile = org.openide.filesystems.FileUtil.normalizeFile(absResourceFile);
+            FileObject thisFileObj = org.openide.filesystems.FileUtil.toFileObject(normalizedFile);
+            boolean editable = isEditable(absResourceFile);
+            result = createModelSource(thisFileObj, editable);
+        }else if(exn!= null) {
+            throw new CatalogModelException(exn);
+        }
         logger.exiting("CatalogModelImpl", "getModelSource", result);
         return result;
     }
@@ -163,6 +190,7 @@ public class CatalogModelImpl implements CatalogModel {
         }
     }
     
+    
     public ModelSource getModelSource(URI locationURI) throws CatalogModelException{
         if(isOrphan()){
             //the originating file does not belong to a project so dont use catalog lookup
@@ -184,9 +212,11 @@ public class CatalogModelImpl implements CatalogModel {
         return ms;
     }
     
+    
     protected CatalogModel createCatalogModel(FileObject fo) throws CatalogModelException{
         return new CatalogModelFactoryImpl().getCatalogModel(fo);
     }
+    
     
     private ModelSource tryOrphanResolution(URI locationURI, ModelSource modelSource){
         logger.entering("CatalogModelImpl", "getModelSource", locationURI);
@@ -220,6 +250,7 @@ public class CatalogModelImpl implements CatalogModel {
         return null;
     }
     
+    
     private boolean isOrphan(){
         if(catalogFileObject == null)
             return true;
@@ -227,22 +258,20 @@ public class CatalogModelImpl implements CatalogModel {
     }
     
     
-    protected File resolveUsingCatalog(URI locationURI, FileObject sourceFileObject) throws CatalogModelException, IOException {
+    protected File resolveUsingCatalog(URI locationURI, FileObject sourceFileObject
+            ) throws CatalogModelException, IOException {
         logger.entering("CatalogModelImpl", "resolveUsingCatalog", locationURI);
         if(locationURI == null)
             return null;
         File result = null;
-        
         result = resolveUsingPublicCatalog(locationURI);
         if(result != null)
             return result;
-        
         if(sourceFileObject != null){
             result = resolveRelativeURI(locationURI,  sourceFileObject);
         }
         if(result != null)
             return result;
-        
         if( (locationURI.isAbsolute()) && locationURI.getScheme().equalsIgnoreCase("file")){
             //try to make a File
             result = new File(locationURI);
@@ -251,9 +280,13 @@ public class CatalogModelImpl implements CatalogModel {
                 return result;
             } else
                 throw new FileNotFoundException(locationURI.toString()+": is absolute but "+result.getAbsolutePath()+" Not Found.");
-            
         }
-        
+        throw new CatalogModelException(locationURI.toString()+" : Entry is not a relative or absolute and catalog entry not found");
+    }
+    
+    
+    private File retrieveCacheAndLookup(URI locationURI, FileObject sourceFileObject) throws IOException, CatalogModelException{
+        File result = null;
         if((locationURI.isAbsolute()) && locationURI.getScheme().toLowerCase().
                 startsWith("http") && !CatalogFileWrapperDOMImpl.TEST_ENVIRONMENT){
             // for all http and https absolute URI, just attempt downloading the
@@ -265,17 +298,14 @@ public class CatalogModelImpl implements CatalogModel {
             }catch (Exception e){//ignore all exceptions
             }
             if(res){
-                //not attempt onec more
+                //now attempt onec more
                 result = resolveUsingPublicCatalog(locationURI);
                 if(result != null)
                     return result;
             }
         }
-        
-        throw new CatalogModelException(locationURI.toString()+" : Entry is not a relative or absolute and catalog entry not found");
+        return result;
     }
-    
-    
     
     protected File resolveUsingPublicCatalog(URI locationURI) throws IOException, CatalogModelException{
         File result = null;
@@ -283,11 +313,9 @@ public class CatalogModelImpl implements CatalogModel {
             //look up in the catalog
             File publicCatalogFile = FileUtil.toFile(catalogFileObject);
             if(publicCatalogFile.isFile()){
-                
                 //return if the file content is empty or just start and end tags
                 if(publicCatalogFile.length() < 20)
                     return null;
-                
                 URI strRes = resolveUsingApacheCatalog(publicCatalogFile, locationURI.toString());
                 if(strRes != null){
                     if(strRes.isAbsolute()){
@@ -332,7 +360,6 @@ public class CatalogModelImpl implements CatalogModel {
     }
     
     
-    
     protected URI resolveUsingApacheCatalog(File catalogFile, String locationURI) throws IOException, CatalogModelException{
         List<File> catalogFileList = new ArrayList<File>();
         catalogFileList.add(catalogFile);
@@ -347,25 +374,18 @@ public class CatalogModelImpl implements CatalogModel {
             Debug debug = CatalogManager.getStaticManager().debug;
             debug.setDebug(logger.getLevel().intValue());
         }
-        
         //Debug debug = CatalogManager.getStaticManager().debug;
         //debug.setDebug(4);
-        /*CatalogManager cm = CatalogManager.getStaticManager();
-        cm.setUseStaticCatalog(false);*/
+       /*CatalogManager cm = CatalogManager.getStaticManager();
+       cm.setUseStaticCatalog(false);*/
         //parse catalog file if its required
-        
         if(reparseRequired(catalogFileList)){
-            
             CatalogManager manager = new CatalogManager(null);
             manager.setUseStaticCatalog(false);
             manager.setPreferPublic(false);
-            
             catalogResolver = new CatalogResolver(manager);
-            
-            
             //catalogResolver = new CatalogResolver(true);
             apacheCatalogResolverObj = catalogResolver.getCatalog();
-            
             for(File catFile : catalogFileList){
                 try {
                     apacheCatalogResolverObj.parseCatalog(catFile.getAbsolutePath());
@@ -374,7 +394,6 @@ public class CatalogModelImpl implements CatalogModel {
                 }
             }
         }
-        
         String result = null;
         try {
             result = apacheCatalogResolverObj.resolveSystem(locationURI);
@@ -414,31 +433,30 @@ public class CatalogModelImpl implements CatalogModel {
     
     long lastModTime = 0;
     protected boolean reparseRequired(List<File> catalogFileList){
-       /* if((apacheCatalogResolverObj == null) || (lastModTime == 0)){
-            //then parse always
-            lastModTime = catalogFileList.get(0).lastModified(); //bother only public catalog for now
-            //System.out.println("Parsing First time: "+lastModTime);
-            return true;
-        }
-        if((apacheCatalogResolverObj != null) && (lastModTime != 0)){
-            if(lastModTime <  catalogFileList.get(0).lastModified()){
-                //System.out.println("Parsing time diff Old: "+lastModTime+" New:"+catalogFileList.get(0).lastModified());
-                lastModTime = catalogFileList.get(0).lastModified();
-                return true;
-            } else{
-                //System.out.println("NOT Parsing time diff Old: "+lastModTime);
-                return false;
-            }
-        }
-        //System.out.println("Parsing Otherwise: "+lastModTime);*/
+      /* if((apacheCatalogResolverObj == null) || (lastModTime == 0)){
+           //then parse always
+           lastModTime = catalogFileList.get(0).lastModified(); //bother only public catalog for now
+           //System.out.println("Parsing First time: "+lastModTime);
+           return true;
+       }
+       if((apacheCatalogResolverObj != null) && (lastModTime != 0)){
+           if(lastModTime <  catalogFileList.get(0).lastModified()){
+               //System.out.println("Parsing time diff Old: "+lastModTime+" New:"+catalogFileList.get(0).lastModified());
+               lastModTime = catalogFileList.get(0).lastModified();
+               return true;
+           } else{
+               //System.out.println("NOT Parsing time diff Old: "+lastModTime);
+               return false;
+           }
+       }
+       //System.out.println("Parsing Otherwise: "+lastModTime);*/
         return true;
     }
+    
     
     boolean isEditable(File absResourceFile) {
         return true;
     }
-    
-    
     
     
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
@@ -450,6 +468,7 @@ public class CatalogModelImpl implements CatalogModel {
             throw new IOException("SystemID not a URL");
         }
     }
+    
     
     private InputSource getInputSource(URI locationURI) throws CatalogModelException, IOException {
         logger.entering("CatalogModelImpl", "getInputSource", locationURI);
@@ -472,7 +491,6 @@ public class CatalogModelImpl implements CatalogModel {
         } catch (URISyntaxException ex) {
             return null;
         }
-        
         FileObject baseFO = null;
         //get the resolver object
         CatalogModelImpl depRez = null;
@@ -500,25 +518,19 @@ public class CatalogModelImpl implements CatalogModel {
         }
         if(resultMS == null)
             return null;
-        
         //get file object
         FileObject resultFob = (FileObject) resultMS.getLookup().lookup(FileObject.class);
         if(resultFob == null)
             return null;
-        
         //get file
         File resultFile = FileUtil.toFile(resultFob);
         if(resultFile == null)
             return null;
-        
         //get URI out of file
         URI resultURI = resultFile.toURI();
-        
-        
         //create LSInput object
         DOMImplementation domImpl = null;
         try {
-            
             domImpl =  DocumentBuilderFactory.newInstance().newDocumentBuilder().getDOMImplementation();
         } catch (ParserConfigurationException ex) {
             return null;
@@ -569,11 +581,12 @@ public class CatalogModelImpl implements CatalogModel {
         return null;
     }
     
+    
     private CatalogModelImpl getResolver(FileObject baseFileObject) throws CatalogModelException{
         return this;
     }
     
-   private Reader getFileStreamFromDocument(File resultFile) {
+    private Reader getFileStreamFromDocument(File resultFile) {
         FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(resultFile));
         if(fo != null){
             DataObject dobj = null;
@@ -594,4 +607,39 @@ public class CatalogModelImpl implements CatalogModel {
         return null;
     }
     
+ 
+    protected File resolveProjectProtocol(URI strRes) {
+        File result = null;
+        Project prj = FileOwnerQuery.getOwner(this.catalogFileObject);
+        if(prj != null){
+            ProjectCatalogSupport pcs = (ProjectCatalogSupport) prj.getLookup().lookup(ProjectCatalogSupport.class);
+            if(pcs.isProjectProtocol(strRes)){
+                FileObject resFO = pcs.resolveProjectProtocol(strRes);
+                if(resFO != null){
+                    return FileUtil.toFile(resFO);
+                }
+            }
+        }
+        return result;
+    }
+    
+    
+    private ModelSource getModelSourceFromSystemWideCatalog(URI locationURI,
+            ModelSource modelSourceOfSourceDocument) {
+        if( (locationURI != null) && locationURI.isAbsolute()){
+            try {
+                Lookup.Template templ = new Lookup.Template(CatalogModel.class);
+                Lookup.Result res = Lookup.getDefault().lookup(templ);
+                Collection impls = res.allInstances();
+                for(Object obj : impls){
+                    CatalogModel cm = (CatalogModel) obj;
+                    return cm.getModelSource(locationURI,
+                            modelSourceOfSourceDocument);
+                }
+            } catch (CatalogModelException ex) {
+            }
+        }
+        return null;
+    }
 }
+
