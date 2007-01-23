@@ -46,6 +46,7 @@ public class HttpSettingsTest extends NbTestCase {
     private Preferences proxyPreferences;
     private static String SILLY_USER_PROXY_HOST = "http://my.webcache";
     private static String SILLY_SYSTEM_PROXY_HOST = "http://system.cache.org";
+    private static String SILLY_SYSTEM_PROXY_PORT = "777//";
     private static String MY_NON_PROXY_HOSTS = "myhost.mydomain.net";
     
     private static String NETBEANS_ORG = "*.netbeans.org";
@@ -105,7 +106,7 @@ public class HttpSettingsTest extends NbTestCase {
             }
         }
         
-        System.setProperty ("netbeans.system_http_proxy", SILLY_SYSTEM_PROXY_HOST + ":" + SYSTEM_PROXY_PORT);
+        System.setProperty ("netbeans.system_http_proxy", SILLY_SYSTEM_PROXY_HOST + ":" + SILLY_SYSTEM_PROXY_PORT);
         synchronized (sync) {
             if (! SILLY_USER_PROXY_HOST.equals (proxyPreferences.get ("proxyHttpHost", ""))) {
                 proxyPreferences.put ("proxyHttpHost", SILLY_USER_PROXY_HOST);
@@ -265,8 +266,8 @@ public class HttpSettingsTest extends NbTestCase {
             }
         }
         assertEquals ("Proxy type MANUAL_SET_PROXY.", ProxySettings.MANUAL_SET_PROXY, ProxySettings.getProxyType ());
-        assertEquals ("Manual Set Proxy Host from ProxySettings: ", SILLY_USER_PROXY_HOST, ProxySettings.getHttpHost ());
-        assertEquals ("Manual Set Proxy Port from ProxySettings: ", USER_PROXY_PORT, ProxySettings.getHttpPort ());
+        assertEquals ("Manual Set Proxy Host from ProxySettings doesn't return SILLY_USER_PROXY_HOST anymore.", USER_PROXY_HOST, ProxySettings.getHttpHost ());
+        assertEquals ("Manual Set Proxy Port from ProxySettings doesn't return SILLY_USER_PROXY_PORT anymore.", USER_PROXY_PORT, ProxySettings.getHttpPort ());
         assertEquals ("Manual Set Proxy Host from System.getProperty(): ", USER_PROXY_HOST, System.getProperty ("http.proxyHost"));
         assertEquals ("Manual Set Proxy Port from System.getProperty(): ", USER_PROXY_PORT, System.getProperty ("http.proxyPort"));
     }
@@ -280,8 +281,8 @@ public class HttpSettingsTest extends NbTestCase {
             }
         }
         assertEquals ("Proxy type AUTO_DETECT_PROXY.", ProxySettings.AUTO_DETECT_PROXY, ProxySettings.getProxyType ());
-        assertEquals ("Auto Detected Proxy Host from ProxySettings: ", SILLY_SYSTEM_PROXY_HOST, ProxySettings.SystemProxySettings.getHttpHost ());
-        assertEquals ("Auto Detected Proxy Port from ProxySettings: ", SYSTEM_PROXY_PORT, ProxySettings.SystemProxySettings.getHttpPort ());
+        assertEquals ("Auto Detected Proxy Host from ProxySettings doesn't return SILLY_SYSTEM_PROXY_HOST anymore.", SYSTEM_PROXY_HOST, ProxySettings.SystemProxySettings.getHttpHost ());
+        assertEquals ("Auto Detected Proxy Port from ProxySettings doesn't return SILLY_SYSTEM_PROXY_PORT anymore.", SYSTEM_PROXY_PORT, ProxySettings.SystemProxySettings.getHttpPort ());
         assertEquals ("System Proxy Host: ", SYSTEM_PROXY_HOST, System.getProperty ("http.proxyHost"));
         assertEquals ("System Proxy Port: ", SYSTEM_PROXY_PORT, System.getProperty ("http.proxyPort"));
     }    

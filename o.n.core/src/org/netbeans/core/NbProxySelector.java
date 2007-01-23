@@ -146,13 +146,13 @@ public final class NbProxySelector extends ProxySelector {
             sHost = EMPTY_VALUE;
             sPort = EMPTY_VALUE;
         } else if (ProxySettings.AUTO_DETECT_PROXY == proxyType) {
-            host = normalizeProxyHost (ProxySettings.SystemProxySettings.getHttpHost ());
+            host = ProxySettings.SystemProxySettings.getHttpHost ();
             port = ProxySettings.SystemProxySettings.getHttpPort ();
             nonProxyHosts = ProxySettings.SystemProxySettings.getNonProxyHosts ();
             sHost = ProxySettings.SystemProxySettings.getSocksHost ();
             sPort = ProxySettings.SystemProxySettings.getSocksPort ();
         } else if (ProxySettings.MANUAL_SET_PROXY == proxyType) {
-            host = normalizeProxyHost (ProxySettings.getHttpHost ());
+            host = ProxySettings.getHttpHost ();
             port = ProxySettings.getHttpPort ();
             nonProxyHosts = ProxySettings.getNonProxyHosts ();
             sHost = ProxySettings.getSocksHost ();
@@ -235,14 +235,6 @@ public final class NbProxySelector extends ProxySelector {
         log.finest ("Set System's socksProxyHost/Port to " + sHost + "/" + sPort);
     }
 
-    private static String normalizeProxyHost (String proxyHost) {
-        if (proxyHost.toLowerCase ().startsWith ("http://")) { // NOI18N
-            return proxyHost.substring (7, proxyHost.length ());
-        } else {
-            return proxyHost;
-        }
-    }
-    
     private boolean dontUseProxy (String nonProxyHosts, String host) {
         if (host == null) return false;
 

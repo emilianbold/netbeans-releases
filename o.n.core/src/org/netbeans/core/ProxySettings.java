@@ -65,7 +65,7 @@ public class ProxySettings {
     }
     
     public static String getHttpHost () {
-        return getPreferences ().get (PROXY_HTTP_HOST, "");
+        return normalizeProxyHost (getPreferences ().get (PROXY_HTTP_HOST, ""));
     }
     
     public static String getHttpPort () {
@@ -190,7 +190,7 @@ public class ProxySettings {
                 return ""; // NOI18N
             }
 
-            return systemProxy.substring (0, i);
+            return normalizeProxyHost (systemProxy.substring (0, i));
         }
 
         private static String getSystemProxyPort () {
@@ -203,8 +203,13 @@ public class ProxySettings {
             if (i <= 0 || i >= systemProxy.length () - 1) {
                 return ""; // NOI18N
             }
+            
+            String p = systemProxy.substring (i + 1);
+            if (p.indexOf ('/') >= 0) {
+                p = p.substring (0, p.indexOf ('/'));
+            }
 
-            return systemProxy.substring (i+1);
+            return p;
         }
 
         private static boolean isSystemSocksServerDetect () {
@@ -317,4 +322,12 @@ public class ProxySettings {
         return reguralProxyHosts.toString();
     }
 
+    private static String normalizeProxyHost (String proxyHost) {
+        if (proxyHost.toLowerCase (Locale.US).startsWith ("http://")) { // NOI18N
+            return proxyHost.substring (7, proxyHost.length ());
+        } else {
+            return proxyHost;
+        }
+    }
+    
 }
