@@ -20,14 +20,22 @@
 package org.netbeans.modules.refactoring.api.ui;
 
 import java.awt.Component;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import javax.swing.Action;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import junit.framework.TestCase;
+import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.java.LogTestCase;
 import org.netbeans.modules.refactoring.spi.impl.ParametersPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -36,7 +44,7 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author Jan Becicka
  */
-public class ActionInvocationTest extends TestCase {
+public class ActionInvocationTest extends LogTestCase {
     
 
     /** Creates a new instance of ActionInstantiationTest */
@@ -44,50 +52,54 @@ public class ActionInvocationTest extends TestCase {
         super(name);
     }
     
-    protected void setUp() {
+    protected void setUp() throws IOException {
+       super.setUp();
        assertEquals(DD.class, Lookup.getDefault().lookup(DialogDisplayer.class).getClass());
     }
     
-//    public void testRenameAction() throws InterruptedException, InvocationTargetException {
-//        final JavaClass clazz = (JavaClass) Utility.findClass("org.netbeans.test.encapsulate.Encapsulate");
-//        Node node = factory.createClassNode(clazz);
-//        
-//        InstanceContent ic = new InstanceContent();
-//        Lookup lookup = new AbstractLookup(ic);
-//        ic.add(node);
-//        final Action rename = RefactoringActionsFactory.renameAction().createContextAwareInstance(lookup);
-//        SwingUtilities.invokeAndWait(new Runnable() {
-//            public void run() {
-//                if (rename.isEnabled()) {
-//                    rename.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
-//                    if (!((RenameRefactoring) DD.rui.getRefactoring()).getRefactoredObject().equals(clazz))
-//                        fail("Rename dialog was opened with wrong data");
-//                } else {
-//                    fail("Action is not enabled.");
-//                }
-//            }
-//        });
-//    }
-//    
-//    public void testMoveAction() throws InterruptedException, InvocationTargetException {
-//        final JavaClass clazz = (JavaClass) Utility.findClass("org.netbeans.test.encapsulate.Encapsulate");
-//        Node node = factory.createClassNode(clazz);
-//        InstanceContent ic = new InstanceContent();
-//        Lookup lookup = new AbstractLookup(ic);
-//        ic.add(node);
-//        final Action move = RefactoringActionsFactory.moveClassAction().createContextAwareInstance(lookup);
-//        SwingUtilities.invokeAndWait(new Runnable() {
-//            public void run() {
-//                if (move.isEnabled()) {
-//                    move.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
-//                    if (!((MoveClassRefactoring) DD.rui.getRefactoring()).getResources().toArray()[0].equals(clazz.getResource()))
-//                        fail("MoveClass was opened with wrong data");
-//                } else {
-//                    fail("Action is not enabled.");
-//                }
-//            }
-//        });
-//    }
+    public void testRenameAction() throws InterruptedException, InvocationTargetException, IOException {
+        final FileObject test = getFileInProject("default","src/defaultpkg/Main.java" );
+        DataObject testdo = DataObject.find(test);
+        final Node node = testdo.getNodeDelegate();
+        
+        InstanceContent ic = new InstanceContent();
+        Lookup lookup = new AbstractLookup(ic);
+        ic.add(node);
+        final Action rename = RefactoringActionsFactory.renameAction().createContextAwareInstance(lookup);
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+                if (rename.isEnabled()) {
+                    rename.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
+                    if (!((RenameRefactoring) DD.rui.getRefactoring()).getRefactoredObject().equals(test))
+                        fail("Rename dialog was opened with wrong data");
+                } else {
+                    fail("Action is not enabled.");
+                }
+            }
+        });
+    }
+    
+    public void testMoveAction() throws InterruptedException, InvocationTargetException, DataObjectNotFoundException, IOException {
+        final FileObject test = getFileInProject("default","src/defaultpkg/Main.java" );
+        DataObject testdo = DataObject.find(test);
+        final Node node = testdo.getNodeDelegate();
+
+        InstanceContent ic = new InstanceContent();
+        Lookup lookup = new AbstractLookup(ic);
+        ic.add(node);
+        final Action move = RefactoringActionsFactory.moveAction().createContextAwareInstance(lookup);
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+                if (move.isEnabled()) {
+                    move.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
+                    if (!((MoveRefactoring) DD.rui.getRefactoring()).getRefactoredObjects()[0].equals(test))
+                        fail("MoveClass was opened with wrong data");
+                } else {
+                    fail("Action is not enabled.");
+                }
+            }
+        });
+    }
     
     public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
         public Lkp () {
@@ -142,5 +154,4 @@ public class ActionInvocationTest extends TestCase {
         }
         
     } // end of DD
-    
 }

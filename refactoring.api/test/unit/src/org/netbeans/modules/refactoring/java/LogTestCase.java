@@ -21,12 +21,20 @@ package org.netbeans.modules.refactoring.java;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.diff.LineDiff;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.netbeans.api.project.ui.OpenProjects;
+
 
 
 /** LogTestCase
@@ -39,6 +47,13 @@ public class LogTestCase extends NbTestCase {
      *       - false - generating goldenfiles
      */
     public static boolean CREATE_GOLDENFILES=false;
+    
+    private FileObject projectDirFo;
+    
+    
+    private boolean backupFiles = true;
+    private static boolean initProjects = true;
+    
     
     static {
         if (System.getProperty("create.goldenfiles") != null && System.getProperty("create.goldenfiles").equals("true")) {
@@ -73,7 +88,10 @@ public class LogTestCase extends NbTestCase {
         prepareProject();
         
         FileObject fo = FileUtil.toFileObject(classPathWorkDir);
-        RepositoryUpdater.getDefault().scheduleCompilationAndWait(fo, fo);
+        if (initProjects) {
+            RepositoryUpdater.getDefault().scheduleCompilationAndWait(fo, fo);
+            initProjects=false;
+        }
         
         try {
             //logs and refs
@@ -168,6 +186,83 @@ public class LogTestCase extends NbTestCase {
                 assertTrue(ex.toString(), false);
             }
         }
+    }
+    
+    public FileObject openProject(String projectName) throws IOException {
+        File projectsDir = FileUtil.normalizeFile(new File(getDataDir(), "projects"));
+        FileObject projectsDirFO = FileUtil.toFileObject(projectsDir);
+        FileObject projdir = projectsDirFO.getFileObject(projectName);
+        Project p = ProjectManager.getDefault().findProject(projdir);
+        OpenProjects.getDefault().open(new Project[]{p}, false);
+        System.out.println(p.getClass().getName());
+        //J2SEProject p2 = (J2SEProject)p;
+        assertNotNull("Project is not opened",p);
+        return projdir;                
+    }
+    
+    private void copyFile(File src,File dst)  {
+        BufferedReader br = null;
+        FileWriter fw = null;
+        try {
+            br = new BufferedReader(new FileReader(src));
+            fw = new FileWriter(dst);
+            String buff;
+            while ((buff=br.readLine())!=null) fw.write(buff+"\n");
+            fw.close();
+            br.close();
+        } catch (IOException ioexception) {
+            ioexception.printStackTrace(log);
+            fail("Error while creating backupfile");
+        } finally {
+            try {
+                if(fw!=null) fw.close();
+                if(br!=null) br.close();
+            } catch (IOException ioexception) {
+                ioexception.printStackTrace(log);
+                fail("Error while closing backupfile");
+            }
+        }
+    }
+    
+    private String getRelativeFileName(FileObject fo) {
+        String relPath = FileUtil.getRelativePath(projectDirFo, fo);
+        String res = relPath.replace('/', '.');
+        if(res.startsWith("src.")) res = res.substring(4);
+        return res;
+    }
+    
+    Map<String,LinkedList<String>> refactoredFiles;
+    
+    protected void addRefactoringElement(RefactoringElement element) throws IOException {
+        FileObject fo = element.getParentFile();
+        String relPath = getRelativeFileName(fo);
+        if(!refactoredFiles.keySet().contains(relPath)) { //new file
+            if(backupFiles) {
+                File fBackUp = new File(getWorkDir(),getRelativeFileName(fo));
+                File oFile = FileUtil.toFile(fo);
+                copyFile(oFile, fBackUp);
+            }
+            refactoredFiles.put(relPath, new LinkedList<String>());
+        }
+        List<String> list = refactoredFiles.get(relPath);
+        list.add(element.getDisplayText());
+    }
+    
+    protected void dumpRefactoredFiles(PrintWriter out) {
+        
+        for (String fileName: refactoredFiles.keySet()) {
+            out.println(fileName);
+            out.println("--------------------");
+            for(String text : refactoredFiles.get(fileName)) {
+                out.println(text);
+            }
+        }
+    }                
+    
+    protected FileObject getFileInProject(String project,String file) throws IOException {
+        projectDirFo = openProject(project);
+        FileObject test = projectDirFo.getFileObject(file);
+        return test;
     }
         
 }
