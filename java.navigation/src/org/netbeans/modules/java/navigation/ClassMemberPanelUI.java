@@ -162,7 +162,11 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     // FilterChangeListener ----------------------------------------------------
     
     public void filterStateChanged(ChangeEvent e) {
-        getRootNode().refreshRecursively();
+        ElementNode root = getRootNode();
+        
+        if ( root != null ) {
+            root.refreshRecursively();
+        }
     }
     
     /** This method is called from within the constructor to
