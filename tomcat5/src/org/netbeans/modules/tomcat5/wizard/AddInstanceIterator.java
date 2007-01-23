@@ -28,6 +28,7 @@ import java.util.Properties;
 import java.util.Set;
 import javax.swing.JComponent;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
 import org.openide.DialogDisplayer;
@@ -160,37 +161,56 @@ public class AddInstanceIterator implements WizardDescriptor.InstantiatingIterat
         boolean setclasspathOK = new File(homeDir, "bin/" + SETCLASSPATH).exists(); // NOI18N
 
         if (!catalinaOK || !setclasspathOK) {
-            String msg = null;
-            if (!catalinaOK && !setclasspathOK) {
-                msg = NbBundle.getMessage(AddInstanceIterator.class, "MSG_no_startup_scripts", CATALINA, SETCLASSPATH);
+            File bundledHome = TomcatInstallUtil.getBundledHome();
+            // INFO: DO NOT FORGET TO CHANGE THE BUNDLED TOMCAT VERSION (AND THE VERSION STRING BELLOW) WHEN UPGRADING
+            //       5.5.17  - hopefully this string helps not to miss it;)
+            if (tomcatVersion != TomcatManager.TomcatVersion.TOMCAT_55 
+                    || bundledHome == null || !bundledHome.exists()) {
+                // If there is no bundled Tomcat or the being installed Tomcat is a different
+                // version, there is no place where to get the startup scripts from. Lets inform 
+                // the user about the problem at least.
+                String msg;
+                if (!catalinaOK && !setclasspathOK) {
+                    msg = NbBundle.getMessage(AddInstanceIterator.class, "MSG_no_startup_scripts_fix_by_hand", CATALINA, SETCLASSPATH);
+                } else {
+                    msg = NbBundle.getMessage(AddInstanceIterator.class, "MSG_no_startup_script_fix_by_hand", !catalinaOK ? CATALINA : SETCLASSPATH);
+                }
+                NotifyDescriptor nd = new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notify(nd);
             } else {
-                msg = NbBundle.getMessage(AddInstanceIterator.class, "MSG_no_startup_script", !catalinaOK ? CATALINA : SETCLASSPATH);
-            }
-            NotifyDescriptor nd =
-                    new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
-            if (DialogDisplayer.getDefault().notify(nd).equals(NotifyDescriptor.YES_OPTION)) {
-                try {
-                    File bundledHome = TomcatInstallUtil.getBundledHome();
-                    if (bundledHome != null) {
-                        if (!catalinaOK) {
-                            FileUtil.copyFile(
-                                FileUtil.toFileObject(new File(bundledHome, "bin/" + CATALINA)), // NOI18N
-                                FileUtil.toFileObject(new File(homeDir, "bin")),    // NOI18N
-                                CATALINA.substring(0, CATALINA.indexOf("."))    // NOI18N
-                            );
+                // The IDE can copy the startup scripts for the user, lets ask
+                // him whether to do it or not.
+                String msg;
+                if (!catalinaOK && !setclasspathOK) {
+                    msg = NbBundle.getMessage(AddInstanceIterator.class, "MSG_no_startup_scripts", CATALINA, SETCLASSPATH);
+                } else {
+                    msg = NbBundle.getMessage(AddInstanceIterator.class, "MSG_no_startup_script", !catalinaOK ? CATALINA : SETCLASSPATH);
+                }
+                NotifyDescriptor nd =
+                        new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
+                if (DialogDisplayer.getDefault().notify(nd).equals(NotifyDescriptor.YES_OPTION)) {
+                    try {
+                        if (bundledHome != null) {
+                            if (!catalinaOK) {
+                                FileUtil.copyFile(
+                                    FileUtil.toFileObject(new File(bundledHome, "bin/" + CATALINA)), // NOI18N
+                                    FileUtil.toFileObject(new File(homeDir, "bin")),    // NOI18N
+                                    CATALINA.substring(0, CATALINA.indexOf("."))    // NOI18N
+                                );
+                            }
+                            if (!setclasspathOK) {
+                                FileUtil.copyFile(
+                                    FileUtil.toFileObject(new File(bundledHome, "bin/" + SETCLASSPATH)), // NOI18N
+                                    FileUtil.toFileObject(new File(homeDir, "bin")),        // NOI18N
+                                    SETCLASSPATH.substring(0, SETCLASSPATH.indexOf("."))    // NOI18N
+                                );
+                            }
                         }
-                        if (!setclasspathOK) {
-                            FileUtil.copyFile(
-                                FileUtil.toFileObject(new File(bundledHome, "bin/" + SETCLASSPATH)), // NOI18N
-                                FileUtil.toFileObject(new File(homeDir, "bin")),        // NOI18N
-                                SETCLASSPATH.substring(0, SETCLASSPATH.indexOf("."))    // NOI18N
-                            );
-                        }
+                    } catch (IOException e) {
+                        msg = NbBundle.getMessage(AddInstanceIterator.class, "MSG_startup_scripts_copy_failed");
+                        nd = new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE);
+                        DialogDisplayer.getDefault().notify(nd);
                     }
-                } catch (IOException e) {
-                    msg = NbBundle.getMessage(AddInstanceIterator.class, "MSG_startup_scripts_copy_failed");
-                    nd = new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE);
-                    DialogDisplayer.getDefault().notify(nd);
                 }
             }
         }
