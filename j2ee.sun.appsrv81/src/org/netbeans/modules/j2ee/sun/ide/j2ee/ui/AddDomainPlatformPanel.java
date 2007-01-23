@@ -58,7 +58,7 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
             File defaultLoc = new File(System.getProperty("user.home"));//NOI18N
             if (f!=null && f.exists()) {
                 defaultLoc = f;
-            }
+            } 
             component = new AddInstanceVisualPlatformPanel(defaultLoc);
             component.addChangeListener(this);
         }
@@ -102,8 +102,8 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
                 // not valid install directory
                 wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(AddDomainPlatformPanel.class,
-                        "Msg_InValidInstall"));
-            }// NOI18N
+                        "Msg_InValidInstall")); // NOI18N
+            }
             component.setDomainsList(new Object[0]);
             retVal = false;
         } else if (retVal) {
