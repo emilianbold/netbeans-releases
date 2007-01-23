@@ -64,9 +64,14 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
                 fireChangeEvent();
             }
         });
-        type = AddDomainWizardIterator.DEFAULT;
         platformField.setText(defaultLoc.getAbsolutePath());
-        registerDefault.setSelected(true);
+        if (defaultLoc.canWrite()) {
+            type = AddDomainWizardIterator.DEFAULT;
+            registerDefault.setSelected(true);
+        } else {
+            type = AddDomainWizardIterator.PERSONAL;
+            createPersonal.setSelected(true);
+        }
         instanceSelector.setModel(new ComboBoxModel() {
             public void addListDataListener(ListDataListener listDataListener) {
             }
