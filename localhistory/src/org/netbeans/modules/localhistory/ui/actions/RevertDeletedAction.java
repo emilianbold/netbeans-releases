@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.localhistory.ui.actions;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

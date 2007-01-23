@@ -129,7 +129,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         if(parent != null) {
             writeHistory(parent, new HistoryEntry[] {new HistoryEntry(ts, from, to, TOUCHED)});                        
         }
-        fireChanged(file);        
+        fireChanged(null, file);        
     }
     
     public synchronized void fileChange(File file, long ts) { 
@@ -150,7 +150,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
             }            
         } 
-        fireChanged(file);        
+        fireChanged(null, file);        
     }
     
     public synchronized void fileDelete(File file, long ts) {
@@ -163,7 +163,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
         }      
-        fireChanged(file);        
+        fireChanged(null, file);        
     }
 
     private void fileDeleteImpl(File file, String from, String to, long ts) throws IOException {        
@@ -200,7 +200,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
         }
-        fireChanged(to);        
+        fireChanged(null, to);        
     }
 
     // XXX merge with create
@@ -214,7 +214,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
         }        
-        fireChanged(from);        
+        fireChanged(null, from);        
     }    
 
     private long lastModified(File file) {   
@@ -267,7 +267,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             storeFile.delete();    
         }                
         // XXX delete from parent history    
-        fireChanged(file);        
+        fireChanged(file, null);        
     }
 
     public synchronized StoreEntry[] getDeletedFiles(File file) {
@@ -517,13 +517,13 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         return newEntries.size() < 1;
     }
     
-    private void fireChanged(File file) {
+    private void fireChanged(File oldValue, File newValue) {
         propertyChangeSupport.firePropertyChange(
             new PropertyChangeEvent(
                     this, 
                     LocalHistoryStore.PROPERTY_CHANGED, 
-                    null, 
-                    file));
+                    oldValue, 
+                    newValue));
     }        
     
     private void touch(File file, StoreDataFile data) throws IOException {      
@@ -637,6 +637,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         return emptyLabels;
     }
             
+    // XXX do we need this?
     private void writeHistory(File file, HistoryEntry[] entries) { // XXX int action
         File history = getHistoryFile(file);
         DataOutputStream dos = null;
