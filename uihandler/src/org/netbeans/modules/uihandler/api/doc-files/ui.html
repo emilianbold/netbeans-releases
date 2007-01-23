@@ -236,36 +236,47 @@
     - e.g. in develpment builds to common "Unexpected Exception Dialog" is shown,
     in releases a blinking icon at the lower right corner starts to blink and
     when clicked the dialog is shown. However in contrast to previous versions,
-    there is a new button <q>_R_eport Problem</q> in the dialog. When clicked it 
+    there is a new button <q>_R_eport Exception</q> in the dialog. When clicked it 
     opens following dialog:
 </p>
 
 <pre>
 +-------------------------------------------------------------------------------+
-| UI Gestures Collector                                                       X |
+|   Report Exception                                                          X |
 +-------------------------------------------------------------------------------+
-|                                                                               |
-|                                                                               |
-|                                                                               |
-|                                                                               |
-|                                                                               |
-|                                                                               |
-|                                                                               |
-|         An <a href="http://logger.netbeans.org/nonav/welcome/error.html">HTML page</a> describing that an exception happened and that it        |
-|      would be reasonably to report it by submitting the data to the server    |
-|                                                                               |
-|                                                                               |
-|                                                                               |
-|                                                                               |
-|                                                                               |
-|                                                                               |
-|                                                                               |
-|                                                                               |
-|                                                                               |
-|               [[_S_ubmit Data]] [[_V_iew Data]]  [[_C_ancel]]                 | 
+|  You need to be a registered member of NetBeans.org.                          |
+|  If you're not registered, <a href="http://www.netbeans.org/servlets/Join">register here</a>.                                     |
+|  YourNetBeans.org username: |_______________________|                         |
+|  ---------------------------------------------------------------------------  |
+|  Component:     |__________________________________M|                         |
+|  Subcomponent:  |__________________________________M|                         |
+|  ---------------------------------------------------------------------------  |
+|  Summary:       |___________________________________|                         |
+|  Describe what you were doing when the exception occured:                     |
+|   _________________________________________________________________________   |
+|  |                                                                         |  |
+|  |                                                                         |  |
+|  |                                                                         |  |
+|  |                                                                         |  |
+|  |                                                                         |  |
+|  |                                                                         |  |
+|  |                                                                         |  |
+|  |                                                                         |  |
+|  |_________________________________________________________________________|  |
+|  [[_V_iew Data]]                             [[_S_ubmit Data]]  [[_C_ancel]]  | 
 +-------------------------------------------------------------------------------+
 </pre>
-
+<p>
+ Username is needed, because we want to be able to contact the user when 
+ resolving an issue. Component and Subcomponent comboboxes contain all 
+ the components and subcomponents of NetBeans and one for each of them is suggested 
+ aumatically according to exception stacktrace. User doesn't have to change
+ these boxes, but he can do so if he recognizes wrong suggestion. Summary is 
+ going to be initially set to exception class and exception message, if there
+ is some, but we are giving user a possibility to change this item as well.
+ The only thing(except username) we need user to fill is a description what he was 
+ doing when the exception occured.
+</p>
 </body>
     
 </html>
