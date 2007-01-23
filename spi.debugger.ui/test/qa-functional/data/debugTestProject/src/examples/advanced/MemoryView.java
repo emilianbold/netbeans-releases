@@ -59,7 +59,7 @@ public class MemoryView extends Helper {
         Map tmap=new TreeMap();
         Set hset=new HashSet();
         Set tset=new TreeSet();
-        for (int i=0; i<n; i++) {
+        for (int i=0;i < n; i++) {
             String s=i+". item";
             llist.add(s);
             alist.add(s);

@@ -70,7 +70,7 @@ public class LocalVariables extends JellyTestCase {
         javaNode.select();
         javaNode.performPopupAction(Utilities.openSourceAction);
         Utilities.sleep(2000);
-        Utilities.setCaret(45, 1);
+        //Utilities.setCaret(45, 1);
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runToCursorItem).toString(), null).perform();
         new Action(null, null, Utilities.runToCursorShortcut).performShortcut();
         MainWindowOperator.getDefault().waitStatusText("Thread main stopped at MemoryView.java:45.");
@@ -122,7 +122,7 @@ public class LocalVariables extends JellyTestCase {
     }
         
     public void testLocalVariablesExtended() {
-        Utilities.setCaret(70, 1);
+        //Utilities.setCaret(70, 1);
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runToCursorItem).toString(), null).perform();
         new Action(null, null, Utilities.runToCursorShortcut).performShortcut();
         MainWindowOperator.getDefault().waitStatusText("Thread main stopped at MemoryView.java:70.");
@@ -202,7 +202,7 @@ public class LocalVariables extends JellyTestCase {
     }
     
     public void testLocalVariablesValues() {
-        Utilities.setCaret(98, 1);
+        //Utilities.setCaret(98, 1);
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runToCursorItem).toString(), null).perform();
         new Action(null, null, Utilities.runToCursorShortcut).performShortcut();
         MainWindowOperator.getDefault().waitStatusText("Thread main stopped at MemoryView.java:98.");

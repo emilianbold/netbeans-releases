@@ -21,14 +21,11 @@
 
 package gui.debuggercore;
 
-import junit.textui.TestRunner;
 import org.openide.nodes.Node;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.JavaNode;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.util.PNGEncoder;
@@ -86,7 +83,7 @@ public class Watches extends JellyTestCase {
         javaNode.select();
         javaNode.performPopupAction(Utilities.openSourceAction);
         Utilities.sleep(2000);
-        Utilities.setCaret(70, 1);
+        //Utilities.setCaret(70, 1);
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runToCursorItem).toString(), null).perform();
         new Action(null, null, Utilities.runToCursorShortcut).performShortcut();
         MainWindowOperator.getDefault().waitStatusText("Thread main stopped at MemoryView.java:70.");
@@ -321,7 +318,7 @@ public class Watches extends JellyTestCase {
     }        
     
     public void testWatchesValues() {
-        Utilities.setCaret(98, 1);
+        //Utilities.setCaret(98, 1);
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runToCursorItem).toString(), null).perform();
         new Action(null, null, Utilities.runToCursorShortcut).performShortcut();
         MainWindowOperator.getDefault().waitStatusText("Thread main stopped at MemoryView.java:98.");

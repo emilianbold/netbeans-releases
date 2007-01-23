@@ -68,7 +68,7 @@ public class Views extends JellyTestCase {
     }
     
     public void testViewsDefaultOpen() {
-        Utilities.toggleBreakpoint(86);
+        //Utilities.toggleBreakpoint(86);
         Utilities.startDebugger("Breakpoint hit at line 86 in class examples.advanced.MemoryView by thread main.");
         Utilities.sleep(1000);
         assertNotNull("Local variables view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.localVarsViewTitle, 0));
