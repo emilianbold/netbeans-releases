@@ -177,8 +177,12 @@ public abstract class Anchor implements Widget.Dependency {
      * @return the scene location; null if no related widget is assigned
      */
     public Point getRelatedSceneLocation () {
-        if (relatedWidget != null)
-            return GeomUtil.center (relatedWidget.convertLocalToScene (relatedWidget.getBounds ()));
+        if (relatedWidget != null) {
+            Rectangle bounds = relatedWidget.getBounds ();
+            if (bounds != null)
+                throw new IllegalStateException ("Widget (" + relatedWidget + ") was not added into the scene");
+            return GeomUtil.center (relatedWidget.convertLocalToScene (bounds));
+        }
         assert false : "Anchor.getRelatedSceneLocation has to be overridden when a related widget is not used";
         return null;
     }
