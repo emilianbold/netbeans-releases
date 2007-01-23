@@ -66,6 +66,8 @@ install: build
 
 	# platform
 	mkdir -p $(CURDIR)/debian/netbeans5.5-platform$(NBROOT)
+	#Remove Windows/OS2 specific files
+	rm $(BUILD)/platform6/lib/nbexec.cmd
 	cp -r $(BUILD)/platform6 $(CURDIR)/debian/netbeans5.5-platform$(NBROOT)/
 	mkdir -p $(CURDIR)/debian/netbeans5.5-platform/usr/share/doc/netbeans5.5-platform/
 	mv $(CURDIR)/debian/netbeans5.5-platform$(NBROOT)/platform6/*.txt $(CURDIR)/debian/netbeans5.5-platform/usr/share/doc/netbeans5.5-platform/
@@ -77,8 +79,20 @@ install: build
 
 	# IDE
 	mkdir -p $(CURDIR)/debian/netbeans5.5$(NBROOT)
+	#Remove Windows/OS2 specific files
+	rm $(BUILD)/enterprise3/apache-tomcat-5.5.17/bin/*.bat
+	rm $(BUILD)/enterprise3/apache-tomcat-5.5.17/bin/*.exe
+	rm $(BUILD)/ide7/ant/bin/*.bat
+	rm $(BUILD)/ide7/ant/bin/*.cmd
+	rm $(BUILD)/bin/netbeans.cmd
+	rm $(BUILD)/bin/nb.exe
+	rm $(BUILD)/bin/netbeans.exe
 	cp -r $(BUILD)/* $(CURDIR)/debian/netbeans5.5$(NBROOT)/
 	rm -r $(CURDIR)/debian/netbeans5.5$(NBROOT)/platform6
+	#Version specific manpage
+	mkdir -p $(CURDIR)/debian/netbeans5.5$(NBROOT)/man
+	cp $(CURDIR)/debian/netbeans.1 $(CURDIR)/debian/netbeans5.5$(NBROOT)/man
+	gzip $(CURDIR)/debian/netbeans5.5$(NBROOT)/man/netbeans.1
 	mkdir -p $(CURDIR)/debian/netbeans5.5/usr/share/doc/netbeans5.5/
 	mv $(CURDIR)/debian/netbeans5.5$(NBROOT)/*.txt $(CURDIR)/debian/netbeans5.5/usr/share/doc/netbeans5.5/
 	mv $(CURDIR)/debian/netbeans5.5$(NBROOT)/*.html $(CURDIR)/debian/netbeans5.5/usr/share/doc/netbeans5.5/
@@ -88,6 +102,7 @@ install: build
 	cp $(CURDIR)/debian/extra/netbeans.desktop $(CURDIR)/debian/netbeans5.5/usr/share/applications/netbeans.desktop
 
 	mkdir -p $(CURDIR)/debian/netbeans5.5/usr/bin
+        #Created using alternatives
 	ln -sf $(NBROOT)/bin/netbeans $(CURDIR)/debian/netbeans5.5/usr/bin/netbeans
 
 	# replace bundled jars with links to jars from packages
