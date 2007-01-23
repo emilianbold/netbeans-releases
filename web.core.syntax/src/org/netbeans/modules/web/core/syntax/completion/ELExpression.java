@@ -38,6 +38,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -100,18 +101,26 @@ public class ELExpression {
         BaseDocument document = sup.getDocument();
         document.readLock();
         try {
-            
-            int tunedOffset = offset > 0 ? offset-1 : offset;
-            
             TokenHierarchy hi = TokenHierarchy.get(document);
-            TokenSequence ts = JspSyntaxSupport.tokenSequence(hi, ELTokenId.language(), tunedOffset);
+            TokenSequence ts = JspSyntaxSupport.tokenSequence(hi, ELTokenId.language(), offset);
             if(ts == null) {
                 //no EL token sequence
                 return EL_UNKNOWN;
             }
-            int diff = ts.move(tunedOffset);
-            if(diff == Integer.MAX_VALUE) {
-                return EL_START; //TODO: why?
+            
+            TokenSequence jspTokenSequence = hi.tokenSequence();
+            jspTokenSequence.move(offset);
+            Token jspToken = jspTokenSequence.token();
+            isDefferedExecution = jspToken.text().toString().startsWith("#{"); //NOI18N
+            
+            if (jspToken.id() == JspTokenId.EL){
+                if (offset == jspToken.offset(hi) + "${".length()){ //NOI18N
+                    return EL_START;
+                }
+            }
+            
+            if(ts.move(offset) == Integer.MAX_VALUE) {
+                return NOT_EL;
             }
             
             // Find the start of the expression. It doesn't have to be an EL delimiter (${ #{)
@@ -128,8 +137,13 @@ public class ELExpression {
                         replace="";
                         middle = true;
                     } else if (token.text().length() >= (offset-token.offset(hi))){
-                        value = value.substring(0, offset-token.offset(hi));
-                        replace = value;
+                        if (token.offset(hi) <= offset){
+                            value = value.substring(0, offset-token.offset(hi));
+                            replace = value;
+                        } else {
+                            // cc invoked within EL delimiter
+                            return NOT_EL;
+                        }
                     }
                 } else {
                     value = token.text().toString() + value;
@@ -148,15 +162,7 @@ public class ELExpression {
                 } else
                     if (value != null){
                         result = findContext(value);
-                    }
-            
-            // move to the beginning 
-            TokenSequence jspTokenSequence = hi.tokenSequence();
-            
-            if (jspTokenSequence.move(token.offset(hi)) != Integer.MAX_VALUE){
-                isDefferedExecution = jspTokenSequence.token().text().toString().startsWith("#{"); //NOI18N
-            }
-            
+                    } 
         } finally {
             document.readUnlock();
         }
