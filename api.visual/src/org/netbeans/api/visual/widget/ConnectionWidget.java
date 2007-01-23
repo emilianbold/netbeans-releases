@@ -74,6 +74,7 @@ public class ConnectionWidget extends Widget {
     private ConnectionWidgetLayout connectionWidgetLayout;
     private Stroke stroke;
     private boolean paintControlPoints;
+    private Color lineColor;
 
     private Anchor.Entry sourceEntry;
     private Anchor.Entry targetEntry;
@@ -104,7 +105,7 @@ public class ConnectionWidget extends Widget {
      * @param state the new state
      */
     public void notifyStateChanged (ObjectState previousState, ObjectState state) {
-        setForeground (getScene ().getLookFeel ().getLineColor (state));
+        setForeground (lineColor != null ? lineColor : getScene ().getLookFeel ().getLineColor (state));
         setPaintControlPoints (state.isSelected ());
     }
 
@@ -112,7 +113,7 @@ public class ConnectionWidget extends Widget {
      * Returns a stroke of the connection widget.
      * @return the stroke
      */
-    public Stroke getStroke () {
+    public final Stroke getStroke () {
         return stroke;
     }
 
@@ -120,17 +121,35 @@ public class ConnectionWidget extends Widget {
      * Sets a stroke.
      * @param stroke the stroke
      */
-    public void setStroke (Stroke stroke) {
+    public final void setStroke (Stroke stroke) {
         assert stroke != null;
         this.stroke = stroke;
         repaint (); // TODO - check when to revalidate and when to repaint only
     }
 
     /**
+     * Returns line color of the widget.
+     * @return the line color; null if no line color is specified
+     */
+    public final Color getLineColor () {
+        return lineColor;
+    }
+
+    /**
+     * Sets a line color of the widget.
+     * @param lineColor the line color; if null, then the line color will be resolved from LookFeel of the scene.
+     */
+    public final void setLineColor (Color lineColor) {
+        this.lineColor = lineColor;
+        ObjectState state = getState ();
+        notifyStateChanged (state, state);
+    }
+
+    /**
      * Returns whether the control (and end) points are painted
      * @return true, if the control points (and end points) are painted
      */
-    public boolean isPaintControlPoints () {
+    public final boolean isPaintControlPoints () {
         return paintControlPoints;
     }
 
@@ -138,7 +157,7 @@ public class ConnectionWidget extends Widget {
      * Sets whether the control (and end) points are painted
      * @param paintControlPoints
      */
-    public void setPaintControlPoints (boolean paintControlPoints) {
+    public final void setPaintControlPoints (boolean paintControlPoints) {
         this.paintControlPoints = paintControlPoints;
         repaint ();
     }
