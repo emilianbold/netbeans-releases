@@ -141,7 +141,7 @@ public class CreateBundleAction extends WizardAction {
                 
                 final List<Platform> platforms = component.getSupportedPlatforms();
                 final String uriPrefix =
-                        "resource:" +
+                        FileProxy.RESOURCE_SCHEME_PREFIX +
                         Installer.DATA_DIRECTORY + "/" +
                         component.getUid() + "/" +
                         component.getVersion() + "/" +

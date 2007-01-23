@@ -63,8 +63,11 @@ public abstract class StringUtils {
     public static final String CRLFCRLF = CRLF + CRLF;
     public static final String SPACE = " ";
     
+    public static final String NEW_LINE_PATTERN = "(?:\r\n|\n|\r)";
+    
     private static final String LEFT_WHITESPACE  = "^\\s+";
     private static final String RIGHT_WHITESPACE = "\\s+$";
+    
     
     private static final char   MNEMONIC_CHAR    = '&';
     private static final String MNEMONIC         = "&";
@@ -364,7 +367,7 @@ public abstract class StringUtils {
             int read = stream.read(buffer);
             
             String readString = new String(buffer, 0, read);
-            for(String string : readString.split("(?:\r\n|\n|\r)")) {
+            for(String string : readString.split(NEW_LINE_PATTERN)) {
                 builder.append(string).append(SystemUtils.getLineSeparator());
             }
         }

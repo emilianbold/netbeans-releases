@@ -65,13 +65,15 @@ public class Wizard {
             "nbi.wizard.components.instance.uri";
     
     public static final String DEFAULT_COMPONENTS_INSTANCE_URI =
-            "resource:org/netbeans/installer/wizard/wizard-components.xml";
+            FileProxy.RESOURCE_SCHEME_PREFIX +
+            "org/netbeans/installer/wizard/wizard-components.xml";
     
     public static final String COMPONENTS_SCHEMA_URI_PROPERTY =
             "nbi.wizard.components.schema.uri";
     
     public static final String DEFAULT_COMPONENTS_SCHEMA_URI =
-            "resource:org/netbeans/installer/wizard/wizard-components.xsd";
+            FileProxy.RESOURCE_SCHEME_PREFIX +
+            "org/netbeans/installer/wizard/wizard-components.xsd";
     
     public static final String SILENT_MODE_ACTIVE_PROPERTY =
             "nbi.wizard.silent.mode.active";

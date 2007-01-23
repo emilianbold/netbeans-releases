@@ -553,10 +553,11 @@ public class Installer {
     }
     
     private void cacheEngineJar() throws IOException, DownloadException {
-        File engCont = FileProxy.getInstance().getFile("resource:" + ENGINE_JAR_CONTENT_LIST);
-        
-        List <String> entries = FileUtils.readStringList(engCont);
-        
+        LogManager.log(MESSAGE, "... starting copying engine content to the new jar file");
+        String [] entries = StreamUtils.readStream(
+                ResourceUtils.getResource(ENGINE_JAR_CONTENT_LIST)).
+                toString().split(StringUtils.NEW_LINE_PATTERN);
+                
         File dest = getCacheExpectedFile();
         
         JarOutputStream jos = null;
@@ -566,21 +567,21 @@ public class Installer {
                     DEFAULT_INSTALLER_MANIFEST.getBytes()));
             dest.getParentFile().mkdirs();
             jos = new JarOutputStream(new FileOutputStream(dest),mf);
-            
-            for(int i=0;i<entries.size();i++) {
-                String name = entries.get(i);
+            LogManager.log(MESSAGE, "... total entries : " + entries.length);
+            for(int i=0;i<entries.length;i++) {
+                String name = entries[i];
                 if(name.length() > 0 && !name.startsWith(DATA_DIRECTORY)) {
                     jos.putNextEntry(new JarEntry(name));
-                    if(!name.endsWith("/")) {
+                    if(!name.endsWith(StringUtils.FORWARD_SLASH)) {
                         StreamUtils.transferData(ResourceUtils.getResource(name), jos);
                     }
                 }
             }
+            LogManager.log(MESSAGE, "... adding content list and some other stuff");
+            jos.putNextEntry(new JarEntry(DATA_DIRECTORY + StringUtils.FORWARD_SLASH));            
             
-            jos.putNextEntry(new JarEntry(DATA_DIRECTORY + "/"));
-            
-            
-            jos.putNextEntry(new JarEntry(DATA_DIRECTORY + "/bundled-product-registry.xml"));
+            jos.putNextEntry(new JarEntry(DATA_DIRECTORY + StringUtils.FORWARD_SLASH + 
+                    "bundled-product-registry.xml"));
             
             Document doc = Registry.getInstance().getEmptyRegistryDocument();
             Registry.getInstance().saveRegistryDocument(doc,jos);
@@ -621,7 +622,7 @@ public class Installer {
         String jarSep = "!/";
         
         try {
-            String installerResource = "org/netbeans/installer/Installer.class";
+            String installerResource = Installer.class.getName().replace(".","/") + ".class";
             URL url = this.getClass().getClassLoader().getResource(installerResource);
             if(url == null) {
                 throw new IOException("No main Installer class in the engine");

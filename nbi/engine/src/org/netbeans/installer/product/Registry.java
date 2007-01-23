@@ -1185,19 +1185,22 @@ public class Registry {
             "nbi.product.local.registry.file.name";
     
     public static final String DEFAULT_LOCAL_PRODUCT_REGISTRY_STUB_URI =
-            "resource:org/netbeans/installer/product/default-product-registry.xml";
+            FileProxy.RESOURCE_SCHEME_PREFIX + 
+            "org/netbeans/installer/product/default-product-registry.xml";
     
     public static final String LOCAL_PRODUCT_REGISTRY_STUB_PROPERTY =
             "nbi.product.local.registry.stub";
     
     public static final String DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI =
-            "resource:" + Installer.DATA_DIRECTORY + "/bundled-product-registry.xml";
+            FileProxy.RESOURCE_SCHEME_PREFIX + 
+            Installer.DATA_DIRECTORY + "/bundled-product-registry.xml";
     
     public static final String BUNDLED_PRODUCT_REGISTRY_URI_PROPERTY =
             "nbi.product.bundled.registry.uri";
     
     public static final String DEFAULT_PRODUCT_REGISTRY_SCHEMA_URI =
-            "resource:org/netbeans/installer/product/product-registry.xsd";
+            FileProxy.RESOURCE_SCHEME_PREFIX +
+            "org/netbeans/installer/product/product-registry.xsd";
     
     public static final String PRODUCT_REGISTRY_SCHEMA_URI_PROPERTY =
             "nbi.product.registry.schema.uri";
@@ -1221,10 +1224,12 @@ public class Registry {
             "nbi.state.file.schema.uri";
     
     public static final String DEFAULT_STATE_FILE_SCHEMA_URI =
-            "resource:org/netbeans/installer/product/state-file.xsd";
+            FileProxy.RESOURCE_SCHEME_PREFIX +
+            "org/netbeans/installer/product/state-file.xsd";
     
     public static final String DEFAULT_STATE_FILE_STUB_URI =
-            "resource:org/netbeans/installer/product/default-state-file.xml";
+            FileProxy.RESOURCE_SCHEME_PREFIX +
+            "org/netbeans/installer/product/default-state-file.xml";
     
     public static final String STATE_FILE_STUB_PROPERTY =
             "nbi.state.file.stub";

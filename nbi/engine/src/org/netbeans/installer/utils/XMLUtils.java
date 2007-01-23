@@ -72,8 +72,10 @@ public abstract class XMLUtils {
     private static final String ATTR_DELIM  = "=";
     private static final String ATTRS_DELIM = " and ";
     
+    public static final String XSLT_REFORMAT_RESOURCE = 
+            "org/netbeans/installer/utils/xml/reformat.xslt";
     public static final String XSLT_REFORMAT_URI =
-            "resource:org/netbeans/installer/utils/xml/reformat.xslt";
+            FileProxy.RESOURCE_SCHEME_PREFIX + XSLT_REFORMAT_RESOURCE;
     
     /////////////////////////////////////////////////////////////////////////////////
     // Static

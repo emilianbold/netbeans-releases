@@ -49,6 +49,8 @@ import org.netbeans.installer.utils.progress.Progress;
  */
 //todo: This class already ready to die.
 public class FileProxy {
+  private static final String RESOURCE_SCHEME = "resource";
+  public static final String RESOURCE_SCHEME_PREFIX = RESOURCE_SCHEME + ":";
   
   private final File tmpDir = new File(Installer.getInstance().getLocalDirectory(), "tmp");
   private final Map<String, File> cache = new HashMap<String, File>();
@@ -126,7 +128,7 @@ public class FileProxy {
       File file = new File(uri);
       if (!file.exists()) throw new DownloadException("file not exist: " + uri);
       return file;
-    } else if (uri.getScheme().equals("resource")) {
+    } else if (uri.getScheme().equals(RESOURCE_SCHEME)) {
       OutputStream out  = null;
       try {
         String path = uri.getSchemeSpecificPart();
@@ -142,7 +144,7 @@ public class FileProxy {
         }
         final InputStream resource = (loader != null ? loader: getClass().getClassLoader()).getResourceAsStream(uri.getSchemeSpecificPart());
         out = new FileOutputStream(file);
-        if (resource == null) throw new DownloadException("resource:" + uri + "not found");
+        if (resource == null) throw new DownloadException(RESOURCE_SCHEME_PREFIX + uri + "not found");
         StreamUtils.transferData(resource, out);
         cache.put(uri.toString(), file);
         return file;
