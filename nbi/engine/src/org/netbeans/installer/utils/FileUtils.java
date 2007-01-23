@@ -290,7 +290,7 @@ public final class FileUtils {
     
     public static List<String> readStringList(File file) throws IOException {
         final List<String> list = new LinkedList<String>();
-        for (String line: readFile(file).split("\r\n|\r|\n")) {
+        for (String line: readFile(file).split(StringUtils.NEW_LINE_PATTERN)) {
             list.add(line);
         }
         return list;
