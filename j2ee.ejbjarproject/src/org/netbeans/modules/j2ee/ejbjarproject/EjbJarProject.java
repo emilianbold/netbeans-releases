@@ -324,7 +324,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new EjbJarProjectOperations(this),
                 new EjbJarPersistenceProvider(this, evaluator()),
                 new EjbJAXWSMetadataFinder(this),
-                getJaxWsModel()
+                getJaxWsModel(),
+                new EjbJarEMGenStrategyResolver()
                 // TODO: AB: maybe add "this" to the lookup. You should not cast a Project to EjbJarProject, but use the lookup instead.
             });
     }
