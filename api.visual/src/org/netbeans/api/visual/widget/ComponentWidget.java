@@ -43,6 +43,7 @@ public class ComponentWidget extends Widget {
     private double zoomFactor = Double.MIN_VALUE;
     private ComponentSceneListener validateListener;
     private ComponentComponentListener componentListener;
+    private boolean componentVisible = false;
 
     /**
      * Creates a component widget.
@@ -54,7 +55,27 @@ public class ComponentWidget extends Widget {
         this.component = component;
         validateListener = null;
         componentListener = new ComponentComponentListener ();
+        setComponentVisible (true);
+    }
+
+    /**
+     * Returns whether the component should be visible.
+     * @return true if the component is visible
+     */
+    public boolean isComponentVisible () {
+        return componentVisible;
+    }
+
+    /**
+     * Sets whether the component should be visible.
+     * @param componentVisible if true, then the component is visible
+     */
+    public void setComponentVisible (boolean componentVisible) {
+        if (this.componentVisible == componentVisible)
+            return;
+        this.componentVisible = componentVisible;
         attach ();
+        revalidate ();
     }
 
     /**
@@ -69,7 +90,7 @@ public class ComponentWidget extends Widget {
     }
 
     /**
-     * Detaches the scene listener for automatic recaulculation. The detaching is required for preventing memory leaks
+     * Detaches the scene listener for automatic recalculation. The detaching is required for preventing memory leaks
      * after the component widget is remove from the scene. When you want to reuse the widget again, you have call
      * the attach method.
      */
@@ -121,6 +142,7 @@ public class ComponentWidget extends Widget {
         component.removeComponentListener (componentListener);
         component.setBounds (scene.convertSceneToView (convertLocalToScene (getClientArea ())));
         component.addComponentListener (componentListener);
+        component.repaint ();
     }
 
     private void removeComponent () {
@@ -136,7 +158,7 @@ public class ComponentWidget extends Widget {
      * Paints the component widget.
      */
     protected void paintWidget () {
-        if (getScene ().isPaintEverything ()) {
+        if (getScene ().isPaintEverything ()  ||  ! componentVisible) {
             Graphics2D graphics = getGraphics ();
             Rectangle bounds = getClientArea ();
             AffineTransform previousTransform = graphics.getTransform ();
@@ -159,10 +181,11 @@ public class ComponentWidget extends Widget {
         }
 
         public void sceneValidated () {
-            if (isWidgetInScene ())
+            if (isWidgetInScene ()  &&  componentVisible)
                 addComponent ();
-            else
+            else {
                 removeComponent ();
+            }
         }
     }
 
