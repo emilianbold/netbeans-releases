@@ -26,8 +26,6 @@ import org.openide.util.actions.CallableSystemAction;
 import java.awt.*;
 import java.awt.event.*;
 
-import java.text.Format;
-import java.text.MessageFormat;
 
 import javax.swing.*;
 
@@ -75,7 +73,6 @@ public class GarbageCollectAction extends CallableSystemAction {
 
     public Component getToolbarPresenter() {
         return new HeapViewWrapper();
-//        return new MemButton();
     }
 
     private static final class HeapViewWrapper extends JComponent {
@@ -107,8 +104,13 @@ public class GarbageCollectAction extends CallableSystemAction {
         
         public Dimension calcPreferredSize() {
             Dimension pref = getHeapView().heapViewPreferredSize();
-            pref.height += 1;
             pref.width += 6;
+            // update height according to parent if possible
+            Component parent = getParent();
+            if (parent != null) {
+                Insets insets = getInsets();
+                pref.height = parent.getHeight() - (insets.top + insets.bottom) - 3;
+            }
             return pref;
         }
 
