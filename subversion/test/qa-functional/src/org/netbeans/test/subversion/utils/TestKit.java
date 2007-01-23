@@ -42,10 +42,10 @@ public final class TestKit {
     public final static String CONFLICT_COLOR = "#FF0000";
     public final static String IGNORED_COLOR = "#999999";
     
-    public final static String MODIFIED_STATUS = "[Modified]";
-    public final static String NEW_STATUS = "[New]";
-    public final static String CONFLICT_STATUS = "[Conflict]";
-    public final static String IGNORED_STATUS = "[Ignored]";
+    public final static String MODIFIED_STATUS = "[Modified ]";
+    public final static String NEW_STATUS = "[New ]";
+    public final static String CONFLICT_STATUS = "[Conflict ]";
+    public final static String IGNORED_STATUS = "[Ignored ]";
     public final static String UPTODATE_STATUS = "";
     
     public static File prepareProject(String category, String project, String project_name) throws Exception {

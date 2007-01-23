@@ -74,11 +74,11 @@ public class ExportDiffPatchTest extends JellyTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ExportDiffPatchTest("invokeExportDiffPath"));
+        suite.addTest(new ExportDiffPatchTest("invokeExportDiffPatch"));
         return suite;
     }
     
-    public void invokeExportDiffPath() throws Exception {
+    public void invokeExportDiffPatch() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
         TestKit.closeProject(PROJECT_NAME);
@@ -106,7 +106,7 @@ public class ExportDiffPatchTest extends JellyTestCase {
         OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
         oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.clear();
-        wdso.finish();
+        wdso.finish();     
         //open project
         oto.waitText("Checking out... finished.");
         NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");

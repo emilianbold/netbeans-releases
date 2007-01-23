@@ -137,13 +137,13 @@ public class CopyTest extends JellyTestCase {
         org.openide.nodes.Node nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
         //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
         String status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
-        assertEquals("Wrong annotation of node!!!", "[release01]", status);
+        assertEquals("Wrong annotation of node!!!", "[ release01]", status);
         
         nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
         nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
         //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
         status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
-        assertEquals("Wrong annotation of node!!!", "[release01]", status);
+        assertEquals("Wrong annotation of node!!!", "[ release01]", status);
         //to do 
         stream.flush();
         stream.close();
@@ -229,13 +229,13 @@ public class CopyTest extends JellyTestCase {
         nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
         //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
         status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
-        assertEquals("Wrong annotation of node!!!", "[release01]", status);
+        assertEquals("Wrong annotation of node!!!", "[ release01]", status);
         
         nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
         nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
         //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
         status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
-        assertEquals("Wrong annotation of node!!!", "[release01]", status);
+        assertEquals("Wrong annotation of node!!!", "[ release01]", status);
         
         oto = new OutputTabOperator("file:///tmp/repo");
         oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);

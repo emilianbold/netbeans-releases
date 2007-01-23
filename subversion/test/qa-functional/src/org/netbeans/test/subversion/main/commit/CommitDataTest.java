@@ -48,15 +48,15 @@ public class CommitDataTest extends JellyTestCase {
     public File projectPath;
     public PrintStream stream;
     String os_name;
-    Operator.DefaultStringComparator comOperator; 
-    Operator.DefaultStringComparator oldOperator; 
+    Operator.DefaultStringComparator comOperator;
+    Operator.DefaultStringComparator oldOperator;
     
     /** Creates a new instance of CommitDataTest */
     public CommitDataTest(String name) {
         super(name);
     }
     
-    protected void setUp() throws Exception {        
+    protected void setUp() throws Exception {
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
         System.out.println("### "+getName()+" ###");
@@ -78,9 +78,9 @@ public class CommitDataTest extends JellyTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CommitDataTest("testCommitFile"));      
-        suite.addTest(new CommitDataTest("testCommitPackage"));      
-        suite.addTest(new CommitDataTest("testRecognizeMimeType"));   
+        suite.addTest(new CommitDataTest("testCommitFile"));
+        suite.addTest(new CommitDataTest("testCommitPackage"));
+        suite.addTest(new CommitDataTest("testRecognizeMimeType"));
         return suite;
     }
     
@@ -103,16 +103,16 @@ public class CommitDataTest extends JellyTestCase {
         Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         Operator.setDefaultStringComparator(oldOperator);
-        RepositoryStepOperator rso = new RepositoryStepOperator();       
+        RepositoryStepOperator rso = new RepositoryStepOperator();
         
-        //create repository... 
+        //create repository...
         File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
         new File(TMP_PATH).mkdirs();
         work.mkdirs();
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
         //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
-        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
-        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
+        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
+        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
         
         rso.next();
@@ -151,7 +151,14 @@ public class CommitDataTest extends JellyTestCase {
         //print message to log file.
         TestKit.printLogStream(stream, "Duration of invoking Commit dialog: " + (end - start));
         cmo.selectCommitAction("NewClass.java", "Exclude from Commit");
-        cmo.commit();
+        TimeoutExpiredException tee = null;
+        try {
+            cmo.commit();
+        } catch (TimeoutExpiredException e) {
+            tee = e;
+        }
+        assertNotNull("TimeoutExpiredException was expected.", tee);
+        cmo.cancel();
         nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|NewClass.java");
         nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
         color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
@@ -178,7 +185,7 @@ public class CommitDataTest extends JellyTestCase {
         //color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
         Thread.sleep(1000);
         vo = VersioningOperator.invoke();
-        TimeoutExpiredException tee = null;
+//        TimeoutExpiredException tee = null;
         try {
             vo.tabFiles();
         } catch (Exception e) {
@@ -190,7 +197,7 @@ public class CommitDataTest extends JellyTestCase {
         
         TestKit.closeProject(PROJECT_NAME);
     }
- 
+    
     public void testCommitPackage() throws Exception {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);
@@ -209,16 +216,16 @@ public class CommitDataTest extends JellyTestCase {
         Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         Operator.setDefaultStringComparator(oldOperator);
-        RepositoryStepOperator rso = new RepositoryStepOperator(); 
+        RepositoryStepOperator rso = new RepositoryStepOperator();
         
-        //create repository... 
+        //create repository...
         File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
         new File(TMP_PATH).mkdirs();
         work.mkdirs();
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
         //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
-        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
-        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
+        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
+        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
         
         rso.next();
@@ -317,16 +324,16 @@ public class CommitDataTest extends JellyTestCase {
         Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         Operator.setDefaultStringComparator(oldOperator);
-        RepositoryStepOperator rso = new RepositoryStepOperator(); 
+        RepositoryStepOperator rso = new RepositoryStepOperator();
         
-        //create repository... 
+        //create repository...
         File work = new File(TMP_PATH + File.separator + WORK_PATH + File.separator + "w" + System.currentTimeMillis());
         new File(TMP_PATH).mkdirs();
         work.mkdirs();
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
         //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
-        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
-        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
+        RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
+        RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
         
         rso.next();
@@ -385,7 +392,7 @@ public class CommitDataTest extends JellyTestCase {
         nodeSrc = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
         CommitOperator cmo = CommitOperator.invoke(nodeSrc);
         table = cmo.tabFiles();
-        model = table.getModel();       
+        model = table.getModel();
         actual = new String[model.getRowCount()];
         for (int i = 0; i < actual.length; i++) {
             actual[i] = model.getValueAt(i, 0).toString();
@@ -406,7 +413,7 @@ public class CommitDataTest extends JellyTestCase {
         oto.waitText("Committing... finished.");
         //System.out.println("Issue should be fixed: http://www.netbeans.org/issues/show_bug.cgi?id=77060!!!");
         
-        //files have been committed, 
+        //files have been committed,
         //verify explorer node
         for (int i = 0; i < expected.length; i++) {
             nodeTest = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|" + expected[i]);
@@ -421,7 +428,7 @@ public class CommitDataTest extends JellyTestCase {
         } catch (Exception e) {
             tee = (TimeoutExpiredException) e;
         }
-        assertNotNull("There shouldn't be any table in Versioning view", tee);       
+        assertNotNull("There shouldn't be any table in Versioning view", tee);
         //TestKit.removeAllData(PROJECT_NAME);
         stream.flush();
         stream.close();

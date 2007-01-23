@@ -20,6 +20,8 @@ import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
@@ -44,6 +46,8 @@ public class DeleteTest extends JellyTestCase {
     public File projectPath;
     public PrintStream stream;
     String os_name;
+    Operator.DefaultStringComparator comOperator; 
+    Operator.DefaultStringComparator oldOperator;     
     
     /** Creates a new instance of DeleteTest */
     public DeleteTest(String name) {
@@ -84,7 +88,11 @@ public class DeleteTest extends JellyTestCase {
         
         stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
         VersioningOperator vo = VersioningOperator.invoke();
+        comOperator = new Operator.DefaultStringComparator(true, true);
+        oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();        
+        Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+        Operator.setDefaultStringComparator(oldOperator);
         RepositoryStepOperator rso = new RepositoryStepOperator();       
         
         //create repository... 

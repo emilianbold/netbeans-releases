@@ -254,7 +254,7 @@ public class CommitStepOperator extends ImportWizardOperator {
         tabFiles();
         btWindowsScrollBarUI$WindowsArrowButton();
         btWindowsScrollBarUI$WindowsArrowButton2();
-        lblCommitFiles();
+//        lblCommitFiles();
         lblWizardDescriptor$FixedHeightLabel();
         btBack();
         btNext();
