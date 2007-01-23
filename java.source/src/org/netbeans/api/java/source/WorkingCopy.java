@@ -21,7 +21,6 @@ package org.netbeans.api.java.source;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.util.Context;
@@ -34,15 +33,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.swing.text.Position.Bias;
-import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.ModificationResult.Difference;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.java.source.transform.ChangeSet;
 import org.netbeans.api.java.source.query.QueryException;
 import org.netbeans.api.java.source.transform.Transformer;
@@ -69,7 +63,6 @@ import org.openide.text.CloneableEditorSupport;
  */
 public class WorkingCopy extends CompilationController {
     
-    private CompilationInfo delegate;
     private EngineEnvironment ce;
     private ChangeSet changes;
     private boolean afterCommit = false;
@@ -78,8 +71,6 @@ public class WorkingCopy extends CompilationController {
     
     WorkingCopy(final CompilationInfo delegate) throws IOException {        
         super(delegate);
-        assert delegate != null;
-        this.delegate = delegate;
         wcc = new WorkingCopyContext();
     }
 
@@ -127,17 +118,7 @@ public class WorkingCopy extends CompilationController {
         }
         
         return result;
-    }
-    
-    @Override
-    public TreeUtilities getTreeUtilities() {
-        return this.delegate.getTreeUtilities();
-    }
-    
-    @Override
-    public ElementUtilities getElementUtilities() {
-        return this.delegate.getElementUtilities();
-    }
+    }        
     
     public synchronized TreeMaker getTreeMaker() {
         if (treeMaker == null)
@@ -192,101 +173,8 @@ public class WorkingCopy extends CompilationController {
         
         changes.rewrite(oldTree, newTree);
     }
-    
-    /**
-     * Returns the current phase of the {@link JavaSource}.
-     * @return {@link JavaSource.Phase} the state which was reached by the {@link JavaSource}.
-     */
-    @Override
-    public JavaSource.Phase getPhase() {
-        return this.delegate.getPhase();
-    }
-    
-    /**
-     * Returns the javac tree representing the source file.
-     * @return {@link CompilationUnitTree} the compilation unit cantaining the top level classes contained in the
-     * java source file
-     */
-    @Override
-    public CompilationUnitTree getCompilationUnit() {
-        return this.delegate.getCompilationUnit();
-    }
-    
-    /**
-     * Returns the content of the file represented by the {@link JavaSource}.
-     * @return String the java source
-     */
-    @Override
-    public String getText() {
-        return this.delegate.getText();
-    }
-
-    /**@inheritDoc*/
-    @Override
-    public TokenHierarchy getTokenHierarchy() {
-        return this.delegate.getTokenHierarchy();
-    }
-    
-    /**
-     * Returns the errors in the file represented by the {@link JavaSource}.
-     * @return an list of {@link Diagnostic} 
-     */
-    @Override
-    public List<Diagnostic> getDiagnostics() {
-        return this.delegate.getDiagnostics();
-    }
-
-    @Override
-    public Trees getTrees() {
-        return this.delegate.getTrees();
-    }
-
-    @Override
-    public Types getTypes() {
-        return this.delegate.getTypes();
-    }
-    
-    @Override
-    public Elements getElements() {
-	return this.delegate.getElements();
-    }
-    
-    @Override 
-    public JavaSource getJavaSource() {
-        return this.delegate.getJavaSource();
-    }
-
-    @Override 
-    public ClasspathInfo getClasspathInfo() {
-        return this.delegate.getClasspathInfo();
-    }
-    
-    @Override
-    public FileObject getFileObject() {
-        return this.delegate.getFileObject();
-    }
-
-    @Override
-    public Document getDocument() throws IOException {
-        return this.delegate.getDocument();
-    }
-    
-    // Package private methods -------------------------------------------------
-    
-    @Override 
-    void setPhase(final JavaSource.Phase phase) {
-        throw new UnsupportedOperationException ("WorkingCopy supports only read interface");          //NOI18N
-    }
-
-    @Override 
-    void setCompilationUnit(final CompilationUnitTree compilationUnit) {
-        throw new UnsupportedOperationException ("WorkingCopy supports only read interface");          //NOI18N
-    }
-
-    @Override
-    JavacTaskImpl getJavacTask() {
-        return this.delegate.getJavacTask();
-    }
+              
+    // Package private methods -------------------------------------------------        
     
     List<Difference> getChanges() throws IOException {
         if (afterCommit)
