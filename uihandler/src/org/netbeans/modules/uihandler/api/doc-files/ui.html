@@ -224,7 +224,7 @@
 |                                                                               |
 |                                                                               |
 |-------------------------------------------------------------------------------|
-|               [[_S_ubmit Data]] [[_V_iew Data]]  [[_C_ancel]]                 | 
+|                                               [[_S_ubmit Data]] [[_C_ancel]]  | 
 +-------------------------------------------------------------------------------+
 </pre>
 
@@ -242,7 +242,7 @@
 
 <pre>
 +-------------------------------------------------------------------------------+
-|   Report Exception                                                          X |
+| UI Gestures Collector                                                       X |
 +-------------------------------------------------------------------------------+
 |  You need to be a registered member of NetBeans.org.                          |
 |  If you're not registered, <a href="http://www.netbeans.org/servlets/Join">register here</a>.                                     |
@@ -263,7 +263,7 @@
 |  |                                                                         |  |
 |  |                                                                         |  |
 |  |_________________________________________________________________________|  |
-|  [[_V_iew Data]]                             [[_S_ubmit Data]]  [[_C_ancel]]  | 
+|                             [[_S_ubmit Data]]  [[_V_iew Data]]  [[_C_ancel]]  | 
 +-------------------------------------------------------------------------------+
 </pre>
 <p>
@@ -276,6 +276,41 @@
  is some, but we are giving user a possibility to change this item as well.
  The only thing(except username) we need user to fill is a description what he was 
  doing when the exception occured.
+</p>
+<p>
+  After pressing View Data Examination Dialog appears, but <q>Submit data</q> button 
+  is changed to <q>Back to report</q> button.
+</p>
+<pre>
++-------------------------------------------------------------------------------+
+| UI Gestures Collector                                                       X |
++-------------------------------------------------------------------------------+
+| Structured | Raw |                                                            |
+|-------------------------------------------------------------------------------|
+| list with records, first is the newest one                                    |
+| second is the second newest one                                               |
+| 3rd                                                                           |
+| 4th                                                                           |
+| 5th                                                                           |
+| 6th                                                                           |
+|-------------------------------------------------------------------------------|
+| The exact text of the select record to be sent to server. XML format.         |
+| &lt;record&gt;                                                                      |
+| &lt;message&gt;Invoking Build &lt;/message&gt;                                            |
+| &lt;/record&gt;                                                                     |  
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|                                                                               |
+|-------------------------------------------------------------------------------|
+|                                            [[_B_ack to report]]  [[_C_ancel]] | 
++-------------------------------------------------------------------------------+
+</pre>
+<p>
+"Back to report" button moves the user back to Error dialog. He can fill 
+description and submit data.
 </p>
 </body>
     
