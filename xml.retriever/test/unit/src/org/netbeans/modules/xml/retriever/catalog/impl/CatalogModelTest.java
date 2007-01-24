@@ -24,6 +24,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel;
+import org.netbeans.modules.xml.retriever.catalog.model.TestUtil;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.openide.cookies.EditorCookie;
@@ -33,13 +34,16 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
  * @author girix
  */
 public class CatalogModelTest extends TestCase {
+    
+    static {
+        TestUtil.registerXMLKit();
+    }
     
     public CatalogModelTest(String testName) {
         super(testName);

@@ -11,11 +11,13 @@ package org.netbeans.modules.xml.retriever.catalog.model;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import javax.swing.text.Document;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
@@ -28,6 +30,31 @@ import org.openide.util.lookup.Lookups;
 
 public class TestUtil{
     
+    static {
+        registerXMLKit();
+    }
+    
+    public static void registerXMLKit() {
+        String[] path = new String[] { "Editors", "text", "x-xml" };
+        FileObject target = Repository.getDefault().getDefaultFileSystem().getRoot();
+        try {
+            for (int i=0; i<path.length; i++) {
+                FileObject f = target.getFileObject(path[i]);
+                if (f == null) {
+                    f = target.createFolder(path[i]);
+                }
+                target = f;
+            }
+            String name = "EditorKit.instance";
+            if (target.getFileObject(name) == null) {
+                FileObject f = target.createData(name);
+                f.setAttribute("instanceClass", "org.netbeans.modules.xml.text.syntax.XMLKit");
+            }
+        } catch(IOException ioe) {
+            ioe.printStackTrace();
+        }
+    }
+
     public static ModelSource createModelSource(final FileObject thisFileObj, boolean editable) throws CatalogModelException{
         assert thisFileObj != null : "Null file object.";
         final DataObject dobj;
