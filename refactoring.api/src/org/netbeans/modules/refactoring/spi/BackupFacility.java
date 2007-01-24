@@ -30,6 +30,35 @@ import org.openide.filesystems.FileUtil;
 /**
  * Simple backup facility
  * can be used to backup files and implement undo
+ * For instance Java Refactoring module implements undo this way:
+ * 
+ * public Problem prepare(RefactoringElementsBag elements) {
+ * .
+ * .
+ *   elements.registerTransaction(new RetoucheCommit(results));
+ * }
+
+ * where RetoucheCommit is Transaction:
+ * <pre>
+ * public void commit() {
+ *   //backup all files
+ *   for(FileObject fo: files) {
+ *     //remember id of backup file
+ *     ids.add(BackupFacility.getDefault().backup(fo));
+ *   }
+ *   doCommit();
+ * }
+ * public void rollback() {
+ *   //rollbqack all files  
+ *   for (long id:ids) {
+ *      BackupFacility.getDefault().restore(id);
+ *    }
+ * }
+ * @see Transaction
+ * @see RefactoringElementImplementation#performChange
+ * @see RefactoringElementImplementation#undoChange
+ * @see RefactoringElementsBag#registerTransaction
+ * @see RefactoringElementsBag#registerFileChange
  * @author Jan Becicka
  */
 public final class BackupFacility {

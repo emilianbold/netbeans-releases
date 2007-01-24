@@ -22,8 +22,12 @@ package org.netbeans.modules.refactoring.spi;
 /**
  * Transaction interface
  * can do rollback and commit
+ * @see BackupFacility
  * @see RefactoringElementsBag#registerFileChange
  * @see RefactoringElementsBag#registerTransaction
+ * @see Transaction
+ * @see RefactoringElementImplementation#performChange
+ * @see RefactoringElementImplementation#undoChange
  * @author Jan Becicka
  */
 public interface Transaction {

@@ -30,6 +30,8 @@ import org.openide.text.PositionBounds;
  * @author Jan Becicka
  * @see RefactoringElement
  * @see SimpleRefactoringElementImpl
+ * @see RefactoringSession
+ * @see RefactoringElementsBag
  */
 public interface RefactoringElementImplementation {
     /** Status corresponding to a normal element */
@@ -66,11 +68,25 @@ public interface RefactoringElementImplementation {
      *  Performs the change represented by this refactoring element.
      *  Implementation can be impty if the change is done using some high level
      *  transaction model
+     * @see BackupFacility
+     * @see RefactoringElementsBag#registerFileChange
+     * @see RefactoringElementsBag#registerTransaction
+     * @see Transaction
+     * @see RefactoringElementImplementation#performChange
+     * @see RefactoringElementImplementation#undoChange
      */
     void performChange();
     
     /**
-     * Undo change done by performChange
+     *  Undo change done by performChange
+     *  Implementation can be impty if the change is done using some high level
+     *  transaction model
+     * @see BackupFacility
+     * @see RefactoringElementsBag#registerFileChange
+     * @see RefactoringElementsBag#registerTransaction
+     * @see Transaction
+     * @see RefactoringElementImplementation#performChange
+     * @see RefactoringElementImplementation#undoChange
      */
     void undoChange();
     

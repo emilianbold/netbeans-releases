@@ -133,6 +133,8 @@ public final class RefactoringElementsBag {
     
     /**
      * commits are called after all changes are performed
+     * @see Transaction
+     * @see BackupFacilty
      */
     public void registerTransaction(Transaction commit) {
         if (APIAccessor.DEFAULT.isCommit(session))
@@ -142,6 +144,8 @@ public final class RefactoringElementsBag {
     
     /**
      * fileChanges are performed after all element changes
+     * @see Transaction
+     * @see BackupFacilty
      */
     public void registerFileChange(Transaction changes) {
         if (APIAccessor.DEFAULT.isCommit(session))
