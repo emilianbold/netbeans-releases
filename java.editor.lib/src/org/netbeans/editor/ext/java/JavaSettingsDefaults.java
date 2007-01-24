@@ -238,11 +238,11 @@ public class JavaSettingsDefaults extends ExtSettingsDefaults {
                 + "} while (${EXP instanceof=\"java.lang.Boolean\" default=\"exp\"});\n" // NOI18N
         );
         javaAbbrevMap.put("runn",
-                "new Runnable() {\n"
+                "${RUNN_TYPE type=\"java.lang.Runnable\" default=\"Runnable\" editable=false} ${RUNN newVarName default=\"r\"} = new ${RUNN_TYPE}() {\n"
                 +    "public void run() {\n"
                 +        "${selection line}${cursor}\n"
                 +    "}\n"
-                + "}\n"
+                + "};\n"
         );
         javaAbbrevMap.put("trycatch",
                 "try {\n"
