@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
 
-import org.netbeans.modules.print.api.PrintUtil;
+import static org.netbeans.modules.print.api.PrintUtil.*;
 import org.netbeans.modules.bpel.search.api.SearchManager;
 import org.netbeans.modules.bpel.search.api.SearchMatch;
 import org.netbeans.modules.bpel.search.api.SearchPattern;
@@ -53,7 +53,7 @@ public final class Manager implements SearchManager {
       return null;
     }
     if (advanced) {
-      return mySearch.getComponent(engines, source);
+      return mySearch.getUIComponent(engines, source);
     }
     else {
       return new Find(engines, source, parent);
@@ -78,14 +78,6 @@ public final class Manager implements SearchManager {
       }
     }
     return engines;
-  }
-
-  private void out() {
-    PrintUtil.out();
-  }
-
-  private void out(Object object) {
-    PrintUtil.out(object);
   }
 
   private Search mySearch;

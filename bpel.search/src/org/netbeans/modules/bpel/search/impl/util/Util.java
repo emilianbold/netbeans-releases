@@ -36,15 +36,13 @@ public final class Util {
   private Util() {}
 
   /**{@inheritDoc}*/
-  @SuppressWarnings("unchecked") // NOI18N
-  public static <T> List<T> getInstances(Class<T> clazz)
-  {
+  public static <T> List<T> getInstances(Class<T> clazz) {
     Lookup.Result result = Lookup.getDefault().lookup(new Lookup.Template(clazz));
-    Collection<Object> collection = result.allInstances();
+    Collection collection = result.allInstances();
     List<T> list = new ArrayList<T>();
 
     for (Object object : collection) {
-      list.add((T) object);
+      list.add(clazz.cast(object));
     }
     return list;
   }

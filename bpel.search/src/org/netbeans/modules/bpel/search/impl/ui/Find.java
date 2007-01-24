@@ -37,9 +37,10 @@ import org.netbeans.modules.xml.xam.ui.search.SearchControlPanel;
 import org.netbeans.modules.xml.xam.ui.search.SearchProvider;
 import org.netbeans.modules.xml.xam.ui.search.Query;
 
-import org.netbeans.modules.print.api.PrintUtil;
+import static org.netbeans.modules.print.api.PrintUtil.*;
 import org.netbeans.modules.bpel.search.api.SearchElement;
 import org.netbeans.modules.bpel.search.api.SearchEvent;
+import org.netbeans.modules.bpel.search.api.SearchException;
 import org.netbeans.modules.bpel.search.api.SearchOption;
 import org.netbeans.modules.bpel.search.api.SearchMatch;
 import org.netbeans.modules.bpel.search.spi.SearchEngine;
@@ -71,7 +72,7 @@ public final class Find extends SearchControlPanel {
       return;
     }
     for (Object element : myElements) {
-      ((SearchElement) element).highlight(false);
+      ((SearchElement) element).highlightOnDiagram(false);
     }
     myElements = null;
   }
@@ -83,8 +84,7 @@ public final class Find extends SearchControlPanel {
     if ( !(object instanceof SearchElement)) {
       return;
     }
-    SearchElement element = (SearchElement) object;
-    element.select();
+    ((SearchElement) object).selectOnDiagram();
   }
 
   private void bindAction(JComponent parent) {
@@ -92,7 +92,7 @@ public final class Find extends SearchControlPanel {
     Object mapKey = findAction.getActionMapKey();
     parent.getActionMap().put(mapKey, new AbstractAction () {
       public void actionPerformed(ActionEvent event) {
-        setVisible( !isVisible());
+        setVisible(true);
       }
     });
     InputMap keys =
@@ -103,14 +103,6 @@ public final class Find extends SearchControlPanel {
       key = KeyStroke.getKeyStroke(KeyEvent.VK_F, Event.CTRL_MASK);
     }
     keys.put(key, mapKey);
-  }
-
-  private void out() {
-    PrintUtil.out();
-  }
-
-  private void out(Object object) {
-    PrintUtil.out(object);
   }
 
   // ---------------------------------------------------------------------
@@ -134,27 +126,44 @@ public final class Find extends SearchControlPanel {
       return NbBundle.getMessage(Provider.class, "CTL_Input_Description"); // NOI18N
     }
 
-    public List<Object> search(Query query) {
-      String text = query.getQuery();
+    public List<Object> search(Query query)
+      throws org.netbeans.modules.xml.xam.ui.search.SearchException
+    {
+      SearchMatch match = getMatch(query);
+      String text = getText(query, match);
 
       SearchOption option = new SearchOption.Adapter(
         text,
         mySource,
-        query.isRegularExpression() ?
-          SearchMatch.REGULAR_EXPRESSION : getMatch(text),
+        null, // target
+        match,
         false, // case sensitive
         query.useSelected());
 
-      mySearchEngine.search(option);
-
+      try {
+        mySearchEngine.search(option);
+      }
+      catch (SearchException e) {
+        throw new org.netbeans.modules.xml.xam.ui.search.SearchException(
+          e.getMessage(), e);
+      }
       return myElements;
     }
 
-    private SearchMatch getMatch(String text) {
-      if (text.contains("*") || text.contains("?")) { // NOI18N
-        return SearchMatch.PATTERN_MATCH;
+    private SearchMatch getMatch(Query query) {
+      if (query.isRegularExpression()) {
+        return SearchMatch.REGULAR_EXPRESSION;
       }
-      return null;
+      return SearchMatch.PATTERN_MATCH;
+    }
+
+    private String getText(Query query, SearchMatch match) {
+      String text = query.getQuery();
+
+      if (match == SearchMatch.PATTERN_MATCH) {
+        return "*" + text + "*"; // NOI18N
+      }
+      return text;
     }
 
     public void searchStarted(SearchEvent event) {

@@ -28,7 +28,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.swing.JComponent;
 
-import org.netbeans.modules.print.api.PrintUtil;
+import static org.netbeans.modules.print.api.PrintUtil.*;
 import org.netbeans.modules.print.spi.PrintPage;
 import org.netbeans.modules.print.impl.util.Util;
 
@@ -307,14 +307,6 @@ final class Paper extends JComponent {
 
   private String getTimestamp(Date timestamp, String format) {
     return new SimpleDateFormat(format).format(timestamp);
-  }
-
-  private void out() {
-    PrintUtil.out();
-  }
-
-  private void out(Object object) {
-    PrintUtil.out(object);
   }
 
   private int myNumber;

@@ -18,40 +18,26 @@
  */
 package org.netbeans.modules.bpel.search.impl.ui;
 
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Point;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.JToggleButton;
-import javax.swing.JScrollPane;
-import javax.swing.JViewport;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingUtilities;
 
 import org.openide.DialogDescriptor;
-
 import org.netbeans.modules.print.api.PrintUtil.Dialog;
+
+import org.netbeans.modules.bpel.search.api.SearchException;
 import org.netbeans.modules.bpel.search.api.SearchOption;
 import org.netbeans.modules.bpel.search.api.SearchMatch;
 import org.netbeans.modules.bpel.search.spi.SearchEngine;
@@ -64,155 +50,185 @@ import org.netbeans.modules.bpel.search.spi.SearchListener;
 public final class Search extends Dialog {
 
   /**{@inheritDoc}*/
-  public Component getComponent(List<SearchEngine> engines, Object source) {
+  public Component getUIComponent(List<SearchEngine> engines, Object source) {
     mySource = source;
     myTree = new Tree();
     mySearchEngine = engines.get(0);
     mySearchEngine.addSearchListener(myTree);
+    // todo a? progress
     show();
-    return getComponent();
+    return getUIComponent();
   }
 
-  private JPanel createMainPanel() {
-//out("Create Main panel");
+  @Override
+  protected JPanel createMainPanel()
+  {
     JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
-    c.gridy = 1;
+    c.anchor = GridBagConstraints.NORTHWEST;
+    c.fill = GridBagConstraints.HORIZONTAL;
+    c.weightx = 1.0;
+    c.gridx = 0;
 
-    // text field
-    myText = new JTextField("*"); // todo r
-    // todo m
-    int width = TEXT_WIDTH;
-    int height = myText.getPreferredSize().height;
-    myText.setPreferredSize(new Dimension(width, height));
-    myText.setMinimumSize(new Dimension(width, height));
-    panel.add(myText, c);
+    // text
+    panel.add(createTextPanel(), c);
 
-//    c.gridy++;
+    // option
+    panel.add(getSeparator("LBL_Options"), c); // NOI18N
+    panel.add(createOptionPanel(), c);
 
     return panel;
   }
 
-  private JComponent createNavigatePanel() {
+  private JComponent createTextPanel() {
     JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
+    c.anchor = GridBagConstraints.WEST;
 
-    // first
-    panel = new JPanel(new GridBagLayout());
-    c.insets = new Insets(TINY_INSET, TINY_INSET, TINY_INSET, TINY_INSET);
-/*
-    myFirst = (JButton) createButton(new JButton(),
-      "TLT_First", // NOI18N
-      new AbstractAction(null, Util.getIcon("first")) { // NOI18N
+    // text
+    c.gridy++;
+    c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
+    JLabel label = createLabel("LBL_Name"); // NOI18N
+    panel.add(label, c);
+
+    c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.fill = GridBagConstraints.HORIZONTAL;
+    c.weightx = 1.0;
+    myName = new TextField(ASTERISK);
+    myName.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent event) {
+        updateButton();
+      }
+    });
+    setWidth(myName.getUIComponent(), TEXT_WIDTH);
+    label.setLabelFor(myName.getUIComponent());
+    panel.add(myName.getUIComponent(), c);
+
+    // type
+    c.gridy++;
+    c.fill = GridBagConstraints.NONE;
+    c.weightx = 0.0;
+    c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
+    label = createLabel("LBL_Type"); // NOI18N
+    panel.add(label, c);
+
+    c.fill = GridBagConstraints.HORIZONTAL;
+    c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.weightx = 1.0;
+    myTarget = new JComboBox(mySearchEngine.getTargets());
+    label.setLabelFor(myTarget);
+    panel.add(myTarget, c);
+
+    return panel;
+  }
+
+  private JComponent createOptionPanel() {
+    JPanel panel = new JPanel(new GridBagLayout());
+    GridBagConstraints c = new GridBagConstraints();
+    c.anchor = GridBagConstraints.NORTHWEST;
+    c.insets = new Insets(0, SMALL_INSET, 0, 0);
+    c.weightx = 1.0;
+
+    c.gridy++;
+    myMatchCase = createCheckBox(
+      "LBL_Match_Case", // NOI18N 
+      new AbstractAction(getMessage("LBL_Match_Case")) { // NOI18N
+        public void actionPerformed(ActionEvent event) {}
+      }
+    );
+    panel.add(myMatchCase, c);
+
+    c.gridy++;
+    myPatternMatch = createCheckBox(
+      "LBL_Pattern_Match", // NOI18N 
+      new AbstractAction(getMessage("LBL_Pattern_Match")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
-          first();
+          exclusion(myPatternMatch, myRegularExpression);
         }
       }
     );
-*/
-    panel.add(myFirst, c);
+    myPatternMatch.setSelected(true);
+    myPatternMatch.setEnabled(true);
+    panel.add(myPatternMatch, c);
 
-    // previous
-    panel.add(myPrevious, c);
-
-//    int width = (int)Math.round(myPrevious.getPreferredSize().width/PREVIEW_FACTOR);
-//    int height = myPrevious.getPreferredSize().height;
-//    myGoto.setPreferredSize(new Dimension(width, height));
-//    myGoto.setMinimumSize(new Dimension(width, height));
-
-//    myGoto.setHorizontalAlignment(JTextField.CENTER);
-//    myGoto.setToolTipText(getMessage("TLT_Goto")); // NOI18N
-//    myGoto.addActionListener(new ActionListener() {
-//      public void actionPerformed(ActionEvent event) {
-//        goTo();
-//      }
-//    });
-//    panel.add(myGoto, c);
-    
-    // next
-    panel.add(myNext, c);
-
-    // last
-    panel.add(myLast, c);
+    c.gridy++;
+    myRegularExpression = createCheckBox(
+      "LBL_Regular_Expression", // NOI18N 
+      new AbstractAction(getMessage("LBL_Regular_Expression")) { // NOI18N
+        public void actionPerformed(ActionEvent event) {
+          exclusion(myRegularExpression, myPatternMatch);
+        }
+      }
+    );
+    myRegularExpression.setSelected(false);
+    myRegularExpression.setEnabled(false);
+    panel.add(myRegularExpression, c);
 
     return panel;
   }
 
-  private JComponent createScalePanel() {
-//out("Create scale panel");
-    JPanel panel = new JPanel(new GridBagLayout());
-    GridBagConstraints c = new GridBagConstraints();
+  private void exclusion(JCheckBox checkBox1, JCheckBox checkBox2) {
+    checkBox1.setEnabled( !checkBox2.isSelected());
 
-    // fit to window
-    c.insets = new Insets(TINY_INSET, MEDIUM_INSET, TINY_INSET, TINY_INSET);
-    panel.add(myFit, c);
+    if (checkBox2.isSelected()) {
+      checkBox1.setSelected(false);
+    }
+    checkBox2.setEnabled( !checkBox1.isSelected());
 
-    // decrease
-    panel.add(myDecrease, c);
-
-    // increase
-    panel.add(myIncrease, c);
-
-    return panel;
+    if (checkBox1.isSelected()) {
+      checkBox2.setSelected(false);
+    }
   }
 
-  private JComponent createScrollPanel() {
-//out("Create scroll panel");
-    GridBagConstraints c = new GridBagConstraints();
-
-    // papers
-//    myPaperPanel = new JPanel(new GridBagLayout());
-//    myPaperPanel.setBackground(Color.lightGray);
-    JPanel panel = new JPanel(new GridBagLayout());
-
-    c.gridy = 1;
-    c.anchor = GridBagConstraints.NORTHWEST;
-    c.weightx = 1.0;
-    c.weighty = 1.0;
-    c.insets = new Insets(0, 0, 0, 0);
-    panel.setBackground(Color.lightGray);
-//    panel.add(myPaperPanel, c);
-    //panel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.yellow));
-    //optionPanel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.green));
-    //myPaperPanel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.green));
-
-    // scroll
-    c.fill = GridBagConstraints.BOTH;
-
+  private SearchMatch getMatch() {
+    if (myPatternMatch.isSelected()) {
+      return SearchMatch.PATTERN_MATCH;
+    }
+    if (myRegularExpression.isSelected()) {
+      return SearchMatch.REGULAR_EXPRESSION;
+    }
     return null;
   }
 
-  private void search() {
-//out("text: '" + myText.getText() + "'");
-    SearchOption option = new SearchOption.Adapter(
-      myText.getText(),
-      mySource,
-      SearchMatch.PATTERN_MATCH, // todo m
-      false, // case sensitive
-      false); // use selection
-
-    mySearchEngine.search(option);
+  private void updateButton() {
+//    String text = myName.getText();
+//    boolean enabled = text != null && text.length() > 0;
+//    mySearchButton.setEnabled(enabled);
+// todo r
   }
 
-  private void updateButtons() {
-/*
-    myGoto.setText (getPaper(myPaperNumber));
-    myFirst.setEnabled (myPaperNumber > 1);
-    myPrevious.setEnabled (myPaperNumber > 1);
-    myGoto.setEnabled (enabled);
-    myToggle.setEnabled (enabled);
-    myFit.setEnabled (enabled);
-    myIncrease.setEnabled (enabled);
-    myDecrease.setEnabled (enabled);
-    myPrnBtn.setEnabled (enabled);
-    myOptBtn.setEnabled (enabled);
-*/
-// disable Search button if name is empty
+  private void search() {
+    myDescriptor.setClosingOptions(
+      new Object[] { 
+        mySearchButton,
+        DialogDescriptor.CANCEL_OPTION
+      }
+    );
+    SearchOption option = new SearchOption.Adapter(
+      myName.getText(),
+      mySource,
+      myTarget.getSelectedItem(),
+      getMatch(),
+      myMatchCase.isSelected(),
+      false); // use selection
+
+    try {
+      mySearchEngine.search(option);
+    }
+    catch (SearchException e) {
+      myDescriptor.setClosingOptions(
+        new Object[] { 
+          DialogDescriptor.CANCEL_OPTION
+        }
+      );
+      printError("ERR_Pattern_Error", e.getMessage()); // NOI18N
+    }
   }
 
   @Override
   protected void closed()
   {
+    myName.save();
     mySearchEngine.removeSearchListener(myTree);
     mySearchEngine = null;
     mySource = null;
@@ -220,38 +236,35 @@ public final class Search extends Dialog {
   }
 
   @Override
-  protected void opened()
-  {
-//    myScrollPanel.requestFocus();
-  }
-
-  @Override
-  protected DialogDescriptor getDescriptor()
+  protected DialogDescriptor createDescriptor()
   {
     Object[] buttons = getButtons();
-    DialogDescriptor descriptor = new DialogDescriptor(
-      createMainPanel(),
+    myDescriptor = new DialogDescriptor(
+      getPanel(),
       getMessage("LBL_Advanced_Search"), // NOI18N
-      true,
+      true, // modal
       buttons,
       mySearchButton,
       DialogDescriptor.DEFAULT_ALIGN,
       null,
-      null
+      new ActionListener() {
+        public void actionPerformed(ActionEvent event) {
+          if (mySearchButton == event.getSource()) {
+            search();
+          }
+        }
+      }
     );
-//    descriptor.setClosingOptions(
-//      new Object[] { myPrnBtn, DialogDescriptor.CANCEL_OPTION });
+    updateButton();
 
-    return descriptor;
+    return myDescriptor;
   }
 
   private Object[] getButtons() {
-    mySearchButton = (JButton) createButton(new JButton(),
+    mySearchButton = createButton(
       "TLT_Search", // NOI18N
       new AbstractAction(getMessage("LBL_Search")) { // NOI18N
-        public void actionPerformed(ActionEvent event) {
-          search();
-        }
+        public void actionPerformed(ActionEvent event) {}
       }
     );
     return new Object[] {
@@ -260,21 +273,17 @@ public final class Search extends Dialog {
     };
   }
 
-  private JButton myFirst;
-  private JButton myPrevious;
-  private JButton myNext;
-  private JButton myLast;
-
-  private JButton myFit;
-  private JButton myIncrease;
-  private JButton myDecrease;
-
-  
   private Object mySource;
-  private JTextField myText;
+  private TextField myName;
+  private JComboBox myTarget;
   private SearchListener myTree;
   private JButton mySearchButton;
+  private JCheckBox myMatchCase;
+  private JCheckBox myPatternMatch;
+  private JCheckBox myRegularExpression;
   private SearchEngine mySearchEngine;
+  private DialogDescriptor myDescriptor;
 
-  private static final int TEXT_WIDTH = 100;
+  private static final int TEXT_WIDTH = 200;
+  private static final String ASTERISK = "*"; // NOI18N
 }

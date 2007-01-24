@@ -25,8 +25,11 @@ import java.util.List;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.MouseAdapter;
@@ -35,6 +38,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeExpansionEvent;
@@ -51,7 +55,7 @@ import javax.swing.tree.TreeSelectionModel;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 
-import org.netbeans.modules.print.api.PrintUtil;
+import static org.netbeans.modules.print.api.PrintUtil.*;
 import org.netbeans.modules.bpel.search.api.SearchEvent;
 import org.netbeans.modules.bpel.search.api.SearchElement;
 import org.netbeans.modules.bpel.search.spi.SearchListener;
@@ -62,13 +66,7 @@ import org.netbeans.modules.bpel.search.impl.util.Util;
  * @version 2006.11.24
  */
 final class Tree implements SearchListener {
-/*
-  Tree() {
-    myConfig = new Config (key);
-    mySeparator = I18n.get (myConfig.get ("separator", "$separator." + myKey));
-  }
-// todo r
-*/
+
   public void searchStarted(SearchEvent event) {
 //out();
     myRoot = new DefaultMutableTreeNode();
@@ -90,8 +88,7 @@ final class Tree implements SearchListener {
       Tree.class, "LBL_Found_Occurrences", text, myFoundCount); // NOI18N
     myRoot.setUserObject(
       new SearchElement.Adapter(title, title, Util.getIcon("find"), null)); // NOI18N
-// todo r
-//  factorizeRoot(myRoot);
+
     View view = (View) WindowManager.getDefault().findTopComponent(View.NAME);
     view.show(createTree());
   }
@@ -99,11 +96,12 @@ final class Tree implements SearchListener {
   private JTree createTree() {
     myTree = new JTree(new DefaultTreeModel(myRoot));
     myTree.getSelectionModel().setSelectionMode(
-      TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
+      TreeSelectionModel.SINGLE_TREE_SELECTION);
     ToolTipManager.sharedInstance().registerComponent(myTree);
     myTree.setCellRenderer(new TreeRenderer());
     myTree.setShowsRootHandles(false);
     myTree.setRootVisible(true);
+    myTree.setSelectionPath(new TreePath(myRoot.getPath()));
 
     myTree.addTreeWillExpandListener(new TreeWillExpandListener() {
       public void treeWillExpand(TreeExpansionEvent event) {
@@ -126,22 +124,23 @@ final class Tree implements SearchListener {
     myTree.addMouseListener(new MouseAdapter() {
       public void mousePressed(MouseEvent event) {
         if (SwingUtilities.isRightMouseButton(event)) {
-          showPopupMenu(event);
+          showPopupMenu(event, event.getX(), event.getY());
         }
       }
       public void mouseClicked(MouseEvent event) {
-        // simple click
-        if (event.getClickCount() == 1) {
-          select(getNode(event));
+        // double click
+        if (event.getClickCount() == 2) {
+          DefaultMutableTreeNode node = getSelectedNode();
+
+          if (node.isLeaf()) {
+            selectOnDiagram(node);
+          }
         }
       }
     });
     myTree.addKeyListener(new KeyAdapter() {
       public void keyReleased(KeyEvent event) {
-        if (event.getKeyCode() == event.VK_ENTER) {
-          reform(getSelectedNodes());
-//todo a  goto(getSelectedNodes());
-        }
+        handleEvent(event);
       }
     });
     updateSize();
@@ -149,63 +148,269 @@ final class Tree implements SearchListener {
     return myTree;
   }
 
+  private void handleEvent(KeyEvent event) {
+    DefaultMutableTreeNode node = getSelectedNode();
+    int code = event.getKeyCode();
+    int modifiers = event.getModifiers();
+
+    if (code == KeyEvent.VK_F10 && isShift(modifiers)) {
+      showPopupMenu(event, 0, 0);
+    }
+    else {
+      handleAction(code, modifiers, node);
+    }
+  }
+
+  private void handleAction(int code, int modifiers, DefaultMutableTreeNode node) {
+    if (code == KeyEvent.VK_O && isAlt(modifiers)) {
+      gotoSource(node);
+    }
+    else if (code == KeyEvent.VK_D && isAlt(modifiers)) {
+      selectOnDiagram(node);
+    }
+    else if (code == KeyEvent.VK_C && isCtrl(modifiers)) {
+      copy(node);
+    }
+    else if (code == KeyEvent.VK_H && isCtrl(modifiers)) {
+      export(node);
+    }
+    else {
+      handleResult(code, modifiers, node);
+    }
+  }
+
+  private void handleResult(int code, int modifiers, DefaultMutableTreeNode node) {
+    if (code == KeyEvent.VK_F12 && isShift(modifiers)) {
+      previousOccurence(node);
+    }
+    else if (code == KeyEvent.VK_F12) {
+      nextOccurence(node);
+    }
+    else if (code == KeyEvent.VK_E && isCtrl(modifiers)) {
+      collapseExpand(getSelectedNode());
+    }
+    else if (code == KeyEvent.VK_DELETE) {
+      remove(node);
+    }
+  }
+
+  private void showPopupMenu(ComponentEvent event, int x, int y) {
+    final DefaultMutableTreeNode node = getSelectedNode();
+    JPopupMenu popup = new JPopupMenu();
+    JMenuItem item;
+
+    createAction(popup, node);
+
+    popup.addSeparator(); // -----------------------------------------------------
+
+    // previous occurence
+    item = createItem("LBL_Previous_Occurence"); // NOI18N
+    item.setEnabled(true);
+    item.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent event) {
+        previousOccurence(node);
+      }
+    });
+    item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F12,KeyEvent.SHIFT_MASK));
+    popup.add(item);
+
+    // next occurence
+    item = createItem("LBL_Next_Occurence"); // NOI18N
+    item.setEnabled(true);
+    item.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent event) {
+        nextOccurence(node);
+      }
+    });
+    item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0));
+    popup.add(item);
+
+    popup.addSeparator(); // -----------------------------------------------------
+
+    // collapse / expand
+    item = createItem("LBL_Collapse_Expand"); // NOI18N
+    item.setEnabled( !node.isLeaf());
+    item.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent event) {
+        collapseExpand(node);
+      }
+    });
+    item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.CTRL_MASK));
+    popup.add(item);
+
+    // remove
+    item = createItem("LBL_Remove"); // NOI18N
+    item.setEnabled( !node.isRoot());
+    item.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent event) {
+        remove(node);
+      }
+    });
+    item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
+    popup.add(item);
+
+    // show
+    popup.show(event.getComponent(), x, y);
+  }
+
+  private void createAction(JPopupMenu popup, final DefaultMutableTreeNode node) {
+    JMenuItem item;
+
+    // go to source
+    item = createItem("LBL_Go_to_Source"); // NOI18N
+    item.setEnabled( !node.isRoot());
+    item.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent event) {
+        gotoSource(node);
+      }
+    });
+    item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.ALT_MASK));
+    popup.add(item);
+
+    // select on diagram
+    item = createItem("LBL_Select_on_Diagram"); // NOI18N
+    item.setEnabled( !node.isRoot());
+    item.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent event) {
+        selectOnDiagram(node);
+      }
+    });
+    item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.ALT_MASK));
+    popup.add(item);
+
+    // copy
+    item = createItem("LBL_Copy"); // NOI18N
+    item.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent event) {
+        copy(node);
+      }
+    });
+    item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK));
+    popup.add(item);
+
+    // export
+    item = createItem("LBL_Export"); // NOI18N
+    item.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent event) {
+        export(node);
+      }
+    });
+    item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_H, KeyEvent.CTRL_MASK));
+    popup.add(item);
+  }
+
+  private boolean isAlt(int modifiers) {
+    return isModifier(modifiers, KeyEvent.ALT_MASK);
+  }
+
+  private boolean isShift(int modifiers) {
+    return isModifier(modifiers, KeyEvent.SHIFT_MASK);
+  }
+
+  private boolean isCtrl(int modifiers) {
+    return isModifier(modifiers, KeyEvent.CTRL_MASK);
+  }
+
+  private boolean isModifier(int modifiers, int mask) {
+    return (modifiers & mask) != 0;
+  }
+
   private void updateSize() {
     myTree.putClientProperty(Dimension.class.getName(), myTree.getMaximumSize());
   }
 
-  private void showPopupMenu(MouseEvent event) {
-    DefaultMutableTreeNode node = getNode(event);
-    JPopupMenu popup = new JPopupMenu();
-    JMenuItem item;
+  private void gotoSource(DefaultMutableTreeNode node) {
+    ((SearchElement) node.getUserObject()).gotoSource();
+  }
 
-    // select
-    item = createItem("LBL_Select_Action"); // NOI18N
-    item.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent event) {
-        select(getSelectedNodes());
+  private void selectOnDiagram(DefaultMutableTreeNode node) {
+    ((SearchElement) node.getUserObject()).selectOnDiagram();
+  }
+
+  private void previousOccurence(TreeNode node) {
+// todo a
+  }
+
+  private void nextOccurence(TreeNode node) {
+// todo a
+  }
+
+  private void copy(TreeNode node) {
+    StringBuffer buffer = new StringBuffer();
+
+    copy(node, buffer, ""); // NOI18N
+    buffer.append(LS);
+
+    StringSelection selection = new StringSelection(buffer.toString());
+    Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
+      selection, selection);
+  }
+
+  private void copy(TreeNode node, StringBuffer buffer, String indent) {
+    buffer.append(indent + node + LS);
+    Enumeration children = node.children();
+
+    while (children.hasMoreElements()) {
+      TreeNode child = (TreeNode) children.nextElement();
+      copy(child, buffer, indent + "    "); // NOI18N
+    }
+  }
+
+  private void export(DefaultMutableTreeNode node) {
+    List<List<String>> descriptions = new ArrayList<List<String>>();
+    export(node, descriptions);
+    descriptions.add (null);
+
+    if (myExport == null) {
+      myExport = new Export();
+    }
+    myExport.show(descriptions, myRoot.toString());
+  }
+
+  private void export(DefaultMutableTreeNode node, List<List<String>> descriptions) {
+    if (node.isLeaf()) {
+      List<String> description = new ArrayList<String>();
+      description.add(getDescription(node));
+      description.add(node.toString());
+      descriptions.add(description);
+    }
+    Enumeration children = node.children();
+
+    while (children.hasMoreElements()) {
+      DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
+      export(child, descriptions);
+    }
+  }
+
+  private String getDescription(DefaultMutableTreeNode node) {
+    if (isRoot(node)) {
+      return ""; // NOI18N
+    }
+    String description = getDescription((DefaultMutableTreeNode) node.getParent());
+
+    if ( !node.isLeaf()) {
+      if ( !isRoot((DefaultMutableTreeNode) node.getParent())) {
+        description += LS;
       }
-    });
-    if ( !node.isRoot()) {
-      popup.add(item);
+      description += node;
     }
-    popup.addSeparator();
-    // todo start here
-
-    if (popup.getSubElements().length != 0) {
-      popup.show(event.getComponent(), event.getX(), event.getY());
-    }
+    return description;
   }
 
-  private JMenuItem createItem(String name) {
-    return new JMenuItem(NbBundle.getMessage(Tree.class, name));
+  private boolean isRoot(DefaultMutableTreeNode node) {
+    if (node == null) {
+      return true;
+    }
+    if (node.getParent() == null) {
+      return true;
+    }
+    if (node.getParent().getParent() == null) {
+      return true;
+    }
+    return false;
   }
 
-  private void select(DefaultMutableTreeNode [] nodes) {
-    if (nodes == null) {
-      return;
-    }
-    for (DefaultMutableTreeNode node : nodes) {
-      select(node);
-    }
-  }
-
-  private void select(DefaultMutableTreeNode node) {
-    if (node == null || node.isRoot()) {
-      return;
-    }
-    ((SearchElement) node.getUserObject()).select();
-  }
-
-  private void reform(DefaultMutableTreeNode [] nodes) {
-    if (nodes == null) {
-      return;
-    }
-    for (DefaultMutableTreeNode node : nodes) {
-      reform(node);
-    }
-  }
-
-  private void reform(DefaultMutableTreeNode node) {
+  private void collapseExpand(DefaultMutableTreeNode node) {
     if (node == null || node.isLeaf()) {
       return;
     }
@@ -294,209 +499,37 @@ final class Tree implements SearchListener {
     }
   }
 
-  private DefaultMutableTreeNode getNode(MouseEvent event) {
-    return getNode(myTree.getPathForLocation(event.getX(), event.getY()));
+  private void remove(DefaultMutableTreeNode node) {
+    DefaultMutableTreeNode parent = (DefaultMutableTreeNode) node.getParent();
+
+    if (parent != null) {
+      parent.remove(node);
+      myTree.updateUI();
+    }
   }
 
   private DefaultMutableTreeNode getNode(TreePath path) {
-    if (path == null) {
-      return null;
-    }
     return (DefaultMutableTreeNode) path.getLastPathComponent();
   }
 
-  private DefaultMutableTreeNode [] getSelectedNodes() {
-    TreePath [] treePaths = myTree.getSelectionPaths();
+  private DefaultMutableTreeNode getSelectedNode() {
+    TreePath[] paths = myTree.getSelectionPaths();
 
-    if (treePaths == null) {
-      return null;
+    if (paths == null || paths.length == 0) {
+      return myRoot;
     }
-    DefaultMutableTreeNode [] nodes = new DefaultMutableTreeNode[treePaths.length];
+    TreePath path = paths [0];
 
-    for (int i=0; i < treePaths.length; i++) {
-      nodes [i] = getNode(treePaths[i]);
+    if (path == null) {
+      return myRoot;
     }
-    return nodes;
+    return getNode(path);
   }
 
-/*todo r
-  private void factorizeRoot(DefaultMutableTreeNode root) {
-    int count = root.getChildCount ();
-
-    for (int i=0; i < count; i++) {
-      factorize ((DefaultMutableTreeNode) root.getChildAt (i));
-    }
+  private JMenuItem createItem(String name) {
+    return new JMenuItem(NbBundle.getMessage(Tree.class, name));
   }
 
-  private void factorize (DefaultMutableTreeNode node) {
-//System.out.println ();
-//System.out.println ("SEE: " + node);
-    if (node.getChildCount () != 1) {
-//System.out.println ("    return: has more children: " + node.getChildCount ());
-      return;
-    }
-    DefaultMutableTreeNode child = (DefaultMutableTreeNode) node.getChildAt (0);
-
-    if (child.isLeaf ()) {
-//System.out.println ("    return: child is leaf: " + child);
-      return;
-    }
-    DefaultMutableTreeNode grandChild = (DefaultMutableTreeNode) child.getChildAt (0);
-
-    if (grandChild.isLeaf ()) {
-//System.out.println ("    return: grandchild is leaf: " + grandchild);
-      return;
-    }
-    // union node with child
-//System.out.println ("==== see  node: " + node  + " " + ((SearchElement) node.getUserObject ()));
-//System.out.println ("==== see child: " + child + " " + ((SearchElement) child.getUserObject ()));
-    SearchElement searchElement = (SearchElement) child.getUserObject ();
-    String text = "" + node + mySeparator + child;
-    node.setUserObject (searchElement.clone (text));
-//System.out.println ("==== set text: " + text);
-
-    node.remove (child);
-//System.out.println ("      remove child: " + child);
-
-    Vector grandchildren = new Vector ();
-    Enumeration children = child.children ();
-
-    while (children.hasMoreElements ()) {
-      DefaultMutableTreeNode next = (DefaultMutableTreeNode) children.nextElement ();
-      grandchildren.add (next);
-//System.out.println ("        grandchild: " + next);
-    }
-//System.out.println ("        --------------------");
-
-    for (int i=0; i < grandchildren.size (); i++) {
-      DefaultMutableTreeNode next = (DefaultMutableTreeNode) grandchildren.get (i);
-      node.add (next); 
-//System.out.println ("    add grandchild: " + next);
-    }
-//System.out.println ("           updated: " + node);
-    factorize (node);
-  }
-
-  public void copy () {
-    DefaultMutableTreeNode [] nodes = getSelectedNodes();
-
-    if (nodes == null) {
-      return;
-    }
-    StringBuffer buffer = new StringBuffer ();
-
-    for (int i=0; i < nodes.length; i++) {
-      copy (nodes [i], buffer, "");
-      buffer.append ("\n");
-    }
-    StringSelection stringSelection = new StringSelection (buffer.toString ());
-    Toolkit.getDefaultToolkit ().getSystemClipboard ().setContents (stringSelection, stringSelection);
-  }
-
-  private void copy (DefaultMutableTreeNode node, StringBuffer buffer, String indent) {
-    buffer.append (indent + node + "\n");
-    Enumeration children = node.children ();
-
-    while (children.hasMoreElements ()) {
-      DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement ();
-      copy (child, buffer, indent + "   ");
-    }
-  }
-
-  public void remove () {
-    DefaultMutableTreeNode [] nodes = getSelectedNodes();
-
-    if (nodes == null) {
-      return;
-    }
-    for (int i=0; i < nodes.length; i++) {
-      DefaultMutableTreeNode parent = (DefaultMutableTreeNode) nodes [i].getParent ();
-
-      if (parent == null) {
-        continue;
-      }
-      parent.remove (nodes [i]);
-    }
-//todo r    myTree.updateUI ();
-myTree.revalidate();
-myTree.repaint();
-  }
-
-  public void removeAll () {
-    DefaultMutableTreeNode root = (DefaultMutableTreeNode) myTree.getModel ().getRoot ();
-    root.removeAllChildren ();
-//todo r    myTree.updateUI ();
-myTree.revalidate();
-myTree.repaint();
-  }
-
-  public void export () { // todo rename save
-    DefaultMutableTreeNode [] nodes = getSelectedNodes();
-
-    if (nodes == null) {
-      return;
-    }
-    Vector descriptions = new Vector ();
-
-    for (int i=0; i < nodes.length; i++) {
-      export (nodes [i], descriptions);
-      descriptions.add (null);
-    }
-    if (myExport == null) {
-      myExport = new Export ();
-    }
-    myExport.show (descriptions, myTitle);
-  }
-
-  private void export (DefaultMutableTreeNode node, Vector descriptions) {
-    if (node.isLeaf ()) {
-      Vector description = new Vector ();
-      description.add (getDescription (node));
-      description.add ("" + node);
-      descriptions.add (description);
-    }
-    Enumeration children = node.children ();
-
-    while (children.hasMoreElements ()) {
-      DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement ();
-      export (child, descriptions);
-    }
-  }
-
-  private String getDescription (DefaultMutableTreeNode node) {
-    if (isRoot (node)) {
-      return "";
-    }
-    String description = getDescription ((DefaultMutableTreeNode) node.getParent ());
-
-    if ( !node.isLeaf () ) {
-      if ( !isRoot ((DefaultMutableTreeNode) node.getParent ())) {
-        description += mySeparator;
-      }
-      description += node;
-    }
-    return description;
-  }
-
-  private boolean isRoot (DefaultMutableTreeNode node) {
-    if (node == null) {
-      return true;
-    }
-    if (node.getParent () == null) {
-      return true;
-    }
-    if (node.getParent ().getParent () == null) {
-      return true;
-    }
-    return false;
-  }
-
-  private String myId;
-  private String myTitle;
-  private String mySeparator;
-  private Export myExport = null;
-//todo r  private JPanel myPanel = new JPanel (new GridBagLayout ());
-*/
   private void addElement(
     MutableTreeNode root,
     SearchElement element,
@@ -526,12 +559,6 @@ myTree.repaint();
 //out("skip leaf: " + child);
         continue;
       }
-//todo r      String text = ((SearchElement) child.getUserObject()).getText();
-//out("see child: " + text);
-//out("see next: " + next.toString());
-
-//todo r?      if (next.getText().equals(text)) {
-//      if (next.toString().equals(child.toString())) {
       if (child.getUserObject().equals(next)) {
         // go to the next level
 //out("next level");
@@ -557,14 +584,6 @@ myTree.repaint();
     return elements.iterator();
   }
 
-  private void out() {
-    PrintUtil.out();
-  }
-
-  private void out(Object object) {
-    PrintUtil.out(object);
-  }
-
   // ----------------------------------------------------------------
   private static class TreeRenderer extends DefaultTreeCellRenderer {
 
@@ -583,12 +602,9 @@ myTree.repaint();
     }
   }
 
-// todo r
-//  private String myKey;
-//  private Config myConfig;
-//  private String mySeparator;
   private JTree myTree;
+  private Export myExport;
   private int myFoundCount;
   private boolean myIsReformAll;
-  private MutableTreeNode myRoot;
+  private DefaultMutableTreeNode myRoot;
 }

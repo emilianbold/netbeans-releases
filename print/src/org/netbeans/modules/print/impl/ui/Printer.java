@@ -26,7 +26,7 @@ import java.awt.print.PrinterJob;
 
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.print.api.PrintUtil;
+import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -71,10 +71,6 @@ final class Printer implements Printable {
     myPapers[index].print(g);
   
     return PAGE_EXISTS;
-  }
-
-  private void out(Object object) {
-    PrintUtil.out(object);
   }
 
   private Paper[] myPapers;

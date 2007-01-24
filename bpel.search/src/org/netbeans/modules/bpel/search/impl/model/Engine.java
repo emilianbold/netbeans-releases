@@ -25,6 +25,8 @@ import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.NamedElement;
 
+import org.netbeans.modules.bpel.search.api.SearchException;
+import org.netbeans.modules.bpel.search.api.SearchMatch;
 import org.netbeans.modules.bpel.search.api.SearchOption;
 import org.netbeans.modules.bpel.search.spi.SearchEngine;
 
@@ -35,12 +37,19 @@ import org.netbeans.modules.bpel.search.spi.SearchEngine;
 public final class Engine extends SearchEngine.Adapter {
 
   /**{@inheritDoc}*/
-  public void search(SearchOption option) {
+  public void search(SearchOption option) throws SearchException {
     BpelModel model = (BpelModel) option.getSource();
+    myTarget = ((Target) option.getTarget()).getClazz();
+    myOption = option;
 //out();
     fireSearchStarted(option);
     search(model.getProcess(), ""); // NOI18N
     fireSearchFinished(option);
+  }
+
+  /**{@inheritDoc}*/
+  public Object[] getTargets() {
+    return Target.values();
   }
 
   private void search(BpelEntity element, String indent) {
@@ -56,17 +65,45 @@ public final class Engine extends SearchEngine.Adapter {
   }
 
   private void process(BpelEntity element, String indent) {
-    if ( !(element instanceof NamedElement)) {
-      return;
-    }
-    NamedElement named = (NamedElement) element;
-    String text = named.getName();
-//out(indent + " see: " + text);
-
-    if (accepts(text)) {
+//out(indent + " see: " + element);
+    if (checkTarget(element) && checkName(element)) {
 //out(indent + "      add.");
       fireSearchFound(new Element(element));
     }
+  }
+
+  private boolean checkTarget(Object object) {
+    if (myTarget == null) {
+      return true;
+    }
+    return myTarget.isAssignableFrom(object.getClass());
+  }
+
+  private boolean checkName(BpelEntity element) {
+    if (anyName()) {
+      return true;
+    }
+    if ( !(element instanceof NamedElement)) {
+      return false;
+    }
+    NamedElement named = (NamedElement) element;
+    return accepts(named.getName());
+  }
+
+  private boolean anyName() {
+    String text = myOption.getText();
+    SearchMatch match = myOption.getSearchMatch();
+
+    if (match == SearchMatch.PATTERN_MATCH && text.equals("*")) { // NOI18N
+      return true;
+    }
+    if (match == SearchMatch.REGULAR_EXPRESSION && text.equals("\\.*")) { // NOI18N
+      return true;
+    }
+    if (match == null && text.equals("")) { // NOI18N
+      return true;
+    }
+    return false;
   }
 
   /**{@inheritDoc}*/
@@ -84,4 +121,7 @@ public final class Engine extends SearchEngine.Adapter {
     return NbBundle.getMessage(
       Engine.class, "CTL_Engine_Short_Description"); // NOI18N
   }
+
+  private SearchOption myOption;
+  private Class<? extends BpelEntity> myTarget;
 }

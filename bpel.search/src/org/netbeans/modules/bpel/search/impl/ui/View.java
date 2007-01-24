@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.bpel.search.impl.ui;
 
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.FocusEvent;
@@ -44,6 +43,7 @@ public final class View extends TopComponent implements FocusListener {
   public View() {
     setIcon(Util.getIcon("find").getImage()); // NOI18N
     setLayout(new GridBagLayout());
+    setFocusable(true);
   }
 
   void show(JTree tree) {
@@ -82,6 +82,7 @@ public final class View extends TopComponent implements FocusListener {
     c.weightx = 1.0;
     c.weighty = 1.0;
     add(scrollPanel, c);
+//todo a add buttons on toolbar
 
     revalidate();
     repaint();

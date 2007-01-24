@@ -19,7 +19,6 @@
 package org.netbeans.modules.print.impl.ui;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -43,14 +42,11 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
 import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.text.PrintSettings;
 import org.openide.util.HelpCtx;
 
@@ -83,7 +79,7 @@ final class Attribute extends Dialog
   }
 
   @Override
-  protected DialogDescriptor getDescriptor()
+  protected DialogDescriptor createDescriptor()
   {
     myDescriptor = new DialogDescriptor(
       getPanel(),
@@ -119,27 +115,18 @@ final class Attribute extends Dialog
     printError("ERR_Zoom_Value_Is_Invalid"); // NOI18N
   }
 
-  private void printError(String key) {
-    DialogDisplayer.getDefault().notify(
-      new NotifyDescriptor.Message(
-        getMessage(key),
-        NotifyDescriptor.ERROR_MESSAGE
-      )
-    );
-  }
-
   private Object[] getButtons() {
     return new Object[] {
       DialogDescriptor.OK_OPTION,
-      DialogDescriptor.CANCEL_OPTION,
-      createButton(new JButton(),
+      createButton(
         "TLT_Apply", // NOI18N
         new AbstractAction(getMessage("LBL_Apply")) { // NOI18N
           public void actionPerformed(ActionEvent event) {
             updatePreview();
           }
         }
-      )
+      ),
+      DialogDescriptor.CANCEL_OPTION
     };
   }
 
@@ -219,56 +206,33 @@ final class Attribute extends Dialog
     return true;
   }
 
-  private JComponent getPanel() {
-    JPanel p = new JPanel(new GridBagLayout());
+  @Override
+  protected JPanel createMainPanel()
+  {
+    JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
-    c.weightx = 1.0;
+    c.anchor = GridBagConstraints.NORTHWEST;
     c.fill = GridBagConstraints.HORIZONTAL;
+    c.weightx = 1.0;
     c.gridx = 0;
 
     // border
-    p.add(getSeparator("LBL_Print_Options"), c); // NOI18N
-    p.add(getBorderPanel(), c);
+    panel.add(getSeparator("LBL_Print_Options"), c); // NOI18N
+    panel.add(getBorderPanel(), c);
 
     // header & footer
-    p.add(getSeparator("LBL_Header_Footer"), c); // NOI18N
-    p.add(getTitlePanel(), c);
+    panel.add(getSeparator("LBL_Header_Footer"), c); // NOI18N
+    panel.add(getTitlePanel(), c);
 
     // text
-    p.add(getSeparator("LBL_Text"), c); // NOI18N
-    p.add(getTextPanel(), c);
+    panel.add(getSeparator("LBL_Text"), c); // NOI18N
+    panel.add(getTextPanel(), c);
 
     // zoom
-    p.add(getSeparator("LBL_Zoom"), c); // NOI18N
-    p.add(getZoomPanel(), c);
-
-    // main panel
-    JPanel panel = new JPanel(new GridBagLayout());
-    c.weightx = 1.0;
-    c.weighty = 1.0;
-    c.insets = new Insets(TINY_INSET, MEDIUM_INSET, 0, MEDIUM_INSET);
-    c.anchor = GridBagConstraints.NORTHWEST;
-    c.fill = GridBagConstraints.HORIZONTAL;
-    panel.add(p, c);
+    panel.add(getSeparator("LBL_Zoom"), c); // NOI18N
+    panel.add(getZoomPanel(), c);
 
     updateControl();
-
-    return panel;
-  }
-
-  private JPanel getSeparator(String key) {
-    JPanel panel = new JPanel(new GridBagLayout());
-    GridBagConstraints c = new GridBagConstraints();
-    c.anchor = GridBagConstraints.WEST;
-
-    c.insets = new Insets(SMALL_INSET, 0, SMALL_INSET, 0);
-    panel.add(createLabel(key), c);
-
-    c.weightx = 1.0;
-    c.fill = GridBagConstraints.HORIZONTAL;
-    c.insets = new Insets(SMALL_INSET, SMALL_INSET, SMALL_INSET, 0);
-    panel.add(new JSeparator(), c);
-//  panel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.green));
 
     return panel;
   }
@@ -279,7 +243,7 @@ final class Attribute extends Dialog
     c.anchor = GridBagConstraints.WEST;
 
     // border
-    myBorder = (JCheckBox) createButton(new JCheckBox(),
+    myBorder = createCheckBox(
       "LBL_Print_Border", // NOI18N
       new AbstractAction(getMessage("LBL_Print_Border")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
@@ -292,7 +256,7 @@ final class Attribute extends Dialog
     // border.color
     c.weightx = 1.0;
     c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
-    myBorderColor = (JButton) createButton(new JButton(),
+    myBorderColor = createButton(
       "TLT_Border_Color", // NOI18N
       new AbstractAction(null, Util.getIcon("color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
@@ -304,7 +268,7 @@ final class Attribute extends Dialog
 
     // page setup
     c.anchor = GridBagConstraints.EAST;
-    JButton button = (JButton) createButton(new JButton(),
+    JButton button = createButton(
       "TLT_Page_Setup", // NOI18N
       new AbstractAction(getMessage("LBL_PageSetup")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
@@ -339,6 +303,7 @@ final class Attribute extends Dialog
     setHeaderPanel(panel, c);
     setFooterPanel(panel, c);
     setPatternPanel(panel, c);
+
 //  panel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.red));
 
     return panel;
@@ -366,7 +331,7 @@ final class Attribute extends Dialog
     c.gridy++;
     c.insets = new Insets(0, 0, 0, 0);
     c.anchor = GridBagConstraints.WEST;
-    myHeader = (JCheckBox) createButton(new JCheckBox(),
+    myHeader = createCheckBox(
       "LBL_Print_Header", // NOI18N
       new AbstractAction(getMessage("LBL_Print_Header")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
@@ -386,23 +351,23 @@ final class Attribute extends Dialog
     c.fill = GridBagConstraints.HORIZONTAL;
     c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
     myHeaderLeft = new JTextField();
-    setWidth(myHeaderLeft, FIELD_WIDTH);
+    setWidthFocused(myHeaderLeft, FIELD_WIDTH);
     panel.add(myHeaderLeft, c);
 
     // header center
     myHeaderCenter = new JTextField();
-    setWidth(myHeaderCenter, FIELD_WIDTH);
+    setWidthFocused(myHeaderCenter, FIELD_WIDTH);
     panel.add(myHeaderCenter, c);
 
     // header right
     myHeaderRight = new JTextField();
-    setWidth(myHeaderRight, FIELD_WIDTH);
+    setWidthFocused(myHeaderRight, FIELD_WIDTH);
     panel.add(myHeaderRight, c);
 
     // header.color
     c.weightx = 0.0;
     c.fill = GridBagConstraints.NONE;
-    myHeaderColor = (JButton) createButton(new JButton(),
+    myHeaderColor = createButton(
       "TLT_Header_Color", // NOI18N
       new AbstractAction(null, Util.getIcon("color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
@@ -413,7 +378,7 @@ final class Attribute extends Dialog
     panel.add(myHeaderColor, c);
 
     // header font
-    myHeaderFont = (JButton) createButton(new JButton(),
+    myHeaderFont = createButton(
       "TLT_Header_Font", // NOI18N
       new AbstractAction(null, Util.getIcon("font")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
@@ -429,7 +394,7 @@ final class Attribute extends Dialog
     c.gridy++;
     c.insets = new Insets(0, 0, 0, 0);
     c.anchor = GridBagConstraints.WEST;
-    myFooter = (JCheckBox) createButton(new JCheckBox(),
+    myFooter = createCheckBox(
       "LBL_Print_Footer", // NOI18N
       new AbstractAction(getMessage("LBL_Print_Footer")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
@@ -448,23 +413,23 @@ final class Attribute extends Dialog
     c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
     c.fill = GridBagConstraints.HORIZONTAL;
     myFooterLeft = new JTextField();
-    setWidth(myFooterLeft, FIELD_WIDTH);
+    setWidthFocused(myFooterLeft, FIELD_WIDTH);
     panel.add(myFooterLeft, c);
 
     // footer center
     myFooterCenter = new JTextField();
-    setWidth(myFooterCenter, FIELD_WIDTH);
+    setWidthFocused(myFooterCenter, FIELD_WIDTH);
     panel.add(myFooterCenter, c);
 
     // footer right
     myFooterRight = new JTextField();
-    setWidth(myFooterRight, FIELD_WIDTH);
+    setWidthFocused(myFooterRight, FIELD_WIDTH);
     panel.add(myFooterRight, c);
 
     // footer color
     c.weightx = 0.0;
     c.fill = GridBagConstraints.NONE;
-    myFooterColor = (JButton) createButton(new JButton(),
+    myFooterColor = createButton(
       "TLT_Footer_Color", // NOI18N
       new AbstractAction(null, Util.getIcon("color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
@@ -475,7 +440,7 @@ final class Attribute extends Dialog
     panel.add(myFooterColor, c);
 
     // footer font
-    myFooterFont = (JButton) createButton(new JButton(),
+    myFooterFont = createButton(
       "TLT_Footer_Font", // NOI18N
       new AbstractAction(null, Util.getIcon("font")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
@@ -560,7 +525,7 @@ final class Attribute extends Dialog
   private void createTopTextPanel(JPanel panel, GridBagConstraints c) {
     // line numbers
     c.gridy++;
-    myLineNumbers = (JCheckBox) createButton(new JCheckBox(),
+    myLineNumbers = createCheckBox(
       "LBL_Line_Numbers", // NOI18N
       new AbstractAction(getMessage("LBL_Line_Numbers")) { // NOI18N
         public void actionPerformed(ActionEvent event) {}
@@ -569,7 +534,7 @@ final class Attribute extends Dialog
     panel.add(myLineNumbers, c);
 
     // use color
-    myUseColor = (JCheckBox) createButton(new JCheckBox(),
+    myUseColor = createCheckBox(
       "TLT_Use_Color", // NOI18N
       new AbstractAction(getMessage("LBL_Use_Color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {}
@@ -582,7 +547,7 @@ final class Attribute extends Dialog
 
     // text color
     c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
-    myTextColor = (JButton) createButton(new JButton(),
+    myTextColor = createButton(
       "TLT_Text_Color", // NOI18N
       new AbstractAction(null, Util.getIcon("color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
@@ -593,7 +558,7 @@ final class Attribute extends Dialog
     panel.add(myTextColor, c);
     
     // text font
-    myTextFont = (JButton) createButton(new JButton(),
+    myTextFont = createButton(
       "TLT_Text_Font", // NOI18N
       new AbstractAction(null, Util.getIcon("font")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
@@ -608,7 +573,7 @@ final class Attribute extends Dialog
     // wrap lines
     c.gridy++;
     c.insets = new Insets(0, 0, 0, 0);
-    myWrapLines = (JCheckBox) createButton(new JCheckBox(),
+    myWrapLines = createCheckBox(
       "LBL_Wrap_Lines", // NOI18N
       new AbstractAction(getMessage("LBL_Wrap_Lines")) { // NOI18N
         public void actionPerformed(ActionEvent event) {}
@@ -617,7 +582,7 @@ final class Attribute extends Dialog
     panel.add(myWrapLines, c);
 
     // use font
-    myUseFont = (JCheckBox) createButton(new JCheckBox(),
+    myUseFont = createCheckBox(
       "TLT_Use_Font", // NOI18N
       new AbstractAction(getMessage("LBL_Use_Font")) { // NOI18N
         public void actionPerformed(ActionEvent event) {}
@@ -633,7 +598,7 @@ final class Attribute extends Dialog
     // background color
     c.anchor = GridBagConstraints.WEST;
     c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
-    myBackgroundColor = (JButton) createButton(new JButton(),
+    myBackgroundColor = createButton(
       "TLT_Background_Color", // NOI18N
       new AbstractAction(null, Util.getIcon("color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
@@ -667,7 +632,7 @@ final class Attribute extends Dialog
       SPACING_MAX,
       SPACING_STP
     ));
-    setWidth(myLineSpacing, myBackgroundColor.getPreferredSize(), false);
+    setWidth(myLineSpacing, myBackgroundColor.getPreferredSize().width);
     label.setLabelFor(myLineSpacing);
     panel.add(myLineSpacing, c);
   }
@@ -702,7 +667,7 @@ final class Attribute extends Dialog
     c.insets = new Insets(SMALL_INSET, SMALL_INSET, TINY_INSET, 0);
     int zoomWidth = myOption.getZoomWidth();
     myZoomWidth = new JTextField(getString(zoomWidth));
-    setWidth(myZoomWidth, TEXT_WIDTH, false);
+    setWidth(myZoomWidth, TEXT_WIDTH);
     panel.add(myZoomWidth, c);
 
     // page(s)
@@ -737,6 +702,7 @@ final class Attribute extends Dialog
     // (o) Fit height to
     c.gridy++;
     c.insets = new Insets(SMALL_INSET, 0, 0, 0);
+
     JRadioButton buttonH = createRadioButton("LBL_Fit_Height_to"); // NOI18N
     buttonH.addItemListener(createItemListener(false, true, false));
     panel.add(buttonH, c);
@@ -746,16 +712,17 @@ final class Attribute extends Dialog
     c.insets = new Insets(SMALL_INSET, SMALL_INSET, TINY_INSET, 0);
     int zoomHeight = myOption.getZoomHeight();
     myZoomHeight = new JTextField(getString(zoomHeight));
-    setWidth(myZoomHeight, TEXT_WIDTH, false);
+    setWidth(myZoomHeight, TEXT_WIDTH);
     panel.add(myZoomHeight, c);
 
     // page(s)
-    c.weightx = 1.0;
     panel.add(createLabel("LBL_Pages"), c); // NOI18N
 
     buttonF.setSelected(zoomFactor >= 0.0);
     buttonW.setSelected(zoomWidth > 0 && zoomFactor < 0.0);
     buttonH.setSelected(zoomHeight > 0 && zoomFactor < 0.0);
+
+//  panel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.green));
 
     return panel;
   }
@@ -798,21 +765,9 @@ final class Attribute extends Dialog
     }
   }
 
-  private void setWidth(JComponent field, int width) {
-    setWidth(field, width, true);
-  }
-
-  private void setWidth(JComponent f, int width, boolean focusable) {
-    setWidth(f, new Dimension(width, f.getPreferredSize().height), focusable);
-  }
-
-  private void setWidth(JComponent field, Dimension dimension, boolean focusable) {
-    field.setMinimumSize(dimension);
-    field.setPreferredSize(dimension);
-
-    if (focusable) {
-      field.addFocusListener(this);
-    }
+  private void setWidthFocused(JComponent component, int width) {
+    setWidth(component, width);
+    component.addFocusListener(this);
   }
 
   public void focusGained(FocusEvent event) {

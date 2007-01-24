@@ -20,7 +20,6 @@ package org.netbeans.modules.bpel.search.impl.model;
 
 import javax.swing.Icon;
 
-import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.editors.api.utils.Util;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.NamedElement;
@@ -45,23 +44,16 @@ final class Element extends SearchElement.Adapter {
 
   /**{@inheritDoc}*/
   @Override
-  public void select()
-  {
-//out("select: " + this); // todo a
-  }
-
-  /**{@inheritDoc}*/
-  @Override
-  public void highlight(boolean highlighted)
-  {
-  // todo a
-  }
-
-  /**{@inheritDoc}*/
-  @Override
   public void gotoSource()
   {
-//out("goto source: " + this); // todo a
+    Util.goToSource(myElement);
+  }
+
+  /**{@inheritDoc}*/
+  @Override
+  public void selectOnDiagram()
+  {
+    Util.goToDesign(myElement);
   }
 
   /**{@inheritDoc}*/
@@ -127,8 +119,7 @@ final class Element extends SearchElement.Adapter {
   }
 
   private static Icon getIcon(BpelEntity element) {
-    NodeType node = Util.getBasicNodeType(element);
-    return node.getIcon();
+    return Util.getBasicNodeType(element).getIcon();
   }
 
   private BpelEntity myElement;

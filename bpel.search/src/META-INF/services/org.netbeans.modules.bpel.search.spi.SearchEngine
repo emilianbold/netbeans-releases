@@ -1,1 +1,3 @@
 org.netbeans.modules.bpel.search.impl.diagram.Engine
+org.netbeans.modules.bpel.search.impl.diagram.Construct
+org.netbeans.modules.bpel.search.impl.model.Engine

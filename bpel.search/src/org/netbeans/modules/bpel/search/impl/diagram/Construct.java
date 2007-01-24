@@ -18,20 +18,16 @@
  */
 package org.netbeans.modules.bpel.search.impl.diagram;
 
-import java.util.Iterator;
 import java.util.List;
-
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.bpel.editors.api.Diagram;
+import org.netbeans.modules.bpel.editors.api.DiagramElement;
 
-import org.netbeans.modules.bpel.design.DesignView;
-import org.netbeans.modules.bpel.design.model.DiagramModel;
-import org.netbeans.modules.bpel.design.model.elements.VisualElement;
-import org.netbeans.modules.bpel.design.model.patterns.Pattern;
-
+import org.netbeans.modules.bpel.search.api.SearchException;
 import org.netbeans.modules.bpel.search.api.SearchOption;
 
 /**
@@ -41,47 +37,30 @@ import org.netbeans.modules.bpel.search.api.SearchOption;
 public final class Construct extends Engine {
 
   /**{@inheritDoc}*/
-  public void search(SearchOption option) {
-    DesignView view = (DesignView) option.getSource();
-    myModel = view.getModel();
-    Util.getDecorator(view).clearHighlighting();
+  public void search(SearchOption option) throws SearchException {
+    Diagram diagram = (Diagram) option.getSource();
+    diagram.clearHighlighting();
 //out();
     fireSearchStarted(option);
-    search(getRoot(myModel, option.useSelection()).getOMReference(), ""); // NOI18N
+    search(diagram, option.useSelection());
     fireSearchFinished(option);
   }
-
-  private void search(BpelEntity element, String indent) {
-    if (element == null) {
-      return;
-    }
-    process(element, indent);
-    List<BpelEntity> children = element.getChildren();
   
-    for (BpelEntity entity : children) {
-      search(entity, indent + "    "); // NOI18N
-    }
-  }
+  private void search(Diagram diagram, boolean useSelection) {
+    List<DiagramElement> elements = diagram.getElements(useSelection);
 
-  private void process(BpelEntity element, String indent) {
-    Pattern pattern = myModel.getPattern(element);
+    for (DiagramElement element : elements) {
+      BpelEntity entity = element.getBpelEntity();
 
-    if (pattern == null) {
-      return;
-    }
-    Iterator<VisualElement> iterator = pattern.getElements().iterator();
-
-    if ( !iterator.hasNext()) {
-      return;
-    }
-    if (acceptsAttribute(element) || acceptsComponent(element)) {
+      if (acceptsAttribute(entity) || acceptsComponent(entity)) {
 //out(indent + "      add.");
-      fireSearchFound(new Element(iterator.next()));
+        fireSearchFound(new Element(element));
+      }
     }
   }
-
-  private boolean acceptsAttribute(BpelEntity element) {
-    NamedNodeMap attributes = element.getPeer().getAttributes();
+  
+  private boolean acceptsAttribute(BpelEntity entity) {
+    NamedNodeMap attributes = entity.getPeer().getAttributes();
 
     for (int i=0; i < attributes.getLength(); i++) {
       Node attribute = attributes.item(i);
@@ -96,8 +75,8 @@ public final class Construct extends Engine {
     return false;
   }
 
-  private boolean acceptsComponent(BpelEntity element) {
-    return accepts(element.getPeer().getTagName());
+  private boolean acceptsComponent(BpelEntity entity) {
+    return accepts(entity.getPeer().getTagName());
   }
 
   /**{@inheritDoc}*/
@@ -110,6 +89,4 @@ public final class Construct extends Engine {
     return NbBundle.getMessage(
       Engine.class, "CTL_Construct_Short_Description"); // NOI18N
   }
-
-  private DiagramModel myModel;
 }
