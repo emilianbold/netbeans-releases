@@ -1,5 +1,6 @@
 package org.netbeans.installer.infra.server.client.servlets;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,7 +60,7 @@ public class CreateBundle extends HttpServlet {
                 platform = Platform.SOLARIS_X86;
             }
             if (userAgent.contains("SunOS sun4u")) {
-                platform = Platform.SOLARIS_X86;
+                platform = Platform.SOLARIS_SPARC;
             }
             
             
@@ -126,11 +127,13 @@ public class CreateBundle extends HttpServlet {
             String[] components = request.getParameterValues("component");
             Platform platform = StringUtils.parsePlatform(request.getParameter("platform"));
             
-            final InputStream  input  = new FileInputStream(manager.createBundle(platform, registries, components));
+            File bundle = manager.createBundle(platform, registries, components);
+            
+            final InputStream  input  = new FileInputStream(bundle);
             final OutputStream output = response.getOutputStream();
             
             response.setContentType("application/octet-stream");
-            response.setHeader("Content-Disposition", "attachment; filename=nbi-bundle.jar");
+            response.setHeader("Content-Disposition", "attachment; filename=" + bundle.getName());
             
             StreamUtils.transferData(input, output);
             

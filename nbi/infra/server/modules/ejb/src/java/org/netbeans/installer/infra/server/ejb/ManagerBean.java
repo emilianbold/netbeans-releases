@@ -578,7 +578,12 @@ public class ManagerBean implements Manager {
         
         try {
             File statefile = FileUtils.createTempFile(TEMP, false);
-            File bundle    = FileUtils.createTempFile(BUNDLES, false);
+            File bundle = new File(BUNDLES,
+                    "nbi_" + 
+                    StringUtils.asString(components, "_").replace(",", "_") + 
+                    "_" + 
+                    platform + 
+                    ".jar");
             
             File javaHome  = new File(System.getProperty("java.home"));
             
@@ -623,6 +628,11 @@ public class ManagerBean implements Manager {
             
             if (results.getErrorCode() != 0) {
                 throw new ManagerException("Could not create bundle - error in running the engine");
+            }
+            
+            if (platform == Platform.WINDOWS) { 
+                bundle = new File(
+                        bundle.getAbsolutePath().replaceFirst("\\.jar$", ".exe"));
             }
             
             bundles.put(key, bundle);

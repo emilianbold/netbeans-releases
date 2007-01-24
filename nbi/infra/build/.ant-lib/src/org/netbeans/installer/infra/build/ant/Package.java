@@ -130,7 +130,14 @@ public class Package extends Task {
     
     private void browse(File parent, JarOutputStream output) throws IOException {
         FileInputStream fis = null;
+        List<File> toSkip = new LinkedList<File>();
+        
         for (File child: parent.listFiles()) {
+            if (toSkip.contains(child)) {
+                log("    skipping " + child);
+                continue;
+            }
+            
             log("    visiting " + child);
             
             String    path     = child.getAbsolutePath();
@@ -148,11 +155,53 @@ public class Package extends Task {
                 
                 browse(child, output);
             } else {
+                // if the source file comes in already packed, we need to unpack it 
+                // first and then process normally
+                if (child.getName().endsWith(".jar.pack.gz")) {
+                    log("        it is a packed jar - attempting unpacking");
+                    File unpacked = new File(child.getPath().substring(
+                            0, 
+                            child.getPath().length() - 8));
+                    File temp = null;
+                    
+                    if (unpacked.exists()) {
+                        temp = File.createTempFile(
+                                "xxx", 
+                                null, 
+                                child.getParentFile());
+                        temp.delete();
+                        unpacked.renameTo(temp);
+                    }
+                    
+                    if (AntUtils.unpack(child, unpacked)) {
+                        child.delete();
+                        if (temp != null) {
+                            temp.delete();
+                        }
+                        child = unpacked.getAbsoluteFile();
+                        
+                        log("        successfully unpacked - processing file: " + child);
+                    } else {
+                        unpacked.delete();
+                        if (temp != null) {
+                            temp.renameTo(unpacked);
+                        }
+                    }
+                }
+                
                 entry = new FileEntry(child, name);
                 
                 if (entry.isJarFile() && !entry.isSignedJarFile()) {
                     File backup = new File(child.getPath() + ".bak");
                     File packed = new File(child.getPath() + ".pack.gz");
+                    
+                    // if the packed form of this jar already exists, we need to 
+                    // clean it up
+                    if (packed.exists()) {
+                        log("        packed jar already exists - deleting it");
+                        packed.delete();
+                        toSkip.add(packed);
+                    }
                     
                     AntUtils.copy(child, backup);
                     
