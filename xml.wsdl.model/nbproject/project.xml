@@ -20,7 +20,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.xml.wsdl.model</code-name-base>
             <module-dependencies>
                 <dependency>
@@ -65,6 +65,38 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                 <package>org.netbeans.modules.xml.wsdl.model.visitor</package>
                 <package>org.netbeans.modules.xml.wsdl.validator.spi</package>
             </public-packages>
+            <test-dependencies>
+                <!-- Dependencies for a source root with tests: -->
+                <test-type>
+                    <name>unit</name>
+                    <!-- A dependency on a module or its tests: -->
+                    <test-dependency>
+                        <!-- Identification of module our tests depend upon: -->
+                        <code-name-base>org.netbeans.modules.xml.text</code-name-base>
+                        <!-- Include also transitive module dependencies of that module: -->
+                        <recursive/>
+                        <!-- Always available when running, but to include at compile time also: -->
+                        <compile-dependency/>
+                        <!-- To request the tests of that module as well: -->
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.xml.xdm</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.xml.retriever</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.masterfs</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
+            </test-dependencies>
         </data>
     </configuration>
 </project>
