@@ -13,10 +13,9 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 
 package org.netbeans.api.progress;
 
@@ -140,13 +139,13 @@ public final class ProgressHandle {
     
 
     /**
-     * allows to set a custom initial delay for the progress task to appear in the
-     * status bar. This delay marks the time between starting of the progress handle
-     * and it's appearance in the status bar. If it finishes earlier, it's not shown at all.
-     * There is a default < 1s value for this. If you want to to appear earlier or later, 
+     * Set a custom initial delay for the progress task to appear in the status bar.
+     * This delay marks the time between starting of the progress handle
+     * and its appearance in the status bar. If it finishes earlier, it's not shown at all.
+     * There is a default &lt; 1s value for this. If you want to to appear earlier or later, 
      * call this method with the value you prefer before starting the handle.
      * <p> Progress bars that are placed in custom dialogs do always appear right away without a delay.
-     * @param millis amount of miliseconds that shall pass before the progress appears in status bar.
+     * @param millis number of miliseconds to wait before the progress appears in status bar.
      */
     public void setInitialDelay(int millis) {
        internal.setInitialDelay(millis); 
