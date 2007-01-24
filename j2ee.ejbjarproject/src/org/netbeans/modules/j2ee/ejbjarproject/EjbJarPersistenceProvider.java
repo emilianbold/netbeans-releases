@@ -23,20 +23,31 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
+import org.netbeans.modules.j2ee.persistence.provider.Provider;
+import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceClassPathProvider;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceLocationProvider;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeFactory;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeImplementation;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeProvider;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopesProvider;
+import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
 import org.netbeans.modules.j2ee.persistence.spi.support.PersistenceScopesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
@@ -47,34 +58,34 @@ import org.openide.filesystems.FileObject;
  *
  * @author Andrei Badea
  */
-public class EjbJarPersistenceProvider implements PersistenceLocationProvider, PersistenceScopeProvider, PersistenceScopesProvider, PersistenceClassPathProvider, PropertyChangeListener {
-
+public class EjbJarPersistenceProvider implements PersistenceLocationProvider, PersistenceScopeProvider, PersistenceScopesProvider, PersistenceClassPathProvider, PropertyChangeListener, PersistenceProviderSupplier{
+    
     private final EjbJarProject project;
     private final PropertyEvaluator evaluator;
-
+    
     private final PersistenceScopeImplementation persistenceScopeImpl = new PersistenceScopeImpl();
     private final PersistenceScope persistenceScope = PersistenceScopeFactory.createPersistenceScope(persistenceScopeImpl);
-
+    
     private final PersistenceScopesHelper scopesHelper = new PersistenceScopesHelper();
-
+    
     private ClassPath projectSourcesClassPath;
-
+    
     public EjbJarPersistenceProvider(EjbJarProject project, PropertyEvaluator evaluator) {
         this.project = project;
         this.evaluator = evaluator;
         evaluator.addPropertyChangeListener(this);
         locationChanged();
     }
-
+    
     public FileObject getLocation() {
         return project.getEjbModule().getMetaInf();
     }
-
+    
     public FileObject createLocation() throws IOException {
         // the folder should have be created when the project was generated
         return project.getAPIEjbJar().getMetaInf();
     }
-
+    
     public PersistenceScope findPersistenceScope(FileObject fo) {
         Project project = FileOwnerQuery.getOwner(fo);
         if (project != null) {
@@ -83,15 +94,15 @@ public class EjbJarPersistenceProvider implements PersistenceLocationProvider, P
         }
         return null;
     }
-
+    
     public PersistenceScopes getPersistenceScopes() {
         return scopesHelper.getPersistenceScopes();
     }
-
+    
     public ClassPath getClassPath() {
         return getProjectSourcesClassPath();
     }
-
+    
     private PersistenceScope getPersistenceScope() {
         FileObject persistenceXml = persistenceScope.getPersistenceXml();
         if (persistenceXml != null && persistenceXml.isValid()) {
@@ -99,7 +110,7 @@ public class EjbJarPersistenceProvider implements PersistenceLocationProvider, P
         }
         return null;
     }
-
+    
     private ClassPath getProjectSourcesClassPath() {
         synchronized (this) {
             if (projectSourcesClassPath == null) {
@@ -112,14 +123,14 @@ public class EjbJarPersistenceProvider implements PersistenceLocationProvider, P
             return projectSourcesClassPath;
         }
     }
-
+    
     public void propertyChange(PropertyChangeEvent event) {
         String propName = event.getPropertyName();
         if (propName == null || propName.equals(EjbJarProjectProperties.META_INF)) {
             locationChanged();
         }
     }
-
+    
     private void locationChanged() {
         File metaInfFile = project.getEjbModule().getMetaInfAsFile();
         if (metaInfFile != null) {
@@ -129,12 +140,54 @@ public class EjbJarPersistenceProvider implements PersistenceLocationProvider, P
             scopesHelper.changePersistenceScope(null, null);
         }
     }
+    
+    public List<Provider> getSupportedProviders() {
+        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eePlatform platform  = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
+        
+        if (platform == null){
+            return Collections.<Provider>emptyList();
+        }
+        List<Provider> result = new ArrayList<Provider>();
+        
+        addPersistenceProvider(ProviderUtil.HIBERNATE_PROVIDER, "hibernatePersistenceProviderIsDefault", platform, result); // NOI18N
+        addPersistenceProvider(ProviderUtil.TOPLINK_PROVIDER, "toplinkPersistenceProviderIsDefault", platform, result);// NOI18N
+        addPersistenceProvider(ProviderUtil.KODO_PROVIDER, "kodoPersistenceProviderIsDefault", platform, result); // NOI18N
+        
+        return result;
+    }
+    
+    private void addPersistenceProvider(Provider provider, String defaultProvider, J2eePlatform platform, List<Provider> providers){
+        // would need an api for this..
+        if (platform.isToolSupported(provider.getProviderClass())){
+            if (platform.isToolSupported(defaultProvider)){
+                providers.add(0, provider);
+            } else {
+                providers.add(provider);
+            }
+        }
+    }
+    
+    public boolean supportsDefaultProvider() {
+        
+        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eePlatform platform  = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
+        
+        if (platform == null){
+            // server probably not registered, can't resolve whether default provider is supported (see #79856)
+            return false;
+        }
+        
+        Set<String> supportedVersions = platform.getSupportedSpecVersions(j2eeModuleProvider.getJ2eeModule().getModuleType());
+        
+        return supportedVersions.contains(J2eeModule.JAVA_EE_5);
+    }
 
     /**
      * Implementation of PersistenceScopeImplementation.
      */
     private final class PersistenceScopeImpl implements PersistenceScopeImplementation {
-
+        
         public FileObject getPersistenceXml() {
             FileObject location = getLocation();
             if (location == null) {
@@ -142,7 +195,7 @@ public class EjbJarPersistenceProvider implements PersistenceLocationProvider, P
             }
             return location.getFileObject("persistence.xml"); // NOI18N
         }
-
+        
         public ClassPath getClassPath() {
             return getProjectSourcesClassPath();
         }
