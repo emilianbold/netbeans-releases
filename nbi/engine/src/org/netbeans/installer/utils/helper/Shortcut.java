@@ -54,6 +54,7 @@ public class Shortcut {
         this.names.put(Locale.getDefault(), name);
         
         this.executable = executable;
+        this.categories = new String [] {};
     }
     
     public Map<Locale, String> getNames() {

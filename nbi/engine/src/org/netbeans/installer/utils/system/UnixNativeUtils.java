@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExecutionResults;
@@ -154,6 +155,22 @@ public abstract class UnixNativeUtils extends NativeUtils {
         
         contents.append("Name=" + shortcut.getName()).append(nl);
         contents.append("Exec=" + shortcut.getExecutable()).append(nl);
+        
+        if(shortcut.getIcon()!=null) {
+            contents.append("Icon=" + shortcut.getIconPath()).append(nl);
+        }
+        
+        if(shortcut.getCategories().length != 0) {
+            contents.append("Categories=" + 
+                    StringUtils.asString(shortcut.getCategories(),";")).
+                    append(nl);
+        }
+        
+        contents.append("Version=1.0").append(nl);
+        contents.append("StartupNotify=true").append(nl);
+        contents.append("Type=Application").append(nl);        
+        contents.append("Terminal=0").append(nl);
+        
         
         try {
             FileUtils.writeFile(file, contents);

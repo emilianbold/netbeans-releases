@@ -167,7 +167,8 @@ public final class Product extends RegistryNode {
         // product should be automatically wrapped, we first create the required
         // directories structure and then extract the product
         if (SystemUtils.isMacOS() && configurationLogic.wrapForMacOs()) {
-            setInstallationLocation(new File(resourcesDir, getUid()));
+            setInstallationLocation(new File(resourcesDir, 
+                    getInstallationLocation().getName().replaceAll("\\.app$","")));
             
             final UnixNativeUtils utils =
                     (UnixNativeUtils) SystemUtils.getNativeUtils();

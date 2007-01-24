@@ -65,7 +65,8 @@ public class SetInstallationLocationAction extends WizardAction {
             if (SystemUtils.isMacOS() && source.getLogic().wrapForMacOs()) {
                 sourceLocation = new File(
                         source.getInstallationLocation(), 
-                        "Contents/Resources/" + source.getUid());
+                        "Contents/Resources/" + 
+                        source.getInstallationLocation().getName().replaceAll("\\.app$",""));
             } else {
                 sourceLocation = source.getInstallationLocation();
             }
