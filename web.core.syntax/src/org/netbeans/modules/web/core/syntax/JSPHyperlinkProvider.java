@@ -151,7 +151,12 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
             if (elTokenSequence != null){
                 ELExpression exp = new ELExpression((JspSyntaxSupport)bdoc.getSyntaxSupport());
-                elTokenSequence.moveLast();
+                elTokenSequence.move(offset);
+                
+                if (elTokenSequence.token().id() == ELTokenId.DOT){
+                    return false;
+                }
+                
                 int endOfEL = elTokenSequence.offset() + elTokenSequence.token().length();
                 int res = exp.parse(endOfEL);
                 if (res == ELExpression.EL_START) {
@@ -212,14 +217,12 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             
             if (elTokenSequence != null){
                 ELExpression exp = new ELExpression((JspSyntaxSupport)bdoc.getSyntaxSupport());
-                elTokenSequence.moveFirst();
-                int elStart = elTokenSequence.offset();
-                elTokenSequence.moveLast();
+                elTokenSequence.move(offset);
                 int elEnd = elTokenSequence.offset() + elTokenSequence.token().length();
                 int res = exp.parse(elEnd);
                 
                 if (res == ELExpression.EL_BEAN || res == ELExpression.EL_START ){
-                    return new int[] {elStart, elEnd};
+                    return new int[] {elTokenSequence.offset(), elEnd};
                 }
             }
             // dynamic or static include, forward.
@@ -268,10 +271,11 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             if (elTokenSequence != null){
                 ELExpression exp = new ELExpression((JspSyntaxSupport)bdoc.getSyntaxSupport());
                 
-                elTokenSequence.moveLast();
-                int res = exp.parse(elTokenSequence.offset() + elTokenSequence.token().length());
+                elTokenSequence.move(offset);
+                int elEnd = elTokenSequence.offset() + elTokenSequence.token().length();
+                int res = exp.parse(elEnd);
                 if (res == ELExpression.EL_START ){
-                    navigateToUserBeanDef(doc, jspSup, target, token.text().toString());
+                    navigateToUserBeanDef(doc, jspSup, target, elTokenSequence.token().text().toString());
                     return;
                 }
                 if (res == ELExpression.EL_BEAN){

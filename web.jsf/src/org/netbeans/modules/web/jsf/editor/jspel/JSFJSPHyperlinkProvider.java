@@ -99,7 +99,12 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
             
             if (wm != null){
                 JSFELExpression exp = new JSFELExpression(wm, (JspSyntaxSupport)bdoc.getSyntaxSupport());
-                elTokenSequence.moveLast();
+                elTokenSequence.move(offset);
+                
+                if (elTokenSequence.token().id() == ELTokenId.DOT){
+                    return false;
+                }
+                
                 int endOfEL = elTokenSequence.offset() + elTokenSequence.token().length();
                 int res = exp.parse(endOfEL);
                 
@@ -156,14 +161,12 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
             WebModule wm = WebModule.getWebModule(fObject);
             if (wm != null){
                 JSFELExpression exp = new JSFELExpression(wm, (JspSyntaxSupport)bdoc.getSyntaxSupport());
-                elTokenSequence.moveFirst();
-                int elStart = elTokenSequence.offset();
-                elTokenSequence.moveLast();
+                elTokenSequence.move(offset);
                 int elEnd = elTokenSequence.offset() + elTokenSequence.token().length();
                 
                 int res = exp.parse(elEnd);
                 if (res == JSFELExpression.EL_JSF_BEAN || res == JSFELExpression.EL_START )
-                    return new int[] {elStart, elEnd};
+                    return new int[] {elTokenSequence.offset(), elEnd};
             }
         }
         return null;
@@ -205,10 +208,10 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
             WebModule wm = WebModule.getWebModule(fObject);
             if (wm != null){
                 JSFELExpression exp = new JSFELExpression(wm, (JspSyntaxSupport)bdoc.getSyntaxSupport());
-                elTokenSequence.moveLast();
+                elTokenSequence.move(offset);
                 int res = exp.parse(elTokenSequence.offset() + elTokenSequence.token().length());
                 if (res == JSFELExpression.EL_START ){
-                    (new OpenConfigFile(wm, token.text().toString())).run();
+                    (new OpenConfigFile(wm, elTokenSequence.token().text().toString())).run();
                     return;
                 }
                 if (res == JSFELExpression.EL_JSF_BEAN){

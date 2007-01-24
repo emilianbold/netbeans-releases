@@ -123,6 +123,10 @@ public class ELExpression {
                 return NOT_EL;
             }
             
+            if (ts.offset() == offset){
+                ts.movePrevious();
+            }
+            
             // Find the start of the expression. It doesn't have to be an EL delimiter (${ #{)
             // it can be start of the function or start of a simple expression.
             Token<ELTokenId> token = ts.token();
