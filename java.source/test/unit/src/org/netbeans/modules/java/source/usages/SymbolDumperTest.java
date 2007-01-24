@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.source.usages;
@@ -29,6 +29,7 @@ import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.jvm.ClassReader;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Name.Table;
 import java.io.File;
@@ -54,6 +55,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
+import junit.framework.TestSuite;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -62,6 +64,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
@@ -938,11 +941,19 @@ public class SymbolDumperTest extends NbTestCase {
     }
     
     public void testCompileAgainstInnerClassWithGenerics9() throws Exception {
-        performCompileAgainst("package test; public class test2 {\npublic void testMethod2() {test<String>.Inner1<java.util.Comparator> t1;}\n}", "1.5", "package test; public class test<E> {\npublic static abstract class Inner1<T> {} public <T> Inner1<T> ret() {return null;}\n}", "1.5", true, "test.test$Inner1");
+        performCompileAgainst("package test; public class test2 {\npublic void testMethod2() {test<String>.Inner1<java.util.Comparator> t1;}\n}", "1.5", "package test; public class test<E> {\npublic abstract class Inner1<T> {} public <T> Inner1<T> ret() {return null;}\n}", "1.5", true, "test.test$Inner1");
     }
     
     public void testCompileAgainstLocalClassWithGenerics1() throws Exception {
         performCompileAgainst("package test; public class test2 {\npublic void testMethod2() {test.Inner1<java.util.Comparator> t1;}\n}", "1.5", "package test; public class test {\npublic static abstract class Inner1<T> {} public <T> Inner1<T> ret() {class X extends Inner1<T>{} return null;}\n}", "1.5", false, "test.test$Inner1");
+    }
+    
+    public void testCompileAgainstInnerClass1() throws Exception {
+        performCompileAgainst("package test; public class test2 {\npublic void testMethod2() {test.Inner t = new test.Inner(null);}\n}", "1.5", "package test; public class test {\npublic static class Inner {Inner(Runnable r){}}\n}", "1.5", false);
+    }
+    
+    public void testCompileAgainstInnerClass2() throws Exception {
+        performCompileAgainst("package test; import test.test.Inner; public class test2 {\npublic void testMethod2() {test t = new test(); Inner i = t.new Inner(null);}\n}", "1.5", "package test; public class test {\npublic class Inner {Inner(Runnable r){}}\n}", "1.5", false);
     }
     
     public void testCompileAgainstEnum1() throws Exception {
@@ -1139,10 +1150,53 @@ public class SymbolDumperTest extends NbTestCase {
     }
     
     public void testNarazecka() throws Exception {
-        performTestNarazecka("package test; public class test {public void testMethod() {new Runnable() {public void run(){}};}}\n");
+        performTestNarazecka("package test; public class test {public void testMethod() {new Runnable() {public void run(){}};}}\n", "test.test$1");
     }
     
-    private void performTestNarazecka(String what) throws Exception {
+    //TODO: the following two tests represent unfixed bugs:
+//    public void testNarazecka2() throws Exception {
+//        performTestNarazecka("package test; public class test<I, T> {private java.util.List<Snap> snaps; private class Snap {}}\n", "test.test$Snap");
+//    }
+//    
+//    public void testNarazecka3() throws Exception {
+//        performTestNarazecka("package test; public class test {private annotations.RequestProcessor.Task task; public static class O {}}\n", "test.test$O");
+//    }
+    
+    public void testNarazecka4() throws Exception {
+        performTestNarazecka("package test;import java.util.Collection;" +
+                "    abstract class Lookup {" +
+                "    public static final Lookup EMPTY = null;" +
+                "    private static Lookup defaultLookup;" +
+                "    public Lookup() {}" +
+                "    public static synchronized Lookup getDefault() {return null;}" +
+                "    private static final class DefLookup {}" +
+                "    private static void resetDefaultLookup() {}" +
+                "    public abstract <T> T lookup(Class<T> clazz);" +
+                "    public abstract <T> Result<T> lookup(Template<T> template);" +
+                "    public <T> Item<T> lookupItem(Template<T> template) {return null;}" +
+                "    public <T> Lookup.Result<T> lookupResult(Class<T> clazz) {return null;}" +
+                "    public <T> Collection<? extends T> lookupAll(Class<T> clazz) {return null;}" +
+                "    public interface Provider {}" +
+                "    public static final class Template<T> extends Object {}" +
+                "    public static abstract class Result<T> extends Object {}" +
+                "    public static abstract class Item<T> extends Object {}" +
+                "    private static abstract class Empty extends Lookup {}" +
+                "}", "test.Lookup$Template");
+    }
+
+    public void testNarazecka5() throws Exception {
+        performTestNarazecka("package test; public class test {private static Deleg cur; private static class Deleg extends test {}}\n", "test.test$Deleg");
+    }
+    
+    public void testNarazecka6() throws Exception {
+        performTestNarazecka("package test; public class test {public final class Deleg {Deleg(Runnable r) {} Deleg(Runnable r, int x) {}}}\n", "test.test$Deleg");
+    }
+    
+    public void testNarazecka7() throws Exception {
+        performTestNarazecka("package test; public class test {public <T> Two<T> lookup(One<T> o){return null;} public static class One<T> {}public static class Two<T> {}}\n", "test.test$One");
+    }
+    
+    private void performTestNarazecka(String what, final String innerclassName) throws Exception {
         FileSystem fs = FileUtil.createMemoryFileSystem();
         FileObject file = fs.getRoot().createData("test.java");
         
@@ -1173,7 +1227,8 @@ public class SymbolDumperTest extends NbTestCase {
             private TypeElement innerClass;
             public void cancel() {
             }
-            public void run(CompilationController parameter) {
+            public void run(CompilationController parameter) throws Exception {
+                CouplingAbort.wasCouplingError = false;
                 try {
                     JavacTaskImpl task = (JavacTaskImpl) SourceUtilsTestUtil.getJavacTaskFor(parameter);
                     Context context = task.getContext();
@@ -1193,16 +1248,20 @@ public class SymbolDumperTest extends NbTestCase {
                     
                     parameter.toPhase(Phase.RESOLVED);
                     
+                    assertFalse(CouplingAbort.wasCouplingError);
+                    
                     if (firstClass == null) {
                         JavacElements jels = (JavacElements) parameter.getElements();
                         
                         firstClass = jels.getTypeElementByBinaryName("test.test");
-                        innerClass = jels.getTypeElementByBinaryName("test.test$1");
+                        innerClass = jels.getTypeElementByBinaryName(innerclassName);
                         return;
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                
+                assertFalse(CouplingAbort.wasCouplingError);
             }
         },true);
     }

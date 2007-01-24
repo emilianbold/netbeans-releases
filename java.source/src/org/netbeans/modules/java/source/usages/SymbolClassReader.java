@@ -302,7 +302,10 @@ public class SymbolClassReader extends JavadocClassReader {
             // sym is a nested class with an "Enclosing Method" attribute
             // remove sym from it's current owners scope and place it in
             // the scope specified by the attribute
-            self.owner.members().remove(self);
+            //jlahoda: the owner may already be set correctly, do not remove from it in such a case:
+            if (self.owner.kind == PCK) {
+                self.owner.members().remove(self);
+            }
             ClassSymbol c = enterClass(readPlainNameIntoTable(r));
             MethodSymbol m = null;
             read = r.read();
@@ -717,18 +720,6 @@ public class SymbolClassReader extends JavadocClassReader {
         }
         
         Type returnType = readType(r, r.read());
-        
-        //constructors of innerclasses:
-        if (symbolName == table.init && currentOwner.hasOuterInstance() && (currentOwner.flags_field & Flags.STATIC) == 0) {
-            // Sometimes anonymous classes don't have an outer
-            // instance, however, there is no reliable way to tell so
-            // we never strip this$n
-            if (currentOwner.name.len != 0) {
-                paramsTypes = paramsTypes.tail != null ? paramsTypes.tail : List.<Type>nil();
-                params = params.tail != null ? params.tail : List.<VarSymbol>nil();
-            }
-        }
-        
         Type methodType = new MethodType(paramsTypes, returnType, throwsTypes.reverse(), syms.methodClass/*???*/);;
         
         if (typevarsList != null) {
