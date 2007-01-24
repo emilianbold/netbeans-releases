@@ -47,9 +47,13 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/netbeans/api/java/source/gen/MethodCreationTest.class"/>
                 <exclude name="org/netbeans/api/java/source/gen/MemberAdditionTest.class"/>
                 <exclude name="org/netbeans/api/java/source/gen/IndentAddedElemTest.class"/>
-		
+                <exclude name="org/netbeans/api/java/source/gen/VarArgsTest.class"/>
+                <exclude name="org/netbeans/api/java/source/gen/FeatureAddingTest.class"/>
+                <exclude name="org/netbeans/api/java/source/gen/ClashingImportsTest.class"/>
+                <exclude name="org/netbeans/api/java/source/gen/EnumTest.class"/>
+                <exclude name="org/netbeans/modules/java/source/usages/LucenePerformanceTest.class"/>
 		<!--requires test source:-->
-		<exclude name="org/netbeans/api/java/source/UiUtils.class" />
+		<exclude name="org/netbeans/api/java/source/UiUtilsTest.class" />
 		
 		<!--classes without any uncommented tests:-->
 		<exclude name="org/netbeans/modules/java/source/parsing/CachingFolderArchiveTest.class" />

@@ -53,7 +53,35 @@ public class ImportAnalysisTest extends GeneratorTest {
     }
     
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite(ImportAnalysisTest.class);
+        NbTestSuite suite = new NbTestSuite();
+//        suite.addTestSuite(ImportAnalysisTest.class);
+        suite.addTest(new ImportAnalysisTest("testAddImport1"));
+        suite.addTest(new ImportAnalysisTest("testAddImport2"));
+        suite.addTest(new ImportAnalysisTest("testAddImport3"));
+        suite.addTest(new ImportAnalysisTest("testAddImport4"));
+        suite.addTest(new ImportAnalysisTest("testAddImport5"));
+        suite.addTest(new ImportAnalysisTest("testAddImport6"));
+        suite.addTest(new ImportAnalysisTest("testAddImport7"));
+        suite.addTest(new ImportAnalysisTest("testAddImport8"));
+        suite.addTest(new ImportAnalysisTest("testAddImport9"));
+        suite.addTest(new ImportAnalysisTest("testAddImport10"));
+//        suite.addTest(new ImportAnalysisTest("testAddImport11"));
+//        suite.addTest(new ImportAnalysisTest("testAddImport12"));
+        suite.addTest(new ImportAnalysisTest("testAddImport13"));
+//        suite.addTest(new ImportAnalysisTest("testAddImport14"));
+        suite.addTest(new ImportAnalysisTest("testAddImport15"));
+//        suite.addTest(new ImportAnalysisTest("testAddImport16"));
+        suite.addTest(new ImportAnalysisTest("testAddImport17"));
+        suite.addTest(new ImportAnalysisTest("testAddImport18"));
+        suite.addTest(new ImportAnalysisTest("testAddImportOrder1"));
+        suite.addTest(new ImportAnalysisTest("testAddImportSamePackage"));
+        suite.addTest(new ImportAnalysisTest("testAddImportThroughMethod1"));
+        suite.addTest(new ImportAnalysisTest("testAddImportThroughMethod2"));
+        suite.addTest(new ImportAnalysisTest("testAddImportThroughMethod3"));
+        suite.addTest(new ImportAnalysisTest("testAddImportThroughMethod4"));
+        suite.addTest(new ImportAnalysisTest("testAddImportThroughMethod5"));
+        suite.addTest(new ImportAnalysisTest("testDefaultPackage1"));
+        suite.addTest(new ImportAnalysisTest("testImportAddedAfterThrows"));
         return suite;
     }
     
