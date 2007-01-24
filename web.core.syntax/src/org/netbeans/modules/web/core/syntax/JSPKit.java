@@ -101,9 +101,6 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     
     public static final boolean debug = false;
     
-    private static final boolean J2EE_LEXER_COLORING = true;
-    
-    
     /** Default constructor */
     public JSPKit() {
         super();
@@ -273,22 +270,6 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
      */
     public CompletionJavaDoc createCompletionJavaDoc(ExtEditorUI extEditorUI) {
         return null;
-    }
-    
-    /*
-     * @Override()
-     */
-    public Document createDefaultDocument() {
-        if(J2EE_LEXER_COLORING) {
-            Document doc = new JspEditorDocument(this.getClass());
-            Object mimeType = doc.getProperty("mimeType"); //NOI18N
-            if (mimeType == null){
-                doc.putProperty("mimeType", getContentType()); //NOI18N
-            }
-            return doc;
-        } else {
-            return super.createDefaultDocument();
-        }
     }
     
     protected void initDocument(BaseDocument doc) {
@@ -596,21 +577,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     //        }
     //
     //    }
-    
-    public class JspEditorDocument extends NbEditorDocument {
-        public JspEditorDocument(Class kitClass) {
-            super(kitClass);
-        }
-        
-        public boolean addLayer(DrawLayer layer, int visibility) {
-            //filter out the syntax layer adding
-            if(!(layer instanceof DrawLayerFactory.SyntaxLayer)) {
-                return super.addLayer(layer, visibility);
-            } else {
-                return false;
-            }
-        }
-    }
+
     
 }
 
