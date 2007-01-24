@@ -25,7 +25,6 @@ import org.netbeans.installer.product.components.Group;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.product.filters.TrueFilter;
-import org.netbeans.installer.product.utils.Status;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -38,6 +37,7 @@ import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.helper.ExtendedURI;
 import org.netbeans.installer.utils.helper.Platform;
+import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.progress.Progress;
 import org.w3c.dom.Document;
@@ -174,8 +174,7 @@ public class ManagerBean implements Manager {
             final Product component = new Product().loadFromDom(
                     XMLUtils.loadXMLDocument(descriptor).getDocumentElement());
             
-            final List<Product> existingComponents =
-                    registry.getProductComponents(
+            final List<Product> existingComponents = registry.getProducts(
                     component.getUid(),
                     component.getVersion(),
                     component.getSupportedPlatforms());
@@ -217,15 +216,15 @@ public class ManagerBean implements Manager {
             
             List<Product> parents = null;
             if (!parentVersion.equals("null") && !parentPlatforms.equals("null")) {
-                parents = registry.getProductComponents(
+                parents = registry.getProducts(
                         parentUid,
-                        new Version(parentVersion),
+                        Version.getVersion(parentVersion),
                         StringUtils.parsePlatforms(parentPlatforms));
             }
-            if (parents == null) {
-                parent = registry.getProductGroup(parentUid);
+            if ((parents == null) || (parents.size() == 0)) {
+                parent = registry.getGroup(parentUid);
                 if (parent == null) {
-                    parent = registry.getProductTreeRoot();
+                    parent = registry.getRegistryRoot();
                 }
             } else {
                 parent = parents.get(0);
@@ -233,14 +232,14 @@ public class ManagerBean implements Manager {
             
             parent.addChild(component);
             
-            for (ExtendedURI uri: component.getConfigurationLogicUris()) {
+            for (ExtendedURI uri: component.getLogicUris()) {
                 string = uri.getRemote().getSchemeSpecificPart();
                 string = string.substring(componentsDir.toURI().getSchemeSpecificPart().length());
                 string = URLEncoder.encode("components/" + string, "UTF-8");
                 uri.setLocal(new URI(uriPrefix + string));
             }
             
-            for (ExtendedURI uri: component.getInstallationDataUris()) {
+            for (ExtendedURI uri: component.getDataUris()) {
                 string = uri.getRemote().getSchemeSpecificPart();
                 string = string.substring(componentsDir.toURI().getSchemeSpecificPart().length());
                 string = URLEncoder.encode("components/" + string, "UTF-8");
@@ -292,7 +291,10 @@ public class ManagerBean implements Manager {
         try {
             final Registry registry = new Registry(registryXml);
             
-            final List<Product> existing = registry.getProductComponents(uid, new Version(version), StringUtils.parsePlatforms(platforms));
+            final List<Product> existing = registry.getProducts(
+                    uid, 
+                    Version.getVersion(version), 
+                    StringUtils.parsePlatforms(platforms));
             
             if (existing != null) {
                 existing.get(0).getParent().removeChild(existing.get(0));
@@ -364,7 +366,7 @@ public class ManagerBean implements Manager {
             
             final Group group = new Group().loadFromDom(
                     XMLUtils.loadXMLDocument(descriptor).getDocumentElement());
-            final Group existing = registry.getProductGroup(
+            final Group existing = registry.getGroup(
                     group.getUid());
             
             if (existing != null) {
@@ -400,15 +402,15 @@ public class ManagerBean implements Manager {
             
             List<Product> parents = null;
             if (!parentVersion.equals("null") && !parentPlatforms.equals("null")) {
-                parents = registry.getProductComponents(
+                parents = registry.getProducts(
                         parentUid,
-                        new Version(parentVersion),
+                        Version.getVersion(parentVersion),
                         StringUtils.parsePlatforms(parentPlatforms));
             }
-            if (parents == null) {
-                parent = registry.getProductGroup(parentUid);
+            if ((parents == null) || (parents.size() == 0)) {
+                parent = registry.getGroup(parentUid);
                 if (parent == null) {
-                    parent = registry.getProductTreeRoot();
+                    parent = registry.getRegistryRoot();
                 }
             } else {
                 parent = parents.get(0);
@@ -461,7 +463,7 @@ public class ManagerBean implements Manager {
         try {
             final Registry registry = new Registry(registryXml);
             
-            final Group existing = registry.getProductGroup(uid);
+            final Group existing = registry.getGroup(uid);
             
             if (existing != null) {
                 existing.getParent().removeChild(existing);
@@ -526,7 +528,7 @@ public class ManagerBean implements Manager {
             }
             
             try {
-                return new Registry(platform, files).getProductTreeRoot();
+                return new Registry(platform, files).getRegistryRoot();
             } catch (InitializationException e) {
                 e.printStackTrace();
                 throw new ManagerException("Could not load registry", e);
@@ -553,7 +555,7 @@ public class ManagerBean implements Manager {
             
             try {
                 components.addAll(new Registry(platform, files).
-                        queryComponents(new TrueFilter()));
+                        queryProducts(new TrueFilter()));
             } catch (InitializationException e) {
                 e.printStackTrace();
                 throw new ManagerException("Could not load registry", e);
@@ -597,8 +599,9 @@ public class ManagerBean implements Manager {
             for (String string: components) {
                 String[] parts = string.split(",");
                 
-                registry.getProductComponent(parts[0], new Version(parts[1])).
-                        setStatus(Status.INSTALLED);
+                registry.getProduct(
+                        parts[0], 
+                        Version.getVersion(parts[1])).setStatus(Status.INSTALLED);
             }
             registry.saveStateFile(statefile, new Progress());
             

@@ -42,6 +42,12 @@ import org.netbeans.installer.wizard.ui.WizardUi;
 import org.netbeans.installer.wizard.components.WizardPanel;
 import org.netbeans.installer.wizard.containers.SwingContainer;
 import org.netbeans.installer.wizard.utils.InstallationLogDialog;
+import static org.netbeans.installer.utils.helper.DetailedStatus.INSTALLED_SUCCESSFULLY;
+import static org.netbeans.installer.utils.helper.DetailedStatus.INSTALLED_WITH_WARNINGS;
+import static org.netbeans.installer.utils.helper.DetailedStatus.FAILED_TO_INSTALL;
+import static org.netbeans.installer.utils.helper.DetailedStatus.UNINSTALLED_SUCCESSFULLY;
+import static org.netbeans.installer.utils.helper.DetailedStatus.UNINSTALLED_WITH_WARNINGS;
+import static org.netbeans.installer.utils.helper.DetailedStatus.FAILED_TO_UNINSTALL;
 
 /**
  *
@@ -171,9 +177,13 @@ public class PostCreateBundleSummaryPanel extends WizardPanel {
         }
         
         protected void initialize() {
-            Registry registry = Registry.getInstance();
+            final Registry registry = Registry.getInstance();
             
-            if (registry.wereErrorsEncountered()) {
+            final boolean errorsEncountered = 
+                    registry.getProducts(FAILED_TO_INSTALL).size() > 0 && 
+                    registry.getProducts(FAILED_TO_UNINSTALL).size() > 0;
+            
+            if (errorsEncountered) {
                 messagePane.setContentType(component.getProperty(MESSAGE_ERRORS_CONTENT_TYPE_PROPERTY));
                 messagePane.setText(component.getProperty(MESSAGE_ERRORS_TEXT_PROPERTY));
             } else {
@@ -183,7 +193,7 @@ public class PostCreateBundleSummaryPanel extends WizardPanel {
             
             List<Product> components;
             
-            components = registry.getComponentsInstalledSuccessfullyDuringThisSession();
+            components = registry.getProducts(INSTALLED_SUCCESSFULLY);
             if (components.size() > 0) {
                 successfullyBundledComponentsLabel.setVisible(true);
                 successfullyBundledComponentsPane.setVisible(true);
@@ -196,7 +206,7 @@ public class PostCreateBundleSummaryPanel extends WizardPanel {
                 successfullyBundledComponentsPane.setVisible(false);
             }
             
-            components = registry.getComponentsFailedToInstallDuringThisSession();
+            components = registry.getProducts(FAILED_TO_INSTALL);
             if (components.size() > 0) {
                 componentsFailedToBundleLabel.setVisible(true);
                 componentsFailedToBundlePane.setVisible(true);

@@ -105,6 +105,18 @@ public class MacOsNativeUtils extends UnixNativeUtils {
     public File createShortcut(Shortcut shortcut, ShortcutLocationType locationType) throws NativeException {
         final File shortcutFile = getShortcutLocation(shortcut, locationType);
         
+        if (shortcut.canModifyExecutablePath()) {
+            File executable = new File(shortcut.getExecutablePath());
+            
+            while ((executable != null) && !executable.getPath().endsWith(".app")) {
+                executable = executable.getParentFile();
+            }
+            
+            if (executable != null) {
+                shortcut.setExecutable(executable);
+            }
+        }
+        
         try {
             if (locationType == ShortcutLocationType.CURRENT_USER_DESKTOP ||
                     locationType == ShortcutLocationType.ALL_USERS_DESKTOP ) {
@@ -117,7 +129,7 @@ public class MacOsNativeUtils extends UnixNativeUtils {
             } else {
                 //create link in the Dock
                 if(convertDockProperties(true)==0) {
-                    if(modifyDockLink(shortcut,shortcutFile,true)) {
+                    if (modifyDockLink(shortcut, shortcutFile, true)) {
                         LogManager.log(ErrorLevel.DEBUG,
                                 "    Updating Dock");
                         convertDockProperties(false);

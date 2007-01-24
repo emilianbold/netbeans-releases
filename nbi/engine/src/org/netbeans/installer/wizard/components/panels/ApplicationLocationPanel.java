@@ -44,7 +44,7 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.filters.TrueFilter;
-import org.netbeans.installer.product.utils.Status;
+import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;

@@ -45,6 +45,12 @@ import org.netbeans.installer.wizard.components.WizardPanel.WizardPanelUi;
 import org.netbeans.installer.wizard.containers.SwingContainer;
 import org.netbeans.installer.wizard.utils.InstallationDetailsDialog;
 import org.netbeans.installer.wizard.utils.InstallationLogDialog;
+import static org.netbeans.installer.utils.helper.DetailedStatus.INSTALLED_SUCCESSFULLY;
+import static org.netbeans.installer.utils.helper.DetailedStatus.INSTALLED_WITH_WARNINGS;
+import static org.netbeans.installer.utils.helper.DetailedStatus.FAILED_TO_INSTALL;
+import static org.netbeans.installer.utils.helper.DetailedStatus.UNINSTALLED_SUCCESSFULLY;
+import static org.netbeans.installer.utils.helper.DetailedStatus.UNINSTALLED_WITH_WARNINGS;
+import static org.netbeans.installer.utils.helper.DetailedStatus.FAILED_TO_UNINSTALL;
 
 /**
  *
@@ -230,12 +236,19 @@ public class PostInstallSummaryPanel extends WizardPanel {
         }
         
         protected void initialize() {
-            Registry registry = Registry.getInstance();
+            final Registry registry = Registry.getInstance();
             
-            if (registry.wereErrorsEncountered()) {
+            final boolean errorsEncountered = 
+                    registry.getProducts(FAILED_TO_INSTALL).size() > 0 && 
+                    registry.getProducts(FAILED_TO_UNINSTALL).size() > 0;
+            final boolean warningsEncountered = 
+                    registry.getProducts(INSTALLED_WITH_WARNINGS).size() > 0 && 
+                    registry.getProducts(UNINSTALLED_WITH_WARNINGS).size() > 0;
+            
+            if (errorsEncountered) {
                 messagePane.setContentType(component.getProperty(MESSAGE_ERRORS_CONTENT_TYPE_PROPERTY));
                 messagePane.setText(component.getProperty(MESSAGE_ERRORS_TEXT_PROPERTY));
-            } else if (registry.wereWarningsEncountered()) {
+            } else if (warningsEncountered) {
                 messagePane.setContentType(component.getProperty(MESSAGE_WARNINGS_CONTENT_TYPE_PROPERTY));
                 messagePane.setText(component.getProperty(MESSAGE_WARNINGS_TEXT_PROPERTY));
             } else {
@@ -245,7 +258,7 @@ public class PostInstallSummaryPanel extends WizardPanel {
             
             List<Product> products;
             
-            products = registry.getComponentsInstalledSuccessfullyDuringThisSession();
+            products = registry.getProducts(INSTALLED_SUCCESSFULLY);
             if (products.size() > 0) {
                 successfullyInstalledComponentsLabel.setVisible(true);
                 successfullyInstalledComponentsPane.setVisible(true);
@@ -258,7 +271,7 @@ public class PostInstallSummaryPanel extends WizardPanel {
                 successfullyInstalledComponentsPane.setVisible(false);
             }
             
-            products = registry.getComponentsInstalledWithWarningsDuringThisSession();
+            products = registry.getProducts(INSTALLED_WITH_WARNINGS);
             if (products.size() > 0) {
                 componentsInstalledWithWarningsLabel.setVisible(true);
                 componentsInstalledWithWarningsPane.setVisible(true);
@@ -271,7 +284,7 @@ public class PostInstallSummaryPanel extends WizardPanel {
                 componentsInstalledWithWarningsPane.setVisible(false);
             }
             
-            products = registry.getComponentsFailedToInstallDuringThisSession();
+            products = registry.getProducts(FAILED_TO_INSTALL);
             if (products.size() > 0) {
                 componentsFailedToInstallLabel.setVisible(true);
                 componentsFailedToInstallPane.setVisible(true);
@@ -284,7 +297,7 @@ public class PostInstallSummaryPanel extends WizardPanel {
                 componentsFailedToInstallPane.setVisible(false);
             }
             
-            products = registry.getComponentsUninstalledSuccessfullyDuringThisSession();
+            products = registry.getProducts(UNINSTALLED_SUCCESSFULLY);
             if (products.size() > 0) {
                 successfullyUninstalledComponentsLabel.setVisible(true);
                 successfullyUninstalledComponentsPane.setVisible(true);
@@ -297,7 +310,7 @@ public class PostInstallSummaryPanel extends WizardPanel {
                 successfullyUninstalledComponentsPane.setVisible(false);
             }
             
-            products = registry.getComponentsUninstalledWithWarningsDuringThisSession();
+            products = registry.getProducts(UNINSTALLED_WITH_WARNINGS);
             if (products.size() > 0) {
                 componentsUninstalledWithWarningsLabel.setVisible(true);
                 componentsUninstalledWithWarningsPane.setVisible(true);
@@ -310,7 +323,7 @@ public class PostInstallSummaryPanel extends WizardPanel {
                 componentsUninstalledWithWarningsPane.setVisible(false);
             }
             
-            products = registry.getComponentsFailedToUninstallDuringThisSession();
+            products = registry.getProducts(FAILED_TO_UNINSTALL);
             if (products.size() > 0) {
                 componentsFailedToUninstallLabel.setVisible(true);
                 componentsFailedToUninstallPane.setVisible(true);

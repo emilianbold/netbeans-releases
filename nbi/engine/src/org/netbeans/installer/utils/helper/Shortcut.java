@@ -28,15 +28,15 @@ import java.util.Locale;
 import java.util.Map;
 
 public class Shortcut {
-    private Map<Locale, String> names = new HashMap<Locale, String>();
-    private Map<Locale, String> descriptions = new HashMap<Locale, String>();
+    private Map<Locale, String> names;
+    private Map<Locale, String> descriptions;
     
     private String relativePath;
     private String fileName;
     
     private File executable;
     private File workingDirectory;
-    private List<String> arguments = new ArrayList<String>();
+    private List<String> arguments;
     
     private File icon;
     
@@ -44,7 +44,13 @@ public class Shortcut {
     
     private String path;
     
+    private boolean modifyExecutablePath;
+    
     public Shortcut(final String name, final File executable) {
+        names = new HashMap<Locale, String>();
+        descriptions = new HashMap<Locale, String>();
+        arguments = new ArrayList<String>();
+        
         this.names.put(Locale.getDefault(), name);
         
         this.executable = executable;
@@ -210,5 +216,13 @@ public class Shortcut {
     
     public void setPath(final String path) {
         this.path = path;
+    }
+    
+    public boolean canModifyExecutablePath() {
+        return modifyExecutablePath;
+    }
+    
+    public void setModifyExecutablePath(final boolean modifyExecutablePath) {
+        this.modifyExecutablePath = modifyExecutablePath;
     }
 }

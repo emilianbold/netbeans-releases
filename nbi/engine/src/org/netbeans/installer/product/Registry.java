@@ -26,14 +26,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Queue;
-import java.util.Set;
-import java.util.Stack;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -44,20 +40,18 @@ import org.netbeans.installer.Installer;
 import org.netbeans.installer.Installer.InstallerExecutionMode;
 import org.netbeans.installer.product.components.Group;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.product.filters.DependentsFilter;
 import org.netbeans.installer.product.filters.OrFilter;
-import org.netbeans.installer.product.filters.ProductChangedStatusFilter;
 import org.netbeans.installer.product.filters.ProductFilter;
-import org.netbeans.installer.product.filters.ProductDetailedStatusFilter;
-import org.netbeans.installer.product.filters.ProductStatusFilter;
-import org.netbeans.installer.product.filters.ProductGroupFilter;
+import org.netbeans.installer.product.filters.GroupFilter;
 import org.netbeans.installer.product.filters.RegistryFilter;
-import org.netbeans.installer.product.filters.RequirementsFilter;
 import org.netbeans.installer.product.filters.TrueFilter;
-import org.netbeans.installer.product.utils.DetailedStatus;
-import org.netbeans.installer.product.utils.Status;
+import org.netbeans.installer.utils.helper.DetailedStatus;
+import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileProxy;
+import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.helper.Dependency;
+import org.netbeans.installer.utils.helper.DependencyType;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -66,12 +60,10 @@ import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.FinalizationException;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.ParseException;
-import org.netbeans.installer.utils.exceptions.UnresolvedDependencyException;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.Version;
-import org.netbeans.installer.utils.helper.Dependency;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
 import org.w3c.dom.Document;
@@ -98,51 +90,65 @@ public class Registry {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    private File localDirectory         = Installer.getInstance().getLocalDirectory();
-    private File localProductCache      = new File(localDirectory, DEFAULT_LOCAL_PRODUCT_CACHE_DIRECTORY_NAME).getAbsoluteFile();
-    private File localProductRegistry   = new File(localDirectory, DEFAULT_LOCAL_REGISTRY_FILE_NAME).getAbsoluteFile();
+    private File         localProductCache;
     
-    private String localRegistryStubURI = DEFAULT_LOCAL_PRODUCT_REGISTRY_STUB_URI;
-    private String localRegistryURI     = localProductRegistry.toURI().toString();
-    private String bundledRegistryURI   = DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI;
-    private String registrySchemaURI    = DEFAULT_PRODUCT_REGISTRY_SCHEMA_URI;
+    private String       localRegistryStubUri;
+    private File         localRegistryFile;
+    private String       bundledRegistryUri;
+    private List<String> remoteRegistryUris;
+    private String       registrySchemaUri;
     
-    private String stateFileSchemaURI   = DEFAULT_STATE_FILE_SCHEMA_URI;
-    private String stateFileStubURI     = DEFAULT_STATE_FILE_STUB_URI;
+    private String       stateFileSchemaUri;
+    private String       stateFileStubUri;
     
-    private List<String> remoteRegistryURIs = new ArrayList<String>();
+    private RegistryNode registryRoot;
+    private Properties   properties;
+    private Platform     targetPlatform;
     
-    private RegistryNode productTreeRoot = createTreeRoot();
-    
-    private Properties properties           = new Properties();
-    
-    private Platform targetPlatform = SystemUtils.getCurrentPlatform();
-    
+    // constructors /////////////////////////////////////////////////////////////////
     private Registry() {
+        localProductCache = new File(
+                Installer.getInstance().getLocalDirectory(),
+                DEFAULT_LOCAL_PRODUCT_CACHE_DIRECTORY_NAME);
+        
+        localRegistryStubUri = DEFAULT_LOCAL_PRODUCT_REGISTRY_STUB_URI;
+        localRegistryFile = new File(
+                Installer.getInstance().getLocalDirectory(),
+                DEFAULT_LOCAL_REGISTRY_FILE_NAME);
+        bundledRegistryUri = DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI;
+        remoteRegistryUris = new ArrayList<String>();
+        registrySchemaUri = DEFAULT_PRODUCT_REGISTRY_SCHEMA_URI;
+        
+        stateFileSchemaUri = DEFAULT_STATE_FILE_SCHEMA_URI;
+        stateFileStubUri = DEFAULT_STATE_FILE_STUB_URI;
+        
+        registryRoot = new Group();
+        properties = new Properties();
+        targetPlatform = SystemUtils.getCurrentPlatform();
     }
     
-    public Registry(File file) throws InitializationException {
+    public Registry(final File file) throws InitializationException {
         this();
         
-        initializeRegistryProperties();
+        setRegistryProperties();
         
         loadProductRegistry(file.toURI().toString(), new Progress());
     }
     
-    public Registry(List<File> files) throws InitializationException {
+    public Registry(final List<File> files) throws InitializationException {
         this();
         
-        initializeRegistryProperties();
+        setRegistryProperties();
         
         for (File file: files) {
             loadProductRegistry(file.toURI().toString(), new Progress());
         }
     }
     
-    public Registry(Platform platform, List<File> files) throws InitializationException {
+    public Registry(final Platform platform, final List<File> files) throws InitializationException {
         this();
         
-        initializeRegistryProperties();
+        setRegistryProperties();
         
         this.targetPlatform = platform;
         
@@ -151,38 +157,35 @@ public class Registry {
         }
     }
     
-    public void initializeRegistry(Progress progress) throws InitializationException {
+    // initialization/finalization //////////////////////////////////////////////////
+    public void initializeRegistry(final Progress progress) throws InitializationException {
         LogManager.logEntry("initializing product registry");
         
-        initializeRegistryProperties();
+        setRegistryProperties();
         
-        CompositeProgress compositeProgress = new CompositeProgress();
+        final CompositeProgress compositeProgress = new CompositeProgress();
         Progress childProgress;
         
-        int percentageChunk = Progress.COMPLETE / (remoteRegistryURIs.size() + 2);
-        int percentageLeak = Progress.COMPLETE % (remoteRegistryURIs.size() + 2);
+        int percentageChunk = Progress.COMPLETE / (remoteRegistryUris.size() + 2);
+        int percentageLeak = Progress.COMPLETE % (remoteRegistryUris.size() + 2);
         
         compositeProgress.synchronizeTo(progress);
         compositeProgress.synchronizeDetails(true);
         
         childProgress = new Progress();
         compositeProgress.addChild(childProgress, percentageChunk + percentageLeak);
-        compositeProgress.setTitle("Loading local registry [" + localRegistryURI + "]");
-        localRegistryURI = localProductRegistry.toURI().toString();
-        loadProductRegistry(localRegistryURI, childProgress);
-        
-        // sleep a little to let the user perceive that something is happening
-        SystemUtils.sleep(200);
+        compositeProgress.setTitle("Loading local registry [" + localRegistryFile + "]");
+        loadProductRegistry(localRegistryFile.toURI().toString(), childProgress);
         
         childProgress = new Progress();
         compositeProgress.addChild(childProgress, percentageChunk);
-        compositeProgress.setTitle("Loading bundled registry [" + bundledRegistryURI + "]");
-        loadProductRegistry(bundledRegistryURI, childProgress);
+        compositeProgress.setTitle("Loading bundled registry [" + bundledRegistryUri + "]");
+        loadProductRegistry(bundledRegistryUri, childProgress);
         
         // sleep a little to let the user perceive that something is happening
         SystemUtils.sleep(200);
         
-        for (String remoteRegistryURI: remoteRegistryURIs) {
+        for (String remoteRegistryURI: remoteRegistryUris) {
             childProgress = new Progress();
             compositeProgress.addChild(childProgress, percentageChunk);
             compositeProgress.setTitle("Loading remote registry [" + remoteRegistryURI + "]");
@@ -192,15 +195,12 @@ public class Registry {
             SystemUtils.sleep(200);
         }
         
-        try {
-            resolveDependencies();
-            checkCircles();//TODO: think about notification message
-        } catch (UnresolvedDependencyException e) {
-            throw new InitializationException("Cannot resolve dependencies", e);
-        }
+        validateDependencies();
         
         if (System.getProperty(SOURCE_STATE_FILE_PATH_PROPERTY) != null) {
-            loadStateFile(new File(System.getProperty(SOURCE_STATE_FILE_PATH_PROPERTY)), new Progress());
+            loadStateFile(
+                    new File(System.getProperty(SOURCE_STATE_FILE_PATH_PROPERTY)),
+                    new Progress());
         }
         
         applyRegistryFilters();
@@ -208,7 +208,7 @@ public class Registry {
         LogManager.logExit("... product registry initialization complete");
     }
     
-    public void finalizeRegistry(Progress progress) throws FinalizationException {
+    public void finalizeRegistry(final Progress progress) throws FinalizationException {
         LogManager.logEntry("finalizing product registry");
         
         progress.setPercentage(Progress.START);
@@ -216,11 +216,11 @@ public class Registry {
         if (Installer.getInstance().getExecutionMode() ==
                 InstallerExecutionMode.NORMAL) {
             progress.setTitle("Saving local registry");
-            progress.setDetail("Saving to " + localRegistryURI);
+            progress.setDetail("Saving to " + localRegistryFile);
             
             saveProductRegistry(
-                    new File(localDirectory, DEFAULT_LOCAL_REGISTRY_FILE_NAME),
-                    new ProductStatusFilter(Status.INSTALLED));
+                    localRegistryFile,
+                    new ProductFilter(Status.INSTALLED));
         }
         
         if (System.getProperty(TARGET_STATE_FILE_PATH_PROPERTY) != null) {
@@ -235,17 +235,18 @@ public class Registry {
         LogManager.logExit("finalizing product registry");
     }
     
-    // initialization ///////////////////////////////////////////////////////////////
-    private void initializeRegistryProperties() throws InitializationException {
+    private void setRegistryProperties() throws InitializationException {
         LogManager.logEntry("initializing product registry properties");
+        
+        final File localDirectory = Installer.getInstance().getLocalDirectory();
         
         /////////////////////////////////////////////////////////////////////////////
         LogManager.logIndent("initializing local product cache directory");
-        if (System.getProperty(LOCAL_PRODUCT_CACHE_DIRECTORY_NAME_PROPERTY) != null) {
-            localProductCache = new File(localDirectory,
-                    System.getProperty(LOCAL_PRODUCT_CACHE_DIRECTORY_NAME_PROPERTY));
+        if (System.getProperty(LOCAL_PRODUCT_CACHE_DIRECTORY_PROPERTY) != null) {
+            localProductCache = new File(
+                    localDirectory,
+                    System.getProperty(LOCAL_PRODUCT_CACHE_DIRECTORY_PROPERTY));
         }
-        
         if (!localProductCache.exists()) {
             if (!localProductCache.mkdirs()) {
                 throw new InitializationException("Cannot create local product cache directory: " + localDirectory);
@@ -261,74 +262,78 @@ public class Registry {
         
         /////////////////////////////////////////////////////////////////////////////
         LogManager.log("initializing local product registry file");
-        if (System.getProperty(LOCAL_PRODUCT_REGISTRY_FILE_NAME_PROPERTY) != null) {
-            localProductRegistry = new File(localDirectory,
-                    System.getProperty(LOCAL_PRODUCT_REGISTRY_FILE_NAME_PROPERTY));
-            localRegistryURI = localProductRegistry.toURI().toString();
+        if (System.getProperty(LOCAL_PRODUCT_REGISTRY_PROPERTY) != null) {
+            localRegistryFile = new File(
+                    localDirectory,
+                    System.getProperty(LOCAL_PRODUCT_REGISTRY_PROPERTY));
         }
         
-        if (!localProductRegistry.exists()) {
+        if (!localRegistryFile.exists()) {
             try {
-                localProductRegistry = FileProxy.getInstance().getFile(localRegistryStubURI);
+                FileUtils.copyFile(
+                        FileProxy.getInstance().getFile(localRegistryStubUri), 
+                        localRegistryFile);
             } catch (DownloadException e) {
                 throw new InitializationException("Cannot create local registry", e);
+            } catch (IOException e) {
+                throw new InitializationException("Cannot create local registry", e);
             }
-        } else if (localProductRegistry.isDirectory()) {
+        } else if (localRegistryFile.isDirectory()) {
             throw new InitializationException("Local registry is a directory!");
-        } else if (!localProductRegistry.canRead()) {
+        } else if (!localRegistryFile.canRead()) {
             throw new InitializationException("Cannot read local registry - not enough permissions");
-        } else if (!localProductRegistry.canWrite()) {
+        } else if (!localRegistryFile.canWrite()) {
             throw new InitializationException("Cannot write to local registry - not enough permissions");
         }
-        LogManager.log("    ... " + localProductRegistry);
+        LogManager.log("    ... " + localRegistryFile);
         
         /////////////////////////////////////////////////////////////////////////////
         LogManager.log("    initializing local product registry stub uri");
         if (System.getProperty(LOCAL_PRODUCT_REGISTRY_STUB_PROPERTY) != null) {
-            localRegistryStubURI =
+            localRegistryStubUri =
                     System.getProperty(LOCAL_PRODUCT_REGISTRY_STUB_PROPERTY);
         }
-        LogManager.log("    ... " + localRegistryStubURI);
+        LogManager.log("    ... " + localRegistryStubUri);
         
         /////////////////////////////////////////////////////////////////////////////
         LogManager.log("    initializing bundled product registry uri");
         if (System.getProperty(BUNDLED_PRODUCT_REGISTRY_URI_PROPERTY) != null) {
-            bundledRegistryURI =
+            bundledRegistryUri =
                     System.getProperty(BUNDLED_PRODUCT_REGISTRY_URI_PROPERTY);
         }
-        LogManager.log("    ... " + bundledRegistryURI);
+        LogManager.log("    ... " + bundledRegistryUri);
         
         /////////////////////////////////////////////////////////////////////////////
         LogManager.log("    initializing product registry schema uri");
         if (System.getProperty(PRODUCT_REGISTRY_SCHEMA_URI_PROPERTY) != null) {
-            registrySchemaURI = System.getProperty(PRODUCT_REGISTRY_SCHEMA_URI_PROPERTY);
+            registrySchemaUri = System.getProperty(PRODUCT_REGISTRY_SCHEMA_URI_PROPERTY);
         }
-        LogManager.log("    ... " + registrySchemaURI);
+        LogManager.log("    ... " + registrySchemaUri);
         
         /////////////////////////////////////////////////////////////////////////////
         LogManager.log("    initializing remote product registries uris");
         if (System.getProperty(REMOTE_PRODUCT_REGISTRIES_PROPERTY) != null) {
             for (String remoteRegistryURI: System.getProperty(REMOTE_PRODUCT_REGISTRIES_PROPERTY).split("\n")) {
-                remoteRegistryURIs.add(remoteRegistryURI);
+                remoteRegistryUris.add(remoteRegistryURI);
             }
         }
-        for (String string: remoteRegistryURIs) {
+        for (String string: remoteRegistryUris) {
             LogManager.log("    ... " + string);
         }
         
         /////////////////////////////////////////////////////////////////////////////
         LogManager.log("    initializing state file schema uri");
         if (System.getProperty(STATE_FILE_SCHEMA_URI_PROPERTY) != null) {
-            stateFileSchemaURI = System.getProperty(STATE_FILE_SCHEMA_URI_PROPERTY);
+            stateFileSchemaUri = System.getProperty(STATE_FILE_SCHEMA_URI_PROPERTY);
         }
-        LogManager.log("    ... " + stateFileSchemaURI);
+        LogManager.log("    ... " + stateFileSchemaUri);
         
         /////////////////////////////////////////////////////////////////////////////
         LogManager.log("    initializing default state file uri");
         if (System.getProperty(STATE_FILE_STUB_PROPERTY) != null) {
-            stateFileStubURI = System.getProperty(STATE_FILE_STUB_PROPERTY);
+            stateFileStubUri = System.getProperty(STATE_FILE_STUB_PROPERTY);
         }
-        LogManager.log("    ... " + stateFileStubURI);
+        LogManager.log("    ... " + stateFileStubUri);
         
         /////////////////////////////////////////////////////////////////////////////
         LogManager.log("    initializing target platform");
@@ -343,31 +348,38 @@ public class Registry {
     }
     
     private void applyRegistryFilters() {
+        // if a target component was specified, hide everything except:
+        //   * the target itself
+        //   * products, whose requirement the target satisfies
+        //   * ancestors of the target of any of the above
         if ((System.getProperty(TARGET_COMPONENT_UID_PROPERTY) != null) &&
                 (System.getProperty(TARGET_COMPONENT_VERSION_PROPERTY) != null)) {
             String uid = System.getProperty(TARGET_COMPONENT_UID_PROPERTY);
-            Version version = new Version(System.getProperty(TARGET_COMPONENT_VERSION_PROPERTY));
+            Version version = Version.getVersion(System.getProperty(TARGET_COMPONENT_VERSION_PROPERTY));
             
-            Product target = getProductComponent(uid, version);
+            Product target = getProduct(uid, version);
             
             List<Product> dependents = new ArrayList<Product>();
-            
-            for (Product component: queryComponents(TrueFilter.INSTANCE)) {
-                if (component.requires(target)) {
-                    dependents.add(component);
+            for (Product product: getProducts()) {
+                if (target.satisfiesRequirement(product)) {
+                    dependents.add(product);
                 }
             }
             
-            for (Product component: queryComponents(TrueFilter.INSTANCE)) {
-                if ((component == target) || component.requires(target) || component.isAncestor((target)) || component.isAncestor(dependents)) {
-                    component.setVisible(true);
+            for (Product product: getProducts()) {
+                if (target.equals(product) ||
+                        dependents.contains(product) ||
+                        product.isAncestor(target) ||
+                        product.isAncestor(dependents)) {
+                    product.setVisible(true);
                 } else {
-                    component.setVisible(false);
+                    product.setVisible(false);
                 }
             }
         }
         
-        for (Product component: queryComponents(TrueFilter.INSTANCE)) {
+        // hide products that do not support the current platform
+        for (Product component: queryProducts(TrueFilter.INSTANCE)) {
             if (component.getSupportedPlatforms().contains(targetPlatform)) {
                 component.setVisible(true);
             } else {
@@ -375,6 +387,7 @@ public class Registry {
             }
         }
         
+        // hide empty groups
         for (Group group: queryGroups(TrueFilter.INSTANCE)) {
             if (group.isEmpty()) {
                 group.setVisible(false);
@@ -382,91 +395,147 @@ public class Registry {
         }
     }
     
-    private void resolveDependencies() throws UnresolvedDependencyException {
-        Queue<RegistryNode> queue = new LinkedList<RegistryNode>();
-        
-        queue.offer(productTreeRoot);
-        while (queue.peek() != null) {
-            RegistryNode node = queue.poll();
+    // validation ///////////////////////////////////////////////////////////////////
+    public void validateDependencies() throws InitializationException {
+        for (Product product: getProducts()) {
+            validateRequirements(product);
+            validateConflicts(product);
+            validateInstallAfters(product);
+        }
+    }
+    
+    private void validateRequirements(Product product) throws InitializationException {
+        validateRequirements(product, new LinkedList<Product>());
+    }
+    
+    private void validateRequirements(Product product, List<Product> prohibitedList) throws InitializationException {
+        for (Dependency requirement: product.getDependencies(DependencyType.REQUIREMENT)) {
+            // get the list of products that satisfy the requirement
+            final List<Product> requirees = queryProducts(new ProductFilter(
+                    requirement.getUid(),
+                    requirement.getVersionLower(),
+                    requirement.getVersionUpper(),
+                    targetPlatform));
             
-            if (node instanceof Product) {
-                Product component = (Product) node;
-                
-                for (Dependency rawDependency: component.getRawDependencies()) {
-                    switch (rawDependency.getType()) {
-                        case REQUIREMENT:
-                            Product dependee = getProductComponent(rawDependency.getUid(), rawDependency.getLower(), rawDependency.getUpper());
-                            
-                            if (dependee != null) {
-                                component.addRequirement(dependee);
-                                
-                            } else {
-                                throw new UnresolvedDependencyException("Cannot resolve dependency on " + rawDependency.getUid() + " for " + component.getDisplayName());
-                            }
-                            break;
-                        case CONFLICT:
-                            List<Product> dependees = getProductComponents(rawDependency.getUid(), rawDependency.getLower(), rawDependency.getUpper());
-                            
-                            if (dependees.size() > 0) {
-                                for (Product dep: dependees) {
-                                    component.addConflict(dep);
-                                }
-                            } else {
-                                throw new UnresolvedDependencyException("Cannot resolve dependency on " + rawDependency.getUid() + " for " + component.getDisplayName());
-                            }
-                            break;
-                        default:
-                            throw new UnresolvedDependencyException("Unknow dependency type: " + rawDependency.getType());
+            // if there are no products that satisfy the requirement, the registry
+            // is inconsistent
+            if (requirees.size() == 0) {
+                throw new InitializationException("No components " +
+                        "matching the requirement.");
+            }
+            
+            // iterate over the list of satisfying products, and check whether they
+            // define a dependency that is satisfied wither by the current product
+            // or by any product in the prohibited list; if it is, we have a cyclic
+            // dependency which is faulty - throw an exception
+            for (Product requiree: requirees) {
+                for (Dependency dependency: requiree.getDependencies()) {
+                    if (product.satisfies(dependency)) {
+                        throw new InitializationException(
+                                "Cyclic dependency: " + product.getUid() +
+                                ", " + dependency.getUid());
+                    }
+                    
+                    for (Product prohibited: prohibitedList) {
+                        if (prohibited.satisfies(dependency)) {
+                            throw new InitializationException(
+                                    "Cyclic dependency: " + prohibited.getUid() +
+                                    ", " + dependency.getUid());
+                        }
                     }
                 }
+                
+                // if the requiree's dependencies are ok, we need to check whether,
+                // the products that satisfy its requirements are ok as well
+                final List<Product> newProhibitedList = new LinkedList<Product>();
+                newProhibitedList.addAll(prohibitedList);
+                newProhibitedList.add(product);
+                
+                validateRequirements(requiree, newProhibitedList);
+            }
+        }
+    }
+    
+    private void validateConflicts(Product product) throws InitializationException {
+        for (Dependency requirement: product.getDependencies(DependencyType.REQUIREMENT)) {
+            // get the list of products that satisfy the requirement
+            final List<Product> requirees = queryProducts(new ProductFilter(
+                    requirement.getUid(),
+                    requirement.getVersionLower(),
+                    requirement.getVersionUpper(),
+                    targetPlatform));
+            
+            for (Dependency conflict: product.getDependencies(DependencyType.CONFLICT)) {
+                // get the list of products that satisfy the conflict
+                final List<Product> conflictees = queryProducts(new ProductFilter(
+                        conflict.getUid(),
+                        conflict.getVersionLower(),
+                        conflict.getVersionUpper(),
+                        targetPlatform));
+                
+                if (SystemUtils.intersects(requirees, conflictees)) {
+                    throw new InitializationException(
+                            "A requiree is also a conflictee.");
+                }
+            }
+        }
+    }
+    
+    private void validateInstallAfters(Product product) throws InitializationException {
+        validateInstallAfters(product, new LinkedList<Product>());
+    }
+    
+    private void validateInstallAfters(Product product, List<Product> prohibitedList) throws InitializationException {
+        for (Dependency installafter: product.getDependencies(DependencyType.INSTALL_AFTER)) {
+            // get the list of products that satisfy the install-after dependency
+            final List<Product> dependees = queryProducts(new ProductFilter(
+                    installafter.getUid(),
+                    targetPlatform));
+            
+            // iterate over the list of satisfying products, and check whether they
+            // define a requirement or install-efter dependency that is satisfied
+            // either by the current product or by any product in the prohibited
+            // list; if it is, we have a cyclic dependency which is faulty - throw
+            // an exception
+            for (Product requiree: dependees) {
+                for (Dependency dependency: requiree.getDependencies(
+                        DependencyType.REQUIREMENT,
+                        DependencyType.INSTALL_AFTER)) {
+                    if (product.satisfies(dependency)) {
+                        throw new InitializationException(
+                                "Cyclic dependency: " + product.getUid() +
+                                ", " + dependency.getUid());
+                    }
+                    
+                    for (Product prohibited: prohibitedList) {
+                        if (prohibited.satisfies(dependency)) {
+                            throw new InitializationException(
+                                    "Cyclic dependency: " + prohibited.getUid() +
+                                    ", " + dependency.getUid());
+                        }
+                    }
+                }
+                
+                // if the requiree's dependencies are ok, we need to check whether
+                // the products that satisfy its requirements are ok as well
+                final List<Product> newProhibitedList = new LinkedList<Product>();
+                newProhibitedList.addAll(prohibitedList);
+                newProhibitedList.add(product);
+                
+                validateRequirements(requiree, newProhibitedList);
             }
             
-            for (RegistryNode child: node.getChildren()) {
-                queue.offer(child);
-            }
         }
     }
     
     // registry <-> dom <-> xml operations //////////////////////////////////////////
-    public void loadProductRegistry(String registryUri, Progress progress) throws InitializationException {
+    public void loadProductRegistry(String uri, Progress progress) throws InitializationException {
         try {
-            Document document = loadRegistryDocument(registryUri);
+            Document document = loadRegistryDocument(uri);
             
-            loadRegistryComponents(productTreeRoot, document.getDocumentElement());
+            loadRegistryComponents(registryRoot, document.getDocumentElement());
         } catch (XMLException e) {
             throw new InitializationException("Cannot load registry", e);
-        }
-    }
-    
-    private void loadRegistryComponents(RegistryNode parent, Element parentElement) throws InitializationException {
-        Element componentsElement = XMLUtils.getChild(parentElement, "components");
-        
-        if (componentsElement != null) {
-            for (Element child: XMLUtils.getChildren(componentsElement)) {
-                if (child.getNodeName().equals("product")) {
-                    Product component = new Product().loadFromDom(child);
-                    List<Product> existing = getProductComponents(component.getUid(), component.getVersion(), component.getSupportedPlatforms());
-                    
-                    if (existing == null) {
-                        parent.addChild(component);
-                        loadRegistryComponents(component, child);
-                    } else {
-                        loadRegistryComponents(existing.get(0), child);
-                    }
-                }
-                
-                if (child.getNodeName().equals("group")) {
-                    Group group = new Group().loadFromDom(child);
-                    Group existing = getProductGroup(group.getUid());
-                    
-                    if (existing == null) {
-                        parent.addChild(group);
-                        loadRegistryComponents(group, child);
-                    } else {
-                        loadRegistryComponents(existing, child);
-                    }
-                }
-            }
         }
     }
     
@@ -479,11 +548,10 @@ public class Registry {
     }
     
     public Document getEmptyRegistryDocument() throws XMLException {
-        return loadRegistryDocument(localRegistryStubURI);
+        return loadRegistryDocument(localRegistryStubUri);
     }
     
-    public Document getRegistryDocument(final RegistryFilter filter) 
-            throws XMLException, FinalizationException {
+    public Document getRegistryDocument(final RegistryFilter filter) throws XMLException, FinalizationException {
         final Document document        = getEmptyRegistryDocument();
         final Element  documentElement = document.getDocumentElement();
         
@@ -504,8 +572,8 @@ public class Registry {
             documentElement.appendChild(propertiesElement);
         }
         
-        Element componentsElement = 
-                productTreeRoot.saveChildrenToDom(document, filter);
+        Element componentsElement =
+                registryRoot.saveChildrenToDom(document, filter);
         
         if (componentsElement != null) {
             documentElement.appendChild(componentsElement);
@@ -514,10 +582,10 @@ public class Registry {
         return document;
     }
     
-    public Document loadRegistryDocument(String registryUri) throws XMLException {
+    public Document loadRegistryDocument(String uri) throws XMLException {
         try {
-            File schemaFile = FileProxy.getInstance().getFile(registrySchemaURI);
-            File registryFile = FileProxy.getInstance().getFile(registryUri, true);
+            File schemaFile   = FileProxy.getInstance().getFile(registrySchemaUri);
+            File registryFile = FileProxy.getInstance().getFile(uri, true);
             
             Schema schema = SchemaFactory.
                     newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).
@@ -559,20 +627,55 @@ public class Registry {
         }
     }
     
-    public void saveRegistryDocument(Document document, OutputStream stream) throws XMLException {
+    public void saveRegistryDocument(Document document, OutputStream out) throws XMLException {
         try {
-            XMLUtils.saveXMLDocument(document, stream);
+            XMLUtils.saveXMLDocument(document, out);
         } catch (XMLException e) {
             throw new XMLException("Could not finalize registry", e);
         }
     }
     
-    // queries //////////////////////////////////////////////////////////////////////
+    private void loadRegistryComponents(RegistryNode parentNode, Element parentElement) throws InitializationException {
+        Element element = XMLUtils.getChild(parentElement, "components");
+        
+        if (element != null) {
+            for (Element child: XMLUtils.getChildren(element)) {
+                if (child.getNodeName().equals("product")) {
+                    final Product product = new Product().loadFromDom(child);
+                    final List<Product> existing = getProducts(
+                            product.getUid(),
+                            product.getVersion(),
+                            product.getSupportedPlatforms());
+                    
+                    if (existing.size() == 0) {
+                        parentNode.addChild(product);
+                        loadRegistryComponents(product, child);
+                    } else {
+                        loadRegistryComponents(existing.get(0), child);
+                    }
+                }
+                
+                if (child.getNodeName().equals("group")) {
+                    final Group group = new Group().loadFromDom(child);
+                    final Group existing = getGroup(group.getUid());
+                    
+                    if (existing == null) {
+                        parentNode.addChild(group);
+                        loadRegistryComponents(group, child);
+                    } else {
+                        loadRegistryComponents(existing, child);
+                    }
+                }
+            }
+        }
+    }
+    
+    // basic queries ////////////////////////////////////////////////////////////////
     public List<RegistryNode> query(RegistryFilter filter) {
         List<RegistryNode>  matches = new ArrayList<RegistryNode>();
         Queue<RegistryNode> queue    = new LinkedList<RegistryNode>();
         
-        queue.offer(productTreeRoot);
+        queue.offer(registryRoot);
         while (queue.peek() != null) {
             RegistryNode node = queue.poll();
             
@@ -588,7 +691,7 @@ public class Registry {
         return matches;
     }
     
-    public List<Product> queryComponents(RegistryFilter filter) {
+    public List<Product> queryProducts(RegistryFilter filter) {
         List<Product> components = new ArrayList<Product>();
         
         for (RegistryNode node: query(filter)) {
@@ -612,187 +715,124 @@ public class Registry {
         return groups;
     }
     
-    public List<Product> getComponents() {
-        return queryComponents(TrueFilter.INSTANCE);
-    }
-    
-    public List<Product> getComponentsInstalledDuringThisSession() {
-        return queryComponents(new OrFilter(
-                new ProductDetailedStatusFilter(DetailedStatus.INSTALLED_SUCCESSFULLY),
-                new ProductDetailedStatusFilter(DetailedStatus.INSTALLED_WITH_WARNINGS)));
-    }
-    
-    public List<Product> getComponentsInstalledSuccessfullyDuringThisSession() {
-        return queryComponents(new ProductDetailedStatusFilter(DetailedStatus.INSTALLED_SUCCESSFULLY));
-    }
-    
-    public List<Product> getComponentsInstalledWithWarningsDuringThisSession() {
-        return queryComponents(new ProductDetailedStatusFilter(DetailedStatus.INSTALLED_WITH_WARNINGS));
-    }
-    
-    public List<Product> getComponentsFailedToInstallDuringThisSession() {
-        return queryComponents(new ProductDetailedStatusFilter(DetailedStatus.FAILED_TO_INSTALL));
-    }
-    
-    public List<Product> getComponentsUninstalledDuringThisSession() {
-        return queryComponents(new OrFilter(
-                new ProductDetailedStatusFilter(DetailedStatus.UNINSTALLED_SUCCESSFULLY),
-                new ProductDetailedStatusFilter(DetailedStatus.UNINSTALLED_WITH_WARNINGS)));
-    }
-    
-    public List<Product> getComponentsUninstalledSuccessfullyDuringThisSession() {
-        return queryComponents(new ProductDetailedStatusFilter(DetailedStatus.UNINSTALLED_SUCCESSFULLY));
-    }
-    
-    public List<Product> getComponentsUninstalledWithWarningsDuringThisSession() {
-        return queryComponents(new ProductDetailedStatusFilter(DetailedStatus.UNINSTALLED_WITH_WARNINGS));
-    }
-    
-    public List<Product> getComponentsFailedToUninstallDuringThisSession() {
-        return queryComponents(new ProductDetailedStatusFilter(DetailedStatus.FAILED_TO_UNINSTALL));
-    }
-    
-    public List<Product> getInstalledProducts() {
-        return queryComponents(new ProductStatusFilter(Status.INSTALLED));
-    }
-    
-    public boolean wereErrorsEncountered() {
-        boolean install = getComponentsFailedToInstallDuringThisSession().size() == 0;
-        boolean uninstall = getComponentsFailedToUninstallDuringThisSession().size() == 0;
-        
-        return !install || !uninstall;
-    }
-    
-    public boolean wereWarningsEncountered() {
-        boolean install = getComponentsInstalledWithWarningsDuringThisSession().size() == 0;
-        boolean uninstall = getComponentsUninstalledWithWarningsDuringThisSession().size() == 0;
-        
-        return !install || !uninstall;
-    }
-    
-    public List<Product> getDependingComponents(Product component) {
-        return queryComponents(new DependentsFilter(component));
-    }
-    
-    public List<Product> getRequiredComponents(Product component) {
-        return queryComponents(new RequirementsFilter(component));
-    }
-    
-    public Product getProductComponent(String uid, Version version) {
-        List<Product> candidates = queryComponents(new ProductFilter(uid, version, targetPlatform));
-        
-        return (candidates.size() > 0) ? candidates.get(0) : null;
-    }
-    
-    public List<Product> getProductComponents(String uid, Version version, List<Platform> platforms) {
-        List<Product> candidates = queryComponents(new ProductFilter(uid, version, platforms));
-        
-        return (candidates.size() > 0) ? candidates : null;
+    // products queries /////////////////////////////////////////////////////////////
+    public List<Product> getProducts() {
+        return queryProducts(TrueFilter.INSTANCE);
     }
     
     public List<Product> getProducts(String uid) {
-        List<Product> candidates = queryComponents(new ProductFilter(uid, targetPlatform));
-        
-        return (candidates.size() > 0) ? candidates : null;
+        return queryProducts(new ProductFilter(uid, targetPlatform));
     }
     
     public List<Product> getProducts(String uid, List<Platform> platforms) {
-        List<Product> candidates = queryComponents(new ProductFilter(uid, platforms));
-        
-        return (candidates.size() > 0) ? candidates : null;
+        return queryProducts(new ProductFilter(uid, platforms));
     }
     
-    public Product getProductComponent(String uid, Version lower, Version upper) {
-        Product newest = null;
-        
-        for (Product candidate: queryComponents(new ProductFilter(uid, lower, upper, targetPlatform))) {
-            if ((newest == null) || newest.getVersion().olderThan(candidate.getVersion())) {
-                newest = candidate;
-            }
+    public List<Product> getProducts(String uid, Version lower, Version upper) {
+        return queryProducts(new ProductFilter(uid, lower, upper, targetPlatform));
+    }
+    
+    public List<Product> getProducts(String uid, Version version, List<Platform> platforms) {
+        return queryProducts(new ProductFilter(uid, version, platforms));
+    }
+    
+    public List<Product> getProducts(Dependency dependency) {
+        switch (dependency.getType()) {
+            case REQUIREMENT:
+                if (dependency.getVersionResolved() != null) {
+                    return queryProducts(new ProductFilter(
+                            dependency.getUid(),
+                            dependency.getVersionResolved(),
+                            dependency.getVersionResolved(),
+                            targetPlatform));
+                }
+            case CONFLICT:
+                return queryProducts(new ProductFilter(
+                        dependency.getUid(),
+                        dependency.getVersionLower(),
+                        dependency.getVersionUpper(),
+                        targetPlatform));
+            case INSTALL_AFTER:
+                return queryProducts(new ProductFilter(
+                        dependency.getUid(),
+                        targetPlatform));
+            default:
+                ErrorManager.notifyCritical("unknown dependency type");
         }
         
-        return newest;
+        // the only way for us to reach this spot is to get to 'default:' in the
+        // switch, but ErrorManager.notifyCritical() will cause a System.exit(),
+        // so the below line is present only for successful compilation
+        return null;
     }
     
-    public List<Product> getProductComponents(String uid, Version lower, Version upper) {
-        return queryComponents(new ProductFilter(uid, lower, upper, targetPlatform));
+    public List<Product> getProducts(Status status) {
+        return queryProducts(new ProductFilter(status));
     }
     
-    public Group getProductGroup(String uid) {
-        List<Group> candidates = queryGroups(new ProductGroupFilter(uid));
+    public List<Product> getProducts(DetailedStatus detailedStatus) {
+        return queryProducts(new ProductFilter(detailedStatus));
+    }
+    
+    public Product getProduct(final String uid, final Version version) {
+        List<Product> candidates = queryProducts(new ProductFilter(uid, version, targetPlatform));
         
         return (candidates.size() > 0) ? candidates.get(0) : null;
     }
     
-    public RegistryNode getProductTreeRoot() {
-        return productTreeRoot;
-    }
-    
-    public boolean hasInstalledChildren(RegistryNode parentNode) {
-        for (RegistryNode child: parentNode.getChildren()) {
-            if (child instanceof Product) {
-                Product component = (Product) child;
-                if (component.getStatus() == Status.INSTALLED) {
-                    return true;
-                }
-            }
-            
-            if (hasInstalledChildren(child)) {
-                return true;
-            }
-        }
+    // groups queries ///////////////////////////////////////////////////////////////
+    public Group getGroup(String uid) {
+        List<Group> candidates = queryGroups(new GroupFilter(uid));
         
-        return false;
-    }
-    
-    public long getInstallationSize() {
-        long size = 0;
-        
-        for (Product product: getComponentsToInstall()) {
-            size += product.getRequiredDiskSpace();
-        }
-        
-        return size;
-    }
-    
-    public long getDownloadSize() {
-        long size = 0;
-        
-        for (Product product: getComponentsToInstall()) {
-            size += product.getDownloadSize();
-        }
-        
-        return size;
+        return (candidates.size() > 0) ? candidates.get(0) : null;
     }
     
     // installation order related queries ///////////////////////////////////////////
-    public List<Product> getComponentsToInstall() {
-        List<Product> components = new ArrayList<Product>();
+    public List<Product> getProductsToInstall() {
+        final List<Product> products = new LinkedList<Product>();
         
-        Product component;
-        
-        while ((component = getNextComponentToInstall(components)) != null) {
-            components.add(component);
+        Product product;
+        while ((product = getNextComponentToInstall(products)) != null) {
+            products.add(product);
         }
         
-        return components;
+        return products;
+    }
+    
+    public List<Product> getComponentsToUninstall() {
+        final List<Product> products = new ArrayList<Product>();
+        
+        Product product;
+        while ((product = getNextComponentToUninstall(products)) != null) {
+            products.add(product);
+        }
+        
+        return products;
     }
     
     private Product getNextComponentToInstall(List<Product> currentList) {
-        List<Product> components = queryComponents(TrueFilter.INSTANCE);
-        
-        for (Product component: components) {
-            if ((component.getStatus() == Status.TO_BE_INSTALLED) && !currentList.contains(component) && checkDependenciesForInstall(component)) {
-                boolean componentIsGood = true;
+        for (Product product: getProducts()) {
+            if ((product.getStatus() == Status.TO_BE_INSTALLED) && 
+                    !currentList.contains(product) && 
+                    product.checkDependenciesForInstall()) {
+                boolean productIsGood = true;
                 
-                for (Product requirement: component.getRequirements()) {
-                    if ((requirement.getStatus() != Status.INSTALLED) && !currentList.contains(requirement)) {
-                        componentIsGood = false;
+                // all products satisfying the requirement and install-after 
+                // dependencies which are planned for installation should be already 
+                // present in the list
+                for (Dependency dependency: product.getDependencies(
+                        DependencyType.REQUIREMENT, 
+                        DependencyType.INSTALL_AFTER)) {
+                    for (Product dependee: getProducts(dependency)) {
+                        if ((dependee.getStatus() == Status.TO_BE_INSTALLED) && 
+                                !currentList.contains(dependee)) {
+                            productIsGood = false;
+                        }
                     }
                 }
                 
-                if (componentIsGood) {
-                    return component;
+                if (productIsGood) {
+                    return product;
                 }
             }
         }
@@ -800,117 +840,29 @@ public class Registry {
         return null;
     }
     
-    public List<Product> getComponentsToUninstall() {
-        List<Product> components = new ArrayList<Product>();
-        
-        Product component;
-        
-        while ((component = getNextComponentToUninstall(components)) != null) {
-            components.add(component);
-        }
-        
-        return components;
-    }
-    
     private Product getNextComponentToUninstall(List<Product> currentList) {
-        List<Product> components = queryComponents(TrueFilter.INSTANCE);
-        
-        for (Product component: components) {
-            if ((component.getStatus() == Status.TO_BE_UNINSTALLED) && !currentList.contains(component) && checkDependenciesForUninstall(component)) {
-                boolean componentIsGood = true;
+        for (Product product: getProducts()) {
+            if ((product.getStatus() == Status.TO_BE_UNINSTALLED) && 
+                    !currentList.contains(product) && 
+                    product.checkDependenciesForUninstall()) {
+                boolean productIsGood = true;
                 
-                for (Product dependentComponent: components) {
-                    if ((dependentComponent.getStatus() != Status.NOT_INSTALLED) && !currentList.contains(dependentComponent) && dependentComponent.getRequirements().contains(component)) {
-                        componentIsGood = false;
+                for (Product dependent: getProducts()) {
+                    if ((dependent.getStatus() != Status.NOT_INSTALLED) && 
+                            !currentList.contains(dependent) && 
+                            product.satisfiesRequirement(dependent)) {
+                        productIsGood = false;
                         break;
                     }
                 }
                 
-                if (componentIsGood) {
-                    return component;
+                if (productIsGood) {
+                    return product;
                 }
                 
             }
         }
         return null;
-    }
-    
-    // verification /////////////////////////////////////////////////////////////////
-    public boolean checkDependenciesForInstall(Product component) {
-        for (Product requirement: component.getRequirements()) {
-            if ((requirement.getStatus() != Status.INSTALLED) &&
-                    (requirement.getStatus() != Status.TO_BE_INSTALLED)) {
-                return false;
-            }
-        }
-        
-        for (Product conflict: component.getConflicts()) {
-            if ((conflict.getStatus() != Status.NOT_INSTALLED) &&
-                    (conflict.getStatus() != Status.TO_BE_UNINSTALLED)) {
-                return false;
-            }
-        }
-        
-        return true;
-    }
-    
-    public boolean checkDependenciesForUninstall(Product component) {
-        List<Product> components = queryComponents(TrueFilter.INSTANCE);
-        
-        for (Product dependent: components) {
-            if (dependent.requires(component) &&
-                    ((dependent.getStatus() == Status.INSTALLED) ||
-                    (dependent.getStatus() == Status.TO_BE_INSTALLED))) {
-                return false;
-            }
-        }
-        
-        return true;
-    }
-    
-    public boolean checkDependencies() {
-        List<Product> components = queryComponents(TrueFilter.INSTANCE);
-        
-        for (Product component: components) {
-            if (component.getStatus() == Status.TO_BE_INSTALLED) {
-                if (!checkDependenciesForInstall(component)) {
-                    return false;
-                }
-            }
-            if (component.getStatus() == Status.TO_BE_UNINSTALLED) {
-                if (!checkDependenciesForUninstall(component)) {
-                    return false;
-                }
-            }
-        }
-        
-        return true;
-    }
-    
-    private void checkCircles() throws UnresolvedDependencyException {
-        final List<Product> list = queryComponents(TrueFilter.INSTANCE);
-        for (Product component : list) {
-            final Stack<Product> visited = new Stack<Product>();
-            final Set<Product> conflictSet = new HashSet<Product>();
-            final Set<Product> requirementSet = new HashSet<Product>();
-            checkCircles(component, visited, conflictSet, requirementSet);
-        }
-    }
-    
-    private void checkCircles(Product component, Stack<Product> visited, Set<Product> conflictSet, Set<Product> requirementSet) throws UnresolvedDependencyException {
-        if (visited.contains(component) || conflictSet.contains(component)) {
-            throw new UnresolvedDependencyException("circles found");
-        }
-        visited.push(component);
-        requirementSet.add(component);
-        if (!Collections.disjoint(requirementSet, component.getConflicts())) {
-            throw new UnresolvedDependencyException("circles found");
-        }
-        conflictSet.addAll(component.getConflicts());
-        for (Product comp : component.getRequirements()) {
-            checkCircles(comp, visited, conflictSet, requirementSet);
-        }
-        visited.pop();
     }
     
     // properties ///////////////////////////////////////////////////////////////////
@@ -926,22 +878,13 @@ public class Registry {
         properties.setProperty(name, value);
     }
     
-    // various getters //////////////////////////////////////////////////////////////
-    public File getLocalProductCache() {
-        return localProductCache;
-    }
-    
-    public Platform getTargetPlatform() {
-        return targetPlatform;
-    }
-    
     // state file methods ///////////////////////////////////////////////////////////
     public void loadStateFile(File stateFile, Progress progress) throws InitializationException {
         try {
             LogManager.log(ErrorLevel.DEBUG, "Loading state file from " + stateFile.getAbsolutePath());
             
             File schemaFile =
-                    FileProxy.getInstance().getFile(stateFileSchemaURI);
+                    FileProxy.getInstance().getFile(stateFileSchemaUri);
             
             SchemaFactory schemaFactory =
                     SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -993,13 +936,13 @@ public class Registry {
             List<Node> componentsNodes = XMLUtils.getChildList(documentElement, "./components/product");
             for (Node componentNode: componentsNodes) {
                 String uid = XMLUtils.getAttribute(componentNode, "uid");
-                Version version = new Version(XMLUtils.getAttribute(componentNode, "version"));
+                Version version = Version.getVersion(XMLUtils.getAttribute(componentNode, "version"));
                 List<Platform> platforms = StringUtils.parsePlatforms(XMLUtils.getAttribute(componentNode, "platform"));
                 
                 LogManager.log(ErrorLevel.DEBUG, "        parsing component uid=" + uid + ", version=" + version);
                 progress.setDetail("Loading component: uid=" + uid + ", version=" + version);
                 if (platforms.contains(targetPlatform)) {
-                    Product component = getProductComponent(uid, version);
+                    Product component = getProduct(uid, version);
                     
                     if (component != null) {
                         Status status = StringUtils.parseStatus(XMLUtils.getAttribute(componentNode, "status"));
@@ -1059,9 +1002,9 @@ public class Registry {
     public void saveStateFile(File stateFile, Progress progress) throws FinalizationException {
         try {
             File schemaFile =
-                    FileProxy.getInstance().getFile(stateFileSchemaURI);
+                    FileProxy.getInstance().getFile(stateFileSchemaUri);
             File stubFile =
-                    FileProxy.getInstance().getFile(stateFileStubURI);
+                    FileProxy.getInstance().getFile(stateFileStubUri);
             
             SchemaFactory schemaFactory =
                     SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -1097,7 +1040,9 @@ public class Registry {
                 documentElement.appendChild(propertiesNode);
             }
             
-            List<Product> components = queryComponents(new ProductChangedStatusFilter());
+            List<Product> components = queryProducts(new OrFilter(
+                    new ProductFilter(Status.INSTALLED),
+                    new ProductFilter(Status.NOT_INSTALLED)));
             if (components.size() > 0) {
                 Element componentsNode = document.createElement("components");
                 for (Product component: components) {
@@ -1140,8 +1085,7 @@ public class Registry {
                 documentElement.appendChild(componentsNode);
             }
             
-            XMLUtils.saveXMLDocument( document, stateFile);
-            
+            XMLUtils.saveXMLDocument(document, stateFile);
         } catch (DownloadException e) {
             throw new FinalizationException("Could not finalize registry", e);
         } catch (ParserConfigurationException e) {
@@ -1156,6 +1100,35 @@ public class Registry {
     }
     
     // miscellanea //////////////////////////////////////////////////////////////////
+    public File getLocalProductCache() {
+        return localProductCache;
+    }
+    
+    public RegistryNode getRegistryRoot() {
+        return registryRoot;
+    }
+    
+    public boolean hasInstalledChildren(RegistryNode parentNode) {
+        for (RegistryNode child: parentNode.getChildren()) {
+            if (child instanceof Product) {
+                Product component = (Product) child;
+                if (component.getStatus() == Status.INSTALLED) {
+                    return true;
+                }
+            }
+            
+            if (hasInstalledChildren(child)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    public Platform getTargetPlatform() {
+        return targetPlatform;
+    }
+    
     private int getNumberOfComponents(Node node) {
         List<Node> list = XMLUtils.getChildList(node,"./components/(product,group)");
         int result = list.size();
@@ -1165,23 +1138,19 @@ public class Registry {
         return result;
     }
     
-    private Group createTreeRoot() {
-        return new Group();
-    }
-    
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final String DEFAULT_LOCAL_PRODUCT_CACHE_DIRECTORY_NAME =
             "product-cache";
 
     
-    public static final String LOCAL_PRODUCT_CACHE_DIRECTORY_NAME_PROPERTY =
+    public static final String LOCAL_PRODUCT_CACHE_DIRECTORY_PROPERTY =
             "nbi.product.local.cache.directory.name";
     
     public static final String DEFAULT_LOCAL_REGISTRY_FILE_NAME =
             "product-registry.xml";
     
-    public static final String LOCAL_PRODUCT_REGISTRY_FILE_NAME_PROPERTY =
+    public static final String LOCAL_PRODUCT_REGISTRY_PROPERTY =
             "nbi.product.local.registry.file.name";
     
     public static final String DEFAULT_LOCAL_PRODUCT_REGISTRY_STUB_URI =

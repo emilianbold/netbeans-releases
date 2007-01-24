@@ -18,27 +18,36 @@
  *
  * $Id$
  */
-package org.netbeans.installer.utils.helper;
+package org.netbeans.installer.product.filters;
 
-import org.netbeans.installer.utils.exceptions.ParseException;
-import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
+import java.util.LinkedList;
+import java.util.List;
+import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.product.RegistryNode;
 
-public enum DependencyType {
-    REQUIREMENT("requirement"),
-    CONFLICT("conflict"),
-    INSTALL_AFTER("install-after");
+/**
+ *
+ * @author Kirill Sorokin
+ */
+public class SubTreeFilter implements RegistryFilter {
+    private List<RegistryNode> leaves;
     
-    private String name;
-    
-    private DependencyType(String name) {
-        this.name = name;
+    public SubTreeFilter(List<RegistryNode> nodes) {
+        this.leaves = new LinkedList<RegistryNode>();
+        this.leaves.addAll(nodes);
     }
     
-    public String getName() {
-        return name;
-    }
-    
-    public String toString() {
-        return name;
+    public boolean accept(final RegistryNode node) {
+        if (leaves.contains(node)) {
+            return true;
+        }
+        
+        for (RegistryNode leaf: leaves) {
+            if (node.isAncestor(leaf)) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 }

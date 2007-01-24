@@ -28,12 +28,11 @@ import org.netbeans.installer.utils.StringUtils;
  * @author Kirill Sorokin
  */
 public class NbiLabel extends JLabel {
-    public static final String DEFAULT_TEXT = " ";
+    public static final String DEFAULT_TEXT = " "; // NOI18N
     
     public NbiLabel() {
         super();
         
-        setOpaque(false);
         setText(null);
     }
     

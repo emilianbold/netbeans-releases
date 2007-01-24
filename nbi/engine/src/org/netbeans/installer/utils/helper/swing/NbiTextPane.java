@@ -57,6 +57,10 @@ public class NbiTextPane extends JTextPane {
         setText(text.getText());
     }
     
+    public void setText(CharSequence chars) {
+        setText(chars.toString());
+    }
+    
     public void setContentType(ContentType contentType) {
         super.setContentType(contentType.toString());
     }

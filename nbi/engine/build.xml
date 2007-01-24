@@ -51,11 +51,16 @@ $Id$
     </target>
     
     <target name="native-build" depends="native-init,native-compile">
-        <copy file="${native.dir.windows}/${native.dist.dir}/${native.file.windows}" todir="${build.classes.dir}/${native.dirname}"/>
-        <copy file="${native.dir.linux}/${native.dist.dir}/${native.file.linux}" todir="${build.classes.dir}/${native.dirname}"/>
-        <copy file="${native.dir.solaris-x86}/${native.dist.dir}/${native.file.solaris-x86}" todir="${build.classes.dir}/${native.dirname}"/>
-        <copy file="${native.dir.solaris-sparc}/${native.dist.dir}/${native.file.solaris-sparc}" todir="${build.classes.dir}/${native.dirname}"/>
-        <copy file="${native.dir.macosx}/${native.dist.dir}/${native.file.macosx}" todir="${build.classes.dir}/${native.dirname}"/>
+        <copy file="${native.dir.windows}/${native.dist.dir}/${native.file.windows}" 
+              todir="${build.classes.dir}/${native.dirname}"/>
+        <copy file="${native.dir.linux}/${native.dist.dir}/${native.file.linux}" 
+              todir="${build.classes.dir}/${native.dirname}"/>
+        <copy file="${native.dir.solaris-x86}/${native.dist.dir}/${native.file.solaris-x86}" 
+              todir="${build.classes.dir}/${native.dirname}"/>
+        <copy file="${native.dir.solaris-sparc}/${native.dist.dir}/${native.file.solaris-sparc}" 
+              todir="${build.classes.dir}/${native.dirname}"/>
+        <copy file="${native.dir.macosx}/${native.dist.dir}/${native.file.macosx}" 
+              todir="${build.classes.dir}/${native.dirname}"/>
     </target>
     
     <target name="define-platform">
@@ -103,7 +108,6 @@ $Id$
     </target>
     
     <target name="init-custom-tasks" depends="build-custom-tasks">
-        
         <taskdef 
             name="write-jar-content-list" 
             classname="org.netbeans.installer.infra.build.ant.WriteFileList" 
@@ -128,22 +132,21 @@ $Id$
             output="${basedir}/${build.classes.dir}/${jar.contents.list}"
             mask="(?!^data/).*"/>                                
     </target>
-
+    
     <target name="copy-launchers" >
-
-        <mkdir dir="${basedir}/${build.classes.dir}/${native.launcher.windows.stub.dst.dir}"/>
-
+        <mkdir dir="${build.classes.dir}/${native.launcher.windows.stub.dst.dir}"/>
+        
         <!-- copy windows launcher stub -->
-	<copy file="${basedir}/${native.launcher.windows.stub.src}" 
-              todir="${basedir}/${build.classes.dir}/${native.launcher.windows.stub.dst.dir}"/>
-
+        <copy file="${native.launcher.windows.stub.src}" 
+              todir="${build.classes.dir}/${native.launcher.windows.stub.dst.dir}"/>
+        
         <!-- copy windows launcher i18n messages -->
-        <copy  todir="${basedir}/${build.classes.dir}/${native.launcher.windows.i18n.dir}">
+        <copy todir="${build.classes.dir}/${native.launcher.windows.i18n.dir}">
             <fileset dir="${native.launcher.windows.i18n.dir}">
                 <include name="*"/>
-             </fileset>
-       </copy>
-
+            </fileset>
+        </copy>
+        
     </target>
-
+    
 </project>

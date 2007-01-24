@@ -294,31 +294,20 @@ public abstract class XMLUtils {
         return properties;
     }
     
-    public static Document getEmptyDocument(String tagName) throws XMLException {
-        try {
-            final Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().getDOMImplementation().createDocument("", "files-list", null);
-            
-            document.renameNode(document.getDocumentElement(), null, tagName);
-            
-            return document;
-        } catch (ParserConfigurationException e) {
-            throw new XMLException("Cannot create a document", e);
-        }
-    }
-    
     // parsing //////////////////////////////////////////////////////////////////////
     public static Dependency parseDependency(Element element) throws ParseException {
-        try {
-            DependencyType type    = DependencyType.parseDependencyType(element.getNodeName());
-            String         uid     = XMLUtils.getAttribute(element, "uid");
-            Version        lower   = new Version(XMLUtils.getAttribute(element, "version-lower"));
-            Version        upper   = new Version(XMLUtils.getAttribute(element, "version-upper"));
-            Version        desired = new Version(XMLUtils.getAttribute(element, "version-desired"));
-            
-            return new Dependency(type, uid, lower, upper, desired);
-        } catch (UnrecognizedObjectException e) {
-            throw new ParseException("Cannot parse dependency", e);
-        }
+        final DependencyType type = 
+                StringUtils.parseDependencyType(element.getNodeName());
+        final String uid = 
+                XMLUtils.getAttribute(element, "uid");
+        final Version lower = 
+                Version.getVersion(element.getAttribute("version-lower"));
+        final Version upper = 
+                Version.getVersion(element.getAttribute("version-upper"));
+        final Version resolved = 
+                Version.getVersion(element.getAttribute("version-resolved"));
+        
+        return new Dependency(type, uid, lower, upper, resolved);
     }
     
     public static ExtendedURI parseExtendedUri(Element element) throws ParseException {

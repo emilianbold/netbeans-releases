@@ -20,12 +20,6 @@
  */
 package org.netbeans.installer.utils.helper;
 
-import org.netbeans.installer.product.utils.*;
-import org.netbeans.installer.utils.XMLUtils;
-import org.netbeans.installer.utils.exceptions.ParseException;
-import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
-import org.w3c.dom.Element;
-
 /**
  *
  * @author Kirill Sorokin
@@ -34,17 +28,22 @@ public class Dependency {
     private DependencyType type;
     
     private String         uid;
-    private Version        lower;
-    private Version        upper;
-    private Version        desired;
+    private Version        versionLower;
+    private Version        versionUpper;
+    private Version        versionPreferred;
     
-    public Dependency(DependencyType type, String uid, Version lower, Version upper, Version desired) {
-        this.type    = type;
+    public Dependency(
+            final DependencyType type,
+            final String uid,
+            final Version versionLower,
+            final Version versionUpper,
+            final Version versionPreferred) {
+        this.type             = type;
         
-        this.uid     = uid;
-        this.lower   = lower;
-        this.upper   = upper;
-        this.desired = desired;
+        this.uid              = uid;
+        this.versionLower     = versionLower;
+        this.versionUpper     = versionUpper;
+        this.versionPreferred = versionPreferred;
     }
     
     public DependencyType getType() {
@@ -55,15 +54,15 @@ public class Dependency {
         return uid;
     }
     
-    public Version getLower() {
-        return lower;
+    public Version getVersionLower() {
+        return versionLower;
     }
     
-    public Version getUpper() {
-        return upper;
+    public Version getVersionUpper() {
+        return versionUpper;
     }
     
-    public Version getDesired() {
-        return desired;
+    public Version getVersionResolved() {
+        return versionPreferred;
     }
 }

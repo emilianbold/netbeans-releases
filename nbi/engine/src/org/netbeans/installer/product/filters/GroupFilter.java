@@ -18,27 +18,38 @@
  *
  * $Id$
  */
-package org.netbeans.installer.utils.helper;
+package org.netbeans.installer.product.filters;
 
-import org.netbeans.installer.utils.exceptions.ParseException;
-import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
+import org.netbeans.installer.product.components.Group;
+import org.netbeans.installer.product.RegistryNode;
 
-public enum DependencyType {
-    REQUIREMENT("requirement"),
-    CONFLICT("conflict"),
-    INSTALL_AFTER("install-after");
+/**
+ *
+ * @author Kirill Sorokin
+ */
+public class GroupFilter implements RegistryFilter {
+    private String  uid;
     
-    private String name;
-    
-    private DependencyType(String name) {
-        this.name = name;
+    public GroupFilter() {
+        // does nothing
     }
     
-    public String getName() {
-        return name;
+    public GroupFilter(final String uid) {
+        this.uid = uid;
     }
     
-    public String toString() {
-        return name;
+    public boolean accept(final RegistryNode node) {
+        if (node instanceof Group) {
+            Group group = (Group) node;
+            if (uid != null) {
+                if (!group.getUid().equals(uid)) {
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+        
+        return false;
     }
 }

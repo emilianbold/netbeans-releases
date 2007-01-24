@@ -24,14 +24,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.jar.JarFile;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
-import org.netbeans.installer.product.utils.DetailedStatus;
-import org.netbeans.installer.product.utils.Status;
+import org.netbeans.installer.utils.helper.DetailedStatus;
+import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
@@ -60,6 +58,7 @@ import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.progress.ProgressAdapter;
 import org.netbeans.installer.utils.progress.ProgressDetailAdapter;
+import org.netbeans.installer.utils.system.UnixNativeUtils;
 import org.netbeans.installer.wizard.components.WizardComponent;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -73,19 +72,17 @@ public final class Product extends RegistryNode {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private Version version;
-    private List<Platform> supportedPlatforms = new ArrayList<Platform>();
+    private List<Platform> supportedPlatforms;
     
     private Status initialStatus;
     private Status currentStatus;
     
-    private List<ExtendedURI> configurationLogicUris = new ArrayList<ExtendedURI>();
-    private List<ExtendedURI> installationDataUris = new ArrayList<ExtendedURI>();
+    private List<ExtendedURI> logicUris;
+    private List<ExtendedURI> dataUris;
     
     private long requiredDiskSpace;
     
-    private List<Product> requirements = new ArrayList<Product>();
-    private List<Product> conflicts = new ArrayList<Product>();
-    private List<Dependency> rawDependencies = new ArrayList<Dependency>();
+    private List<Dependency> dependencies;
     
     private NbiClassLoader classLoader;
     private ProductConfigurationLogic configurationLogic;
@@ -96,72 +93,19 @@ public final class Product extends RegistryNode {
     private Throwable uninstallationError;
     private List<Throwable> uninstallationWarnings;
     
-    private FilesList filesList;
+    private FilesList installedFiles;
     
     private InstallationPhase installationPhase = null;
     
-    public void downloadConfigurationLogic(Progress progress) throws DownloadException {
-        CompositeProgress composite = new CompositeProgress();
-        ProgressAdapter   adapter   = new ProgressAdapter(composite, progress);
-        Progress          childProgress;
-        
-        int percentageChunk = Progress.COMPLETE / configurationLogicUris.size();
-        
-        composite.setTitle("Downloading configuration logic for " + getDisplayName());
-        
-        FileProxy fileProxy = FileProxy.getInstance();
-        for (ExtendedURI uri: configurationLogicUris) {
-            childProgress = new Progress();
-            new ProgressDetailAdapter(childProgress, composite);
-            composite.addChild(childProgress, percentageChunk);
-            composite.setDetail("Loading file from " + uri.getRemote());
-            
-            final File cache = fileProxy.getFile(uri.getRemote(), childProgress);
-            uri.setLocal(cache.toURI());
-        }
+    // constructor //////////////////////////////////////////////////////////////////
+    public Product() {
+        supportedPlatforms = new ArrayList<Platform>();
+        logicUris          = new ArrayList<ExtendedURI>();
+        dataUris           = new ArrayList<ExtendedURI>();
+        dependencies       = new ArrayList<Dependency>();
     }
     
-    public boolean isConfigurationLogicDownloaded() {
-        for (ExtendedURI uri: configurationLogicUris) {
-            if (uri.getLocal() == null) {
-                return false;
-            }
-        }
-        
-        return true;
-    }
-    
-    public void downloadInstallationData(Progress progress) throws DownloadException {
-        CompositeProgress composite = new CompositeProgress();
-        ProgressAdapter   adapter   = new ProgressAdapter(composite, progress);
-        Progress          childProgress;
-        
-        int percentageChunk = Progress.COMPLETE / installationDataUris.size();
-        
-        composite.setTitle("Downloading installation data for " + getDisplayName());
-        
-        FileProxy fileProxy = FileProxy.getInstance();
-        for (ExtendedURI uri: installationDataUris) {
-            childProgress = new Progress();
-            new ProgressDetailAdapter(childProgress, composite);
-            composite.addChild(childProgress, percentageChunk);
-            composite.setDetail("Loading file from " + uri.getRemote());
-            
-            final File cache = fileProxy.getFile(uri.getRemote(), childProgress);
-            uri.setLocal(cache.toURI());
-        }
-    }
-    
-    public boolean isInstallationDataDownloaded() {
-        for (ExtendedURI uri: installationDataUris) {
-            if (uri.getLocal() == null) {
-                return false;
-            }
-        }
-        
-        return true;
-    }
-    
+    // essential functionality //////////////////////////////////////////////////////
     public void install(final Progress progress) throws InstallationException {
         final CompositeProgress totalProgress = new CompositeProgress();
         final Progress          unjarProgress = new Progress();
@@ -178,7 +122,7 @@ public final class Product extends RegistryNode {
         // load the component's configuration logic (it should be already
         // there, but we need to be sure)
         try {
-            loadConfigurationLogic();
+            getLogic();
         } catch (InitializationException e) {
             throw new InstallationException(
                     "Cannot load configuration logic", e);
@@ -192,7 +136,7 @@ public final class Product extends RegistryNode {
         }
         
         // initialize the local cache directory
-        final File cache = getCacheDirectory();
+        final File cache = getLocalCache();
         if (!cache.exists()) {
             if (!cache.mkdirs()) {
                 throw new InstallationException(
@@ -204,7 +148,7 @@ public final class Product extends RegistryNode {
         }
         
         // initialize the files list
-        filesList = new FilesList();
+        installedFiles = new FilesList();
         
         // check for cancel status
         if (progress.isCanceled()) return;
@@ -214,8 +158,44 @@ public final class Product extends RegistryNode {
         
         totalProgress.setTitle("Installing " + getDisplayName());
         
+        final File contentsDir = new File(getInstallationLocation(), "Contents");
+        final File macosDir = new File(contentsDir, "MacOS");
+        final File resourcesDir = new File(contentsDir, "Resources");
+        final File infoplist = new File(contentsDir, "Info.plist");
+        
+        // if we're running on macos x and the configuraion logic tells us that the
+        // product should be automatically wrapped, we first create the required
+        // directories structure and then extract the product
+        if (SystemUtils.isMacOS() && configurationLogic.wrapForMacOs()) {
+            setInstallationLocation(new File(resourcesDir, getUid()));
+            
+            final UnixNativeUtils utils =
+                    (UnixNativeUtils) SystemUtils.getNativeUtils();
+            
+            try {
+                installedFiles.add(FileUtils.mkdirs(contentsDir));
+                installedFiles.add(FileUtils.mkdirs(resourcesDir));
+                installedFiles.add(FileUtils.mkdirs(macosDir));
+                
+                installedFiles.add(utils.createSymLink(
+                        new File(macosDir, "executable"),
+                        new File(getInstallationLocation(), configurationLogic.getExecutable())));
+                installedFiles.add(utils.createSymLink(
+                        new File(resourcesDir, "icon.icns"),
+                        new File(getInstallationLocation(), configurationLogic.getIcon())));
+                
+                installedFiles.add(FileUtils.writeFile(infoplist, StringUtils.format(
+                        INFO_PLIST_STUB,
+                        getDisplayName(),
+                        getVersion().toString(),
+                        getVersion().toMinor())));
+            } catch (IOException e) {
+                throw new InstallationException("Cannot wrap for MacOS", e);
+            }
+        }
+        
         // extract each of the defined installation data files
-        for (ExtendedURI uri: installationDataUris) {
+        for (ExtendedURI uri: dataUris) {
             final URI dataUri = uri.getLocal();
             if (dataUri == null) {
                 throw new InstallationException("Installation data is not cached");
@@ -227,7 +207,7 @@ public final class Product extends RegistryNode {
             }
             
             try {
-                filesList.add(FileUtils.unjar(
+                installedFiles.add(FileUtils.unjar(
                         dataFile,
                         getInstallationLocation(),
                         unjarProgress));
@@ -241,7 +221,7 @@ public final class Product extends RegistryNode {
         // create legal/docs artifacts
         progress.setDetail("Creating legal artifacts");
         try {
-            saveLegalArtifacts(configurationLogic);
+            saveLegalArtifacts();
         } catch (IOException e) {
             addInstallationWarning(e);
         }
@@ -277,7 +257,7 @@ public final class Product extends RegistryNode {
         // save the installed files list
         progress.setDetail("Saving installed files list");
         try {
-            filesList.saveXmlGz(getInstalledFilesList());
+            installedFiles.saveXmlGz(getInstalledFilesList());
         } catch (XMLException e) {
             throw new InstallationException("Cannot save installed files list", e);
         }
@@ -301,7 +281,7 @@ public final class Product extends RegistryNode {
         // load the component's configuration logic (it should be already
         // there, but we need to be sure)
         try {
-            loadConfigurationLogic();
+            getLogic();
         } catch (InitializationException e) {
             throw new UninstallationException(
                     "Cannot load configuration logic", e);
@@ -333,10 +313,10 @@ public final class Product extends RegistryNode {
                 logicProgress.setPercentage(Progress.COMPLETE);
                 
                 // remove installation files
-                int total   = filesList.getSize();
+                int total   = installedFiles.getSize();
                 int current = 0;
                 
-                for (FileEntry entry: filesList) {
+                for (FileEntry entry: installedFiles) {
                     current++;
                     
                     File file = entry.getFile();
@@ -374,7 +354,7 @@ public final class Product extends RegistryNode {
         
         // load the installed files list
         try {
-            filesList = new FilesList().loadXmlGz(getInstalledFilesList());
+            installedFiles = new FilesList().loadXmlGz(getInstalledFilesList());
         } catch (XMLException e) {
             throw new UninstallationException("Cannot get the files list", e);
         }
@@ -384,7 +364,7 @@ public final class Product extends RegistryNode {
         
         // run custom unconfiguration logic
         try {
-            loadConfigurationLogic().uninstall(logicProgress);
+            getLogic().uninstall(logicProgress);
             
             logicProgress.setPercentage(Progress.COMPLETE);
         } catch (InitializationException e) {
@@ -395,10 +375,10 @@ public final class Product extends RegistryNode {
         progress.setTitle("Uninstalling " + getDisplayName());
         
         // remove installation files
-        int total   = filesList.getSize();
+        int total   = installedFiles.getSize();
         int current = 0;
         
-        for (FileEntry entry: filesList) {
+        for (FileEntry entry: installedFiles) {
             current++;
             
             File file = entry.getFile();
@@ -433,87 +413,64 @@ public final class Product extends RegistryNode {
         setStatus(Status.NOT_INSTALLED);
     }
     
-    private void saveLegalArtifacts(ProductConfigurationLogic configurationLogic) throws IOException {
-        Text license = configurationLogic.getLicense();
-        if (license != null) {
-            File file = new File(
-                    getInstallationLocation(),
-                    "LICENSE-" + uid + license.getContentType().getExtension());
-            
-            FileUtils.writeFile(file, license.getText());
-            filesList.add(file);
-        }
+    // configuration logic //////////////////////////////////////////////////////////
+    public List<ExtendedURI> getLogicUris() {
+        return logicUris;
+    }
+    
+    public void downloadLogic(final Progress progress) throws DownloadException {
+        CompositeProgress composite = new CompositeProgress();
+        ProgressAdapter   adapter   = new ProgressAdapter(composite, progress);
+        Progress          childProgress;
         
-        Map<String, Text> thirdPartyLicenses = configurationLogic.getThirdPartyLicenses();
-        if (thirdPartyLicenses != null) {
-            File file = new File(
-                    getInstallationLocation(),
-                    "THIRDPARTYLICENSES-" + uid + ".txt");
+        int percentageChunk = Progress.COMPLETE / logicUris.size();
+        
+        composite.setTitle("Downloading configuration logic for " + getDisplayName());
+        
+        FileProxy fileProxy = FileProxy.getInstance();
+        for (ExtendedURI uri: logicUris) {
+            childProgress = new Progress();
+            new ProgressDetailAdapter(childProgress, composite);
+            composite.addChild(childProgress, percentageChunk);
+            composite.setDetail("Loading file from " + uri.getRemote());
             
-            for (String title: thirdPartyLicenses.keySet()) {
-                FileUtils.appendFile(file,
-                        "%% The following software may be included in this product: " + title + ";\n" +
-                        "Use of any of this software is governed by the terms of the license below:\n\n");
-                FileUtils.appendFile(file, thirdPartyLicenses.get(title).getText() + "\n\n");
+            final File cache = fileProxy.getFile(uri.getRemote(), childProgress);
+            uri.setLocal(cache.toURI());
+        }
+    }
+    
+    public boolean isLogicDownloaded() {
+        for (ExtendedURI uri: logicUris) {
+            if (uri.getLocal() == null) {
+                return false;
             }
-            
-            filesList.add(file);
         }
         
-        Text releaseNotes = configurationLogic.getReleaseNotes();
-        if (releaseNotes != null) {
-            File file = new File(
-                    getInstallationLocation(),
-                    "RELEASENOTES-" + uid + releaseNotes.getContentType().getExtension());
-            
-            FileUtils.writeFile(file, releaseNotes.getText());
-            filesList.add(file);
-        }
-        
-        Text readme = configurationLogic.getReadme();
-        if (readme != null) {
-            File file = new File(
-                    getInstallationLocation(),
-                    "README-" + uid + readme.getContentType().getExtension());
-            
-            FileUtils.writeFile(file, readme.getText());
-            filesList.add(file);
-        }
+        return true;
     }
     
-    public List<WizardComponent> getWizardComponents() {
-        try {
-            return loadConfigurationLogic().getWizardComponents();
-        } catch (InitializationException e) {
-            ErrorManager.notify(ErrorLevel.ERROR,
-                    "Cannot get component's wizard components", e);
-        }
-        
-        return null;
-    }
-    
-    public ProductConfigurationLogic loadConfigurationLogic() throws InitializationException {
+    public ProductConfigurationLogic getLogic() throws InitializationException {
         if (configurationLogic != null) {
             return configurationLogic;
         }
         
-        if (!isConfigurationLogicDownloaded()) {
+        if (!isLogicDownloaded()) {
             throw new InitializationException("Configuration logic is not yet downloaded");
         }
         
         try {
             String classname = null;
-            for (ExtendedURI uri: configurationLogicUris) {
-                JarFile jar = new JarFile(new File(uri.getLocal()));
-                classname = jar.getManifest().getMainAttributes().getValue(MANIFEST_LOGIC_CLASS);
-                jar.close();
+            for (ExtendedURI uri: logicUris) {
+                classname = FileUtils.getJarAttribute(
+                        new File(uri.getLocal()),
+                        MANIFEST_LOGIC_CLASS);
                 
                 if (classname != null) {
                     break;
                 }
             }
             
-            classLoader = new NbiClassLoader(configurationLogicUris);
+            classLoader = new NbiClassLoader(logicUris);
             
             configurationLogic = (ProductConfigurationLogic) classLoader.loadClass(classname).newInstance();
             configurationLogic.setProduct(this);
@@ -530,22 +487,55 @@ public final class Product extends RegistryNode {
         }
     }
     
-    public File getCacheDirectory() {
-        return new File(Registry.getInstance().getLocalProductCache(), uid + File.separator + version.toString());
+    // installation data ////////////////////////////////////////////////////////////
+    public List<ExtendedURI> getDataUris() {
+        return dataUris;
     }
     
-    private File getInstalledFilesList() {
-        return new File(getCacheDirectory(), INSTALLED_FILES_LIST_FILE_NAME);
+    public void downloadData(final Progress progress) throws DownloadException {
+        CompositeProgress composite = new CompositeProgress();
+        ProgressAdapter   adapter   = new ProgressAdapter(composite, progress);
+        Progress          childProgress;
+        
+        int percentageChunk = Progress.COMPLETE / dataUris.size();
+        
+        composite.setTitle("Downloading installation data for " + getDisplayName());
+        
+        FileProxy fileProxy = FileProxy.getInstance();
+        for (ExtendedURI uri: dataUris) {
+            childProgress = new Progress();
+            new ProgressDetailAdapter(childProgress, composite);
+            composite.addChild(childProgress, percentageChunk);
+            composite.setDetail("Loading file from " + uri.getRemote());
+            
+            final File cache = fileProxy.getFile(uri.getRemote(), childProgress);
+            uri.setLocal(cache.toURI());
+        }
     }
     
-    public Version getVersion() {
-        return version;
+    public boolean isDataDownloaded() {
+        for (ExtendedURI uri: dataUris) {
+            if (uri.getLocal() == null) {
+                return false;
+            }
+        }
+        
+        return true;
     }
     
-    public List<Platform> getSupportedPlatforms() {
-        return supportedPlatforms;
+    // wizard ///////////////////////////////////////////////////////////////////////
+    public List<WizardComponent> getWizardComponents() {
+        try {
+            return getLogic().getWizardComponents();
+        } catch (InitializationException e) {
+            ErrorManager.notify(ErrorLevel.ERROR,
+                    "Cannot get component's wizard components", e);
+        }
+        
+        return null;
     }
     
+    // status ///////////////////////////////////////////////////////////////////////
     public Status getStatus() {
         return currentStatus;
     }
@@ -558,184 +548,8 @@ public final class Product extends RegistryNode {
         currentStatus = status;
     }
     
-    public boolean statusChanged() {
+    public boolean hasStatusChanged() {
         return currentStatus != initialStatus;
-    }
-    
-    public List<ExtendedURI> getConfigurationLogicUris() {
-        return configurationLogicUris;
-    }
-    
-    public List<ExtendedURI> getInstallationDataUris() {
-        return installationDataUris;
-    }
-    
-    public List<Product> getRequirements() {
-        return requirements;
-    }
-    
-    public void addRequirement(final Product component) {
-        requirements.add(component);
-    }
-    
-    public Product getRequirementByUid(final String uid) {
-        for (Product component: getRequirements()) {
-            if (component.getUid().equals(uid)) {
-                return component;
-            }
-        }
-        
-        return null;
-    }
-    
-    public List<Product> getConflicts() {
-        return conflicts;
-    }
-    
-    public void addConflict(final Product component) {
-        conflicts.add(component);
-    }
-    
-    public Product getConflictByUid(final String uid) {
-        for (Product component: getConflicts()) {
-            if (component.getUid().equals(uid)) {
-                return component;
-            }
-        }
-        
-        return null;
-    }
-    
-    public List<Dependency> getRawDependencies() {
-        return rawDependencies;
-    }
-    
-    public long getRequiredDiskSpace() {
-        return requiredDiskSpace;
-    }
-    
-    public File getInstallationLocation() {
-        String path = SystemUtils.parseString(
-                getProperty(INSTALLATION_LOCATION_PROPERTY),
-                getClassLoader());
-        
-        return path == null ? null : new File(path);
-    }
-    
-    public void setInstallationLocation(final File location) {
-        setProperty(INSTALLATION_LOCATION_PROPERTY, location.getAbsolutePath());
-    }
-    
-    // legal/documentation stuff ////////////////////////////////////////////////////
-    public Text getLicense() throws InitializationException {
-        return loadConfigurationLogic().getLicense();
-    }
-    
-    public Map<String, Text> getThirdPartyLicenses() throws InitializationException {
-        return loadConfigurationLogic().getThirdPartyLicenses();
-    }
-    
-    public Text getReleaseNotes() throws InitializationException {
-        return loadConfigurationLogic().getReleaseNotes();
-    }
-    
-    public Text getReadme() throws InitializationException {
-        return loadConfigurationLogic().getReadme();
-    }
-    
-    public Text getInstallationInstructions() throws InitializationException {
-        return loadConfigurationLogic().getInstallationInstructions();
-    }
-    
-    public ClassLoader getClassLoader() {
-        return classLoader;
-    }
-    
-    public boolean isVisible() {
-        return this.visible;
-    }
-    
-    public void setVisible(final boolean visible) {
-        this.visible = visible;
-    }
-    
-    public List<RegistryNode> getVisibleChildren() {
-        List<RegistryNode> visibleChildren = new LinkedList<RegistryNode>();
-        
-        for (RegistryNode child: children) {
-            if (child.isVisible()) {
-                visibleChildren.add(child);
-            }
-        }
-        
-        return visibleChildren;
-    }
-    
-    public boolean requires(final Product component) {
-        for (Product requirement: requirements) {
-            if (requirement.equals(component) || requirement.requires(component)) {
-                return true;
-            }
-        }
-        
-        return false;
-    }
-    
-    public String toString() {
-        return getDisplayName();
-    }
-    
-    public long getDownloadSize() {
-        long downloadSize = 0;
-        
-        for (ExtendedURI uri: configurationLogicUris) {
-            downloadSize += uri.getSize();
-        }
-        for (ExtendedURI uri: installationDataUris) {
-            downloadSize += uri.getSize();
-        }
-        
-        return downloadSize;
-    }
-    
-    public Throwable getInstallationError() {
-        return installationError;
-    }
-    
-    public void setInstallationError(Throwable error) {
-        installationError = error;
-    }
-    
-    public List<Throwable> getInstallationWarnings() {
-        return installationWarnings;
-    }
-    
-    public void addInstallationWarning(Throwable warning) {
-        if (installationWarnings == null) {
-            installationWarnings = new ArrayList<Throwable>();
-        }
-        
-        installationWarnings.add(warning);
-    }
-    
-    public Throwable getUninstallationError() {
-        return uninstallationError;
-    }
-    
-    public void setUninstallationError(Throwable error) {
-        uninstallationError = error;
-    }
-    
-    public List<Throwable> getUninstallationWarnings() {
-        return uninstallationWarnings;
-    }
-    
-    public void addUninstallationWarning(Throwable warning) {
-        if (uninstallationWarnings == null) {
-            uninstallationWarnings = new ArrayList<Throwable>();
-        }
-        
-        uninstallationWarnings.add(warning);
     }
     
     public DetailedStatus getDetailedStatus() {
@@ -743,10 +557,10 @@ public final class Product extends RegistryNode {
             if (getUninstallationError() != null) {
                 return DetailedStatus.FAILED_TO_UNINSTALL;
             }
-            if (statusChanged() && (getInstallationWarnings() != null)) {
+            if (hasStatusChanged() && (getInstallationWarnings() != null)) {
                 return DetailedStatus.INSTALLED_WITH_WARNINGS;
             }
-            if (statusChanged()) {
+            if (hasStatusChanged()) {
                 return DetailedStatus.INSTALLED_SUCCESSFULLY;
             }
         }
@@ -755,10 +569,10 @@ public final class Product extends RegistryNode {
             if (getInstallationError() != null) {
                 return DetailedStatus.FAILED_TO_INSTALL;
             }
-            if (statusChanged() && (getUninstallationWarnings() != null)) {
+            if (hasStatusChanged() && (getUninstallationWarnings() != null)) {
                 return DetailedStatus.UNINSTALLED_WITH_WARNINGS;
             }
-            if (statusChanged()) {
+            if (hasStatusChanged()) {
                 return DetailedStatus.UNINSTALLED_SUCCESSFULLY;
             }
         }
@@ -766,8 +580,183 @@ public final class Product extends RegistryNode {
         return null;
     }
     
-    public FilesList getInstalledFiles() {
-        return filesList;
+    // dependencies /////////////////////////////////////////////////////////////////
+    public List<Dependency> getDependencies() {
+        return dependencies;
+    }
+    
+    public List<Dependency> getDependencies(final DependencyType... types) {
+        final List<Dependency> filtered = new ArrayList<Dependency>();
+        
+        for (Dependency dependency: dependencies) {
+            for (DependencyType type: types) {
+                if (dependency.getType() == type) {
+                    filtered.add(dependency);
+                    break;
+                }
+            }
+        }
+        
+        return filtered;
+    }
+    
+    public boolean satisfies(final Dependency dependency) {
+        switch (dependency.getType()) {
+            case REQUIREMENT:
+                if (dependency.getVersionResolved() != null) {
+                    return uid.equals(dependency.getUid()) &&
+                            version.equals(dependency.getVersionResolved());
+                }
+                // if the requirement is not resolved, we fall through to validation
+                // for a conflict - it's identical to what we need
+            case CONFLICT:
+                return uid.equals(dependency.getUid()) &&
+                        version.newerOrEquals(dependency.getVersionLower()) &&
+                        version.olderOrEquals(dependency.getVersionUpper());
+                
+            case INSTALL_AFTER:
+                return uid.equals(dependency.getUid());
+                
+            default:
+                ErrorManager.notifyCritical("Unrecognized dependency type: " + dependency.getType());
+        }
+        
+        // the only way for us to reach this spot is to get to 'default:' in the
+        // switch, but ErrorManager.notifyCritical() will cause a System.exit(),
+        // so the below line is present only for successful compilation
+        return false;
+    }
+    
+    public boolean satisfiesRequirement(final Product product) {
+        for (Dependency requirement: product.getDependencies(DependencyType.REQUIREMENT)) {
+            final List<Product> requirees =
+                    Registry.getInstance().getProducts(requirement);
+            
+            for (Product requiree: requirees) {
+                if (this.equals(requiree) || satisfiesRequirement(requiree)) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+    
+    public boolean checkDependenciesForInstall() {
+        final Registry registry = Registry.getInstance();
+        
+        for (Dependency requirement: getDependencies(DependencyType.REQUIREMENT)) {
+            final List<Product> requirees =
+                    Registry.getInstance().getProducts(requirement);
+            boolean satisfied = false;
+            
+            for (Product requiree: requirees) {
+                if ((requiree.getStatus() == Status.INSTALLED) ||
+                        (requiree.getStatus() == Status.TO_BE_INSTALLED)) {
+                    satisfied = true;
+                    break;
+                }
+            }
+            
+            if (!satisfied) return false;
+        }
+        
+        for (Dependency conflict: getDependencies(DependencyType.CONFLICT)) {
+            final List<Product> conflictees =
+                    Registry.getInstance().getProducts(conflict);
+            boolean satisfied = true;
+            
+            for (Product conflictee: conflictees) {
+                if ((conflictee.getStatus() == Status.INSTALLED) ||
+                        (conflictee.getStatus() == Status.TO_BE_INSTALLED)) {
+                    satisfied = false;
+                    break;
+                }
+            }
+            
+            if (!satisfied) return false;
+        }
+        
+        return true;
+    }
+    
+    public boolean checkDependenciesForUninstall() {
+        for (Product product: Registry.getInstance().getProducts()) {
+            if ((product.getStatus() == Status.INSTALLED) ||
+                    (product.getStatus() == Status.TO_BE_INSTALLED)) {
+                for (Dependency requirement: product.getDependencies(DependencyType.REQUIREMENT)) {
+                    final List<Product> requirees =
+                            Registry.getInstance().getProducts(requirement);
+                    
+                    for (Product requiree: requirees) {
+                        if (requiree.getStatus() == Status.INSTALLED) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return true;
+    }
+    
+    public List<Dependency> getDependencyByUid(String dependentUid) {
+        final List<Dependency> filtered = new ArrayList<Dependency>();
+        
+        for (Dependency dependency: dependencies) {
+            if (dependency.getUid().equals(dependentUid)) {
+                filtered.add(dependency);
+            }
+        }
+        
+        return filtered;
+    }
+    
+    // system requirements //////////////////////////////////////////////////////////
+    public long getRequiredDiskSpace() {
+        return requiredDiskSpace;
+    }
+    
+    // install-time error/warnings //////////////////////////////////////////////////
+    public Throwable getInstallationError() {
+        return installationError;
+    }
+    
+    public void setInstallationError(final Throwable error) {
+        installationError = error;
+    }
+    
+    public List<Throwable> getInstallationWarnings() {
+        return installationWarnings;
+    }
+    
+    public void addInstallationWarning(final Throwable warning) {
+        if (installationWarnings == null) {
+            installationWarnings = new ArrayList<Throwable>();
+        }
+        
+        installationWarnings.add(warning);
+    }
+    
+    // uninstall-time error/warnings ////////////////////////////////////////////////
+    public Throwable getUninstallationError() {
+        return uninstallationError;
+    }
+    
+    public void setUninstallationError(final Throwable error) {
+        uninstallationError = error;
+    }
+    
+    public List<Throwable> getUninstallationWarnings() {
+        return uninstallationWarnings;
+    }
+    
+    public void addUninstallationWarning(final Throwable warning) {
+        if (uninstallationWarnings == null) {
+            uninstallationWarnings = new ArrayList<Throwable>();
+        }
+        
+        uninstallationWarnings.add(warning);
     }
     
     // node <-> dom /////////////////////////////////////////////////////////////////
@@ -775,7 +764,7 @@ public final class Product extends RegistryNode {
         return "product";
     }
     
-    protected Element saveToDom(Element element) throws FinalizationException {
+    public Element saveToDom(final Element element) throws FinalizationException {
         super.saveToDom(element);
         
         final Document document = element.getOwnerDocument();
@@ -785,7 +774,7 @@ public final class Product extends RegistryNode {
         element.setAttribute("status", getStatus().toString());
         
         final Element logicNode = document.createElement("configuration-logic");
-        for (ExtendedURI uri: configurationLogicUris) {
+        for (ExtendedURI uri: logicUris) {
             final Element node = document.createElement("file");
             node.setAttribute("size", Long.toString(uri.getSize()));
             node.setAttribute("md5", uri.getMd5());
@@ -803,7 +792,7 @@ public final class Product extends RegistryNode {
         element.appendChild(logicNode);
         
         final Element dataNode = document.createElement("installation-data");
-        for (ExtendedURI uri: installationDataUris) {
+        for (ExtendedURI uri: dataUris) {
             final Element node = document.createElement("file");
             node.setAttribute("size", Long.toString(uri.getSize()));
             node.setAttribute("md5", uri.getMd5());
@@ -820,31 +809,35 @@ public final class Product extends RegistryNode {
         }
         element.appendChild(dataNode);
         
-        final Element requirementsNode = document.createElement("requirements");
+        final Element requirementsNode = document.createElement("system-requirements");
         
         final Element diskSpaceNode = document.createElement("disk-space");
-        diskSpaceNode.setTextContent(Long.toString(getRequiredDiskSpace()));
+        diskSpaceNode.setTextContent(Long.toString(requiredDiskSpace));
         requirementsNode.appendChild(diskSpaceNode);
         
         element.appendChild(requirementsNode);
         
-        if (getRawDependencies().size() > 0) {
+        if (dependencies.size() > 0) {
             final Element dependenciesNode = document.createElement("dependencies");
             
-            for (Dependency dependency: getRawDependencies()) {
+            for (Dependency dependency: getDependencies()) {
                 Element dependencyNode =
                         document.createElement(dependency.getType().toString());
                 
                 dependencyNode.setAttribute("uid",
                         dependency.getUid());
-                dependencyNode.setAttribute("version-lower",
-                        dependency.getLower().toString());
-                dependencyNode.setAttribute("version-upper",
-                        dependency.getUpper().toString());
                 
-                if (dependency.getDesired() != null) {
-                    dependencyNode.setAttribute("version-desired",
-                            dependency.getDesired().toString());
+                if (dependency.getVersionLower() != null) {
+                    dependencyNode.setAttribute("version-lower",
+                            dependency.getVersionLower().toString());
+                }
+                if (dependency.getVersionUpper() != null) {
+                    dependencyNode.setAttribute("version-upper",
+                            dependency.getVersionUpper().toString());
+                }
+                if (dependency.getVersionResolved() != null) {
+                    dependencyNode.setAttribute("version-resolved",
+                            dependency.getVersionResolved().toString());
                 }
                 
                 dependenciesNode.appendChild(dependencyNode);
@@ -856,34 +849,40 @@ public final class Product extends RegistryNode {
         return element;
     }
     
-    public Product loadFromDom(Element element) throws InitializationException {
+    public Product loadFromDom(final Element element) throws InitializationException {
         super.loadFromDom(element);
         
         List<Node> nodes;
         
         try {
-            version = new Version(element.getAttribute("version"));
+            version =
+                    Version.getVersion(element.getAttribute("version"));
+            supportedPlatforms =
+                    StringUtils.parsePlatforms(element.getAttribute("platform"));
             
-            supportedPlatforms = StringUtils.parsePlatforms(element.getAttribute("platform"));
-            
-            initialStatus = StringUtils.parseStatus(element.getAttribute("status"));
-            currentStatus = initialStatus;
+            initialStatus =
+                    StringUtils.parseStatus(element.getAttribute("status"));
+            currentStatus =
+                    initialStatus;
             
             nodes = XMLUtils.getChildList(element, "./configuration-logic/file");
             for (Node node: nodes) {
-                configurationLogicUris.add(XMLUtils.parseExtendedUri((Element) node));
+                logicUris.add(XMLUtils.parseExtendedUri((Element) node));
             }
             
             nodes = XMLUtils.getChildList(element, "./installation-data/file");
             for (Node node: nodes) {
-                installationDataUris.add(XMLUtils.parseExtendedUri((Element) node));
+                dataUris.add(XMLUtils.parseExtendedUri((Element) node));
             }
             
-            requiredDiskSpace = Long.parseLong(XMLUtils.getChildNodeTextContent(element, "./requirements/disk-space"));
+            requiredDiskSpace = Long.parseLong(XMLUtils.getChildNodeTextContent(
+                    element,
+                    "./system-requirements/disk-space"));
             
-            nodes = XMLUtils.getChildList(element, "./dependencies/(" + DependencyType.REQUIREMENT + "," + DependencyType.CONFLICT + ")");
+            nodes = XMLUtils.getChildList(
+                    element, "./dependencies/(" + DependencyType.REQUIREMENT + "," + DependencyType.CONFLICT + "," + DependencyType.INSTALL_AFTER + ")");
             for (Node node: nodes) {
-                rawDependencies.add(XMLUtils.parseDependency((Element) node));
+                dependencies.add(XMLUtils.parseDependency((Element) node));
             }
         } catch (ParseException e) {
             throw new InitializationException("Could not load components", e);
@@ -892,7 +891,110 @@ public final class Product extends RegistryNode {
         return this;
     }
     
-    ////////////////////////////////////////////////////////////////////////////
+    // essential getters/setters ////////////////////////////////////////////////////
+    public Version getVersion() {
+        return version;
+    }
+    
+    public List<Platform> getSupportedPlatforms() {
+        return supportedPlatforms;
+    }
+    
+    public File getInstallationLocation() {
+        final String path = SystemUtils.parseString(
+                getProperty(INSTALLATION_LOCATION_PROPERTY),
+                getClassLoader());
+        
+        return path == null ? null : new File(path);
+    }
+    
+    public void setInstallationLocation(final File location) {
+        setProperty(INSTALLATION_LOCATION_PROPERTY, location.getAbsolutePath());
+    }
+    
+    public File getLocalCache() {
+        return new File(
+                Registry.getInstance().getLocalProductCache(),
+                uid + File.separator + version);
+    }
+    
+    public FilesList getInstalledFiles() {
+        return installedFiles;
+    }
+    
+    public File getInstalledFilesList() {
+        return new File(
+                getLocalCache(),
+                INSTALLED_FILES_LIST_FILE_NAME);
+    }
+    
+    public ClassLoader getClassLoader() {
+        return classLoader;
+    }
+    
+    public long getDownloadSize() {
+        long downloadSize = 0;
+        
+        for (ExtendedURI uri: logicUris) {
+            downloadSize += uri.getSize();
+        }
+        for (ExtendedURI uri: dataUris) {
+            downloadSize += uri.getSize();
+        }
+        
+        return downloadSize;
+    }
+    
+    // miscellanea //////////////////////////////////////////////////////////////////
+    private void saveLegalArtifacts() throws IOException {
+        final Text license = configurationLogic.getLicense();
+        if (license != null) {
+            final File file = new File(
+                    getInstallationLocation(),
+                    "LICENSE-" + uid + license.getContentType().getExtension());
+            
+            FileUtils.writeFile(file, license.getText());
+            installedFiles.add(file);
+        }
+        
+        final Map<String, Text> thirdPartyLicenses = configurationLogic.getThirdPartyLicenses();
+        if (thirdPartyLicenses != null) {
+            final File file = new File(
+                    getInstallationLocation(),
+                    "THIRDPARTYLICENSES-" + uid + ".txt");
+            
+            for (String title: thirdPartyLicenses.keySet()) {
+                FileUtils.appendFile(file,
+                        "%% The following software may be included in this product: " + title + ";\n" +
+                        "Use of any of this software is governed by the terms of the license below:\n\n");
+                FileUtils.appendFile(file, thirdPartyLicenses.get(title).getText() + "\n\n");
+            }
+            
+            installedFiles.add(file);
+        }
+        
+        final Text releaseNotes = configurationLogic.getReleaseNotes();
+        if (releaseNotes != null) {
+            final File file = new File(
+                    getInstallationLocation(),
+                    "RELEASENOTES-" + uid + releaseNotes.getContentType().getExtension());
+            
+            FileUtils.writeFile(file, releaseNotes.getText());
+            installedFiles.add(file);
+        }
+        
+        final Text readme = configurationLogic.getReadme();
+        if (readme != null) {
+            final File file = new File(
+                    getInstallationLocation(),
+                    "README-" + uid + readme.getContentType().getExtension());
+            
+            FileUtils.writeFile(file, readme.getText());
+            installedFiles.add(file);
+        }
+    }
+    
+    /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
     private static enum InstallationPhase {
         INITIALIZATION,
@@ -906,8 +1008,42 @@ public final class Product extends RegistryNode {
     // Constants
     public static final String INSTALLATION_LOCATION_PROPERTY =
             "installation.location"; // NOI18N
+    
     public static final String INSTALLED_FILES_LIST_FILE_NAME =
             "installed-files.xml.gz"; // NOI18N
+    
     public static final String MANIFEST_LOGIC_CLASS =
             "Configuration-Logic-Class"; // NOI18N
+    
+    public static final String INFO_PLIST_STUB =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">\n" +
+            "<plist version=\"0.9\">\n" +
+            "  <dict>\n" +
+            "    \n" +
+            "    <key>CFBundleName</key>\n" +
+            "    <string>{0}</string>\n" +
+            "    \n" +
+            "    <key>CFBundleVersion</key>\n" +
+            "    <string>{1}</string>\n" +
+            "    \n" +
+            "    <key>CFBundleExecutable</key>\n" +
+            "    <string>executable</string>\n" +
+            "    \n" +
+            "    <key>CFBundlePackageType</key>\n" +
+            "    <string>APPL</string>\n" +
+            "    \n" +
+            "    <key>CFBundleShortVersionString</key>\n" +
+            "    <string>{2}</string>\n" +
+            "    \n" +
+            "    <key>CFBundleSignature</key>\n" +
+            "    <string>????</string>\n" +
+            "    \n" +
+            "    <key>CFBundleInfoDictionaryVersion</key>\n" +
+            "    <string>6.0</string>\n" +
+            "    \n" +
+            "    <key>CFBundleIconFile</key>\n" +
+            "    <string>icon.icns</string>\n" +
+            "  </dict>\n" +
+            "</plist>\n";
 }

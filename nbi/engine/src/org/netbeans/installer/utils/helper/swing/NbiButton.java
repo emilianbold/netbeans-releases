@@ -33,12 +33,10 @@ public class NbiButton extends JButton {
     public NbiButton() {
         super();
         
-        if (SystemUtils.isMacOS()) {
-            setOpaque(false);
-        }
-        
         if (SystemUtils.isWindows()) {
-            boolean xpThemeActive = (Boolean) Toolkit.getDefaultToolkit().getDesktopProperty("win.xpstyle.themeActive");
+            boolean xpThemeActive = (Boolean) Toolkit.
+                    getDefaultToolkit().
+                    getDesktopProperty("win.xpstyle.themeActive");
             if (xpThemeActive) {
                 setOpaque(false);
             }

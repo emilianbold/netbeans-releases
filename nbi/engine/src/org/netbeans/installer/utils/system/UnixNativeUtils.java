@@ -31,6 +31,7 @@ import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.helper.Shortcut;
 import org.netbeans.installer.utils.helper.ShortcutLocationType;
 import org.netbeans.installer.utils.SystemUtils;
@@ -385,6 +386,30 @@ public abstract class UnixNativeUtils extends NativeUtils {
     }
     
     public void removeComponentFromSystemInstallManager(Product comp) {
+    }
+    
+    public FilesList createSymLink(File source, File target) throws IOException {
+        return createSymLink(source, target, true);
+    }
+    
+    public FilesList createSymLink(File source, File target, boolean useRelativePath) throws IOException {
+        FilesList list = new FilesList();
+        
+        list.add(FileUtils.mkdirs(source.getParentFile()));
+        list.add(source);
+        
+        String relativePath = null;
+        if (useRelativePath) {
+            relativePath = FileUtils.getRelativePath(source, target);
+        }
+        
+        SystemUtils.executeCommand(
+                "ln",
+                "-s",
+                relativePath == null ? target.getAbsolutePath() : relativePath,
+                source.getAbsolutePath());
+        
+        return list;
     }
     
     // native declarations //////////////////////////////////////////////////////////

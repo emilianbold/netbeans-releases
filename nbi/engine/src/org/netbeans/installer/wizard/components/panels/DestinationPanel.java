@@ -29,7 +29,9 @@ import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.ResourceUtils;
@@ -49,48 +51,48 @@ public class DestinationPanel extends ErrorMessagePanel {
     // Constants
     public static final Class CLS = DestinationPanel.class;
     
-    public static final String DEFAULT_TITLE = 
+    public static final String DEFAULT_TITLE =
             ResourceUtils.getString(CLS, "DP.title"); // NOI18N
-    public static final String DEFAULT_DESCRIPTION = 
+    public static final String DEFAULT_DESCRIPTION =
             ResourceUtils.getString(CLS, "DP.description"); // NOI18N
     
-    public static final String DESTINATION_LABEL_TEXT_PROPERTY 
+    public static final String DESTINATION_LABEL_TEXT_PROPERTY
             = "destination.label.text"; // NOI18N
-    public static final String DESTINATION_BUTTON_TEXT_PROPERTY 
+    public static final String DESTINATION_BUTTON_TEXT_PROPERTY
             = "destination.button.text"; // NOI18N
     
-    public static final String DEFAULT_DESTINATION_LABEL_TEXT = 
+    public static final String DEFAULT_DESTINATION_LABEL_TEXT =
             ResourceUtils.getString(CLS, "DP.destination.label.text"); // NOI18N
-    public static final String DEFAULT_DESTINATION_BUTTON_TEXT = 
+    public static final String DEFAULT_DESTINATION_BUTTON_TEXT =
             ResourceUtils.getString(CLS, "DP.destination.button.text"); // NOI18N
     
-    public static final String ERROR_NULL_PROPERTY = 
+    public static final String ERROR_NULL_PROPERTY =
             "error.null"; // NOI18N
-    public static final String ERROR_NOT_VALID_PROPERTY = 
+    public static final String ERROR_NOT_VALID_PROPERTY =
             "error.not.valid"; // NOI18N
-    public static final String ERROR_NOT_DIRECTORY_PROPERTY = 
+    public static final String ERROR_NOT_DIRECTORY_PROPERTY =
             "error.not.directory"; // NOI18N
-    public static final String ERROR_NOT_READABLE_PROPERTY = 
+    public static final String ERROR_NOT_READABLE_PROPERTY =
             "error.not.readable"; // NOI18N
-    public static final String ERROR_NOT_WRITABLE_PROPERTY = 
+    public static final String ERROR_NOT_WRITABLE_PROPERTY =
             "error.not.writable"; // NOI18N
-    public static final String ERROR_NOT_EMPTY_PROPERTY = 
+    public static final String ERROR_NOT_EMPTY_PROPERTY =
             "error.not.empty"; // NOI18N
     
-    public static final String DEFAULT_ERROR_NULL = 
+    public static final String DEFAULT_ERROR_NULL =
             ResourceUtils.getString(CLS, "DP.error.null"); // NOI18N
-    public static final String DEFAULT_ERROR_NOT_VALID = 
+    public static final String DEFAULT_ERROR_NOT_VALID =
             ResourceUtils.getString(CLS, "DP.error.not.valid"); // NOI18N
-    public static final String DEFAULT_ERROR_NOT_DIRECTORY = 
+    public static final String DEFAULT_ERROR_NOT_DIRECTORY =
             ResourceUtils.getString(CLS, "DP.error.not.directory"); // NOI18N
-    public static final String DEFAULT_ERROR_NOT_READABLE = 
+    public static final String DEFAULT_ERROR_NOT_READABLE =
             ResourceUtils.getString(CLS, "DP.error.not.readable"); // NOI18N
-    public static final String DEFAULT_ERROR_NOT_WRITABLE = 
+    public static final String DEFAULT_ERROR_NOT_WRITABLE =
             ResourceUtils.getString(CLS, "DP.error.not.writable"); // NOI18N
-    public static final String DEFAULT_ERROR_NOT_EMPTY = 
+    public static final String DEFAULT_ERROR_NOT_EMPTY =
             ResourceUtils.getString(CLS, "DP.error.not.empty"); // NOI18N
     
-    public static final String DEFAULT_DESTINATION = 
+    public static final String DEFAULT_DESTINATION =
             ResourceUtils.getString(CLS, "DP.default.destination"); // NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -165,13 +167,23 @@ public class DestinationPanel extends ErrorMessagePanel {
             destinationButton.setText(
                     component.getProperty(DESTINATION_BUTTON_TEXT_PROPERTY));
             
-            String destination = component.
-                    getWizard().
-                    getProduct().
+            final Product product = (Product) component.getWizard().getProduct();
+            
+            String destination = product.
                     getProperty(Product.INSTALLATION_LOCATION_PROPERTY);
             
             if (destination == null) {
                 destination = DEFAULT_DESTINATION;
+            }
+            
+            try {
+                if (SystemUtils.isMacOS() && product.getLogic().wrapForMacOs()) {
+                    if (!destination.endsWith(".app")) {
+                        destination += ".app";
+                    }
+                }
+            } catch (InitializationException e) {
+                ErrorManager.notifyError("Cannot obtain confguration logic", e);
             }
             
             destinationField.setText(component.parsePath(destination).getPath());
@@ -180,53 +192,64 @@ public class DestinationPanel extends ErrorMessagePanel {
         }
         
         protected void saveInput() {
-            String value = 
+            String value =
                     new File(destinationField.getText().trim()).getAbsolutePath();
             
             component.getWizard().getProduct().setProperty(
-                    Product.INSTALLATION_LOCATION_PROPERTY, 
+                    Product.INSTALLATION_LOCATION_PROPERTY,
                     value);
         }
         
         protected String validateInput() {
-            final String string = destinationField.getText().trim();
-            final File   file   = new File(string);
-            final String path   = file.getAbsolutePath();
+            final String  string  = destinationField.getText().trim();
+            final File    file    = new File(string);
+            final String  path    = file.getAbsolutePath();
+            final Product product = (Product) component.getWizard().getProduct();
             
             if (string.equals("")) {
                 return StringUtils.format(
-                        component.getProperty(ERROR_NULL_PROPERTY), 
+                        component.getProperty(ERROR_NULL_PROPERTY),
                         path);
             }
             
             if (!SystemUtils.isPathValid(path)) {
                 return StringUtils.format(
-                        component.getProperty(ERROR_NOT_VALID_PROPERTY), 
+                        component.getProperty(ERROR_NOT_VALID_PROPERTY),
                         path);
             }
             
             if (file.exists() && !file.isDirectory()) {
                 return StringUtils.format(
-                        component.getProperty(ERROR_NOT_DIRECTORY_PROPERTY), 
+                        component.getProperty(ERROR_NOT_DIRECTORY_PROPERTY),
                         path);
             }
             
             if (!FileUtils.canRead(file)) {
                 return StringUtils.format(
-                        component.getProperty(ERROR_NOT_READABLE_PROPERTY), 
+                        component.getProperty(ERROR_NOT_READABLE_PROPERTY),
                         path);
             }
             
             if (!FileUtils.canWrite(file)) {
                 return StringUtils.format(
-                        component.getProperty(ERROR_NOT_WRITABLE_PROPERTY), 
+                        component.getProperty(ERROR_NOT_WRITABLE_PROPERTY),
                         path);
             }
             
             if (!FileUtils.isEmpty(file)) {
                 return StringUtils.format(
-                        component.getProperty(ERROR_NOT_EMPTY_PROPERTY), 
+                        component.getProperty(ERROR_NOT_EMPTY_PROPERTY),
                         path);
+            }
+            
+            try {
+                if (SystemUtils.isMacOS() && product.getLogic().wrapForMacOs()) {
+                    if (!string.endsWith(".app")) {
+                        return "Product's installation directory should end with .app";
+                    }
+                }
+            } catch (InitializationException e) {
+                ErrorManager.notifyError("Cannot obtain confguration logic", e);
             }
             
             return null;

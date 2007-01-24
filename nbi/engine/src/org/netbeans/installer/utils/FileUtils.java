@@ -743,52 +743,57 @@ public final class FileUtils {
     }
     
     public static String getRelativePath(File source, File target) {
-        // simplest - source equals target //////////////////////////////////////////
-        if (source.equals(target)) {
-            return CURRENT;
-        }
+        String path;
         
-        // simple - source is a parent of target ////////////////////////////////////
-        if (isParent(source, target)) {
-            String sourcePath = source.getAbsolutePath().replace(BACKSLASH, SLASH);
-            String targetPath = target.getAbsolutePath().replace(BACKSLASH, SLASH);
+        if (source.equals(target)) { // simplest - source equals target
+            path = source.isDirectory() ? CURRENT : target.getName();
+        } else if (isParent(source, target)) { // simple - source is target's parent
+            final String sourcePath =
+                    source.getAbsolutePath().replace(BACKSLASH, SLASH);
+            final String targetPath =
+                    target.getAbsolutePath().replace(BACKSLASH, SLASH);
             
             if (sourcePath.endsWith(SLASH)) {
-                return targetPath.substring(sourcePath.length());
+                path = targetPath.substring(sourcePath.length());
             } else {
-                return targetPath.substring(sourcePath.length() + 1);
+                path = targetPath.substring(sourcePath.length() + 1);
             }
-        }
-        
-        // simple - target is a parent of source ////////////////////////////////////
-        if (isParent(target, source)) {
-            String path = PARENT;
+        } else if (isParent(target, source)) { // simple - target is source's parent
+            path = source.isDirectory() ? PARENT : CURRENT;
             
             File parent = source.getParentFile();
             while (!parent.equals(target)) {
                 path  += SLASH + PARENT;
                 parent = parent.getParentFile();
             }
+        } else { // tricky - the files are unrelated
+            // first we need to find a common parent for the files
+            File parent = source.getParentFile();
+            while ((parent != null) && !isParent(parent, target)) {
+                parent = parent.getParentFile();
+            }
             
-            return path;
+            // if there is no common parent, we cannot deduct a relative path
+            if (parent == null) {
+                return null;
+            }
+            
+            path =  getRelativePath(source, parent) +
+                    SLASH +
+                    getRelativePath(parent, target);
         }
         
-        // tricky - the files are unrelated /////////////////////////////////////////
-        
-        // first we need to find a common parent for the files
-        File parent = source.getParentFile();
-        while ((parent != null) && !isParent(parent, target)) {
-            parent = parent.getParentFile();
+        // some final beautification
+        if (path.startsWith(CURRENT + SLASH)) {
+            if (path.length() > 2) {
+                path = path.substring(2);
+            } else {
+                path = path.substring(0, 1);
+            }
         }
+        path = path.replace(SLASH + CURRENT + SLASH, SLASH);
         
-        // if there is no common parent, we cannot deduct a relative path
-        if (parent == null) {
-            return null;
-        }
-        
-        return getRelativePath(source, parent) +
-                SLASH +
-                getRelativePath(parent, target);
+        return path;
     }
     
     public static boolean isParent(File candidate, File file) {
@@ -802,7 +807,7 @@ public final class FileUtils {
     }
     
     public static File createLauncher(NativeLauncher nl, Platform platform, Progress progress) throws IOException {
-        return nl.createLauncher(platform, 
+        return nl.createLauncher(platform,
                 (progress==null) ? new Progress() : progress);
     }
     

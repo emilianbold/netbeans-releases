@@ -42,9 +42,11 @@ public abstract class ProductConfigurationLogic {
     private Product product;
     
     // abstract /////////////////////////////////////////////////////////////////////
-    public abstract void install(final Progress progress) throws InstallationException;
+    public abstract void install(
+            final Progress progress) throws InstallationException;
     
-    public abstract void uninstall(final Progress progress) throws UninstallationException;
+    public abstract void uninstall(
+            final Progress progress) throws UninstallationException;
     
     public abstract List<WizardComponent> getWizardComponents();
     
@@ -76,7 +78,7 @@ public abstract class ProductConfigurationLogic {
         product.setProperty(name, value);
     }
     
-    // various documentation getters - to be overriden //////////////////////////////
+    // various documentation/legal getters //////////////////////////////////////////
     public Text getLicense() {
         final String text = parseString(
                 "$R{" + StringUtils.asPath(getClass()) + "/license.txt}");
@@ -100,12 +102,24 @@ public abstract class ProductConfigurationLogic {
         return null;
     }
     
-    // system integration probes ////////////////////////////////////////////////////
+    // system integration ///////////////////////////////////////////////////////////
     public boolean registerInSystem() {
         return true;
     }
     
-    // helper methods for SystemUtils and ResourceUtils /////////////////////////////
+    public boolean wrapForMacOs() {
+        return false;
+    }
+    
+    public String getExecutable() {
+        return null;
+    }
+    
+    public String getIcon() {
+        return null;
+    }
+    
+    // helper methods for system utils and resource utils ///////////////////////////
     public final String parseString(String string) {
         return SystemUtils.parseString(string, product.getClassLoader());
     }

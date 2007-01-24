@@ -49,7 +49,9 @@ import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.product.components.Group;
-import org.netbeans.installer.product.utils.Status;
+import org.netbeans.installer.utils.helper.Dependency;
+import org.netbeans.installer.utils.helper.DependencyType;
+import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
@@ -212,47 +214,89 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         }
         
         protected String validateInput() {
-            Registry registry = Registry.getInstance();
+            final Registry registry = Registry.getInstance();
             
-            List<Product> toInstall   = new ArrayList<Product>();
-            List<Product> toUninstall = new ArrayList<Product>();
-            
-            for (Product product: registry.getComponents()) {
-                if (product.getStatus() == Status.TO_BE_INSTALLED) {
-                    toInstall.add(product);
-                }
-                if (product.getStatus() == Status.TO_BE_UNINSTALLED) {
-                    toUninstall.add(product);
-                }
-            }
+            final List<Product> toInstall   =
+                    registry.getProducts(Status.TO_BE_INSTALLED);
+            final List<Product> toUninstall =
+                    registry.getProducts(Status.TO_BE_UNINSTALLED);
             
             if ((toInstall.size() == 0) && (toUninstall.size() == 0)) {
                 return component.getProperty(ERROR_NO_CHANGES_PROPERTY);
             }
             
             for (Product product: toInstall) {
-                for (Product requirement: product.getRequirements()) {
-                    if ((requirement.getStatus() != Status.TO_BE_INSTALLED) && (requirement.getStatus() != Status.INSTALLED)) {
-                        return StringUtils.format(component.getProperty(ERROR_REQUIREMENT_INSTALL_PROPERTY), product.getDisplayName(), requirement.getDisplayName());
+                for (Dependency requirement: product.getDependencies(DependencyType.REQUIREMENT)) {
+                    List<Product> requirees = registry.getProducts(requirement);
+                    
+                    boolean satisfied = false;
+                    
+                    for (Product requiree: requirees) {
+                        if ((requiree.getStatus() == Status.TO_BE_INSTALLED) ||
+                                (requiree.getStatus() == Status.INSTALLED)) {
+                            satisfied = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!satisfied) {
+                        return StringUtils.format(
+                                component.getProperty(ERROR_REQUIREMENT_INSTALL_PROPERTY),
+                                product.getDisplayName(),
+                                requirees.get(0).getDisplayName());
                     }
                 }
                 
-                for (Product conflict: product.getConflicts()) {
-                    if ((conflict.getStatus() == Status.TO_BE_INSTALLED) || (conflict.getStatus() == Status.INSTALLED)) {
-                        return StringUtils.format(component.getProperty(ERROR_CONFLICT_INSTALL_PROPERTY), product.getDisplayName(), conflict.getDisplayName());
+                for (Dependency conflict: product.getDependencies(DependencyType.CONFLICT)) {
+                    List<Product> conflictees = registry.getProducts(conflict);
+                    
+                    boolean satisfied = true;
+                    Product unsatisfiedConflict = null;
+                    
+                    for (Product conflictee: conflictees) {
+                        if ((conflictee.getStatus() == Status.TO_BE_INSTALLED) ||
+                                (conflictee.getStatus() == Status.INSTALLED)) {
+                            satisfied = false;
+                            unsatisfiedConflict = conflictee;
+                            break;
+                        }
+                    }
+                    
+                    if (!satisfied) {
+                        return StringUtils.format(
+                                component.getProperty(ERROR_CONFLICT_INSTALL_PROPERTY),
+                                product.getDisplayName(),
+                                unsatisfiedConflict.getDisplayName());
                     }
                 }
             }
             
             for (Product product: toUninstall) {
-                for (Product dependent: registry.getComponents()) {
-                    if (dependent.requires(product) &&
-                            ((dependent.getStatus() == Status.INSTALLED) ||
-                            (dependent.getStatus() == Status.TO_BE_INSTALLED))) {
-                        return StringUtils.format(
-                                component.getProperty(ERROR_REQUIREMENT_UNINSTALL_PROPERTY),
-                                product.getDisplayName(),
-                                dependent.getDisplayName());
+                for (Product dependent: registry.getProducts()) {
+                    if ((dependent.getStatus() == Status.TO_BE_UNINSTALLED) ||
+                            (dependent.getStatus() == Status.NOT_INSTALLED)) {
+                        continue;
+                    }
+                    
+                    for (Dependency requirement: dependent.getDependencies(DependencyType.REQUIREMENT)) {
+                        final List<Product> requirees = registry.getProducts(requirement);
+                        
+                        if (requirees.contains(product)) {
+                            boolean satisfied = false;
+                            for (Product requiree: requirees) {
+                                if (requiree.getStatus() == Status.INSTALLED) {
+                                    satisfied = true;
+                                    break;
+                                }
+                            }
+                            
+                            if (!satisfied) {
+                                return StringUtils.format(
+                                        component.getProperty(ERROR_REQUIREMENT_UNINSTALL_PROPERTY),
+                                        product.getDisplayName(),
+                                        dependent.getDisplayName());
+                            }
+                        }
                     }
                 }
             }
@@ -370,8 +414,13 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         }
         
         private void updateSizes() {
-            long installationSize = Registry.getInstance().getInstallationSize();
-            long downloadSize = Registry.getInstance().getDownloadSize();
+            long installationSize = 0;
+            long downloadSize     = 0;
+            
+            for (Product product: Registry.getInstance().getProductsToInstall()) {
+                installationSize += product.getRequiredDiskSpace();
+                downloadSize += product.getDownloadSize();
+            }
             
             if (installationSize == 0) {
                 sizesLabel.setText(StringUtils.format(
@@ -393,7 +442,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                     new Vector<TreeModelListener>();
             
             public Object getRoot() {
-                return Registry.getInstance().getProductTreeRoot();
+                return Registry.getInstance().getRegistryRoot();
             }
             
             public Object getChild(Object node, int index) {

@@ -28,70 +28,66 @@ import java.util.regex.Pattern;
  * @author Kirill Sorokin
  */
 public class Version {
+    public static Version getVersion(String string) {
+        if (string.matches("([0-9]+[\\._\\-]+)*[0-9]+")) {
+            return new Version(string);
+        } else {
+            return null;
+        }
+    }
+    
     private long major;
     private long minor;
     private long micro;
     private long update;
     private long build;
     
-    private String string;
-    
-    public Version(String versionString) {
-        if (versionString.matches("([0-9]+[\\._\\-]+)*[0-9]+")) {
-            String[] split = versionString.split("[\\._\\-]+"); //NOI18N
-            
-            if (split.length > 0) {
-                major = new Long(split[0]);
-            }
-            if (split.length > 1) {
-                minor = new Long(split[1]);
-            }
-            if (split.length > 2) {
-                micro = new Long(split[2]);
-            }
-            if (split.length > 3) {
-                update = new Long(split[3]);
-            }
-            if (split.length > 4) {
-                build = new Long(split[4]);
-            }
-        } else {
-            string = versionString;
+    private Version(String string) {
+        String[] split = string.split("[\\._\\-]+"); //NOI18N
+        
+        if (split.length > 0) {
+            major = new Long(split[0]);
+        }
+        if (split.length > 1) {
+            minor = new Long(split[1]);
+        }
+        if (split.length > 2) {
+            micro = new Long(split[2]);
+        }
+        if (split.length > 3) {
+            update = new Long(split[3]);
+        }
+        if (split.length > 4) {
+            build = new Long(split[4]);
         }
     }
     
     public boolean equals(Version version) {
-        if (string == null) {
-            return ((major == version.getMajor()) && (minor == version.getMinor()) && (micro == version.getMicro()) && (update == version.getUpdate() && (build == version.getBuild()))) ? true : false;
-        } else {
-            return string.equals(version.toString());
-        }
+        return ((major == version.getMajor()) &&
+                (minor == version.getMinor()) &&
+                (micro == version.getMicro()) &&
+                (update == version.getUpdate() &&
+                (build == version.getBuild()))) ? true : false;
     }
     
     public boolean newerThan(Version version) {
-        if (string == null) {
-            if (major > version.getMajor()) {
+        if (major > version.getMajor()) {
+            return true;
+        } else if (major == version.getMajor()) {
+            if (minor > version.getMinor()) {
                 return true;
-            } else if (major == version.getMajor()) {
-                if (minor > version.getMinor()) {
+            } else if (minor == version.getMinor()) {
+                if (micro > version.getMicro()) {
                     return true;
-                } else if (minor == version.getMinor()) {
-                    if (micro > version.getMicro()) {
+                } else if (micro == version.getMicro()) {
+                    if (update > version.getUpdate()) {
                         return true;
-                    } else if (micro == version.getMicro()) {
-                        if (update > version.getUpdate()) {
+                    } else if (update == version.getBuild()) {
+                        if (build > version.getBuild()) {
                             return true;
-                        } else if (update == version.getBuild()) {
-                            if (build > version.getBuild()) {
-                                return true;
-                            }
                         }
                     }
                 }
-            }
-        } else {
-            if (string.compareTo(version.toString()) > 0) {
-                return true;
             }
         }
         
@@ -143,11 +139,7 @@ public class Version {
     }
     
     public String toString() {
-        if (string == null) {
-            return "" + major + "." + minor + "." + micro + "." + update + "." + build;
-        } else {
-            return string;
-        }
+        return "" + major + "." + minor + "." + micro + "." + update + "." + build;
     }
     
     public String toMajor() {
@@ -163,9 +155,9 @@ public class Version {
     }
     
     public String toJdkStyle() {
-        return "" + major + 
-                "." + minor + 
-                "." + micro + 
+        return "" + major +
+                "." + minor +
+                "." + micro +
                 (update != 0 ? "_" + (update < 10 ? "0" + update : update) : "");
     }
 }

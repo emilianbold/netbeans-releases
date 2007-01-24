@@ -15,16 +15,19 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- *  
+ *
  * $Id$
  */
 package org.netbeans.installer.wizard.components.actions;
 
 import java.io.File;
+import java.util.List;
+import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
-import org.netbeans.installer.wizard.ui.WizardUi;
+import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.exceptions.InitializationException;
+import org.netbeans.installer.utils.helper.Dependency;
 import org.netbeans.installer.wizard.components.WizardAction;
 
 /**
@@ -36,29 +39,45 @@ public class SetInstallationLocationAction extends WizardAction {
     public static final String RELATIVE_LOCATION_PROPERTY = "relative.location";
     
     public void execute() {
-        String uid              = getProperty(SOURCE_UID_PROPERTY);
-        String relativeLocation = getProperty(RELATIVE_LOCATION_PROPERTY);
+        final String uid              = getProperty(SOURCE_UID_PROPERTY);
+        final String relativeLocation = getProperty(RELATIVE_LOCATION_PROPERTY);
         
         if (uid == null) {
             ErrorManager.notifyError("Required property not set");
             return;
         }
         
-        // we do expect the property container of the wizard to be a product, if 
+        // we do expect the property container of the wizard to be a product, if
         // it's not we should fail
-        Product target = (Product) getWizard().getProduct();
-        Product source = target.getRequirementByUid(uid);
+        final Product target = (Product) getWizard().getProduct();
+        
+        final List<Dependency> dependencies = target.getDependencyByUid(uid);
+        final Product source =
+                Registry.getInstance().getProducts(dependencies.get(0)).get(0);
         
         if (source == null) {
             ErrorManager.notifyError("Component with the given uid does not exist");
             return;
         }
         
-        File location;
+        File sourceLocation = null;
+        try {
+            if (SystemUtils.isMacOS() && source.getLogic().wrapForMacOs()) {
+                sourceLocation = new File(
+                        source.getInstallationLocation(), 
+                        "Contents/Resources/" + source.getUid());
+            } else {
+                sourceLocation = source.getInstallationLocation();
+            }
+        } catch (InitializationException e) {
+            ErrorManager.notifyError("Could not access configuration logic", e);
+        }
+        
+        final File location;
         if (relativeLocation != null) {
-            location = new File(source.getInstallationLocation(), relativeLocation);
+            location = new File(sourceLocation, relativeLocation);
         } else {
-            location = source.getInstallationLocation();
+            location = sourceLocation;
         }
         
         target.setInstallationLocation(location.getAbsoluteFile());

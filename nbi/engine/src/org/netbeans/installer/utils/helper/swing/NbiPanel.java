@@ -31,7 +31,6 @@ public class NbiPanel extends JPanel {
     public NbiPanel() {
         super();
         
-        setOpaque(false);
         setLayout(new GridBagLayout());
     }
 }

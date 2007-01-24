@@ -25,7 +25,8 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
-import org.netbeans.installer.product.utils.Status;
+import org.netbeans.installer.utils.helper.DetailedStatus;
+import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.LogManager;
@@ -57,7 +58,7 @@ public class InstallAction extends WizardAction {
     }
     
     public boolean canExecuteForward() {
-        return Registry.getInstance().getComponentsToInstall().size() > 0;
+        return Registry.getInstance().getProductsToInstall().size() > 0;
     }
     
     public boolean isPointOfNoReturn() {
@@ -66,65 +67,73 @@ public class InstallAction extends WizardAction {
     
     public void execute() {
         final Registry registry = Registry.getInstance();
-        final List<Product> components = registry.getComponentsToInstall();
-        final int percentageChunk = Progress.COMPLETE / components.size();
-        final int percentageLeak = Progress.COMPLETE % components.size();
+        final List<Product> products = registry.getProductsToInstall();
+        final int percentageChunk = Progress.COMPLETE / products.size();
+        final int percentageLeak = Progress.COMPLETE % products.size();
         
         final Map<Product, Progress> progresses = new HashMap<Product, Progress>();
         
         overallProgress = new CompositeProgress();
-        overallProgress.setTitle("Installing selected components");
+        overallProgress.setTitle("Installing selected products");
         overallProgress.setPercentage(percentageLeak);
         
         getWizardUi().setProgress(overallProgress);
-        for (Product component:components) {
+        for (Product product:products) {
             currentProgress = new Progress();
-            currentProgress.setTitle("Installing " + component.getDisplayName());
+            currentProgress.setTitle("Installing " + product.getDisplayName());
             
             overallProgress.addChild(currentProgress, percentageChunk);
             try {
-                component.install(currentProgress);
+                product.install(currentProgress);
                 
                 if (canceled)  {
                     currentProgress.setCanceled(false);
-                    component.rollback(currentProgress);
+                    product.rollback(currentProgress);
                     
-                    for (Product toUninstall: registry.getComponentsInstalledDuringThisSession()) {
-                        toUninstall.setStatus(Status.TO_BE_UNINSTALLED);
+                    for (Product toRollback: registry.getProducts(DetailedStatus.INSTALLED_SUCCESSFULLY)) {
+                        toRollback.setStatus(Status.TO_BE_UNINSTALLED);
                     }
-                    for (Product toUninstall: registry.getComponentsToUninstall()) {
-                        component.rollback(progresses.get(component));
+                    for (Product toRollback: registry.getProducts(DetailedStatus.INSTALLED_WITH_WARNINGS)) {
+                        toRollback.setStatus(Status.TO_BE_UNINSTALLED);
+                    }
+                    for (Product toRollback: registry.getComponentsToUninstall()) {
+                        toRollback.rollback(progresses.get(toRollback));
                     }
                     break;
                 }
                 
-                progresses.put(component, currentProgress);
+                progresses.put(product, currentProgress);
                 
                 // sleep a little so that the user can perceive that something
                 // is happening
                 SystemUtils.sleep(200);
-            }  catch (InstallationException e) {
-                // adjust the component's status and save this error - it will
-                // be reused later at the PostInstallSummary
-                component.setStatus(Status.NOT_INSTALLED);
-                component.setInstallationError(e);
+            } catch (UninstallationException e) {
+                LogManager.log(ErrorLevel.ERROR, e);
+            } catch (Throwable e) {
+                if (!(e instanceof InstallationException)) {
+                    e = new InstallationException("Unknown Error", e);
+                }
                 
-                // since the component failed to install  - we should remove the
-                // depending components from our plans to install
-                for(Product dependent : Registry.getInstance().getDependingComponents(component)) {
-                    if (dependent.getStatus()  == Status.TO_BE_INSTALLED) {
-                        InstallationException dependentError = new InstallationException("Could not install " + dependent.getDisplayName() + ", since the installation of " + component.getDisplayName() + "failed", e);
+                // adjust the product's status and save this error - it will
+                // be reused later at the PostInstallSummary
+                product.setStatus(Status.NOT_INSTALLED);
+                product.setInstallationError(e);
+                
+                // since the current product failed to install, we should cancel the 
+                // installation of the products that may require this one
+                for(Product dependent: registry.getProducts()) {
+                    if ((dependent.getStatus()  == Status.TO_BE_INSTALLED) &&
+                            product.satisfiesRequirement(dependent)) {
+                        final InstallationException dependentError = new InstallationException("Could not install " + dependent.getDisplayName() + ", since the installation of " + product.getDisplayName() + "failed", e);
                         
                         dependent.setStatus(Status.NOT_INSTALLED);
                         dependent.setInstallationError(dependentError);
                         
-                        components.remove(dependent);
+                        products.remove(dependent);
                     }
                 }
                 
                 // finally notify the user of what has happened
-                LogManager.log(ErrorLevel.ERROR, e);
-            } catch (UninstallationException e) {
                 LogManager.log(ErrorLevel.ERROR, e);
             }
         }

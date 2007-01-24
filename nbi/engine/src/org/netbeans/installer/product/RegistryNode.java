@@ -411,4 +411,9 @@ public abstract class RegistryNode implements PropertyContainer {
         
         return this;
     }
+    
+    // node -> string ///////////////////////////////////////////////////////////////
+    public String toString() {
+        return getDisplayName();
+    }
 }

@@ -37,7 +37,7 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
-import org.netbeans.installer.product.utils.DetailedStatus;
+import org.netbeans.installer.utils.helper.DetailedStatus;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.utils.helper.ErrorLevel;
@@ -93,15 +93,15 @@ public class InstallationDetailsDialog extends NbiDialog {
         private Object root = new Object();
         
         public InstallationDetailsTreeModel() {
-            Registry registry = Registry.getInstance();
+            final Registry registry = Registry.getInstance();
             
-            components.addAll(registry.getComponentsInstalledSuccessfullyDuringThisSession());
-            components.addAll(registry.getComponentsInstalledWithWarningsDuringThisSession());
-            components.addAll(registry.getComponentsFailedToInstallDuringThisSession());
+            components.addAll(registry.getProducts(DetailedStatus.INSTALLED_SUCCESSFULLY));
+            components.addAll(registry.getProducts(DetailedStatus.INSTALLED_WITH_WARNINGS));
+            components.addAll(registry.getProducts(DetailedStatus.FAILED_TO_INSTALL));
             
-            components.addAll(registry.getComponentsUninstalledSuccessfullyDuringThisSession());
-            components.addAll(registry.getComponentsUninstalledWithWarningsDuringThisSession());
-            components.addAll(registry.getComponentsFailedToUninstallDuringThisSession());
+            components.addAll(registry.getProducts(DetailedStatus.UNINSTALLED_SUCCESSFULLY));
+            components.addAll(registry.getProducts(DetailedStatus.UNINSTALLED_WITH_WARNINGS));
+            components.addAll(registry.getProducts(DetailedStatus.FAILED_TO_UNINSTALL));
         }
         
         public Object getRoot() {

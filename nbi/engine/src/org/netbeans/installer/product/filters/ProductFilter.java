@@ -24,6 +24,8 @@ import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.RegistryNode;
+import org.netbeans.installer.utils.helper.DetailedStatus;
+import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.helper.Version;
@@ -33,35 +35,58 @@ import org.netbeans.installer.utils.helper.Version;
  * @author Kirill Sorokin
  */
 public class ProductFilter implements RegistryFilter {
-    private String uid = null;
+    private String uid;
     
-    private List<Platform> platforms = new LinkedList<Platform>();
+    private List<Platform> platforms;
     
-    private Version versionLower = null;
-    private Version versionUpper = null;
+    private Version versionLower;
+    private Version versionUpper;
+    
+    private Status status;
+    private DetailedStatus detailedStatus;
     
     public ProductFilter() {
-        // does nothing
+        platforms = new LinkedList<Platform>();
+    }
+    
+    public ProductFilter(final Status status) {
+        this();
+        
+        this.status = status;
+    }
+    
+    public ProductFilter(final DetailedStatus detailedStatus) {
+        this();
+        
+        this.detailedStatus = detailedStatus;
     }
     
     public ProductFilter(final String uid, final Platform platform) {
+        this();
+        
         this.uid = uid;
         this.platforms.add(platform);
     }
     
     public ProductFilter(final String uid, final Version version, final Platform platform) {
+        this();
+        
         this.uid          = uid;
-        this.platforms    = new LinkedList<Platform>();
-        this.versionLower = this.versionUpper = version;
+        this.versionLower = version;
+        this.versionUpper = version;
         this.platforms.add(platform);
     }
     
     public ProductFilter(final String uid, final List<Platform> platforms) {
+        this();
+        
         this.uid          = uid;
         this.platforms.addAll(platforms);
     }
     
     public ProductFilter(final String uid, final Version version, final List<Platform> platforms) {
+        this();
+        
         this.uid          = uid;
         this.versionLower = version;
         this.versionUpper = version;
@@ -69,8 +94,9 @@ public class ProductFilter implements RegistryFilter {
     }
     
     public ProductFilter(final String uid, final Version versionLower, final Version versionUpper, final Platform platform) {
+        this();
+        
         this.uid          = uid;
-        this.platforms    = new LinkedList<Platform>();
         this.versionLower = versionLower;
         this.versionUpper = versionUpper;
         this.platforms.add(platform);
@@ -78,7 +104,7 @@ public class ProductFilter implements RegistryFilter {
     
     public boolean accept(final RegistryNode node) {
         if (node instanceof Product) {
-            Product product = (Product) node;
+            final Product product = (Product) node;
             
             if (uid != null) {
                 if (!product.getUid().equals(uid)) {
@@ -97,6 +123,18 @@ public class ProductFilter implements RegistryFilter {
                 if (!SystemUtils.intersects(
                         product.getSupportedPlatforms(),
                         platforms)) {
+                    return false;
+                }
+            }
+            
+            if (status != null) {
+                if (product.getStatus() != status) {
+                    return false;
+                }
+            }
+            
+            if (detailedStatus != null) {
+                if (product.getDetailedStatus() != detailedStatus) {
                     return false;
                 }
             }
