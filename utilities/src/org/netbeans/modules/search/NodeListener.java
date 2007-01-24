@@ -13,13 +13,14 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.search;
 
 import java.awt.EventQueue;
+import java.awt.Toolkit;
 import static java.awt.event.InputEvent.BUTTON1_DOWN_MASK;
 import static java.awt.event.InputEvent.BUTTON1_MASK;
 import java.awt.Rectangle;
@@ -155,10 +156,14 @@ final class NodeListener implements MouseListener, KeyListener,
             //no popup-menu for the root node
         } else if (pathCount == 2) {
             Node nbNode = getNbNode(path, resultModel);
-            createFileNodePopupMenu(nbNode).show(tree, e.getX(), e.getY());
+            if (nbNode != null) {
+                createFileNodePopupMenu(nbNode).show(tree, e.getX(), e.getY());
+            }
         } else if (pathCount == 3) {        //detail node
             Node nbNode = getNbNode(path, resultModel);
-            nbNode.getContextMenu().show(tree, e.getX(), e.getY());
+            if (nbNode != null) {
+                nbNode.getContextMenu().show(tree, e.getX(), e.getY());
+            }
         } else {
             assert false;
         }
@@ -342,14 +347,41 @@ final class NodeListener implements MouseListener, KeyListener,
     }
     
     /**
+     * Returns a NetBeans explorer node corresponding to the given object.
+     * 
+     * @param  path  identifies the object for which a NetBeans explorer node
+     *               should be returned
+     * @param  resultModel  model of search results
+     * @return  node corresponding to the given object,
+     *          or {@code null} if the {@link MatchingObject} representing
+     *          the given object is not {@link MatchingObject#isValid}
      */
-    private Node getNbNode(TreePath path, ResultModel resultModel) {
+    private static Node getNbNode(TreePath path, ResultModel resultModel) {
         Node node;
         
         Object obj = path.getLastPathComponent();
+        
+        MatchingObject matchingObj;
+        boolean isFileNode;
+        
         if (obj.getClass() == MatchingObject.class) {
+            matchingObj = (MatchingObject) obj;
+            
+            isFileNode = true;
+        } else {
+            Object parentObj = path.getParentPath().getLastPathComponent();
+            assert parentObj.getClass() == MatchingObject.class;
+            matchingObj = (MatchingObject) parentObj;
+            
+            isFileNode = false;
+        }
+        if (!matchingObj.isObjectValid()) {
+            return null;
+        }
+        
+        if (isFileNode) {
             node = resultModel.getSearchGroup().getNodeForFoundObject(
-                                                ((MatchingObject) obj).object);
+                                                            matchingObj.object);
         } else {
             assert obj instanceof Node;         //detail node
             node = (Node) obj;
@@ -411,11 +443,19 @@ final class NodeListener implements MouseListener, KeyListener,
     }
     
     /**
+     * @param  node  node on which the default action should be called,
+     *               or {@code null} if the user action was called on an invalid
+     *               object
+     * @see  MatchingObject#isValid
      */
     private void callDefaultAction(Node node,
                                    Object eventSource,
                                    int eventId,
                                    String command) {
+        if (node == null) {
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
         
         /*
          * Before trying the actual default action, try EditCookie first.

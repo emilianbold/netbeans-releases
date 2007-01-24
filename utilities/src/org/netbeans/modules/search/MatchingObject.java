@@ -13,13 +13,15 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.search;
 
 import java.awt.EventQueue;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -47,7 +49,7 @@ import org.openide.util.NbBundle;
  * @author  Marian Petras
  * @author  Tim Boudreau
  */
-final class MatchingObject {
+final class MatchingObject implements PropertyChangeListener {
     
     /** */
     private final ResultModel resultModel;
@@ -129,6 +131,47 @@ final class MatchingObject {
         file = FileUtil.toFile(fileObject);
         timestamp = (file != null) ? file.lastModified() : 0L;
         valid = (timestamp != 0L);
+        
+        setUpDataObjValidityChecking();
+    }
+    
+    /**
+     */
+    private void setUpDataObjValidityChecking() {
+        final DataObject dataObj = (DataObject) object;
+        if (dataObj.isValid()) {
+            dataObj.addPropertyChangeListener(this);
+        }
+    }
+    
+    /**
+     */
+    void cleanup() {
+        final DataObject dataObj = (DataObject) object;
+        dataObj.removePropertyChangeListener(this);
+    }
+    
+    public void propertyChange(PropertyChangeEvent e) {
+        if (DataObject.PROP_VALID.equals(e.getPropertyName())
+                && Boolean.FALSE.equals(e.getNewValue())) {
+            assert e.getSource() == (DataObject) object;
+            
+            final DataObject dataObj = (DataObject) object;
+            dataObj.removePropertyChangeListener(this);
+            
+            resultModel.objectBecameInvalid(this);
+        }
+    }
+    
+    /**
+     * Is the {@code DataObject} encapsulated by this {@code MatchingObject}
+     * valid?
+     * 
+     * @return  {@code true} if the {@code DataObject} is valid, false otherwise
+     * @see  DataObject#isValid
+     */
+    boolean isObjectValid() {
+        return ((DataObject) object).isValid();
     }
     
     private FileObject getFileObject() {

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,7 +23,6 @@ package org.netbeans.modules.search;
 
 import java.util.*;
 import org.netbeans.modules.search.types.FullTextType;
-
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openidex.search.DataObjectSearchGroup;
@@ -164,6 +163,12 @@ public final class ResultModel {
      * various objects (some VisualizerNode realy loves us). So keep leak as small as possible.
      * */
     void close() {
+        if ((matchingObjects != null) && !matchingObjects.isEmpty()) {
+            for (MatchingObject matchingObj : matchingObjects) {
+                matchingObj.cleanup();
+            }
+        }
+        
         if (searchTypeList != null){
             for (SearchType searchType : searchTypeList) {
                 /*
@@ -212,6 +217,18 @@ public final class ResultModel {
         resultView.objectFound(matchingObject, totalDetailsCount);
         
         return size < COUNT_LIMIT && totalDetailsCount < DETAILS_COUNT_LIMIT;
+    }
+    
+    /**
+     */
+    public void objectBecameInvalid(MatchingObject matchingObj) {
+        
+        /* may be called from non-EDT thread */
+        
+        int index = matchingObjects.indexOf(matchingObj);
+        assert index != -1;
+        
+        treeModel.objectBecameInvalid(matchingObj);
     }
     
     /**

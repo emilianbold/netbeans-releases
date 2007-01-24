@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,6 +37,7 @@ import javax.swing.tree.TreePath;
 import org.openide.awt.HtmlRenderer;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -55,6 +56,10 @@ final class NodeRenderer extends JComponent implements TreeCellRenderer {
     /** */
     private final JCheckBox checkBox;
 
+    /** */
+    private Image deletedObjectIconImage;
+    /** */
+    private String deletedObjectHtmlSuffix;
     /**
      * the component returned by
      * {@link HtmlRenderer.Renderer#getTreeCellRendererComponent() getTreeCellRendererComponent()}
@@ -118,13 +123,20 @@ final class NodeRenderer extends JComponent implements TreeCellRenderer {
         } else if (value.getClass() == MatchingObject.class) {
             final MatchingObject matchingObj = (MatchingObject) value;
             final DataObject dataObj = (DataObject) matchingObj.object;
-            final Node node = dataObj.getNodeDelegate();
-            text = node.getHtmlDisplayName();
-            isHtml = (text != null);
-            if (!isHtml) {
-                text = node.getDisplayName();
+            final boolean valid = matchingObj.isObjectValid();
+            if (valid) {
+                final Node node = dataObj.getNodeDelegate();
+                text = node.getHtmlDisplayName();
+                isHtml = (text != null);
+                if (!isHtml) {
+                    text = node.getDisplayName();
+                }
+                iconImage = node.getIcon(BeanInfo.ICON_COLOR_16x16);
+            } else {
+                text = dataObj.getName() + getDeletedObjectHtmlSuffix();
+                isHtml = true;
+                iconImage = getDeletedObjectIconImage();
             }
-            iconImage = node.getIcon(BeanInfo.ICON_COLOR_16x16);
             checked = (checkBox != null) ? matchingObj.isSelected()
                                          : false;
             
@@ -243,6 +255,26 @@ final class NodeRenderer extends JComponent implements TreeCellRenderer {
         if (checkBounds == null) {
             checkBounds = checkBox.getBounds();
         }
+    }
+    
+    private Image getDeletedObjectIconImage() {
+        if (deletedObjectIconImage == null) {
+            deletedObjectIconImage = Utilities.loadImage(
+                    "org/netbeans/modules/search/res/invalid.png",      //NOI18N
+                    true);                       //localized
+        }
+        return deletedObjectIconImage;
+    }
+    
+    private String getDeletedObjectHtmlSuffix() {
+        if (deletedObjectHtmlSuffix == null) {
+            deletedObjectHtmlSuffix
+                    = "&nbsp;&nbsp;<font color=\"#ff0000\">"            //NOI18N
+                      + NbBundle.getMessage(getClass(),
+                                            "LBL_InvalidFile")          //NOI18N
+                      + "</font>";                                      //NOI18N
+        }
+        return deletedObjectHtmlSuffix;
     }
 
     static Rectangle getCheckBoxRectangle() {

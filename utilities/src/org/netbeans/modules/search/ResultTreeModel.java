@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -38,7 +38,7 @@ final class ResultTreeModel implements TreeModel {
     /** */
     final ResultModel resultModel;
     /** */
-    private final Object[] rootPath;
+    private final TreePath rootPath;
     /** */
     private String rootDisplayName;
     /** */
@@ -54,7 +54,7 @@ final class ResultTreeModel implements TreeModel {
      */
     ResultTreeModel(ResultModel resultModel) {
         this.resultModel = resultModel;
-        this.rootPath = new Object[] { this };
+        this.rootPath = new TreePath(this);
         
         if (resultModel != null) {
             resultModel.setObserver(this);
@@ -230,6 +230,15 @@ final class ResultTreeModel implements TreeModel {
     
     /**
      */
+    void objectBecameInvalid(MatchingObject object) {
+        if (resultModel == null) {
+            throw new IllegalStateException("resultModel is null");     //NOI18N
+        }
+        new Task(object).run();
+    }
+    
+    /**
+     */
     String getRootDisplayName() {
         assert EventQueue.isDispatchThread();
         
@@ -271,6 +280,10 @@ final class ResultTreeModel implements TreeModel {
             this.foundObject = null;
             this.foundObjectIndex = -1;
         }
+        private Task(MatchingObject object) {
+            this.foundObject = object;
+            this.foundObjectIndex = -1;
+        }
         private Task(MatchingObject foundObject, int foundObjectIndex) {
             assert (foundObject != null) && (foundObjectIndex >= 0);
             this.foundObject = foundObject;
@@ -284,8 +297,12 @@ final class ResultTreeModel implements TreeModel {
             
             assert EventQueue.isDispatchThread();
             if (foundObject != null) {
-                objectsCount++;
-                fireNodeAdded(foundObjectIndex, foundObject);
+                if (foundObjectIndex != -1) {
+                    objectsCount++;
+                    fireNodeAdded(foundObjectIndex, foundObject);
+                } else {
+                    fireNodeChanged(foundObject);
+                }
             } else {
                 fireRootNodeChanged();
             }
@@ -307,6 +324,22 @@ final class ResultTreeModel implements TreeModel {
                                                   new Object[] { object });
         for (TreeModelListener l : treeModelListeners) {
             l.treeNodesInserted(event);
+        }
+    }
+    
+    /**
+     */
+    private void fireNodeChanged(MatchingObject object) {
+        assert EventQueue.isDispatchThread();
+        
+        if ((treeModelListeners == null) || treeModelListeners.isEmpty()) {
+            return;
+        }
+        
+        TreePath path = rootPath.pathByAddingChild(object);
+        TreeModelEvent event = new TreeModelEvent(this, path);
+        for (TreeModelListener l : treeModelListeners) {
+            l.treeStructureChanged(event);
         }
     }
 
