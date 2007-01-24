@@ -26,7 +26,6 @@ import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 
 /** 
- * // XXX 
  * @author Tomas Stupka
  */  
 public class LocalHistory {    
@@ -90,7 +89,8 @@ public class LocalHistory {
         return file;    
     }
     
-    boolean isManagedByName(File file) {
-        return !fileNameExclPattern.matcher(file.getName()).matches();
+    boolean isManaged(File file) {
+        return !fileNameExclPattern.matcher(file.getName()).matches() && 
+               file.length() <= LocalHistorySettings.getMaxFileSize();
     }
 }

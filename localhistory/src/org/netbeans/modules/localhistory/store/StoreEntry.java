@@ -81,9 +81,8 @@ public class StoreEntry {
         
     // XXX compresion level etc.
     public static OutputStream createStoreFileOutputSteam(File storeFile) throws FileNotFoundException, IOException {
-        // XXX this stores the file with a wrong path into the zip file
         ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(storeFile)));
-        ZipEntry entry = new ZipEntry(storeFile.getAbsolutePath());
+        ZipEntry entry = new ZipEntry(storeFile.getName());
         zos.putNextEntry(entry);
         return zos;
     }
@@ -96,7 +95,7 @@ public class StoreEntry {
         ZipInputStream zis = new ZipInputStream(new BufferedInputStream(new FileInputStream(storeFile)));
         ZipEntry entry;
         while ( (entry = zis.getNextEntry()) != null ) {
-            if( entry.getName().equals(storeFile.getAbsolutePath()) ) {
+            if( entry.getName().equals(storeFile.getName()) ) {
                 return zis;
             }
         }

@@ -32,6 +32,10 @@ public class LocalHistorySettings {
     public static long getTTL() {
         return 7 * 24 * 60 * 60 * 1000; // XXX need options                                
     }    
+
+    public static Long getMaxFileSize() {
+        return 1024L * 1024L;
+    }
     
     public static String getExludedFileNames() {
         return ".*(\\.class|\\.jar|\\.zip|\\.rar|\\.gz|\\.bz|\\.tgz|\\.tar|\\.gif|\\.jpg|\\.jpeg|\\.png|\\.nbm)"; // this is going to be a very very long list ...

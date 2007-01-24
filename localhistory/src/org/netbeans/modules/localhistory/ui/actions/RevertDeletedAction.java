@@ -38,7 +38,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 /**
- * // XXX context action?
  * @author Tomas Stupka
  */
 public class RevertDeletedAction extends NodeAction {
@@ -67,7 +66,6 @@ public class RevertDeletedAction extends NodeAction {
                 }                                       
             }
         });
-        // XXX refresh view
     }
 
     private void revertRecursively(File file) {

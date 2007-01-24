@@ -47,7 +47,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
         }
         
         public void create() {
-            ts = to.lastModified(); // XXX asuming that this will happen before delete
+            ts = to.lastModified(); 
             getStore().fileCreateFromMove(from, to, ts);            
         }         
     }; 
@@ -107,8 +107,8 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
             return false;
         }
                 
-        // XXX moving a package comes like: 
-        // - either create(to), delete(from)
+        // moving a package comes either like  
+        // - create(to) and delete(from)
         // - or the files from the package come like move(from, to)
         StorageMoveHandler handler = new StorageMoveHandler(from, to);
         getMoveHandlerMap().put(to.getAbsolutePath(), handler);        
@@ -208,7 +208,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
             }
         }
         
-        if(!LocalHistory.getInstance().isManagedByName(file)) {
+        if(!LocalHistory.getInstance().isManaged(file)) {
             return false;
         }               
                       

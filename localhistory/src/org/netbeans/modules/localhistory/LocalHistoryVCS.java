@@ -41,7 +41,6 @@ public class LocalHistoryVCS extends VersioningSystem implements org.netbeans.mo
     }
                
     public File getTopmostManagedParent(File file) {    
-        // XXX it's still open how the LH has to be integrated into VCS
         if(file == null) {
             return null;
         }                

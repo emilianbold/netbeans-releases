@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;  
+import java.util.Map.Entry;
 import java.util.Set;       
 import org.netbeans.modules.localhistory.Diagnostics;
 import org.netbeans.modules.localhistory.utils.FileUtils;
@@ -56,7 +57,6 @@ import org.openide.util.RequestProcessor;
 /**
  *
  * @author Tomas Stupka
- * XXX check for last modified
  */
 class LocalHistoryStoreImpl implements LocalHistoryStore {           
 
@@ -81,7 +81,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 public boolean accept(File dir, String fileName) {
                     return !( fileName.endsWith(DATA_FILE)    || 
                               fileName.endsWith(HISTORY_FILE) || 
-                              fileName.endsWith(LABELS_FILE)); // XXX 
+                              fileName.endsWith(LABELS_FILE)); 
                 }
             };
     
@@ -110,7 +110,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
 
     private void fileCreateImpl(File file, long ts, String from, String to) throws IOException {     
-        if(lastModified(file) > 0) {
+       if(lastModified(file) > 0) {
             return; 
         }        
         String tsString = Long.toString(ts);
@@ -132,7 +132,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         fireChanged(null, file);        
     }
     
-    public synchronized void fileChange(File file, long ts) { 
+    public synchronized void fileChange(File file, long ts) {
         if(lastModified(file) == ts) {
             return; 
         }        
@@ -154,10 +154,6 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
     
     public synchronized void fileDelete(File file, long ts) {
-        // XXX does this make sense?
-//        if(lastModified(file) == ts) {
-//            return; 
-//        }                
         try {
             fileDeleteImpl(file, null, file.getAbsolutePath(), ts);                            
         } catch (IOException ioe) {
@@ -167,12 +163,13 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
 
     private void fileDeleteImpl(File file, String from, String to, long ts) throws IOException {        
-        StoreDataFile data = readStoreData(file); 
+        StoreDataFile data = readStoreData(file);         
         
-        if(data == null) {            
-            // XXX should not happen?
-            return;
-            //assert data != null : "no history entry for file: " + file.getAbsolutePath();
+        if(data == null) {                        
+            if(Diagnostics.ON) {                
+                Diagnostics.println("deleting without data for file : " + file);
+            }         
+            return;            
         }
         // copy from previous entry
         long lastModified = data.getLastModified();
@@ -190,7 +187,6 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }
     }
     
-    // XXX merge with delete
     public synchronized void fileCreateFromMove(File from, File to, long ts) {
         if(lastModified(to) > 0) {
             return; 
@@ -203,12 +199,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         fireChanged(null, to);        
     }
 
-    // XXX merge with create
     public synchronized void fileDeleteFromMove(File from, File to, long ts) {
-        // XXX does this make sense?
-//        if(lastModified(to) > 0) {
-//            return; 
-//        }           
         try {
             fileDeleteImpl(from, from.getAbsolutePath(), to.getAbsolutePath(), ts);
         } catch (IOException ioe) {
@@ -229,7 +220,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             if(storeFiles != null) {
                 List<StoreEntry> ret = new ArrayList<StoreEntry>(storeFiles.length);                
                 if(storeFiles.length > 0) {
-                    Map<Long, String> labels = getLabels(file);
+                    Map<Long, String> labels = getLabels(getLabelsFile(file));
                     for (int i = 0; i < storeFiles.length; i++) {
                         long ts = Long.parseLong(storeFiles[i].getName());
                         String label = labels.get(ts);
@@ -278,12 +269,11 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         Map<String, StoreEntry> deleted = new HashMap<String, StoreEntry>();
         List<HistoryEntry> entries = readHistory(file);
         for(HistoryEntry he : entries) {
-            // XXX why action? why not status?
-            if(he.getAction() == DELETED) {
+            if(he.getStatus() == DELETED) {
                 String filePath = he.getTo();
                 if(!deleted.containsKey(filePath)) {
                     StoreDataFile data = readStoreData(new File(he.getTo()));
-                    if(data != null && data.getAction() == DELETED) {
+                    if(data != null && data.getStatus() == DELETED) {
                         File storeFile = data.isFile ? 
                                             getStoreFile(new File(data.getAbsolutePath()), Long.toString(data.getLastModified()), false) :
                                             getStoreFolder(file);
@@ -308,7 +298,6 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         DataOutputStream oos = null; 
         boolean foundLabel = false;
         try {
-            
             if(!labelsFile.exists()) {
                 oos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(labelsFile)));
                 oos.writeLong(ts);
@@ -354,16 +343,16 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             if (oos != null) {
                 try { oos.close(); } catch (IOException e) { }                
             }            
-        }    
+        }            
         
         try {
             if(labelsNew != null ) {
                 FileUtils.renameFile(labelsNew, labelsFile);   
-            }                    
+            }
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);            
         }
-
+    
         return;        
     }    
     
@@ -399,9 +388,16 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         long now = System.currentTimeMillis();        
         
         File[] topLevelFiles = storage.listFiles();                
-                
+        if(topLevelFiles == null || topLevelFiles.length == 0) {
+            return;
+        }
+        
         for(File topLevelFile : topLevelFiles) {                        
             File[] secondLevelFiles = topLevelFile.listFiles();
+            if(secondLevelFiles == null || secondLevelFiles.length == 0) {
+                continue;
+            }
+            
             boolean allEmpty = true;
             for(File secondLevelFile : secondLevelFiles) {       
                                                             
@@ -472,23 +468,58 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         File[] files = store.listFiles(fileEntriesFilter);            
         boolean skipped = false;
         
+        File labelsFile = new File(store, LABELS_FILE);        
+        Map<Long, String> labels = emptyLabels;
+        if(labelsFile.exists()) {
+            labels = getLabels(labelsFile);
+        }
         for(File f : files) {                
             long ts = Long.parseLong(f.getName());
             if(ts < now - ttl) {
-                // XXX remove labels
+                if(labels.size() > 0) {
+                    labels.remove(ts);
+                }                                
                 f.delete(); 
             } else {
                 skipped = true;
             }
-        }    
-        
+        }                    
         if(!skipped) {
-            // if all entries are gone then remove also the metadata             
-            File labelsFile = new File(store, LABELS_FILE);
+            // all entries are gone -> remove also the metadata             
             labelsFile.delete();            
             writeStoreData(dataFile, null);                                  
-        }                        
+        } else {
+            if(labels.size() > 0) {
+                writeLabels(labelsFile, labels);
+            } 
+        }                       
         return !skipped;
+    }
+    
+    private void writeLabels(File labelsFile, Map<Long, String> labels) {        
+        File parent = labelsFile.getParentFile();
+        if(!parent.exists()) {
+            parent.mkdirs();
+        }
+        DataInputStream dis = null;        
+        DataOutputStream oos = null; 
+        try {
+            for(Entry<Long, String> label : labels.entrySet()) {
+                oos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(labelsFile)));
+                oos.writeLong(label.getKey());
+                writeString(oos, label.getValue());                
+            }            
+            oos.flush();
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        } finally {
+            if (dis != null) {
+                try { dis.close(); } catch (IOException e) { }                
+            }
+            if (oos != null) {
+                try { oos.close(); } catch (IOException e) { }                
+            }            
+        }            
     }
     
     private boolean cleanUpStoredFolder(File store, long ttl, long now) {
@@ -527,7 +558,6 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }        
     
     private void touch(File file, StoreDataFile data) throws IOException {      
-        // XXX no data file created if original file was already present when LH began to work!!!
         writeStoreData(file, data);
     }    
        
@@ -537,7 +567,6 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         if(!storage.exists()) {
             storage.mkdirs();
         }        
-        // XXX what if storage == null
     }    
 
     private File getStoreFolder(File file) {                        
@@ -545,21 +574,20 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         File storeFolder = getStoreFolderName(filePath);
         int i = 0;
         while(storeFolder.exists()) {
+            // check for collisions 
             StoreDataFile data = readStoreData(storeFolder);
             if(data == null || !data.getAbsolutePath().equals(filePath)) {
                 break;                
             }
-            storeFolder = getStoreFolderName(filePath + "." + i);
+            storeFolder = getStoreFolderName(filePath + "." + i++);
         }            
         return storeFolder;                     
     }
     
     private File getStoreFolderName(String filePath) {        
         int fileHash = filePath.hashCode();                                        
-        String storeFileName = getMD5(filePath); // XXX colisions could cause trouble                                
+        String storeFileName = getMD5(filePath); 
         String storeIndex = storage.getAbsolutePath() + "/" + Integer.toString(fileHash % 173 + 172);   // NOI18N                                  
-        // storeFileName = file.getAbsolutePath().replaceAll("/", "<=>");   
-        // String storeIndex = storage.getAbsolutePath() + "/" + Integer.toString(1);         
         return new File(storeIndex + "/" + storeFileName);
     }
     
@@ -573,15 +601,15 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }
         digest.update(name.getBytes());
         byte[] hash = digest.digest();
-        String ret = "";                                                        // NOI18N
+        StringBuffer ret = new StringBuffer();                                  // NOI18N
         for (int i = 0; i < hash.length; i++) {
             String hex = Integer.toHexString(hash[i] & 0x000000FF);
             if(hex.length()==1) {
                 hex = "0" + hex;                                                // NOI18N
             }
-            ret += hex;                                                         // NOI18N
+            ret.append(hex);                                                    // NOI18N
         }       
-        return ret;
+        return ret.toString();
     }
     
     private File getStoreFile(File file, String name, boolean mkdirs) {
@@ -610,8 +638,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         return new File(storeFolder, LABELS_FILE);     
     }       
     
-    private Map<Long, String> getLabels(File file) {
-        File labelsFile = getLabelsFile(file);
+    private Map<Long, String> getLabels(File labelsFile) {        
 
         if(!labelsFile.exists()) {
             return emptyLabels;
@@ -637,8 +664,14 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         return emptyLabels;
     }
             
-    // XXX do we need this?
-    private void writeHistory(File file, HistoryEntry[] entries) { // XXX int action
+    private void writeHistory(File file, HistoryEntry[] entries) { 
+        
+        if(Diagnostics.ON) {                
+            if(getDataFile(file) == null) {
+                Diagnostics.println("writing history for file without data : " + file);    
+            }            
+        } 
+        
         File history = getHistoryFile(file);
         DataOutputStream dos = null;
         try {
@@ -647,7 +680,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 dos.writeLong(entry.getTimestamp());                        
                 writeString(dos, entry.getFrom());        
                 writeString(dos, entry.getTo());            
-                dos.writeInt(entry.getAction());
+                dos.writeInt(entry.getStatus());
             }
             dos.flush();            
         } catch (Exception e) {
@@ -688,7 +721,15 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }    
         return emptyHistory;
     }   
-           
+         
+    private StoreDataFile readStoreData(File file) {
+        return (StoreDataFile) turbo.readEntry(file, DataFilesTurboProvider.ATTR_DATA_FILES);
+    }
+
+    private void writeStoreData(File file, StoreDataFile data) {        
+        turbo.writeEntry(file, DataFilesTurboProvider.ATTR_DATA_FILES, data);        
+    }  
+    
     private static void writeString(DataOutputStream dos, String str) throws IOException {
         if(str != null) {
             dos.writeInt(str.length());
@@ -762,12 +803,12 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         private long ts;
         private String from;
         private String to;
-        private int action;        
+        private int status;        
         HistoryEntry(long ts, String from, String to, int action) {
             this.ts = ts;
             this.from = from;
             this.to = to;
-            this.action = action;
+            this.status = action;
         }        
         long getTimestamp() {
             return ts;
@@ -778,41 +819,27 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         String getTo() {
             return to;
         }        
-        int getAction() {
-            return action;
+        int getStatus() {
+            return status;
         }
-    }
-    
-    private StoreDataFile readStoreData(File file) {
-//        if(Diagnostics.ON) {
-//            Diagnostics.println("readStoreData:" + file);
-//        }    
-        return (StoreDataFile) turbo.readEntry(file, DataFilesTurboProvider.ATTR_DATA_FILES);
-    }
-
-    private void writeStoreData(File file, StoreDataFile data) {        
-//        if(Diagnostics.ON) {
-//            Diagnostics.println("writeStoreData:" + file);
-//        }            
-        turbo.writeEntry(file, DataFilesTurboProvider.ATTR_DATA_FILES, data);        
-    }    
+    }  
     
     private static class StoreDataFile {        
-        private final int action;
+        private final int status;
         private final long lastModified;        
         private final String absolutePath;
         private final boolean isFile;
         
         private StoreDataFile(String absolutePath, int action, long lastModified, boolean isFile) {
-            this.action = action;
+            this.status = action;
             this.lastModified = lastModified;
             this.absolutePath = absolutePath;
             this.isFile = isFile;            
         }                 
         
-        int getAction() {
-            return action;
-        }         
+        int getStatus() {
+            return status;
+        }        
         
         long getLastModified() {
             return lastModified;
@@ -851,15 +878,14 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 dos = getOutputStream(storeFile, false);
                 StoreDataFile data = (StoreDataFile) value;
                 dos.writeBoolean(data.isFile);                
-                dos.writeInt(data.getAction());
+                dos.writeInt(data.getStatus());
                 dos.writeLong(data.getLastModified());
                 dos.writeInt(data.getAbsolutePath().length());
                 dos.writeChars(data.getAbsolutePath());          
                 dos.flush();
             } catch (Exception e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);                
-            }
-            finally {
+            } finally {
                 if (dos != null) {
                     try { dos.close(); } catch (IOException e) { }
                 }
