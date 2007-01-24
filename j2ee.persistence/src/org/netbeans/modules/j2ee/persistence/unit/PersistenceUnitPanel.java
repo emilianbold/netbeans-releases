@@ -40,6 +40,7 @@ import org.netbeans.modules.j2ee.persistence.util.PersistenceProviderComboboxHel
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.JdbcListCellRenderer;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.modules.j2ee.persistence.util.PersistenceProviderComboboxHelper;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.Error;
@@ -74,14 +75,13 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         
         initComponents();
         
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-        
+        PersistenceProviderComboboxHelper comboHelper = new PersistenceProviderComboboxHelper(project);
         if (isContainerManaged){
-            PersistenceProviderComboboxHelper.connect(j2eeModuleProvider, providerCombo);
+            comboHelper.connect(providerCombo);
             Provider provider = ProviderUtil.getProvider(persistenceUnit);
             providerCombo.setSelectedItem(provider);
         } else {
-            PersistenceProviderComboboxHelper.connect(j2eeModuleProvider, libraryComboBox);
+            comboHelper.connect(libraryComboBox);
             setSelectedLibrary();
         }
         
@@ -774,9 +774,9 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     }//GEN-LAST:event_addClassButtonActionPerformed
     
     private void libraryComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_libraryComboBoxActionPerformed
-//        setProvider();
-////        setSelectedLibrary();
-//        setTableGeneration();
+        //        setProvider();
+        ////        setSelectedLibrary();
+        //        setTableGeneration();
     }//GEN-LAST:event_libraryComboBoxActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

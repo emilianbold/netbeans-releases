@@ -69,7 +69,9 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
             connectDatasources(j2eeModuleProvider);
         }
         
-        PersistenceProviderComboboxHelper.connect(j2eeModuleProvider, providerCombo);
+        PersistenceProviderComboboxHelper comboHelper = new PersistenceProviderComboboxHelper(project);
+        comboHelper.connect(providerCombo);
+//        PersistenceProviderComboboxHelper.connect(j2eeModuleProvider, providerCombo);
         
         unitNameTextField.setText(ProjectUtils.getInformation(project).getName() + "PU"); //NOI18N
         // unit name editing is not available when adding first PU

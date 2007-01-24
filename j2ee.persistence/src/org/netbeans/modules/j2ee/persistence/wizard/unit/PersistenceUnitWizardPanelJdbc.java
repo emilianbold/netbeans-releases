@@ -31,7 +31,6 @@ import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
@@ -62,8 +61,8 @@ public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
         this.project = project;
         this.defaultProvider = ProviderUtil.getContainerManagedProvider(project);
         
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-        PersistenceProviderComboboxHelper.connect(j2eeModuleProvider, libraryCombo);
+        PersistenceProviderComboboxHelper comboHelper = new PersistenceProviderComboboxHelper(project);
+        comboHelper.connect(libraryCombo);
         
         unitNameTextField.setText(ProjectUtils.getInformation(project).getName() + "PU"); //NOI18N
         // unit name editing is not available when adding first PU
