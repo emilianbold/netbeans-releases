@@ -177,9 +177,10 @@ public class ELExpression {
         return task.getCompletionItems();
     }
     
-    public void gotoPropertyDeclaration(String beanType){
+    public boolean gotoPropertyDeclaration(String beanType){
         GoToSourceTask task = new GoToSourceTask(beanType);
         runTask(task);
+        return task.wasSuccessful();
     }
     
     /**
@@ -337,6 +338,8 @@ public class ELExpression {
      * - a getter in case of 
      */
     private class GoToSourceTask extends BaseELTaskClass implements CancellableTask<CompilationController>{
+        private boolean success = false;
+        
         GoToSourceTask(String beanType){
             super(beanType);
         }
@@ -352,11 +355,15 @@ public class ELExpression {
                     String propertyName = getExpressionSuffix(method);
                     
                     if (propertyName != null && propertyName.equals(suffix)){
-                        UiUtils.open(parameter.getClasspathInfo(), method);
+                        success = UiUtils.open(parameter.getClasspathInfo(), method);
                         break;
                     }
                 }
             }
+        }
+        
+        public boolean wasSuccessful(){
+            return success;
         }
     }
     

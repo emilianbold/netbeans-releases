@@ -20,6 +20,7 @@
 package org.netbeans.modules.web.core.syntax;
 
 
+import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -52,6 +53,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.web.core.syntax.completion.ELExpression;
 import org.openide.ErrorManager;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -149,9 +151,11 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
             if (elTokenSequence != null){
                 ELExpression exp = new ELExpression((JspSyntaxSupport)bdoc.getSyntaxSupport());
-                int res = exp.parse(token.offset(tokenHierarchy) + token.length());
+                elTokenSequence.moveLast();
+                int endOfEL = elTokenSequence.offset() + elTokenSequence.token().length();
+                int res = exp.parse(endOfEL);
                 if (res == ELExpression.EL_START) {
-                    res = res = exp.parse(token.offset(tokenHierarchy) + token.length() + 1);
+                    res = res = exp.parse(endOfEL + 1);
                 }
                 return res == ELExpression.EL_BEAN;
             }
@@ -205,11 +209,18 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
         } else{
             // is it a bean in EL ?
             TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
+            
             if (elTokenSequence != null){
                 ELExpression exp = new ELExpression((JspSyntaxSupport)bdoc.getSyntaxSupport());
-                int res = exp.parse(token.offset(tokenHierarchy) + token.length());
-                if (res == ELExpression.EL_BEAN || res == ELExpression.EL_START )
-                    return new int[] {token.offset(tokenHierarchy), token.offset(tokenHierarchy) + token.length()};
+                elTokenSequence.moveFirst();
+                int elStart = elTokenSequence.offset();
+                elTokenSequence.moveLast();
+                int elEnd = elTokenSequence.offset() + elTokenSequence.token().length();
+                int res = exp.parse(elEnd);
+                
+                if (res == ELExpression.EL_BEAN || res == ELExpression.EL_START ){
+                    return new int[] {elStart, elEnd};
+                }
             }
             // dynamic or static include, forward.
             // remove all white space between the value.
@@ -256,13 +267,17 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
             if (elTokenSequence != null){
                 ELExpression exp = new ELExpression((JspSyntaxSupport)bdoc.getSyntaxSupport());
-                int res = exp.parse(token.offset(tokenHierarchy) + token.length());
+                
+                elTokenSequence.moveLast();
+                int res = exp.parse(elTokenSequence.offset() + elTokenSequence.token().length());
                 if (res == ELExpression.EL_START ){
                     navigateToUserBeanDef(doc, jspSup, target, token.text().toString());
                     return;
                 }
                 if (res == ELExpression.EL_BEAN){
-                    exp.gotoPropertyDeclaration(exp.getObjectClass());
+                    if (!exp.gotoPropertyDeclaration(exp.getObjectClass())){
+                        gotoSourceFailed();
+                    }
                 }
                 return;
             }
@@ -301,7 +316,7 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
                 } else {
                     // when the file was not found.
                     String msg = NbBundle.getMessage(JSPHyperlinkProvider.class, "LBL_file_not_found", path); //NOI18N
-                    org.openide.awt.StatusDisplayer.getDefault().setStatusText(msg);
+                    StatusDisplayer.getDefault().setStatusText(msg);
                 }
                 
             }
@@ -449,6 +464,12 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
         }
     }
     
+    private void gotoSourceFailed(){
+        String msg = NbBundle.getBundle(JSPHyperlinkProvider.class).getString("MSG_source_not_found");
+        StatusDisplayer.getDefault().setStatusText(msg);
+        Toolkit.getDefaultToolkit().beep();
+    }
+    
     private class GoToTypeDefTask implements CancellableTask<CompilationController>{
         private String className;
         
@@ -461,9 +482,10 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             TypeElement type = parameter.getElements().getTypeElement(className);
             
             if (type != null){
-                UiUtils.open(parameter.getClasspathInfo(), type);
-            }
-            else{
+                if (!UiUtils.open(parameter.getClasspathInfo(), type)){
+                    gotoSourceFailed();
+                }
+            } else{
                 logger.fine("could not resolve " + className); //NOI18N
             }
         }
