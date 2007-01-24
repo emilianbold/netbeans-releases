@@ -19,41 +19,5 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="org.netbeans.modules.xml.xdm/test-unit" basedir="." default="all">
-    <property name="build.compiler.source" value="1.5"/>
-    <property file="../nbproject/project.properties"/>
-    <property name="test.unit.cp" value="${netbeans.dest.dir}/ide8/modules/org-netbeans-modules-xml-xdm.jar
-        :${netbeans.dest.dir}/ide8/modules/org-netbeans-modules-xml-text.jar
-        :${netbeans.dest.dir}/ide8/modules/org-netbeans-modules-xml-core.jar
-        :${netbeans.dest.dir}/ide8/modules/org-netbeans-modules-editor-lib.jar"/>
-    <!-- ========= -->
-    <!-- Compilers -->
-    <!-- ========= -->
-    
-    <target name="default-compiler">
-        <!-- Build application before tests -->
-        <ant dir=".." target="jar"/>
-        <buildTests srcdir="unit/src" compileexcludes="**/data/**">
-        <property name="package.tests.includes" value="**/*"/>
-        <property name="package.tests.excludes" value="**/*.java"/>
-            <classpath>
-                <!-- Add classpath elements needed to compile tests -->
-                <pathelement path="${test.unit.cp}"/>
-            </classpath>
-        </buildTests>
-    </target>
-    
-    <!-- ========= -->
-    <!-- Executors -->
-    <!-- ========= -->
-    
-    <target name="run-unit-test">
-        <executeTests pluginname="jvm">
-            <classpath>
-                <!-- Add classpath elements needed to run tests -->
-                <pathelement path="${test.unit.cp}"/>
-                <pathelement path="${test.unit.run.cp.extra}"/>
-            </classpath>
-        </executeTests>
-    </target>
-    
+    <import file="../../../nbbuild/templates/xtest-unit.xml"/>
 </project>
