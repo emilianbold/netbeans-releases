@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,6 +21,7 @@
 package org.netbeans.modules.i18n;
 
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -111,20 +112,31 @@ public class I18nManager {
         final I18nPanel i18nPanel = ((I18nPanel)i18nPanelWRef.get());
         i18nPanel.showBundleMessage("TXT_SearchingForStrings");
         i18nPanel.getCancelButton().requestFocusInWindow();
+        
+        final class SearchResultDisplayer implements Runnable {
+            private final boolean success;
+            SearchResultDisplayer(boolean success) {
+                this.success = success;
+            }
+            public void run() {
+                if (success) {
+                    initCaret(ec);
+                    highlightHCString();
+                    fillDialogValues();                        
+                    i18nPanel.getReplaceButton().requestFocusInWindow();
+                } else {
+                    i18nPanel.showBundleMessage("TXT_NoHardcodedString");
+                    i18nPanel.getCancelButton().requestFocusInWindow();
+
+                }
+            }
+        }
 
         // do the search on background
         RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    if (find()) {
-                        initCaret(ec);
-                        highlightHCString();
-                        fillDialogValues();                        
-                        i18nPanel.getReplaceButton().requestFocusInWindow();
-                    } else {
-                        i18nPanel.showBundleMessage("TXT_NoHardcodedString");
-                        i18nPanel.getCancelButton().requestFocusInWindow();
-
-                    }
+                    boolean found = find();
+                    EventQueue.invokeLater(new SearchResultDisplayer(found));
                 }
             });
 
