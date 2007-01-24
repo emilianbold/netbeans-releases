@@ -19,6 +19,8 @@
 
 package org.netbeans.lib.editor.codetemplates;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
@@ -28,6 +30,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.KeyStroke;
+import javax.swing.Timer;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
@@ -74,6 +77,7 @@ PropertyChangeListener, KeyListener, CaretListener {
             = "abbrev-ignore-modification"; // NOI18N
 
     private static final String SURROUND_WITH = NbBundle.getMessage(SurroundWithFix.class, "TXT_SurroundWithHint_Label"); //NOI18N
+    private static final int SURROUND_WITH_DELAY = 250;
     
     private static final AbbrevExpander[] abbrevExpanders = { new CodeTemplateAbbrevExpander() };
 
@@ -109,6 +113,7 @@ PropertyChangeListener, KeyListener, CaretListener {
     
     private ErrorDescription errorDescription = null;
     private List surrounsWithFixes = null;
+    private Timer surroundsWithTimer;
     
     private AbbrevDetection(JTextComponent component) {
         this.component = component;
@@ -125,6 +130,13 @@ PropertyChangeListener, KeyListener, CaretListener {
         
         component.addKeyListener(this);
         component.addPropertyChangeListener(this);
+        
+        surroundsWithTimer = new Timer(0, new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showSurroundWithHint();
+            }
+        });
+        surroundsWithTimer.setRepeats(false);
     }
 
     public void settingsChange(SettingsChangeEvent evt) {
@@ -193,8 +205,10 @@ PropertyChangeListener, KeyListener, CaretListener {
     
     public void caretUpdate(CaretEvent evt) {
         if (evt.getDot() != evt.getMark()) {
-            showSurroundWithHint(evt.getDot());
+            surroundsWithTimer.setInitialDelay(SURROUND_WITH_DELAY);
+            surroundsWithTimer.restart();
         } else {
+            surroundsWithTimer.stop();
             hideSurroundWithHint();
         }
     }
@@ -325,18 +339,18 @@ PropertyChangeListener, KeyListener, CaretListener {
         return false;
     }
     
-    private void showSurroundWithHint(int offset) {
-        if (surrounsWithFixes == null)
-            surrounsWithFixes = SurroundWithFix.getFixes(component);
-        
+    private void showSurroundWithHint() {
+        surrounsWithFixes = SurroundWithFix.getFixes(component);
         if (!surrounsWithFixes.isEmpty()) {
-            try {
-                Position pos = doc.createPosition(offset);
+            try {                
+                Position pos = doc.createPosition(component.getCaretPosition());
                 errorDescription = ErrorDescriptionFactory.createErrorDescription(Severity.HINT, SURROUND_WITH, surrounsWithFixes, doc, pos, pos);
                 HintsController.setErrors(doc, SURROUND_WITH, Collections.singleton(errorDescription));
             } catch (BadLocationException ble) {
                 Logger.getLogger("global").log(Level.WARNING, ble.getMessage(), ble);
             }
+        } else {
+            hideSurroundWithHint();
         }
     }
 

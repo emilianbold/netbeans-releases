@@ -39,11 +39,13 @@ import org.openide.ErrorManager;
 public class JavaCodeTemplateFilter implements CodeTemplateFilter, CancellableTask<CompilationController> {
     
     private boolean initialized = false;
-    private int offset;
+    private int startOffset;
+    private int endOffset;
     private Tree.Kind ctx = null;
     
     private JavaCodeTemplateFilter(JTextComponent component, int offset) {
-        this.offset = offset;
+        this.startOffset = offset;
+        this.endOffset = component.getSelectionStart() == offset ? component.getSelectionEnd() : -1;            
         JavaSource js = JavaSource.forDocument(component.getDocument());
         try {
             js.runUserActionTask(this, true);
@@ -59,7 +61,7 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter, CancellableTa
         } catch (InterruptedException ex) {
             ErrorManager.getDefault().notify(ex);
         }
-        return ctx == null || getTemplateContexts(template).contains(ctx);
+        return ctx != null && getTemplateContexts(template).contains(ctx);
     }
     
     public void cancel() {
@@ -68,8 +70,13 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter, CancellableTa
     public synchronized void run(CompilationController controller) {
         try {
             controller.toPhase(Phase.PARSED);
-            TreePath path = controller.getTreeUtilities().pathFor(offset);
-            ctx = path.getLeaf().getKind();
+            TreePath startPath = controller.getTreeUtilities().pathFor(startOffset);
+            ctx = startPath.getLeaf().getKind();
+            if (endOffset >= 0 && startOffset != endOffset) {
+                TreePath endPath = controller.getTreeUtilities().pathFor(endOffset);
+                if (endPath.getLeaf().getKind() != ctx)
+                    ctx = null;
+            }
             initialized = true;
             notifyAll();
         } catch (IOException ex) {

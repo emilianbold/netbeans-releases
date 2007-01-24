@@ -20,11 +20,13 @@
 package org.netbeans.lib.editor.codetemplates;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
+import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
@@ -42,8 +44,11 @@ public class SurroundWithFix implements Fix {
         Document doc = component.getDocument();
         CodeTemplateManagerOperation op = CodeTemplateManagerOperation.get(doc);
         op.waitLoaded();
+        Collection/*<CodeTemplateFilter>*/ filters = op.getTemplateFilters(component, component.getSelectionStart());
         for (Iterator it = op.findSelectionTemplates().iterator(); it.hasNext();) {
-            fixes.add(new SurroundWithFix((CodeTemplate)it.next(), component));
+            CodeTemplate template = (CodeTemplate)it.next();
+            if (accept(template, filters))
+                fixes.add(new SurroundWithFix(template, component));
         }
         return fixes;
     }
@@ -66,4 +71,12 @@ public class SurroundWithFix implements Fix {
         return null;
     }
     
+    private static boolean accept(CodeTemplate template, Collection/*<CodeTemplateFilter>*/ filters) {
+        for(Iterator it = filters.iterator(); it.hasNext();) {
+            CodeTemplateFilter filter = (CodeTemplateFilter)it.next();
+            if (!filter.accept(template))
+                return false;
+        }
+        return true;
+    }
 }
