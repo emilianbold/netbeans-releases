@@ -105,19 +105,8 @@ public class MacOsNativeUtils extends UnixNativeUtils {
     public File createShortcut(Shortcut shortcut, ShortcutLocationType locationType) throws NativeException {
         final File shortcutFile = getShortcutLocation(shortcut, locationType);
         
-        if (shortcut.canModifyExecutablePath()) {
-            File executable = new File(shortcut.getExecutablePath());
-            
-            while ((executable != null) && !executable.getPath().endsWith(".app")) {
-                executable = executable.getParentFile();
-            }
-            
-            if (executable != null) {
-                shortcut.setExecutable(executable);
-            }
-        }
-        
         try {
+            
             if (locationType == ShortcutLocationType.CURRENT_USER_DESKTOP ||
                     locationType == ShortcutLocationType.ALL_USERS_DESKTOP ) {
                 // create a symlink on desktop
@@ -200,9 +189,31 @@ public class MacOsNativeUtils extends UnixNativeUtils {
         return System.getProperty("os.version");
     }
     
+    private File upToApp(File exec) {
+        File executable = exec;
+        while ((executable != null) && !executable.getPath().endsWith(APP_SUFFIX)) {
+            executable = executable.getParentFile();
+        }
+        
+        return executable;
+    }
+    
+    private void modifyShortcutExecutable(Shortcut shortcut) {
+        if (shortcut.canModifyExecutablePath()) {
+            File executable = upToApp(new File(shortcut.getExecutablePath()));
+            
+            if (executable != null) {
+                shortcut.setExecutable(executable);
+            }
+        }
+    }
+    
     private boolean modifyDockLink(Shortcut shortcut, File dockFile, boolean adding) {
         OutputStream outputStream = null;
         try {
+            
+            modifyShortcutExecutable(shortcut);
+            
             DocumentBuilderFactory documentBuilderFactory =
                     DocumentBuilderFactory.newInstance();
             documentBuilderFactory.setNamespaceAware(true);
@@ -351,8 +362,7 @@ public class MacOsNativeUtils extends UnixNativeUtils {
         } catch (NullPointerException e) {
             LogManager.log(ErrorLevel.WARNING,e);
             return false;
-        }
-        finally {
+        } finally {
             if (outputStream!=null) {
                 try {
                     outputStream.close();
@@ -376,7 +386,7 @@ public class MacOsNativeUtils extends UnixNativeUtils {
     private int convertDockProperties(boolean decode) {
         File dockFile = getDockPropertiesFile();
         int returnResult = 0;
-        try {            
+        try {
             if(!isCheetah() && !isPuma()) {
                 if((!decode && (isTiger() || isLeopard())) || decode) {
                     // decode for all except Cheetah and Puma
@@ -385,7 +395,7 @@ public class MacOsNativeUtils extends UnixNativeUtils {
                     ExecutionResults result = SystemUtils.executeCommand(null,
                             new String[] { PLUTILS,PLUTILS_CONVERT,(decode)? PLUTILS_CONVERT_XML :
                                 PLUTILS_CONVERT_BINARY,dockFile.getPath()});
-                    returnResult = result.getErrorCode();                    
+                    returnResult = result.getErrorCode();
                 }
             }
         } catch (IOException ex) {
