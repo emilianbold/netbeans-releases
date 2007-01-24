@@ -47,6 +47,14 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/netbeans/api/java/source/gen/MethodCreationTest.class"/>
                 <exclude name="org/netbeans/api/java/source/gen/MemberAdditionTest.class"/>
                 <exclude name="org/netbeans/api/java/source/gen/IndentAddedElemTest.class"/>
+		
+		<!--requires test source:-->
+		<exclude name="org/netbeans/api/java/source/UiUtils.class" />
+		
+		<!--classes without any uncommented tests:-->
+		<exclude name="org/netbeans/modules/java/source/parsing/CachingFolderArchiveTest.class" />
+		<exclude name="org/netbeans/modules/java/source/parsing/CachingZipArchiveTest.class" />
+		<exclude name="org/netbeans/modules/java/source/parsing/FileManagerTest.class" />
             </patternset>
         </testset>
     </testbag>
