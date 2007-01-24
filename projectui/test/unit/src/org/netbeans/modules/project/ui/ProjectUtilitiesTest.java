@@ -42,6 +42,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.w3c.dom.Element;
@@ -107,7 +108,7 @@ public class ProjectUtilitiesTest extends NbTestCase {
         (tc1_1 = new SimpleTopComponent (do1_1_open, CloneableEditorSupport.EDITOR_MODE)).open ();
         (tc1_2 = new SimpleTopComponent (do1_2_open, CloneableEditorSupport.EDITOR_MODE)).open ();
         (tc2_1 = new SimpleTopComponent (do2_1_open, CloneableEditorSupport.EDITOR_MODE)).open ();
-        (tc1_1_navigator = new SimpleTopComponent (do1_1_open, NAVIGATOR_MODE)).open ();
+        (tc1_1_navigator = new SimpleTopComponent2 (do1_1_open, NAVIGATOR_MODE)).open ();
         
         ExitDialog.SAVE_ALL_UNCONDITIONALLY = true;
     }
@@ -276,10 +277,29 @@ public class ProjectUtilitiesTest extends NbTestCase {
         assertTrue(tc1_1_navigator.isOpened());
     }
 
-    private static class SimpleTopComponent extends TopComponent {
+    private static class SimpleTopComponent extends CloneableTopComponent {
         private Object content;
         private String modeToDockInto;
         public SimpleTopComponent (Object obj, String modeToDockInto) {
+            this.content = obj;
+            this.modeToDockInto = modeToDockInto;
+            setName (obj.toString ());
+        }
+        
+        public Lookup getLookup () {
+            return Lookups.singleton (content);
+        }
+        
+        public void open() {
+            super.open();
+            WindowManager.getDefault().findMode(modeToDockInto).dockInto(this);
+        }
+    }
+    
+    private static class SimpleTopComponent2 extends TopComponent {
+        private Object content;
+        private String modeToDockInto;
+        public SimpleTopComponent2 (Object obj, String modeToDockInto) {
             this.content = obj;
             this.modeToDockInto = modeToDockInto;
             setName (obj.toString ());

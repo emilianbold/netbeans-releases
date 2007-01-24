@@ -50,11 +50,10 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.windows.Mode;
+import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.xml.XMLUtil;
@@ -122,15 +121,12 @@ public class ProjectUtilities {
             Set<DataObject> openFiles = new HashSet<DataObject>();
             final Set<TopComponent> tc2close = new HashSet<TopComponent>();
             for (TopComponent tc : WindowManager.getDefault().getRegistry().getOpened()) {
-                // #57621: check if the closed top component isn't instance of ExplorerManager.Provider e.g. Projects/Files tab, if yes then do skip this loop
-                if (tc instanceof ExplorerManager.Provider) {
+                //#84546 - this condituon should allow us to close just editor related TCs that are in any imaginable mode.
+                if (! (tc instanceof CloneableTopComponent)) {
                     continue;
                 }
-                // #68677: closing only documents in the editor, not eg. navigator window:
-                Mode m = WindowManager.getDefault().findMode(tc);
-
-                if (m == null ||
-                    !CloneableEditorSupport.EDITOR_MODE.equals(m.getName())) {
+                // #57621: check if the closed top component isn't instance of ExplorerManager.Provider e.g. Projects/Files tab, if yes then do skip this loop
+                if (tc instanceof ExplorerManager.Provider) {
                     continue;
                 }
                 DataObject dobj = tc.getLookup().lookup(DataObject.class);
