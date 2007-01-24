@@ -11,6 +11,12 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
             </folder>
+            <folder name="x-tag">
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.api.jsp.lexer.JspTokenId.language"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
+            </folder>
         </folder>
     </folder>
 </filesystem>
