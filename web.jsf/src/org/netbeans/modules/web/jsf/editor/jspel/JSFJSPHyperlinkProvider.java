@@ -20,21 +20,23 @@
 package org.netbeans.modules.web.jsf.editor.jspel;
 
 import java.awt.Cursor;
+import java.awt.Toolkit;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SyntaxSupport;
-import org.netbeans.editor.TokenID;
-import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.core.syntax.JSPHyperlinkProvider;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.deprecated.ELTokenContext;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
@@ -48,7 +50,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * @author Tomasz.Slota@Sun.COM
  * @author Petr Pisl
  */
 public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
@@ -74,35 +76,41 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
         if (!(doc instanceof BaseDocument))
             return false;
         
-        try {
-            BaseDocument bdoc = (BaseDocument) doc;
-            JTextComponent target = Utilities.getFocusedComponent();
-            
-            if (target == null || target.getDocument() != bdoc)
-                return false;
-            SyntaxSupport sup = bdoc.getSyntaxSupport();
-            JspSyntaxSupport jspSup = (JspSyntaxSupport)sup.get(JspSyntaxSupport.class);
-            
-            TokenItem token = jspSup.getTokenChain(offset, offset+1);
-            if (token == null) return false;
-            TokenID tokenID = token.getTokenID();
-            if (tokenID == null) return false;
-            
-            if (token.getTokenContextPath().contains(ELTokenContext.contextPath)){
-                FileObject fObject = NbEditorUtilities.getFileObject(doc);
-                WebModule wm = WebModule.getWebModule(fObject);
-                if (wm != null){
-                    JSFELExpression exp = new JSFELExpression(wm, (JspSyntaxSupport)bdoc.getSyntaxSupport());
-                    int res = exp.parse(token.getOffset() + token.getImage().length());
-                    if (res == JSFELExpression.EL_START)
-                        res = exp.parse(token.getOffset() + token.getImage().length() + 1);
-                    return res == JSFELExpression.EL_JSF_BEAN;
-                }
-            }
-            
-        } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+        BaseDocument bdoc = (BaseDocument) doc;
+        JTextComponent target = Utilities.getFocusedComponent();
+        
+        if (target == null || target.getDocument() != bdoc)
+            return false;
+        SyntaxSupport sup = bdoc.getSyntaxSupport();
+        JspSyntaxSupport jspSup = (JspSyntaxSupport)sup.get(JspSyntaxSupport.class);
+        
+        TokenHierarchy tokenHierarchy = TokenHierarchy.get(bdoc);
+        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+        if(tokenSequence.move(offset) == Integer.MAX_VALUE) {
+            return false; //no token found
         }
+        
+        Token token = tokenSequence.token();
+        TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
+        
+        if (elTokenSequence != null){
+            FileObject fObject = NbEditorUtilities.getFileObject(doc);
+            WebModule wm = WebModule.getWebModule(fObject);
+            
+            if (wm != null){
+                JSFELExpression exp = new JSFELExpression(wm, (JspSyntaxSupport)bdoc.getSyntaxSupport());
+                elTokenSequence.moveLast();
+                int endOfEL = elTokenSequence.offset() + elTokenSequence.token().length();
+                int res = exp.parse(endOfEL);
+                
+                if (res == JSFELExpression.EL_START){
+                    res = exp.parse(endOfEL + 1);
+                }
+                
+                return res == JSFELExpression.EL_JSF_BEAN;
+            }
+        }
+        
         return false;
     }
     
@@ -124,31 +132,39 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
         if (!(doc instanceof BaseDocument))
             return null;
         
-        try {
-            BaseDocument bdoc = (BaseDocument) doc;
-            JTextComponent target = Utilities.getFocusedComponent();
-            
-            if (target == null || target.getDocument() != bdoc)
-                return null;
-            
-            SyntaxSupport sup = bdoc.getSyntaxSupport();
-            JspSyntaxSupport jspSup = (JspSyntaxSupport)sup.get(JspSyntaxSupport.class);
-            
-            TokenItem token = jspSup.getTokenChain(offset, offset+1);
-            if (token == null) return null;
-            
-            if (token.getTokenContextPath().contains(ELTokenContext.contextPath)){
-                FileObject fObject = NbEditorUtilities.getFileObject(doc);
-                WebModule wm = WebModule.getWebModule(fObject);
-                if (wm != null){
-                    JSFELExpression exp = new JSFELExpression(wm, (JspSyntaxSupport)bdoc.getSyntaxSupport());
-                    int res = exp.parse(token.getOffset() + token.getImage().length());
-                    if (res == JSFELExpression.EL_JSF_BEAN || res == JSFELExpression.EL_START )
-                        return new int[] {token.getOffset(), token.getOffset() + token.getImage().length()};
-                }
+        BaseDocument bdoc = (BaseDocument) doc;
+        JTextComponent target = Utilities.getFocusedComponent();
+        
+        if (target == null || target.getDocument() != bdoc)
+            return null;
+        
+        SyntaxSupport sup = bdoc.getSyntaxSupport();
+        JspSyntaxSupport jspSup = (JspSyntaxSupport)sup.get(JspSyntaxSupport.class);
+        
+        TokenHierarchy tokenHierarchy = TokenHierarchy.get(bdoc);
+        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+        if(tokenSequence.move(offset) == Integer.MAX_VALUE) {
+            return null; //no token found
+        }
+        Token token = tokenSequence.token();
+        
+        // is it a bean in EL ?
+        TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
+        
+        if (elTokenSequence != null){
+            FileObject fObject = NbEditorUtilities.getFileObject(doc);
+            WebModule wm = WebModule.getWebModule(fObject);
+            if (wm != null){
+                JSFELExpression exp = new JSFELExpression(wm, (JspSyntaxSupport)bdoc.getSyntaxSupport());
+                elTokenSequence.moveFirst();
+                int elStart = elTokenSequence.offset();
+                elTokenSequence.moveLast();
+                int elEnd = elTokenSequence.offset() + elTokenSequence.token().length();
+                
+                int res = exp.parse(elEnd);
+                if (res == JSFELExpression.EL_JSF_BEAN || res == JSFELExpression.EL_START )
+                    return new int[] {elStart, elEnd};
             }
-        } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
         }
         return null;
     }
@@ -165,48 +181,44 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
      *               the implementations should not depend on it)
      */
     public void performClickAction(Document doc, int offset) {
-        TokenItem token = null;
-        try {
-            BaseDocument bdoc = (BaseDocument) doc;
-            JTextComponent target = Utilities.getFocusedComponent();
-            
-            if (target == null || target.getDocument() != bdoc)
-                return;
-            
-            SyntaxSupport sup = bdoc.getSyntaxSupport();
-            JspSyntaxSupport jspSup = (JspSyntaxSupport)sup.get(JspSyntaxSupport.class);
-            
-            token = jspSup.getTokenChain(offset, offset+1);
-            
-            if (token == null) return;
-            
-            // is it a bean in EL
-            if (token.getTokenContextPath().contains(ELTokenContext.contextPath)){
-                FileObject fObject = NbEditorUtilities.getFileObject(doc);
-                WebModule wm = WebModule.getWebModule(fObject);
-                if (wm != null){
-                    JSFELExpression exp = new JSFELExpression(wm, (JspSyntaxSupport)bdoc.getSyntaxSupport());
-                    int res = exp.parse(token.getOffset() + token.getImage().length());
-                    if (res == JSFELExpression.EL_START ){
-                        (new OpenConfigFile(wm, token.getImage())).run();
-                        return;
-                    }
-                    if (res == JSFELExpression.EL_JSF_BEAN){
-                        //TODO: RETOUCHE
-                        /*JavaClass bean = exp.getBean(exp.getExpression());
-                        Object item = exp.getPropertyDeclaration(exp.getExpression(), bean);
-                        if (item == null)
-                            item = exp.getMethodDeclaration(exp.getExpression(), bean);
-                        if (item != null){
-                            Runnable run = new OpenJavaItem(item, sup);
-                            JavaMetamodel.getManager().invokeAfterScanFinished(run, NbBundle.getMessage(JSPHyperlinkProvider.class, "MSG_goto-source"));
-                        }
-                         **/
+        
+        BaseDocument bdoc = (BaseDocument) doc;
+        JTextComponent target = Utilities.getFocusedComponent();
+        
+        if (target == null || target.getDocument() != bdoc)
+            return;
+        
+        SyntaxSupport sup = bdoc.getSyntaxSupport();
+        JspSyntaxSupport jspSup = (JspSyntaxSupport)sup.get(JspSyntaxSupport.class);
+        
+        TokenHierarchy tokenHierarchy = TokenHierarchy.get(bdoc);
+        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+        if(tokenSequence.move(offset) == Integer.MAX_VALUE) {
+            return; //no token found
+        }
+        Token token = tokenSequence.token();
+        
+        // is it a bean in EL
+        TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
+        if (elTokenSequence != null){
+            FileObject fObject = NbEditorUtilities.getFileObject(doc);
+            WebModule wm = WebModule.getWebModule(fObject);
+            if (wm != null){
+                JSFELExpression exp = new JSFELExpression(wm, (JspSyntaxSupport)bdoc.getSyntaxSupport());
+                elTokenSequence.moveLast();
+                int res = exp.parse(elTokenSequence.offset() + elTokenSequence.token().length());
+                if (res == JSFELExpression.EL_START ){
+                    (new OpenConfigFile(wm, token.text().toString())).run();
+                    return;
+                }
+                if (res == JSFELExpression.EL_JSF_BEAN){
+                    if (!exp.gotoPropertyDeclaration(exp.getObjectClass())){
+                        String msg = NbBundle.getBundle(JSFJSPHyperlinkProvider.class).getString("MSG_source_not_found");
+                        StatusDisplayer.getDefault().setStatusText(msg);
+                        Toolkit.getDefaultToolkit().beep();
                     }
                 }
             }
-        } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
         }
     }
     
@@ -247,13 +259,13 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
                                         public void propertyChange(PropertyChangeEvent evt) {
                                             if (EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())) {
                                                 final JEditorPane[] panes = ec.getOpenedPanes();
-                                                if (panes != null && panes.length > 0) 
+                                                if (panes != null && panes.length > 0)
                                                     openPane(panes[0], beanName);
                                                 ec.removePropertyChangeListener(this);
                                             }
                                         }
                                     });
-                                   // ec.open();
+                                    // ec.open();
                                 }
                             }
                         });
@@ -271,32 +283,6 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
                 pane.setCaretPosition(definition[0]);
             pane.setCursor(editCursor);
             StatusDisplayer.getDefault().setStatusText(""); //NOI18N
-        }
-    }
-    
-    
-    /* This thread open a java element in the editor
-     */
-    public static class OpenJavaItem implements Runnable{
-        private Object item;
-        private SyntaxSupport sup;
-        
-        OpenJavaItem(Object item, SyntaxSupport sup){
-            super();
-            this.item = item;
-            this.sup = sup;
-        }
-        
-        public void run() {
-            //TODO: RETOUCHE
-            /*JspJavaSyntaxSupport javaSup = (JspJavaSyntaxSupport)sup.get(JspJavaSyntaxSupport.class);
-            if (item != null && javaSup != null) {
-                String itemDesc = null;
-                if ((itemDesc = javaSup.openSource(item, true)) != null){
-                    String msg = NbBundle.getBundle(JSPHyperlinkProvider.class).getString("MSG_source_not_found");                            
-                    org.openide.awt.StatusDisplayer.getDefault().setStatusText(msg);
-                }
-            }*/
         }
     }
 }
