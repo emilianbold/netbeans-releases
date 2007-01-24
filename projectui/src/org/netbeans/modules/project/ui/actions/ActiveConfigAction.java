@@ -32,15 +32,17 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
+import javax.swing.plaf.UIResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ui.OpenProjectList;
@@ -121,8 +123,8 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
         if (configs == null) {
             configListCombo.setModel(EMPTY_MODEL);
             configListCombo.setEnabled(false);
-            if( null != toolbarPanel )
-                toolbarPanel.setVisible( false );
+            /*if( null != toolbarPanel )
+                toolbarPanel.setVisible( false );*/
         } else {
             DefaultComboBoxModel model = new DefaultComboBoxModel(configs.toArray());
             if (pcp.hasCustomizer()) {
@@ -195,7 +197,8 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
         toolbarPanel.setPreferredSize(new Dimension(150, 23));
         // XXX top inset of 2 looks better w/ small toolbar, but 1 seems to look better for large toolbar (the default):
         toolbarPanel.add(configListCombo, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(1, 6, 1, 5), 0, 0));
-        toolbarPanel.setVisible( configListCombo.getItemCount() > 0 );
+        //toolbarPanel.setVisible( configListCombo.getItemCount() > 0 );
+        toolbarPanel.setEnabled( configListCombo.getItemCount() > 0 );
         return toolbarPanel;
     }
 
@@ -274,24 +277,45 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
         return new ConfigMenu(null);
     }
 
-    private static class ConfigCellRenderer extends DefaultListCellRenderer {
+    private static class ConfigCellRenderer extends JLabel implements ListCellRenderer, UIResource {
 
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            JComponent result;
+            // #89393: GTK needs name to render cell renderer "natively"
+            setName("ComboBox.listRenderer"); // NOI18N
+            String label = null;
             if (value instanceof ProjectConfiguration) {
-                result = (JComponent) super.getListCellRendererComponent(list, ((ProjectConfiguration) value).getDisplayName(), index, isSelected, cellHasFocus);
-                result.setBorder (null);
+                label = ((ProjectConfiguration) value).getDisplayName();
+                //setBorder (null);
             } else if (value == CUSTOMIZE_ENTRY) {
-                String label = org.openide.awt.Actions.cutAmpersand(NbBundle.getMessage(ActiveConfigAction.class, "ActiveConfigAction.customize"));
-                result = (JComponent) super.getListCellRendererComponent(list, label, index, isSelected, cellHasFocus);
-                result.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("controlDkShadow")));
+                label = org.openide.awt.Actions.cutAmpersand(NbBundle.getMessage(ActiveConfigAction.class, "ActiveConfigAction.customize"));
+                setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("controlDkShadow")));
             } else {
                 assert value == null;
-                result = (JComponent) super.getListCellRendererComponent(list, null, index, isSelected, cellHasFocus);
-                result.setBorder (null);
+                label = null;
+                //setBorder (null);
             }
-            return result;
+            
+            setText(label);
+            setIcon(null);
+            
+            if ( isSelected ) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());             
+            }
+            else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            
+            return this;
         }
+        
+        // #89393: GTK needs name to render cell renderer "natively"
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name;  // NOI18N
+        }
+        
     }
 
     private synchronized void activeProjectChanged(Project p) {
