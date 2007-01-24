@@ -20,22 +20,33 @@
 
 package org.netbeans.modules.vmd.inspector;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataEditorViewLookupFactory;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import org.netbeans.spi.navigator.NavigatorLookupHint;
 
 /**
  * @author Karol Harezlak
  */
 public class InspectorLookupFactory implements DataEditorViewLookupFactory {
-
+    
     public Collection<?> getLookupObjects(DataObjectContext context, String viewID, DataEditorView.Kind viewKind) {
-        if (viewKind.equals(DataEditorView.Kind.MODEL))
-            return Collections.singleton(InspectorManagerRegistry.getInstance(context));
-        
-        return null;
+        if (viewKind == DataEditorView.Kind.CODE) {
+            return null;
+        } else if (viewKind == DataEditorView.Kind.MODEL) {
+            return Arrays.asList(
+                new NavigatorLookupHint() {
+                    public String getContentType() {
+                        return "vmd"; // NOI18N
+                    }
+                }
+            );
+            
+           
+        }
+         return null;
     }
 }

@@ -243,6 +243,9 @@ public final class InspectorWrapperTree implements FolderRegistry.Listener, Acti
     private List<InspectorFolderWrapper> registryDescriptorsDive(InspectorFolderPath path, InspectorFolderWrapper parentWrapper) {
         List<InspectorFolderWrapper> wrapperChildren = null;
         
+        if (globalFolders == null)
+            return null;
+        
         for (InspectorFolder folder : globalFolders ){
             if (folder.isInside(path, folder, null)){
                 if (parentWrapper.getChildrenFolders() != null && parentWrapper.getChildrenFolders().contains(folder))

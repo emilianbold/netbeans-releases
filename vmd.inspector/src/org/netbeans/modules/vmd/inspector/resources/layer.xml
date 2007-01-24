@@ -20,28 +20,12 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
 
-    <folder name="Actions">
-        <folder name="Window">
-            <file name="org-netbeans-modules-vmd-inspector-InspectorWindowAction.instance"/>
-        </folder>
-    </folder>
-    <folder name="Menu">
-        <folder name="Window">
-            <file name="InspectorWindowAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-vmd-inspector-InspectorWindowAction.instance"/>
-            </file>
-        </folder>
-    </folder>
-   
-    
-    <folder name="Windows2">
-        <folder name="Components">
-            <file name="InspectorWindowTopComponent.settings" url="InspectorWindowTopComponentSettings.xml"/>
-        </folder>
-        <folder name="Modes">
-            <folder name="navigator">
-                <file name="InspectorWindowTopComponent.wstcref" url="InspectorWindowTopComponentWstcref.xml"/>
+     <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="vmd">
+                <file name="org-netbeans-modules-vmd-inspector-InspectorPanel.instance"/>
             </folder>
         </folder>
     </folder>
+    
 </filesystem>
