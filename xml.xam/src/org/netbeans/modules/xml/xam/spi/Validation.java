@@ -76,12 +76,13 @@ public class Validation {
         // Call each provider and accumulate results.
         for(Validator provider: validators) {
             ValidationResult result = provider.validate(model, this, validationType);
-            
-            // Gather validation results.
-            validationResult.addAll(result.getValidationResult());
-            
-            // Updated validated models list.
-            validatedModels.addAll(result.getValidatedModels());
+            if (result != null) {
+                // Gather validation results.
+                validationResult.addAll(result.getValidationResult());
+
+                // Updated validated models list.
+                validatedModels.addAll(result.getValidatedModels());
+            }
         }
     }
     
