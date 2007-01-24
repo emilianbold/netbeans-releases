@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,6 +28,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
+import org.openide.filesystems.FileStateInvalidException;
 
 /**
  *
@@ -123,4 +124,13 @@ public class ClashingImportsTest extends GeneratorTest {
         return "org/netbeans/jmi/javamodel/codegen/ClashingImportsTest/";
     }
 
+    void assertFiles(final String aGoldenFile) throws IOException, FileStateInvalidException {
+        assertFile("File is not correctly generated.",
+                getTestFile(),
+                getFile(getGoldenDir(), getGoldenPckg() + aGoldenFile),
+                getWorkDir(),
+                new WhitespaceIgnoringDiff()
+                );
+    }
+    
 }
