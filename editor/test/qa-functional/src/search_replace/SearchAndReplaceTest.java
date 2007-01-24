@@ -156,7 +156,7 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
         }
         find.cbBackwardSearch().setSelected(false);
         find.cbIncrementalSearch().setSelected(false);
-        find.cboFindWhat().typeText("");
+        find.cboFindWhat().clearText();
     }
     
     protected Find openFindDialog(String text, int modifiers){
@@ -189,6 +189,7 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
         if ((modifiers & INCREMENTAL_SEARCH) != 0){
             find.cbIncrementalSearch().setSelected(true);
         }
+        find.cboFindWhat().clearText();
         if (text != null){
             find.cboFindWhat().typeText(text);
         }
@@ -288,6 +289,10 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
     }
 
     private void checkIncrementalSearch(Find find, String s, int startEtalon, int endEtalon){
+        // Checking Disabled - the new highlighting SPI will be used so the draw layer's data should not be checked directly.
+        if (true)
+            return;
+
         find.cboFindWhat().typeText(s);
         
         waitMaxMilisForValue(WAIT_MAX_MILIS_FOR_FIND_OPERATION, getIncFindResolver(txtOper, startEtalon, endEtalon), Boolean.TRUE);
@@ -398,8 +403,12 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             }
             
             blockFind.close();
-            //check if the selection persists
-            checkSelection(txtOper, 1, 100, "Issue #53536 testing failed!");
+            // Selection made before Find dialog invocation gets lost.
+            // Either a searched text was found and the found text gets selected
+            // or the searched text is not found and then no selection is done.
+            // The selection is only retained in case there was nothing typed into the "find what" field
+            
+            //checkSelection(txtOper, 1, 100, "Issue #53536 testing failed!");
             
             //test find in selection
             find = openFindDialog(null, ALL_UNCHECKED); // reset find dialog checkboxes
@@ -492,18 +501,18 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             // firstly try CTRL+V
             editor.setCaretPosition(16, 9);  //word "search"
             txtOper.pushKey(KeyEvent.VK_J, KeyEvent.ALT_DOWN_MASK);
-            cutCopyViaStrokes(txtOper, KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK);
+            cutCopyViaStrokes(txtOper, KeyEvent.VK_C, KeyEvent.CTRL_MASK);
             editor.setCaretPosition(1, 1);
             find = openFindDialog(null, ALL_UNCHECKED); // reset find dialog checkboxes
             find.cboFindWhat().requestFocus(); // [temp] failing tests on SunOS & Linux
-            pasteViaStrokes(find, KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK, null);
+            pasteViaStrokes(find, KeyEvent.VK_V, KeyEvent.CTRL_MASK, null);
             find.find();
             find.close();
             checkSelection(txtOper, 8, 14, "Issue #52115 testing failed on CTRL+V!");
             // then Shift+Insert
             editor.setCaretPosition(327);  //word "text"
             txtOper.pushKey(KeyEvent.VK_J, KeyEvent.ALT_DOWN_MASK);
-            cutCopyViaStrokes(txtOper, KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK);
+            cutCopyViaStrokes(txtOper, KeyEvent.VK_C, KeyEvent.CTRL_MASK);
             editor.setCaretPosition(1, 1);
             find = openFindDialog(null, ALL_UNCHECKED); // reset find dialog checkboxes
             find.cboFindWhat().requestFocus(); // [temp] failing tests on SunOS & Linux
