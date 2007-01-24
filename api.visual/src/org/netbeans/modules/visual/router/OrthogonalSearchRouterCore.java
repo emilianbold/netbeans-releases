@@ -19,6 +19,7 @@
 package org.netbeans.modules.visual.router;
 
 import org.netbeans.api.visual.anchor.Anchor;
+import org.netbeans.api.visual.widget.Scene;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -37,6 +38,7 @@ final class OrthogonalSearchRouterCore {
     static final boolean IGNORE_LINKS_WITH_ACTUAL_PORTS = false; // cause links to try to merge as a bus, multilinks are merged too
     private static final boolean OPTIMALIZE_REGIONS = false;
 
+    private Scene scene;
     private ArrayList<Rectangle> verticalCollisions;
     private ArrayList<Rectangle> horizontalCollisions;
     private Point sourcePoint;
@@ -51,7 +53,8 @@ final class OrthogonalSearchRouterCore {
     private Point[] bestControlPoints;
     private int bestControlPointsPrice;
 
-    public OrthogonalSearchRouterCore (ArrayList<Rectangle> verticalCollisions, ArrayList<Rectangle> horizontalCollisions, Point sourcePoint, Anchor.Direction sourceDirection, Point targetPoint, Anchor.Direction targetDirection) {
+    public OrthogonalSearchRouterCore (Scene scene, ArrayList<Rectangle> verticalCollisions, ArrayList<Rectangle> horizontalCollisions, Point sourcePoint, Anchor.Direction sourceDirection, Point targetPoint, Anchor.Direction targetDirection) {
+        this.scene = scene;
         this.verticalCollisions = verticalCollisions;
         this.horizontalCollisions = horizontalCollisions;
         this.sourcePoint = sourcePoint;
@@ -128,6 +131,9 @@ final class OrthogonalSearchRouterCore {
     }
 
     private void search (OrthogonalSearchRouterRegion region) {
+        Rectangle inter = region.intersection (scene.getMaximumBounds ());
+        region = new OrthogonalSearchRouterRegion (inter.x, inter.y, inter.width, inter.height, region.getDirection (), region.getDepth ());
+
         if (region.width < 0 || region.height < 0)
             return;
         assert region.x >= OrthogonalSearchRouterRegion.MIN_INT_REGION;

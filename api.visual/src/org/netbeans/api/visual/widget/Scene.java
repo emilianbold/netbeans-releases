@@ -24,7 +24,6 @@ import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.animator.SceneAnimator;
 import org.netbeans.api.visual.laf.LookFeel;
 import org.netbeans.modules.visual.util.GeomUtil;
-import org.netbeans.modules.visual.laf.DefaultLookFeel;
 import org.netbeans.modules.visual.widget.SatelliteComponent;
 
 import javax.swing.*;
@@ -63,11 +62,14 @@ public class Scene extends Widget {
     private Graphics2D graphics = null;
     private boolean paintEverything = true;
 
-    private Font defaultFont;
     private Rectangle repaintRegion = null;
     private HashSet<Widget> repaintWidgets = new HashSet<Widget> ();
-    private LookFeel lookFeel = new DefaultLookFeel ();
+
+    private Font defaultFont;
+    private LookFeel lookFeel = LookFeel.createDefaultLookFeel ();
     private String activeTool = null;
+    private Rectangle maximumBounds = new Rectangle (Integer.MIN_VALUE / 2, Integer.MIN_VALUE / 2, Integer.MAX_VALUE, Integer.MAX_VALUE);
+
 
     private final ArrayList<SceneListener> sceneListeners = new ArrayList<SceneListener> ();
 
@@ -154,6 +156,24 @@ public class Scene extends Widget {
     }
 
     /**
+     * Returns maximum bounds of the scene.
+     * @return the maximum bounds
+     */
+    public final Rectangle getMaximumBounds () {
+        return new Rectangle (maximumBounds);
+    }
+
+    /**
+     * Sets maximum bounds of the scene.
+     * @param maximumBounds the non-null maximum bounds
+     */
+    public final void setMaximumBounds (Rectangle maximumBounds) {
+        assert maximumBounds != null;
+        this.maximumBounds = new Rectangle (maximumBounds);
+        revalidate ();
+    }
+
+    /**
      * Returns a default font of the scene.
      * @return the default font
      */
@@ -212,6 +232,7 @@ public class Scene extends Widget {
             rect.y -= insets.top;
             rect.width += insets.left + insets.right;
             rect.height += insets.top + insets.bottom;
+            rect = rect.intersection (maximumBounds);
         }
 
         Point preLocation = getLocation ();

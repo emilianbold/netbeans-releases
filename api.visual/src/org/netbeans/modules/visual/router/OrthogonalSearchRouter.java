@@ -62,7 +62,7 @@ public final class OrthogonalSearchRouter implements Router {
 
         for (Anchor.Direction sourceDirection : sourceResult.getDirections ()) {
             for (Anchor.Direction targetDirection : targetResult.getDirections ()) {
-                Solution solution = new OrthogonalSearchRouterCore (verticalCollisions, horizontalCollisions, sourcePoint, sourceDirection, targetPoint, targetDirection).route ();
+                Solution solution = new OrthogonalSearchRouterCore (widget.getScene (), verticalCollisions, horizontalCollisions, sourcePoint, sourceDirection, targetPoint, targetDirection).route ();
                 if (solution != null  &&  solution.compareTo (bestSolution) > 0)
                     bestSolution = solution;
             }
