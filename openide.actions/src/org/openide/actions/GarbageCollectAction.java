@@ -105,11 +105,15 @@ public class GarbageCollectAction extends CallableSystemAction {
         public Dimension calcPreferredSize() {
             Dimension pref = getHeapView().heapViewPreferredSize();
             pref.width += 6;
-            // update height according to parent if possible
-            Component parent = getParent();
-            if (parent != null) {
-                Insets insets = getInsets();
-                pref.height = parent.getHeight() - (insets.top + insets.bottom) - 3;
+            pref.height += 1;
+            // #93085: special sizing for GTK LF to behave similarly like on other LFs 
+            String lfID = UIManager.getLookAndFeel().getID();
+            if (lfID != null && lfID.indexOf("GTK") != -1) {
+                Component parent = getParent();
+                if (parent != null) {
+                    Insets insets = getInsets();
+                    pref.height = parent.getHeight() - (insets.top + insets.bottom) - 3;
+                }
             }
             return pref;
         }
