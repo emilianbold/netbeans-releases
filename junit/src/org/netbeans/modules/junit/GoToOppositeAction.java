@@ -36,7 +36,6 @@ import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
-//import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -49,6 +48,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -96,11 +96,32 @@ public final class GoToOppositeAction extends CallableSystemAction {
         Project project;
         
         boolean sourceToTest = true;
-        if (!((comp = TopComponent.getRegistry().getActivated())
-                                        instanceof CloneableEditorSupport.Pane)
-          || ((editorPane = ((CloneableEditorSupport.Pane)comp).getEditorPane())
-                                        == null)      //side effect - assignment
-          || ((fileObj = getFileObject(editorPane.getDocument())) == null)
+        comp = TopComponent.getRegistry().getActivated();
+        if (comp instanceof CloneableEditorSupport.Pane) {
+            editorPane = ((CloneableEditorSupport.Pane) comp).getEditorPane();
+            if (editorPane == null) {
+                return;
+            }
+            
+            fileObj = getFileObject(editorPane.getDocument());
+        } else {
+            editorPane = null;
+            
+            Node[] selectedNodes = comp.getActivatedNodes();
+            if ((selectedNodes == null) || (selectedNodes.length != 1)) {
+                return;
+            }
+            
+            DataObject dataObj = selectedNodes[0].getLookup().lookup(DataObject.class);
+            if (dataObj == null) {
+                return;
+            }
+            
+            fileObj = dataObj.getPrimaryFile();
+        }
+        
+        if ((fileObj == null)
+          || !TestUtil.isJavaFile(fileObj)
           || ((srcCP = ClassPath.getClassPath(fileObj, ClassPath.SOURCE)) == null)
           || ((fileObjRoot = srcCP.findOwnerRoot(fileObj)) == null)
           || ((project = FileOwnerQuery.getOwner(fileObjRoot)) == null)
@@ -123,6 +144,7 @@ public final class GoToOppositeAction extends CallableSystemAction {
         }
         ClassPath srcClassPath = ClassPathSupport.createClassPath(srcRoots);
 
+        /*
         ClasspathInfo cpInfo = ClasspathInfo.create(
                         ClassPath.getClassPath(fileObj, ClassPath.BOOT),
                         ClassPath.getClassPath(fileObj, ClassPath.COMPILE),
@@ -141,10 +163,11 @@ public final class GoToOppositeAction extends CallableSystemAction {
             Logger.getLogger("global").log(Level.SEVERE, null, ex);     //NOI18N
         }
         Element element = elementFinder.getElement();
+        */
         RequestProcessor.getDefault().post(
                 new ActionImpl(plugin,
                                new Location(fileObj/*, element*/),
-                               fromSourceToTest,
+                               sourceToTest,
                                srcClassPath));
     }
     
@@ -331,19 +354,29 @@ public final class GoToOppositeAction extends CallableSystemAction {
      *          {@code null} if this action should be disabled
      */
     private Boolean checkDirection() {
-        TopComponent comp;
-        JEditorPane editorPane;
-        FileObject fileObj;
+        TopComponent comp = TopComponent.getRegistry().getActivated();
+        FileObject fileObj = null;
+        
+        if (comp instanceof CloneableEditorSupport.Pane) {
+            JEditorPane editorPane = ((CloneableEditorSupport.Pane) comp).getEditorPane();
+            if (editorPane != null) {
+                fileObj = getFileObject(editorPane.getDocument());
+            }
+        } else {
+            Node[] selectedNodes = comp.getActivatedNodes();
+            if ((selectedNodes != null) && (selectedNodes.length == 1)) {
+                DataObject dataObj = selectedNodes[0].getLookup().lookup(DataObject.class);
+                if (dataObj != null) {
+                    fileObj = dataObj.getPrimaryFile();
+                }
+            }
+        }
+        
         ClassPath srcCP;
         FileObject fileObjRoot;
         
         boolean sourceToTest = true;
-        boolean enabled = 
-          ((comp = TopComponent.getRegistry().getActivated())
-                                        instanceof CloneableEditorSupport.Pane)
-          && ((editorPane = ((CloneableEditorSupport.Pane)comp).getEditorPane())
-                                        != null)      //side effect - assignment
-          && ((fileObj = getFileObject(editorPane.getDocument())) != null)
+        boolean enabled = (fileObj != null)
           && TestUtil.isJavaFile(fileObj)
           && ((srcCP = ClassPath.getClassPath(fileObj, ClassPath.SOURCE)) != null)
           && ((fileObjRoot = srcCP.findOwnerRoot(fileObj)) != null)
