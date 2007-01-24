@@ -46,18 +46,19 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(MethodThrowsTest.class);
-//        suite.addTest(new MethodThrowsTest("testAddFirst"));
-//        suite.addTest(new MethodThrowsTest("testAddFirstToExisting"));
-//        suite.addTest(new MethodThrowsTest("testAddFirstTwo"));
-//        suite.addTest(new MethodThrowsTest("testAddThirdToExisting"));
+//        suite.addTestSuite(MethodThrowsTest.class);
+        suite.addTest(new MethodThrowsTest("testAddFirst"));
+        suite.addTest(new MethodThrowsTest("testAddFirstToExisting"));
+        suite.addTest(new MethodThrowsTest("testAddFirstTwo"));
+        suite.addTest(new MethodThrowsTest("testAddThirdToExisting"));
 //        suite.addTest(new MethodThrowsTest("testRemoveAll"));
-//        suite.addTest(new MethodThrowsTest("testRemoveMid"));
+        suite.addTest(new MethodThrowsTest("testRemoveMid"));
 //        suite.addTest(new MethodThrowsTest("testRemoveFirst"));
-//        suite.addTest(new MethodThrowsTest("testRemoveLast"));
-//        suite.addTest(new MethodThrowsTest("testRemoveJust"));
-//        suite.addTest(new MethodThrowsTest("testStupid"));
-//        suite.addTest(new MethodThrowsTest("testTuner"));
+        suite.addTest(new MethodThrowsTest("testRemoveLast"));
+        suite.addTest(new MethodThrowsTest("testRemoveJust"));
+        suite.addTest(new MethodThrowsTest("testStupid"));
+        suite.addTest(new MethodThrowsTest("testTuner"));
+        suite.addTest(new MethodThrowsTest("testAddFirstToBadFormatted"));
         return suite;
     }
     

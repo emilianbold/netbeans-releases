@@ -49,14 +49,15 @@ public class ClassMemberTest extends GeneratorTest {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(ClassMemberTest.class);
+//        suite.addTestSuite(ClassMemberTest.class);
 //        suite.addTest(new ClassMemberTest("testAddAtIndex0"));
-//        suite.addTest(new ClassMemberTest("testAddAtIndex2"));
-//        suite.addTest(new ClassMemberTest("testAddToEmpty"));
+        suite.addTest(new ClassMemberTest("testAddAtIndex2"));
+        suite.addTest(new ClassMemberTest("testAddToEmpty"));
 //        suite.addTest(new ClassMemberTest("testAddConstructor"));
-//        suite.addTest(new ClassMemberTest("testModifyFieldName"));
-//        suite.addTest(new ClassMemberTest("testModifyModifiers"));
-//        suite.addTest(new ClassMemberTest("testAddToEmptyInterface"));
+//        suite.addTest(new ClassMemberTest("testInsertFieldToIndex0"));
+        suite.addTest(new ClassMemberTest("testModifyFieldName"));
+        suite.addTest(new ClassMemberTest("testModifyModifiers"));
+        suite.addTest(new ClassMemberTest("testAddToEmptyInterface"));
           return suite;
     }
     

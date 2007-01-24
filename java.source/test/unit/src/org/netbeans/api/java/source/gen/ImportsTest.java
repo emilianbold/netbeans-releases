@@ -46,7 +46,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         NbTestSuite suite = new NbTestSuite();
 //        suite.addTestSuite(ImportsTest.class);
         suite.addTest(new ImportsTest("testAddFirst"));
-        suite.addTest(new ImportsTest("testAddFirstAgain"));
+//        suite.addTest(new ImportsTest("testAddFirstAgain"));
         suite.addTest(new ImportsTest("testAddSecondImport"));
         suite.addTest(new ImportsTest("testAddSecondImportWithEndLineCmt"));
         suite.addTest(new ImportsTest("testAddTwoImportsOrigWithComment"));

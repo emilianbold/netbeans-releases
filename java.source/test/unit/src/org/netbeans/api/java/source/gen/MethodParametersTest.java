@@ -41,17 +41,17 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(MethodParametersTest.class);
+//        suite.addTestSuite(MethodParametersTest.class);
 //        suite.addTest(new MethodParametersTest("testAddInsertReplaceParameters"));
-//        suite.addTest(new MethodParametersTest("testAddFirst"));
-//        suite.addTest(new MethodParametersTest("testAddToIndex0"));
-//        suite.addTest(new MethodParametersTest("testRemoveFirstTwo"));
-//        suite.addTest(new MethodParametersTest("testRemoveLast"));
-//        suite.addTest(new MethodParametersTest("testRemoveLastTwo"));
-//        suite.addTest(new MethodParametersTest("testRemoveMid"));
-//        suite.addTest(new MethodParametersTest("testSwap"));
-//        suite.addTest(new MethodParametersTest("testRenameInTypePar"));
-//        suite.addTest(new MethodParametersTest("testRenameInParameterizedType"));
+        suite.addTest(new MethodParametersTest("testAddFirst"));
+        suite.addTest(new MethodParametersTest("testAddToIndex0"));
+        suite.addTest(new MethodParametersTest("testRemoveFirstTwo"));
+        suite.addTest(new MethodParametersTest("testRemoveLast"));
+        suite.addTest(new MethodParametersTest("testRemoveLastTwo"));
+        suite.addTest(new MethodParametersTest("testRemoveMid"));
+        suite.addTest(new MethodParametersTest("testSwap"));
+        suite.addTest(new MethodParametersTest("testRenameInTypePar"));
+        suite.addTest(new MethodParametersTest("testRenameInParameterizedType"));
         return suite;
     }
     
