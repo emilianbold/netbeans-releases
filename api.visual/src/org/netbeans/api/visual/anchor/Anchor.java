@@ -179,7 +179,7 @@ public abstract class Anchor implements Widget.Dependency {
     public Point getRelatedSceneLocation () {
         if (relatedWidget != null) {
             Rectangle bounds = relatedWidget.getBounds ();
-            if (bounds != null)
+            if (bounds == null)
                 throw new IllegalStateException ("Widget (" + relatedWidget + ") was not added into the scene");
             return GeomUtil.center (relatedWidget.convertLocalToScene (bounds));
         }
