@@ -23,7 +23,7 @@ package org.netbeans.installer.wizard.components.actions;
 import java.util.List;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
-import org.netbeans.installer.product.utils.Status;
+import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
@@ -39,11 +39,11 @@ import org.netbeans.installer.wizard.components.WizardAction.WizardActionUi;
 public class DownloadInstallationDataAction extends WizardAction {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String DEFAULT_TITLE = 
-            ResourceUtils.getString(DownloadInstallationDataAction.class, 
+    public static final String DEFAULT_TITLE =
+            ResourceUtils.getString(DownloadInstallationDataAction.class,
             "DIDA.title"); // NOI18N
-    public static final String DEFAULT_DESCRIPTION = 
-            ResourceUtils.getString(DownloadInstallationDataAction.class, 
+    public static final String DEFAULT_DESCRIPTION =
+            ResourceUtils.getString(DownloadInstallationDataAction.class,
             "DIDA.description"); // NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -58,22 +58,22 @@ public class DownloadInstallationDataAction extends WizardAction {
     
     public void execute() {
         final Registry registry = Registry.getInstance();
-        final List<Product> components = registry.getComponentsToInstall();
-        final int percentageChunk = Progress.COMPLETE / components.size();
-        final int percentageLeak = Progress.COMPLETE % components.size();
+        final List<Product> products = registry.getProductsToInstall();
+        final int percentageChunk = Progress.COMPLETE / products.size();
+        final int percentageLeak = Progress.COMPLETE % products.size();
         
         overallProgress = new CompositeProgress();
-        overallProgress.setTitle("Downloading installation data for selected components");
+        overallProgress.setTitle("Downloading installation data for selected products");
         overallProgress.setPercentage(percentageLeak);
         
         getWizardUi().setProgress(overallProgress);
-        for (Product component: components) {
+        for (Product product: products) {
             // initiate the progress for the current element
             currentProgress = new Progress();
             
             overallProgress.addChild(currentProgress, percentageChunk);
             try {
-                component.downloadInstallationData(currentProgress);
+                product.downloadData(currentProgress);
                 
                 // check for cancel status
                 if (canceled) return;
@@ -83,24 +83,25 @@ public class DownloadInstallationDataAction extends WizardAction {
                 SystemUtils.sleep(200);
             }  catch (DownloadException e) {
                 // wrap the download exception with a more user-friendly one
-                InstallationException error = new InstallationException("Failed to download installation data for " + component.getDisplayName(), e);
+                InstallationException error = new InstallationException("Failed to download installation data for " + product.getDisplayName(), e);
                 
-                // adjust the component's status and save this error - it will
+                // adjust the product's status and save this error - it will
                 // be reused later at the PostInstallSummary
-                component.setStatus(Status.NOT_INSTALLED);
-                component.setInstallationError(error);
+                product.setStatus(Status.NOT_INSTALLED);
+                product.setInstallationError(error);
                 
-                // since the component failed to download and hence failed to
-                // install - we should remove the depending components from
-                // our plans to install
-                for(Product dependent: registry.getDependingComponents(component)) {
-                    if (dependent.getStatus()  == Status.TO_BE_INSTALLED) {
-                        InstallationException dependentError = new InstallationException("Could not install " + dependent.getDisplayName() + ", since the installation of " + component.getDisplayName() + "failed", error);
+                // since the installation data for the current product failed to
+                // be downloaded, we should cancel the installation of the products
+                // that may require this one
+                for(Product dependent: registry.getProducts()) {
+                    if ((dependent.getStatus()  == Status.TO_BE_INSTALLED) &&
+                            product.satisfiesRequirement(dependent)) {
+                        final InstallationException dependentError = new InstallationException("Could not install " + dependent.getDisplayName() + ", since the installation of " + product.getDisplayName() + "failed", error);
                         
                         dependent.setStatus(Status.NOT_INSTALLED);
                         dependent.setInstallationError(dependentError);
                         
-                        components.remove(dependent);
+                        products.remove(dependent);
                     }
                 }
                 
@@ -123,7 +124,7 @@ public class DownloadInstallationDataAction extends WizardAction {
     }
     
     public boolean canExecuteForward() {
-        return Registry.getInstance().getComponentsToInstall().size() > 0;
+        return Registry.getInstance().getProductsToInstall().size() > 0;
     }
     
     public boolean isPointOfNoReturn() {

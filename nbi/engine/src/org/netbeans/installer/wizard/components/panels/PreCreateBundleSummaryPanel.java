@@ -81,11 +81,11 @@ public class PreCreateBundleSummaryPanel extends WizardPanel {
     }
     
     public boolean canExecuteForward() {
-        return Registry.getInstance().getComponentsToInstall().size() > 0;
+        return Registry.getInstance().getProductsToInstall().size() > 0;
     }
     
     public boolean canExecuteBackward() {
-        return Registry.getInstance().getComponentsToInstall().size() > 0;
+        return Registry.getInstance().getProductsToInstall().size() > 0;
     }
     
     public WizardUi getWizardUi() {
@@ -149,7 +149,7 @@ public class PreCreateBundleSummaryPanel extends WizardPanel {
             final String messageText = component.getProperty(MESSAGE_TEXT_PROPERTY);
             messagePane.setText(messageText);
             
-            List<Product> componentsToBundle = Registry.getInstance().getComponentsToInstall();
+            List<Product> componentsToBundle = Registry.getInstance().getProductsToInstall();
             
             componentsToBundleLabel.setVisible(true);
             componentsToBundlePane.setVisible(true);

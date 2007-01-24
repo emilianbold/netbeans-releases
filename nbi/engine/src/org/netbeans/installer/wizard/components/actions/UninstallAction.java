@@ -23,7 +23,7 @@ package org.netbeans.installer.wizard.components.actions;
 import java.util.List;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
-import org.netbeans.installer.product.utils.Status;
+import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
@@ -55,22 +55,22 @@ public class UninstallAction extends WizardAction {
     
     public void execute() {
         final Registry registry = Registry.getInstance();
-        final List<Product> components = registry.getComponentsToUninstall();
-        final int percentageChunk = Progress.COMPLETE / components.size();
-        final int percentageLeak = Progress.COMPLETE % components.size();
+        final List<Product> products = registry.getComponentsToUninstall();
+        final int percentageChunk = Progress.COMPLETE / products.size();
+        final int percentageLeak = Progress.COMPLETE % products.size();
         
         overallProgress = new CompositeProgress();
         overallProgress.setTitle("Uninstalling selected components");
         overallProgress.setPercentage(percentageLeak);
         
         getWizardUi().setProgress(overallProgress);
-        for (Product component: components) {
+        for (Product product: products) {
             currentProgress = new Progress();
-            currentProgress.setTitle("Uninstalling " + component.getDisplayName());
+            currentProgress.setTitle("Uninstalling " + product.getDisplayName());
             
             overallProgress.addChild(currentProgress, percentageChunk);
             try {
-                component.uninstall(currentProgress);
+                product.uninstall(currentProgress);
                 
                 // sleep a little so that the user can perceive that something
                 // is happening
@@ -78,19 +78,20 @@ public class UninstallAction extends WizardAction {
             }  catch (UninstallationException e) {
                 // adjust the component's status and save this error - it will
                 // be reused later at the PostInstallSummary
-                component.setStatus(Status.INSTALLED);
-                component.setUninstallationError(e);
+                product.setStatus(Status.INSTALLED);
+                product.setUninstallationError(e);
                 
-                // since the component failed to uninstall  - we should remove
+                // since the product failed to uninstall  - we should remove
                 // the components it depends on from our plans to uninstall
-                for(Product requirement : Registry.getInstance().getRequiredComponents(component)) {
-                    if (requirement.getStatus() == Status.TO_BE_UNINSTALLED) {
-                        UninstallationException requirementError = new UninstallationException("Could not uninstall " + requirement.getDisplayName() + ", since the uninstallation of " + component.getDisplayName() + "failed", e);
+                for(Product requirement : registry.getProducts()) {
+                    if ((requirement.getStatus() == Status.TO_BE_UNINSTALLED) && 
+                            requirement.satisfiesRequirement(product)) {
+                        UninstallationException requirementError = new UninstallationException("Could not uninstall " + requirement.getDisplayName() + ", since the uninstallation of " + product.getDisplayName() + "failed", e);
                         
                         requirement.setStatus(Status.INSTALLED);
                         requirement.setUninstallationError(requirementError);
                         
-                        components.remove(requirement);
+                        products.remove(requirement);
                     }
                 }
                 

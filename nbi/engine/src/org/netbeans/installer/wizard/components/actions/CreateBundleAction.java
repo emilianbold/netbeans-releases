@@ -35,7 +35,7 @@ import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.product.filters.RegistryFilter;
-import org.netbeans.installer.product.utils.Status;
+import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.exceptions.FinalizationException;
 import org.netbeans.installer.utils.helper.ErrorLevel;
@@ -78,7 +78,7 @@ public class CreateBundleAction extends WizardAction {
     
     public void execute() {
         final Registry registry = Registry.getInstance();
-        final List<Product> components = registry.getComponentsToInstall();
+        final List<Product> components = registry.getProductsToInstall();
         final int percentageChunk = Progress.COMPLETE / (components.size() + 1);
         final int percentageLeak = Progress.COMPLETE % (components.size() + 1);
         
@@ -160,7 +160,7 @@ public class CreateBundleAction extends WizardAction {
                 component.getIconUri().setLocal(new URI(uriPrefix + "/icon.png"));
                 
                 
-                final List<ExtendedURI> logicUris = component.getConfigurationLogicUris();
+                final List<ExtendedURI> logicUris = component.getLogicUris();
                 for (int i = 0; i < logicUris.size(); i++) {
                     if (canceled) return; // check for cancel status
                     
@@ -172,7 +172,7 @@ public class CreateBundleAction extends WizardAction {
                     logicUris.get(i).setLocal(new URI(uriPrefix + "/configuration-logic/logic-" + (i + 1) + ".jar"));
                 }
                 
-                final List<ExtendedURI> dataUris = component.getInstallationDataUris();
+                final List<ExtendedURI> dataUris = component.getDataUris();
                 for (int i = 0; i < dataUris.size(); i++) {
                     if (canceled) return; // check for cancel status
                     
@@ -251,11 +251,11 @@ public class CreateBundleAction extends WizardAction {
                     node.getIconUri().setLocal(null);
                     
                     if (node instanceof Product) {
-                        for (ExtendedURI uri: ((Product) node).getConfigurationLogicUris()) {
+                        for (ExtendedURI uri: ((Product) node).getLogicUris()) {
                             uri.setLocal(null);
                         }
                         
-                        for (ExtendedURI uri: ((Product) node).getInstallationDataUris()) {
+                        for (ExtendedURI uri: ((Product) node).getDataUris()) {
                             uri.setLocal(null);
                         }
                     }

@@ -45,7 +45,7 @@ import org.netbeans.installer.wizard.components.panels.netbeans.NbPreInstallSumm
 public class MainSequence extends WizardSequence {
     public void executeForward() {
         final Registry      registry    = Registry.getInstance();
-        final List<Product> toInstall   = registry.getComponentsToInstall();
+        final List<Product> toInstall   = registry.getProductsToInstall();
         final List<Product> toUninstall = registry.getComponentsToUninstall();
         
         // remove all current children (if there are any), as the components 

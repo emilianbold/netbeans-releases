@@ -127,12 +127,12 @@ public class PreInstallSummaryPanel extends WizardPanel {
     }
     
     public boolean canExecuteForward() {
-        return Registry.getInstance().getComponentsToInstall().size() +
+        return Registry.getInstance().getProductsToInstall().size() +
                 Registry.getInstance().getComponentsToUninstall().size() > 0;
     }
     
     public boolean canExecuteBackward() {
-        return Registry.getInstance().getComponentsToInstall().size() +
+        return Registry.getInstance().getProductsToInstall().size() +
                 Registry.getInstance().getComponentsToUninstall().size() > 0;
     }
     
@@ -199,7 +199,7 @@ public class PreInstallSummaryPanel extends WizardPanel {
             final String messageText = component.getProperty(MESSAGE_TEXT_PROPERTY);
             messagePane.setText(messageText);
             
-            List<Product> componentsToInstall = Registry.getInstance().getComponentsToInstall();
+            List<Product> componentsToInstall = Registry.getInstance().getProductsToInstall();
             List<Product> componentsToUninstall = Registry.getInstance().getComponentsToUninstall();
             
             if (componentsToUninstall.size() > 0) {

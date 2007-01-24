@@ -96,8 +96,8 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     
     public void initialize() {
         if (minimumVersion == null) {
-            minimumVersion = new Version(getProperty(MINIMUM_JDK_VERSION_PROPERTY));
-            maximumVersion = new Version(getProperty(MAXIMUM_JDK_VERSION_PROPERTY));
+            minimumVersion = Version.getVersion(getProperty(MINIMUM_JDK_VERSION_PROPERTY));
+            maximumVersion = Version.getVersion(getProperty(MAXIMUM_JDK_VERSION_PROPERTY));
             
             for (int i = 0; i < SearchForJavaAction.javaLocations.size(); i++) {
                 File    location = SearchForJavaAction.javaLocations.get(i);
