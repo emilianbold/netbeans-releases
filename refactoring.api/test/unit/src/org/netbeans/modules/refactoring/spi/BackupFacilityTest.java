@@ -58,7 +58,8 @@ public class BackupFacilityTest extends NbTestCase {
         f.delete();
         assertFalse(f.isValid());
         BackupFacility.getDefault().restore(transactionId);
-        assertEquals(f.getPath(), FileUtil.toFileObject(new File(f.getPath())).getPath());
+        FileObject newone = FileUtil.toFileObject(new File(f.getPath()));
+        assertTrue(newone.isValid());
     }
 
     public void testClear() throws IOException {
