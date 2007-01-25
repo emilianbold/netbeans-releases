@@ -38,8 +38,8 @@ Microsystems, Inc. All Rights Reserved.
         <java classname="org.apache.tools.ant.Main" classpath="${java.class.path}" fork="true">
             <arg value="-f"/>
             <arg value="../../../lexer/test/build.xml"/>
-            <arg value="-Dxtest.testtype=${xtest.testtype}"/>
-            <arg value="-Dxtest.attribs=${xtest.attribs}"/>
+            <arg value="-Dxtest.testtype=unit"/>
+            <arg value="-Dxtest.attribs=stable"/>
             <arg value="buildtests"/>
         </java>
     </target>

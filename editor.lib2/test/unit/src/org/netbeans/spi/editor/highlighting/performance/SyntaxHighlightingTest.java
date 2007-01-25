@@ -12,11 +12,18 @@ package org.netbeans.spi.editor.highlighting.performance;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.SimpleAttributeSet;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -85,7 +92,7 @@ public class SyntaxHighlightingTest extends NbTestCase {
         System.out.println("TokenHierarchy.tokenSequence() took " + (timestamp2 - timestamp1) + " msecs.");
 
         timestamp1 = System.currentTimeMillis();
-        iterateOver(ts);
+        iterateOver(ts, null);
         timestamp2 = System.currentTimeMillis();
         System.out.println("Iterating through TokenSequence took " + (timestamp2 - timestamp1) + " msecs.");
         
@@ -105,14 +112,32 @@ public class SyntaxHighlightingTest extends NbTestCase {
         System.out.println("Iterating through HighlightsSequence took " + (timestamp2 - timestamp1) + " msecs.");
     }
     
-    private void iterateOver(TokenSequence ts) {
+    private void iterateOver(TokenSequence ts, HashMap<String, Integer> distro) {
         for( ; ts.moveNext(); ) {
             String name = ts.token().id().name();
             assertNotNull("Token name must not be null", name);
             
+            if (distro != null) {
+                String tokenId = ts.languagePath().mimePath() + ":" + name;
+                Integer freq = distro.get(tokenId);
+                if (freq == null) {
+                    freq = 1;
+                } else {
+                    freq++;
+                }
+                distro.put(tokenId, freq);
+                
+                if (ts.token().id() == JavadocTokenId.IDENT) {
+                    System.out.println("Javadoc IDENT: '" + ts.token().text() + "'");
+                }
+                if (ts.token().id() == JavadocTokenId.OTHER_TEXT) {
+                    System.out.println("Javadoc OTHER_TEXT: '" + ts.token().text() + "'");
+                }
+            }
+            
             TokenSequence embedded = ts.embedded();
             if (embedded != null) {
-                iterateOver(embedded);
+                iterateOver(embedded, distro);
             }
         }
     }
@@ -152,5 +177,41 @@ public class SyntaxHighlightingTest extends NbTestCase {
         System.out.println("Second TS.embedded() took " + (timestamp2 - timestamp1) + " msecs.");
         
         assertNotNull("Second call to TS.embedded() produced null", embeddedSeq2);
+    }
+
+    public void testDistro() {
+        TokenHierarchy th = TokenHierarchy.get(document);
+        TokenSequence ts = th.tokenSequence();
+        HashMap<String, Integer> distro = new HashMap<String, Integer>();
+        iterateOver(ts, distro);
+        
+        System.out.println("\nSorted by names:");
+        ArrayList<String> names = new ArrayList<String>(distro.keySet());
+        Collections.sort(names);
+        
+        for(String tokenId : names) {
+            Integer freq = distro.get(tokenId);
+            System.out.println(tokenId + " -> " + freq);
+        }
+        
+        System.out.println("\nSorted by freq:");
+        ArrayList<Map.Entry<String, Integer>> entries = new ArrayList<Map.Entry<String, Integer>>(distro.entrySet());
+        Collections.sort(entries, new FreqCmp());
+        
+        for(Map.Entry<String, Integer> entry : entries) {
+            System.out.println(entry.getKey() + " -> " + entry.getValue());
+        }
+    }
+    
+    private static final class FreqCmp implements Comparator<Map.Entry<String, Integer>> {
+        public int compare(Entry<String, Integer> e1,
+                           Entry<String, Integer> e2
+        ) {
+            Integer freq1 = e1.getValue();
+            Integer freq2 = e2.getValue();
+            int f1 = freq1 == null ? 0 : freq1.intValue();
+            int f2 = freq2 == null ? 0 : freq2.intValue();
+            return f1 - f2;
+        }
     }
 }
