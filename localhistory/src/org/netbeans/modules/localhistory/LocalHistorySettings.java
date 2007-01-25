@@ -18,9 +18,14 @@
  */
 package org.netbeans.modules.localhistory;
 
+import org.openide.ErrorManager;
+
 /**
  *
+ * Manages the Local Hisotry Settings
+ * 
  * XXX this is dummy
+ * XXX options 
  * @author Tomas Stupka
  */
 public class LocalHistorySettings {
@@ -29,16 +34,38 @@ public class LocalHistorySettings {
     public LocalHistorySettings() {
     }
     
-    public static long getTTL() {
-        return 7 * 24 * 60 * 60 * 1000; // XXX need options                                
+    public static long getTTL() {       
+        // XXX need options                                
+        String ttl = System.getProperty("netbeans.localhistory.ttl");
+        if( ttl != null && !ttl.trim().equals("") ) {
+            try {
+                return Long.parseLong(ttl) * 24 * 60 * 60 * 1000; // supposed to be specified in days
+            } catch (Exception e) {
+                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);                                       
+            }
+        }
+        return 7 * 24 * 60 * 60 * 1000; 
     }    
 
     public static Long getMaxFileSize() {
+        String max = System.getProperty("netbeans.localhistory.maxFileSize");        
+        if( max != null && !max.trim().equals("") ) {
+            try {
+                return Long.parseLong(max);
+            } catch (Exception e) {
+                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);                                       
+            }
+        }
         return 1024L * 1024L;
     }
     
     public static String getExludedFileNames() {
-        return ".*(\\.class|\\.jar|\\.zip|\\.rar|\\.gz|\\.bz|\\.tgz|\\.tar|\\.gif|\\.jpg|\\.jpeg|\\.png|\\.nbm)"; // this is going to be a very very long list ...
+        String excluded = System.getProperty("netbeans.localhistory.excludedFiles");        
+        if( excluded != null && !excluded.trim().equals("") ) {
+            return excluded;
+        } else {
+            return ".*(\\.class|\\.jar|\\.zip|\\.rar|\\.gz|\\.bz|\\.tgz|\\.tar|\\.gif|\\.jpg|\\.jpeg|\\.png|\\.nbm)"; // this is going to be a very very long list ...   
+        }        
     }
     
 }

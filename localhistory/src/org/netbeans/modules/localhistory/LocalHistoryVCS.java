@@ -27,17 +27,18 @@ import org.openide.util.NbBundle;
 
 /**
  *
+ * Provides the VersioningSystem functionality to the IDE
+ * 
  * @author Tomas Stupka
  */
 public class LocalHistoryVCS extends VersioningSystem implements org.netbeans.modules.versioning.spi.LocalHistory {
-    
-    /** Creates a new instance of LocalHistoryVCS */
-    public LocalHistoryVCS() {
         
+    public LocalHistoryVCS() {
+    
     }
     
     public String getDisplayName() {
-        return NbBundle.getMessage(LocalHistoryVCS.class, "CTL_MainMenuItem");
+        return NbBundle.getMessage(LocalHistoryVCS.class, "CTL_MainMenuItem");  // NOI18N
     }
                
     public File getTopmostManagedParent(File file) {    
@@ -56,6 +57,7 @@ public class LocalHistoryVCS extends VersioningSystem implements org.netbeans.mo
     }
     
     public OriginalContent getVCSOriginalContent(File workingCopy) {
+        // not supported yet
         return super.getVCSOriginalContent(workingCopy);
     }     
     

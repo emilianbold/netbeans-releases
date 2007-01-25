@@ -26,6 +26,9 @@ import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 
 /** 
+ * 
+ * A singleton Local Hisotry manager class, center of the Local History module. 
+ * Use {@link #getInstance()} to get access to Local History module functionality.
  * @author Tomas Stupka
  */  
 public class LocalHistory {    
@@ -34,6 +37,10 @@ public class LocalHistory {
     private VCSInterceptor vcsInterceptor;
     private VCSAnnotator vcsAnnotator;
     private LocalHistoryStore store;
+    
+
+    private static String userDir;    
+    private Pattern fileNameExclPattern = Pattern.compile(LocalHistorySettings.getExludedFileNames()); 
     
     public static synchronized LocalHistory getInstance() {
         if(instance == null) {
@@ -61,15 +68,11 @@ public class LocalHistory {
             store = LocalHistoryStoreFactory.getInstance().createLocalHistoryStorage();
         }
         return store;
-    }    
-
-    private static String userDir;
-    // XXX options
-    private Pattern fileNameExclPattern = Pattern.compile(LocalHistorySettings.getExludedFileNames()); // XXX this is very dummy
+    }   
     
     private String getUserDir() {
         if(userDir == null) {
-            userDir = System.getProperty("netbeans.user"); // NOI18N
+            userDir = System.getProperty("netbeans.user");                      // NOI18N
         }
         return userDir;
     }

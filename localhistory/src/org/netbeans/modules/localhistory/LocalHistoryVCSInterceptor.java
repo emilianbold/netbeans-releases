@@ -27,6 +27,8 @@ import org.netbeans.modules.versioning.spi.VCSInterceptor;
 
 /**       
  * 
+ * Listens to file system operations from the IDE and eventually handles them synchronously
+ * 
  * @author Tomas Stupka
  */
 class LocalHistoryVCSInterceptor extends VCSInterceptor {
@@ -81,7 +83,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     }
 
     public void afterDelete(File file) {      
-        if(!accept(file, false)) {
+        if(!accept(file)) {
             return;
         }
                 
@@ -142,7 +144,6 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     // CREATE
     // ==================================================================================================
 
-
     public boolean beforeCreate(File file, boolean isDirectory) {
         // do nothing
         return false;
@@ -195,17 +196,21 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
         }
         return moveHandlerMap;
     }
-
-    private boolean accept(File file) {
-        return accept(file, true);
-    }    
     
-    private boolean accept(File file, boolean checkTimestamp) {
-        if(checkTimestamp ) {
-            long now = System.currentTimeMillis();
-            if(file.lastModified() < now - LocalHistorySettings.getTTL()) {
-                return false;
-            }
+    /**
+     * 
+     * Decides if a file has to be stored in the Local History or not.
+     * 
+     * @param file the file to be stored
+     * @param checkTimestamp checks if 
+     * 
+     * @return true if the file has to be stored in the Local History, otherwise false 
+     */
+    private boolean accept(File file) {       
+        if(file.lastModified() > 0 &&                  
+           file.lastModified() < System.currentTimeMillis() - LocalHistorySettings.getTTL()) 
+        {
+            return false;
         }
         
         if(!LocalHistory.getInstance().isManaged(file)) {

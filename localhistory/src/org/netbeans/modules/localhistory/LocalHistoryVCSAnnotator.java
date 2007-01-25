@@ -34,6 +34,8 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
+ * Provides the Local History Actions to the IDE
+ * 
  * @author Tomas Stupka
  */
 public class LocalHistoryVCSAnnotator extends VCSAnnotator {
@@ -43,12 +45,12 @@ public class LocalHistoryVCSAnnotator extends VCSAnnotator {
     }
  
     public Image annotateIcon(Image icon, VCSContext context) {
-        // XXX
+        // not supported yet
         return super.annotateIcon(icon, context);
     }    
             
     public String annotateName(String name, VCSContext context) {
-        // XXX
+        // not supported yet
         return super.annotateName(name, context);
     }
     
@@ -69,9 +71,6 @@ public class LocalHistoryVCSAnnotator extends VCSAnnotator {
                                             context));           
         }
         return actions.toArray(new Action[actions.size()]);
-//        return new Action[] {
-//            SystemAction.get(ShowLocalHistoryAction.class)
-//        };
     }    
     
 }
