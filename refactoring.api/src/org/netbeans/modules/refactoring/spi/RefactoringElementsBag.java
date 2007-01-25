@@ -80,16 +80,22 @@ public final class RefactoringElementsBag {
             delegate.add(el);
         } else if (isGuarded(el)) {
             ArrayList<RefactoringElementImplementation> proposedChanges = new ArrayList();
+            ArrayList<Transaction> transactions = new ArrayList();
             for (GuardedBlockHandler gbHandler: APIAccessor.DEFAULT.getGBHandlers(refactoring)) {
-                p = APIAccessor.DEFAULT.chainProblems(gbHandler.handleChange(el, proposedChanges),  p);
+                p = APIAccessor.DEFAULT.chainProblems(gbHandler.handleChange(el, proposedChanges, transactions),  p);
                 
                 if (p != null && p.isFatal())
                     return p;
                 
-                if (!proposedChanges.isEmpty()) {
-                    delegate.addAll(proposedChanges);
+                delegate.addAll(proposedChanges);
+                
+                for (Transaction transaction:transactions) {
+                    registerTransaction(transaction);
+                }
+                
+                if (!proposedChanges.isEmpty() || !transactions.isEmpty())
                     return p;
-                } 
+                
             }
             el.setEnabled(false);
             el.setStatus(el.GUARDED);
@@ -133,7 +139,8 @@ public final class RefactoringElementsBag {
      */
     public void registerTransaction(Transaction commit) {
         if (APIAccessor.DEFAULT.isCommit(session))
-            commits.add(commit);
+            if (!commits.contains(commit))
+                commits.add(commit);
     }
     
     
