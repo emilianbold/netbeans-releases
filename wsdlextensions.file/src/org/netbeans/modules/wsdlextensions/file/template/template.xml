@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Document   : template.xml
+    Created on : August 25, 2006, 5:39 PM
+    Author     : sweng
+    Description: Describes the File Binding Component's extensibility element views on WSDL wizard
+-->
+<templateGroup namespace="http://schemas.sun.com/jbi/wsdl-extensions/file/" 
+	       xmlns="http://xml.netbeans.org/schema/templates"
+	       xmlns:xsi="http://www.w3.org/1999/XMLSchema/instance"
+               xsi:schemaLocation="http://xml.netbeans.org/schema/templates 
+               templates.xsd" prefix="file">
+    <template name="FileTransport">
+        <wsdlElement name="Binding">
+            <extensionElement name="binding"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="message">
+                <extensionAttr name="use" defaultValue="literal" />
+                <extensionAttr name="fileName" defaultValue="test.xml" />
+                <extensionAttr name="pollingInterval" defaultValue="1000" />
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationOutput">
+            <extensionElement name="message" >
+                <extensionAttr name="use" defaultValue="literal" />
+                <extensionAttr name="fileName" defaultValue="output.xml" />
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address" >
+                <extensionAttr name="fileDirectory"  defaultValue="C:\Temp"/>
+            </extensionElement>
+        </wsdlElement>
+    </template>
+</templateGroup>

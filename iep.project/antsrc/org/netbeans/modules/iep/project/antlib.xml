@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ <antlib>
+        <typedef name="generate-asa-artifacts" classname="org.netbeans.modules.iep.project.anttasks.GenerateAsaArtifacts"/>
+ </antlib>

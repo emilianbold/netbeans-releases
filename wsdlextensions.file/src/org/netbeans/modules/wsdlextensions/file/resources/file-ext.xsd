@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+           xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+           xmlns:file="http://schemas.sun.com/jbi/wsdl-extensions/file/" 
+           targetNamespace="http://schemas.sun.com/jbi/wsdl-extensions/file/">
+	<xs:import namespace="http://schemas.xmlsoap.org/wsdl/" schemaLocation="http://schemas.xmlsoap.org/wsdl/"/>
+	<xs:element name="binding" type="file:tBinding">
+		<xs:annotation>
+			<xs:documentation>
+	      	"binding" indicates a file protocol based binding.
+	      </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="tBinding">
+		<xs:complexContent>
+			<xs:extension base="wsdl:tExtensibilityElement"/>
+			<!-- could add more attributes to the binding -->
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="operation" type="file:tOperation"/>
+	<xs:complexType name="tOperation">
+		<xs:annotation>
+			<xs:documentation>
+	      	"operation" defines the file protocol based operation binding details.
+	      </xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="wsdl:tExtensibilityElement">
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="message" type="file:tFileMessage">
+		<xs:annotation>
+			<xs:documentation>
+	      	Defines the file transport based operation binding details.
+	      </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="tFileMessage">
+		<xs:complexContent>
+			<xs:extension base="wsdl:tExtensibilityElement">
+				<xs:attribute name="use" type="file:useTypes" use="required"/>
+				<xs:attribute name="encodingStyle" type="xs:anyURI" use="optional"/>
+				<xs:attribute name="fileType" type="file:fileType" use="optional">
+					<xs:annotation>
+						<xs:documentation>Defines the file type of the input file.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="fileName" type="xs:string" use="required">
+  				    <xs:annotation>
+  			                <xs:documentation>Defines the file name relative to the specified directory to read from or write to. If fileNameIsPattern is not true, this attribute specifies an actual file name. Otherwise, this attribute specifies a pattern marker used for filtering input files from the directory, or a file name format to write to the directory; The supported patterns are: 1. &lt;anyString&gt;%d&lt;anyString&gt;.&lt;anySuffix&gt; where "%d" denotes an unique number for input and an one-up sequence number for output file names; 2. &lt;anyString&gt;%u&lt;anyString&gt;.&lt;anySuffix&gt; where %u denotes a wild card match for input and an UUID for output file names. 3.&lt;anyString&gt;%t&lt;anyString&gt;.&lt;anySuffix&gt; where %t denotes an unique timestamp for both input and out file names. The expected date format is yyyymmdd-HH-mm-ss-SSS. For input file names, the -HH-mm-ss-SSS part may be omitted if unique-ness is guaranteed.</xs:documentation>
+  				    </xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="fileNameIsPattern" type="xs:boolean" use="optional">
+				    <xs:annotation>
+					<xs:documentation>Indicates whether or not the fileName attribute designates a file name pattern.</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="pollingInterval" type="xs:long" use="optional">
+				    <xs:annotation>
+					<xs:documentation>Defines the polling interval that File Binding Component searches for input files in the specified directory.  The polling interval is specified in milliseconds and has a default value of 1000ms. This attribute has no effect for writing.</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="part" type="xs:string" use="optional">
+				    <xs:annotation>
+				        <xs:documentation>Defines the reference to the abstract message part in the WSDL.</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="removeEOL" type="xs:boolean" use="optional">
+				    <xs:annotation>
+					<xs:documentation>Defines whether or not end-of-line characters should be removed before processing. If multiple records are present, this attribute defines whether or not end-of-line characters should be removed for each record. This attribute has no effect for writing.</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="addEOL" type="xs:boolean" use="optional">
+				    <xs:annotation>
+					<xs:documentation>Defines whether or not end-of-line characters should be appended to the outbound message. If multiple records are present, this attribute defines whether or not end-of-line characters should be appended to each record. This attribute has no effect for reading.</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="multipleRecordsPerFile" type="xs:boolean" use="optional">
+				    <xs:annotation>
+					<xs:documentation>Defines whether or not the file to read from or write to the file system contains multiple records or should be considered a single payload.</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="maxBytesPerRecord" type="xs:long" use="optional">
+				    <xs:annotation>
+					<xs:documentation>Defines the maximum number of bytes to be read per record. If only single record is present, this attribute defines the total number of bytes to be read. This attribute has no effect for writing.</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="recordDelimiter" type="xs:string" use="optional">
+				    <xs:annotation>
+					<xs:documentation>Defines the record delimiter when multiple records are present. This value of this attribute is considered only if multipleRecordsPerFile is true. If no value is specified for this attribute but maxBytesPerRecord is defined when reading a file, it is assumed that each record is of fixed length with the length being the value defined for maxBytesPerRecord; Otherwise, the default record delimiter is line feed.</xs:documentation>
+				    </xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="fileType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="text">
+				<xs:annotation>
+					<xs:documentation>Signifies a character based file type</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="binary">
+				<xs:annotation>
+					<xs:documentation>Signifies a binary data based file type</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="useTypes">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="literal"/>
+			<xs:enumeration value="encoded"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:element name="address" type="file:tAddress">
+		<xs:annotation>
+			<xs:documentation>
+	      	"address" indicates a file protocol based service address.
+	      </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="tAddress">
+		<xs:complexContent>
+			<xs:extension base="wsdl:tExtensibilityElement">
+				<xs:attribute name="fileDirectory" type="xs:string" use="required">
+					<xs:annotation>
+						<xs:documentation>Defines the directory name where WSDL provisioner should read input files from, and where client should write files to.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="relativePath" type="xs:boolean" use="optional">
+					<xs:annotation>
+						<xs:documentation>Defines whether the directory is a relative path.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="pathRelativeTo" type="file:systemProperties" use="optional">
+					<xs:annotation>
+						<xs:documentation>Defines what the fileDirectory is relative to. The root path is a standard Java system property that can be read from runtime JVM settings.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="systemProperties">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="User Home"/>
+			<xs:enumeration value="Current Working Dir"/>
+			<xs:enumeration value="Default System Temp Dir"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

@@ -1,0 +1,529 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   - The contents of this file are subject to the terms of the Common Development
+   - and Distribution License (the License). You may not use this file except in
+   - compliance with the License.
+   -
+   - You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+   - or http://www.netbeans.org/cddl.txt.
+
+   - When distributing Covered Code, include this CDDL Header Notice in each file
+   - and include the License file at http://www.netbeans.org/cddl.txt.
+   - If applicable, add the following below the CDDL Header, with the fields
+   - enclosed by brackets [] replaced by your own identifying information:
+   - "Portions Copyrighted [year] [name of copyright owner]"
+   -
+   - The Original Software is NetBeans. The Initial Developer of the Original
+   - Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+   - Microsystems, Inc. All Rights Reserved.
+  -->
+<!DOCTYPE component_type_group [
+
+<!ENTITY R    "read">
+<!ENTITY RW   "read,write">
+
+<!ELEMENT component_type_group (property_group*,component_type_group*, component_type*)>
+<!ATTLIST component_type_group
+icon CDATA #REQUIRED
+name CDATA #REQUIRED
+title CDATA #REQUIRED
+description CDATA #REQUIRED
+>
+<!ELEMENT property_group (property_group*, property*)>
+<!ATTLIST property_group
+name CDATA #IMPLIED
+ref CDATA #IMPLIED
+>
+<!ELEMENT component_type (property_group*, property*, component_type*, code*)>
+<!ATTLIST component_type
+allowsChildren CDATA #IMPLIED
+icon CDATA #IMPLIED
+name CDATA #IMPLIED
+extends CDATA #IMPLIED
+title CDATA #IMPLIED
+description CDATA #IMPLIED
+visible CDATA #IMPLIED
+validator CDATA #IMPLIED
+>
+<!ELEMENT property (script*)>
+<!ATTLIST property
+access CDATA #IMPLIED
+category CDATA #IMPLIED
+default CDATA #IMPLIED
+title CDATA #IMPLIED
+description CDATA #IMPLIED
+editor CDATA #IMPLIED
+multiple CDATA #IMPLIED
+name CDATA #IMPLIED
+renderer CDATA #IMPLIED
+required CDATA #IMPLIED
+script CDATA #IMPLIED
+transient CDATA #IMPLIED
+type CDATA #IMPLIED
+>
+<!ELEMENT script (#PCDATA)>
+
+<!ELEMENT code EMPTY>
+<!ATTLIST code
+file CDATA #REQUIRED
+type CDATA #REQUIRED
+>
+
+]>
+
+<!-- edited with XML Spy v4.4 U (http://www.xmlspy.com) by Bing Lu (SeeBeyond) -->
+<component_type_group name="IEP" icon="" title="IEP.title" description="IEP.description">
+    <component_type_group name="View" icon="" title="IEP.View.title" description="IEP.View.description">
+        <property_group name="Node">
+            <property transient="false" category="layout" name="x" title="IEP.View.Node.x.title" description="IEP.View.Node.x.description" required="false" type="integer" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="0" renderer="string" access="" multiple="false"/>
+            <property transient="false" category="layout" name="y" title="IEP.View.Node.y.title" description="IEP.View.Node.y.description" required="false" type="integer" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="0" renderer="string" access="" multiple="false"/>
+            <property transient="false" category="layout" name="z" title="IEP.View.Node.z.title" description="IEP.View.Node.z.description" required="false" type="integer" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="0" renderer="string" access="" multiple="false"/>
+        </property_group>
+    </component_type_group>
+    <!-- Model -->
+    <component_type_group name="Model" icon="" title="IEP.Model.title" description="IEP.Model.description">
+        <property_group name="Entity">
+            <property transient="true" category="IEP.Category.main" name="propertyEditor" title="IEP.Model.Entity.propertyEditor.title" description="IEP.Model.Entity.propertyEditor.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="&RW;" multiple="false"/>
+            <property transient="false" category="IEP.Category.main" name="id" title="IEP.Model.Entity.id.title" description="IEP.Model.Entity.id.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="&R;" multiple="false"/>
+            <property transient="false" category="IEP.Category.main" name="name" title="IEP.Model.Entity.name.title" description="IEP.Model.Entity.name.description" required="true" type="string" editor="default" default="" renderer="string" access="&RW;" multiple="false"/>
+            <property transient="true" category="IEP.Category.main" name="type" title="IEP.Model.Entity.type.title" description="IEP.Model.Entity.type.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="Entity" renderer="string" access="&R;" multiple="false"/>
+            <property transient="false" category="IEP.Category.schema" name="inputSchemaIdList" title="IEP.Model.Entity.inputSchemaIdList.title" description="IEP.Model.Entity.inputSchemaIdList.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="&R;" multiple="true"/>
+            <property transient="false" category="IEP.Category.schema" name="outputSchemaId" title="IEP.Model.Entity.outputSchemaId.title" description="IEP.Model.Entity.outputSchemaId.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="&R;" multiple="false"/>
+            <property transient="false" category="IEP.Category.entity" name="description" title="IEP.Model.Entity.description.title" description="IEP.Model.Entity.description.description" required="false" type="string" editor="default" default="" renderer="string" access="&RW;" multiple="false"/>
+            <property transient="false" category="IEP.Category.entity" name="topoScore" title="IEP.Model.Entity.topoScore.title" description="IEP.Model.Entity.topoScore.description" required="false" type="integer" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="0" renderer="string" access="&R;" multiple="false"/>
+            <property transient="false" category="IEP.Category.entity" name="inputType" title="IEP.Model.Entity.inputType.title" description="IEP.Model.Entity.inputType.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="i18n.IEP.IOType.none" renderer="string" access="&R;" multiple="false"/>
+            <property transient="true" category="IEP.Category.entity" name="inputMaxCount" title="IEP.Model.Entity.inputMaxCount.title" description="IEP.Model.Entity.inputMaxCount.description" required="false" type="integer" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="1" renderer="string" access="&R;" multiple="false"/>
+            <property transient="false" category="IEP.Category.entity" name="inputIdList" title="IEP.Model.Entity.inputIdList.title" description="IEP.Model.Entity.inputIdList.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="&R;" multiple="true"/>
+            <property transient="true" category="IEP.Category.entity" name="staticInputMaxCount" title="IEP.Model.Entity.staticInputMaxCount.title" description="IEP.Model.Entity.staticInputMaxCount.description" required="false" type="integer" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="0" renderer="string" access="&R;" multiple="false"/>
+            <property transient="false" category="IEP.Category.entity" name="staticInputIdList" title="IEP.Model.Entity.staticInputIdList.title" description="IEP.Model.Entity.staticInputIdList.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="&R;" multiple="true"/>
+            <property transient="false" category="IEP.Category.entity" name="outputType" title="IEP.Model.Entity.outputType.title" description="IEP.Model.Entity.outputType.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="i18n.IEP.IOType.none" renderer="string" access="&R;" multiple="false"/>
+            <property transient="true" category="IEP.Category.entity" name="isSchemaOwner" title="IEP.Model.Entity.isSchemaOwner.title" description="IEP.Model.Entity.isSchemaOwner.description" required="false" type="boolean" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="false" renderer="string" access="&R;" multiple="false"/>
+            <property transient="false" category="IEP.Category.entity" name="isGlobal" title="IEP.Model.Entity.isGlobal.title" description="IEP.Model.Entity.isGlobal.description" required="false" type="boolean" editor="default" default="false" renderer="string" access="&R;" multiple="false"/>
+            <property transient="false" category="IEP.Category.entity" name="globalId" title="IEP.Model.Entity.globalId.title" description="IEP.Model.Entity.globalId.description" required="false" type="string" editor="default" default="" renderer="string" access="&R;" multiple="false"/>
+            <property transient="true" category="IEP.Category.entity" name="wsInput" title="IEP.Model.Entity.wsInput.title" description="IEP.Model.Entity.wsInput.description" required="false" type="boolean" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="false" renderer="string" access="" multiple="false"/>
+            <property transient="true" category="IEP.Category.entity" name="wsOutput" title="IEP.Model.Entity.wsOutput.title" description="IEP.Model.Entity.wsOutput.description" required="false" type="boolean" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="false" renderer="string" access="" multiple="false"/>
+            <property transient="true" category="IEP.Category.entity" name="palette" title="IEP.Model.Entity.palette.title" description="IEP.Model.Entity.palette.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="" multiple="false"/>
+            <property transient="true" category="IEP.Category.entity" name="categoryOrder" title="IEP.Model.Entity.categoryOrder.title" description="IEP.Model.Entity.categoryOrder.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="IEP.Category.main\IEP.Category.operator\IEP.Category.schema\IEP.Category.entity" renderer="string" access="" multiple="true"/>
+        </property_group>
+        <component_type name="Plan" icon="" title="IEP.Model.Plan.title" description="IEP.Model.Plan.description" allowsChildren="true" visible="false" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property transient="false" category="IEP.Category.model" required="false" name="version" title="IEP.Model.Plan.version.title" description="IEP.Model.Plan.version.description" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="5.0" renderer="string" access="&R;" multiple="false"/>
+            <property transient="true" category="IEP.Category.model" required="false" name="doc" title="IEP.Model.Plan.doc.title" description="IEP.Model.Plan.doc.description" type="object" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="docObj" access="&R;" multiple="false"/>
+            
+            <component_type name="Metadata" icon="" title="IEP.Model.Plan.Metadata.title" description="IEP.Model.Plan.Metadata.description" allowsChildren="true" visible="false"  validator="org.netbeans.modules.iep.editor.tcg.model.OkValidator">
+                <component_type name="View" icon="" title="View" description="IEP.Model.Plan.Metadata.View.description" allowsChildren="true" visible="false"  validator="org.netbeans.modules.iep.editor.tcg.model.OkValidator">
+                    <property transient="false" category="this" required="false" name="orthoflow" title="IEP.Model.Plan.Metadata.View.orthoflow.title" description="IEP.Model.Plan.Metadata.View.orthoflow.description" type="boolean" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="false" renderer="string" access="" multiple="false"/>
+                </component_type>
+            </component_type>
+            
+            <component_type name="Schemas" icon="" title="IEP.Model.Plan.Schemas.title" description="IEP.Model.Plan.Schemas.description" allowsChildren="true" visible="false" validator="org.netbeans.modules.iep.editor.tcg.model.OkValidator">
+                <code type="xml" file="vm/iep/model/group.xml"/>            
+            </component_type>
+            
+            <component_type name="Operators" icon="" title="IEP.Model.Plan.Operators.title" description="IEP.Model.Plan.Operators.description" allowsChildren="true" visible="false" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+                <code type="xml" file="vm/iep/model/group.xml"/>            
+            </component_type>
+            
+            <component_type name="Links" icon="" title="IEP.Model.Plan.Links" description="IEP.Model.Plan.Links.description" allowsChildren="true" visible="false" validator="org.netbeans.modules.iep.editor.tcg.model.OkValidator">
+                <code type="xml" file="vm/iep/model/group.xml"/>            
+            </component_type>
+            
+            <code type="xml" file="vm/iep/model/plan.xml"/>            
+        </component_type>
+        <component_type name="Link" icon="" title="IEP.Model.Link.title" description="IEP.Model.Link.description" allowsChildren="true" visible="false" validator="org.netbeans.modules.iep.editor.tcg.model.OkValidator">
+            <property transient="false" category="this" required="false" name="name" title="IEP.Model.Link.name.title" description="IEP.Model.Link.name.description" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="" multiple="false"/>
+            <property transient="false" category="this" required="false" name="from" title="IEP.Model.Link.from.title" description="IEP.Model.Link.from.description" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="" multiple="false"/>
+            <property transient="false" category="this" required="false" name="to" title="IEP.Model.Link.to.title" description="IEP.Model.Link.to.description" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="" multiple="false"/>
+        </component_type>
+    </component_type_group>
+
+    <!-- Metadata -->
+    <component_type_group name="Metadata" icon="" title="IEP.Metadata.title" description="IEP.Metadata.description">
+        <!-- column -->
+        <component_type name="ColumnMetadata" icon="" title="IEP.Metadata.ColumnMetadata.title" description="IEP.Metadata.ColumnMetada.description" allowsChildren="false" visible="false" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property transient="false" category="this" name="name" title="IEP.Metadata.ColumnMetadata.name.title" description="IEP.Metadata.ColumnMetadata.name.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="&RW;" multiple="false"/>
+            <property transient="false" category="this" name="type" title="IEP.Metadata.ColumnMetadata.type.title" description="IEP.Metadata.ColumnMetadata.type.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="&RW;" multiple="false"/>
+            <property transient="false" category="this" name="size" title="IEP.Metadata.ColumnMetadata.size.title" description="IEP.Metadata.ColumnMetadata.size.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="&RW;" multiple="false"/>
+            <property transient="false" category="this" name="scale" title="IEP.Metadata.ColumnMetadata.scale.title" description="IEP.Metadata.ColumnMetadata.scale.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="&RW;" multiple="false"/>
+            <property transient="false" category="this" name="comment" title="IEP.Metadata.ColumnMetadata.comment.title" description="IEP.Metadata.ColumnMetadata.comment.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="&RW;" multiple="false"/>
+            <code type="xml" file="vm/iep/metadata/columnMetadata.xml"/>
+        </component_type>
+        <!-- schema -->
+        <component_type name="Schema" icon="" title="IEP.Metadata.Schema.title" description="IEP.Metadata.Schema.description" allowsChildren="true" visible="false" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <code type="xml" file="vm/iep/metadata/schema.xml"/>
+        </component_type>
+    </component_type_group>
+    
+    <!-- Input -->
+    <component_type_group name="Input" icon="" title="IEP.Input.title" description="IEP.Input.description">
+        <!-- stream input: creating table in db -->
+        <component_type name="StreamInput" icon="streamx16.gif" title="IEP.Input.StreamInput.title" description="IEP.Input.StreamInput.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
+                <property name="type" default="i18n.IEP.Input.StreamInput.title"/>
+                <property name="outputType" default="i18n.IEP.IOType.stream"/>
+                <property name="outputSchemaId" required="true"/>
+                <property name="isSchemaOwner" default="true"/>
+                <property name="wsInput" default="true"/>
+                <property name="palette" default="input"/>
+            </property_group>
+            <code type="xml" file="vm/iep/input/streamInput.xml"/>
+        </component_type>
+        <!-- relation input: creating table in db-->
+        <component_type name="TableInput" icon="tablex16.gif" title="IEP.Input.TableInput.title" description="IEP.Input.TableInput.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.StaticIOCustomEditor"/>
+                <property name="type" default="i18n.IEP.Input.TableInput.title"/>
+                <property name="outputType" default="i18n.IEP.IOType.table"/>
+                <property name="outputSchemaId" required="true"/>
+                <property name="isSchemaOwner" default="true"/>
+                <property name="isGlobal" default="false" access="&RW;"/>
+                <property name="globalId" default="" access="&RW;"/>
+                <property name="palette" default="input"/>
+            </property_group>
+            <code type="xml" file="vm/iep/input/relationInput.xml"/>
+        </component_type>
+    </component_type_group>
+    <!-- Output -->
+    <component_type_group name="Output" icon="" title="IEP.Output.title" description="IEP.Output.description">
+        <!-- stream output: do nothing -->
+        <component_type name="StreamOutput" icon="streamx16.gif" title="IEP.Output.StreamOutput.title" description="IEP.Output.StreamOutput.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DynamicOutputCustomEditor"/>
+                <property name="type" default="i18n.IEP.Output.StreamOutput.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.stream"/>
+                <property name="wsOutput" default="true"/>
+                <property name="palette" default="output"/>
+            </property_group>
+            <property transient="false" category="IEP.Category.operator" name="includeTimestamp" title="IEP.Output.StreamOutput.includeTimestamp.title" description="IEP.Output.StreamOutput.includeTimestamp.description" required="false" type="boolean" editor="default" default="false" renderer="string" access="&RW;" multiple="false"/>
+            <code type="xml" file="vm/iep/output/streamOutput.xml"/>
+        </component_type>
+        <!-- relation output: do nothing -->
+        <component_type name="RelationOutput" icon="relationx16.gif" title="IEP.Output.RelationOutput.title" description="IEP.Output.RelationOutput.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DynamicOutputCustomEditor"/>
+                <property name="type" default="i18n.IEP.Output.RelationOutput.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.relation"/>
+                <property name="wsOutput" default="true"/>
+                <property name="palette" default="output"/>
+            </property_group>
+            <property transient="false" category="IEP.Category.operator" name="includeTimestamp" title="IEP.Output.RelationOutput.includeTimestamp.title" description="IEP.Output.RelationOutput.includeTimestamp.description" required="false" type="boolean" editor="default" default="false" renderer="string" access="&RW;" multiple="false"/>
+            <code type="xml" file="vm/iep/output/relationOutput.xml"/>
+        </component_type>
+        <!-- relation output: use a table update info to maintain the table's state -->
+        <component_type name="TableOutput"  icon="operatorRTx16.gif" title="IEP.Output.TableOutput.title" description="IEP.Output.TableOutput.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.StaticIOCustomEditor"/>
+                <property name="type" default="i18n.IEP.Output.TableOutput.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.relation"/>
+                <property name="isGlobal" default="false" access="&RW;"/>
+                <property name="globalId" default="" access="&RW;"/>
+                <property name="palette" default="output"/>
+            </property_group>
+            <code type="xml" file="vm/iep/output/tableOutput.xml"/>
+        </component_type>
+    </component_type_group>
+    <!-- Correlation and Filter -->
+    <component_type_group name="Operator" icon="" title="IEP.Operator.title" description="IEP.Operator.description">
+        <!-- stream project and filter -->
+        <component_type name="StreamProjectAndFilter" icon="operatorSTSx16.gif" title="IEP.Operator.StreamProjectAndFilter.title" description="IEP.Operator.StreamProjectAndFilter.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
+                <property name="type" default="i18n.IEP.Operator.StreamProjectAndFilter.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.stream"/>
+                <property name="staticInputMaxCount" default="1000000"/>
+                <property name="outputType" default="i18n.IEP.IOType.stream"/>
+                <property name="isSchemaOwner" default="true"/>
+                <property name="palette" default="correlationAndFilter"/>
+            </property_group>
+            <property transient="false" category="IEP.Category.operator" name="fromColumnList" title="IEP.Operator.StreamProjectAndFilter.fromColumnList.title" description="IEP.Operator.StreamProjectAndFilter.fromColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
+            <property transient="false" category="IEP.Category.operator" name="toColumnList" title="IEP.Operator.StreamProjectAndFilter.toColumnList.title" description="IEP.Operator.StreamProjectAndFilter.toColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
+            <property transient="false" category="IEP.Category.operator" name="fromClause" title="IEP.Operator.StreamProjectAndFilter.fromClause.title" description="IEP.Operator.StreamProjectAndFilter.fromClause.description" required="true" type="string" editor="default" default="" renderer="string" access="" multiple="false"/>
+            <property transient="false" category="IEP.Category.operator" name="whereClause" title="IEP.Operator.StreamProjectAndFilter.whereClause.title" description="IEP.Operator.StreamProjectAndFilter.whereClause.description" required="false" type="string" editor="default" default="" renderer="string" access="" multiple="false"/>
+            <code type="xml" file="vm/iep/operator/streamProjectAndFilter.xml"/>
+        </component_type>
+        <!-- tuple serial correlation -->
+        <component_type name="TupleSerialCorrelation" icon="operatorSSx16.gif" title="IEP.Operator.TupleSerialCorrelation.title" description="IEP.Operator.TupleSerialCorrelation.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.TupleSerialCorrelationCustomEditor"/>
+                <property name="type" default="i18n.IEP.Operator.TupleSerialCorrelation.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.stream"/>
+                <property name="outputType" default="i18n.IEP.IOType.stream"/>
+                <property name="isSchemaOwner" default="true"/>
+                <property name="palette" default="correlationAndFilter"/>
+            </property_group>
+            <property transient="false" category="IEP.Category.operator" name="fromColumnList" title="IEP.Operator.TupleSerialCorrelation.fromColumnList.title" description="IEP.Operator.TupleSerialCorrelation.fromColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="&R;" multiple="true"/>
+            <property transient="false" category="IEP.Category.operator" name="increment" title="IEP.Operator.TupleSerialCorrelation.increment.title" description="IEP.Operator.TupleSerialCorrelation.increment.description" required="true" type="integer" editor="default" default="1" renderer="string" access="&RW;" multiple="false"/>
+            <property transient="false" category="IEP.Category.operator" name="size" title="IEP.Operator.TupleSerialCorrelation.size.title" description="IEP.Operator.TupleSerialCorrelation.size.description" required="true" type="integer" editor="default" default="1" renderer="string" access="&R;" multiple="false"/>
+            <code type="xml" file="vm/iep/operator/TupleSerialCorrelation.xml"/>
+        </component_type>
+        <!-- relation map-->
+        <component_type name="RelationMap" icon="operatorRTRx16.gif" title="IEP.Operator.RelationMap.title" description="IEP.Operator.RelationMap.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
+                <property name="type" default="i18n.IEP.Operator.RelationMap.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.relation"/>
+                <property name="inputMaxCount" default="1000000"/>
+                <property name="staticInputMaxCount" default="1000000"/>
+                <property name="outputType" default="i18n.IEP.IOType.relation"/>
+                <property name="isSchemaOwner" default="true"/>
+                <property name="palette" default="correlationAndFilter"/>
+            </property_group>
+            <property transient="false" category="IEP.Category.operator" name="fromColumnList" title="IEP.Operator.RelationMap.fromColumnList.title" description="IEP.Operator.RelationMap.fromColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
+            <property transient="false" category="IEP.Category.operator" name="toColumnList" title="IEP.Operator.RelationMap.toColumnList.title" description="IEP.Operator.RelationMap.toColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
+            <property transient="false" category="IEP.Category.operator" name="fromClause" title="IEP.Operator.RelationMap.fromClause.title" description="IEP.Operator.RelationMap.fromClause.description" required="true" type="string" editor="default" default="" renderer="string" access="" multiple="false"/>
+            <property transient="false" category="IEP.Category.operator" name="whereClause" title="IEP.Operator.RelationMap.whereClause.title" description="IEP.Operator.RelationMap.whereClause.description" required="false" type="string" editor="default" default="" renderer="string" access="" multiple="false"/>
+            <code type="xml" file="vm/iep/operator/relationMap.xml"/>
+        </component_type>
+        <!-- tuple based aggregator -->
+        <component_type name="TupleBasedAggregator" icon="operatorSTSx16.gif" title="IEP.Operator.TupleBasedAggregator.title" description="IEP.Operator.TupleBasedAggregator.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.TupleBasedAggregatorCustomEditor"/>
+                <property name="type" default="i18n.IEP.Operator.TupleBasedAggregator.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.stream"/>
+                <property name="staticInputMaxCount" default="1000000"/>
+                <property name="outputType" default="i18n.IEP.IOType.stream"/>
+                <property name="isSchemaOwner" default="true"/>
+                <property name="palette" default="aggregator"/>
+            </property_group>
+            <property transient="false" category="IEP.Category.operator" name="fromColumnList" title="IEP.Operator.TupleBasedAggregator.fromColumnList.title" description="IEP.Operator.TupleBasedAggregator.fromColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
+            <property transient="false" category="IEP.Category.operator" name="toColumnList" title="IEP.Operator.TupleBasedAggregator.toColumnList.title" description="IEP.Operator.TupleBasedAggregator.toColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
+            <property transient="false" category="IEP.Category.operator" name="groupByColumnList" title="IEP.Operator.TupleBasedAggregator.groupByColumnList.title" description="IEP.Operator.TupleBasedAggregator.groupByColumnList.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
+            <property transient="false" category="IEP.Category.operator" name="fromClause" title="IEP.Operator.TupleBasedAggregator.fromClause.title" description="IEP.Operator.TupleBasedAggregator.fromClause.description" required="true" type="string" editor="default" default="" renderer="string" access="" multiple="false"/>
+            <property transient="false" category="IEP.Category.operator" name="whereClause" title="IEP.Operator.TupleBasedAggregator.whereClause.title" description="IEP.Operator.TupleBasedAggregator.whereClause.description" required="false" type="string" editor="default" default="" renderer="string" access="" multiple="false"/>
+            <property transient="false" category="IEP.Category.operator" name="start" title="IEP.Operator.TupleBasedAggregator.start.title" description="IEP.Operator.TupleBasedAggregator.start.description" required="true" type="integer" editor="default" default="1" renderer="string" access="&RW;" multiple="false"/>
+            <property transient="false" category="IEP.Category.operator" name="increment" title="IEP.Operator.TupleBasedAggregator.increment.title" description="IEP.Operator.TupleBasedAggregator.increment.description" required="true" type="integer" editor="default" default="1" renderer="string" access="&RW;" multiple="false"/>
+            <property transient="false" category="IEP.Category.operator" name="size" title="IEP.Operator.TupleBasedAggregator.size.title" description="IEP.Operator.TupleBasedAggregator.size.description" required="true" type="integer" editor="default" default="1" renderer="string" access="&RW;" multiple="false"/>
+            <code type="xml" file="vm/iep/operator/tupleBasedAggregator.xml"/>
+        </component_type>
+        <!-- time based aggregator -->
+        <component_type name="TimeBasedAggregator" icon="operatorSTSx16.gif" title="IEP.Operator.TimeBasedAggregator.title" description="IEP.Operator.TimeBasedAggregator.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.TimeBasedAggregatorCustomEditor"/>
+                <property name="type" default="i18n.IEP.Operator.TimeBasedAggregator.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.stream"/>
+                <property name="staticInputMaxCount" default="1000000"/>
+                <property name="outputType" default="i18n.IEP.IOType.stream"/>
+                <property name="isSchemaOwner" default="true"/>
+                <property name="palette" default="aggregator"/>
+            </property_group>
+            <property transient="false" category="IEP.Category.operator" name="fromColumnList" title="IEP.Operator.TimeBasedAggregator.fromColumnList.title" description="IEP.Operator.TimeBasedAggregator.fromColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
+            <property transient="false" category="IEP.Category.operator" name="toColumnList" title="IEP.Operator.TimeBasedAggregator.toColumnList.title" description="IEP.Operator.TimeBasedAggregator.toColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
+            <property transient="false" category="IEP.Category.operator" name="groupByColumnList" title="IEP.Operator.TimeBasedAggregator.groupByColumnList.title" description="IEP.Operator.TimeBasedAggregator.groupByColumnList.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
+            <property transient="false" category="IEP.Category.operator" name="fromClause" title="IEP.Operator.TimeBasedAggregator.fromClause.title" description="IEP.Operator.TimeBasedAggregator.fromClause.description" required="true" type="string" editor="default" default="" renderer="string" access="" multiple="false"/>
+            <property transient="false" category="IEP.Category.operator" name="whereClause" title="IEP.Operator.TimeBasedAggregator.whereClause.title" description="IEP.Operator.TimeBasedAggregator.whereClause.description" required="false" type="string" editor="default" default="" renderer="string" access="" multiple="false"/>
+            <property transient="false" category="IEP.Category.operator" name="start" title="IEP.Operator.TimeBasedAggregator.start.title" description="IEP.Operator.TimeBasedAggregator.start.description" required="true" type="date" editor="org.netbeans.modules.iep.editor.tcg.ps.DatePropertyEditor" default="1970-01-01 00:00:00.000-0000" renderer="string" access="&RW;" multiple="false"/>
+            <property transient="false" category="IEP.Category.operator" name="increment" title="IEP.Operator.TimeBasedAggregator.increment.title" description="IEP.Operator.TimeBasedAggregator.increment.description" required="true" type="double" editor="default" default="1" renderer="string" access="&RW;" multiple="false"/>
+            <property transient="false" category="IEP.Category.operator" name="incrementUnit" title="IEP.Operator.TimeBasedAggregator.incrementUnit.title" description="IEP.Operator.TimeBasedAggregator.incrementUnit.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TimeUnitPropertyEditor" default="second" renderer="string" access="&RW;" multiple="false"/>
+            <property transient="false" category="IEP.Category.operator" name="size" title="IEP.Operator.TimeBasedAggregator.size.title" description="IEP.Operator.TimeBasedAggregator.size.description" required="true" type="double" editor="default" default="1" renderer="string" access="&RW;" multiple="false"/>
+            <property transient="false" category="IEP.Category.operator" name="unit" title="IEP.Operator.TimeBasedAggregator.unit.title" description="IEP.Operator.TimeBasedAggregator.unit.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TimeUnitPropertyEditor" default="second" renderer="string" access="&RW;" multiple="false"/>
+            <code type="xml" file="vm/iep/operator/timeBasedAggregator.xml"/>
+        </component_type>
+        <!-- relation aggregator-->
+        <component_type name="RelationAggregator" icon="operatorRRx16.gif" title="IEP.Operator.RelationAggregator.title" description="IEP.Operator.RelationAggregator.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
+                <property name="type" default="i18n.IEP.Operator.RelationAggregator.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.relation"/>
+                <property name="inputMaxCount" default="1"/>
+                <property name="staticInputMaxCount" default="0"/>
+                <property name="outputType" default="i18n.IEP.IOType.relation"/>
+                <property name="isSchemaOwner" default="true"/>
+                <property name="palette" default="aggregator"/>
+            </property_group>
+            <property transient="false" category="IEP.Category.operator" name="fromColumnList" title="IEP.Operator.RelationAggregator.fromColumnList.title" description="IEP.Operator.RelationAggregator.fromColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
+            <property transient="false" category="IEP.Category.operator" name="toColumnList" title="IEP.Operator.RelationAggregator.toColumnList.title" description="IEP.Operator.RelationAggregator.toColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
+            <property transient="false" category="IEP.Category.operator" name="groupByColumnList" title="IEP.Operator.RelationAggregator.groupByColumnList.title" description="IEP.Operator.RelationAggregator.groupByColumnList.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
+            <property transient="false" category="IEP.Category.operator" name="whereClause" title="IEP.Operator.RelationAggregator.whereClause.title" description="IEP.Operator.RelationAggregator.whereClause.description" required="false" type="string" editor="default" default="" renderer="string" access="" multiple="false"/>
+            <code type="xml" file="vm/iep/operator/relationAggregator.xml"/>
+        </component_type>
+        <!-- tuple based window -->
+        <component_type name="TupleBasedWindow" icon="operatorSRx16.gif" title="IEP.Operator.TupleBasedWindow.title" description="IEP.Operator.TupleBasedWindow.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.TupleBasedWindowCustomEditor"/>
+                <property name="type" default="i18n.IEP.Operator.TupleBasedWindow.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.stream"/>
+                <property name="outputType" default="i18n.IEP.IOType.relation"/>
+                <property name="palette" default="streamConverter"/>
+            </property_group>
+            <property transient="false" category="IEP.Category.operator" name="size" title="IEP.Operator.TupleBasedWindow.size.title" description="IEP.Operator.TupleBasedWindow.size.description" required="true" type="integer" editor="default" default="1" renderer="string" access="&RW;" multiple="false"/>
+            <code type="xml" file="vm/iep/operator/tupleBasedWindow.xml"/>
+        </component_type>
+        <!-- partitioned window -->
+        <component_type name="PartitionedWindow" icon="operatorSRx16.gif" title="IEP.Operator.PartitionedWindow.title" description="IEP.Operator.PartitionedWindow.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.PartitionedWindowCustomEditor"/>
+                <property name="type" default="i18n.IEP.Operator.PartitionedWindow.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.stream"/>
+                <property name="outputType" default="i18n.IEP.IOType.relation"/>
+                <property name="palette" default="streamConverter"/>
+            </property_group>
+            <property transient="false" category="IEP.Category.operator" name="size" title="IEP.Operator.PartitionedWindow.size.title" description="IEP.Operator.PartitionedWindow.size.description" required="true" type="integer" editor="default" default="1" renderer="string" access="&RW;" multiple="false"/>
+            <property transient="false" category="IEP.Category.operator" name="attributeList" title="IEP.Operator.PartitionedWindow.attributeList.title" description="IEP.Operator.PartitionedWindow.attributeList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="&RW;" multiple="true"/>
+            <code type="xml" file="vm/iep/operator/partitionedWindow.xml"/>
+        </component_type>
+        <!-- attribute based window -->
+        <component_type name="AttributeBasedWindow" icon="operatorSRx16.gif" title="IEP.Operator.AttributeBasedWindow.title" description="IEP.Operator.AttributeBasedWindow.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.AttributeBasedWindowCustomEditor"/>
+                <property name="type" default="i18n.IEP.Operator.AttributeBasedWindow.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.stream"/>
+                <property name="outputType" default="i18n.IEP.IOType.relation"/>
+                <property name="palette" default="streamConverter"/>
+            </property_group>
+            <property transient="false" category="IEP.Category.operator" name="attribute" title="IEP.Operator.AttributeBasedWindow.attribute.title" description="IEP.Operator.AttributeBasedWindow.attribute.description" required="true" type="string" editor="default" default="" renderer="string" access="&RW;" multiple="false"/>
+            <property transient="false" category="IEP.Category.operator" name="size" title="IEP.Operator.AttributeBasedWindow.size.title" description="IEP.Operator.AttributeBasedWindow.size.description" required="true" type="double" editor="default" default="1" renderer="string" access="&RW;" multiple="false"/>
+            <code type="xml" file="vm/iep/operator/attributeBasedWindow.xml"/>
+        </component_type>
+        <!-- time based window -->
+        <component_type name="TimeBasedWindow" icon="operatorSRx16.gif" title="IEP.Operator.TimeBasedWindow.title" description="IEP.Operator.TimeBasedWindow.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.TimeBasedWindowCustomEditor"/>
+                <property name="type" default="i18n.IEP.Operator.TimeBasedWindow.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.stream"/>
+                <property name="outputType" default="i18n.IEP.IOType.relation"/>
+                <property name="palette" default="streamConverter"/>
+            </property_group>
+            <property transient="false" category="IEP.Category.operator" name="size" title="IEP.Operator.TimeBasedWindow.size.title" description="IEP.Operator.TimeBasedWindow.size.description" required="true" type="integer" editor="default" default="1" renderer="string" access="&RW;" multiple="false"/>
+            <property transient="false" category="IEP.Category.operator" name="unit" title="IEP.Operator.TimeBasedWindow.unit.title" description="IEP.Operator.TimeBasedWindow.unit.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TimeUnitPropertyEditor" default="second" renderer="string" access="&RW;" multiple="false"/>
+            <code type="xml" file="vm/iep/operator/timeBasedWindow.xml"/>
+        </component_type>
+        <!-- insert stream-->
+        <component_type name="InsertStream" icon="operatorRSx16.gif" title="IEP.Operator.InsertStream.title" description="IEP.Operator.InsertStream.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
+                <property name="type" default="i18n.IEP.Operator.InsertStream.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.relation"/>
+                <property name="outputType" default="i18n.IEP.IOType.stream"/>
+                <property name="palette" default="relationConverter"/>
+            </property_group>
+            <code type="xml" file="vm/iep/operator/relationToStream/insertStream.xml"/>
+        </component_type>
+        <!-- delete stream-->
+        <component_type name="DeleteStream" icon="operatorRSx16.gif" title="IEP.Operator.DeleteStream.title" description="IEP.Operator.DeleteStream.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
+                <property name="type" default="i18n.IEP.Operator.DeleteStream.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.relation"/>
+                <property name="outputType" default="i18n.IEP.IOType.stream"/>
+                <property name="palette" default="relationConverter"/>
+            </property_group>
+            <code type="xml" file="vm/iep/operator/relationToStream/deleteStream.xml"/>
+        </component_type>
+        <!-- relation stream-->
+        <component_type name="RelationStream" icon="operatorRSx16.gif" title="IEP.Operator.RelationStream.title" description="IEP.Operator.RelationStream.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
+                <property name="type" default="i18n.IEP.Operator.RelationStream.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.relation"/>
+                <property name="outputType" default="i18n.IEP.IOType.stream"/>
+                <property name="palette" default="relationConverter"/>
+            </property_group>
+            <code type="xml" file="vm/iep/operator/relationToStream/relationStream.xml"/>
+        </component_type>
+        <!-- relation output: use a table update info to maintain the table's state -->
+        <component_type name="Table" icon="operatorRTx16.gif" title="IEP.Operator.Table.title" description="IEP.Operator.Table.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
+                <property name="type" default="i18n.IEP.Operator.Table.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.relation"/>
+                <property name="outputType" default="i18n.IEP.IOType.table"/>
+                <property name="palette" default="relationConverter"/>
+            </property_group>
+            <code type="xml" file="vm/iep/operator/table.xml"/>
+        </component_type>
+        <!-- distinct-->
+        <component_type name="Distinct" icon="operatorRRx16.gif" title="IEP.Operator.Distinct.title" description="IEP.Operator.Distinct.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
+                <property name="type" default="i18n.IEP.Operator.Distinct.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.relation"/>
+                <property name="inputMaxCount" default="1"/>
+                <property name="staticInputMaxCount" default="0"/>
+                <property name="outputType" default="i18n.IEP.IOType.relation"/>
+                <property name="isSchemaOwner" default="false"/>
+                <property name="palette" default="relationOperator"/>
+            </property_group>
+            <code type="xml" file="vm/iep/operator/distinct.xml"/>
+        </component_type>
+        <!-- union all-->
+        <component_type name="UnionAll" icon="operatorRRx16.gif" title="IEP.Operator.UnionAll.title" description="IEP.Operator.UnionAll.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
+                <property name="type" default="i18n.IEP.Operator.UnionAll.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.relation"/>
+                <property name="inputMaxCount" default="1000000"/>
+                <property name="staticInputMaxCount" default="0"/>
+                <property name="outputType" default="i18n.IEP.IOType.relation"/>
+                <property name="isSchemaOwner" default="false"/>
+                <property name="palette" default="relationOperator"/>
+            </property_group>
+            <code type="xml" file="vm/iep/operator/unionAll.xml"/>
+        </component_type>
+        <!-- union-->
+        <component_type name="Union" icon="operatorRRx16.gif" title="IEP.Operator.Union.title" description="IEP.Operator.Union.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
+                <property name="type" default="i18n.IEP.Operator.Union.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.relation"/>
+                <property name="inputMaxCount" default="1000000"/>
+                <property name="staticInputMaxCount" default="0"/>
+                <property name="outputType" default="i18n.IEP.IOType.relation"/>
+                <property name="isSchemaOwner" default="false"/>
+                <property name="palette" default="relationOperator"/>
+            </property_group>
+            <code type="xml" file="vm/iep/operator/union.xml"/>
+        </component_type>
+        <!-- intersect-->
+        <component_type name="Intersect" icon="operatorRRx16.gif" title="IEP.Operator.Intersect.title" description="IEP.Operator.Intersect.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
+                <property name="type" default="i18n.IEP.Operator.Intersect.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.relation"/>
+                <property name="inputMaxCount" default="1000000"/>
+                <property name="staticInputMaxCount" default="0"/>
+                <property name="outputType" default="i18n.IEP.IOType.relation"/>
+                <property name="isSchemaOwner" default="false"/>
+                <property name="palette" default="relationOperator"/>
+            </property_group>
+            <code type="xml" file="vm/iep/operator/intersect.xml"/>
+        </component_type>
+        <!-- minus-->
+        <component_type name="Minus" icon="operatorRRx16.gif" title="IEP.Operator.Minus.title" description="IEP.Operator.Minus.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.tcg.model.DefaultValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
+                <property name="type" default="i18n.IEP.Operator.Minus.title"/>
+                <property name="inputType" default="i18n.IEP.IOType.relation"/>
+                <property name="inputMaxCount" default="1000000"/>
+                <property name="staticInputMaxCount" default="0"/>
+                <property name="outputType" default="i18n.IEP.IOType.relation"/>
+                <property name="isSchemaOwner" default="false"/>
+                <property name="palette" default="relationOperator"/>
+            </property_group>
+            <code type="xml" file="vm/iep/operator/minus.xml"/>
+        </component_type>
+    </component_type_group>
+</component_type_group>
