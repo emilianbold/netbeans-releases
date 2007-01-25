@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Document   : template.xml
+    Created on : August 25, 2006, 5:39 PM
+    Author     : Sun Microsystems
+    Description: Describes the JMS Binding Component's extensibility element views on WSDL wizard
+-->
+<templateGroup namespace="http://schemas.sun.com/jbi/wsdl-extensions/jms/" 
+	       xmlns="http://xml.netbeans.org/schema/templates"
+	       xmlns:xsi="http://www.w3.org/1999/XMLSchema/instance"
+               xsi:schemaLocation="http://xml.netbeans.org/schema/templates 
+               templates.xsd" prefix="jms">
+    <template name="JMSTransport">
+        <wsdlElement name="Binding">
+            <extensionElement name="binding"/>
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation">
+                <extensionAttr name="destination" defaultValue="DefaultQueue" />
+                <extensionAttr name="destinationType" defaultValue="Queue" />
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="message">
+                <extensionAttr name="messageType" defaultValue="TextMessage" />
+                <extensionAttr name="textPart" defaultValue="change me" />
+                <extensionAttr name="use" defaultValue="literal" />
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationOutput">
+            <extensionElement name="message" >
+                <extensionAttr name="messageType" defaultValue="TextMessage" />
+                <extensionAttr name="textPart" defaultValue="change me" />
+                <extensionAttr name="use" defaultValue="literal" />
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address" >
+                <extensionAttr name="connectionURL"  defaultValue="mq://localhost:7676"/>
+            </extensionElement>
+        </wsdlElement>
+    </template>
+</templateGroup>
