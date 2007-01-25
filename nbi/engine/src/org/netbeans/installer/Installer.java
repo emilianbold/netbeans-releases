@@ -155,8 +155,15 @@ public class Installer {
         LogManager.log(MESSAGE, "initializing the installer engine");
         LogManager.indent();
         
+        // attach a handler for uncaught exceptions in the main thread
         Thread.currentThread().setUncaughtExceptionHandler(
                 ErrorManager.getExceptionHandler());
+        
+        // check whether we can safely execute on the current platform, exit in 
+        // panic otherwise
+        if (SystemUtils.getCurrentPlatform() == null) {
+            ErrorManager.notifyCritical("The current platform is not supported.");
+        }
         
         instance = this;
         

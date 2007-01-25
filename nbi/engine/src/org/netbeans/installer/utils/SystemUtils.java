@@ -60,9 +60,12 @@ public final class SystemUtils {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Static
-    private static Map<String, String> environment = new ProcessBuilder().environment();
-    private static NativeUtils nativeUtils = null;
-    private static Platform currentPlatform = null;
+    private static Map<String, String> environment = 
+            new ProcessBuilder().environment();
+    
+    private static NativeUtils nativeUtils;
+    
+    private static Platform currentPlatform;
     
     // string resolution ////////////////////////////////////////////////////////////
     public static String parseString(String string) {
@@ -521,16 +524,20 @@ public final class SystemUtils {
             if (System.getProperty("os.name").contains("Linux")) {
                 currentPlatform = Platform.LINUX;
             }
-            if (System.getProperty("os.name").contains("Mac OS X") && System.getProperty("os.arch").contains("ppc")) {
+            if (System.getProperty("os.name").contains("Mac OS X") && 
+                    System.getProperty("os.arch").contains("ppc")) {
                 currentPlatform = Platform.MACOS_X_PPC;
             }
-            if (System.getProperty("os.name").contains("Mac OS X") && System.getProperty("os.arch").contains("i386")) {
+            if (System.getProperty("os.name").contains("Mac OS X") && 
+                    System.getProperty("os.arch").contains("i386")) {
                 currentPlatform = Platform.MACOS_X_X86;
             }
-            if (System.getProperty("os.name").contains("SunOS") && System.getProperty("os.arch").contains("sparc")) {
+            if (System.getProperty("os.name").contains("SunOS") && 
+                    System.getProperty("os.arch").contains("sparc")) {
                 currentPlatform = Platform.SOLARIS_SPARC;
             }
-            if (System.getProperty("os.name").contains("SunOS") && System.getProperty("os.arch").contains("x86")) {
+            if (System.getProperty("os.name").contains("SunOS") && 
+                    System.getProperty("os.arch").contains("x86")) {
                 currentPlatform = Platform.SOLARIS_X86;
             }
         }
