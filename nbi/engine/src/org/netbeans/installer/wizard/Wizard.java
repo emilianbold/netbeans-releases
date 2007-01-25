@@ -22,6 +22,7 @@ package org.netbeans.installer.wizard;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.SwingUtilities;
@@ -32,7 +33,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import org.netbeans.installer.Installer;
-import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.PropertyContainer;
 import org.netbeans.installer.utils.helper.UiMode;
@@ -258,6 +258,23 @@ public class Wizard {
         switch (executionMode) {
             case SWING:
                 container = new SwingFrameContainer();
+
+                try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+                        public void run() {
+                            Thread.currentThread().setUncaughtExceptionHandler(
+                                    ErrorManager.getExceptionHandler());
+                        }
+                    });
+                } catch (InvocationTargetException e) {
+                    ErrorManager.notifyDebug(
+                            "Could not attach error handler to the EDT.", 
+                            e);
+                } catch (InterruptedException e) {
+                    ErrorManager.notifyDebug(
+                            "Could not attach error handler to the EDT.", 
+                            e);
+                }
                 
                 SwingUtilities.invokeLater(new Runnable(){
                     public void run() {
