@@ -38,9 +38,7 @@ public interface LocalHistoryStore {
     
     public void fileDeleteFromMove(File from, File to, long ts);
  
-    public void fileChange(File file, long ts);
-    
-    //public long lastModified(File file);        
+    public void fileChange(File file, long ts);        
     
     public StoreEntry[] getFiles(File file);
     
