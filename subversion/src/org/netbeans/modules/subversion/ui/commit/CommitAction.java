@@ -144,6 +144,7 @@ public class CommitAction extends ContextAction {
         DialogDescriptor dd = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_CommitDialog_Title", contentTitle)); // NOI18N
         dd.setModal(true);
         final JButton commitButton = new JButton(org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Commit")); // NOI18N
+        commitButton.setEnabled(false);
         dd.setOptions(new Object[] {commitButton, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Cancel")}); // NOI18N
         dd.setHelpCtx(new HelpCtx(CommitAction.class));
         panel.addVersioningListener(new VersioningListener() {
@@ -153,18 +154,11 @@ public class CommitAction extends ContextAction {
         });
         data.getTableModel().addTableModelListener(new TableModelListener() {
             public void tableChanged(TableModelEvent e) {
-                Map<SvnFileNode, CommitOptions> map = data.getCommitFiles();
-                boolean commitEnabled = false;
-                for(CommitOptions co : map.values()) {
-                    if(co != CommitOptions.EXCLUDE) {
-                        commitEnabled = true;
-                        break;
-                    }
-                }
-                commitButton.setEnabled(commitEnabled);
+                refreshCommitDialog(panel, data, commitButton);
             }
         });
-        
+        commitButton.setEnabled(containsCommitable(data));
+                
         panel.putClientProperty("contentTitle", contentTitle);  // NOI18N
         panel.putClientProperty("DialogDescriptor", dd); // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
@@ -192,6 +186,16 @@ public class CommitAction extends ContextAction {
         
     }
     
+    private static boolean containsCommitable(CommitTable data) {
+        Map<SvnFileNode, CommitOptions> map = data.getCommitFiles();
+        for(CommitOptions co : map.values()) {
+            if(co != CommitOptions.EXCLUDE) {
+                return true;                
+            }
+        }
+        return false;
+    }
+    
     /**
      * User changed a commit action.
      * 
@@ -204,13 +208,15 @@ public class CommitAction extends ContextAction {
         Set<String> stickyTags = new HashSet<String>();
         boolean conflicts = false;
         
+        boolean enabled = commit.isEnabled();
+        
         for (SvnFileNode fileNode : files.keySet()) {                                    
             CommitOptions options = files.get(fileNode);
             if (options == CommitOptions.EXCLUDE) continue;
             stickyTags.add(SvnUtils.getCopy(fileNode.getFile()));
             int status = fileNode.getInformation().getStatus();
             if ((status & FileInformation.STATUS_REMOTE_CHANGE) != 0 || status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                commit.setEnabled(false);
+                enabled = false;
                 String msg = (status == FileInformation.STATUS_VERSIONED_CONFLICT) ? 
                         loc.getString("MSG_CommitForm_ErrorConflicts") :
                         loc.getString("MSG_CommitForm_ErrorRemoteChanges");
@@ -248,9 +254,9 @@ public class CommitAction extends ContextAction {
         }
         if (!conflicts) {
             panel.setErrorLabel(errorLabel);
-            commit.setEnabled(true);
+            enabled = true; 
         }
-        
+        commit.setEnabled(enabled && containsCommitable(table));
     }
     
     protected void performContextAction(Node[] nodes) {
