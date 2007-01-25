@@ -160,14 +160,16 @@ public final class RefactoringElementsBag {
             DataObject dob = DataObject.find(el.getParentFile());
             EditorCookie e = dob.getCookie(EditorCookie.class);
             GuardedSectionManager manager = GuardedSectionManager.getInstance(e.openDocument());
-            for(GuardedSection section:manager.getGuardedSections()) {
-                int sectionStart = section.getStartPosition().getOffset();
-                int sectionEnd = section.getEndPosition().getOffset();
-                int elementStart = el.getPosition().getBegin().getOffset();
-                int elementEnd = el.getPosition().getEnd().getOffset();
-                if (sectionStart <= elementStart && sectionEnd >=elementStart ||
-                        sectionStart <= elementEnd && sectionEnd >=elementEnd) {
-                    return true;
+            if (manager != null) {
+                for(GuardedSection section:manager.getGuardedSections()) {
+                    int sectionStart = section.getStartPosition().getOffset();
+                    int sectionEnd = section.getEndPosition().getOffset();
+                    int elementStart = el.getPosition().getBegin().getOffset();
+                    int elementEnd = el.getPosition().getEnd().getOffset();
+                    if (sectionStart <= elementStart && sectionEnd >=elementStart ||
+                            sectionStart <= elementEnd && sectionEnd >=elementEnd) {
+                        return true;
+                    }
                 }
             }
         } catch (DataObjectNotFoundException ex) {
