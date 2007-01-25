@@ -22,9 +22,13 @@ package org.netbeans.modules.debugger.ui.actions;
 import java.awt.Dialog;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JButton;
 import org.netbeans.modules.debugger.ui.Utils;
+import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -39,7 +43,9 @@ import org.openide.util.NbBundle;
 */
 public final class ConnectAction extends AbstractAction {
     
-    Dialog dialog;
+    private Dialog dialog;
+    private JButton bOk;
+    private JButton bCancel;
 
     
     public ConnectAction () {
@@ -70,29 +76,77 @@ public final class ConnectAction extends AbstractAction {
             true, // modal
             new ConnectListener (cp)
         );
-        (dialog = DialogDisplayer.getDefault ().createDialog (descr)).setVisible(true);
+        descr.setOptions (new JButton[] {
+            bOk = new JButton (NbBundle.getMessage (ConnectAction.class, "CTL_Ok")), // NOI18N
+            bCancel = new JButton (NbBundle.getMessage (ConnectAction.class, "CTL_Cancel")) // NOI18N
+        });
+        bOk.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage (ConnectAction.class, "ACSD_CTL_Ok")); // NOI18N
+        bCancel.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage (ConnectAction.class, "ACSD_CTL_Cancel")); // NOI18N
+        descr.setClosingOptions (new Object [0]);
+        dialog = DialogDisplayer.getDefault ().createDialog (descr);
+        dialog.setVisible(true);
     }
 
 
     // innerclasses ............................................................
-    private class ConnectListener implements ActionListener {
+    private class ConnectListener implements ActionListener, PropertyChangeListener {
         
         ConnectorPanel connectorPanel;
+        Controller controller;
         
         ConnectListener (ConnectorPanel connectorPanel) {
             this.connectorPanel = connectorPanel;
+            connectorPanel.addPropertyChangeListener(this);
         }
         
         public void actionPerformed (ActionEvent e) {
-            if (e.getSource ().equals (DialogDescriptor.OK_OPTION)) {
-                connectorPanel.ok ();
-            } else
-            if (e.getSource ().equals (DialogDescriptor.CANCEL_OPTION)) {
-                connectorPanel.cancel ();
+            boolean okPressed = bOk.equals (e.getSource ());
+            Controller controller = connectorPanel.getController ();
+            boolean close = false;
+            if (okPressed) {
+                close = controller.ok ();
+            } else {
+                close = controller.cancel ();
             }
+            if (!close) return;
+            connectorPanel.removePropertyChangeListener (this);
+            stopListening ();
             dialog.setVisible (false);
             dialog.dispose ();
+            dialog = null;
         }
+        
+        void startListening () {
+            controller = connectorPanel.getController ();
+            if (controller == null) return;
+            controller.addPropertyChangeListener (this);
+        }
+        
+        void stopListening () {
+            if (controller == null) return;
+            controller.removePropertyChangeListener (this);
+            controller = null;
+        }
+
+        void setValid () {
+            Controller controller = connectorPanel.getController ();
+            if (controller == null) {
+                bOk.setEnabled (false);
+                return;
+            }
+            bOk.setEnabled (controller.isValid ());
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName () == ConnectorPanel.PROP_TYPE) {
+                stopListening ();
+                setValid ();
+                startListening ();
+            } else if (evt.getPropertyName () == Controller.PROP_VALID) {
+                setValid ();
+            }
+        }
+        
     }
 }
 

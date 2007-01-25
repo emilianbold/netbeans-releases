@@ -48,9 +48,10 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 
-public class ConnectorPanel extends JPanel implements ActionListener,
-Controller {
+public class ConnectorPanel extends JPanel implements ActionListener {
 
+    public static final String PROP_TYPE = "type";
+    
     /** Contains list of AttachType names.*/
     private JComboBox             cbAttachTypes;
     /** Switches off listenning on cbAttachTypes.*/
@@ -58,7 +59,7 @@ Controller {
     /** Contains list of installed AttachTypes.*/
     private List                  attachTypes;
     /** Currentlydisplayed panel.*/
-    private JComponent            currentPanel;
+    private Controller            currentPanel;
     /** Current attach type, which is stored into settings for the next invocation. */
     private AttachType            currentAttachType;
 
@@ -132,10 +133,11 @@ Controller {
         c.fill = java.awt.GridBagConstraints.BOTH;
         c.gridwidth = 0;
         AttachType attachType = (AttachType) attachTypes.get (index);
+        JComponent customizer = attachType.getCustomizer ();
+        currentPanel = (Controller) customizer;
+        firePropertyChange(PROP_TYPE, null, customizer);
         this.currentAttachType = attachType;
-        currentPanel = attachType.getCustomizer ();
-        
-        add (currentPanel, c);
+        add (customizer, c);
     }
 
 
@@ -154,14 +156,18 @@ Controller {
         return;
     }
     
+    Controller getController() {
+        return currentPanel;
+    }
+    
     public boolean cancel () {
-        return ((Controller) currentPanel).cancel ();
+        return currentPanel.cancel ();
     }
     
     public boolean ok () {
         String defaultAttachTypeName = currentAttachType.getClass().getName();
         Properties.getDefault().getProperties("debugger").setString("last_attach_type", defaultAttachTypeName);
-        return ((Controller) currentPanel).ok ();
+        return currentPanel.ok ();
     }    
 }
 
