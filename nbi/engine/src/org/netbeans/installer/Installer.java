@@ -118,6 +118,7 @@ public class Installer {
     public static final int CRITICAL_ERRORCODE = Integer.MAX_VALUE;
     
     public static final String TARGET_ARG = "--target";
+    
     /////////////////////////////////////////////////////////////////////////////////
     // Static
     private static Installer instance;
@@ -153,6 +154,9 @@ public class Installer {
     private Installer(String[] arguments) {
         LogManager.log(MESSAGE, "initializing the installer engine");
         LogManager.indent();
+        
+        Thread.currentThread().setUncaughtExceptionHandler(
+                ErrorManager.getExceptionHandler());
         
         instance = this;
         

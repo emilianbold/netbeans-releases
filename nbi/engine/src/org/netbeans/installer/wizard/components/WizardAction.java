@@ -26,6 +26,7 @@ import org.netbeans.installer.Installer;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.helper.ErrorLevel;
+import org.netbeans.installer.utils.helper.NbiThread;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiProgressBar;
@@ -52,7 +53,7 @@ public abstract class WizardAction extends WizardComponent {
     }
     
     public final void executeForward() {
-        new Thread() {
+        new NbiThread() {
             public void run() {
                 finished = false;
                 execute();

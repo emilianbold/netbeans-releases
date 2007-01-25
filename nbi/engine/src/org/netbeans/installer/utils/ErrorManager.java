@@ -20,6 +20,7 @@
  */
 package org.netbeans.installer.utils;
 
+import java.lang.Thread.UncaughtExceptionHandler;
 import javax.swing.JOptionPane;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.utils.helper.ErrorLevel;
@@ -36,6 +37,8 @@ import static org.netbeans.installer.utils.helper.ErrorLevel.ERROR;
 public class ErrorManager {
     /////////////////////////////////////////////////////////////////////////////////
     // Static
+    private static UncaughtExceptionHandler exceptionHandler;
+    
     public static synchronized void notifyDebug(String message) {
         notify(DEBUG, message);
     }
@@ -127,8 +130,26 @@ public class ErrorManager {
         }
     }
     
+    public static synchronized UncaughtExceptionHandler getExceptionHandler() {
+        if (exceptionHandler == null) {
+            exceptionHandler = new ExceptionHandler();
+        }
+        
+        return exceptionHandler;
+    }
+    
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private ErrorManager() {
+    }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Inner Classes
+    private static class ExceptionHandler implements UncaughtExceptionHandler {
+        public void uncaughtException(Thread thread, Throwable exception) {
+            ErrorManager.notifyCritical(
+                    "An uncaught exception happened in thread " + thread.getName(), 
+                    exception);
+        }
     }
 }

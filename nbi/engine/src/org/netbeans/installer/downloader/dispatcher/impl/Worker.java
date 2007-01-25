@@ -21,11 +21,12 @@
 package org.netbeans.installer.downloader.dispatcher.impl;
 
 import org.netbeans.installer.downloader.dispatcher.Process;
+import org.netbeans.installer.utils.helper.NbiThread;
 
 /**
  * @author Danila_Dugurov
  */
-public class Worker extends Thread {
+public class Worker extends NbiThread {
   
   /////////////////////////////////////////////////////////////////////////////////
   // Instance

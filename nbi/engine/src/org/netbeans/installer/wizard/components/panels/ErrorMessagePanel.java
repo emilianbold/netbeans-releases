@@ -28,10 +28,10 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.helper.NbiThread;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
-import org.netbeans.installer.wizard.components.WizardComponent;
 import org.netbeans.installer.wizard.components.WizardPanel;
 import org.netbeans.installer.wizard.components.WizardPanel.WizardPanelSwingUi;
 import org.netbeans.installer.wizard.components.WizardPanel.WizardPanelUi;
@@ -182,7 +182,7 @@ public class ErrorMessagePanel extends WizardPanel {
         
         /////////////////////////////////////////////////////////////////////////////
         // Inner Classes
-        protected static class ValidatingThread extends Thread {
+        protected static class ValidatingThread extends NbiThread {
             /////////////////////////////////////////////////////////////////////////
             // Constants
             public static final long VALIDATION_DELAY = 1000;
@@ -193,6 +193,8 @@ public class ErrorMessagePanel extends WizardPanel {
             private boolean paused = false;
             
             public ValidatingThread(ErrorMessagePanelSwingUi swingUi) {
+                super();
+                
                 this.swingUi = swingUi;
             }
             

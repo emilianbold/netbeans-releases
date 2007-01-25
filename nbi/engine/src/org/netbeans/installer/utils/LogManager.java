@@ -168,7 +168,7 @@ public class LogManager {
     }
     
     public static synchronized void logEntry(String message) {
-        StackTraceElement traceElement = Thread.currentThread().getStackTrace()[1];
+        StackTraceElement traceElement = Thread.currentThread().getStackTrace()[2];
         
         log(DEBUG, "entering -- " +
                 (traceElement.isNativeMethod() ? "[native] " : "") +
@@ -180,7 +180,7 @@ public class LogManager {
     }
     
     public static synchronized void logExit(String message) {
-        StackTraceElement traceElement = Thread.currentThread().getStackTrace()[1];
+        StackTraceElement traceElement = Thread.currentThread().getStackTrace()[2];
         
         unindent();
         log(message);
