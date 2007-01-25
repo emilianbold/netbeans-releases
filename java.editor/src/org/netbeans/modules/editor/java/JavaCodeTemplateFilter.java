@@ -87,7 +87,7 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter, CancellableTa
     private EnumSet<Tree.Kind> getTemplateContexts(CodeTemplate template) {
         //TODO: rewrite this method when contexts are provided by templates
         String abbrev = template.getAbbreviation().toLowerCase();
-        if (abbrev.startsWith("runn") || abbrev.startsWith("for") || abbrev.startsWith("while") || abbrev.equals("inst") || abbrev.startsWith("if") || abbrev.startsWith("do"))
+        if (abbrev.equals("runn") || abbrev.startsWith("for") || abbrev.startsWith("while") || abbrev.equals("inst") || abbrev.startsWith("if") || abbrev.startsWith("do") || abbrev.startsWith("try"))
             return EnumSet.of(Tree.Kind.BLOCK);
         return EnumSet.noneOf(Tree.Kind.class);
     }
