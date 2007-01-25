@@ -292,17 +292,11 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
             return new TemplateChildren (folder);
         }
 
-        public char getCategoriesMnemonic() {
-            return NbBundle.getMessage(TemplatesPanel.class,"MNE_Categories").charAt(0);
-        }
 
         public String getCategoriesName() {
             return NbBundle.getMessage(TemplatesPanel.class,"CTL_Categories");
         }
 
-        public char getTemplatesMnemonic() {
-            return NbBundle.getMessage(TemplatesPanel.class,"MNE_Projects").charAt (0);
-        }
 
         public String getTemplatesName() {
             return NbBundle.getMessage(TemplatesPanel.class,"CTL_Projects");

@@ -45,6 +45,7 @@ import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 import org.openide.ErrorManager;
+import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.ListView;
@@ -75,10 +76,6 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         public String getCategoriesName ();
         
         public String getTemplatesName ();
-        
-        public char getCategoriesMnemonic ();
-        
-        public char getTemplatesMnemonic ();
         
         public void fireChange ();
     }
@@ -246,10 +243,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     }
         
     private void postInitComponents () {        
-        this.jLabel1.setText (this.firer.getCategoriesName());
-        this.jLabel1.setDisplayedMnemonic(this.firer.getCategoriesMnemonic());
-        this.jLabel2.setText (this.firer.getTemplatesName());
-        this.jLabel2.setDisplayedMnemonic (this.firer.getTemplatesMnemonic());                                                
+        Mnemonics.setLocalizedText(jLabel1, this.firer.getCategoriesName());
+        Mnemonics.setLocalizedText(jLabel2, this.firer.getTemplatesName());
         this.description.setEditorKit(new HTMLEditorKit());
 
         // please wait node, see issue 52900
@@ -289,7 +284,6 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         setPreferredSize(new java.awt.Dimension(500, 230));
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(TemplatesPanelGUI.class).getString("MNE_Categories").charAt(0));
         jLabel1.setLabelFor(categoriesPanel);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getBundle(TemplatesPanelGUI.class).getString("CTL_Categories")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -301,7 +295,6 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(jLabel1, gridBagConstraints);
 
-        jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(TemplatesPanelGUI.class).getString("MNE_Templates").charAt(0));
         jLabel2.setLabelFor(projectsPanel);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getBundle(TemplatesPanelGUI.class).getString("CTL_Templates")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();

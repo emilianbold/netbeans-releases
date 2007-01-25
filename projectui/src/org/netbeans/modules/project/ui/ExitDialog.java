@@ -22,7 +22,6 @@ package org.netbeans.modules.project.ui;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog;
-
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -40,10 +39,10 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.openide.DialogDescriptor;
-
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
@@ -266,12 +265,9 @@ final public class ExitDialog extends JPanel implements ActionListener {
                 JButton buttonDiscardAll = new JButton();
                 buttonDiscardAll.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_DiscardAll"));
                 
-                buttonSave.setText (bundle.getString("CTL_Save"));
-                buttonSave.setMnemonic (bundle.getString ("CTL_Save_MNM").charAt (0));
-                buttonSaveAll.setText (bundle.getString ("CTL_SaveAll"));
-                buttonSaveAll.setMnemonic (bundle.getString ("CTL_SaveAll_MNM").charAt (0));
-                buttonDiscardAll.setText (bundle.getString ("CTL_DiscardAll"));
-                buttonDiscardAll.setMnemonic (bundle.getString ("CTL_DiscardAll_MNM").charAt (0));
+                Mnemonics.setLocalizedText(buttonSave, bundle.getString("CTL_Save"));
+                Mnemonics.setLocalizedText(buttonSaveAll, bundle.getString ("CTL_SaveAll"));
+                Mnemonics.setLocalizedText(buttonDiscardAll, bundle.getString ("CTL_DiscardAll"));
                 
                 exitOptions = new Object[] {
                                   buttonSave,

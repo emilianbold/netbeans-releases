@@ -97,6 +97,7 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     
     private UpdatingMenu createSubMenu() {
         UpdatingMenu menu = new UpdatingMenu(this);
+        //ok to have mnenomics here, not shown on mac anyway
         menu.setMnemonic(NbBundle.getMessage(RecentProjects.class, "MNE_RecentProjectsAction_Name").charAt(0));
         return menu;
     }
