@@ -47,7 +47,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <implementation-version/>
+                        <specification-version>1.13.0.4.4</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
