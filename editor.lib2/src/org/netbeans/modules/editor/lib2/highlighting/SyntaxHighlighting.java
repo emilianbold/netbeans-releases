@@ -61,16 +61,20 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
     private final HashMap<String, WeakHashMap<TokenId, AttributeSet>> attribsCache = new HashMap<String, WeakHashMap<TokenId, AttributeSet>>();
     
     private final Document document;
-    private final String mimeType;
-    private final boolean needsHack;
+    private final String mimeTypeForHack;
     private TokenHierarchy<? extends Document> hierarchy = null;
     private long version = 0;
     
     /** Creates a new instance of SyntaxHighlighting */
     public SyntaxHighlighting(Document document) {
         this.document = document;
-        this.mimeType = (String) document.getProperty("mimeType"); //NOI18N
-        this.needsHack = mimeType.startsWith("test"); //NOI18N
+        
+        String mimeType = (String) document.getProperty("mimeType"); //NOI18N
+        if (mimeType != null && mimeType.startsWith("test")) { //NOI18N
+            this.mimeTypeForHack = mimeType;
+        } else {
+            this.mimeTypeForHack = null;
+        }
     }
 
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
@@ -334,7 +338,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
             TokenId tokenId = seq.token().id();
             String mimePath;
             
-            if (needsHack) {
+            if (mimeTypeForHack != null) {
                 mimePath = languagePathToMimePathHack(seq.languagePath());
             } else {
                 mimePath = seq.languagePath().mimePath();
@@ -399,9 +403,9 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
         // panel.
         private String languagePathToMimePathHack(LanguagePath languagePath) {
             if (languagePath.size() == 1) {
-                return mimeType;
+                return mimeTypeForHack;
             } else if (languagePath.size() > 1) {
-                return mimeType + "/" + languagePath.subPath(1).mimePath(); //NOI18N
+                return mimeTypeForHack + "/" + languagePath.subPath(1).mimePath(); //NOI18N
             } else {
                 throw new IllegalStateException("LanguagePath should not be empty."); //NOI18N
             }
