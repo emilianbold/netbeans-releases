@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ <antlib>
+        <!-- typedef name="XsltProjectJBIGen" classname="org.netbeans.modules.xslt.project.anttasks.IDEGenerateJBIDescriptor"/ -->
+        <!-- typedef name="XsltProjectValidate" classname="org.netbeans.modules.xslt.project.anttasks.IDEValidateXSLTProject"/ -->
+        
+ </antlib>
