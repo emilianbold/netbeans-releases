@@ -28,10 +28,14 @@ import org.netbeans.api.project.SourceGroup;
  *
  * @author Peter Williams, Milan Kuchtiak
  */
+
+/** SPI for JAXWSClientView
+ */
 public interface JAXWSClientViewImpl {
     
-	// PW FIXME not all these methods will stay.  As of 8/31, the one used
-	// is the FileObject wsdlFolder version.
+	/** Create Node representing JAX-WS References for a given project
+     *@param project containing web service references (WS Clients) 
+	*/ 
     public Node createJAXWSClientView(Project p);
 	
 }

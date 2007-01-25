@@ -30,11 +30,11 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
-/** WebServicesSupport should be used to manipulate a projects representation
- *  of a web service implementation.
+/** JAXWSSupport should be used to manipulate projects representations
+ *  of JAX-WS services.
  * <p>
- * A client may obtain a WebServicesSupport instance using
- * <code>WebServicesSupport.getWebServicesSupport(fileObject)</code> static
+ * A client may obtain a JAXWSSupport instance using
+ * <code>JAXWSSupport.getJAXWSSupport(fileObject)</code> static
  * method, for any FileObject in the project directory structure.
  *
  * @author Peter Williams, Milan Kuchtiak
@@ -63,7 +63,7 @@ public final class JAXWSSupport {
         this.impl = impl;
     }
     
-    /** Find the WebServicesSupport for given file or null if the file does not belong
+    /** Find the JAXWSSupport for given file or null if the file does not belong
      * to any module support web services.
      */
     public static JAXWSSupport getJAXWSSupport(FileObject f) {
@@ -83,19 +83,17 @@ public final class JAXWSSupport {
     
     // Delegated methods from WebServicesSupportImpl
     
-    /*
-     * Add web service to jax-ws.xml
-     * intended for web services from java
+    /**
+     * Add web service to jax-ws.xml intended for web services from java
      * @param serviceName service display name (name of the node ws will be presented in Netbeans), e.g. "SearchService"
      * @param serviceImpl package name of the implementation class, e.g. "org.netbeans.SerchServiceImpl"
-     * @param isJsr109 Indicates if the web service is being created in a JSR 109 container
+     * @param isJsr109 Indicates if the web service is being created in a project that supports a JSR 109 container
      */
     public void addService(String serviceName, String serviceImpl, boolean isJsr109) {
         impl.addService(serviceName, serviceImpl, isJsr109);
     }
     
-    /*
-     * Add web service to jax-ws.xml
+    /** Add web service to jax-ws.xml
      * intended for web services from wsdl
      * @param name service display name (name of the node ws will be presented in Netbeans), e.g. "SearchService"
      * @param serviceImpl package name of the implementation class, e.g. "org.netbeans.SerchServiceImpl"
@@ -110,8 +108,10 @@ public final class JAXWSSupport {
             String serviceName, String portName, String packageName, boolean isJsr109) {
         return impl.addService(name, serviceImpl, wsdlUrl, serviceName, portName, packageName, isJsr109);
     }
+    
     /**
      * Returns the list of web services in the project
+     * @return list of web services
      */
     public List getServices() {
         return impl.getServices();
@@ -119,6 +119,7 @@ public final class JAXWSSupport {
   
     /**
      * Remove the web service entries from the project properties
+     * @param serviceName service IDE name 
      * project.xml files
      */
     public void removeService(String serviceName) {
@@ -128,48 +129,64 @@ public final class JAXWSSupport {
     /**
      * Notification when Service (created from java) is removed from jax-ws.xml
      * (JAXWSSupport needs to react when @WebService annotation is removed 
-     * or when impl.class is removed (manually from project) 
+     * or when impl.class is removed (manually from project)
+     * @param serviceName service IDE name 
      */
     public void serviceFromJavaRemoved(String serviceName) {
         impl.serviceFromJavaRemoved(serviceName);
     }
     
-    /**
-     * Returns the name of the implementation class
+    /** Get the name of the implementation class
      * given the service (ide) name
+     * @param serviceName service IDE name 
+     * @return service implementation class package name
      */
     public String getServiceImpl(String serviceName) {
         return impl.getServiceImpl(serviceName);
     }
     
-    /**
-     * Determine if the web service was created from WSDL
+    /** Determine if the web service was created from WSDL
+     * @param serviceName service name 
      */
     public boolean isFromWSDL(String serviceName) {
         return impl.isFromWSDL(serviceName);
     }
     
-    /**
-     *  return wsdl folder for local copy of WSDL
+    /** Get WSDL folder for the project (folder containing wsdl files)
+     *  The folder is used to save remote or local wsdl files to be available within the jar/war files.
+     *  it is usually META-INF/wsdl folder (or WEB-INF/wsdl for web application)
+     *  @param createFolder if (createFolder==true) the folder will be created (if not created before)
+     *  @return the file object (folder) where wsdl files are located in project 
      */
     public FileObject getWsdlFolder(boolean create) throws java.io.IOException {
         return impl.getWsdlFolder(create);
     }
     
-    /**
-     *  return folder for local wsdl artifacts
+    /** Get folder for local WSDL and XML artifacts for given service
+     * This is the location where wsdl/xml files are downloaded to the project.
+     * JAX-WS java artifacts will be generated from these local files instead of remote.
+     * @param serviceName service IDE name (the web service node display name)
+     * @param createFolder if (createFolder==true) the folder will be created (if not created before)
+     * @return the file object (folder) where wsdl files are located in project 
      */
     public FileObject getLocalWsdlFolderForService(String serviceName, boolean createFolder) {
         return impl.getLocalWsdlFolderForService(serviceName,createFolder);
     }
     
-    /**
-     *  return folder for local wsdl bindings
+    /** Get folder for local jaxb binding (xml) files for given service
+     *  This is the location where external jaxb binding files are downloaded to the project.
+     *  JAX-WS java artifacts will be generated using these local binding files instead of remote.
+     * @param serviceName service IDE name (the web service node display name)
+     * @param createFolder if (createFolder==true) the folder will be created (if not created before)
+     * @return the file object (folder) where jaxb binding files are located in project 
      */
     public FileObject getBindingsFolderForService(String serviceName, boolean createFolder) {
         return impl.getBindingsFolderForService(serviceName,createFolder);
     }
-
+    
+    /**
+     * Get the AntProjectHelper from the project
+     */
     public AntProjectHelper getAntProjectHelper() {
         return impl.getAntProjectHelper();
     }
@@ -180,18 +197,26 @@ public final class JAXWSSupport {
         return impl.getCatalog();
     }
     
-    /** Get wsdlLocation information 
-     * Useful for web service from wsdl
-     * @param name service "display" name
+    /** Get wsdlLocation information
+     * Useful for web service from wsdl (the @WebService wsdlLocation attribute)
+     * @param serviceName service "display" name
      */
     public String getWsdlLocation(String serviceName) {
         return impl.getWsdlLocation(serviceName);
     }
     
+    /**
+     * Remove all entries associated with a non-JSR 109 entries
+     * This may include entries in the module's deployment descriptor,
+     * and entries in the implementation-specific descriptor file, sun-jaxws.xml.
+     * This is provided as a service so that the node can also use it for cleanup.
+     */
     public void removeNonJsr109Entries(String serviceName) throws IOException{
         impl.removeNonJsr109Entries(serviceName);
     }
-    
+    /**
+     * Returns the directory that contains the deployment descriptor in the project
+     */    
     public FileObject getDeploymentDescriptorFolder(){
         return impl.getDeploymentDescriptorFolder();
     }

@@ -26,7 +26,14 @@ import org.openide.nodes.Node;
  *
  * @author mkuchtiak
  */
+
+/** SPI for JAXWSView
+ */
 public interface JAXWSViewImpl {
-    
+   
+    /** Create JAXWSView node for given project
+     * @param project project containing JAX-WS services
+     * @return root node for web JAX-WS services representations
+     */
     public Node createJAXWSView(Project project);
 }

@@ -31,19 +31,17 @@ import org.openide.util.Lookup;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportProvider;
 import org.openide.nodes.Node;
 
-/** WebServicesClientSupport should be used to manipulate a projects representation
- *  of a web service implementation.
+/** JAXWSClientSupport should be used to manipulate representations
+ *  of JAX-WS service references (WS Clients) in a project.
  * <p>
- * A client may obtain a WebServicesClientSupport instance using
- * <code>WebServicesClientSupport.getWebServicesClientSupport(fileObject)</code> static
+ * A client may obtain a JAXWSClientSupport instance using
+ * <code>JAXWSClientSupport.getJAXWSClientSupport(fileObject)</code> static
  * method, for any FileObject in the project directory structure.
  *
  * @author Peter Williams
  */
 public final class JAXWSClientSupport {
     
-    public static final String WSCLIENTUPTODATE_CLASSPATH = "wsclientuptodate.classpath";
-
     private JAXWSClientSupportImpl impl;
     private static final Lookup.Result implementations =
         Lookup.getDefault().lookup(new Lookup.Template(WebServicesClientSupportProvider.class));
@@ -66,8 +64,8 @@ public final class JAXWSClientSupport {
         this.impl = impl;
     }
 
-    /** Find the WebServicesClientSupport for given file or null if the file does
-     *  not belong to any module supporting web service clients.
+    /** Find the JAXWSClientSupport for given file or null if the file does
+     *  not belong to any module supporting JAX-WS service clients.
      */
     public static JAXWSClientSupport getJaxWsClientSupport (FileObject f) {
         if (f == null) {
@@ -84,92 +82,88 @@ public final class JAXWSClientSupport {
         return null;
     }
 
-    // Delegated methods from WebServicesClientSupportImpl
+    // Delegated methods from JAXWSClientSupportImpl
 
-    /** Adds a service client to the module represented by this support object.
-     *
-     * 1. Add appropriate entries to project.xml and project.properties to add
-     *    this service client to the build. Web/project implementation added
-     *    wscompile targets directly to the build-impl.xsl script and adds some
-     *    entries to project.xml to drive those fragments.
-     * 2. Regenerate build-impl.xml (For web/project, this happens automatically
-     *    when the modified project.xml/project.properties is saved.)
-     * 3. Add J2EE Platform support
-     * 4. Code completion source registration for generated interface files? (So
-     *    the user can type "TemperatureService." and have the list of port methods
-     *    show up.) This was implemented independent of web services by adding
-     *    the build.classes.dir to the SourceForBinaryQuery classpath.
-     * 5. DELETED add service-ref to module deployment descriptor
-     *
-     * @param serviceName name of this service (as specified in wsdl file.)
-     * @param configFile config file for use by wscompile target
+    /** Add JAX-WS Client to project.
+     *  <ul>
+     *  <li> add client element to jax-ws.xml (Netbeans specific configuration file)
+     *  <li> download the wsdl file(s) and all related XML artifacts to the project 
+     *  <li> generate JAX-WS artifacts for web service specified by wsdlUrl.
+     *  <li> this can be achieved by creating specific target in build-impl.xml, that calls wsimport task.
+     *  </ul>
+     * @param clientName proposed name for the client (the web service reference node display name)
+     * @param wsdlURL URL for web service WSDL file
+     * @param isJsr109 flag indicating the need to add JAX-WS libraries to project:
+     *        if (isJsr109==false) JAX-WS libraries should be added to the project classpath 
+     * @return unique name for WS Client in the project(can be different than requested clientName)
      */
     public String addServiceClient(String serviceName, String wsdlUrl, String packageName, boolean isJsr109) {
         return impl.addServiceClient(serviceName, wsdlUrl, packageName, isJsr109);
     }
     
     
-    /**  Removes a service client from the module represented by this support object.
-     *
-     * 1. Removes everything associated with this service that was added in
-     *    addServiceClient, assuming it is not needed by another service client.
-     * 2. Anything specific only to this service should be removed.
-     * 3. Anything specific to web service clients in general should be removed
-     *    if there are no other clients, e.g. library support.
-     * 4. Note there are a few items that are shared between web service
-     *    implementations and web service clients. These items should only be
-     *    removed if there are no services OR clients in the project after this
-     *    action is performed.
-     *
-     * @param serviceName name of this service (as specified in wsdl file).
+    /** Remove JAX-WS Client from project.
+     * <ul>
+     *  <li> remove client element from jax-ws.xml (Netbeans specific configuration file)
+     *  <li> remove all WSDL/XML artifacts related to this client
+     *  <li> remove all JAX-WS java artifacts generated for this client
+     * </ul>
+     * @param clientName client name (the web service reference node display name)
      */
     public void removeServiceClient(String serviceName) {
         impl.removeServiceClient(serviceName);
     }
 
-    /** Get the WSDL folder (where WSDL files are to be stored) for this module.
-     *
-     * 1. Return the source folder where wsdl files for the services used by the
-     *    client are to be stored. For web project, this is WEB-INF/wsdl
-     * 2. Should this method return a higher level folder type? (if so, what
-     *    would that type be? DataFolder?)
-     * 3. Note that this is referring to the source folder, thus allowing freeform
-     *    project to let the user set this if they want. For the build directory,
-     *    wsdl location is enforced by J2EE 1.4 container to be WEB-INF/wsdl or
-     *    META-INF/wsdl.
-     *
-     * @param create set to true if the folder should be created if it does not exist.
-     * @return FileObject representing this folder.
-     * @exception IOException if there is a problem accessing or creating the folder
+    /** Get WSDL folder for the project (folder containing wsdl files)
+     *  The folder is used to save remote or local wsdl files to be available within the jar/war files.
+     *  it is usually META-INF/wsdl folder (or WEB-INF/wsdl for web application)
+     *  @param createFolder if (createFolder==true) the folder will be created (if not created before)
+     *  @return the file object (folder) where wsdl files are located in project 
      */
     public FileObject getWsdlFolder(boolean create) throws IOException {
         return impl.getWsdlFolder(create);
     }
     
-    /**
-     *  return folder for local wsdl artifacts
+    /** Get folder for local WSDL and XML artifacts for given client
+     * This is the location where wsdl/xml files are downloaded to the project.
+     * JAX-WS java artifacts will be generated from these local files instead of remote.
+     * @param clientName client name (the web service reference node display name)
+     * @param createFolder if (createFolder==true) the folder will be created (if not created before)
+     * @return the file object (folder) where wsdl files are located in project 
      */
     public FileObject getLocalWsdlFolderForClient(String clientName, boolean createFolder) {
         return impl.getLocalWsdlFolderForClient(clientName,createFolder);
     }
     
-    /**
-     *  return folder for local wsdl bindings
+    /** Get folder for local jaxb binding (xml) files for given client
+     *  This is the location where external jaxb binding files are downloaded to the project.
+     *  JAX-WS java artifacts will be generated using these local binding files instead of remote.
+     * @param clientName client name (the web service reference node display name)
+     * @param createFolder if (createFolder==true) the folder will be created (if not created before)
+     * @return the file object (folder) where jaxb binding files are located in project 
      */
     public FileObject getBindingsFolderForClient(String clientName, boolean createFolder) {
         return impl.getBindingsFolderForClient(clientName,createFolder);
     }
     
-    /** returns the URL of catalog file in project
+    /** gets the URL of catalog.xml file
+     *  (the catalog is used by wsimport to locate local wsdl/xml resources)
+     * @return URL url of the car
      */
     public URL getCatalog() {
         return impl.getCatalog();
     }
     
+    /** Get list of all JAX-WS Clients in project
+     * @param clientName client name (the web service reference node display name)
+     */    
     public List/*Client*/ getServiceClients() {
         return impl.getServiceClients();
     }
     
+    /** intended to be used to obtain service-ref name for given web service reference
+     *  (currently not used in projects)
+     */    
      public String getServiceRefName(Node clientNode){
          return impl.getServiceRefName(clientNode);
      }

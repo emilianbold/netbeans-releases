@@ -27,14 +27,13 @@ import org.openide.util.Lookup;
 import org.openide.nodes.Node;
 import org.netbeans.api.project.Project;
 
-/** WebServicesView should be used to retrieve information and display objects
- *  for the webservices in a project.
+/** JAXWSView should be used to display JAX-WS services in project.
  * <p>
- * A client may obtain a WebServicesView instance using 
- * <code>WebServicesView.getWebServicesView(fileObject)</code> static 
- * method, for any FileObject in the project directory structure.
+ * A client may obtain a JAXWSView instance using 
+ * <code>JAXWSView.getJAXWSView()</code> static 
+ * method.
  *
- * @author Peter Williams
+ * @author Peter Williams, Milan Kuchtiak
  */
 public final class JAXWSView {
     
@@ -60,8 +59,7 @@ public final class JAXWSView {
         this.impl = impl;
     }
     
-    /** Find the JAXWSView for given file or null if the file does not belong
-     * to any module support web services.
+    /** Lookup the IDE to find the JAXWSView instance
      */
     public static JAXWSView getJAXWSView() {
        Iterator it = implementations.allInstances().iterator();
@@ -75,7 +73,12 @@ public final class JAXWSView {
         return null;
     }
 
-    // Delegated methods from JAXWSViewImpl	
+    // Delegated methods from JAXWSViewImpl
+    
+    /** Create JAXWSView node for given project
+     * @param project project containing JAX-WS services
+     * @return root node for web JAX-WS services representations
+     */
     public Node createJAXWSView(Project project) {
         return impl.createJAXWSView(project);
     }

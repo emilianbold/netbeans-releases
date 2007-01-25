@@ -23,19 +23,18 @@ import java.util.Iterator;
 import org.netbeans.modules.websvc.jaxws.client.JAXWSClientViewAccessor;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientViewImpl;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientViewProvider;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.nodes.Node;
 import org.netbeans.api.project.Project;
 
-/** WebServicesClientView should be used to retrieve information and display objects
- *  for the webservices in a project.
+/** JAXWSlientView should be used to display web service references in project.
+ *  The wiew containes nodes representing web service references in project.
  * <p>
- * A client may obtain a WebServicesClientView instance using 
- * <code>WebServicesClientView.getWebServicesClientView(fileObject)</code> static 
- * method, for any FileObject in the project directory structure.
+ * A client may obtain a JAXWClientView instance using 
+ * <code>JAXWSClientView.getJAXWSClientView()</code> static 
+ * method
  *
- * @author Peter Williams
+ * @author Peter Williams, Milan Kuchtiak  
  */
 public final class JAXWSClientView {
 
@@ -61,9 +60,8 @@ public final class JAXWSClientView {
 		this.impl = impl;
 	}
 
-	/** Find the JAXWSClientView for given file or null if the file does 
-	 *  not belong to any module support web services.
-	 */
+	/** Lookup the IDE and find JAXWSClientView instance
+     */
 	public static JAXWSClientView getJAXWSClientView() {
 		Iterator it = implementations.allInstances().iterator();
 		while (it.hasNext()) {
@@ -83,7 +81,10 @@ public final class JAXWSClientView {
 	}
 
 	// Delegated methods from WebServicesClientViewImpl
-
+    
+	/** Create Node representing Web Service References for a given project
+     *@param project project containing web service references (WS Clients) 
+	*/ 
 	public Node createJAXWSClientView(Project p) {
 		return impl.createJAXWSClientView(p);
 	}
