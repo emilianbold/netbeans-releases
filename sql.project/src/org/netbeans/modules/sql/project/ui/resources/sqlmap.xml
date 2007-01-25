@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+    <requestReplyService>                    
+        <input  partnerLink="{foo}pl0"       
+                roleName="server"            
+                portType="portType"          
+                operation="operation"
+                messageType="replyMessageType"
+                file="map.xsl"               
+                transformJBI="false" />      
+    </requestReplyService>
+    <filterOneWay>                           
+        <input  partnerLink="{foo}pl1"       
+                roleName="server"            
+                portType="portType"          
+                operation="operation"
+                messageType="replyMessageType"
+                file="map.xsl"               
+                transformJBI="false" />      
+        <output partnerLink="{bar}pl2"       
+                roleName="client"            
+                portType="outPortType"       
+                operation="outOp" />      
+    </filterOneWay>
+    <filterRequestReply>                     
+        <input  partnerLink="{foo}pl1"       
+                roleName="server"            
+                portType="portType"          
+                operation="operation"
+                messageType="replyMessageType"
+                file="map.xsl"               
+                transformJBI="false" />      
+        <output partnerLink="{bar}pl2"       
+                roleName="client"            
+                portType="outPortType"       
+                operation="outOp"
+                messageType="replyMessageType"
+                file="map2.xsl"              
+                transformJBI="false" />      
+    </filterRequestReply>
+-->
+<xsltmap>
+	<!-- Insert configuration here -->
+</xsltmap>
