@@ -1,0 +1,71 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<!-- - The contents of this file are subject to the terms of the Common Development
+   - and Distribution License (the License). You may not use this file except in
+   - compliance with the License.
+   -
+   - You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+   - or http://www.netbeans.org/cddl.txt.
+   -
+   - When distributing Covered Code, include this CDDL Header Notice in each file
+   - and include the License file at http://www.netbeans.org/cddl.txt.
+   - If applicable, add the following below the CDDL Header, with the fields
+   - enclosed by brackets [] replaced by your own identifying information:
+   - "Portions Copyrighted [year] [name of copyright owner]"
+   -
+   - The Original Software is NetBeans. The Initial Developer of the Original
+   - Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+   - Microsystems, Inc. All Rights Reserved.
+ -->
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<P><BR><BR>
+</P>
+<H1 ALIGN=CENTER>Service API</H1>
+<P>Service API defines a contract for introspecting development
+environment entities to discover components providing and consuming
+web services.  ServiceAPI is abstract enough to allow service 
+interface to be specified with different web service description standards 
+(WSDL, WADL, ...).  Also, each service component could be rendered with
+specific visualization of the underlying implementation technology such as 
+Servlet, Enterprise Java Bean (EJB), Business Process (BPEL),... 
+</P>
+
+<P>Aside from discovery and visualization, Service API also specifies 
+capabilities for creation of service implementation skeletons, 
+as well as identifying possible service connections. 
+</P>
+<P>Following are entities defined by this API:
+</P>
+<UL>
+	<LI><P><I>ServiceInterface</I>  represents an abstract service
+	endpoint encapsulating a interface and its service aspect, whether
+	it is of provider end or consumer end. 
+	</P>
+	<LI><P><I>ServiceComponent</I> defines service implementation unit
+	of one or multiple interfaces but collocate in a single physical
+	file such as a plain Java class, a BPEL process, an EJB or Servlet
+	class... 
+	</P>
+	<LI><P><I>ServiceModule</I> contains multiple service components.
+	Service module corresponds to service-unit in JBI deployment or
+	runtime environment. There are differen types of service modules
+	based on the underlying service implementation technology: BPEL, XSL
+	Transform, JavaEE and plain Java. 
+	</P>
+	<LI><P><I>ServiceModuleContainer</I> is a compound service module,
+	could contains multiple child service modules. 
+	</P>
+	<LI><P ALIGN=LEFT><I>IntegrationContainer</I> is a service module
+	container with design-time provider-consumer relationships between
+	service interfaces from its child modules. 
+	</P>
+</UL>
+<P>Development projects expose service composition capabilities
+through project lookup. Designer editor should be able to obtain one
+instance of <I>ServiceModule</I> or <I>IntegrationContainer</I> from
+the project lookup. 
+</P>
+</BODY>
+</HTML>

@@ -1,0 +1,7 @@
+javax.xml.namespace
+org.netbeans.modules.xml.wsdl.model
+java.io
+java.util
+java.beans
+java.net
+org.netbeans.api.project
