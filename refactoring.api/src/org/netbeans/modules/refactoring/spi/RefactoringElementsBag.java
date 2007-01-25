@@ -159,16 +159,18 @@ public final class RefactoringElementsBag {
         try {
             DataObject dob = DataObject.find(el.getParentFile());
             EditorCookie e = dob.getCookie(EditorCookie.class);
-            GuardedSectionManager manager = GuardedSectionManager.getInstance(e.openDocument());
-            if (manager != null) {
-                for(GuardedSection section:manager.getGuardedSections()) {
-                    int sectionStart = section.getStartPosition().getOffset();
-                    int sectionEnd = section.getEndPosition().getOffset();
-                    int elementStart = el.getPosition().getBegin().getOffset();
-                    int elementEnd = el.getPosition().getEnd().getOffset();
-                    if (sectionStart <= elementStart && sectionEnd >=elementStart ||
-                            sectionStart <= elementEnd && sectionEnd >=elementEnd) {
-                        return true;
+            if (e!=null) {
+                GuardedSectionManager manager = GuardedSectionManager.getInstance(e.openDocument());
+                if (manager != null) {
+                    for(GuardedSection section:manager.getGuardedSections()) {
+                        int sectionStart = section.getStartPosition().getOffset();
+                        int sectionEnd = section.getEndPosition().getOffset();
+                        int elementStart = el.getPosition().getBegin().getOffset();
+                        int elementEnd = el.getPosition().getEnd().getOffset();
+                        if (sectionStart <= elementStart && sectionEnd >=elementStart ||
+                                sectionStart <= elementEnd && sectionEnd >=elementEnd) {
+                            return true;
+                        }
                     }
                 }
             }
