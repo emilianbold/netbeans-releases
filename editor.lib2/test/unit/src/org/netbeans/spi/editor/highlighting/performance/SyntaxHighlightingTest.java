@@ -125,6 +125,7 @@ public class SyntaxHighlightingTest extends NbTestCase {
     }
 
     public void testLexerEmbedding() {
+        long timestamp1, timestamp2;
         TokenHierarchy th = TokenHierarchy.get(document);
         
         TokenSequence embeddedSeq = null;
@@ -133,8 +134,11 @@ public class SyntaxHighlightingTest extends NbTestCase {
             String name = ts.token().id().name();
             assertNotNull("Token name must not be null", name);
             
+            timestamp1 = System.currentTimeMillis();
             embeddedSeq = ts.embedded();
+            timestamp2 = System.currentTimeMillis();
             if (embeddedSeq != null) {
+                System.out.println("First TS.embedded() took " + (timestamp2 - timestamp1) + " msecs.");
                 // found embedded
                 break;
             }
@@ -142,8 +146,11 @@ public class SyntaxHighlightingTest extends NbTestCase {
         
         assertNotNull("Can't find embedded sequence", embeddedSeq);
         
+        timestamp1 = System.currentTimeMillis();
         TokenSequence embeddedSeq2 = ts.embedded();
+        timestamp2 = System.currentTimeMillis();
+        System.out.println("Second TS.embedded() took " + (timestamp2 - timestamp1) + " msecs.");
+        
         assertNotNull("Second call to TS.embedded() produced null", embeddedSeq2);
-        assertSame("Second call to TS.embedded() produced different sequence", embeddedSeq, embeddedSeq2);
     }
 }
