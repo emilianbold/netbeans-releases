@@ -116,7 +116,8 @@ Microsystems, Inc. All Rights Reserved.
         <property name="test.qa-functional.run.cp.extra" value=""/>
         <property name="test.qa-functional.runtime.cp" value=""/>
         <path id="test.qa-functional.run.cp">
-            <pathelement path="${test.qa-functional.runtime.cp}"/>
+<!--  don't add modules to xtest classpath when tests are run in test mode          
+<pathelement path="${test.qa-functional.runtime.cp}"/>-->
             <path refid="jemmy.and.jelly.path"/>
             <pathelement path="${test.qa-functional.run.cp.extra}"/>
         </path>
