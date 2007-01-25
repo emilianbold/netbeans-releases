@@ -25,12 +25,15 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.installer.product.Registry;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JDKUtils;
+import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.wizard.components.actions.SearchForJavaAction;
 
@@ -102,10 +105,36 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             for (int i = 0; i < SearchForJavaAction.javaLocations.size(); i++) {
                 File    location = SearchForJavaAction.javaLocations.get(i);
                 String  label    = SearchForJavaAction.javaLabels.get(i);
-                Version version  = JDKUtils.getVersion(location);
+                Version version  = null;
                 
-                if (JDKUtils.isJdk(location) && 
-                        !version.olderThan(minimumVersion) && 
+                // initialize the version; if the location exists, it must be an
+                // already installed jdk and we should fetch the version in a
+                // "traditional" way; otherwise the jdk is only planned for
+                // installation and we should try to get its version from the
+                // registry
+                if (location.exists()) {
+                    version = JDKUtils.getVersion(location);
+                } else {
+                    for (Product jdk: Registry.getInstance().getProducts("jdk")) {
+                        if ((jdk.getStatus() == Status.TO_BE_INSTALLED) &&
+                                jdk.getInstallationLocation().equals(location)) {
+                            version = jdk.getVersion();
+                        }
+                    }
+                }
+                
+                // if we could not fetch the version, we should skip this jdk
+                // installation
+                if (version == null) {
+                    continue;
+                }
+                
+                // if the location exists and is a jdk installation (or if the
+                // location does not exist - in this case we're positive that it
+                // WILL be a jdk) and if version satisfies the requirements - add
+                // the location to the list
+                if ((!location.exists() || JDKUtils.isJdk(location)) &&
+                        !version.olderThan(minimumVersion) &&
                         !version.newerThan(maximumVersion)) {
                     jdkLocations.add(location);
                     jdkLabels.add(label);
@@ -123,7 +152,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     }
     
     public String validateLocation(String path) {
-        File file = new File(path);
+        final File file = new File(path);
         
         if (path.equals("")) {
             return StringUtils.format(getProperty(ERROR_NULL_PROPERTY));
@@ -133,26 +162,36 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             return StringUtils.format(getProperty(ERROR_NOT_VALID_PATH_PROPERTY), path);
         }
         
-        if (!JDKUtils.isJavaHome(file)) {
-            return StringUtils.format(getProperty(ERROR_NOT_JAVAHOME_PROPERTY), path);
+        Version version = null;
+        if (file.exists()) {
+            if (!JDKUtils.isJavaHome(file)) {
+                return StringUtils.format(getProperty(ERROR_NOT_JAVAHOME_PROPERTY), path);
+            }
+            
+            if (!JDKUtils.isJdk(file)) {
+                return StringUtils.format(getProperty(ERROR_NOT_JDK_PROPERTY), path);
+            }
+            
+            version = JDKUtils.getVersion(file);
+        } else {
+            for (Product jdk: Registry.getInstance().getProducts("jdk")) {
+                if ((jdk.getStatus() == Status.TO_BE_INSTALLED) &&
+                        jdk.getInstallationLocation().equals(file)) {
+                    version = jdk.getVersion();
+                }
+            }
         }
         
-        if (!JDKUtils.isJdk(file)) {
-            return StringUtils.format(getProperty(ERROR_NOT_JDK_PROPERTY), path);
-        }
-        
-        Version version = JDKUtils.getVersion(file);
-        
-        if (version == null) {
+        if (version != null) {
+            if (version.olderThan(minimumVersion)) {
+                return StringUtils.format(getProperty(ERROR_WRONG_VERSION_OLDER_PROPERTY), path, version, minimumVersion);
+            }
+            
+            if (version.newerThan(maximumVersion)) {
+                return StringUtils.format(getProperty(ERROR_WRONG_VERSION_NEWER_PROPERTY), path, version, maximumVersion);
+            }
+        } else {
             return StringUtils.format(getProperty(ERROR_UNKNOWN_PROPERTY), path);
-        }
-        
-        if (version.olderThan(minimumVersion)) {
-            return StringUtils.format(getProperty(ERROR_WRONG_VERSION_OLDER_PROPERTY), path, version, minimumVersion);
-        }
-        
-        if (version.newerThan(maximumVersion)) {
-            return StringUtils.format(getProperty(ERROR_WRONG_VERSION_NEWER_PROPERTY), path, version, maximumVersion);
         }
         
         return null;

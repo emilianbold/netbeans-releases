@@ -23,15 +23,19 @@ package org.netbeans.installer.wizard.components.actions;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.installer.product.Registry;
+import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.utils.helper.Dependency;
+import org.netbeans.installer.utils.helper.DependencyType;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JDKUtils;
 import org.netbeans.installer.utils.applications.JDKUtils.JavaInfo;
 import org.netbeans.installer.utils.exceptions.NativeException;
+import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.WindowsNativeUtils;
 import org.netbeans.installer.utils.system.windows.WindowsRegistry;
@@ -127,6 +131,7 @@ public class SearchForJavaAction extends WizardAction {
     
     public void execute() {
         final Progress progress = new Progress();
+        final List<File> locations = new LinkedList<File>();
         
         getWizardUi().setProgress(progress);
         
@@ -137,16 +142,12 @@ public class SearchForJavaAction extends WizardAction {
         SystemUtils.sleep(200);
         
         progress.setDetail("Preparing locations list");
-        
-        List<File> locations = new LinkedList<File>();
-        
         if (SystemUtils.isWindows()) {
             fetchLocationsFromWindowsRegistry(locations);
         }
-        
         fetchLocationsFromEnvironment(locations);
-        
         fetchLocationsFromFilesystem(locations);
+        fetchLocationsFromRegistry(locations);
         
         for (int i = 0; i < locations.size(); i++) {
             final File javaHome = locations.get(i).getAbsoluteFile();
@@ -180,6 +181,31 @@ public class SearchForJavaAction extends WizardAction {
             
             progress.setPercentage(Progress.COMPLETE * i / locations.size());
             SystemUtils.sleep(50);
+        }
+        
+        // finally we should scan the registry for jdks planned for installation, if
+        // the current product is scheduled to be installed after 'jdk', i.e. has
+        // an install-after dependency on 'jdk' uid
+        final Product product = (Product) getWizard().getProduct();
+        for (Dependency dependency: product.getDependencies(
+                DependencyType.INSTALL_AFTER)) {
+            if (dependency.getUid().equals("jdk")) {
+                for (Product jdk: Registry.getInstance().getProducts("jdk")) {
+                    if (jdk.getStatus() == Status.TO_BE_INSTALLED) {
+                        javaLocations.add(jdk.getInstallationLocation());
+                        javaLabels.add(
+                                "" +
+                                jdk.getInstallationLocation() +
+                                " (v. " +
+                                jdk.getVersion().toJdkStyle() +
+                                " by " +
+                                "Sun Microsystems Inc." +
+                                ")");
+                    }
+                }
+                
+                break;
+            }
         }
         
         progress.setDetail("");
@@ -288,5 +314,15 @@ public class SearchForJavaAction extends WizardAction {
         }
         
         LogManager.logUnindent("... finished");
+    }
+    
+    private void fetchLocationsFromRegistry(List<File> locations) {
+        for (Product jdk: Registry.getInstance().getProducts("jdk")) {
+            if (jdk.getStatus() == Status.INSTALLED) {
+                if (!locations.contains(jdk.getInstallationLocation())) {
+                    locations.add(jdk.getInstallationLocation());
+                }
+            }
+        }
     }
 }
