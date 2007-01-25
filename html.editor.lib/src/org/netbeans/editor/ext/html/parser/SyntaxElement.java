@@ -18,13 +18,12 @@
  */
 
 
-package org.netbeans.editor.ext.html;
+package org.netbeans.editor.ext.html.parser;
 
 
+import org.netbeans.editor.ext.html.*;
 import java.util.*;
-
 import javax.swing.text.*;
-
 import org.netbeans.editor.ext.*;
 
 /**This class is used during the analysis of the HTML code.
@@ -49,7 +48,7 @@ public class SyntaxElement {
     public static final String[] TYPE_NAMES = 
             new String[]{"comment","declaration","error","text","tag","endtag","script"};
     
-    private HTMLSyntaxSupport support;
+    private SyntaxParser parser;
     private SyntaxElement previous;
     private SyntaxElement next;
 
@@ -58,8 +57,8 @@ public class SyntaxElement {
     int type;
 
     /** Creates new SyntaxElement */
-    public SyntaxElement( HTMLSyntaxSupport support, int from, int to, int type ) {
-        this.support = support;
+    public SyntaxElement( SyntaxParser parser, int from, int to, int type ) {
+        this.parser = parser;
         this.offset = from;
         this.length = to-from;
         this.type = type;
@@ -80,7 +79,7 @@ public class SyntaxElement {
     
     public String getText() {
         try {
-            return support.getDocument().getText( offset, length );
+            return parser.getDocument().getText( offset, length );
         } catch( BadLocationException exc ) {
             // this could happen only when in inconsistent state
            throw new ConcurrentModificationException( "SyntaxElement in inconsistent state" ); // NOI18N
@@ -89,7 +88,7 @@ public class SyntaxElement {
 
     public SyntaxElement getPrevious() throws BadLocationException {
         if( previous == null ) {
-            previous = support.getPreviousElement( offset );
+            previous = parser.getPreviousElement( offset );
             if( previous != null ) previous.next = this;
         }
         return previous;
@@ -97,7 +96,7 @@ public class SyntaxElement {
 
     public SyntaxElement getNext() throws BadLocationException {
         if( next == null ) {
-            next = support.getNextElement( offset+length );
+            next = parser.getNextElement( offset+length );
             if( next != null ) next.previous = this;
         }
         return next;
@@ -132,11 +131,11 @@ public class SyntaxElement {
          * @param doctypeFile system identifier for this DOCTYPE, if available.
          *  null otherwise.
          */
-        public Declaration( HTMLSyntaxSupport support, int from, int to,
+        public Declaration( SyntaxParser parser, int from, int to,
                     String doctypeRootElement,
                     String doctypePI, String doctypeFile
         ) {
-            super( support, from, to, TYPE_DECLARATION );
+            super( parser, from, to, TYPE_DECLARATION );
             root = doctypeRootElement;
             publicID = doctypePI;
             file = doctypeFile;
@@ -172,8 +171,8 @@ public class SyntaxElement {
     public static class Named extends SyntaxElement {
         String name;
 
-        public Named( HTMLSyntaxSupport support, int from, int to, int type, String name ) {
-            super( support, from, to, type );
+        public Named( SyntaxParser parser, int from, int to, int type, String name ) {
+            super( parser, from, to, type );
             this.name = name;
         }
 
@@ -186,16 +185,16 @@ public class SyntaxElement {
     }
 
 
-    public static class Tag extends SyntaxElement.Named {
+    public static class Tag extends org.netbeans.editor.ext.html.parser.SyntaxElement.Named {
         Collection attribs;
         private boolean empty = false;
         
-        public Tag( HTMLSyntaxSupport support, int from, int to, String name, Collection attribs) {
-            this(support, from, to, name, attribs, false);
+        public Tag( SyntaxParser parser, int from, int to, String name, Collection attribs) {
+            this(parser, from, to, name, attribs, false);
         }
         
-        public Tag( HTMLSyntaxSupport support, int from, int to, String name, Collection attribs, boolean isEmpty ) {
-            super( support, from, to, TYPE_TAG, name );
+        public Tag( SyntaxParser parser, int from, int to, String name, Collection attribs, boolean isEmpty ) {
+            super( parser, from, to, TYPE_TAG, name );
             this.attribs = attribs;
             this.empty = isEmpty;
         }

@@ -19,6 +19,7 @@
 
 package org.netbeans.editor.ext.html;
 
+import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -32,7 +33,6 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
-
 import org.netbeans.editor.*;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.Utilities;

@@ -19,25 +19,21 @@
  */
 package org.netbeans.editor.ext.html;
 
+import org.netbeans.editor.ext.html.parser.SyntaxParser;
+import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import java.util.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-
 import org.netbeans.editor.BaseDocument;
-
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.editor.ext.html.dtd.InvalidateEvent;
 import org.netbeans.editor.ext.html.dtd.InvalidateListener;
-import org.netbeans.editor.ext.html.dtd.InvalidateListener;
-
-import org.openide.ErrorManager;
 
 
 /**
@@ -52,10 +48,12 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
     
     private DTD dtd;
     private String docType;
+    private final SyntaxParser parser;
     
     /** Creates new HTMLSyntaxSupport */
     public HTMLSyntaxSupport( BaseDocument doc ) {
         super(doc);
+        parser = SyntaxParser.get(doc);
     }
     
     /** Reset our cached DTD if no longer valid.
@@ -332,10 +330,6 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         return false;
     }
     
-    private final int getTokenEnd( TokenHierarchy thi, Token item ) {
-        return item.offset(thi) + item.text().length();
-    }
-    
     /** Returns SyntaxElement instance for block of tokens, which is either
      * surrounding given offset, or is just after the offset.
      * @param offset offset in document where to search for SyntaxElement
@@ -343,92 +337,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
      * or <CODE>null</CODE> if there is no element there (end of document)
      */
     public SyntaxElement getElementChain( int offset ) throws BadLocationException {
-        BaseDocument document = getDocument();
-        document.readLock();
-        try {
-            TokenHierarchy hi = TokenHierarchy.get(document);
-            TokenSequence ts = tokenSequence(hi, offset);
-            if(ts == null || ts.language() != HTMLTokenId.language()) {
-                //TODO - resolve embedded case
-                //now just the case where HTML is top level language is supported
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "HTMLSyntaxSupport.getElementChain() - now just the case where HTML is top level language is supported!!!");
-                return null;
-            }
-            
-            int diff = ts.move(offset);
-            if(diff == Integer.MAX_VALUE) return null; //no token found
-            
-            Token item = ts.token();
-            
-            int beginning = item.offset(hi);
-            
-            if( item.id() == HTMLTokenId.CHARACTER ) {
-                do {
-                    item = ts.token();
-                    beginning = item.offset(hi);
-                } while(item.id() == HTMLTokenId.CHARACTER && ts.movePrevious());
-                
-                // now item is either HTMLSyntax.VALUE or we're in text, or at BOF
-                if( item.id() != HTMLTokenId.VALUE && item.id() != HTMLTokenId.TEXT ) {
-                    return getNextElement( beginning );
-                } // else ( for VALUE or TEXT ) fall through
-            }
-            
-            if( item.id() == HTMLTokenId.WS || item.id() == HTMLTokenId.ARGUMENT ||     // these are possible only in Tags
-                    item.id() == HTMLTokenId.OPERATOR || item.id() == HTMLTokenId.VALUE ) { // so find boundary
-                while(ts.movePrevious() && !isTag(item = ts.token()));
-                return getNextElement( item.offset(hi) );       // TAGC
-            }
-            
-            if( item.id() == HTMLTokenId.TEXT ) {
-                do {
-                    beginning = ts.token().offset(hi);
-                } while ( ts.movePrevious() && (ts.token().id() == HTMLTokenId.TEXT || ts.token().id() == HTMLTokenId.CHARACTER));
-                
-                return getNextElement( beginning ); // from start of Commment
-            }
-            
-            if( item.id() == HTMLTokenId.SCRIPT) {
-                //we have just one big token for script
-                return getNextElement( ts.token().offset(hi));
-            }
-            
-            
-            if( isTag(item)) {
-                if( item.id() == HTMLTokenId.TAG_OPEN ||
-                        item.id() == HTMLTokenId.TAG_OPEN_SYMBOL)  return getNextElement( item.offset(hi) );  // TAGO/ETAGO // NOI18N
-                else {
-                    do {
-                        if(!ts.movePrevious()) {
-                            return getNextElement(item.offset(hi));
-                        }
-                        item = ts.token();
-                    } while( item.id() != HTMLTokenId.TAG_OPEN_SYMBOL);
-                    
-                    return getNextElement( item.offset(hi) );       // TAGC
-                }
-            }
-            
-            if( item.id() == HTMLTokenId.ERROR )
-                return new SyntaxElement( this, item.offset(hi), getTokenEnd( hi, item ), SyntaxElement.TYPE_ERROR );
-            
-            if( item.id() == HTMLTokenId.BLOCK_COMMENT ) {
-                while( item.id() == HTMLTokenId.BLOCK_COMMENT && !item.text().toString().startsWith( "<!--" ) && ts.movePrevious()) { // NOI18N
-                    item = ts.token();
-                }
-                return getNextElement( item.offset(hi)); // from start of Commment
-            }
-            
-            if( item.id() == HTMLTokenId.DECLARATION || item.id() == HTMLTokenId.SGML_COMMENT ) {
-                while( item.id() != HTMLTokenId.DECLARATION || !item.text().toString().startsWith( "<!" ) && ts.movePrevious()) { // NOI18N
-                    item = ts.token();
-                }
-                return getNextElement( item.offset(hi) ); // from start of Commment
-            }
-        } finally {
-            document.readUnlock();
-        }
-        return null;
+        return parser.getElementChain(offset);
     }
     
     /** The way how to get previous SyntaxElement in document. It is not intended
@@ -438,199 +347,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
     SyntaxElement getPreviousElement( int offset ) throws BadLocationException {
         return offset == 0 ? null : getElementChain( offset - 1 );
     }
-    
-    /**
-     * Beware, changes data
-     */
-    private static String getQuotedString( StringBuffer data ) {
-        int startIndex = 0;
-        if (data == null || data.length() == 0) return null;
-        while( data.charAt( startIndex ) == ' ' ) startIndex++;
-        
-        char stopMark = data.charAt( startIndex++ );
-        if( stopMark == '"' || stopMark == '\'' ) {
-            for( int index = startIndex; index < data.length(); index++ )
-                if( data.charAt( index ) == stopMark ) {
-                String quoted = data.substring( startIndex, index );
-                data.delete( 0, index + 1 );
-                return quoted;
-                }
-        }
-        
-        return null;
-    }
-    
-    /** Get the next element from given offset. Should only be called from
-     * SyntaxElements obtained by getElementChain, or by getElementChain itself.
-     * @return SyntaxElement startting at offset, or null, if EoD
-     */
-    SyntaxElement getNextElement( int offset ) throws BadLocationException {
-        BaseDocument document = getDocument();
-        document.readLock();
-        try {
-            TokenHierarchy hi = TokenHierarchy.get(document);
-            TokenSequence ts = tokenSequence(hi, offset);
-            if(ts == null) {
-                //no suitable token sequence found
-                return null;
-            }
-            if(ts == null || ts.language() != HTMLTokenId.language()) {
-                //TODO - resolve embedded case
-                //now just the case where HTML is top level language is supported
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "HTMLSyntaxSupport.getElementChain() - now just the case where HTML is top level language is supported!!!");
-                return null;
-            }
-            
-            int diff = ts.move(offset);
-            if(diff >= ts.token().length() || diff == Integer.MAX_VALUE) return null; //no token found
-            
-            
-            Token item = ts.token();
-            int lastOffset = getTokenEnd( hi, item );
-            
-            if( item.id() == HTMLTokenId.BLOCK_COMMENT ) {
-                //find block comment end
-                do {
-                    lastOffset = getTokenEnd( hi, ts.token() );
-                } while( ts.token().id() == HTMLTokenId.BLOCK_COMMENT && ts.moveNext() );
-                
-                return new SyntaxElement( this, offset, lastOffset, SyntaxElement.TYPE_COMMENT );
-            }
-            
-            if( item.id() == HTMLTokenId.DECLARATION ) {
-                // Compose whole declaration, leaving out included comments
-                StringBuffer sb = new StringBuffer( item.text() );
-                
-                while(item.id() == HTMLTokenId.DECLARATION || item.id() == HTMLTokenId.SGML_COMMENT ) {
-                    lastOffset = getTokenEnd( hi, item );
-                    if(!ts.moveNext()) {
-                        break;
-                    }
-                    item = ts.token();
-                    if( item.id() == HTMLTokenId.DECLARATION )
-                        sb.append( item.text().toString() );
-                }
-                
-                String image = sb.toString();
-                
-                // not a DOCTYPE declaration
-                if( ! image.startsWith( "<!DOCTYPE" ) )     // NOI18N
-                    return new SyntaxElement.Declaration( this, offset, lastOffset,
-                            null, null, null );
-                
-                // Cut off the <!DOCTYPE substring and possible ws
-                image = image.substring( 9 ).trim();
-                
-                int index = image.indexOf( ' ' );
-                if( index < 0 ) return new SyntaxElement.Declaration(
-                        this, offset, lastOffset, null, null, null );
-                
-                String rootElem = image.substring( 0, index );
-                
-                image = image.substring( index ).trim();
-                
-                if( image.startsWith( "PUBLIC" ) ) {    // NOI18N   Public ID
-                    image = image.substring( 6 ).trim();
-                    sb = new StringBuffer( image );
-                    String pi = getQuotedString( sb );
-                    if( pi != null ) {
-                        String si = getQuotedString( sb );
-                        return new SyntaxElement.Declaration(
-                                this, offset, lastOffset, rootElem, pi, si );
-                    }
-                } else if( image.startsWith( "SYSTEM" ) ) { // NOI18N   System ID
-                    image = image.substring( 6 ).trim();
-                    sb = new StringBuffer( image );
-                    String si = getQuotedString( sb );
-                    if( si != null ) {
-                        return new SyntaxElement.Declaration(
-                                this, offset, lastOffset, rootElem, null, si );
-                    }
-                }
-                return new SyntaxElement.Declaration(
-                        this, offset, lastOffset, null, null, null );
-            }
-            
-            if( item.id() == HTMLTokenId.ERROR )
-                return new SyntaxElement( this, item.offset(hi), lastOffset, SyntaxElement.TYPE_ERROR );
-            
-            if( item.id() == HTMLTokenId.TEXT || item.id() == HTMLTokenId.CHARACTER ) {
-                do {
-                    lastOffset = getTokenEnd( hi, item );
-                    item = ts.token();
-                } while ( ts.moveNext() && (item.id() == HTMLTokenId.TEXT || item.id() == HTMLTokenId.CHARACTER ));
-                
-                return new SyntaxElement( this, offset, lastOffset, SyntaxElement.TYPE_TEXT );
-            }
-            
-            if( item.id() == HTMLTokenId.SCRIPT) {
-                //we have just one big token for script
-                return new SyntaxElement( this, offset, getTokenEnd( hi, item), SyntaxElement.TYPE_SCRIPT );
-            }
-            
-            
-            if( item.id() == HTMLTokenId.TAG_CLOSE || (item.id() == HTMLTokenId.TAG_OPEN_SYMBOL &&
-                    item.text().toString().equals("</"))) { //NOI18N
-                // endtag // NOI18N
-                String name = item.text().toString();
-                
-                if(item.id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
-                    ts.moveNext();  //move to the tag name if necessary
-                    name = ts.token().text().toString();
-                }
-                ts.moveNext(); //move inside the tag
-                item = ts.token();
-                
-                do {
-                    item = ts.token();
-                    lastOffset = getTokenEnd( hi, item );
-                } while(item.id() == HTMLTokenId.WS && ts.moveNext() );
-                
-                if( item.id() == HTMLTokenId.TAG_CLOSE_SYMBOL) {   // with this tag // NOI18N
-                    return new SyntaxElement.Named( this, offset, getTokenEnd( hi, item ), SyntaxElement.TYPE_ENDTAG, name );
-                } else {                                                            // without this tag
-                    return new SyntaxElement.Named( this, offset, lastOffset, SyntaxElement.TYPE_ENDTAG, name );
-                }
-            }
-            
-            if( item.id() == HTMLTokenId.TAG_OPEN || (item.id() == HTMLTokenId.TAG_OPEN_SYMBOL &&
-                    !item.text().toString().equals("</"))) { //NOI18N)
-                // starttag
-                String name = item.text().toString();
-                ArrayList attrs = new ArrayList();
-                
-                if(item.id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
-                    ts.moveNext();  //move to the tag name if necessary
-                    name = ts.token().text().toString();
-                }
-                //move inside the tag (after tag name)
-                ts.moveNext();
-                
-                item = ts.token();
-                //TODO: be able to create SyntaxElement for tags containing JSP scriptlet or EL
-                do {
-                    item = ts.token();
-                    if( item.id() == HTMLTokenId.ARGUMENT ) attrs.add( item.text().toString() );  // log all attributes
-                    lastOffset = getTokenEnd( hi, item );
-                } while ((item.id() == HTMLTokenId.WS ||
-                        item.id() == HTMLTokenId.ARGUMENT || item.id() == HTMLTokenId.OPERATOR ||
-                        item.id() == HTMLTokenId.VALUE || item.id() == HTMLTokenId.CHARACTER ) && ts.moveNext()
-                        ); /* !item.getTokenContextPath().contains(HTMLTokenId.contextPath) */
-                
-                if( item.id() == HTMLTokenId.TAG_CLOSE_SYMBOL) {   // with this tag // NOI18N
-                    return new SyntaxElement.Tag( this, offset, getTokenEnd( hi, item ), name, attrs, item.text().toString().equals("/>"));
-                } else {                                                            // without this tag
-                    return new SyntaxElement.Tag( this, offset, lastOffset, name, attrs );
-                }
-                
-            }
-        } finally {
-            document.readUnlock();
-        }
-        
-        return null;
-    }
-    
+      
     public List getPossibleEndTags( int offset, String prefix ) throws BadLocationException {
         prefix = prefix.toUpperCase();
         int prefixLen = prefix.length();

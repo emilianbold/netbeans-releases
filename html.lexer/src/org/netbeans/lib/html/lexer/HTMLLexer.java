@@ -240,10 +240,11 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                     lexerState = ISP_ENDTAG_X;
                     input.backup(1);
                     //test if the tagname is SCRIPT
-                    if("script".equalsIgnoreCase(input.readText().toString())) { //NOI18N
-                        lexerScriptState = INIT;
-                        //System.out.println("---end of script");
-                    }
+                    //fixme: remove the 'script tag support' from the lexer completely, so far, just partially commented = disabled
+//                    if("script".equalsIgnoreCase(input.readText().toString())) { //NOI18N
+//                        lexerScriptState = INIT;
+//                        //System.out.println("---end of script");
+//                    }
                     
                     return token(HTMLTokenId.TAG_CLOSE);
                     
@@ -280,10 +281,10 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                     lexerState = ISP_TAG_X;
                     input.backup(1);
                     //test if the tagname is SCRIPT
-                    if("script".equalsIgnoreCase(input.readText().toString())) { //NOI18N
-                        lexerScriptState = ISI_SCRIPT;
-                        //System.out.println("+++start of script");
-                    }
+//                    if("script".equalsIgnoreCase(input.readText().toString())) { //NOI18N
+//                        lexerScriptState = ISI_SCRIPT;
+//                        //System.out.println("+++start of script");
+//                    }
                     return token(HTMLTokenId.TAG_OPEN);
                     
                 case ISP_TAG_X:     // DONE

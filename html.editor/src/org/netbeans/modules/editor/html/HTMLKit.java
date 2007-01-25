@@ -30,6 +30,8 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -46,17 +48,16 @@ import javax.swing.text.TextAction;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.Language;
-
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.editor.*;
 import org.netbeans.editor.BaseKit.DeleteCharAction;
 import org.netbeans.editor.ext.*;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.html.*;
-import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorKit.GenerateFoldPopupAction;
+import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
 import org.netbeans.modules.html.editor.folding.HTMLFoldTypes;
 import org.openide.util.NbBundle;
 
@@ -72,6 +73,8 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
     public org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx(HTMLKit.class);
     }
+    
+    private static final Logger LOGGER = Logger.getLogger(HTMLKit.class.getName());
     
     static final long serialVersionUID =-1381945567613910297L;
     
@@ -101,8 +104,18 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         return null;
     }
     
-    protected void initDocument(BaseDocument doc) {
-        //add layers here
+    protected void initDocument(final BaseDocument doc) {
+        TokenHierarchy hi = TokenHierarchy.get(doc);
+        if(hi == null) {
+            LOGGER.log(Level.WARNING, "TokenHierarchy is null for document " + doc);
+            return ;
+        }
+        
+        //listen on the token hierarchy changes and run recoloring parser when necessary
+        EmbeddingUpdater lcu = new EmbeddingUpdater(doc);
+        doc.putProperty(EmbeddingUpdater.class, lcu);
+        hi.addTokenHierarchyListener(lcu);
+        
     }
     
     /** Create new instance of syntax coloring scanner
@@ -136,15 +149,15 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
     protected Action[] createActions() {
         Action[] HTMLActions = new Action[] {
             new HTMLDefaultKeyTypedAction(),
-                    new HTMLDeleteCharAction(deletePrevCharAction, false),
-                    new HTMLDeleteCharAction(deleteNextCharAction, true),
-                    new HTMLShiftBreakAction(),
-                    // replace MatchBraceAction with HtmlEditor own
-                    new MatchBraceAction(ExtKit.matchBraceAction, false),
-                    new MatchBraceAction(ExtKit.selectionMatchBraceAction, true),
-                    new HTMLGenerateFoldPopupAction(),
-                    new CollapseAllCommentsFolds(),
-                    new ExpandAllCommentsFolds()
+            new HTMLDeleteCharAction(deletePrevCharAction, false),
+            new HTMLDeleteCharAction(deleteNextCharAction, true),
+            new HTMLShiftBreakAction(),
+            // replace MatchBraceAction with HtmlEditor own
+            new MatchBraceAction(ExtKit.matchBraceAction, false),
+            new MatchBraceAction(ExtKit.selectionMatchBraceAction, true),
+            new HTMLGenerateFoldPopupAction(),
+            new CollapseAllCommentsFolds(),
+            new ExpandAllCommentsFolds()
         };
         return TextAction.augmentList(super.createActions(), HTMLActions);
     }
@@ -317,7 +330,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                     } else if (plainFlavor == null && mime.startsWith("text/plain")) { //NOI18N
                         plainFlavor = flavors[i];
                     } else if (refFlavor == null && mime.startsWith("application/x-java-jvm-local-objectref") //NOI18N
-                    && flavors[i].getRepresentationClass() == java.lang.String.class) {
+                            && flavors[i].getRepresentationClass() == java.lang.String.class) {
                         refFlavor = flavors[i];
                     } else if (stringFlavor == null && flavors[i].equals(DataFlavor.stringFlavor)) {
                         stringFlavor = flavors[i];
@@ -339,7 +352,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                 if (mime.startsWith("text/plain")) { //NOI18N
                     return flavors[i];
                 } else if (refFlavor == null && mime.startsWith("application/x-java-jvm-local-objectref") //NOI18N
-                && flavors[i].getRepresentationClass() == java.lang.String.class) {
+                        && flavors[i].getRepresentationClass() == java.lang.String.class) {
                     refFlavor = flavors[i];
                 } else if (stringFlavor == null && flavors[i].equals(DataFlavor.stringFlavor)) {
                     stringFlavor = flavors[i];
@@ -357,7 +370,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
          * Import the given stream data into the text component.
          */
         protected void handleReaderImport(Reader in, JTextComponent c, boolean useRead)
-        throws BadLocationException, IOException {
+                throws BadLocationException, IOException {
             if (useRead) {
                 int startPosition = c.getSelectionStart();
                 int endPosition = c.getSelectionEnd();
@@ -925,7 +938,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
     }
     
     // END of fix of issue #43309
-       
+    
     
 }
 
