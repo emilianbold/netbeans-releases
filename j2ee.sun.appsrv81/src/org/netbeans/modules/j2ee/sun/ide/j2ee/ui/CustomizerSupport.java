@@ -417,8 +417,6 @@ public final class CustomizerSupport {
                 assert false : "Illegal type of panel"; //NOI18N
                 return;
             }
-            //label.setText(NbBundle.getMessage(CustomizerSupport.class,key));
-            //label.setDisplayedMnemonic(NbBundle.getMessage(CustomizerSupport.class,mneKey).charAt(0));
             org.openide.awt.Mnemonics.setLocalizedText(label, org.openide.util.NbBundle.getBundle(CustomizerSupport.class).getString(key)); // NOI18N
             GridBagConstraints c = new GridBagConstraints();
             c.gridx = GridBagConstraints.RELATIVE;
@@ -542,55 +540,6 @@ public final class CustomizerSupport {
             }
         }
         
-//        private void addURLElement() {
-//            JPanel p = new JPanel ();
-//            GridBagLayout lm = new GridBagLayout();
-//            p.setLayout (lm);
-//            GridBagConstraints c = new GridBagConstraints ();
-//            c.gridx = c.gridy = GridBagConstraints.RELATIVE;
-//            c.insets = new Insets (12,12,12,6);
-//            c.anchor = GridBagConstraints.NORTHWEST;
-//            JLabel label = new JLabel (NbBundle.getMessage(CustomizerSupport.class,"CTL_AddJavadocURLMessage"));
-//            label.setDisplayedMnemonic ('U');
-//            lm.setConstraints(label,c);
-//            p.add (label);
-//            c = new GridBagConstraints ();
-//            c.gridx = c.gridy = GridBagConstraints.RELATIVE;
-//            c.gridwidth = GridBagConstraints.REMAINDER;
-//            c.insets = new Insets (12,0,12,6);
-//            c.fill = GridBagConstraints.HORIZONTAL;
-//            c.anchor = GridBagConstraints.NORTHWEST;
-//            JTextField text = new JTextField ();
-//            text.setColumns(30);
-//            text.setText (NbBundle.getMessage(CustomizerSupport.class,"TXT_DefaultProtocol"));
-//            text.selectAll();
-//            label.setLabelFor(text);
-//            lm.setConstraints(text,c);
-//            p.add (text);            
-//            JButton[] options = new JButton[] {
-//                new JButton (NbBundle.getMessage(CustomizerSupport.class,"CTL_AddJavadocURLTitle")),
-//                new JButton (NbBundle.getMessage(CustomizerSupport.class,"CTL_Cancel"))
-//            };
-//            options[0].setMnemonic(NbBundle.getMessage(CustomizerSupport.class,"MNE_Add").charAt(0));
-//            options[1].setMnemonic(NbBundle.getMessage(CustomizerSupport.class,"MNE_Cancel").charAt(0));
-//            DialogDescriptor input = new DialogDescriptor (
-//                p,
-//                NbBundle.getMessage(CustomizerSupport.class,"CTL_AddJavadocURLTitle"),
-//                true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);            
-//            if (DialogDisplayer.getDefault().notify(input) == options[0]) {
-//                try {
-//                    String value = text.getText();
-//                    URL url = new URL (value);
-//                    ((PathModel)this.resources.getModel()).addPath(url);
-//                    this.resources.setSelectedIndex (this.resources.getModel().getSize()-1);
-//                } catch (MalformedURLException mue) {
-//                    DialogDescriptor.Message message = new DialogDescriptor.Message (
-//                        NbBundle.getMessage(CustomizerSupport.class,"CTL_InvalidURLFormat"),
-//                        DialogDescriptor.ERROR_MESSAGE);
-//                    DialogDisplayer.getDefault().notify(message);
-//                }
-//            }
-//        }
 
         private void addPathElement () {
             JFileChooser chooser = new JFileChooser();
