@@ -19,9 +19,4 @@
 -->
 <project name="org.netbeans.modules.identity.server.manager" default="netbeans" basedir=".">
     <import file="nbproject/build-impl.xml"/>
-
-    <target name="netbeans-extra">
-        <!-- Add our cluster name in etc/netbeans.clusters -->
-        <echo file="../../nbbuild/netbeans/etc/netbeans.clusters" message="${cluster.dir.name}${line.separator}" append="true"/>
-    </target>
 </project>
