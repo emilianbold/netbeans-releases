@@ -202,7 +202,6 @@ public class CreateServerVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 3);
         portConfPanel.add(instancePortLbl, gridBagConstraints);
 
-        jmsPortLbl.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_JmsPort_Mnemonic").charAt(0));
         jmsPortLbl.setLabelFor(jmsPort);
         org.openide.awt.Mnemonics.setLocalizedText(jmsPortLbl, org.openide.util.NbBundle.getBundle(CreateServerVisualPanel.class).getString("LBL_JmsPort")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
