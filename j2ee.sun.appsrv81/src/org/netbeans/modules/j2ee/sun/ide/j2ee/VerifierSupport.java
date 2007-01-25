@@ -718,15 +718,12 @@ public class VerifierSupport extends TopComponent{
         
         
         // set-up the radio buttons.
-        //allButton.setMnemonic(KeyEvent.VK_L);
         allButton.setActionCommand(allString);
         allButton.setSelected(true);//rifier.getReportLevel()==VerifierSupport.ALL);
         
-        //failButton.setMnemonic(KeyEvent.VK_F);
         failButton.setActionCommand(failString);
         //failButton.setSelected(Verifier.getReportLevel()==VerifierSupport.FAIL);
         
-        //warnButton.setMnemonic(KeyEvent.VK_W);
         warnButton.setActionCommand(warnString);
         // warnButton.setSelected(Verifier.getReportLevel()==VerifierSupport.WARN);
         
