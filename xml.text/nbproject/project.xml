@@ -259,8 +259,11 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.web.core.syntax</friend>
                 <friend>org.netbeans.modules.xml.lexer</friend>
                 <friend>org.netbeans.modules.xml.retriever</friend>
+                <friend>org.netbeans.modules.xml.schema.completion</friend>
+                <friend>org.netbeans.modules.xml.xdm</friend>
                 <package>org.netbeans.modules.xml.text.api</package>
                 <package>org.netbeans.modules.xml.text.syntax</package>
+                <package>org.netbeans.modules.xml.text.syntax.dom</package>
             </friend-packages>
         </data>
     </configuration>
