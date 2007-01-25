@@ -145,15 +145,15 @@ is divided into following sections:
                     <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xslt-project.jar"/>
                     <pathelement location="${{netbeans.home}}/../soa1/ant/nblib/org-netbeans-modules-xslt-project.jar"/>
                     <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xslt-model.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide7/modules/org-netbeans-modules-xml-xam.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide7/modules/org-netbeans-modules-xml-schema-model.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide7/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform6/lib/org-openide-util.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform6/modules/org-openide-loaders.jar"/>                       
+                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-xam.jar"/>
+                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-schema-model.jar"/>
+                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
+                    <pathelement location="${{netbeans.home}}/../platform7/lib/org-openide-util.jar"/>
+                    <pathelement location="${{netbeans.home}}/../platform7/modules/org-openide-loaders.jar"/>                       
                     <pathelement location="${{netbeans.home}}/../xmltools1/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide7/modules/org-apache-xml-resolver.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide7/modules/org-netbeans-modules-xml-retriever.jar"/> 
-                    <pathelement location="${{netbeans.home}}/../ide7/modules/ext/resolver-1_1_nb.jar"/> 
+                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-apache-xml-resolver.jar"/>
+                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-retriever.jar"/> 
+                    <pathelement location="${{netbeans.home}}/../ide8/modules/ext/resolver-1_1_nb.jar"/> 
                 </path>
                 
                 <taskdef name="XsltProjectJBIGen" classname="org.netbeans.modules.xslt.project.anttasks.GenerateJBIDescriptorTask">
@@ -161,22 +161,22 @@ is divided into following sections:
                 </taskdef>        
 
                 <!-- path id="ant.task.classpath.validation">
-        	
+            
                     <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xslt-core.jar"/>
                     <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xslt-project.jar"/>
                     <pathelement location="${{netbeans.home}}/../soa1/ant/nblib/org-netbeans-modules-xslt-project.jar"/>
                     <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xslt-model.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide7/modules/org-netbeans-modules-xml-xam.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide7/modules/org-netbeans-modules-xml-schema-model.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide7/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform6/lib/org-openide-util.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform6/modules/org-openide-loaders.jar"/>                       
+                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-xam.jar"/>
+                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-schema-model.jar"/>
+                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
+                    <pathelement location="${{netbeans.home}}/../platform7/lib/org-openide-util.jar"/>
+                    <pathelement location="${{netbeans.home}}/../platform7/modules/org-openide-loaders.jar"/>                       
                     <pathelement location="${{netbeans.home}}/../xmltools1/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
                     <pathelement location="${{netbeans.home}}/../xmltools1/modules/org-netbeans-modules-xml-xpath.jar"/>
                     <pathelement location="${{netbeans.home}}/../xmltools1/modules/ext/jxpath/jxpath1.1.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide7/modules/org-apache-xml-resolver.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide7/modules/org-netbeans-modules-xml-retriever.jar"/>      
-                    <pathelement location="${{netbeans.home}}/../ide7/modules/ext/resolver-1_1_nb.jar"/>            
+                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-apache-xml-resolver.jar"/>
+                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-retriever.jar"/>      
+                    <pathelement location="${{netbeans.home}}/../ide8/modules/ext/resolver-1_1_nb.jar"/>            
             
             
                 </path>        

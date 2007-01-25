@@ -144,19 +144,19 @@ is divided into following sections:
             
             <target name="init-taskdefs" if="from.commandline">
                 <path id="ant.task.classpath.models">
-                    <pathelement location="${{netbeans.home}}/../platform6/lib/org-openide-util.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform6/modules/org-openide-loaders.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform6/modules/org-openide-nodes.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform6/core/org-openide-filesystems.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform6/modules/org-openide-options.jar"/>
+                    <pathelement location="${{netbeans.home}}/../platform7/lib/org-openide-util.jar"/>
+                    <pathelement location="${{netbeans.home}}/../platform7/modules/org-openide-loaders.jar"/>
+                    <pathelement location="${{netbeans.home}}/../platform7/modules/org-openide-nodes.jar"/>
+                    <pathelement location="${{netbeans.home}}/../platform7/core/org-openide-filesystems.jar"/>
+                    <pathelement location="${{netbeans.home}}/../platform7/modules/org-openide-options.jar"/>
                     <pathelement location="${{netbeans.home}}/../enterprise3/modules/org-netbeans-modules-derby.jar"/>                    
-                    <pathelement location="${{netbeans.home}}/../ide7/modules/org-netbeans-modules-db.jar"/>
+                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-db.jar"/>
                     <pathelement location="${{module.install.dir}}/org-netbeans-modules-sql-project.jar"/>
                     <pathelement location="${{module.install.dir}}/../ant/nblib/org-netbeans-modules-sql-project.jar"/>
                 </path>                                
                 
                 <taskdef name="generate-wsdl-artifacts" classname="org.netbeans.modules.sql.project.anttasks.GenerateWSDL">                    
-                    <!--classpath path="${{module.install.dir}}/org-netbeans-modules-sql-project.jar;${{module.install.dir}}/ext/sql/org-netbeans-modules-sql-project.jar;C:/Alaska/nb_all/nbbuild/netbeans/platform6/core/org-openide-filesystems.jar;C:/Alaska/nb_all/nbbuild/netbeans/platform6/modules/org-openide-loaders.jar;C:/Alaska/nb_all/nbbuild/netbeans/platform6/modules/org-openide-nodes.jar"/-->
+                    <!--classpath path="${{module.install.dir}}/org-netbeans-modules-sql-project.jar;${{module.install.dir}}/ext/sql/org-netbeans-modules-sql-project.jar;C:/Alaska/nb_all/nbbuild/netbeans/platform7/core/org-openide-filesystems.jar;C:/Alaska/nb_all/nbbuild/netbeans/platform7/modules/org-openide-loaders.jar;C:/Alaska/nb_all/nbbuild/netbeans/platform7/modules/org-openide-nodes.jar"/-->
                     <classpath refid="ant.task.classpath.models"/>
                 </taskdef>
             </target>
@@ -219,7 +219,7 @@ is divided into following sections:
                           tofile="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml" filtering="on">
                         <filterset>
                             <!-- replace token with reference to WSDL file in source tree, not build tree, since the
-							     the file probably has not have been copied to the build tree yet. -->
+                                 the file probably has not have been copied to the build tree yet. -->
                             <filter token="CONFIG_ABSOLUTE_PATH" value="${{basedir}}/${{web.docbase.dir}}/WEB-INF/wsdl"/>
                         </filterset>
                     </copy>
