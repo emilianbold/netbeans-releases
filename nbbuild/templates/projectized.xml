@@ -415,9 +415,34 @@ Microsystems, Inc. All Rights Reserved.
            3. contains.test - project contains at least one test type
         -->
     <target name="test-condition" depends="init">
-        <available file="test/cfg-unit.xml" property="contains.unit.test"/>
-        <available file="test/cfg-qa-functional.xml" property="contains.qa-functional.test"/>
-         <condition property="contains.test">
+        <available file="test/cfg-unit.xml" property="contains.unit.test.cfg"/>
+        <available file="test/cfg-qa-functional.xml" property="contains.qa-functional.test.cfg"/>
+        <available file="test/build-unit.xml" property="contains.unit.test.build"/>
+        <available file="test/build-qa-functional.xml" property="contains.qa-functional.test.build"/>
+        <available file="test/build-unit.xml" property="contains.unit.test.build"/>
+        <available file="test/build.xml" property="contains.test.build"/>
+        <available file="test/unit/src" property="contains.unit.test.src"/>
+        <available file="test/qa-functional/src" property="contains.qa-functional.test.src"/>
+
+        <condition property="contains.unit.test">
+            <and>
+                <isset property="contains.unit.test.cfg"/>
+                <isset property="contains.unit.test.build"/>
+                <isset property="contains.test.build"/>
+                <isset property="contains.unit.test.src"/>
+            </and>
+        </condition>
+        
+        <condition property="contains.qa-functional.test">
+            <and>
+                <isset property="contains.qa-functional.test.cfg"/>
+                <isset property="contains.qa-functional.test.build"/>
+                <isset property="contains.test.build"/>
+                <isset property="contains.qa-functional.test.src"/>
+            </and>
+        </condition>
+
+        <condition property="contains.test">
              <or>
                  <isset property="contains.unit.test"/>
                  <isset property="contains.qa-functional.test"/>
