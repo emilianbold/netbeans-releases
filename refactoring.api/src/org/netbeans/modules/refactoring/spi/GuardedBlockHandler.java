@@ -23,20 +23,20 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 
 /** Interface implemented by guarded block refactoring handlers. Contains a callback method
- * that gets a RefactoringElement affecting a guarded block as a parameter and can return
- * the new RefactoringElements that will replace the passed RefactoringElements
+ * that gets a RefactoringElementImplementation affecting a guarded block as a parameter and can return
+ * the new RefactoringElementImplementation that will replace the passed RefactoringElementImplementations
  * in the result collection of refactoring elements for a given refactoring.
  *
  * @author Martin Matula
  */
 public interface GuardedBlockHandler {
     /** Collects replacements for refactoring element affecting a guarded block.
-     * @param proposedChange RefactoringElement that affects a guarded block.
+     * @param proposedChange RefactoringElementImplementation that affects a guarded block.
      * @param replacements Empty collection where the method implementation should add the
-     * replacement RefactoringElements if this GuardedBlockHandler can handle changes in the
-     * guarded block the original RefactoringElement affects.
+     * replacement RefactoringElementImplementations if this GuardedBlockHandler can handle changes in the
+     * guarded block the original RefactoringElementImplementation affects.
      *
      * @return Problems found or null (if no problems were identified)
      */
-    Problem handleChange(RefactoringElementImplementation proposedChange, Collection/*<RefactoringElement>*/ replacements);
+    Problem handleChange(RefactoringElementImplementation proposedChange, Collection<RefactoringElementImplementation> replacements);
 }

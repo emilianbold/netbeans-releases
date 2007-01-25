@@ -18,17 +18,14 @@
  */
 package org.netbeans.modules.refactoring.spi.impl;
 
-import java.io.IOException;
 import java.util.Enumeration;
 import javax.swing.Icon;
 import javax.swing.tree.*;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
-//[retouche]import org.netbeans.jmi.javamodel.Element;
-//[retouche]import org.netbeans.jmi.javamodel.JavaPackage;
 import org.openide.text.PositionBounds;
-//[retouche]import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.refactoring.plugins.RefactoringTreeElement;
+import org.openide.util.NbBundle;
 
 /**
  * @author Pavel Flaska
@@ -47,32 +44,24 @@ public class CheckNode extends DefaultMutableTreeNode {
     private boolean disabled = false;
     private boolean needsRefresh = false;
     
-    private PositionBounds bounds = null;
-    private String resourceName;
-    
     public CheckNode(Object userObject, String nodeLabel, Icon icon) {
         super(userObject, !(userObject instanceof RefactoringElement));
         this.isSelected = true;
         setSelectionMode(DIG_IN_SELECTION);
         this.nodeLabel = nodeLabel;
         this.icon = icon;
-        if (userObject instanceof RefactoringElement) {
-            RefactoringElement ree = (RefactoringElement) userObject;
-            FileObject fo = ree.getParentFile();
-            if (fo == null) {
-//[retouche]                Element el = ree.getJavaElement();
-//[retouche]                fo = JavaModel.getFileObject(el.getResource());
-                if (fo == null) {
-                    resourceName = null;
-                    return;
+        if (userObject instanceof RefactoringTreeElement) {
+            if (((RefactoringTreeElement)userObject).getUserObject() instanceof RefactoringElement) {
+                RefactoringElement ree = (RefactoringElement) ((RefactoringTreeElement)userObject).getUserObject();
+                int s = ree.getStatus();
+                if (s==RefactoringElement.GUARDED || s==RefactoringElement.READ_ONLY) {
+                    isSelected = false;
+                    disabled = true;
+                    this.nodeLabel = "[<font color=#CC0000>"
+                            + NbBundle.getMessage(CheckNode.class, s==RefactoringElement.GUARDED?"LBL_InGuardedBlock":"LBL_InReadOnlyFile")
+                            + "</font>]" + this.nodeLabel;
                 }
             }
-//            ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-//            if (cp != null) {
-//                resourceName = cp.getResourceName(fo);
-//            } else {
-//                resourceName = null;
-//            }
         }
     }
     
@@ -129,12 +118,14 @@ public class CheckNode extends DefaultMutableTreeNode {
     }
 
     public boolean isSelected() {
-        if (userObject instanceof RefactoringElement) {
-            return ((RefactoringElement) userObject).isEnabled() &&
-                !((((RefactoringElement) userObject).getStatus() == RefactoringElement.GUARDED) || (((RefactoringElement) userObject).getStatus() == RefactoringElement.READ_ONLY));
-        } else {
-            return isSelected;
+        if (userObject instanceof TreeElement) {
+            Object ob = ((TreeElement) userObject).getUserObject();
+            if (ob instanceof RefactoringElement) {
+                return ((RefactoringElement) ob).isEnabled() &&
+                        !((((RefactoringElement) ob).getStatus() == RefactoringElement.GUARDED) || (((RefactoringElement) ob).getStatus() == RefactoringElement.READ_ONLY));
+            }
         }
+        return isSelected;
     }
     
     public PositionBounds getPosition() {

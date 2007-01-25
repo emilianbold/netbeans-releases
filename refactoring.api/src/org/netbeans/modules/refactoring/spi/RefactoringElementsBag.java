@@ -19,11 +19,17 @@
 
 package org.netbeans.modules.refactoring.spi;
 
+import java.io.IOException;
 import java.util.*;
+import org.netbeans.api.editor.guards.GuardedSection;
+import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.modules.refactoring.api.impl.APIAccessor;
 import org.netbeans.modules.refactoring.api.impl.SPIAccessor;
 import org.netbeans.modules.refactoring.api.*;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  * Container holding RefactoringElements
@@ -52,41 +58,30 @@ public final class RefactoringElementsBag {
     }
     
     /**
-     * Adds RefactoringElement to this bag.
-     * If RefactoringElement is in read-only file - status of this element is 
+     * Adds RefactoringElementImplementation to this bag.
+     * If RefactoringElementImplementation is in read-only file - status of this element is 
      * changes to RefactoringElement.READ_ONLY
-     * If RefactoringElement is in guarded block, all registered GuardedBlockHandler
-     * are asked, if they can replace given RefactoringElement by it's own 
-     * RefactoringElements. If there is no suitable replacement found, 
+     * If RefactoringElementImplementation is in guarded block, all registered GuardedBlockHandler
+     * are asked, if they can replace given RefactoringElementImplementation by it's own 
+     * RefactoringElementImplementation. If there is no suitable replacement found, 
      * given element is added and it's status is set to RefactringElement.GUARDED
      * 
-     * @param refactoring refactoring, which adds this RefactoringElement
+     * @param refactoring refactoring, which adds this RefactoringElementImplementation
      * @param el element to add
      * @return instance of Problem or null
      */
     public Problem add(AbstractRefactoring refactoring, RefactoringElementImplementation el) {
         Problem p = null;
-//[retouche]        if (CheckUtils.isRefactoringElementReadOnly(el)) {
-        if (false) {
-//[retouche]            Resource resource = el.getJavaElement().getResource();
-//[retouche]            FileObject file;
-//[retouche]            if (resource == null) {
-//[retouche]                file = el.getParentFile();
-//[retouche]            } else {
-//[retouche]                file = JavaModel.getFileObject(resource);
-//[retouche]            }
-//[retouche]            readOnlyFiles.add(file);    
-//[retouche]            el.setEnabled(false);
-//[retouche]            el.setStatus(el.READ_ONLY);
-//[retouche]            delegate.add(el);
-//[retouche]        } else if (CheckUtils.isRefactoringElementGuarded(el)) {
-        } else if (false) {
-            Iterator pIt=APIAccessor.DEFAULT.getGBHandlers(refactoring).iterator();
-            ArrayList proposedChanges = new ArrayList();
-            while(pIt.hasNext()) {
-                GuardedBlockHandler ref = (GuardedBlockHandler) pIt.next();
-                
-                p = APIAccessor.DEFAULT.chainProblems(ref.handleChange(el, proposedChanges),  p);
+        if (isReadOnly(el)) {
+            FileObject file = el.getParentFile();
+            readOnlyFiles.add(file);
+            el.setEnabled(false);
+            el.setStatus(el.READ_ONLY);
+            delegate.add(el);
+        } else if (isGuarded(el)) {
+            ArrayList<RefactoringElementImplementation> proposedChanges = new ArrayList();
+            for (GuardedBlockHandler gbHandler: APIAccessor.DEFAULT.getGBHandlers(refactoring)) {
+                p = APIAccessor.DEFAULT.chainProblems(gbHandler.handleChange(el, proposedChanges),  p);
                 
                 if (p != null && p.isFatal())
                     return p;
@@ -151,4 +146,37 @@ public final class RefactoringElementsBag {
         if (APIAccessor.DEFAULT.isCommit(session))
             fileChanges.add(changes);
     }    
+    
+    private boolean isReadOnly(RefactoringElementImplementation rei) {
+        return !rei.getParentFile().canWrite();
+    }
+    
+    /**
+     * TODO: GuardedQuery is still missing
+     * this solution has performance issues.
+     */ 
+    private boolean isGuarded(RefactoringElementImplementation el) {
+        try {
+            DataObject dob = DataObject.find(el.getParentFile());
+            EditorCookie e = dob.getCookie(EditorCookie.class);
+            GuardedSectionManager manager = GuardedSectionManager.getInstance(e.openDocument());
+            for(GuardedSection section:manager.getGuardedSections()) {
+                int sectionStart = section.getStartPosition().getOffset();
+                int sectionEnd = section.getEndPosition().getOffset();
+                int elementStart = el.getPosition().getBegin().getOffset();
+                int elementEnd = el.getPosition().getEnd().getOffset();
+                if (sectionStart <= elementStart && sectionEnd >=elementStart ||
+                        sectionStart <= elementEnd && sectionEnd >=elementEnd) {
+                    return true;
+                }
+            }
+        } catch (DataObjectNotFoundException ex) {
+            java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+                    ex.getMessage(), ex);
+        } catch (IOException ex) {
+            java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+                    ex.getMessage(), ex);
+        }
+        return false;
+    }
 }

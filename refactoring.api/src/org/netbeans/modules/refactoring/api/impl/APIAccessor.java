@@ -24,6 +24,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProblemDetails;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
+import org.netbeans.modules.refactoring.spi.GuardedBlockHandler;
 import org.netbeans.modules.refactoring.spi.ProblemDetailsImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 
@@ -43,7 +44,7 @@ public abstract class APIAccessor {
         }
     }
 
-    public abstract Collection getGBHandlers(AbstractRefactoring refactoring);
+    public abstract Collection<GuardedBlockHandler> getGBHandlers(AbstractRefactoring refactoring);
     public abstract Problem chainProblems(Problem p, Problem p1);
     public abstract ProblemDetails createProblemDetails(ProblemDetailsImplementation pdi);
     public abstract boolean isCommit(RefactoringSession session);

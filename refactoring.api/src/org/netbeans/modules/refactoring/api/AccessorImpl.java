@@ -20,6 +20,7 @@ package org.netbeans.modules.refactoring.api;
 
 import java.util.Collection;
 import org.netbeans.modules.refactoring.api.impl.APIAccessor;
+import org.netbeans.modules.refactoring.spi.GuardedBlockHandler;
 import org.netbeans.modules.refactoring.spi.ProblemDetailsImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 
@@ -28,7 +29,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
  * @author Martin Matula, Jan Becicka
  */
 final class AccessorImpl extends APIAccessor {
-    public Collection getGBHandlers(AbstractRefactoring refactoring) {
+    public Collection<GuardedBlockHandler> getGBHandlers(AbstractRefactoring refactoring) {
         assert refactoring != null;
         return refactoring.getGBHandlers();
     }
