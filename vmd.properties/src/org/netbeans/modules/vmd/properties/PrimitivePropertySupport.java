@@ -57,6 +57,11 @@ final class PrimitivePropertySupport extends DefaultPropertySupport {
                 designerPropertyDescriptor.getPropertyDisplayName()
                 );
         }
+        if (getPropertyEditor() instanceof DesignPropertyEditor) {
+            String title = ((DesignPropertyEditor) getPropertyEditor()).getCustomEditorTitle();
+            if ( title != null)
+                setValue(PROPERTY_CUSTOM_EDITOR_TITLE, title);
+        }
     }
     
     public Object getValue() throws IllegalAccessException, InvocationTargetException {

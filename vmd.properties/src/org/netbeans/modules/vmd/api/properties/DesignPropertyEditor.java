@@ -197,7 +197,6 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
      * @return custom property editor title
      */
     public String getCustomEditorTitle() {
-        
         if (component == null)
             return null;
         component.getDocument().getTransactionManager().readAccess((new Runnable() {

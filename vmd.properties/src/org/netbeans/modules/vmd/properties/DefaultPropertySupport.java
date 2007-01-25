@@ -60,12 +60,6 @@ public abstract class DefaultPropertySupport extends PropertySupport {
             && ((DesignPropertyEditor) getPropertyEditor()).getInplaceEditor() != null ) {
             setValue(PROPERYT_INPLACE_EDITOR, ((DesignPropertyEditor) getPropertyEditor()).getInplaceEditor());
         }
-        if (getPropertyEditor() instanceof DesignPropertyEditor) {
-            String title = ((DesignPropertyEditor) getPropertyEditor()).getCustomEditorTitle();
-            if ( title != null)
-                setValue(PROPERTY_CUSTOM_EDITOR_TITLE, title);
-        }
-        
     }
     
     public PropertyEditor getPropertyEditor() {
