@@ -32,7 +32,7 @@ import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
-import org.netbeans.installer.utils.applications.JDKUtils;
+import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.wizard.components.actions.SearchForJavaAction;
@@ -113,7 +113,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                 // installation and we should try to get its version from the
                 // registry
                 if (location.exists()) {
-                    version = JDKUtils.getVersion(location);
+                    version = JavaUtils.getVersion(location);
                 } else {
                     for (Product jdk: Registry.getInstance().getProducts("jdk")) {
                         if ((jdk.getStatus() == Status.TO_BE_INSTALLED) &&
@@ -133,7 +133,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                 // location does not exist - in this case we're positive that it
                 // WILL be a jdk) and if version satisfies the requirements - add
                 // the location to the list
-                if ((!location.exists() || JDKUtils.isJdk(location)) &&
+                if ((!location.exists() || JavaUtils.isJdk(location)) &&
                         !version.olderThan(minimumVersion) &&
                         !version.newerThan(maximumVersion)) {
                     jdkLocations.add(location);
@@ -164,15 +164,15 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
         
         Version version = null;
         if (file.exists()) {
-            if (!JDKUtils.isJavaHome(file)) {
+            if (!JavaUtils.isJavaHome(file)) {
                 return StringUtils.format(getProperty(ERROR_NOT_JAVAHOME_PROPERTY), path);
             }
             
-            if (!JDKUtils.isJdk(file)) {
+            if (!JavaUtils.isJdk(file)) {
                 return StringUtils.format(getProperty(ERROR_NOT_JDK_PROPERTY), path);
             }
             
-            version = JDKUtils.getVersion(file);
+            version = JavaUtils.getVersion(file);
         } else {
             for (Product jdk: Registry.getInstance().getProducts("jdk")) {
                 if ((jdk.getStatus() == Status.TO_BE_INSTALLED) &&

@@ -32,8 +32,8 @@ import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.SystemUtils;
-import org.netbeans.installer.utils.applications.JDKUtils;
-import org.netbeans.installer.utils.applications.JDKUtils.JavaInfo;
+import org.netbeans.installer.utils.applications.JavaUtils;
+import org.netbeans.installer.utils.applications.JavaUtils.JavaInfo;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.progress.Progress;
@@ -158,11 +158,11 @@ public class SearchForJavaAction extends WizardAction {
             
             // check whether it is a java installation - the result will be null if
             // it is not
-            final JavaInfo javaInfo = JDKUtils.getInfo(javaHome);
+            final JavaInfo javaInfo = JavaUtils.getInfo(javaHome);
             
             // filter out "private" jres
             if (javaHome.getName().equals("jre") &&
-                    JDKUtils.isJdk(javaHome.getParentFile())) {
+                    JavaUtils.isJdk(javaHome.getParentFile())) {
                 continue;
             }
             
@@ -283,20 +283,20 @@ public class SearchForJavaAction extends WizardAction {
                         if (!registry.valueExists(
                                 section,
                                 path + WindowsRegistry.SEPARATOR + key,
-                                JDKUtils.JAVAHOME_VALUE)) {
+                                JavaUtils.JAVAHOME_VALUE)) {
                             continue;
                         }
                         
                         String javaHome = registry.getStringValue(
                                 section,
                                 path + WindowsRegistry.SEPARATOR + key,
-                                JDKUtils.JAVAHOME_VALUE,
+                                JavaUtils.JAVAHOME_VALUE,
                                 false);
                         
                         LogManager.log("found: " + (section == HKLM ?
                             "HKEY_LOCAL_MACHINE" : "HKEY_CURRENT_USER") + // NOI18N
                             "\\" + path + "\\" + key + "\\" + // NOI18N
-                            JDKUtils.JAVAHOME_VALUE + " = " + javaHome); // NOI18N
+                            JavaUtils.JAVAHOME_VALUE + " = " + javaHome); // NOI18N
                         
                         
                         // add java home to the list if it's not there already

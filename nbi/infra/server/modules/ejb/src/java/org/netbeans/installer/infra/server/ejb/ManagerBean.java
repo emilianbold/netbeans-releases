@@ -29,7 +29,7 @@ import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.XMLUtils;
-import org.netbeans.installer.utils.applications.JDKUtils;
+import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.exceptions.FinalizationException;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.ParseException;
@@ -611,7 +611,7 @@ public class ManagerBean implements Manager {
             registry.saveStateFile(statefile, new Progress());
             
             ExecutionResults results = SystemUtils.executeCommand(
-                    JDKUtils.getExecutable(javaHome).getAbsolutePath(),
+                    JavaUtils.getExecutable(javaHome).getAbsolutePath(),
                     "-Dnbi.product.remote.registries=" + remote,
                     "-jar",
                     ENGINE.getAbsolutePath(),

@@ -38,7 +38,7 @@ import org.netbeans.installer.utils.helper.Shortcut;
 import org.netbeans.installer.utils.helper.ShortcutLocationType;
 import org.netbeans.installer.utils.SystemUtils;
 import static org.netbeans.installer.utils.StringUtils.*;
-import org.netbeans.installer.utils.applications.JDKUtils;
+import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.system.windows.SystemApplication;
 import org.netbeans.installer.utils.system.windows.FileExtension;
@@ -318,7 +318,7 @@ public class WindowsNativeUtils extends NativeUtils {
         String icon        = null; // use standard icon till we find a way to pass it
         String displayName = component.getDisplayName();
         
-        File executable = JDKUtils.getExecutableW(SystemUtils.getCurrentJavaHome());
+        File executable = JavaUtils.getExecutableW(SystemUtils.getCurrentJavaHome());
         File cachedEngine = Installer.getInstance().getCachedEngine();
         
         String uninstallString = null;
