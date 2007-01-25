@@ -19,39 +19,18 @@
 
 package org.netbeans.modules.j2ee.ejbcore;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.TypeParameterTree;
-import com.sun.source.tree.VariableTree;
-import com.sun.source.util.Trees;
 import java.io.File;
-import java.io.IOException;
-import java.rmi.RemoteException;
-import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.common.source.AbstractTask;
-import org.netbeans.modules.j2ee.common.source.SourceUtils;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
-import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -135,44 +114,6 @@ public class EjbGenerationUtil {
             packageName = packageName.replaceAll("/", ".");
         }
         return packageName+"";
-    }
-
-    //TODO: RETOUCHE move this static method somewhere, ensure it is not called from within other task
-    public static void addPKGetter(final Entity entity, FileObject classFO, final boolean remote) throws IOException {
-        final String pkField = entity.getPrimkeyField();
-        if (pkField == null) {
-            return;
-        }
-        JavaSource javaSource = JavaSource.forFileObject(classFO);
-        ModificationResult modificationResult = javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
-            public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
-                SourceUtils sourceUtils = SourceUtils.newInstance(workingCopy);
-                TypeElement javaClass = sourceUtils.getTypeElement();
-                TreeMaker treeMaker = workingCopy.getTreeMaker();
-                TypeElement returnType = workingCopy.getElements().getTypeElement(entity.getPrimKeyClass());
-                ExpressionTree throwsClause = null;
-                if (remote) {
-                    TypeElement element = workingCopy.getElements().getTypeElement(RemoteException.class.getName());
-                    throwsClause = treeMaker.QualIdent(element);
-                }
-                Trees trees = workingCopy.getTrees();
-                MethodTree resultTree = treeMaker.Method(
-                        treeMaker.Modifiers(Collections.<Modifier>emptySet()),
-                        EntityMethodController.getMethodName(pkField, true),
-                        trees.getTree(returnType),
-                        Collections.<TypeParameterTree>emptyList(),
-                        Collections.<VariableTree>emptyList(),
-                        remote ? Collections.singletonList(throwsClause) : Collections.<ExpressionTree>emptyList(),
-                        treeMaker.Block(Collections.<StatementTree>emptyList(), false),
-                        null
-                        );
-                ClassTree classTree = trees.getTree(javaClass);
-                ClassTree modifiedClazz = treeMaker.addClassMember(classTree, resultTree);
-                workingCopy.rewrite(classTree, modifiedClazz);
-            }
-        });
-        modificationResult.commit();
     }
 
 }
