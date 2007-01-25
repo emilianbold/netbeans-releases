@@ -121,13 +121,9 @@ public final class WebProject implements Project, AntProjectListener, FileChange
     private FileObject libFolder = null;
     private CopyOnSaveSupport css;
     private WebModule apiWebModule;
-    private WebProjectWebServicesSupport webProjectWebServicesSupport;
-    private WebProjectWebServicesClientSupport webProjectWebServicesClientSupport;
     private WebServicesSupport apiWebServicesSupport;
     private JAXWSSupport apiJaxwsSupport;
-    private WebProjectJAXWSSupport jaxwsSupport;
     private WebServicesClientSupport apiWebServicesClientSupport;
-    private WebProjectJAXWSClientSupport jaxWsClientSupport;
     private JAXWSClientSupport apiJAXWSClientSupport;
     private WebContainerImpl enterpriseResourceSupport;
     private FileWatch webPagesFileWatch;
@@ -263,10 +259,10 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         this.updateHelper = new UpdateHelper (this, this.helper, this.aux, UpdateHelper.createDefaultNotifier());
         webModule = new ProjectWebModule (this, updateHelper);
         apiWebModule = WebModuleFactory.createWebModule (webModule);
-        webProjectWebServicesSupport = new WebProjectWebServicesSupport(this, helper, refHelper);
-        jaxwsSupport = new WebProjectJAXWSSupport(this, helper);
-        jaxWsClientSupport = new WebProjectJAXWSClientSupport(this);
-        webProjectWebServicesClientSupport = new WebProjectWebServicesClientSupport(this, helper, refHelper);
+        WebProjectWebServicesSupport webProjectWebServicesSupport = new WebProjectWebServicesSupport(this, helper, refHelper);
+        WebProjectJAXWSSupport jaxwsSupport = new WebProjectJAXWSSupport(this, helper);
+        WebProjectJAXWSClientSupport jaxWsClientSupport = new WebProjectJAXWSClientSupport(this);
+        WebProjectWebServicesClientSupport webProjectWebServicesClientSupport = new WebProjectWebServicesClientSupport(this, helper, refHelper);
         apiWebServicesSupport = WebServicesSupportFactory.createWebServicesSupport (webProjectWebServicesSupport);
         apiJaxwsSupport = JAXWSSupportFactory.createJAXWSSupport(jaxwsSupport);
         apiWebServicesClientSupport = WebServicesClientSupportFactory.createWebServicesClientSupport (webProjectWebServicesClientSupport);
