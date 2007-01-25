@@ -107,13 +107,12 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             JavaSource javaSource = JavaSource.forFileObject(grips.get(i).getFileObject());
             try {
                 final ModificationResult result = javaSource.runModificationTask(new FindTask(refactoringElements, grips.get(i)));
+                refactoringElements.registerTransaction(new RetoucheCommit(Collections.singleton(result)));
                 for (FileObject jfo : result.getModifiedFileObjects()) {
                     for (ModificationResult.Difference dif: result.getDifferences(jfo)) {
                         refactoringElements.add(refactoring,DiffElement.create(dif, jfo, result));
                     }
                 }
-                refactoringElements.registerTransaction(new RetoucheCommit(Collections.singleton(result)));
-
             } catch (MalformedURLException ex) {
                 ex.printStackTrace();
             } catch (IOException ex) {

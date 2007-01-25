@@ -379,6 +379,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         fireProgressListenerStart(ProgressEvent.START, a.size());
         if (!a.isEmpty()) {
             final Collection<ModificationResult> results = processFiles(a, new FindTask(elements, element));
+            elements.registerTransaction(new RetoucheCommit(results));
             for (ModificationResult result:results) {
                 for (FileObject jfo : result.getModifiedFileObjects()) {
                     for (Difference dif: result.getDifferences(jfo)) {
@@ -391,8 +392,6 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                     }
                 }
             }
-            
-            elements.registerTransaction(new RetoucheCommit(results));
         }
         fireProgressListenerStop();
         return null;
