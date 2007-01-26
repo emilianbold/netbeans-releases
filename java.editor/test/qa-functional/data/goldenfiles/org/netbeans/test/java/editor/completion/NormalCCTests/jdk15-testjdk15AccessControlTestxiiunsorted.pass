@@ -18,6 +18,7 @@ CloneNotSupportedException
 Cloneable
 Comparable
 Compiler
+Deprecated
 Double
 Enum
 EnumConstantNotPresentException
@@ -54,6 +55,7 @@ Number
 NumberFormatException
 Object
 OutOfMemoryError
+Override
 Package
 Point
 PointList
@@ -75,6 +77,7 @@ StringBuffer
 StringBuilder
 StringIndexOutOfBoundsException
 String[] args
+SuppressWarnings
 System
 Test
 Thread

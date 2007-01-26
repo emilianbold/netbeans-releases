@@ -20,6 +20,7 @@ Comparable
 Compiler
 CopyCtor
 DefaultCtor
+Deprecated
 Double
 Enum
 EnumConstantNotPresentException
@@ -70,6 +71,7 @@ Number
 NumberFormatException
 Object
 OutOfMemoryError
+Override
 Package
 Process
 ProcessBuilder
@@ -88,6 +90,7 @@ String
 StringBuffer
 StringBuilder
 StringIndexOutOfBoundsException
+SuppressWarnings
 System
 T
 Test

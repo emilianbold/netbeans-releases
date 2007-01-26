@@ -18,6 +18,7 @@ CloneNotSupportedException
 Cloneable
 Comparable
 Compiler
+Deprecated
 Double
 Enum
 EnumConstantNotPresentException
@@ -66,6 +67,7 @@ Number
 NumberFormatException
 Object
 OutOfMemoryError
+Override
 Package
 Process
 ProcessBuilder
@@ -85,6 +87,7 @@ StringBuffer
 StringBuilder
 StringIndexOutOfBoundsException
 String[] args
+SuppressWarnings
 System
 Thread
 ThreadDeath
