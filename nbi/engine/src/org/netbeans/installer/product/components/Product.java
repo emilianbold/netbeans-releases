@@ -56,8 +56,6 @@ import org.netbeans.installer.utils.helper.DependencyType;
 import org.netbeans.installer.utils.helper.Text;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
-import org.netbeans.installer.utils.progress.ProgressAdapter;
-import org.netbeans.installer.utils.progress.ProgressDetailAdapter;
 import org.netbeans.installer.utils.system.UnixNativeUtils;
 import org.netbeans.installer.wizard.components.WizardComponent;
 import org.w3c.dom.Document;
@@ -420,22 +418,22 @@ public final class Product extends RegistryNode {
     }
     
     public void downloadLogic(final Progress progress) throws DownloadException {
-        CompositeProgress composite = new CompositeProgress();
-        ProgressAdapter   adapter   = new ProgressAdapter(composite, progress);
-        Progress          childProgress;
+        final CompositeProgress overallProgress = new CompositeProgress();
         
-        int percentageChunk = Progress.COMPLETE / logicUris.size();
+        final int percentageChunk = Progress.COMPLETE / logicUris.size();
+        final int percentageLeak  = Progress.COMPLETE % logicUris.size();
         
-        composite.setTitle("Downloading configuration logic for " + getDisplayName());
+        overallProgress.setPercentage(percentageLeak);
+        overallProgress.synchronizeTo(progress);
+        overallProgress.synchronizeDetails(true);
         
-        FileProxy fileProxy = FileProxy.getInstance();
         for (ExtendedURI uri: logicUris) {
-            childProgress = new Progress();
-            new ProgressDetailAdapter(childProgress, composite);
-            composite.addChild(childProgress, percentageChunk);
-            composite.setDetail("Loading file from " + uri.getRemote());
+            final Progress currentProgress = new Progress();
+            overallProgress.addChild(currentProgress, percentageChunk);
             
-            final File cache = fileProxy.getFile(uri.getRemote(), childProgress);
+            final File cache = FileProxy.getInstance().getFile(
+                    uri.getRemote(), 
+                    currentProgress);
             uri.setLocal(cache.toURI());
         }
     }
@@ -473,7 +471,8 @@ public final class Product extends RegistryNode {
             
             classLoader = new NbiClassLoader(logicUris);
             
-            configurationLogic = (ProductConfigurationLogic) classLoader.loadClass(classname).newInstance();
+            configurationLogic = (ProductConfigurationLogic) classLoader.
+                    loadClass(classname).newInstance();
             configurationLogic.setProduct(this);
             
             return configurationLogic;
@@ -494,22 +493,22 @@ public final class Product extends RegistryNode {
     }
     
     public void downloadData(final Progress progress) throws DownloadException {
-        CompositeProgress composite = new CompositeProgress();
-        ProgressAdapter   adapter   = new ProgressAdapter(composite, progress);
-        Progress          childProgress;
+        final CompositeProgress overallProgress = new CompositeProgress();
         
-        int percentageChunk = Progress.COMPLETE / dataUris.size();
+        final int percentageChunk = Progress.COMPLETE / dataUris.size();
+        final int percentageLeak  = Progress.COMPLETE % dataUris.size();
         
-        composite.setTitle("Downloading installation data for " + getDisplayName());
+        overallProgress.setPercentage(percentageLeak);
+        overallProgress.synchronizeTo(progress);
+        overallProgress.synchronizeDetails(true);
         
-        FileProxy fileProxy = FileProxy.getInstance();
         for (ExtendedURI uri: dataUris) {
-            childProgress = new Progress();
-            new ProgressDetailAdapter(childProgress, composite);
-            composite.addChild(childProgress, percentageChunk);
-            composite.setDetail("Loading file from " + uri.getRemote());
+            final Progress currentProgress = new Progress();
+            overallProgress.addChild(currentProgress, percentageChunk);
             
-            final File cache = fileProxy.getFile(uri.getRemote(), childProgress);
+            final File cache = FileProxy.getInstance().getFile(
+                    uri.getRemote(), 
+                    currentProgress);
             uri.setLocal(cache.toURI());
         }
     }

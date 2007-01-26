@@ -31,7 +31,6 @@ public class NbiProgressBar extends JProgressBar {
     public NbiProgressBar() {
         super(Progress.START, Progress.COMPLETE);
         
-        setOpaque(false);
         setBorderPainted(true);
         setStringPainted(true);
         setValue(0);

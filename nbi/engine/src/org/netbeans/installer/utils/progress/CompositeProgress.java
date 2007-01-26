@@ -21,6 +21,8 @@
 package org.netbeans.installer.utils.progress;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,13 +32,17 @@ import java.util.Map;
 public class CompositeProgress extends Progress implements ProgressListener {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    private Map<Progress, Integer> children = new HashMap<Progress, Integer>();
+    private List<Progress> childProgresses;
+    private List<Integer>  childPercentages;
     
     private boolean synchronizeDetails = false;
     
     // constructors /////////////////////////////////////////////////////////////////
     public CompositeProgress() {
-        // does nothing
+        super();
+        
+        childProgresses = new LinkedList<Progress>();
+        childPercentages = new LinkedList<Integer>();
     }
     
     public CompositeProgress(ProgressListener initialListener) {
@@ -49,8 +55,8 @@ public class CompositeProgress extends Progress implements ProgressListener {
     public int getPercentage() {
         int totalPercentage = 0;
         
-        for (Progress child: children.keySet()) {
-            totalPercentage += child.getPercentage() * children.get(child);
+        for (int i = 0; i < childProgresses.size(); i++) {
+            totalPercentage += childProgresses.get(i).getPercentage() * childPercentages.get(i);
         }
         
         totalPercentage = (totalPercentage / COMPLETE) + percentage;
@@ -77,14 +83,15 @@ public class CompositeProgress extends Progress implements ProgressListener {
     public void setCanceled(final boolean canceled) {
         super.setCanceled(canceled);
         
-        for (Progress child: children.keySet()) {
+        for (Progress child: childProgresses) {
             child.setCanceled(true);
         }
     }
     
     // composite-specific methods ///////////////////////////////////////////////////
     public void addChild(Progress progress, int percentageChunk) {
-        children.put(progress, percentageChunk);
+        childProgresses.add(progress);
+        childPercentages.add(percentageChunk);
         
         progress.addProgressListener(this);
         
@@ -93,8 +100,8 @@ public class CompositeProgress extends Progress implements ProgressListener {
         }
     }
     
-    public void synchronizeDetails(boolean synchronize) {
-        synchronizeDetails = synchronize;
+    public void synchronizeDetails(boolean synchronizeDetails) {
+        this.synchronizeDetails = synchronizeDetails;
     }
     
     // progress listener implementation /////////////////////////////////////////////
@@ -110,7 +117,7 @@ public class CompositeProgress extends Progress implements ProgressListener {
     private boolean evaluateChildren(final int percentage) {
         int totalPercentage = percentage;
         
-        for (Integer value: children.values()) {
+        for (Integer value: childPercentages) {
             totalPercentage += value;
         }
         

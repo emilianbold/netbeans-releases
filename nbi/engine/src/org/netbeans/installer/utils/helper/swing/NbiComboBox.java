@@ -35,7 +35,6 @@ public class NbiComboBox extends JComboBox {
     public NbiComboBox() {
         super();
         
-        setOpaque(false);
         setRenderer(new NbiDefaultComboBoxRenderer());
     }
     

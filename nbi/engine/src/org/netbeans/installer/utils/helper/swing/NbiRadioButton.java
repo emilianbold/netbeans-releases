@@ -30,8 +30,6 @@ import org.netbeans.installer.utils.StringUtils;
 public class NbiRadioButton extends JRadioButton {
     public NbiRadioButton() {
         super();
-        
-        setOpaque(false);
     }
     
     public void setText(String text) {

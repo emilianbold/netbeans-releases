@@ -33,8 +33,6 @@ public class NbiScrollPane extends JScrollPane {
     public NbiScrollPane(JComponent component) {
         super(component);
         
-        setOpaque(false);
-        getViewport().setOpaque(false);
         setViewportBorder(new EmptyBorder(new Insets(0, 0, 0, 0)));
         setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);

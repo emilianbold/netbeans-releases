@@ -20,6 +20,7 @@
  */
 package org.netbeans.installer.wizard.components.actions;
 
+import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
@@ -79,6 +80,10 @@ public class DownloadConfigurationLogicAction extends WizardAction {
             try {
                 product.downloadLogic(currentProgress);
                 
+                // ensure that the current progress has reached the complete state
+                // (sometimes it just does not happen and we're left over with 99%)
+                currentProgress.setPercentage(Progress.COMPLETE);
+                
                 // check for cancel status
                 if (canceled) return;
                 
@@ -87,7 +92,9 @@ public class DownloadConfigurationLogicAction extends WizardAction {
                 SystemUtils.sleep(200);
             }  catch (DownloadException e) {
                 // wrap the download exception with a more user-friendly one
-                InstallationException error = new InstallationException("Failed to download installation logic for " + product.getDisplayName(), e);
+                final InstallationException error = new InstallationException(
+                        "Failed to download installation logic for " + product.getDisplayName(), 
+                        e);
                 
                 // adjust the product's status and save this error - it will
                 // be reused later at the PostInstallSummary

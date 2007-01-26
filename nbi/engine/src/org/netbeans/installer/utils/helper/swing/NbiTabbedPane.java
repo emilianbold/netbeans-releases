@@ -30,7 +30,5 @@ import org.netbeans.installer.utils.StringUtils;
 public class NbiTabbedPane extends JTabbedPane {
     public NbiTabbedPane() {
         super();
-        
-        setOpaque(false);
     }
 }
