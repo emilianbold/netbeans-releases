@@ -344,7 +344,8 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             new WebJAXWSMetadataFinder(this),
             getJaxWsModel(),
             new WebPersistenceProviderSupplier(this),
-            new WebEMGenStrategyResolver()
+            new WebEMGenStrategyResolver(),
+            new WebJPADataSourceSupport(this)
         });
     }
 
