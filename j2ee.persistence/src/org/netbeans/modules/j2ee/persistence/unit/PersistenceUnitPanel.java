@@ -28,9 +28,6 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.j2ee.common.DatasourceUIHelper;
-import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Properties;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Property;
@@ -40,6 +37,8 @@ import org.netbeans.modules.j2ee.persistence.util.PersistenceProviderComboboxHel
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.JdbcListCellRenderer;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
+import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourcePopulator;
 import org.netbeans.modules.j2ee.persistence.util.PersistenceProviderComboboxHelper;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
@@ -138,9 +137,9 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
             String jtaDataSource = persistenceUnit.getJtaDataSource();
             String nonJtaDataSource = persistenceUnit.getNonJtaDataSource();
             
-            J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-            if (j2eeModuleProvider != null) {
-                DatasourceUIHelper.connect(j2eeModuleProvider, dsCombo);
+            JPADataSourcePopulator dsPopulator = project.getLookup().lookup(JPADataSourcePopulator.class);
+            if (dsPopulator != null){
+                dsPopulator.connect(dsCombo);
                 addModifier((JTextComponent)dsCombo.getEditor().getEditorComponent(), false);
             }
             
@@ -341,8 +340,8 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         if (jndiName == null) {
             int itemIndex = dsCombo.getSelectedIndex();
             Object item = dsCombo.getSelectedItem();
-            if (item instanceof Datasource)
-                jndiName = ((Datasource)item).getJndiName();
+            if (item instanceof JPADataSource)
+                jndiName = ((JPADataSource)item).getJndiName();
             else if (itemIndex == -1 && item != null){ // user input
                 jndiName = item.toString();
             }
@@ -411,12 +410,14 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
             int nItems = dsCombo.getItemCount();
             for (int i = 0; i < nItems; i++) {
                 Object item = dsCombo.getItemAt(i);
-                if (item instanceof Datasource && jndiName.equals(((Datasource)item).getJndiName())) {
-                    return (Datasource)item;
+                if (item instanceof JPADataSource && jndiName.equals(((JPADataSource)item).getJndiName())) {
+                    return (JPADataSource)item;
                 }
             }
         }
         
+        String strins = null;
+        strins.equals((("asdf")));
         return jndiName;
     }
     

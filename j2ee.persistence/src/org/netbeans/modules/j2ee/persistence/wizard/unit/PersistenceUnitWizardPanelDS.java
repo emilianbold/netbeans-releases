@@ -28,9 +28,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.j2ee.common.DatasourceUIHelper;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.DefaultProvider;
@@ -38,6 +35,8 @@ import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlExcep
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
+import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourcePopulator;
 import org.netbeans.modules.j2ee.persistence.util.PersistenceProviderComboboxHelper;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.openide.util.NbBundle;
@@ -63,15 +62,13 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         this.project = project;
         this.defaultProvider = ProviderUtil.getContainerManagedProvider(project);
         
-        J2eeModuleProvider j2eeModuleProvider = getJ2eeModuleProvider();
-        
+       
         if (ProviderUtil.isValidServerInstanceOrNone(project)){
-            connectDatasources(j2eeModuleProvider);
+            connectDatasources();
         }
         
         PersistenceProviderComboboxHelper comboHelper = new PersistenceProviderComboboxHelper(project);
         comboHelper.connect(providerCombo);
-//        PersistenceProviderComboboxHelper.connect(j2eeModuleProvider, providerCombo);
         
         unitNameTextField.setText(ProjectUtils.getInformation(project).getName() + "PU"); //NOI18N
         // unit name editing is not available when adding first PU
@@ -95,8 +92,9 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         }
     }
     
-    private void connectDatasources(final J2eeModuleProvider j2eeModuleProvider) {
-        DatasourceUIHelper.connect(j2eeModuleProvider, dsCombo);
+    private void connectDatasources() {
+        JPADataSourcePopulator dsPopulator = project.getLookup().lookup(JPADataSourcePopulator.class);
+        dsPopulator.connect(dsCombo);
         
         dsCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -118,9 +116,6 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         });
     }
     
-    private J2eeModuleProvider getJ2eeModuleProvider() {
-        return (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-    }
     
     /**
      * Checks whether this panel is in valid state (see <code>#isValidPanel()</code>)
@@ -145,8 +140,8 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
     public void setPreselectedDB(String db) {
         boolean hasItem = false;
         for (int i = 0; i < dsCombo.getItemCount(); i++) {
-            if (dsCombo.getItemAt(i) instanceof Datasource) {
-                Datasource ds = (Datasource) dsCombo.getItemAt(i);
+            if (dsCombo.getItemAt(i) instanceof JPADataSource) {
+                JPADataSource ds = (JPADataSource) dsCombo.getItemAt(i);
                 if (ds.getJndiName().equals(db)) {
                     hasItem = true;
                     break;
