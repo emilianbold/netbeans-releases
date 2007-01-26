@@ -14,9 +14,12 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.StringTokenizer;
+import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
@@ -70,7 +73,7 @@ public class MonitoringPanel extends javax.swing.JPanel implements ActionListene
         
         public boolean accept(File f) {
             if(f != null) {
-              if(f.isDirectory()) {
+                if(f.isDirectory()) {
                     return true;
                 }
                 String extension = MgtFileFilter.getExtension(f);
@@ -90,16 +93,10 @@ public class MonitoringPanel extends javax.swing.JPanel implements ActionListene
     private class MultiPurposeListener implements FocusListener,
             ActionListener, KeyListener {
         private JFileChooser chooser;
-        private JFileChooser pluginsChooser;
         MultiPurposeListener(String path) {
             chooser = new JFileChooser(path);
             chooser.setFileFilter(new MgtFileFilter());
-            pluginsChooser = new JFileChooser(path);
-            pluginsChooser.setMultiSelectionEnabled(true); 
-            pluginsChooser.setFileFilter(new PluginsFileFilter());
-            pluginsChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         }
-        
         public void keyTyped(KeyEvent e) {
             char c = e.getKeyChar();
             if (!(Character.isDigit(c) ||
@@ -116,10 +113,10 @@ public class MonitoringPanel extends javax.swing.JPanel implements ActionListene
         }
         
         public void actionPerformed(ActionEvent e) {
-             if(e.getActionCommand().equals( "rmi")) {// NOI18N
-                 if(enableRMI.isSelected()) {
-                     choicePort.setEnabled(true);
-                     choiceFile.setEnabled(true); 
+            if(e.getActionCommand().equals( "rmi")) {// NOI18N
+                if(enableRMI.isSelected()) {
+                    choicePort.setEnabled(true);
+                    choiceFile.setEnabled(true);
                     if(choicePort.isSelected()) {
                         rmiPort.setEnabled(true);
                         confFile.setEnabled(false);
@@ -141,68 +138,62 @@ public class MonitoringPanel extends javax.swing.JPanel implements ActionListene
                             }
                         });
                     }
-                 } else {
-                        choiceFile.setEnabled(false);
-                        choicePort.setEnabled(false);
-                        rmiPort.setEnabled(false);
-                        confFile.setEnabled(false);
-                        browse.setEnabled(false);
-               }
-            }else
+                } else {
+                    choiceFile.setEnabled(false);
+                    choicePort.setEnabled(false);
+                    rmiPort.setEnabled(false);
+                    confFile.setEnabled(false);
+                    browse.setEnabled(false);
+                }
+                return;
+            }
+            
             if(e.getActionCommand().equals( "attach")) {// NOI18N
                 boolean selected = attachJConsole.isSelected();
                 period.setEnabled(selected);
                 periodLabel.setEnabled(selected);
                 classpath.setEnabled(selected);
                 pluginsClasspath.setEnabled(selected);
-                pluginsPath.setEnabled(selected);
-                pluginsBrowse.setEnabled(selected);
-                pluginsPathLabel.setEnabled(selected);
+                pathController.setEnabled(selected);
+               
                 pluginsLabel.setEnabled(selected);
-            }else
-                if(e.getActionCommand().equals( "port")) {// NOI18N
-                    rmiPort.setEnabled(true);
-                    confFile.setEnabled(false);
-                    browse.setEnabled(false);
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            rmiPort.requestFocus();
-                            rmiPort.selectAll();
-                        }
-                    });
-                }else if (e.getActionCommand().equals( "file")) {// NOI18N
-                    rmiPort.setEnabled(false);
-                    confFile.setEnabled(true);
-                    browse.setEnabled(true);
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            confFile.requestFocus();
-                            confFile.selectAll();
-                        }
-                    });
-                } else if (e.getActionCommand().equals( "browse")) {// NOI18N
-                    int returnVal = chooser.showOpenDialog(null);
-                    if(returnVal == JFileChooser.APPROVE_OPTION) {
-                        confFile.setText(chooser.getSelectedFile().getAbsolutePath());
+                return;
+            }
+            
+            if(e.getActionCommand().equals( "port")) {// NOI18N
+                rmiPort.setEnabled(true);
+                confFile.setEnabled(false);
+                browse.setEnabled(false);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        rmiPort.requestFocus();
+                        rmiPort.selectAll();
                     }
-                } else if (e.getActionCommand().equals( "pluginsBrowse")) {// NOI18N
-                    int returnVal = pluginsChooser.showOpenDialog(null);
-                    if(returnVal == JFileChooser.APPROVE_OPTION) {
-                        String current = pluginsPath.getText();
-                        if(current != null && !current.equals(""))
-                            current = current + File.pathSeparator;
-                        
-                        File[] selection = pluginsChooser.getSelectedFiles();
-                        int size = selection.length;
-                        StringBuffer buff = new StringBuffer();
-                        for(int i = 0; i < size; i++) {
-                            buff.append(selection[i].getAbsolutePath());
-                            if(i < size - 1)
-                                buff.append(File.pathSeparator);
-                        }
-                        pluginsPath.setText(current + buff.toString());
+                });
+                return;
+            }
+            
+            if (e.getActionCommand().equals( "file")) {// NOI18N
+                rmiPort.setEnabled(false);
+                confFile.setEnabled(true);
+                browse.setEnabled(true);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        confFile.requestFocus();
+                        confFile.selectAll();
                     }
+                });
+                return;
+            }
+            
+            if (e.getActionCommand().equals( "browse")) {// NOI18N
+                int returnVal = chooser.showOpenDialog(null);
+                if(returnVal == JFileChooser.APPROVE_OPTION) {
+                    confFile.setText(chooser.getSelectedFile().getAbsolutePath());
                 }
+                return;
+            }
+            
         }
         
         public void focusGained(FocusEvent e) {
@@ -222,16 +213,15 @@ public class MonitoringPanel extends javax.swing.JPanel implements ActionListene
         }
     }
     
+    private PathController pathController;
+    
     /** Creates new form MonitoringPanel */
     public MonitoringPanel(Project project, boolean plugins) {
         initComponents();
         
         // Plugins are supported for JDK 6 only
-        pluginsBrowse.setVisible(plugins);
         pluginsClasspath.setVisible(plugins);
         pluginsLabel.setVisible(plugins);
-        pluginsPath.setVisible(plugins);
-        pluginsPathLabel.setVisible(plugins);
         
         
         
@@ -250,19 +240,24 @@ public class MonitoringPanel extends javax.swing.JPanel implements ActionListene
         String rmiPortVal = projectProperties.getProperty(ManagementCompositePanelProvider.RMI_PORT_KEY,"1099"); // NOI18N
         String configFile = projectProperties.getProperty(ManagementCompositePanelProvider.CONFIG_FILE_KEY); // NOI18N
         
-        String periodVal = projectProperties.getProperty(ManagementCompositePanelProvider.POLLING_PERIOD_KEY, "4");
+        String periodVal = projectProperties.getProperty(ManagementCompositePanelProvider.POLLING_PERIOD_KEY, "4");// NOI18N
         
-        boolean resolveClassPath = 
-                Boolean.valueOf(projectProperties.getProperty(ManagementCompositePanelProvider.RESOLVE_CLASSPATH_KEY, 
+        boolean resolveClassPath =
+                Boolean.valueOf(projectProperties.getProperty(ManagementCompositePanelProvider.RESOLVE_CLASSPATH_KEY,
                 "true")); // NOI18N
         
-        String pluginsPathVal = projectProperties.getProperty(ManagementCompositePanelProvider.PLUGINS_PATH_KEY);
-        boolean pluginsClassPathVal = 
-                Boolean.valueOf(projectProperties.getProperty(ManagementCompositePanelProvider.PLUGINS_CLASSPATH_KEY, 
+        String pluginsPathVal = projectProperties.getProperty(ManagementCompositePanelProvider.PLUGINS_PATH_KEY, "");
+        StringTokenizer tk = new StringTokenizer(pluginsPathVal,",");
+        DefaultListModel model = new DefaultListModel();
+        jList1.setModel(model);
+        while(tk.hasMoreTokens()) {
+            String path = tk.nextToken();
+            model.addElement(path);
+        }
+        boolean pluginsClassPathVal =
+                Boolean.valueOf(projectProperties.getProperty(ManagementCompositePanelProvider.PLUGINS_CLASSPATH_KEY,
                 "true")); // NOI18N
         
-        if(pluginsPathVal != null)
-            pluginsPath.setText(pluginsPathVal);
         pluginsClasspath.setSelected(pluginsClassPathVal);
         
         classpath.setSelected(resolveClassPath);
@@ -272,9 +267,6 @@ public class MonitoringPanel extends javax.swing.JPanel implements ActionListene
         periodLabel.setEnabled(localAttach);
         classpath.setEnabled(localAttach);
         pluginsClasspath.setEnabled(localAttach);
-        pluginsPath.setEnabled(localAttach);
-        pluginsBrowse.setEnabled(localAttach);
-        pluginsPathLabel.setEnabled(localAttach);
         pluginsLabel.setEnabled(localAttach);
         
         enableRMI.setSelected(rmiConnect);
@@ -300,17 +292,15 @@ public class MonitoringPanel extends javax.swing.JPanel implements ActionListene
         
         // Event handling
         
-        attachJConsole.setActionCommand("attach");
-        enableRMI.setActionCommand("rmi");
+        attachJConsole.setActionCommand("attach");// NOI18N
+        enableRMI.setActionCommand("rmi");// NOI18N
         
-        choicePort.setActionCommand( "port");
-        choiceFile.setActionCommand( "file");
-        browse.setActionCommand( "browse");
-        pluginsBrowse.setActionCommand("pluginsBrowse");
-
+        choicePort.setActionCommand( "port");// NOI18N
+        choiceFile.setActionCommand( "file");// NOI18N
+        browse.setActionCommand( "browse");// NOI18N
+        
         listener = new MultiPurposeListener(projectRootDir);
         
-        pluginsBrowse.addActionListener(listener);
         attachJConsole.addActionListener(listener);
         enableRMI.addActionListener(listener);
         choicePort.addActionListener(listener);
@@ -319,28 +309,46 @@ public class MonitoringPanel extends javax.swing.JPanel implements ActionListene
         confFile.addFocusListener(listener);
         rmiPort.addKeyListener(listener);
         period.addKeyListener(listener);
-        
-       
+        JFileChooser pluginsChooser = new JFileChooser(projectRootDir);
+        pluginsChooser.setMultiSelectionEnabled(true);
+        pluginsChooser.setFileFilter(new PluginsFileFilter());
+        pluginsChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        pathController = new PathController(jList1, pathLabel,
+                (DefaultListModel)jList1.getModel(), jButtonAddJarC,
+                pluginsChooser,
+                jButtonRemoveC,
+                jButtonMoveUpC,jButtonMoveDownC);
+        pathController.setVisible(plugins);
+        pathController.setEnabled(localAttach);
     }
     
     public void actionPerformed(ActionEvent e) {
         try {
-        // Strore all properties when OK is clicked.
-        Map<String, String> jmxProperties = new HashMap<String, String>();
-        
-        jmxProperties.put(ManagementCompositePanelProvider.ATTACH_JCONSOLE_KEY, String.valueOf(attachJConsole.isSelected()));
-        jmxProperties.put(ManagementCompositePanelProvider.ENABLE_RMI_KEY, String.valueOf(enableRMI.isSelected()));
-        jmxProperties.put(ManagementCompositePanelProvider.RMI_USE_PORT_KEY, String.valueOf(choicePort.isSelected()));
-        jmxProperties.put(ManagementCompositePanelProvider.RMI_PORT_KEY, rmiPort.getText());
-        jmxProperties.put(ManagementCompositePanelProvider.CONFIG_FILE_KEY, confFile.getText());
-        jmxProperties.put(ManagementCompositePanelProvider.POLLING_PERIOD_KEY, period.getText());
-        jmxProperties.put(ManagementCompositePanelProvider.RESOLVE_CLASSPATH_KEY, String.valueOf(classpath.isSelected()));
-        jmxProperties.put(ManagementCompositePanelProvider.PLUGINS_PATH_KEY, pluginsPath.getText());
-        jmxProperties.put(ManagementCompositePanelProvider.PLUGINS_CLASSPATH_KEY, String.valueOf(pluginsClasspath.isSelected()));
-        J2SEProjectType.addProjectProperties(jmxProperties, project);
+            // Strore all properties when OK is clicked.
+            Map<String, String> jmxProperties = new HashMap<String, String>();
+            
+            jmxProperties.put(ManagementCompositePanelProvider.ATTACH_JCONSOLE_KEY, String.valueOf(attachJConsole.isSelected()));
+            jmxProperties.put(ManagementCompositePanelProvider.ENABLE_RMI_KEY, String.valueOf(enableRMI.isSelected()));
+            jmxProperties.put(ManagementCompositePanelProvider.RMI_USE_PORT_KEY, String.valueOf(choicePort.isSelected()));
+            jmxProperties.put(ManagementCompositePanelProvider.RMI_PORT_KEY, rmiPort.getText());
+            jmxProperties.put(ManagementCompositePanelProvider.CONFIG_FILE_KEY, confFile.getText());
+            jmxProperties.put(ManagementCompositePanelProvider.POLLING_PERIOD_KEY, period.getText());
+            jmxProperties.put(ManagementCompositePanelProvider.RESOLVE_CLASSPATH_KEY, String.valueOf(classpath.isSelected()));
+           jmxProperties.put(ManagementCompositePanelProvider.PLUGINS_CLASSPATH_KEY, String.valueOf(pluginsClasspath.isSelected()));
+            
+            Enumeration pluginsPath = ((DefaultListModel)jList1.getModel()).elements();
+            StringBuffer buffer = new StringBuffer();
+            while(pluginsPath.hasMoreElements()) {
+                Object path = pluginsPath.nextElement();
+                buffer.append(path.toString());
+                if(pluginsPath.hasMoreElements())
+                    buffer.append(",");
+            }
+            jmxProperties.put(ManagementCompositePanelProvider.PLUGINS_PATH_KEY, buffer.toString());
+            J2SEProjectType.addProjectProperties(jmxProperties, project);
         }catch(MutexException mx) {
             System.out.println(mx.toString());
-            throw new RuntimeException("Error when Storing Management and Monitoring Properties " + mx);
+            throw new RuntimeException("Error when Storing Management and Monitoring Properties " + mx);// NOI18N
         }
     }
     
@@ -353,22 +361,31 @@ public class MonitoringPanel extends javax.swing.JPanel implements ActionListene
     private void initComponents() {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
+        browse = new javax.swing.JButton();
         attachJConsole = new javax.swing.JCheckBox();
         period = new javax.swing.JTextField();
         periodLabel = new javax.swing.JLabel();
         classpath = new javax.swing.JCheckBox();
         pluginsLabel = new javax.swing.JLabel();
         pluginsClasspath = new javax.swing.JCheckBox();
-        pluginsPathLabel = new javax.swing.JLabel();
-        pluginsPath = new javax.swing.JTextField();
-        pluginsBrowse = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
         enableRMI = new javax.swing.JCheckBox();
-        choicePort = new javax.swing.JRadioButton();
-        rmiPort = new javax.swing.JTextField();
         choiceFile = new javax.swing.JRadioButton();
+        choicePort = new javax.swing.JRadioButton();
         confFile = new javax.swing.JTextField();
-        browse = new javax.swing.JButton();
+        rmiPort = new javax.swing.JTextField();
+        jPanel1 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jList1 = new javax.swing.JList();
+        jButtonAddJarC = new javax.swing.JButton();
+        jButtonMoveUpC = new javax.swing.JButton();
+        jButtonMoveDownC = new javax.swing.JButton();
+        jButtonRemoveC = new javax.swing.JButton();
+        pathLabel = new javax.swing.JLabel();
+
+        setMaximumSize(new java.awt.Dimension(2000, 2000));
+        setPreferredSize(new java.awt.Dimension(2000, 2000));
+
+        browse.setText(org.openide.util.NbBundle.getMessage(MonitoringPanel.class, "MonitoringPanel.browse.text")); // NOI18N
 
         attachJConsole.setText(org.openide.util.NbBundle.getMessage(MonitoringPanel.class, "MonitoringPanel.attachJConsole.text")); // NOI18N
         attachJConsole.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -388,67 +405,67 @@ public class MonitoringPanel extends javax.swing.JPanel implements ActionListene
         pluginsClasspath.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         pluginsClasspath.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        pluginsPathLabel.setText(org.openide.util.NbBundle.getMessage(MonitoringPanel.class, "MonitoringPanel.pluginsPathLabel.text")); // NOI18N
-
-        pluginsPath.setText(org.openide.util.NbBundle.getMessage(MonitoringPanel.class, "MonitoringPanel.pluginsPath.text")); // NOI18N
-
-        pluginsBrowse.setText(org.openide.util.NbBundle.getMessage(MonitoringPanel.class, "MonitoringPanel.pluginsBrowse.text")); // NOI18N
-
         enableRMI.setText(org.openide.util.NbBundle.getMessage(MonitoringPanel.class, "MonitoringPanel.enableRMI.text")); // NOI18N
         enableRMI.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         enableRMI.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        buttonGroup1.add(choicePort);
-        choicePort.setText(org.openide.util.NbBundle.getMessage(MonitoringPanel.class, "MonitoringPanel.choicePort.text")); // NOI18N
-        choicePort.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        choicePort.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        rmiPort.setText(org.openide.util.NbBundle.getMessage(MonitoringPanel.class, "MonitoringPanel.rmiPort.text")); // NOI18N
 
         buttonGroup1.add(choiceFile);
         choiceFile.setText(org.openide.util.NbBundle.getMessage(MonitoringPanel.class, "MonitoringPanel.choiceFile.text")); // NOI18N
         choiceFile.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         choiceFile.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
+        buttonGroup1.add(choicePort);
+        choicePort.setText(org.openide.util.NbBundle.getMessage(MonitoringPanel.class, "MonitoringPanel.choicePort.text")); // NOI18N
+        choicePort.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        choicePort.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
         confFile.setText(org.openide.util.NbBundle.getMessage(MonitoringPanel.class, "MonitoringPanel.confFile.text")); // NOI18N
 
-        browse.setText(org.openide.util.NbBundle.getMessage(MonitoringPanel.class, "MonitoringPanel.browse.text")); // NOI18N
+        rmiPort.setText(org.openide.util.NbBundle.getMessage(MonitoringPanel.class, "MonitoringPanel.rmiPort.text")); // NOI18N
+
+        jScrollPane1.setViewportView(jList1);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddJarC, org.openide.util.NbBundle.getMessage(MonitoringPanel.class, "MonitoringPanel.jButtonAddJarC.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonMoveUpC, org.openide.util.NbBundle.getMessage(MonitoringPanel.class, "MonitoringPanel.jButtonMoveUpC.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonMoveDownC, org.openide.util.NbBundle.getMessage(MonitoringPanel.class, "MonitoringPanel.jButtonMoveDownC.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonRemoveC, org.openide.util.NbBundle.getMessage(MonitoringPanel.class, "MonitoringPanel.jButtonRemoveC.text")); // NOI18N
+
+        pathLabel.setText(org.openide.util.NbBundle.getMessage(MonitoringPanel.class, "MonitoringPanel.pathLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(choicePort, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE)
-                        .add(31, 31, 31))
-                    .add(enableRMI)
-                    .add(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(choiceFile, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 295, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(confFile, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 226, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(rmiPort, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(browse))
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(jButtonRemoveC, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jButtonAddJarC, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jButtonMoveUpC, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(jButtonMoveDownC, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+            .add(pathLabel)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
-                .add(enableRMI)
+                .add(9, 9, 9)
+                .add(pathLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(choicePort)
-                    .add(rmiPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(choiceFile)
-                    .add(browse)
-                    .add(confFile, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(40, Short.MAX_VALUE))
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                    .add(jPanel1Layout.createSequentialGroup()
+                        .add(jButtonAddJarC)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jButtonRemoveC)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jButtonMoveUpC)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jButtonMoveDownC))
+                    .add(jScrollPane1, 0, 0, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -456,36 +473,40 @@ public class MonitoringPanel extends javax.swing.JPanel implements ActionListene
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(29, 29, 29)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(pluginsPathLabel)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(pluginsPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(pluginsBrowse, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 99, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(pluginsLabel)
-                            .add(pluginsClasspath)))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(attachJConsole)
+                    .add(attachJConsole)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, enableRMI)
                             .add(layout.createSequentialGroup()
                                 .add(17, 17, 17)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(classpath)
-                                    .add(layout.createSequentialGroup()
-                                        .add(periodLabel)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, pluginsClasspath)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                            .add(org.jdesktop.layout.GroupLayout.LEADING, classpath)
+                                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                                    .add(layout.createSequentialGroup()
+                                                        .add(choicePort)
+                                                        .add(1, 1, 1))
+                                                    .add(choiceFile, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                                    .add(rmiPort, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
+                                                    .add(confFile, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)))
+                                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                                .add(periodLabel)
+                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                                .add(period, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE))
+                                            .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(period, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 374, Short.MAX_VALUE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addContainerGap())
+                                        .add(browse, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE)
+                                        .add(770, 770, 770))
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, pluginsLabel))))
+                        .add(695, 695, 695)))
+                .add(0, 0, 0))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -498,18 +519,24 @@ public class MonitoringPanel extends javax.swing.JPanel implements ActionListene
                     .add(period, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(classpath)
-                .add(22, 22, 22)
+                .add(21, 21, 21)
                 .add(pluginsLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(pluginsClasspath)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 155, Short.MAX_VALUE)
+                .add(16, 16, 16)
+                .add(enableRMI)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(pluginsPathLabel)
-                    .add(pluginsPath, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(pluginsBrowse))
-                .add(54, 54, 54)
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(26, Short.MAX_VALUE))
+                    .add(choicePort)
+                    .add(rmiPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(choiceFile)
+                    .add(confFile, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(browse))
+                .add(1614, 1614, 1614))
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -523,14 +550,18 @@ public class MonitoringPanel extends javax.swing.JPanel implements ActionListene
     private javax.swing.JCheckBox classpath;
     private javax.swing.JTextField confFile;
     private javax.swing.JCheckBox enableRMI;
+    private javax.swing.JButton jButtonAddJarC;
+    private javax.swing.JButton jButtonMoveDownC;
+    private javax.swing.JButton jButtonMoveUpC;
+    private javax.swing.JButton jButtonRemoveC;
+    private javax.swing.JList jList1;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel pathLabel;
     private javax.swing.JTextField period;
     private javax.swing.JLabel periodLabel;
-    private javax.swing.JButton pluginsBrowse;
     private javax.swing.JCheckBox pluginsClasspath;
     private javax.swing.JLabel pluginsLabel;
-    private javax.swing.JTextField pluginsPath;
-    private javax.swing.JLabel pluginsPathLabel;
     private javax.swing.JTextField rmiPort;
     // End of variables declaration//GEN-END:variables
     
