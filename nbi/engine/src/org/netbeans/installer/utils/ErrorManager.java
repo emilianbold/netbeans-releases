@@ -92,37 +92,55 @@ public class ErrorManager {
         assert (message != null) || (exception != null);
         
         String dialogTitle;
-        String dialogText  = "";
+        String dialogText = "Something wrong happened. Probably more details are available in the log file";
         int dialogType;
         
         if (message != null) {
             LogManager.log(level, message);
-            dialogText += message + "\n";
+            dialogText = message;
         }
         if (exception != null) {
             LogManager.log(level, exception);
-            dialogText += StringUtils.asString(exception);
-            
-            Throwable cause = exception.getCause();
-            while (cause != null) {
-                dialogText += "\nCaused by:\n";
-                dialogText += StringUtils.asString(cause);
-                cause = cause.getCause();
+            if (message != null) {
+                dialogText += 
+                        "\n\nException:\n  " + 
+                        exception.getClass().getName() + ":\n  " + 
+                        exception.getMessage();
+            } else {
+                dialogText = exception.getMessage();
             }
         }
         
+        dialogText += "\n\nYou can get more details about the issue in the installer log file:\n" + LogManager.getLogFile().getAbsolutePath();
+        
         switch (level) {
             case ErrorLevel.MESSAGE:
-                JOptionPane.showMessageDialog(null, dialogText, "Message", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(
+                        null, 
+                        dialogText, 
+                        "Message", 
+                        JOptionPane.INFORMATION_MESSAGE);
                 return;
             case ErrorLevel.WARNING:
-                JOptionPane.showMessageDialog(null, dialogText, "Warning", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(
+                        null, 
+                        dialogText, 
+                        "Warning", 
+                        JOptionPane.WARNING_MESSAGE);
                 return;
             case ErrorLevel.ERROR:
-                JOptionPane.showMessageDialog(null, dialogText, "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(
+                        null, 
+                        dialogText, 
+                        "Error", 
+                        JOptionPane.ERROR_MESSAGE);
                 return;
             case ErrorLevel.CRITICAL:
-                JOptionPane.showMessageDialog(null, dialogText, "Critical Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(
+                        null, 
+                        dialogText, 
+                        "Critical Error", 
+                        JOptionPane.ERROR_MESSAGE);
                 Installer.getInstance().criticalExit();
                 return;
             default:
@@ -148,7 +166,7 @@ public class ErrorManager {
     private static class ExceptionHandler implements UncaughtExceptionHandler {
         public void uncaughtException(Thread thread, Throwable exception) {
             ErrorManager.notifyCritical(
-                    "An uncaught exception happened in thread " + thread.getName(), 
+                    "An unexpected exception happened in thread " + thread.getName(), 
                     exception);
         }
     }

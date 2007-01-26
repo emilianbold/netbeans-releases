@@ -21,6 +21,7 @@
 package org.netbeans.installer.wizard.components;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -240,8 +241,10 @@ public abstract class WizardComponent {
                 saveInput();
                 component.getWizard().next();
             } else {
-                ErrorManager.notify(ErrorLevel.ERROR, errorMessage);
+                ErrorManager.notifyError(errorMessage);
             }
+            
+            throw (NullPointerException) new NullPointerException("asdkalskdjaslkjd").initCause(new IOException("IOIOIO"));
         }
         
         public void evaluateCancelButtonClick() {
