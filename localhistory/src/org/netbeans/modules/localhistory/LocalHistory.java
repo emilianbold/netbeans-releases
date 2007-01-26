@@ -24,6 +24,12 @@ import org.netbeans.modules.localhistory.store.LocalHistoryStore;
 import org.netbeans.modules.localhistory.store.LocalHistoryStoreFactory;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
+import org.openide.cookies.EditCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Utilities;
 
 /** 
  * 
@@ -92,8 +98,24 @@ public class LocalHistory {
         return file;    
     }
     
-    boolean isManaged(File file) {
-        return !fileNameExclPattern.matcher(file.getName()).matches() && 
-               file.length() <= LocalHistorySettings.getMaxFileSize();
+    boolean isManaged(File file) {        
+        return isEditable(file) && file.length() <= LocalHistorySettings.getMaxFileSize();
+    }
+    
+    private boolean isEditable(File file) {
+        FileObject fo = FileUtil.toFileObject(file);
+        if(fo == null) {
+            return false;
+        }         
+        DataObject data = null;
+        try {
+            data = DataObject.find(fo);
+        } catch (DataObjectNotFoundException e) {
+            return false;
+        }
+        if(data == null) {
+            return false;
+        }        
+        return data.getCookie(EditCookie.class) != null;       
     }
 }
