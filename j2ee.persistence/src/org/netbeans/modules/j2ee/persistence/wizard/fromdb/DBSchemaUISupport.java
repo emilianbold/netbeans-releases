@@ -26,7 +26,6 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JList;
-import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
