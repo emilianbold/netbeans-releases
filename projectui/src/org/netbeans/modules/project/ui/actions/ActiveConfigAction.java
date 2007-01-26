@@ -42,6 +42,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -278,21 +279,31 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
     }
 
     private static class ConfigCellRenderer extends JLabel implements ListCellRenderer, UIResource {
+        
+        private Border defaultBorder = getBorder();
+        
+        public ConfigCellRenderer () {
+            setOpaque(true);
+        }
 
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             // #89393: GTK needs name to render cell renderer "natively"
             setName("ComboBox.listRenderer"); // NOI18N
+
             String label = null;
             if (value instanceof ProjectConfiguration) {
                 label = ((ProjectConfiguration) value).getDisplayName();
-                //setBorder (null);
+                setBorder (defaultBorder);
             } else if (value == CUSTOMIZE_ENTRY) {
-                label = org.openide.awt.Actions.cutAmpersand(NbBundle.getMessage(ActiveConfigAction.class, "ActiveConfigAction.customize"));
-                setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("controlDkShadow")));
+                label = org.openide.awt.Actions.cutAmpersand(
+                        NbBundle.getMessage(ActiveConfigAction.class, "ActiveConfigAction.customize"));
+                setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createMatteBorder(1, 0, 0, 0,
+                        UIManager.getColor("controlDkShadow")), defaultBorder));
             } else {
                 assert value == null;
                 label = null;
-                //setBorder (null);
+                setBorder (defaultBorder);
             }
             
             setText(label);
