@@ -17,27 +17,17 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.test.java.editor.completion;
-
-import org.netbeans.spi.editor.completion.CompletionProvider;
+package org.netbeans.test.editor.allcompletion;
 
 /**
  *
  * @author jp159440
  */
-public class AllCCTests extends CompletionTestPerformer{
+public class AllSymbols {
     
-    /** Creates a new instance of AllCCTests */
-    public AllCCTests(String name) {
-        super(name);
-    }
     
-    public void testAllSymbols() throws Exception {
-        new CompletionTest().test(outputWriter, logWriter, "", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/allcompletion/AllSymbols.java", 28,CompletionProvider.COMPLETION_ALL_QUERY_TYPE);        
-    }
-    
-    public void testFilteredSymbols() throws Exception {
-        new CompletionTest().test(outputWriter, logWriter, "abs", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/allcompletion/AllSymbols.java", 28,CompletionProvider.COMPLETION_ALL_QUERY_TYPE);        
+    /** Creates a new instance of AllSymbols */
+    public AllSymbols() {
     }
     
 }

@@ -65,6 +65,10 @@ public class SmartCCTests extends CompletionTestPerformer{
         new CompletionTest().test(outputWriter, logWriter, "public void method() throws ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Types.java", 32,CompletionProvider.COMPLETION_QUERY_TYPE);        
     }
     
+    public void testsmartAnnotation() throws Exception {
+        new CompletionTest().test(outputWriter, logWriter, "@", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Types.java", 32,CompletionProvider.COMPLETION_QUERY_TYPE);        
+    }
+    
     public void testsmartImport() throws Exception {
         new CompletionTest().test(outputWriter, logWriter, "import ", false, getDataDir(),"cp-prj-1", "org/netbeans/test/editor/smartcompletion/Types.java", 21,CompletionProvider.COMPLETION_QUERY_TYPE);        
     }
