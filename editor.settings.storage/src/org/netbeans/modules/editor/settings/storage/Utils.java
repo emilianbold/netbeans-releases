@@ -39,6 +39,7 @@ import javax.swing.KeyStroke;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;

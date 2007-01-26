@@ -37,7 +37,7 @@ import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.Position;
 import javax.swing.text.SimpleAttributeSet;
-import org.netbeans.spi.editor.highlighting.AttributesUtilities;
+import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;

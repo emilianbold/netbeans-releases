@@ -82,6 +82,18 @@ is the proper place.
 
     <changes>
 
+        <change id="removed-AttributesUtilities">
+            <summary>AttributesUtilities removed</summary>
+            <version major="1" minor="3"/>
+            <date day="26" month="1" year="2007"/>
+            <author login="vstejskal"/>
+            <compatibility binary="incompatible" source="incompatible" semantic="incompatible" deletion="yes"/>
+            <description>
+                The <code>AttributesUtilities</code> class has been moved to
+                <code>editor/settings</code> module.
+            </description>
+        </change>
+
         <change id="created">
             <summary>editor/lib2 was created.</summary>
             <version major="1" minor="0"/>

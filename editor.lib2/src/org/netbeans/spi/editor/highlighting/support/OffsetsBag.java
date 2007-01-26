@@ -28,6 +28,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.modules.editor.lib2.highlighting.OffsetGapList;
 import org.netbeans.spi.editor.highlighting.*;
 import org.openide.util.Utilities;

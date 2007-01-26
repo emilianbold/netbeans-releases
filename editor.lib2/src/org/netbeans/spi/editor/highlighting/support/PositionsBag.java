@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
+import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.lib.editor.util.GapList;
 import org.netbeans.spi.editor.highlighting.*;
 

@@ -26,6 +26,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.Position;
 import javax.swing.text.SimpleAttributeSet;
+import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.editor.highlighting.*;
 

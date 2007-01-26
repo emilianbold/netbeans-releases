@@ -25,7 +25,7 @@ import java.util.ConcurrentModificationException;
 import java.util.NoSuchElementException;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
-import org.netbeans.spi.editor.highlighting.AttributesUtilities;
+import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
