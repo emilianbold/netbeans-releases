@@ -21,7 +21,6 @@ package org.netbeans.spi.editor.highlighting;
 
 import java.util.Collection;
 import java.util.List;
-import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.editor.lib2.highlighting.HighlightingSpiPackageAccessor;
@@ -207,10 +206,6 @@ public final class HighlightsLayer {
             }
             
             return layer.accessor;
-        }
-
-        public List<AttributeSet> dismantle(AttributeSet set) {
-            return AttributesUtilities.dismantle(set);
         }
     } // End of PackageAccessor class
 }

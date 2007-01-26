@@ -21,7 +21,6 @@ package org.netbeans.modules.editor.lib2.highlighting;
 
 import java.util.Collection;
 import java.util.List;
-import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
@@ -62,6 +61,4 @@ public abstract class HighlightingSpiPackageAccessor {
     public abstract List<? extends HighlightsLayer> sort(Collection<? extends HighlightsLayer> layers) throws TopologicalSortException;
     
     public abstract HighlightsLayerAccessor getHighlightsLayerAccessor(HighlightsLayer layer);
-
-    public abstract List<AttributeSet> dismantle(AttributeSet set);
 }
