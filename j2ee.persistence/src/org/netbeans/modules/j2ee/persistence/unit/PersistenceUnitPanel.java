@@ -416,8 +416,6 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
             }
         }
         
-        String strins = null;
-        strins.equals((("asdf")));
         return jndiName;
     }
     
