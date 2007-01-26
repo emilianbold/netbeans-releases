@@ -47,7 +47,7 @@ public class RegisterMBeanAction extends NodeAction {
     private FileObject fo;
     private DataObject dob;
     private static String TRY = "try { // Register MBean in Platform MBeanServer\n"; // NOI18N
-    private static String CATCH = "\n}catch(Exception ex) {\n"+ // NOI18N
+    private static String CATCH = "\n}catch(JMException ex) {\n"+ // NOI18N
             "// TODO handle exception\n" + // NOI18N
             "}"; // NOI18N
     private static final String REGISTRATION_1 = TRY + "ManagementFactory.getPlatformMBeanServer().\n"; // NOI18N
@@ -105,6 +105,7 @@ public class RegisterMBeanAction extends NodeAction {
             List<String> imports = new ArrayList<String>();
             imports.add("java.lang.management.ManagementFactory");// NOI18N
             imports.add("javax.management.ObjectName");// NOI18N
+            imports.add("javax.management.JMException");// NOI18N
             String className = cfg.getClassName();
             if(cfg.getConstructor() != null) {
                 imports.add(className);

@@ -1488,7 +1488,7 @@ public class JavaModelHelper {
                     "Notification types definitions. To use when creating JMX Notifications."; // NOI18N
             int notifTypeIndex = 0;
             Set<Modifier> modifiers = new  HashSet<Modifier>();
-            modifiers.add(Modifier.PUBLIC);
+            modifiers.add(Modifier.PRIVATE);
             modifiers.add(Modifier.STATIC);
             modifiers.add(Modifier.FINAL);
             TypeElement stringElem = w.getElements().getTypeElement("java.lang.String");

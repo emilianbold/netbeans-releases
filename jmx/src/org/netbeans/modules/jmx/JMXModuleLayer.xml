@@ -51,7 +51,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="ManagementFile">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jmx.Bundle"/>
             
-            <file name="StandardMBean.java" url="resources/templates/StandardMBean.java.template">
+            <file name="MBeanImpl.java" url="resources/templates/StandardMBean.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" 
                       stringvalue="org.netbeans.modules.jmx.Bundle"/>
@@ -67,8 +67,8 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
-            <attr name="StandardMBean.java/MXBean.java" boolvalue="true" />
-            <file name="MXBean.java" url="resources/templates/MXBean.java.template">
+            <attr name="MBeanImpl.java/MXBeanImpl.java" boolvalue="true" />
+            <file name="MXBeanImpl.java" url="resources/templates/MXBean.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" 
                       stringvalue="org.netbeans.modules.jmx.Bundle"/>
@@ -84,7 +84,7 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
-            <attr name="MXBean.java/DynamicMBean.java" boolvalue="true" />
+           <!-- <attr name="MXBean.java/DynamicMBean.java" boolvalue="true" />
             <file name="DynamicMBean.java" url="resources/templates/DynamicMBean.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" 
@@ -103,7 +103,8 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             
             <attr name="DynamicMBean.java/FromExistingClass.java" boolvalue="true" />
-            
+            -->
+            <attr name="MXBeanImpl.java/FromExistingClass.java" boolvalue="true" />
             <file name="FromExistingClass.java" url="resources/templates/ExtendedStandardMBean.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" 
@@ -121,9 +122,9 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
             
-            <attr name="FromExistingClass.java/ExtendedStandardMBean.java" boolvalue="true" />
+            <attr name="FromExistingClass.java/StandardMBeanImpl.java" boolvalue="true" />
             
-            <file name="ExtendedStandardMBean.java" url="resources/templates/ExtendedStandardMBean.java.template">
+            <file name="StandardMBeanImpl.java" url="resources/templates/ExtendedStandardMBean.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" 
                       stringvalue="org.netbeans.modules.jmx.Bundle"/>
@@ -139,7 +140,7 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
-            <attr name="ExtendedStandardMBean.java/Manager.java" boolvalue="true" />
+            <attr name="StandardMBeanImpl.java/Manager.java" boolvalue="true" />
            <!-- <attr name="ExtendedStandardMBean.java/Agent.java" boolvalue="true" />
             <file name="Agent.java" url="resources/templates/Agent.java.template">
                 <attr name="template" boolvalue="true"/>
