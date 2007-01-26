@@ -24,7 +24,7 @@ import java.util.Collections;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
+import org.netbeans.modules.j2ee.common.method.MethodCustomizerFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
@@ -61,11 +61,15 @@ public class AddCreateMethodStrategy extends AbstractAddMethodStrategy {
 
     protected MethodCustomizer createDialog(FileObject fileObject, final MethodType pType) throws IOException{
         String className = _RetoucheUtil.getMainClassName(fileObject);
-        MethodsNode methodsNode = getMethodsNode();
         EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
-        boolean local = methodsNode == null ? ejbMethodController.hasLocal() : (methodsNode.isLocal() && ejbMethodController.hasLocal());
-        boolean remote = methodsNode == null ? ejbMethodController.hasRemote() : (!methodsNode.isLocal() && ejbMethodController.hasRemote());
-        return MethodCollectorFactory.createCollector(pType.getMethodElement(), ejbMethodController.hasRemote(), ejbMethodController.hasLocal(), remote, local);
+        MethodsNode methodsNode = getMethodsNode();
+        return MethodCustomizerFactory.createMethod(
+                pType.getMethodElement(), 
+                ejbMethodController.hasRemote(), 
+                ejbMethodController.hasLocal(),
+                methodsNode == null ? ejbMethodController.hasLocal() : methodsNode.isLocal(), // fallback to local if method node not found
+                Collections.<MethodModel>emptySet() //TODO: RETOUCHE collect all methods
+                );
     }
 
     protected TypeMirror remoteReturnType(WorkingCopy workingCopy, EjbMethodController ejbMethodController, TypeMirror typeMirror, boolean isOneReturn) {

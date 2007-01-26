@@ -22,7 +22,7 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 import java.io.IOException;
 import java.util.Collections;
 import javax.lang.model.element.Modifier;
-import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
+import org.netbeans.modules.j2ee.common.method.MethodCustomizerFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
@@ -30,7 +30,6 @@ import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-
 
 /**
  * Action that can always be invoked and work procedurally.
@@ -58,12 +57,16 @@ public class AddHomeMethodStrategy extends AbstractAddMethodStrategy {
     }
 
     protected MethodCustomizer createDialog(FileObject fileObject, final MethodType pType) throws IOException{
-        MethodsNode methodsNode = getMethodsNode();
         String className = _RetoucheUtil.getMainClassName(fileObject);
         EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
-        boolean local = methodsNode == null ? ejbMethodController.hasLocal() : (methodsNode.isLocal() && ejbMethodController.hasLocal());
-        boolean remote = methodsNode == null ? ejbMethodController.hasRemote() : (!methodsNode.isLocal() && ejbMethodController.hasRemote());
-        return MethodCollectorFactory.homeCollector(pType.getMethodElement(), ejbMethodController.hasRemote(), ejbMethodController.hasLocal(), remote, local);
+        MethodsNode methodsNode = getMethodsNode();
+        return MethodCustomizerFactory.homeMethod(
+                pType.getMethodElement(), 
+                ejbMethodController.hasRemote(), 
+                ejbMethodController.hasLocal(),
+                methodsNode == null ? ejbMethodController.hasLocal() : methodsNode.isLocal(), // fallback to local if method node not found
+                Collections.<MethodModel>emptySet() //TODO: RETOUCHE collect all methods
+                );
     }
     
     public MethodType.Kind getPrototypeMethodKind() {

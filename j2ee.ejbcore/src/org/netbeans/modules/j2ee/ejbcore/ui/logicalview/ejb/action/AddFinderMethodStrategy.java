@@ -25,7 +25,7 @@ import java.util.Collections;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
+import org.netbeans.modules.j2ee.common.method.MethodCustomizerFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
@@ -68,16 +68,21 @@ public class AddFinderMethodStrategy extends AbstractAddMethodStrategy {
     }
 
     protected MethodCustomizer createFinderDialog(FileObject fileObject, final MethodType pType) throws IOException{
-        final MethodCustomizer[] result = new MethodCustomizer[1];
         String className = _RetoucheUtil.getMainClassName(fileObject);
         EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
-       MethodsNode methodsNode = getMethodsNode();
-        boolean local = methodsNode == null ? ejbMethodController.hasLocal() : (methodsNode.isLocal() && ejbMethodController.hasLocal());
-        boolean remote = methodsNode == null ? ejbMethodController.hasRemote() : (!methodsNode.isLocal() && ejbMethodController.hasRemote());
-        boolean javaImpl = ejbMethodController.hasJavaImplementation(pType);
-        result[0] = MethodCollectorFactory.finderCollector(
-                pType.getMethodElement(), ejbMethodController.hasRemote(), ejbMethodController.hasLocal(), !javaImpl, remote, local);
-        return result[0];
+        String ejbql = null;
+        if (!ejbMethodController.hasJavaImplementation(pType)) {
+            ejbql = ejbMethodController.createDefaultQL(pType);
+        }
+        MethodsNode methodsNode = getMethodsNode();
+        return MethodCustomizerFactory.finderMethod(
+                pType.getMethodElement(), 
+                ejbMethodController.hasRemote(), 
+                ejbMethodController.hasLocal(), 
+                methodsNode == null ? ejbMethodController.hasLocal() : methodsNode.isLocal(), // fallback to local if method node not found
+                ejbql,
+                Collections.<MethodModel>emptySet()
+                );
     }
 
     protected TypeMirror remoteReturnType(WorkingCopy workingCopy, EjbMethodController ejbMethodController, TypeMirror typeMirror, boolean isOneReturn) {

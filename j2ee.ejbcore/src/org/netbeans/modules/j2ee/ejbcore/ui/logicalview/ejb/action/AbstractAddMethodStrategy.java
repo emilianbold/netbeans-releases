@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -30,8 +28,7 @@ import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.MethodType;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.MethodsNode;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -68,46 +65,22 @@ public abstract class AbstractAddMethodStrategy {
         return fqn;
     }
     
-    @SuppressWarnings("deprecation") //NOI18N
     public void addMethod(FileObject fileObject, String className) throws IOException {
         if (className == null) {
             return;
         }
         MethodType pType = getPrototypeMethod(fileObject, className);
         MethodCustomizer methodCustomizer = createDialog(fileObject, pType);
-        EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
-        String defaultQL = ejbMethodController.createDefaultQL(pType);
-        methodCustomizer.setEjbQL(defaultQL);
-        final NotifyDescriptor notifyDescriptor = new NotifyDescriptor(methodCustomizer, getTitle(),
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.PLAIN_MESSAGE,
-                null, null
-                );
-        methodCustomizer.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(MethodCustomizer.OK_ENABLED)) {
-                    Object newvalue = evt.getNewValue();
-                    if ((newvalue != null) && (newvalue instanceof Boolean)) {
-                        notifyDescriptor.setValid(((Boolean)newvalue).booleanValue());
-                    }
-                }
-            }
-        });
-        Object resultValue = DialogDisplayer.getDefault().notify(notifyDescriptor);
-        methodCustomizer.isOK(); // apply possible changes in dialog fields
-        if (resultValue == NotifyDescriptor.OK_OPTION) {
+        if (methodCustomizer.customizeMethod(name)) {
             try {
                 okButtonPressed(methodCustomizer, pType, fileObject, className);
             } catch (IOException ioe) {
-                NotifyDescriptor ndd =
-                        new NotifyDescriptor.Message(ioe.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notify(ndd);
+                ErrorManager.getDefault().notify(ioe);
             }
         }
     }
     
-    @SuppressWarnings("deprecation") //NOI18N
-    protected void okButtonPressed(final MethodCustomizer methodCustomizer, final MethodType methodType, 
+    private void okButtonPressed(final MethodCustomizer methodCustomizer, final MethodType methodType, 
             final FileObject ejbClassFO, String classHandle) throws IOException {
         ProgressHandle handle = ProgressHandleFactory.createHandle("Adding method");
         try {

@@ -26,7 +26,7 @@ import java.util.Set;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.j2ee.common.method.MethodCollectorFactory;
+import org.netbeans.modules.j2ee.common.method.MethodCustomizerFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
@@ -64,8 +64,18 @@ public class AddSelectMethodStrategy extends AbstractAddMethodStrategy {
         return new MethodType.SelectMethodType(method);
     }
     
-    protected MethodCustomizer createDialog(FileObject fileObject, final MethodType pType) {
-        return MethodCollectorFactory.selectCollector(pType.getMethodElement());
+    protected MethodCustomizer createDialog(FileObject fileObject, final MethodType pType) throws IOException {
+        String className = _RetoucheUtil.getMainClassName(fileObject);
+        EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
+        String ejbql = null;
+        if (!ejbMethodController.hasJavaImplementation(pType)) {
+            ejbql = ejbMethodController.createDefaultQL(pType);
+        }
+        return MethodCustomizerFactory.selectMethod(
+                pType.getMethodElement(),
+                ejbql,
+                Collections.<MethodModel>emptySet() //TODO: RETOUCHE collect all methods
+                );
     }
     
     @SuppressWarnings("deprecation") //NOI18N
