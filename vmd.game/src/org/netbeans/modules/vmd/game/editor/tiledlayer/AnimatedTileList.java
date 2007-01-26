@@ -85,7 +85,7 @@ public class AnimatedTileList extends JList {
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 if (e.getClickCount() >= 2) {
 					AnimatedTile tile = (AnimatedTile) AnimatedTileList.this.getSelectedValue();
-					MainView.getInstance().requestEditing(tile.getDefaultSequence());
+					MainView.getInstance().requestEditing(tile);
 				}
             }
 		});

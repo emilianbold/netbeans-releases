@@ -326,6 +326,14 @@ public class GlobalRepository implements PropertyChangeListener {
 		}
 		return sprite;
 	}
+	public Sprite createSprite(String name, ImageResource imageResource, Sequence defaultSequence) {
+		assert (defaultSequence != null);
+		Sprite sprite = new Sprite(name, imageResource, defaultSequence);
+		if (!this.addSprite(sprite)) {
+			throw new IllegalArgumentException("ERR: Layer " + name + " already exists!");
+		}
+		return sprite;
+	}
 	
 	public String toString() {
 		return "[Global Repository]";

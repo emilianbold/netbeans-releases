@@ -24,13 +24,12 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
-
 import org.netbeans.modules.vmd.game.dialog.NewSequenceDialog;
 import org.netbeans.modules.vmd.game.dialog.RenameAnimatedTileDialog;
 import org.netbeans.modules.vmd.game.editor.sequece.SequenceContainerEditor;
+import org.netbeans.modules.vmd.game.editor.sequece.SequenceContainerNavigator;
 import org.netbeans.modules.vmd.game.preview.SequenceContainerPreview;
 
 public class AnimatedTile extends Tile implements SequenceContainer, Editable {
@@ -44,6 +43,13 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 	
 	private SequenceContainerEditor editor;
 	private String name;
+	
+	AnimatedTile(String name, ImageResource imageResource, int index, Sequence sequence) {
+		super(imageResource, index);
+		this.sequenceContainer = new SequenceContainerImpl(this, null, this.propertyChangeSupport, imageResource);
+		this.name = name;
+		this.setDefaultSequence(sequence);
+	}
 	
 	AnimatedTile(String name, ImageResource imageResource, int index) {
 		super(imageResource, index);
@@ -97,7 +103,7 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 		this.sequenceContainer.move(sequence, newIndex);
 	}
 	
-	public List getSequences() {
+	public List<Sequence> getSequences() {
 		return this.sequenceContainer.getSequences();
 	}
 
@@ -182,8 +188,7 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
     }
 
 	public JComponent getNavigator() {
-		//TODO : implement this
-		return null;
+		return new SequenceContainerNavigator(this);
 	}
 
 }

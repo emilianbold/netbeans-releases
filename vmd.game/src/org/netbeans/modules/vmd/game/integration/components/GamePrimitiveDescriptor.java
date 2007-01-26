@@ -83,7 +83,7 @@ public final class GamePrimitiveDescriptor implements PrimitiveDescriptorFactory
 		public String serialize(Object value) {
 			int[] array = (int[]) value;
 			StringBuilder serialized = new StringBuilder();
-			serialized.append(array.length).append(',');
+			serialized.append(array.length).append(",");
 			for (int cell : array) {
 				serialized.append(cell).append(',');
 			}
@@ -91,11 +91,11 @@ public final class GamePrimitiveDescriptor implements PrimitiveDescriptorFactory
 		}
 		
 		public Object deserialize(String serialized) {
-			StringTokenizer tokenizer = new StringTokenizer(serialized, ",");
-			int length = Integer.parseInt(tokenizer.nextToken());
+			String[] tokens = serialized.split(",");
+			int length = Integer.parseInt(tokens[0]);
 			int[] array = new int[length];
 			for (int i = 0; i < length; i++) {
-				array[i] = Integer.parseInt(tokenizer.nextToken());
+				array[i] = Integer.parseInt(tokens[i+1]);
 			}
 			return array;
 		}

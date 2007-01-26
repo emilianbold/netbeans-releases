@@ -36,7 +36,7 @@ public class SequenceContainerCDProperties {
 	public static List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
 		return Arrays.asList(
 			new PropertyDescriptor(PROP_DEFAULT_SEQUENCE, SequenceCD.TYPEID, 
-				PropertyValue.createEmptyArray(SequenceCD.TYPEID), false, false, null),
+				PropertyValue.createNull(), false, false, null),
 			new PropertyDescriptor(PROP_SEQUENCES, SequenceCD.TYPEID.getArrayType(), 
 				PropertyValue.createEmptyArray(SequenceCD.TYPEID), false, false, null)
 		);

@@ -90,7 +90,7 @@ public class SceneListAdapter implements ListModel, SceneListener {
 		this.layerModified(sourceScene, layer);
 	}
 
-	public void layerPositionChanged(Scene sourceScene, Layer layer, Point oldPosition, Point newPosition) {
+	public void layerPositionChanged(Scene sourceScene, Layer layer, Point oldPosition, Point newPosition, boolean inTransition) {
 		this.layerModified(sourceScene, layer);
 	}
 

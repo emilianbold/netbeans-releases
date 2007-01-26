@@ -31,7 +31,12 @@ public interface SceneListener  extends  EventListener {
 	
 	public void layerMoved(Scene sourceScene, Layer layer, int indexOld, int indexNew);
 	
-	public void layerPositionChanged(Scene sourceScene, Layer layer, Point oldPosition, Point newPosition);
+	/**
+	 * The inTransition parameter specifies if the position is final or if the position is still changing. For example
+	 * in the case result of a mouse dragging the layer inside a scene the inTransition argument will be true during the
+	 * drag and false once the drag has ended.
+	 */
+	public void layerPositionChanged(Scene sourceScene, Layer layer, Point oldPosition, Point newPosition, boolean inTransition);
 	
 	public void layerLockChanged(Scene sourceScene, Layer layer, boolean locked);
 	

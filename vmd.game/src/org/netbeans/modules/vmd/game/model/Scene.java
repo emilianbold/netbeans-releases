@@ -76,7 +76,7 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 			Layer layer = (Layer) iter.next();
 			this.insert(layer, other.indexOf(layer));
 			this.setLayerLocked(layer, other.isLayerLocked(layer));
-			this.setLayerPosition(layer, other.getLayerPosition(layer));
+			this.setLayerPosition(layer, other.getLayerPosition(layer), false);
 			this.setLayerVisible(layer, other.isLayerVisible(layer));
 		}
 	}
@@ -218,6 +218,7 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 		}
 		if (DEBUG) System.out.println(this + " move " + layer + " from " + oldIndex + " to " + newIndex);
 		this.layers.remove(layer);
+		this.layers.ensureCapacity(newIndex + 1);
 		this.layers.add(newIndex, layer);
 		this.updateLayersBounds();
 		this.fireLayerMoved(layer, oldIndex, newIndex);
@@ -250,11 +251,11 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 		}
 	}
 
-	private void fireLayerPositionModified(Layer layer, int index, Point oldPosition, Point newPosition) {
+	private void fireLayerPositionModified(Layer layer, int index, Point oldPosition, Point newPosition, boolean inTransition) {
 		Object[] listeners = listenerList.getListenerList();
 		for (int i = listeners.length - 2; i >= 0; i -= 2) {
 			if (listeners[i] == SceneListener.class) {
-				((SceneListener) listeners[i+1]).layerPositionChanged(this, layer, oldPosition, newPosition);
+				((SceneListener) listeners[i+1]).layerPositionChanged(this, layer, oldPosition, newPosition, inTransition);
 			}
 		}
 	}
@@ -333,26 +334,27 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 		return position;
 	}
 
-	public void setLayerPositionX(Layer layer, int x) {
+	public void setLayerPositionX(Layer layer, int x, boolean inTransition) {
 		Point p = this.getLayerPosition(layer);
 		p.x = x;
-		this.setLayerPosition(layer, p);
+		this.setLayerPosition(layer, p, inTransition);
 	}
 	
-	public void setLayerPositionY(Layer layer, int y) {
+	public void setLayerPositionY(Layer layer, int y, boolean inTransition) {
 		Point p = this.getLayerPosition(layer);
 		p.y = y;
-		this.setLayerPosition(layer, p);
+		this.setLayerPosition(layer, p, inTransition);
 	}
 	
-	public void setLayerPosition(Layer layer, int x, int y) {
+	public void setLayerPosition(Layer layer, int x, int y, boolean inTransition) {
 		Point p = this.getLayerPosition(layer);
 		p.x = x;
 		p.y = y;
-		this.setLayerPosition(layer, p);
+		this.setLayerPosition(layer, p, inTransition);
 	}
 	
-	public void setLayerPosition(Layer layer, Point position) {
+	
+	public void setLayerPosition(Layer layer, Point position, boolean inTransition) {
 		if (this.isLayerLocked(layer))
 			throw new IllegalArgumentException("Layer: " + layer + " is locked");
 		if (DEBUG) System.out.println(layer + " set position " + position);
@@ -360,7 +362,7 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 		Point old = info.getPosition();
 		info.setPosition(position);
 		this.updateLayersBounds();
-		this.fireLayerPositionModified(layer, this.layers.indexOf(layer), old, info.getPosition());
+		this.fireLayerPositionModified(layer, this.layers.indexOf(layer), old, info.getPosition(), inTransition);
 	}
 
 	public boolean isLayerVisible(Layer layer) {

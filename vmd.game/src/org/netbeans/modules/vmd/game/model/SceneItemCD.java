@@ -33,6 +33,7 @@ public class SceneItemCD extends ComponentDescriptor {
 	public static final String PROPERTY_LOCK = "sceneitemcd.prop.lock";
 	public static final String PROPERTY_VISIBLE = "sceneitemcd.prop.visible";
 	public static final String PROPERTY_POSITION = "sceneitemcd.prop.position";
+	public static final String PROPERTY_Z_ORDER = "sceneitemcd.prop.z.order";
 	
 	public TypeDescriptor getTypeDescriptor() {
 		return new TypeDescriptor(null, TYPEID, true, false);
@@ -51,6 +52,8 @@ public class SceneItemCD extends ComponentDescriptor {
 				new PropertyDescriptor(PROPERTY_VISIBLE, MidpTypes.TYPEID_BOOLEAN,
 					PropertyValue.createNull(), false, false, Versionable.FOREVER),
 				new PropertyDescriptor(PROPERTY_POSITION, GameTypes.TYPEID_POINT,
+					PropertyValue.createNull(), false, false, Versionable.FOREVER),
+				new PropertyDescriptor(PROPERTY_Z_ORDER, MidpTypes.TYPEID_INT,
 					PropertyValue.createNull(), false, false, Versionable.FOREVER)
 				);
 	}

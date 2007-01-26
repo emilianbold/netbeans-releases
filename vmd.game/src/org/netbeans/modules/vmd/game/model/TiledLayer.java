@@ -23,7 +23,6 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;

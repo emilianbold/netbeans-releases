@@ -156,6 +156,14 @@ public class ImageResource implements CodeGenerator {
 		return animatedTile;
 	}
 	
+	public AnimatedTile createAnimatedTile(String name, Sequence sequence) {
+		int index = this.animatedTileIndexKey--;
+		AnimatedTile animatedTile = new AnimatedTile(name, this, index, sequence);
+		this.animatedTiles.put(index, animatedTile);
+		this.fireAnimatedTileAdded(animatedTile);		
+		return animatedTile;
+	}
+	
 	public AnimatedTile createAnimatedTile(int[] staticTileIndexes) {
 		assert(staticTileIndexes != null);
 		assert(staticTileIndexes.length >= 1);

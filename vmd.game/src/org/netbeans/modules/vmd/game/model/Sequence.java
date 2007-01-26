@@ -130,8 +130,10 @@ public class Sequence implements Previewable, Editable, CodeGenerator {
 	}
 
 	public void setFrame(StaticTile frame, int index) {
-		if (frame == null)
+		if (frame == null) {
 			frame = (StaticTile) imageResource.getTile(0);
+		}
+		this.frames.ensureCapacity(index + 1);
 		this.frames.set(index, frame);
 		this.fireFrameModified(frame, index);
 	}

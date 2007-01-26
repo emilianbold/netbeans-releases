@@ -250,7 +250,7 @@ public interface SequenceContainer extends Editable {
 			throw new UnsupportedOperationException("Must be overriden by aggregating class.");
 		}
 		
-		public List getSequences() {
+		public List<Sequence> getSequences() {
 			return Collections.unmodifiableList(this.sequences);
 		}
 		

@@ -382,7 +382,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 	}
 
 	public void layerPositionChanged(Scene sourceScene, Layer layer,
-			Point oldPosition, Point newPosition) {
+			Point oldPosition, Point newPosition, boolean inTransition) {
 		this.repaintLayerWithDecorations(oldPosition, layer);
 		this.repaintLayerWithDecorations(newPosition, layer);
 	}
@@ -632,6 +632,26 @@ public class ScenePanel extends JPanel implements SceneListener,
 		
 		//if grid snapping
 		if (isSnapGrid() && (this.lastDragPoint != null)) {
+			Point delta = findSnapToGridDelta(p, dx, dy);
+			this.translateSelectedLayers(delta.x, delta.y, true);
+		}
+		else {
+			//System.out.println("translate dx = " + dx);
+			this.translateSelectedLayers(dx, dy, true);
+		}
+		
+		this.lastDragPoint = p;
+		//System.out.println("last drag point: " + this.lastDragPoint);
+
+		//TODO : repaint only the layer outlines not the whole rulers
+		this.horizontalRuler.repaint();
+		this.verticalRuler.repaint();
+		
+		//make sure to scroll while dragging outside the visible area
+		this.scrollRectToVisible(new Rectangle(e.getPoint()));
+	}
+
+	private Point findSnapToGridDelta(Point p, int dx, int dy ) {
 			Point s =  new Point(this.dragLayerStartPoints.get(snapToGridReferenceLayer));
 			
 			//reference point for grid snapping
@@ -676,26 +696,10 @@ public class ScenePanel extends JPanel implements SceneListener,
 
 			dx = nearest.x - s.x;
 			dy = nearest.y - s.y;
-			//System.out.println("dx " + dx + " dy " + dy);
-			this.translateSelectedLayers(dx, dy);
-
-		}
-		else {
-			//System.out.println("translate dx = " + dx);
-			this.translateSelectedLayers(dx, dy);
-		}
-		
-		this.lastDragPoint = p;
-		//System.out.println("last drag point: " + this.lastDragPoint);
-
-		//TODO : repaint only the layer outlines not the whole rulers
-		this.horizontalRuler.repaint();
-		this.verticalRuler.repaint();
-		
-		//make sure to scroll while dragging outside the visible area
-		this.scrollRectToVisible(new Rectangle(e.getPoint()));
+			
+			return new Point(dx, dy);
 	}
-
+	
 	private Point findNearestGridPoint(Point p) {
 		
 		Point nearest = new Point(p);
@@ -737,14 +741,15 @@ public class ScenePanel extends JPanel implements SceneListener,
 		return nearest;
 	}
 	
-	private void translateSelectedLayers(int dx, int dy) {
+	private void translateSelectedLayers(int dx, int dy, boolean inTransition) {
+		//System.out.println("translate dx: " + dx + ", dy: " + dy + ", " + inTransition);
 		for (Layer dragLayer : this.selectedLayers) {
 			Point slp = new Point(this.dragLayerStartPoints.get(dragLayer));
 			slp.translate(dx, dy);
 			if (this.scene.isLayerLocked(dragLayer)) {
 				continue;
 			}
-			this.scene.setLayerPosition(dragLayer, slp);
+			this.scene.setLayerPosition(dragLayer, slp, inTransition);
 		}
 	}
 	
@@ -759,9 +764,7 @@ public class ScenePanel extends JPanel implements SceneListener,
     		this.handlePopUp(e);
     		return;
     	}
-    	//if (SwingUtilities.isRightMouseButton(e)) {
-    	//	return;
-    	//}
+
 		Point p = this.adjustToOriginShift(e.getPoint());
 		List<Layer> layers = this.scene.getLayersAtPoint(p);
 		if (!layers.isEmpty()) {
@@ -770,9 +773,18 @@ public class ScenePanel extends JPanel implements SceneListener,
 	    		if (!this.isMultiSelect(e)) {
 	    			this.clearSelectedLayers();
 	    		}
-	    		//this.addSelectedLayer(layer, false);
-	        	//this.repaintLayerDecorations(layer);
 	    	}
+			if (this.mouseDragging == true) {
+				int dx = this.lastDragPoint.x - this.startDragPoint.x;
+				int dy = this.lastDragPoint.y - this.startDragPoint.y;
+				if (isSnapGrid()) {
+					Point delta = findSnapToGridDelta(this.lastDragPoint, dx, dy);
+					this.translateSelectedLayers(delta.x, delta.y, false);
+				}
+				else {
+					this.translateSelectedLayers(dx, dy, false);
+				}
+			}
 		}
 		this.mouseDragging = false;
     }
@@ -1158,7 +1170,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 				top = scene.getLayerPosition(layer).y < top ? scene.getLayerPosition(layer).y : top;
 			}
 			for (Layer layer : layers) {
-				scene.setLayerPositionY(layer, top);
+				scene.setLayerPositionY(layer, top, false);
 			}
 		}
 	}
@@ -1175,7 +1187,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 				top = scene.getLayerPosition(layer).x < top ? scene.getLayerPosition(layer).x : top;
 			}
 			for (Layer layer : layers) {
-				scene.setLayerPositionX(layer, top);
+				scene.setLayerPositionX(layer, top, false);
 			}
 		}
 	}
@@ -1192,7 +1204,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 				bottom = scene.getLayerPosition(layer).y + layer.getHeight() > bottom ? scene.getLayerPosition(layer).y + layer.getHeight() : bottom;
 			}
 			for (Layer layer : layers) {
-				scene.setLayerPositionY(layer, bottom - layer.getHeight());
+				scene.setLayerPositionY(layer, bottom - layer.getHeight(), false);
 			}
 		}
 	}
@@ -1209,7 +1221,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 				right = scene.getLayerPosition(layer).x + layer.getWidth() > right ? scene.getLayerPosition(layer).x + layer.getWidth() : right;
 			}
 			for (Layer layer : layers) {
-				scene.setLayerPositionX(layer, right - layer.getWidth());
+				scene.setLayerPositionX(layer, right - layer.getWidth(),false);
 			}
 		}
 	}
@@ -1359,7 +1371,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 			Point position = (Point) this.getValue(PROP_POSITION);
 			
 			ScenePanel.this.scene.insert(layer, 0);
-			ScenePanel.this.scene.setLayerPosition(layer, position);
+			ScenePanel.this.scene.setLayerPosition(layer, position, false);
 		}
 	}
 	/*

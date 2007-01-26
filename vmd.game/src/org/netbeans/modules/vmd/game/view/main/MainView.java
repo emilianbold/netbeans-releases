@@ -333,11 +333,11 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 		things.setTileAt(1, 6, 6);
 		
 		
-		scene.setLayerPosition(rock, new Point(300, 22));
-		scene.setLayerPosition(things, new Point(-210, -110));
-		scene.setLayerPosition(water, new Point(200, 300));
-		scene.setLayerPosition(grass, new Point(0, 0));
-		scene.setLayerPosition(bunny, new Point(10, 10));
+		scene.setLayerPosition(rock, new Point(300, 22), false);
+		scene.setLayerPosition(things, new Point(-210, -110), false);
+		scene.setLayerPosition(water, new Point(200, 300), false);
+		scene.setLayerPosition(grass, new Point(0, 0), false);
+		scene.setLayerPosition(bunny, new Point(10, 10), false);
 		scene.move(things, 0);
 		scene.move(water, 1);
 	}

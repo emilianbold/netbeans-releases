@@ -134,11 +134,11 @@ public class SceneLayerTableAdapter implements TableModel, SceneListener, Proper
 				break;
 			case COL_INDEX_LAYER_POS_X:
 				Integer xPos = (Integer) aValue;
-				this.scene.setLayerPositionX(layer, xPos.intValue());
+				this.scene.setLayerPositionX(layer, xPos.intValue(), false);
 				break;
 			case COL_INDEX_LAYER_POS_Y:
 				Integer yPos = (Integer) aValue;
-				this.scene.setLayerPositionY(layer, yPos.intValue());
+				this.scene.setLayerPositionY(layer, yPos.intValue(), false);
 				break;
 		}
 	}
@@ -217,7 +217,7 @@ public class SceneLayerTableAdapter implements TableModel, SceneListener, Proper
 		this.layerModified(sourceScene, layer);
 	}
 
-	public void layerPositionChanged(Scene sourceScene, Layer layer, Point oldPosition, Point newPosition) {
+	public void layerPositionChanged(Scene sourceScene, Layer layer, Point oldPosition, Point newPosition, boolean inTransition) {
 		this.layerModified(sourceScene, layer);
 	}
 

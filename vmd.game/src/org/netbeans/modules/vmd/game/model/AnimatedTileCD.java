@@ -29,6 +29,7 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
 
 /**
  *
@@ -38,7 +39,7 @@ public class AnimatedTileCD extends ComponentDescriptor {
 	
 	public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.modules.vmd.game.model.AnimatedTile"); // NOI18N
 	
-			
+	
 	public static final String PROPERTY_NAME = "animatedtilecd.prop.name";
 	public static final String PROP_IMAGE_RESOURCE = "animatedtilecd.prop.imageresource"; // NOI18N
 	
@@ -55,6 +56,8 @@ public class AnimatedTileCD extends ComponentDescriptor {
 		List<PropertyDescriptor> propertyDescriptors = new ArrayList<PropertyDescriptor>();
 		propertyDescriptors.addAll(SequenceContainerCDProperties.getDeclaredPropertyDescriptors());
 		
+		propertyDescriptors.add(new PropertyDescriptor(PROPERTY_NAME, MidpTypes.TYPEID_JAVA_LANG_STRING, 
+				PropertyValue.createNull(), false, false, null));
 		propertyDescriptors.add(new PropertyDescriptor(PROP_IMAGE_RESOURCE, ImageResourceCD.TYPEID, 
 				PropertyValue.createNull(), false, false, null));
 		return Collections.unmodifiableList(propertyDescriptors);
