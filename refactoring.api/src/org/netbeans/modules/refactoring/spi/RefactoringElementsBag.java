@@ -82,6 +82,7 @@ public final class RefactoringElementsBag {
             ArrayList<RefactoringElementImplementation> proposedChanges = new ArrayList();
             ArrayList<Transaction> transactions = new ArrayList();
             for (GuardedBlockHandler gbHandler: APIAccessor.DEFAULT.getGBHandlers(refactoring)) {
+                el.setEnabled(false);
                 p = APIAccessor.DEFAULT.chainProblems(gbHandler.handleChange(el, proposedChanges, transactions),  p);
                 
                 if (p != null && p.isFatal())
