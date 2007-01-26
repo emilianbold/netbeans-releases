@@ -73,6 +73,7 @@ public class GarbageCollectAction extends CallableSystemAction {
 
     public Component getToolbarPresenter() {
         return new HeapViewWrapper();
+//        return new MemButton();
     }
 
     private static final class HeapViewWrapper extends JComponent {
@@ -104,17 +105,8 @@ public class GarbageCollectAction extends CallableSystemAction {
         
         public Dimension calcPreferredSize() {
             Dimension pref = getHeapView().heapViewPreferredSize();
-            pref.width += 6;
             pref.height += 1;
-            // #93085: special sizing for GTK LF to behave similarly like on other LFs 
-            String lfID = UIManager.getLookAndFeel().getID();
-            if (lfID != null && lfID.indexOf("GTK") != -1) {
-                Component parent = getParent();
-                if (parent != null) {
-                    Insets insets = getInsets();
-                    pref.height = parent.getHeight() - (insets.top + insets.bottom) - 3;
-                }
-            }
+            pref.width += 6;
             return pref;
         }
 
