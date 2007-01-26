@@ -31,6 +31,7 @@ import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
 import org.netbeans.modules.xml.wsdl.ui.api.property.ComboBoxPropertyEditor;
 import org.netbeans.modules.xml.wsdl.ui.api.property.ExtensibilityElementPropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.api.property.MessageAttributeProperty;
@@ -48,9 +49,9 @@ import org.openide.util.NbBundle;
 public class PropertyAliasConfigurator extends
         ExtensibilityElementConfigurator {
     
-    private static QName myQName = new QName("http://schemas.xmlsoap.org/ws/2004/03/business-process/", "propertyAlias");//NOI18N
-    private static QName queryQName = new QName("http://schemas.xmlsoap.org/ws/2004/03/business-process/", "query");//NOI18N
-    private static QName propertyQName = new QName("http://schemas.xmlsoap.org/ws/2004/03/business-process/", "property");//NOI18N
+    private static QName myQName = BPELQName.PROPERTY_ALIAS.getQName();
+    private static QName queryQName = BPELQName.QUERY.getQName();
+    private static QName propertyQName = BPELQName.PROPERTY.getQName();
     
     private static QName[] supportedQNames = {myQName, queryQName};
 

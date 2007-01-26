@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.xml.wsdl.ui.extensibility.model.impl;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +44,7 @@ import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.Port;
 import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
+import org.netbeans.modules.xml.wsdl.ui.extensibility.model.ModelSourceProvider;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElementInfo;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElements;
@@ -53,6 +55,7 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 
 /**
@@ -63,15 +66,25 @@ import org.openide.loaders.DataObject;
 
 public class ExtensibilityUtils {
     
+    private static ModelSourceProvider mProvider;
     
     public static Schema readSchema(DataObject dataObject) {
         
         Schema schema = null;
-        FileObject fileObject = dataObject.getPrimaryFile();
-        ModelSource ms = Utilities.getModelSource(fileObject, false);
-        SchemaModel schemaModel = SchemaModelFactory.getDefault().getModel(ms);
-        if (schemaModel.getState() != Model.State.NOT_WELL_FORMED) {
-            schema = schemaModel.getSchema();
+        try {
+            FileObject fileObject = dataObject.getPrimaryFile();
+            ModelSource ms = null;
+            if(mProvider != null) {
+                ms = mProvider.getModelSource(fileObject, false);
+            } else {
+                ms = Utilities.getModelSource(fileObject, false);
+            }
+            SchemaModel schemaModel = SchemaModelFactory.getDefault().getModel(ms);
+            if (schemaModel.getState() != Model.State.NOT_WELL_FORMED) {
+                schema = schemaModel.getSchema();
+            }
+        } catch(Exception ex) {
+            ex.printStackTrace();
         }
         return schema;
     }
@@ -155,6 +168,11 @@ public class ExtensibilityUtils {
             
         }
         return null;
+    }
+    
+    //This should be used only from JUnit test
+    public static void setModelSourceProvider(ModelSourceProvider provider) {
+        mProvider = provider;
     }
     
     

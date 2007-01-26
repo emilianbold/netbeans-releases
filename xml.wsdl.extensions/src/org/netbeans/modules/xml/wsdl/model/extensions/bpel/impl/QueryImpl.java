@@ -22,8 +22,6 @@
  */
 package org.netbeans.modules.xml.wsdl.model.extensions.bpel.impl;
 
-import javax.xml.namespace.QName;
-
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Query;
@@ -41,7 +39,7 @@ public class QueryImpl extends GenericExtensibilityElement implements Query {
         super(model, e);
     }
 
-    public QueryImpl( WSDLModel model, QName qname ) {
+    public QueryImpl( WSDLModel model ) {
         this(model, createPrefixedElement(BPELQName.QUERY.getQName(),
                 model));
     }

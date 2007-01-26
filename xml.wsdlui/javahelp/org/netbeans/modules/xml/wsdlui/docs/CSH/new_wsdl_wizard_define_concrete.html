@@ -15,14 +15,16 @@ following elements of the WSDL file: binding, service, and port. </p>
 <p>A binding defines message format and protocol details for a port type.</p>
 <ul>
   <li><b>Binding Name.</b> Supply a name for the binding. The default value is derived from the WSDL name.</li>
-  <li><b>Binding Type.</b> The only supported binding type in this release is the SOAP protocol.</li>
-  <li><b>Binding Subtype.</b> The options indicate how to translate the binding to a SOAP message.</li>
+  <li><b>Binding Type.</b> Use this field to customize the WSDL file for a particular binding component. 
+  The appropriate extensibility elements will be added to the WSDL file. </li>
+  <li><b>Binding Subtype.</b> If the binding type is SOAP, then the binding subtypes indicate how to translate 
+  the binding to a SOAP message. For other binding types, you typically have only one choice for the binding subtype.</li>
 </ul>
 <p>The wizard checks for comformance to various requirements of the 
   Web Services Interoperability Organization (WS-I) Basic Profile. 
   These requirements concern the interaction of message parts and the binding subtype. 
   If your settings for message parts and the binding subtype do not conform to these requirements, 
-  an error message appears at the bottom of the wizard page and the Finish button is disabled.</p>
+  then an error message appears at the bottom of the wizard page and the Finish button is disabled.</p>
 <p>A service indicates which binding to use and where clients can access the web service. 
   A port contains the address.</p>
 <ul>

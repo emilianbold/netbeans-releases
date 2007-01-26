@@ -34,7 +34,11 @@ import java.util.logging.Level;
 import javax.xml.namespace.QName;
 
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
+import org.netbeans.modules.xml.wsdl.model.NotificationOperation;
+import org.netbeans.modules.xml.wsdl.model.OneWayOperation;
 import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.RequestResponseOperation;
+import org.netbeans.modules.xml.wsdl.model.SolicitResponseOperation;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.ui.commands.NamedPropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.commands.PropertyAdapter;
@@ -60,21 +64,24 @@ import org.openide.util.datatransfer.NewType;
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
 public class BindingOperationNode extends WSDLExtensibilityElementNode {
-
     private  BindingOperation mWSDLConstruct;
-   
-    private BindingOperationPropertyAdapter mPropertyAdapter = null;
-    
-    private static Image ICON  = Utilities.loadImage
-            ("org/netbeans/modules/xml/wsdl/ui/view/resources/bindingoperation.png");    
+    private BindingOperationPropertyAdapter mPropertyAdapter;
+    private Image ICON;
 
     public BindingOperationNode(BindingOperation wsdlConstruct) {
         super(new GenericWSDLComponentChildren(wsdlConstruct), wsdlConstruct, new BindingOperationNewTypesFactory());
         mWSDLConstruct = wsdlConstruct;
-        
-        
-        this.mPropertyAdapter = new BindingOperationPropertyAdapter();
+        // Must set the icon to something to honor getIcon() contract.
+        ICON = Utilities.loadImage(
+                "org/netbeans/modules/xml/wsdl/ui/view/resources/bindingoperation.png");
+        mPropertyAdapter = new BindingOperationPropertyAdapter();
         super.setNamedPropertyAdapter(this.mPropertyAdapter);
+        if (wsdlConstruct.getOperation() != null) {
+            Operation operation = wsdlConstruct.getOperation().get();
+            if (operation != null) {
+                setIcon(operation);
+            }
+        }
     }
     
     @Override
@@ -82,6 +89,24 @@ public class BindingOperationNode extends WSDLExtensibilityElementNode {
         return WSDLExtensibilityElements.ELEMENT_BINDING_OPERATION;
     }
     
+    private void setIcon(Operation operation){
+        if (operation instanceof RequestResponseOperation) {
+            ICON = Utilities.loadImage
+            ("org/netbeans/modules/xml/wsdl/ui/view/resources/requestresponse_operation.png");
+        } else if (operation instanceof OneWayOperation) {
+            ICON = Utilities.loadImage
+            ("org/netbeans/modules/xml/wsdl/ui/view/resources/oneway_operation.png");
+        } else if (operation instanceof NotificationOperation) {
+            ICON = Utilities.loadImage
+            ("org/netbeans/modules/xml/wsdl/ui/view/resources/notification_operation.png");
+        } else if (operation instanceof SolicitResponseOperation) {
+            ICON =    Utilities.loadImage
+            ("org/netbeans/modules/xml/wsdl/ui/view/resources/solicitresponse_operation.png");
+        } else {
+            ICON = Utilities.loadImage
+            ("org/netbeans/modules/xml/wsdl/ui/view/resources/bindingoperation.png");
+        }
+    }
     
     @Override
     public Image getIcon(int type) {

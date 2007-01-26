@@ -61,6 +61,15 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.print.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.project.ant</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -105,6 +114,14 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.xml.axi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.xml.core</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -128,6 +145,14 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.schema.completion</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
@@ -197,6 +222,24 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.spi.navigator</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.2.22</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.spi.palette</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.6.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -289,15 +332,34 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>com.sun.jbi.ui.devtool.wsdl.file</friend>
+                <friend>org.netbeans.modules.wsdlextensions.file</friend>
                 <friend>org.netbeans.modules.xml.wsdl.refactoring</friend>
                 <friend>org.netbeans.modules.xml.wsdlextui</friend>
+                <friend>org.netbeans.modules.compapp.casaeditor</friend>
+                <friend>org.netbeans.modules.wsdlextensions.jms</friend>
+                <friend>org.netbeans.modules.wsdlextensions.mq</friend>
+                <friend>org.netbeans.modules.wsdlextensions.sag</friend>
+                <friend>org.netbeans.modules.wsdlextensions.ftp</friend>
+                <friend>org.netbeans.modules.wsdlextensions.sap</friend>
+                <friend>org.netbeans.modules.wsdlextensions.jdbc</friend>
+                <friend>org.netbeans.modules.wsdlextensions.msmq</friend>
+                <friend>org.netbeans.modules.wsdlextensions.hl7</friend>
+                <friend>org.netbeans.modules.wsdlextensions.smtp</friend>
+                <friend>org.netbeans.modules.xslt.project</friend>
                 <package>org.netbeans.modules.xml.wsdl.ui.actions</package>
                 <package>org.netbeans.modules.xml.wsdl.ui.api.property</package>
                 <package>org.netbeans.modules.xml.wsdl.ui.netbeans.module</package>
                 <package>org.netbeans.modules.xml.wsdl.ui.spi</package>
+                <package>org.netbeans.modules.xml.wsdl.ui.view</package>
                 <package>org.netbeans.modules.xml.wsdl.ui.view.treeeditor</package>
+                <package>org.netbeans.modules.xml.wsdl.ui.view.wizard</package>
+                <package>org.netbeans.modules.xml.wsdl.ui.view.wizard.localized</package>
+                <package>org.netbeans.modules.xml.wsdl.ui.wizard</package>
             </friend-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/graph2/org-netbeans-api-visual.jar</runtime-relative-path>
+                <binary-origin>external/org-netbeans-api-visual.jar</binary-origin>
+            </class-path-extension>
         </data>
     </configuration>
 </project>

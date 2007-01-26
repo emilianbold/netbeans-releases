@@ -148,23 +148,28 @@ public class SchemaGeneratorFactoryImpl extends SchemaGeneratorFactory {
                     targetPattern == SchemaGenerator.Pattern.VENITIAN_BLIND)
                 return TransformHint.GLOBAL_ELEMENTS_HAVE_NO_GRAND_CHILDREN;
             
-            if((currentPattern == SchemaGenerator.Pattern.VENITIAN_BLIND ||
-                    currentPattern == SchemaGenerator.Pattern.GARDEN_OF_EDEN) &&
-                    (targetPattern == SchemaGenerator.Pattern.RUSSIAN_DOLL ||
-                    targetPattern == SchemaGenerator.Pattern.SALAMI_SLICE)) {
-                if(currentPattern == SchemaGenerator.Pattern.GARDEN_OF_EDEN)
-                    return TransformHint.WILL_REMOVE_GLOBAL_ELEMENTS_AND_TYPES;
-                else
-                    return TransformHint.WILL_REMOVE_TYPES;
-            } else if((currentPattern == SchemaGenerator.Pattern.SALAMI_SLICE ||
-                    currentPattern == SchemaGenerator.Pattern.GARDEN_OF_EDEN) &&
-                    (targetPattern == SchemaGenerator.Pattern.RUSSIAN_DOLL ||
-                    targetPattern == SchemaGenerator.Pattern.VENITIAN_BLIND)) {
-                if(currentPattern == SchemaGenerator.Pattern.GARDEN_OF_EDEN)
-                    return TransformHint.WILL_REMOVE_GLOBAL_ELEMENTS_AND_TYPES;
-                else
-                    return TransformHint.WILL_REMOVE_GLOBAL_ELEMENTS;
-            }
+            if(currentPattern == SchemaGenerator.Pattern.SALAMI_SLICE ||
+                    currentPattern == SchemaGenerator.Pattern.RUSSIAN_DOLL)
+                return TransformHint.WILL_REMOVE_GLOBAL_ELEMENTS;
+            else
+                return TransformHint.WILL_REMOVE_GLOBAL_ELEMENTS_AND_TYPES;
+//            if((currentPattern == SchemaGenerator.Pattern.VENITIAN_BLIND ||
+//                    currentPattern == SchemaGenerator.Pattern.GARDEN_OF_EDEN) &&
+//                    (targetPattern == SchemaGenerator.Pattern.RUSSIAN_DOLL ||
+//                    targetPattern == SchemaGenerator.Pattern.SALAMI_SLICE)) {
+//                if(currentPattern == SchemaGenerator.Pattern.GARDEN_OF_EDEN)
+//                    return TransformHint.WILL_REMOVE_GLOBAL_ELEMENTS_AND_TYPES;
+//                else
+//                    return TransformHint.WILL_REMOVE_TYPES;
+//            } else if((currentPattern == SchemaGenerator.Pattern.SALAMI_SLICE ||
+//                    currentPattern == SchemaGenerator.Pattern.GARDEN_OF_EDEN) &&
+//                    (targetPattern == SchemaGenerator.Pattern.RUSSIAN_DOLL ||
+//                    targetPattern == SchemaGenerator.Pattern.VENITIAN_BLIND)) {
+//                if(currentPattern == SchemaGenerator.Pattern.GARDEN_OF_EDEN)
+//                    return TransformHint.WILL_REMOVE_GLOBAL_ELEMENTS_AND_TYPES;
+//                else
+//                    return TransformHint.WILL_REMOVE_GLOBAL_ELEMENTS;
+//            }
         }
         return TransformHint.OK;
     }

@@ -240,7 +240,7 @@ public class JSplitterBar extends JPanel{
         Rectangle parentRect = cp.getBounds();  // this could be bigger than the scrollpane
         ////System.out.println("mouseDrag: cp parentRect " + parentRect);
         Point l = getLocationOnScreen();
-        Insets insets = ((Container)cp).getInsets();
+        Insets insets = cp.getInsets();
         ////System.out.println("mouseDrag insets " + insets);
         parentRect.height -= insets.top+insets.bottom;
 //        Rectangle r = getBounds(); // mouse event is relative to this...

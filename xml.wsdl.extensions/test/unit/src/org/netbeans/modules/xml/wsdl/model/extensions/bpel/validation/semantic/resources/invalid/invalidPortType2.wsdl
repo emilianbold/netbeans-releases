@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="urn:Test1TargetNamespace" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:bpws="http://schemas.xmlsoap.org/ws/2004/03/business-process/" name="Test1Definition" targetNamespace="urn:Test1TargetNamespace">
+<?xml version="1.0" encoding="UTF-8"?><definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="urn:Test1TargetNamespace" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:vprop="http://docs.oasis-open.org/wsbpel/2.0/varprop" name="Test1Definition" targetNamespace="urn:Test1TargetNamespace">
     <types>
         <xsd:schema xmlns:ns1="urn:Test1TargetNamespace" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="urn:Test1TargetNamespace">
             <xsd:element name="Test1Element" type="tns:Test1Type">
@@ -116,7 +116,7 @@
             <soap:address location="http://localhost:12100/service/Test1"/>
         </port>
     </service>
-    <plnk:partnerLinkType xmlns:plnk="http://schemas.xmlsoap.org/ws/2004/03/partner-link/" name="Test1ServiceLinkType">
+    <plnk:partnerLinkType xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype" name="Test1ServiceLinkType">
 	<plnk:role name="Test1ServerRole" portType="dummy:Test1PortType"/>
    </plnk:partnerLinkType>
    

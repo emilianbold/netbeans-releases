@@ -16,16 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/*
- * AXIModelUpdater.java
- *
- * Created on March 10, 2006, 12:08 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.xml.axi.impl;
 
 import java.util.ArrayList;
@@ -289,7 +279,7 @@ public class AXIModelUpdater extends DeepAXITreeVisitor {
                 
         //if type changed, update children
         SchemaComponent oldType = element.getTypeSchemaComponent();
-        SchemaComponent newType = Util.getSchemaType(element.getPeer());   
+        SchemaComponent newType = Util.getSchemaType(model, element.getPeer());
         if(oldType != newType) {
             AXIType axiType = Util.getAXIType(element, newType);
             element.setType(axiType);
@@ -369,44 +359,7 @@ public class AXIModelUpdater extends DeepAXITreeVisitor {
     public void visit(AnyElement element) {
         Util.updateAnyElement(element);
     }
-    
-    /**
-     * Used to find the least dependent ContentModel.
-     */
-    private static class AXIContainerFinder extends DeepAXITreeVisitor {
-        List<AXIContainer> containers = new ArrayList<AXIContainer>();
-        AXIContainer container;
-        public AXIContainerFinder(AXIContainer container) {
-            this.container = container;
-        }
-        public List<AXIContainer> getUsedContentModels() {
-            container.accept(this);
-            return containers;
-        }        
-        public void visitChildren(AXIComponent component) {
-            if(!component.canVisitChildren()) {
-                return;
-            }
-            if(component.getComponentType() == ComponentType.REFERENCE) {
-                if(component instanceof ElementRef) {
-                    Element element = ((ElementRef)component).getReferent();
-                    if( containers.contains(element) ||
-                            (component.getModel() != element.getOriginal().getModel()) )
-                        return;
-                    containers.add(element);
-                }                
-            }
-            if(component.getComponentType() == ComponentType.PROXY) {
-                AXIContainer cm = component.getContentModel();
-                if( containers.contains(cm) ||
-                    (component.getModel() != component.getOriginal().getModel()) )
-                    return;
-                containers.add(cm);
-            }
-            super.visitChildren(component);
-        }        
-    }        
-                
+
     ////////////////////////////////////////////////////////////////////
     ////////////////////////// member variables ////////////////////////
     ////////////////////////////////////////////////////////////////////

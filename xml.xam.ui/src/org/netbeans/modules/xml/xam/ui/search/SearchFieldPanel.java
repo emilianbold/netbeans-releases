@@ -47,7 +47,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import org.netbeans.modules.xml.xam.Component;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -106,7 +105,7 @@ public class SearchFieldPanel extends JPanel
                 boolean regex = regexMenuItem.isSelected();
                 Query query = new Query(text, selected, regex);
                 try {
-                    List<Component> results = provider.search(query);
+                    List<Object> results = provider.search(query);
                     if (results.isEmpty()) {
                         indicateFailure();
                     } else {
@@ -118,7 +117,7 @@ public class SearchFieldPanel extends JPanel
                 }
             } else {
                 // Notify listeners that the search was empty.
-                List<Component> empty = Collections.emptyList();
+                List<Object> empty = Collections.emptyList();
                 fireSearchComplete(empty);
             }
         } else if (src instanceof JMenuItem) {
@@ -169,7 +168,7 @@ public class SearchFieldPanel extends JPanel
      *
      * @return  results  list of search results.
      */
-    protected void fireSearchComplete(List<Component> results) {
+    protected void fireSearchComplete(List<Object> results) {
         fireSearchEvent(new SearchEvent(this, SearchEvent.Type.FINISHED, results));
     }
 

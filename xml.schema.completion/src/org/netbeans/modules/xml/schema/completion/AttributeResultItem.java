@@ -22,6 +22,7 @@ import java.awt.Component;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.xml.axi.AbstractAttribute;
 import org.netbeans.modules.xml.schema.completion.CompletionPaintComponent.AttributePaintComponent;
+import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
 
 /**
  *
@@ -32,8 +33,8 @@ public class AttributeResultItem extends CompletionResultItem {
     /**
      * Creates a new instance of AttributeResultItem
      */
-    public AttributeResultItem(AbstractAttribute attribute, String typedChars) {
-        super(attribute, typedChars);
+    public AttributeResultItem(AbstractAttribute attribute, CompletionContext context) {
+        super(attribute, context);
         replacementText = attribute.getName();
         icon = new ImageIcon(CompletionResultItem.class.
                 getResource(ICON_LOCATION + ICON_ATTRIBUTE));
@@ -42,8 +43,8 @@ public class AttributeResultItem extends CompletionResultItem {
     /**
      * Creates a new instance of AttributeResultItem
      */
-    public AttributeResultItem(AbstractAttribute attribute, String prefix, String typedChars) {
-        super(attribute, typedChars);
+    public AttributeResultItem(AbstractAttribute attribute, String prefix, CompletionContext context) {
+        super(attribute, context);
         replacementText = prefix + ":" + attribute.getName();
         icon = new ImageIcon(CompletionResultItem.class.
                 getResource(ICON_LOCATION + ICON_ATTRIBUTE));

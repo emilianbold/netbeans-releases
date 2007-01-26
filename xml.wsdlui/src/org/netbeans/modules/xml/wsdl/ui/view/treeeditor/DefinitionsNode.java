@@ -122,7 +122,7 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode {
     public DefinitionsNode(Definitions mWSDLDef) {
         super(new DefinitionsChildren(mWSDLDef), mWSDLDef, new DefinitionsNewTypesFactory());
        
-        this.getCookieSet().add( new WSDLDefinitionNodeCookie(this));
+        getLookupContents().add( new WSDLDefinitionNodeCookie(this));
         
         this.mPropertyAdapter = new DefinitionsPropertyAdapter();
         super.setNamedPropertyAdapter(this.mPropertyAdapter);

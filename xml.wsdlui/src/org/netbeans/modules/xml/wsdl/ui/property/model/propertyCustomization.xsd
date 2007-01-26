@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://xml.netbeans.org/schema/wsdlui/property"
+            xmlns:tns="http://xml.netbeans.org/schema/wsdlui/property"
+            elementFormDefault="qualified">
+    <xsd:element name="ElementProperties">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="tns:PropertyGroup" maxOccurs="unbounded" />
+                <xsd:element ref="tns:Property" maxOccurs="unbounded" />
+            </xsd:sequence>
+            <xsd:attribute name="elementName" type="xsd:string" use="required"/>
+        </xsd:complexType>
+    </xsd:element>            
+    <xsd:element name="PropertyGroup">
+        <xsd:complexType>
+            <xsd:attribute name="name" type="xsd:string" use="required"/>
+            <xsd:attribute name="groupOrder" type="xsd:int"/>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="Property">
+        <xsd:complexType>
+            <xsd:choice>
+                <xsd:element name="BuiltInCustomizer">
+                    <xsd:complexType xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+                        <xsd:sequence/>
+                        <xsd:attribute name="name" type="xsd:string"/>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="NewCustomizer">
+                    <xsd:complexType>
+                        <xsd:attribute name="className" type="xsd:string"/>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:choice>
+            <xsd:attribute name="attributeName" type="xsd:string" use="required"/>
+            <xsd:attribute name="groupName" type="xsd:string"/>
+            <xsd:attribute name="propertyOrder" type="xsd:int"/>
+        </xsd:complexType>
+    </xsd:element>
+</xsd:schema>

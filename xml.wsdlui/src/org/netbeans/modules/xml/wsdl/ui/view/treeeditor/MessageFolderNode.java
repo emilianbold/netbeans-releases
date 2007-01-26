@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
-import java.awt.Image;
 import java.util.Collection;
 
 import org.netbeans.modules.xml.wsdl.model.Definitions;
@@ -50,7 +49,7 @@ public class MessageFolderNode extends FolderNode {
         mDef = element;
         this.setDisplayName(NbBundle.getMessage(MessageFolderNode.class, 
                    "MESSAGE_FOLDER_NODE_NAME"));
-        getCookieSet().add(new AddChildWSDLElementCookie(element));
+        getLookupContents().add(new AddChildWSDLElementCookie(element));
         this.addNodeListener(new WSDLNodeListener(this));
     }
 

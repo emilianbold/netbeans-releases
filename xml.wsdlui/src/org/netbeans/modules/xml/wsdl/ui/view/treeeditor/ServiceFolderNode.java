@@ -51,7 +51,7 @@ public class ServiceFolderNode extends FolderNode {
         this.setDisplayName(NbBundle.
                     getMessage(ServiceFolderNode.class, 
                                "SERVICE_FOLDER_NODE_NAME"));
-        getCookieSet().add(new AddChildWSDLElementCookie(element));
+        getLookupContents().add(new AddChildWSDLElementCookie(element));
         this.addNodeListener(new WSDLNodeListener(this));
     }
 

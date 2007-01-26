@@ -1,13 +1,36 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
 package org.netbeans.modules.xml.wsdl.ui.wizard;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -20,6 +43,7 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.BadLocationException;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
@@ -72,8 +96,7 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
         WizardDescriptor.Panel firstPanel = new WizardNewWSDLStep(Templates.createSimpleTargetChooser(project,sourceGroups,folderPanel));
         JComponent c = (JComponent)firstPanel.getComponent();
         // the bottom panel should listen to changes on file name text field
-        String fileNameLabel = NbBundle.getMessage(NewWSDLWizardIterator.class,"LBL_SimpleTargetChooserPanel_FileName_Label");
-        ((WsdlPanel)folderPanel).setNameTF((JTextField)Utilities.findTextFieldForLabel(c, fileNameLabel));
+        ((WsdlPanel)folderPanel).setNameTF(findFileNameField(c, Templates.getTargetName(wizard)));
         
         WizardDescriptor.Panel secondPanel = new WizardPortTypeConfigurationStep(project);
         WizardDescriptor.Panel thirdPanel = new WizardBindingConfigurationStep();
@@ -136,14 +159,19 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
                     javax.swing.text.Document doc = editorCookie.getDocument();
 
                     //write from tempModel to actual file
-                    FileWriter writer = new FileWriter(wsdlFile);
+                    FileOutputStream stream = new FileOutputStream(wsdlFile);
+                    //set the charset to utf-8
+                    OutputStreamWriter writer = new OutputStreamWriter(stream, "utf-8");
+                    
                     try {
                         writer.write(doc.getText(0, doc.getLength()));
+                    } catch (BadLocationException e) {
+                        ErrorManager.getDefault().notify(e);
+                    } finally {
                         writer.close();
-                        wsdlFile.setLastModified(lastMod);
-                    } catch(Exception ex) {
-                            ErrorManager.getDefault().notify(ex);
+                        stream.close();
                     }
+                    wsdlFile.setLastModified(lastMod);
                     
                     //get the mode for newly created wsdl file
                     ModelSource modelSource = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(dobj.getPrimaryFile(), 
@@ -187,7 +215,7 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
                     wsdlFile.canWrite());
                 model  = WSDLModelFactory.getDefault().getModel(modelSource);
                 
-                String definitionName = panel.getWsName();
+                String definitionName = Templates.getTargetName(wizard);
                 String targetNamespace = panel.getNS();
                 model.startTransaction();
                 Definitions def = model.getDefinitions();
@@ -263,7 +291,6 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
     private void addSchemaImport(WSDLModel model, DataObject dobj) {
                 model.startTransaction();
                 WsdlPanel panel = (WsdlPanel)folderPanel;
-                String definitionName = panel.getWsName();
                 String targetNamespace = panel.getNS();
 
                 WsdlUIPanel.SchemaInfo[] infos = panel.getSchemas();
@@ -505,6 +532,35 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
         return res;
     }
 
+    //from schema wizard
+    private JTextField findFileNameField(Component panel, String text) {
+        Collection<Component> allComponents = new ArrayList<Component>();
+        getAllComponents(new Component[] {panel}, allComponents);
+        for (Component c : allComponents) {
+            // we assume that the first text field is the file text field
+            if (c instanceof JTextField) {
+                JTextField tf = (JTextField) c;
+                //if (text.equals(tf.getText())) {
+                return tf;
+                //}
+            }
+        }
+        return null;
+    }
+
+    /*
+     * Recursively gets all components in the components array and puts it in allComponents
+     */
+    public static void getAllComponents( Component[] components, Collection<Component> allComponents ) {
+        for( int i = 0; i < components.length; i++ ) {
+            if( components[i] != null ) {
+                allComponents.add( components[i] );
+                if( ( ( Container )components[i] ).getComponentCount() != 0 ) {
+                    getAllComponents( ( ( Container )components[i] ).getComponents(), allComponents );
+                }
+            }
+        }
+    }
 
     
 }

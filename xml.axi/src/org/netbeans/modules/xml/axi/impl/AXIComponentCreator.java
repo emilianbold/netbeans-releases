@@ -211,8 +211,11 @@ public class AXIComponentCreator extends DefaultSchemaVisitor {
      * Visit GroupReference.
      */
     public void visit(GroupReference component) {
+        SchemaComponent sc = component.getRef().get();
+        if(sc == null)
+            return;
         AXIComponent referent = new AXIComponentCreator(model).
-                createNew(component.getRef().get());
+                createNew(sc);
         newAXIComponent = referent;
     }
     
@@ -233,8 +236,11 @@ public class AXIComponentCreator extends DefaultSchemaVisitor {
      * Visit AttributeGroupReference.
      */
     public void visit(AttributeGroupReference component) {
+        SchemaComponent sc = component.getGroup().get();
+        if(sc == null)
+            return;
         AXIComponent referent = new AXIComponentCreator(model).
-                createNew(component.getGroup().get());
+                createNew(sc);
         newAXIComponent = referent;        
     }
         

@@ -21,7 +21,6 @@ package org.netbeans.modules.xml.xam.ui.search;
 
 import java.util.EventObject;
 import java.util.List;
-import org.netbeans.modules.xml.xam.Component;
 
 /**
  * An event which indicates that a search operation has commenced,
@@ -33,7 +32,7 @@ public class SearchEvent extends EventObject {
     /** silence compiler warnings */
     private static final long serialVersionUID = 1L;
     /** Search results, if any. */
-    private List<Component> results;
+    private List<Object> results;
     /** Event type. */
     private Type type;
     /** The exception for this event, if any (e.g. for searchFailed()). */
@@ -91,7 +90,7 @@ public class SearchEvent extends EventObject {
      * @param  type     event type.
      * @param  results  set of search results.
      */
-    public SearchEvent(Object src, Type type, List<Component> results) {
+    public SearchEvent(Object src, Type type, List<Object> results) {
         this(src, type);
         this.results = results;
     }
@@ -122,7 +121,7 @@ public class SearchEvent extends EventObject {
      *
      * @return  search results, or null if none available.
      */
-    public List<Component> getResults() {
+    public List<Object> getResults() {
         return results;
     }
 

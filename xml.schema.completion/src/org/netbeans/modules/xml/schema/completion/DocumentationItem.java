@@ -16,6 +16,8 @@ import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIType;
 import org.netbeans.modules.xml.axi.AbstractAttribute;
 import org.netbeans.modules.xml.axi.AbstractElement;
+import org.netbeans.modules.xml.axi.AnyAttribute;
+import org.netbeans.modules.xml.axi.AnyElement;
 import org.netbeans.modules.xml.axi.Attribute;
 import org.netbeans.modules.xml.axi.datatype.Datatype;
 import org.netbeans.modules.xml.schema.model.Attribute.Use;
@@ -113,6 +115,10 @@ public abstract class DocumentationItem implements CompletionDocumentation {
                 if(e.supportsCardinality()) {
                     buffer.append("[" + e.getMinOccurs() + ".." + e.getMaxOccurs() + "]");
                 }
+                if(e instanceof AnyElement) {
+                    buffer.append(" ");
+                    buffer.append("{" + e.getTargetNamespace() + "}");
+                }                
                 buffer.append("<br>"); //NOI18N
             }
             
@@ -133,6 +139,11 @@ public abstract class DocumentationItem implements CompletionDocumentation {
                         buffer.append(attr.getName());
                 } else
                     buffer.append(attr.getName());
+                
+                if(attr instanceof AnyAttribute) {
+                    buffer.append(" ");
+                    buffer.append("{" + attr.getTargetNamespace() + "}");
+                }                
                 buffer.append("<br>"); //NOI18N
             }
             return buffer.toString();

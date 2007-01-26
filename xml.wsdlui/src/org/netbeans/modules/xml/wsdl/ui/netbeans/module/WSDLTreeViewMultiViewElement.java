@@ -24,7 +24,6 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Iterator;
-
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -34,7 +33,6 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.text.DefaultEditorKit;
-
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
@@ -69,7 +67,6 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
 
-
 /**
  * @author radval
  *
@@ -78,34 +75,25 @@ import org.openide.windows.WindowManager;
  */
 public class WSDLTreeViewMultiViewElement extends TopComponent
         implements MultiViewElement, ExplorerManager.Provider {
-    
-    /**
-     * 
-     */
     private static final long serialVersionUID = -655912409997381426L;
-
     private static final String ACTIVATED_NODES = "activatedNodes";//NOI18N
     private ExplorerManager manager;
-    WSDLDataObject mObj = null;
+    private WSDLDataObject mObj;
     private CategoryPane categoryPane;
-    
     private transient MultiViewElementCallback multiViewObserver;
     private transient javax.swing.JLabel errorLabel = new javax.swing.JLabel();
-    
-    private transient JToolBar mToolbar = null;
-    
+    private transient JToolBar mToolbar;
+
     public WSDLTreeViewMultiViewElement() {
-            super();
+        super();
     }
-    
+
     public WSDLTreeViewMultiViewElement(WSDLDataObject dObj) {
         super();
         this.mObj = dObj;
-        
         initialize();
-
     }
-    
+
     private void initialize() {
 	manager = new ExplorerManager();
         // Install our own actions.
@@ -171,18 +159,7 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
     public ExplorerManager getExplorerManager() {
 	return manager;
     }
-    
-    private WSDLDataObject getWSDLDataObject() {
-        return mObj;
-    }
 
-    /**
-     * Overwrite when you want to change default persistence type. Default
-     * persistence type is PERSISTENCE_ALWAYS.
-     * Return value should be constant over a given TC's lifetime.
-     * @return one of P_X constants
-     * @since 4.20
-     */
     @Override
     public int getPersistenceType() {
         return PERSISTENCE_NEVER;
@@ -211,8 +188,6 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
 
     @Override
     public void componentHidden() {
-        //log("componentHidden...");
-        //needUpdate = false;
         super.componentHidden();
         if (categoryPane != null) {
             Category cat = categoryPane.getCategory();
@@ -236,7 +211,7 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
     public void componentActivated() {
         super.componentActivated();
 	ExplorerUtils.activateActions(manager, true);
-        getWSDLDataObject().getWSDLEditorSupport().syncModel();
+        mObj.getWSDLEditorSupport().syncModel();
         updateGroupVisibility(false);
     }
     
@@ -308,7 +283,7 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
      * Construct the user interface.
      */
     private void initUI() {
-        WSDLEditorSupport editor = getWSDLDataObject().getWSDLEditorSupport();
+        WSDLEditorSupport editor = mObj.getWSDLEditorSupport();
         WSDLModel wsdlModel = null;
         String errorMessage = null;
         try {
@@ -364,10 +339,6 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
         errorLabel.setOpaque(true);
         add(errorLabel, BorderLayout.CENTER);
     }
-    
-/*    public javax.swing.Action[] getActions() {
-        return this.mTreeTopComponent.getActions();
-    } */
 
     public javax.swing.JComponent getToolbarRepresentation() {
         if (mToolbar == null) {
@@ -393,12 +364,6 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
     public javax.swing.JComponent getVisualRepresentation() {
         return this;
     }   
-    
-  
-    
-    public TopComponent getComponent() {
-        return this;
-    }
 
     /**
      * Find action for WSDL editor.

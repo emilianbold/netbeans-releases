@@ -31,20 +31,24 @@ import javax.xml.namespace.QName;
  * @author ads
  */
 public enum BPELQName {
-    PROPERTY(createBPQName("property")),
+    PROPERTY(createVarpropQName("property")),
     PARTNER_LINK_TYPE(createPLNKQName("partnerLinkType")),
     ROLE(createPLNKQName("role")),
-    PROPERTY_ALIAS(createBPQName("propertyAlias")),
-    QUERY(createBPQName("query")),
-    DOCUMENTATION(createPLNKQName("documentation"));
+    PROPERTY_ALIAS(createVarpropQName("propertyAlias")),
+    QUERY(createVarpropQName("query")),
+    DOCUMENTATION_PLNK(createPLNKQName("documentation")),
+    DOCUMENTATION_VARPROP(createVarpropQName("documentation"))
+    ;
     
-    public static final String BPWS_NS = "http://schemas.xmlsoap.org/ws/2004/03/business-process/";
-    public static final String BPEL_PREFIX = "bpws";
-    public static final String PLNK_NS = "http://schemas.xmlsoap.org/ws/2004/03/partner-link/";
+    public static final String VARPROP_NS = //"http://schemas.xmlsoap.org/ws/2004/03/business-process/";
+        "http://docs.oasis-open.org/wsbpel/2.0/varprop";        // NOI18N
+    public static final String VPROP_PREFIX = "vprop";
+    public static final String PLNK_NS = //"http://schemas.xmlsoap.org/ws/2004/03/partner-link/";
+        "http://docs.oasis-open.org/wsbpel/2.0/plnktype";       // NOI18N
     public static final String PLNK_PREFIX = "plnk";
     
-    public static QName createBPQName(String localName){
-        return new QName(BPWS_NS, localName, BPEL_PREFIX);
+    public static QName createVarpropQName(String localName){
+        return new QName(VARPROP_NS, localName, VPROP_PREFIX);
     }
     public static QName createPLNKQName(String localName){
         return new QName(PLNK_NS, localName, PLNK_PREFIX);

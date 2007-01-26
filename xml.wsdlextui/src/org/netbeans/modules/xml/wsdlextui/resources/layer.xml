@@ -26,6 +26,10 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 	    	<attr name="prefix" stringvalue="soap" />
         </file>
         
+        <file name="http.xsd" url="http/http.xsd">
+            <attr name="prefix" stringvalue="http" />
+        </file>
+        
 		 <folder name ="Binding">
 	      <file name="SoapBinding">
 	        <attr name="xsdFileName" stringvalue="soap" />
@@ -33,6 +37,12 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 	        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
 	        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/soap/binding.png" /> 
 	      </file>
+            <file name="HttpBinding">
+                <attr name="xsdFileName" stringvalue="http" />
+                <attr name="element" stringvalue="binding" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/http/choose.png" /> 
+            </file>
 	      </folder>
      
 	     <folder name ="BindingOperation">
@@ -42,6 +52,12 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 	        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
 	        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/soap/operation.png" /> 
 	      </file>
+            <file name="HttpBindingOperation" >
+                <attr name="xsdFileName" stringvalue="http" />
+                <attr name="element" stringvalue="operation" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/http/for_icon.jpg" /> 
+            </file>
 	      </folder>
 			
 		  <folder name ="BindingOperationInput">
@@ -76,7 +92,20 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 		        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/soap/header.png" /> 
 		      </file>
 		      
-		      
+            <file name="HttpBindingOperationInputUrlEncoded">
+                <attr name="xsdFileName" stringvalue="http" />
+                <attr name="element" stringvalue="urlEncoded" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/http/code.gif" /> 
+            </file>
+            
+            <file name="HttpBindingOperationInputUrlReplacement">
+                <attr name="xsdFileName" stringvalue="http" />
+                <attr name="element" stringvalue="urlReplacement" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/http/code.gif" /> 
+            </file>
+            
 	       </folder>	        
 	       
 	      <folder name ="BindingOperationFault">
@@ -96,6 +125,12 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 		        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
 		        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/soap/address.png" /> 
 		      </file>
+            <file name="HttpServicePort">
+                <attr name="xsdFileName" stringvalue="http" />
+                <attr name="element" stringvalue="address" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/http/code.gif" /> 
+            </file>
 	      </folder>	        
     </folder>
   
@@ -108,6 +143,9 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             <attr name="type" stringvalue="Binding"/>
             <file name="soap.binding-1.0">
                 <attr name="namespace" stringvalue="http://schemas.xmlsoap.org/wsdl/soap/"/>
+            </file>
+            <file name="http.binding-1.0">
+                <attr name="namespace" stringvalue="http://schemas.xmlsoap.org/wsdl/http/"/>
             </file>
         </folder>
     </folder>  

@@ -20,9 +20,16 @@
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
 import java.awt.Image;
+import java.util.ArrayList;
+import java.util.Arrays;
 
+import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
+import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElements;
+import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.BindingOperationNewType;
+import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.DocumentationNewType;
+import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.ExtensibilityElementNewTypesFactory;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.ImportSchemaNewType;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.NewTypesFactory;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.SchemaNewType;
@@ -44,16 +51,13 @@ public class TypesNode extends WSDLElementNode {
     private static final Image ICON  = Utilities.loadImage
          ("org/netbeans/modules/xml/wsdl/ui/view/resources/schema_folder_badge_var3.png");
     
-    private static final String TYPES_NODE_NAME =
-        NbBundle.getMessage(TypesNode.class, "TYPES_NODE_NAME"); 
-     
     protected Types mWSDLConstruct;
     
     public TypesNode(Types wsdlConstruct) {
         super(new GenericWSDLComponentChildren(wsdlConstruct), wsdlConstruct, new TypesNewTypesFactory());
         mWSDLConstruct = wsdlConstruct;
         
-        this.setDisplayName(TYPES_NODE_NAME);
+        this.setDisplayName(NbBundle.getMessage(TypesNode.class, "TYPES_NODE_NAME"));
     }
     
     @Override
@@ -89,7 +93,15 @@ public class TypesNode extends WSDLElementNode {
 
         public NewType[] getNewTypes(WSDLComponent def) {
             Types types = (Types) def;
-            return new NewType[] {new SchemaNewType(types), new ImportSchemaNewType(types)};
+            ArrayList<NewType> list = new ArrayList<NewType>();
+            if (def.getDocumentation() == null) {
+                list.add(new DocumentationNewType(def));
+            }
+            
+            list.add(new SchemaNewType(types));
+            list.add(new ImportSchemaNewType(types));
+            
+            return list.toArray(new NewType[list.size()]);
         }
     }
 

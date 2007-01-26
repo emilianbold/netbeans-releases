@@ -34,7 +34,7 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
-import org.netbeans.modules.xml.xam.ui.search.SearchControlPanel;
+import org.netbeans.modules.xml.xam.ui.search.DefaultSearchControlPanel;
 
 /**
  * The default implementation of CategoryPane.
@@ -45,7 +45,7 @@ public class DefaultCategoryPane extends AbstractCategoryPane {
     /** The top component of our interface. */
     private JPanel visualComponent;
     /** Component for search interface. */
-    private SearchComponent searchComponent;
+    private DefaultSearchControlPanel searchComponent;
     /** Where the Category components reside. */
     private JPanel categoryPanel;
     /** List of actions to show the categories. */
@@ -93,7 +93,7 @@ public class DefaultCategoryPane extends AbstractCategoryPane {
         visualComponent.add(categoryPanel, gbc);
 
         // Build the search component.
-        searchComponent = new SearchControlPanel(this);
+        searchComponent = new DefaultSearchControlPanel(this);
         searchComponent.hideComponent();
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -146,6 +146,7 @@ public class DefaultCategoryPane extends AbstractCategoryPane {
         category.componentShown();
         categoryPanel.validate();
         categoryPanel.repaint();
+        searchComponent.updateSearchProviders();
     }
 
     /**

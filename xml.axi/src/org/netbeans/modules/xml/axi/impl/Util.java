@@ -122,11 +122,15 @@ public class Util {
     /**
      * Returns an element's type.
      */
-    public static SchemaComponent getSchemaType(SchemaComponent schemaComponent) {
+    public static SchemaComponent getSchemaType(AXIModelImpl model,
+            SchemaComponent schemaComponent) {
         if(schemaComponent instanceof GlobalElement) {
             GlobalElement ge = (GlobalElement)schemaComponent;
             NamedComponentReference ref = ge.getType();
             if(ref != null) {
+                SchemaComponent sc = model.getReferenceableSchemaComponent(ref);
+                if(sc != null)
+                    return sc;                
                 return (SchemaComponent)ref.get();
             }
             return ge.getInlineType();
@@ -136,6 +140,9 @@ public class Util {
             LocalElement le = (LocalElement)schemaComponent;
             NamedComponentReference ref = le.getType();
             if(ref != null) {
+                SchemaComponent sc = model.getReferenceableSchemaComponent(ref);
+                if(sc != null)
+                    return sc;                
                 return (SchemaComponent)ref.get();
             }
             return le.getInlineType();
@@ -220,7 +227,6 @@ public class Util {
         attribute.setName(component.getName());
         attribute.setDefault(component.getDefault());
         attribute.setFixed(component.getFixed());
-        attribute.setType(getDatatype(attribute.getModel(), component));
     }
     
     public static void updateLocalAttribute(Attribute attribute) {
@@ -230,7 +236,6 @@ public class Util {
         attribute.setFixed(component.getFixed());
         attribute.setForm(component.getFormEffective());
         attribute.setUse(component.getUseEffective());
-        attribute.setType(getDatatype(attribute.getModel(), component));
     }
     
     public static void updateAttributeReference(Attribute attribute) {

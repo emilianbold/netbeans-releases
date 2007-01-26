@@ -37,6 +37,7 @@ import org.netbeans.modules.xml.axi.visitor.DeepAXITreeVisitor;
 public class AXIModelPerfTest extends AbstractTestCase {
             
     public static final String TEST_XSD  = "resources/OTA_TravelItinerary.xsd";
+    public static final String CYCLE_XSD  = "resources/cycle.xsd";
         
     /**
      * AXIModelPerfTest
@@ -51,15 +52,7 @@ public class AXIModelPerfTest extends AbstractTestCase {
         return suite;
     }
     
-    public void testPerformance() {
-        reverseEngineer();
-    }
-            
-    /**
-     * Tests reverse engineering.
-     * Creates an AXI tree for the specified schema.
-     */
-    public void reverseEngineer() {
+    public void testPerformance() throws Exception {
         DeepAXITreeVisitor visitor = new DeepAXITreeVisitor();
         long startTime = System.currentTimeMillis();
         visitor.visit(getAXIModel().getRoot());
@@ -71,7 +64,16 @@ public class AXIModelPerfTest extends AbstractTestCase {
         print("Time taken to create AXI model for OTA: " + (endTime - startTime));
         print(getAXIModel().getComponentFactory().toString());
     }
-    
+            
+    public void testCyclicSchema() throws Exception {
+        AXIModel cyclicModel = getModel(CYCLE_XSD);
+        DeepAXITreeVisitor visitor = new DeepAXITreeVisitor();
+        long startTime = System.currentTimeMillis();
+        visitor.visit(cyclicModel.getRoot());
+        long endTime = System.currentTimeMillis();
+        print("Time taken to deep visit cyclic schema: " + (endTime - startTime));
+    }
+        
     private class PerfVisitor extends DeepAXITreeVisitor {
         long componentCount = 0;
         public void traverse(AXIDocument document) {

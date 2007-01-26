@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!-- 
+ 
+Copyright 2001-2003 International Business Machines Corporation, Microsoft Corporation. All rights reserved.
+
+The presentation, distribution or other dissemination of the
+information contained herein by Microsoft is not a license,
+either expressly or impliedly, to any intellectual property owned or
+controlled by Microsoft.
+
+This document and the information contained herein is provided on an
+"AS IS" basis and to the maximum extent permitted by applicable law,
+Microsoft provides the document AS IS AND WITH ALL FAULTS, and hereby
+disclaims all other warranties and conditions, either express, implied
+or statutory, including, but not limited to, any (if any) implied
+warranties, duties or conditions of merchantability, of fitness for a
+particular purpose, of accuracy or completeness of responses, of
+results, of workmanlike effort, of lack of viruses, and of lack of
+negligence, all with regard to the document. ALSO, THERE IS NO
+WARRANTY OR CONDITION OF TITLE, QUIET ENJOYMENT, QUIET POSSESSION,
+CORRESPONDENCE TO DESCRIPTION OR NON-INFRINGEMENT WITH REGARD TO THE
+DOCUMENT.
+
+IN NO EVENT WILL MICROSOFT BE LIABLE TO ANY OTHER PARTY FOR THE COST
+OF PROCURING SUBSTITUTE GOODS OR SERVICES, LOST PROFITS, LOSS OF USE,
+LOSS OF DATA, OR ANY INCIDENTAL, CONSEQUENTIAL, DIRECT, INDIRECT, OR
+SPECIAL DAMAGES WHETHER UNDER CONTRACT, TORT, WARRANTY, OR OTHERWISE,
+ARISING IN ANY WAY OUT OF THIS OR ANY OTHER AGREEMENT RELATING TO THIS
+DOCUMENT, WHETHER OR NOT SUCH PARTY HAD ADVANCE NOTICE OF THE
+POSSIBILITY OF SUCH DAMAGES.  
+
+--> 
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+    targetNamespace="http://schemas.xmlsoap.org/wsdl/http/" >
+
+    <xs:import namespace = "http://schemas.xmlsoap.org/wsdl/" />
+
+    <xs:simpleType name="encodingStyle" >
+        <xs:annotation>
+            <xs:documentation>
+                "encodingStyle" indicates any canonicalization conventions followed in the contents of the containing element.  For example, the value "http://schemas.xmlsoap.org/http/encoding/" indicates the pattern described in HTTP specification
+            </xs:documentation>
+        </xs:annotation>
+        <xs:list itemType="xs:anyURI" />
+    </xs:simpleType>
+
+    <xs:element name="binding" type="http:tBinding" >
+        <xs:annotation>
+            <xs:documentation>
+                "binding" indicates a http protocol binding.
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    
+    <xs:complexType name="tBinding" >
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement" >
+                <xs:attribute name="verb" type="http:tVerbChoice" use="required" />
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:simpleType name="tVerbChoice" >
+        <xs:restriction base="xs:string" >
+            <xs:enumeration value="GET" />
+            <xs:enumeration value="POST" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:element name="operation" type="http:tOperation" >
+        <xs:annotation>
+            <xs:documentation>
+                "operation" indicates a http protocol operation.
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+    <xs:complexType name="tOperation" >
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement" >
+                <xs:attribute name="location" type="xs:uriReference" use="required" />
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:element name="address" type="http:tAddress" >
+        <xs:annotation>
+            <xs:documentation>
+                "address" indicates a address of a soap protocol based service.
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+   
+    <xs:complexType name="tAddress" >
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement" >
+                <xs:attribute name="location" type="xs:uriReference" use="required" />
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:element name="urlEncoded" type="http:tUrlEncoded">
+        <xs:annotation>
+            <xs:documentation>
+                "urlEncoded" indicates all message parts are encoded into the HTTP request URI using the standard URI-encoding rules (n1=v1..).
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+   
+    <xs:complexType name="tUrlEncoded" >
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement"/>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:element name="urlReplacement" type="http:tUrlReplacement">
+        <xs:annotation>
+            <xs:documentation>
+                "urlReplacement" indicates all message parts are encoded into the HTTP request URI using a replacement algorithm
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:complexType name="tUrlReplacement" >
+        <xs:complexContent>
+            <xs:extension base="wsdl:tExtensibilityElement"/>
+        </xs:complexContent>
+    </xs:complexType>
+</xs:schema>

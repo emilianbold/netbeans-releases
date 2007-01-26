@@ -20,7 +20,6 @@
 package org.netbeans.modules.xml.xam.ui.search;
 
 import java.util.List;
-import org.netbeans.modules.xml.xam.Component;
 
 /**
  * Provides the capability to search a XAM model and display the results
@@ -64,5 +63,5 @@ public interface SearchProvider {
      * @throws  SearchException
      *          if the search resulted in an unexpected error.
      */
-    List<Component> search(Query query) throws SearchException;
+    List<Object> search(Query query) throws SearchException;
 }

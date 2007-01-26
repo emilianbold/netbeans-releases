@@ -24,22 +24,18 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
 import javax.swing.text.*;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-
-import org.netbeans.editor.Utilities;
+import javax.xml.XMLConstants;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
-
-import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.modules.xml.axi.AXIComponent;
-import org.netbeans.modules.xml.axi.Element;
-import org.netbeans.modules.xml.axi.Attribute;
+import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
+import org.netbeans.modules.xml.schema.completion.util.CompletionContextImpl;
+import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
+import org.netbeans.modules.xml.text.syntax.dom.StartTag;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 
 /**
@@ -51,9 +47,10 @@ public abstract class CompletionResultItem implements CompletionItem {
     /**
      * Creates a new instance of CompletionUtil
      */
-    public CompletionResultItem(AXIComponent component, String typedChars) {
+    public CompletionResultItem(AXIComponent component, CompletionContext context) {
+        this.context = (CompletionContextImpl)context;
         this.axiComponent = component;
-        this.typedChars = typedChars;
+        this.typedChars = context.getTypedChars();
     }
         
     Icon getIcon(){
@@ -96,17 +93,31 @@ public abstract class CompletionResultItem implements CompletionItem {
         try {
             doc.remove( offset, len );
             doc.insertString( offset, text, null);
+            StartTag docRoot = context.getDocRoot();
+            String prefix = CompletionUtil.getPrefixFromTag(text);
+            if(prefix == null)
+                return true;
+            
+            //insert namespace declaration for the new prefix
+            String tns = CompletionUtil.getTargetNamespaceByPrefix(context, prefix);
+            String newPrefix = CompletionUtil.getSuggestedPrefix(context, prefix, tns);
+            if(newPrefix != null) {
+                doc.insertString( docRoot.getElementOffset() +
+                        docRoot.getElementLength()-1, " "+
+                        XMLConstants.XMLNS_ATTRIBUTE+":"+newPrefix+"=\"" +
+                        tns + "\"", null);
+            }
             //reformat the line
-            ((ExtFormatter)doc.getFormatter()).reformat(doc, Utilities.getRowStart(doc, offset), offset+text.length(), true);
+            //((ExtFormatter)doc.getFormatter()).reformat(doc,
+            //Utilities.getRowStart(doc, offset), offset+text.length(), true);
         } catch( BadLocationException exc ) {
             return false;    //not sucessfull
-        } catch (IOException e) {
-            return false;
         } finally {
             doc.atomicUnlock();
         }
         return true;
-    }
+    }    
+        
     ////////////////////////////////////////////////////////////////////////////////
     ///////////////////methods from CompletionItem interface////////////////////////
     ////////////////////////////////////////////////////////////////////////////////
@@ -172,6 +183,7 @@ public abstract class CompletionResultItem implements CompletionItem {
     protected javax.swing.Icon icon;
     protected CompletionPaintComponent component;
     protected AXIComponent axiComponent;
+    private CompletionContextImpl context;
     
     private static Color foreground = Color.black;
     private static Color background = Color.white;

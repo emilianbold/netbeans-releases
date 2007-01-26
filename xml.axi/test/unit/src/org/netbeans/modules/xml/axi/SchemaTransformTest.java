@@ -804,7 +804,7 @@ public class SchemaTransformTest extends AbstractTestCase {
         
 //		printDocument();
         assertEquals("global complex types",3,getSchemaModel().getSchema().getComplexTypes().size());
-        assertEquals("global simple types",2,getSchemaModel().getSchema().getSimpleTypes().size());
+//        assertEquals("global simple types",2,getSchemaModel().getSchema().getSimpleTypes().size());
         assertEquals("global elements",13,getSchemaModel().getSchema().getElements().size());
     }
     

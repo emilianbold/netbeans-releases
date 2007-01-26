@@ -294,4 +294,12 @@ public class SchemaUsageRefactoringEngine extends RefactoringEngine {
         }
         return false;
     }
+
+    @Override
+    public String getModelReference(Component component) {
+        if (component instanceof SchemaModelReference) {
+            return ((SchemaModelReference)component).getSchemaLocation();
+        }        
+        return null;
+    }
 }

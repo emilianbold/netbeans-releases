@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.WeakHashMap;
@@ -37,6 +38,8 @@ import org.netbeans.modules.xml.schema.model.SchemaModelReference;
 import org.netbeans.modules.xml.xam.ComponentListener;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.NamedReferenceable;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
@@ -106,7 +109,8 @@ public class AXIModelImpl extends AXIModel {
      * Returns the global AXI component from other AXI model.
      */
     public AXIComponent lookupFromOtherModel(SchemaComponent schemaComponent) {
-        assert(schemaComponent.isInDocumentModel());
+        if(!schemaComponent.isInDocumentModel())
+            return null;
         AXIModelFactory factory = AXIModelFactory.getDefault();
         AXIModelImpl model = (AXIModelImpl)factory.getModel(schemaComponent.getModel());
         return model!=null?model.lookup(schemaComponent):null;
@@ -115,14 +119,8 @@ public class AXIModelImpl extends AXIModel {
     /**
      * Returns the global AXI component against the specified global schema component.
      */
-    public AXIComponent lookup(SchemaComponent schemaComponent) {        
-        for(AXIComponent globalChild : getRoot().getChildren()) {
-            if(globalChild.getPeer() == schemaComponent) {
-                return globalChild;
-            }
-        }
-        
-        return null;
+    public AXIComponent lookup(SchemaComponent schemaComponent) {
+        return ((AXIDocumentImpl)getRoot()).findChild(schemaComponent);
     }
         
     /**
@@ -199,12 +197,6 @@ public class AXIModelImpl extends AXIModel {
         return updater.doSync();        
     }
     
-    void updateReferencedModelListener() {
-        for(AXIModel m: getReferencedModels()) {
-            listenToReferencedModel(m);
-        }
-    }
-
     public SchemaGenerator.Pattern getSchemaDesignPattern() {
         return schemaDesignPattern;
     }
@@ -230,39 +222,9 @@ public class AXIModelImpl extends AXIModel {
             return false;
         }
         
-        Validation validation = new Validation();
-        validation.validate(getSchemaModel(), Validation.ValidationType.COMPLETE);
-        List<ResultItem> results = validation.getValidationResult();
-        if(results == null || results.size() == 0)
-            return true;
-        
-        for(ResultItem i : results) {
-            if(i.getType() == ResultType.ERROR)
-                return false;
-        }
-        
         return true;
     }    
-        
-    public void listenToReferencedModel(AXIModel model) {
-        if(listenerMap.get(model) == null) {
-            ComponentListener listener = (ComponentListener)WeakListeners.
-                    create(ComponentListener.class, axiModelListener, model);
-            model.addComponentListener(listener);
-            listenerMap.put(model, listener);
-        }
-    }
     
-    public String toString() {
-        if(getRoot() == null)
-            return null;
-        
-        return getRoot().getTargetNamespace();
-    }
-
-    /**
-     * Returns other AXIModels this model refers to.
-     */
     public List<AXIModel> getReferencedModels() {
         List<AXIModel> models = Collections.emptyList();
         Schema schema = getSchemaModel().getSchema();
@@ -277,6 +239,7 @@ public class AXIModelImpl extends AXIModel {
         while(iter.hasNext()) {
             try {
                 SchemaModelReference ref = iter.next();
+                Schema s = ref.resolveReferencedModel().getSchema();
                 AXIModel m = AXIModelFactory.getDefault().
                         getModel(ref.resolveReferencedModel());
                 models.add(m);
@@ -284,10 +247,86 @@ public class AXIModelImpl extends AXIModel {
                 //will not be added to the list
             }
         }
-        
+
         return Collections.unmodifiableList(models);
     }
+            
+    /**
+     * Builds referenceable cache and listens to appropriate
+     * referenced models. This gets updated in each sync.
+     */
+    void buildReferenceableCache() {
+        listenerMap.clear();
+        Schema schema = getSchemaModel().getSchema();
+        if(schema == null)
+            return;
+        buildCache(schema);
+        Collection<SchemaModelReference> refs = schema.getSchemaReferences();
+        if(refs == null || refs.size() == 0)
+            return;
+        Iterator<SchemaModelReference> iter = refs.iterator();
+        while(iter.hasNext()) {
+            try {
+                SchemaModelReference ref = iter.next();
+                Schema s = ref.resolveReferencedModel().getSchema();
+                buildCache(s);
+                if(getRoot().canVisitChildren()) {
+                    AXIModel m = AXIModelFactory.getDefault().
+                            getModel(ref.resolveReferencedModel());
+                    //listen to other model, only if 
+                    //the doc was expanded earlier.
+                    listenToReferencedModel(m);
+                }
+            } catch (Exception ex) {
+                continue;
+            }
+        }
+    }
+
+    public void listenToReferencedModel(AXIModel model) {
+        if(listenerMap.get(model) == null) {
+            ComponentListener listener = (ComponentListener)WeakListeners.
+                    create(ComponentListener.class, axiModelListener, model);
+            model.addComponentListener(listener);
+            listenerMap.put(model, listener);
+        }
+    }
+       
+    /**
+     * Updates the cache of all referenceable for a given schema file.
+     * Note: the key in the map is namespace:name.
+     */
+    private void buildCache(Schema schema) {
+        for(SchemaComponent child : schema.getChildren()) {
+            if(child instanceof NamedReferenceable) {
+                NamedReferenceable ref = (NamedReferenceable)child;
+                mapReferenceable.put(schema.getTargetNamespace() + ":" + ref.getName(), ref);
+            }
+        }
+    }
+    
+    /**
+     * Fetches an item from the cache of all referenceable.
+     * Note: the key in the map is namespace:name.
+     */
+    public SchemaComponent getReferenceableSchemaComponent(NamedComponentReference ncr) {
+        String name = ncr.getQName().getNamespaceURI() + ":" + ncr.getQName().getLocalPart();
+        Class<? extends NamedReferenceable> elementType = ncr.getType();
+        NamedReferenceable ref = mapReferenceable.get(name);
+        if(ref != null && elementType.isAssignableFrom(ref.getClass())) {
+            return (SchemaComponent)ref;
+        }
         
+        return (SchemaComponent)ncr.get();
+    }
+        
+    public String toString() {
+        if(getRoot() == null)
+            return null;
+        
+        return getRoot().getTargetNamespace();
+    }
+
     /**
      * PCL to be used by code generator.
      */
@@ -316,4 +355,7 @@ public class AXIModelImpl extends AXIModel {
     private boolean isAXIDocumentInitialized = false;
 
     private SchemaGenerator.Pattern schemaDesignPattern;
+    
+    private HashMap<String, NamedReferenceable> mapReferenceable =
+            new HashMap<String, NamedReferenceable>();
 }

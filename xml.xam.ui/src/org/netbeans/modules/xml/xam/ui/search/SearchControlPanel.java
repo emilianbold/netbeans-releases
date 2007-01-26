@@ -20,52 +20,40 @@
 package org.netbeans.modules.xml.xam.ui.search;
 
 import java.awt.BorderLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JPanel;
 import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.ui.category.Category;
-import org.netbeans.modules.xml.xam.ui.category.CategoryPane;
 import org.netbeans.modules.xml.xam.ui.category.SearchComponent;
 import org.netbeans.modules.xml.xam.ui.highlight.Highlight;
 import org.netbeans.modules.xml.xam.ui.highlight.HighlightGroup;
 import org.netbeans.modules.xml.xam.ui.highlight.HighlightManager;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
- * Presents the search component for the category pane.
+ * Presents the search component for XAM-based editors.
  *
  * @author  Nathan Fiedler
  */
-public class SearchControlPanel extends JPanel
-        implements ActionListener, PropertyChangeListener, SearchComponent,
-        SearchListener {
+public abstract class SearchControlPanel extends JPanel
+        implements ActionListener, SearchComponent, SearchListener {
     /** silence compiler warnings */
     private static final long serialVersionUID = 1L;
     /** The search input field. */
     private SearchFieldPanel searchField;
-    /** Template for finding SearchProvider instances. */
-    private transient Lookup.Template providerTemplate;
-    /** Parent category pane. */
-    private transient CategoryPane categoryPane;
     /** If not null, the results of the most recent search. */
-    private List<Component> searchResults;
+    private List<Object> searchResults;
     /** Offset into searchResults which is currently shown. */
     private int searchResultIndex;
 
     /**
      * Creates new form SearchControlPanel.
-     *
-     * @param pane  parent category pane.
      */
-    public SearchControlPanel(CategoryPane pane) {
-        this.categoryPane = pane;
+    public SearchControlPanel() {
         initComponents();
         nextButton.setEnabled(false);
         prevButton.setEnabled(false);
@@ -73,7 +61,6 @@ public class SearchControlPanel extends JPanel
         nextButton.addActionListener(this);
         prevButton.addActionListener(this);
         resetButton.addActionListener(this);
-        providerTemplate = new Lookup.Template(SearchProvider.class);
         searchField = new SearchFieldPanel();
         searchField.addSearchListener(this);
         fieldPanel.add(searchField, BorderLayout.CENTER);
@@ -89,40 +76,32 @@ public class SearchControlPanel extends JPanel
             searchField.prepareForInput(true);
         } else if (src == nextButton) {
             searchResultIndex++;
+
             if (searchResultIndex >= searchResults.size()) {
                 searchResultIndex = 0;
+                beep();
             }
-            Component comp = searchResults.get(searchResultIndex);
-            categoryPane.getCategory().showComponent(comp);
+            showSearchResult(searchResults.get(searchResultIndex));
         } else if (src == prevButton) {
             searchResultIndex--;
+          
             if (searchResultIndex < 0) {
                 searchResultIndex = searchResults.size() - 1;
+                beep();
             }
-            Component comp = searchResults.get(searchResultIndex);
-            categoryPane.getCategory().showComponent(comp);
+            showSearchResult(searchResults.get(searchResultIndex));
         }
     }
-
-    @Override
-    public void addNotify() {
-        super.addNotify();
-        categoryPane.addPropertyChangeListener(this);
-        Category cat = categoryPane.getCategory();
-        updateSearchField(cat);
+    
+    private void beep() {
+        Toolkit.getDefaultToolkit().beep();
     }
 
     /**
      * Hide the results of the previous search, if any.
      */
     private void dismissSearch() {
-        HighlightManager hm = HighlightManager.getDefault();
-        List<HighlightGroup> groups = hm.getHighlightGroups(HighlightGroup.SEARCH);
-        if (groups != null) {
-            for (HighlightGroup group : groups) {
-                hm.removeHighlightGroup(group);
-            }
-        }
+        hideResults();
         // Clear the cached search results.
         searchResults = null;
         // No results, no navigation either.
@@ -131,32 +110,34 @@ public class SearchControlPanel extends JPanel
         resultsLabel.setText("   ");
     }
 
+    protected void hideResults() {
+        HighlightManager hm = HighlightManager.getDefault();
+        List<HighlightGroup> groups = hm.getHighlightGroups(HighlightGroup.SEARCH);
+        if (groups != null) {
+            for (HighlightGroup group : groups) {
+                hm.removeHighlightGroup(group);
+            }
+        }
+    }
+
     public java.awt.Component getComponent() {
         return this;
     }
 
     public void hideComponent() {
         setVisible(false);
-        revalidate();
-        repaint();
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(CategoryPane.PROP_CATEGORY)) {
-            Category cat = (Category) evt.getNewValue();
-            updateSearchField(cat);
-        }
-    }
-
-    @Override
-    public void removeNotify() {
-        super.removeNotify();
-        categoryPane.removePropertyChangeListener(this);
     }
 
     public void showComponent() {
         setVisible(true);
-        searchField.prepareForInput(false);
+    }
+
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+
+        if (visible) {
+            searchField.prepareForInput(false);
+        }
         revalidate();
         repaint();
     }
@@ -201,12 +182,19 @@ public class SearchControlPanel extends JPanel
             // parents, grand parents, and so on, up to the root component.
             HighlightManager hm = HighlightManager.getDefault();
             HighlightGroup group = new HighlightGroup(HighlightGroup.SEARCH);
-            Iterator<Component> iter = searchResults.iterator();
+            Iterator<Object> iter = searchResults.iterator();
+
             while (iter.hasNext()) {
-                Component comp = iter.next();
+                Object object = iter.next();
+
+                if ( !(object instanceof Component)) {
+                  continue;
+                }
+                Component comp = (Component) object;
                 SearchHighlight h = new SearchHighlight(comp, Highlight.SEARCH_RESULT);
                 group.addHighlight(h);
                 Component parent = comp.getParent();
+                
                 while (parent != null) {
                     h = new SearchHighlight(parent, Highlight.SEARCH_RESULT_PARENT);
                     group.addHighlight(h);
@@ -216,8 +204,7 @@ public class SearchControlPanel extends JPanel
             hm.addHighlightGroup(group);
             // Show the first matching result.
             searchResultIndex = 0;
-            categoryPane.getCategory().showComponent(searchResults.get(
-                    searchResultIndex));
+            showSearchResult(searchResults.get(searchResultIndex));
             int count = searchResults.size();
             if (count == 1) {
                 resultsLabel.setText(NbBundle.getMessage(SearchControlPanel.class,
@@ -230,27 +217,25 @@ public class SearchControlPanel extends JPanel
     }
 
     /**
-     * Search the Category's Lookup for instances of SearchProvider and
-     * update the search field interface appropriately. If no providers
-     * exist, the search field is disabled. If one or more providers exist,
-     * then update the search field's type menu with the provider names.
+     * Set the search providers to be made available in the search field.
      *
-     * @param  cat  selected Category, or null if none.
+     * @param  providers  the available search providers (may be null).
      */
-    private void updateSearchField(Category cat) {
-        if (cat == null) {
-            searchField.setEnabled(false);
+    public void setProviders(Collection providers) {
+        if (providers != null && providers.size() > 0) {
+            searchField.setProviders(providers);
+            searchField.setEnabled(true);
         } else {
-            Lookup.Result result = cat.getLookup().lookup(providerTemplate);
-            Collection providers = result.allInstances();
-            if (providers.size() > 0) {
-                searchField.setProviders(providers);
-                searchField.setEnabled(true);
-            } else {
-                searchField.setEnabled(false);
-            }
+            searchField.setEnabled(false);
         }
     }
+
+    /**
+     * Make the given search result visible in the editor.
+     *
+     * @param  result  search result to show.
+     */
+    protected abstract void showSearchResult(Object result);
 
     /**
      * Concrete implementation of a Highlight.

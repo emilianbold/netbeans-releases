@@ -56,18 +56,12 @@ import org.w3c.dom.Node;
 public class SchemaGeneratorUtil {
     
     public static NamedComponentReference<GlobalSimpleType> createPrimitiveType(
-            final Datatype d, SchemaComponent referer){
+            final Datatype d, SchemaComponent referer, SchemaGenerator.PrimitiveCart pc){
+        pc.add(d, referer);
         String typeName = d.getName();
         if(d instanceof CustomDatatype)
             typeName = ((CustomDatatype)d).getBase().getName();
-        SchemaModel primitiveModel = SchemaModelFactory.getDefault().getPrimitiveTypesModel();
-        Collection<GlobalSimpleType> primitives = primitiveModel.getSchema().getSimpleTypes();
-        for(GlobalSimpleType ptype: primitives){
-            if(ptype.getName().equals(typeName)){
-                return referer.createReferenceTo(ptype, GlobalSimpleType.class);
-            }
-        }
-        return null;
+        return referer.createReferenceTo(pc.getPrimitiveType(typeName), GlobalSimpleType.class);
     }
     
     public static boolean isPrimitiveType(Datatype d) {
@@ -76,11 +70,11 @@ public class SchemaGeneratorUtil {
     
     public static void createGlobalSimpleType(
             final Datatype d, final SchemaModel sm, final SchemaComponent sc,
-            final SchemaGenerator.UniqueId id) {
+            final SchemaGenerator.UniqueId id, SchemaGenerator.PrimitiveCart pc) {
         if(d != null) {
             NamedComponentReference<GlobalSimpleType> ref =null;
             if(isPrimitiveType(d)) {
-                ref = SchemaGeneratorUtil.createPrimitiveType(d, sc);
+                ref = SchemaGeneratorUtil.createPrimitiveType(d, sc, pc);
             } else {
                 GlobalSimpleType gst = SchemaGeneratorUtil.createGlobalSimpleType(sm);
                 String typeName = d.getName();
@@ -92,9 +86,9 @@ public class SchemaGeneratorUtil {
                 sm.getSchema().addSimpleType(gst);
                 if(d instanceof CustomDatatype)
                     SchemaGeneratorUtil.populateSimpleType(
-                            ((CustomDatatype)d).getBase(), sm, gst);
+                            ((CustomDatatype)d).getBase(), sm, gst, pc);
                 else
-                    SchemaGeneratorUtil.populateSimpleType(d, sm, gst);
+                    SchemaGeneratorUtil.populateSimpleType(d, sm, gst, pc);
                 ref = sc.createReferenceTo(gst, GlobalSimpleType.class);
             }
             SchemaGeneratorUtil.setSimpleType(sc, ref);
@@ -123,6 +117,14 @@ public class SchemaGeneratorUtil {
             if(((LocalAttribute)e).getInlineType() != null)
                 ((LocalAttribute)e).setInlineType(null);
             ((LocalAttribute)e).setType(ref);
+        } else if(e instanceof SimpleTypeRestriction) {
+            if(((SimpleTypeRestriction)e).getInlineType() != null) {
+                ((SimpleTypeRestriction)e).setInlineType(null);                
+            }
+            ((SimpleTypeRestriction)e).setBase(ref);
+        } else if(e instanceof Union) {
+            ((Union)e).removeMemberType(ref);
+            ((Union)e).addMemberType(ref);
         }
     }
     
@@ -137,20 +139,20 @@ public class SchemaGeneratorUtil {
     
     public static NamedComponentReference<? extends GlobalSimpleType> createInlineSimpleType(
             final Datatype d, final SchemaModel sm,
-            final SchemaComponent sc) {
+            final SchemaComponent sc, SchemaGenerator.PrimitiveCart pc) {
         if(sc instanceof org.netbeans.modules.xml.schema.model.Element)
-            return createInlineSimpleType(d, sm, ((org.netbeans.modules.xml.schema.model.Element)sc));
+            return createInlineSimpleType(d, sm, ((org.netbeans.modules.xml.schema.model.Element)sc), pc);
         else if(sc instanceof org.netbeans.modules.xml.schema.model.Attribute)
-            return createInlineSimpleType(d, sm, ((org.netbeans.modules.xml.schema.model.Attribute)sc));
+            return createInlineSimpleType(d, sm, ((org.netbeans.modules.xml.schema.model.Attribute)sc), pc);
         return null;
     }
     
     public static NamedComponentReference<? extends GlobalSimpleType> createInlineSimpleType(
             final Datatype d, final SchemaModel sm,
-            final org.netbeans.modules.xml.schema.model.Element e) {
+            final org.netbeans.modules.xml.schema.model.Element e, SchemaGenerator.PrimitiveCart pc) {
         NamedComponentReference ref = null;
         if(isPrimitiveType(d)) {
-            ref = createPrimitiveType(d, e);
+            ref = createPrimitiveType(d, e, pc);
             if(e instanceof TypeContainer) {
                 if(((TypeContainer)e).getInlineType() != null)
                     ((TypeContainer)e).setInlineType(null);
@@ -159,19 +161,19 @@ public class SchemaGeneratorUtil {
         } else {
             LocalSimpleType lst = createLocalSimpleType(sm, e);
             if(d instanceof CustomDatatype)
-                ref = populateSimpleType(((CustomDatatype)d).getBase(), sm, lst);
+                ref = populateSimpleType(((CustomDatatype)d).getBase(), sm, lst, pc);
             else
-                ref = populateSimpleType(d, sm, lst);
+                ref = populateSimpleType(d, sm, lst, pc);
         }
         return ref;
     }
     
     public static NamedComponentReference<? extends GlobalSimpleType> createInlineSimpleType(
             final Datatype d, final SchemaModel sm,
-            final org.netbeans.modules.xml.schema.model.Attribute attr) {
+            final org.netbeans.modules.xml.schema.model.Attribute attr, SchemaGenerator.PrimitiveCart pc) {
         NamedComponentReference ref = null;
         if(isPrimitiveType(d)) {
-            ref = createPrimitiveType(d, attr);
+            ref = createPrimitiveType(d, attr, pc);
             if(attr instanceof GlobalAttribute) {
                 if(((GlobalAttribute)attr).getInlineType() != null)
                     ((GlobalAttribute)attr).setInlineType(null);
@@ -184,9 +186,9 @@ public class SchemaGeneratorUtil {
         } else {
             LocalSimpleType lst = createLocalSimpleType(sm, attr);
             if(d instanceof CustomDatatype)
-                ref = populateSimpleType(((CustomDatatype)d).getBase(), sm, lst);
+                ref = populateSimpleType(((CustomDatatype)d).getBase(), sm, lst, pc);
             else
-                ref = populateSimpleType(d, sm, lst);
+                ref = populateSimpleType(d, sm, lst, pc);
         }
         return ref;
     }
@@ -225,7 +227,8 @@ public class SchemaGeneratorUtil {
     }
     
     public static NamedComponentReference<? extends GlobalSimpleType> populateSimpleType(
-            final Datatype d, final SchemaModel sm, final SchemaComponent st) {
+            final Datatype d, final SchemaModel sm, final SchemaComponent st, 
+            SchemaGenerator.PrimitiveCart pc) {
         NamedComponentReference ref = null;
         if(!d.hasFacets()) {
             if(d instanceof UnionType) {
@@ -239,7 +242,7 @@ public class SchemaGeneratorUtil {
  */
                 Union u = createUnion(sm, st);
                 for(Datatype m:((UnionType)d).getMemberTypes()) {
-                    ref = createPrimitiveType(m, u);
+                    ref = createPrimitiveType(m, u, pc);
                     u.addMemberType(ref);
                 }
             }
@@ -266,20 +269,21 @@ public class SchemaGeneratorUtil {
                 
                 for(Datatype m:((UnionType)d).getMemberTypes()) {
                     LocalSimpleType lst2 = createLocalSimpleType(sm, u);
-                    ref = createPrimitiveType(m, lst2);
-                    createFacets(m, sm, ref, lst2);
+                    //ref = createPrimitiveType(m, lst2, pc);
+                    ref = createFacets(m, sm, lst2, pc);
                 }
             } else {
-                ref = createPrimitiveType(d, st);
-                createFacets(d, sm, ref, st);
+                //ref = createPrimitiveType(d, st, pc);
+                ref = createFacets(d, sm, st, pc);
             }
         }
         return ref;
     }
     
-    public static void createFacets(final Datatype d, final SchemaModel sm,
-            final NamedComponentReference ref, final SchemaComponent lst) {
+    public static NamedComponentReference createFacets(final Datatype d, final SchemaModel sm,
+            final SchemaComponent lst, SchemaGenerator.PrimitiveCart pc) {        
         SimpleTypeRestriction def = createSimpleRestriction(sm, (SimpleType)lst);
+        NamedComponentReference ref = createPrimitiveType(d, def, pc);
         def.setBase(ref);
         createLength(d, sm, def);
         createMinLength(d, sm, def);
@@ -293,6 +297,8 @@ public class SchemaGeneratorUtil {
         createMaxExclusive(d, sm, def);
         createMinInclusive(d, sm, def);
         createMinExclusive(d, sm, def);
+        
+        return ref;
     }
     
     public static void createMinExclusive(final Datatype d, final SchemaModel sm,
@@ -997,14 +1003,14 @@ public class SchemaGeneratorUtil {
     }
     
     public static void modifySchemaComponent(final AXIComponent source,
-            final SchemaUpdate.UpdateUnit u, final SchemaModel sm) {
+            final SchemaUpdate.UpdateUnit u, final SchemaModel sm, SchemaGenerator.PrimitiveCart pc) {
         if(source instanceof AXIDocument) {
             modifyAXIDocument((AXIDocument)source, u, sm);
         } else if(source instanceof Element) {
             if(((Element)source).getPeer() instanceof LocalElement)
-                modifyLocalElement(source, u, sm);
+                modifyLocalElement(source, u, sm, pc);
             else if(((Element)source).getPeer() instanceof GlobalElement)
-                modifyGlobalElement(((Element)source), u, sm);
+                modifyGlobalElement(((Element)source), u, sm, pc);
             else if(source instanceof ElementRef &&
                     ((Element)source).getPeer() instanceof ElementReference)
                 modifyElementRef(((ElementRef)source), u, sm);
@@ -1016,9 +1022,9 @@ public class SchemaGeneratorUtil {
             modifyCompositor((Compositor) source, u, sm);
         } else if(source instanceof Attribute) {
             if(((Attribute)source).getPeer() instanceof LocalAttribute)
-                modifyLocalAttribute(source, u, sm);
+                modifyLocalAttribute(source, u, sm, pc);
             else if(((Attribute)source).getPeer() instanceof GlobalAttribute)
-                modifyGlobalAttribute(source, u, sm);
+                modifyGlobalAttribute(source, u, sm, pc);
             else if(((Attribute)source).getPeer() instanceof AttributeReference)
                 modifyAttributeRef(source, u, sm);
         } else if(source instanceof AnyElement) {
@@ -1039,7 +1045,7 @@ public class SchemaGeneratorUtil {
     }
     
     public static void modifyLocalAttribute(final AXIComponent source,
-            final SchemaUpdate.UpdateUnit u, final SchemaModel sm) {
+            final SchemaUpdate.UpdateUnit u, final SchemaModel sm, SchemaGenerator.PrimitiveCart pc) {
         LocalAttribute la = (LocalAttribute) ((Attribute)source).getPeer();
         String propertyName = u.getPropertyName();
         Object newValue = u.getNewValue();
@@ -1054,7 +1060,7 @@ public class SchemaGeneratorUtil {
         } else if(propertyName.equals(Attribute.PROP_USE)) {
             la.setUse((Use) newValue);
         } else if(propertyName.equals(Attribute.PROP_TYPE)) {
-            modifyDatatype(sm, la, (Datatype) u.getNewValue());
+            modifyDatatype(sm, la, (Datatype) u.getNewValue(), pc);
         }
     }
     
@@ -1084,7 +1090,7 @@ public class SchemaGeneratorUtil {
     }
     
     public static void modifyGlobalAttribute(final AXIComponent source,
-            final SchemaUpdate.UpdateUnit u, final SchemaModel sm) {
+            final SchemaUpdate.UpdateUnit u, final SchemaModel sm, SchemaGenerator.PrimitiveCart pc) {
         GlobalAttribute ga = (GlobalAttribute) ((Attribute)source).getPeer();
         String propertyName = u.getPropertyName();
         Object newValue = u.getNewValue();
@@ -1096,12 +1102,12 @@ public class SchemaGeneratorUtil {
             String attrName = findUniqueGlobalName(GlobalAttribute.class, (String)newValue, sm);
             ga.setName(attrName);
         } else if(propertyName.equals(Attribute.PROP_TYPE)) {
-            modifyDatatype(sm, ga, (Datatype) u.getNewValue());
+            modifyDatatype(sm, ga, (Datatype) u.getNewValue(), pc);
         }
     }
     
     private static void modifyDatatype(final SchemaModel sm,
-            final SchemaComponent component, final Datatype d) {
+            final SchemaComponent component, final Datatype d, SchemaGenerator.PrimitiveCart pc) {
         if(d == null)
             return;
         String typeName = d.getName();
@@ -1110,19 +1116,19 @@ public class SchemaGeneratorUtil {
         if(typeName != null) {
             if(component instanceof GlobalAttribute &&
                     ((GlobalAttribute)component).getInlineType() != null) {
-                createInlineSimpleType(d, sm, ((GlobalAttribute)component));
+                createInlineSimpleType(d, sm, ((GlobalAttribute)component), pc);
                 return;
             } else if(component instanceof LocalAttribute &&
                     ((LocalAttribute)component).getInlineType() != null) {
-                createInlineSimpleType(d, sm, ((LocalAttribute)component));
+                createInlineSimpleType(d, sm, ((LocalAttribute)component), pc);
                 return;
             } else if(component instanceof GlobalElement &&
                     ((GlobalElement)component).getInlineType() != null) {
-                createInlineSimpleType(d, sm, ((GlobalElement)component));
+                createInlineSimpleType(d, sm, ((GlobalElement)component), pc);
                 return;
             } else if(component instanceof LocalElement &&
                     ((LocalElement)component).getInlineType() != null) {
-                createInlineSimpleType(d, sm, ((LocalElement)component));
+                createInlineSimpleType(d, sm, ((LocalElement)component), pc);
                 return;
             } else {
                 NamedComponentReference<GlobalSimpleType> ref = null;
@@ -1139,7 +1145,7 @@ public class SchemaGeneratorUtil {
                             return ++lastId;
                         }
                     };
-                    createGlobalSimpleType(d, sm, component, id);
+                    createGlobalSimpleType(d, sm, component, id, pc);
                 } else
                     setSimpleType(component, ref);
             }
@@ -1202,7 +1208,7 @@ public class SchemaGeneratorUtil {
     }
     
     public static void modifyLocalElement(final AXIComponent source,
-            final SchemaUpdate.UpdateUnit u, final SchemaModel sm) {
+            final SchemaUpdate.UpdateUnit u, final SchemaModel sm, SchemaGenerator.PrimitiveCart pc) {
         checkPopulate(source);
         LocalElement le = (LocalElement) ((Element)source).getPeer();
         String propertyName = u.getPropertyName();
@@ -1230,7 +1236,7 @@ public class SchemaGeneratorUtil {
                         (GlobalComplexType)((ContentModel)newValue).getPeer(),
                         GlobalComplexType.class));
             } else
-                modifyDatatype(sm, le, (Datatype) newValue);
+                modifyDatatype(sm, le, (Datatype) newValue, pc);
         }
     }
     
@@ -1255,7 +1261,7 @@ public class SchemaGeneratorUtil {
     }
     
     public static void modifyGlobalElement(final Element element,
-            final SchemaUpdate.UpdateUnit u, final SchemaModel sm) {
+            final SchemaUpdate.UpdateUnit u, final SchemaModel sm, SchemaGenerator.PrimitiveCart pc) {
         checkPopulate(element);
         if(u.getPropertyName().equals(Element.PROP_MINOCCURS) ||
                 u.getPropertyName().equals(Element.PROP_MAXOCCURS)) {
@@ -1285,7 +1291,7 @@ public class SchemaGeneratorUtil {
                         (GlobalComplexType)((ContentModel)newValue).getPeer(),
                         GlobalComplexType.class));
             } else
-                modifyDatatype(sm, ge, (Datatype) newValue);
+                modifyDatatype(sm, ge, (Datatype) newValue, pc);
         }
     }
     

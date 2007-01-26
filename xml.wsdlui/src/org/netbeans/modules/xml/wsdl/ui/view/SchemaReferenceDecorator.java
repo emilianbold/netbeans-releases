@@ -23,11 +23,15 @@ import java.util.Collection;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelReference;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
-import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceCustomizer;
+import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceCreator;
+import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceDataNode;
 import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceDecorator;
 import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceNode;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
@@ -37,18 +41,18 @@ import org.openide.util.NbBundle;
  */
 public class SchemaReferenceDecorator implements ExternalReferenceDecorator {
     /** The customizer that created this decorator. */
-    private ExternalReferenceCustomizer customizer;
+    private ExternalReferenceCreator customizer;
 
     /**
      * Creates a new instance of SchemaReferenceDecorator.
      *
      * @param  customizer  provides information about the edited component.
      */
-    public SchemaReferenceDecorator(ExternalReferenceCustomizer customizer) {
+    public SchemaReferenceDecorator(ExternalReferenceCreator customizer) {
         this.customizer = customizer;
     }
 
-    public String annotate(ExternalReferenceNode node) {
+    public String validate(ExternalReferenceNode node) {
         if (node.hasModel()) {
             Model model = node.getModel();
             if (model == null) {
@@ -103,16 +107,27 @@ public class SchemaReferenceDecorator implements ExternalReferenceDecorator {
         return null;
     }
 
+    public ExternalReferenceDataNode createExternalReferenceNode(Node original) {
+        return customizer.createExternalReferenceNode(original);
+    }
+
+    public String generatePrefix(ExternalReferenceNode node) {
+        if (node.hasModel()) {
+            Model model = node.getModel();
+            if (model != null && model instanceof WSDLModel) {
+                return NameGenerator.getInstance().generateNamespacePrefix(
+                        null, (WSDLModel) model);
+            }
+        }
+        return "";
+    }
+
     public Utilities.DocumentTypesEnum getDocumentType() {
         return Utilities.DocumentTypesEnum.schema;
     }
 
     public String getHtmlDisplayName(String name, ExternalReferenceNode node) {
-        String ns = node.getNamespace();
-        boolean exclude = customizer.mustNamespaceDiffer();
-        String namespace = customizer.getTargetNamespace();
-        if (ns != null && !Utilities.NO_NAME_SPACE.equals(ns) &&
-                exclude == ns.equals(namespace)) {
+        if (validate(node) != null) {
             return "<s>" + name + "</s>";
         }
         return name;

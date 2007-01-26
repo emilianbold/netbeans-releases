@@ -99,6 +99,17 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             <file name="wsdl-validation-annotation.xml" url="../../../validation/resources/validation-annotation.xml"/>
         </folder>
     </folder>
+
+    <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="text">
+                <folder name="xml-wsdl">
+                    <file name="org-netbeans-modules-xml-wsdl-ui-navigator-WSDLNavigatorPanel.instance"/>
+                    <attr name="org-netbeans-modules-xml-wsdl-ui-navigator-WSDLNavigatorPanel.instance/org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance" boolvalue="true"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
     
     <folder name="Templates">
     	<folder name="WebServices">
@@ -106,7 +117,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     			<attr name="template" boolvalue="true" />
     			<attr name="instantiatingIterator"
     				newvalue="org.netbeans.modules.xml.wsdl.ui.wizard.NewWSDLWizardIterator" />
-    			<attr name="templateWizardURL"
+    			<attr name="instantiatingWizardURL"
     				urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/wizard/newWSDL.html" />
     			<attr name="SystemFileSystem.localizingBundle"
     				stringvalue="org.netbeans.modules.websvc.wsdl.wizard.Bundle" />
@@ -139,30 +150,55 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             </folder>
         </folder>
     </folder>
- 
+
+    <folder name="WSDLPalette">
+    	<folder name="WSDLComponents">
+	    	<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.view.grapheditor.palette.resources.Bundle"/>
+    		<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_WSDL_OPERATIONS" />
+    		<file name="RequestReply.xml" url="../../../view/grapheditor/palette/resources/RequestReply.xml"> 
+    			<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_REQUESTREPLY" />
+	    	</file>
+	    	<file name="OneWay.xml" url="../../../view/grapheditor/palette/resources/OneWay.xml"> 
+    			<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_ONEWAYY" />
+    		</file>
+	    	<file name="Notification.xml" url="../../../view/grapheditor/palette/resources/Notification.xml"> 
+    			<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_NOTIFICATION" />
+    		</file>    	
+	    	<file name="SolicitResponse.xml" url="../../../view/grapheditor/palette/resources/SolicitResponse.xml"> 
+    			<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_SOLICITRESPONSE" />
+    		</file>    	
+    		<file name="PartnerLinkType.xml" url="../../../view/grapheditor/palette/resources/PartnerLinkType.xml"> 
+    			<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_PARTNERLINKTYPE" />
+    		</file>
+	    	<file name="Message.xml" url="../../../view/grapheditor/palette/resources/Message.xml"> 
+    			<attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_MESSAGE" />
+    		</file>
+    	</folder>
+    </folder>
+
     <folder name="WSDLEditor">
-        <file name="wsbpel_plinkType-2005-12-22.xsd" url="wsbpel_plinkType-2005-12-22.xsd">
+        <file name="ws-bpel_plnktype.xsd" url="ws-bpel_plnktype.xsd">
         <attr name="prefix" stringvalue="plink"/>
         </file>
-        <file name="wsbpel_msgprop-2005-12-22.xsd" url="wsbpel_msgprop-2005-12-22.xsd">
-        <attr name="prefix" stringvalue="bpws"/>
+        <file name="ws-bpel_varprop.xsd" url="ws-bpel_varprop.xsd">
+        <attr name="prefix" stringvalue="vprop"/>
         </file>
         <folder name="Definitions">
             <file name="partnerLinkType">
-            <attr name="xsdFileName" stringvalue="wsbpel_plinkType-2005-12-22"/>
+            <attr name="xsdFileName" stringvalue="ws-bpel_plnktype"/>
             <attr name="element" stringvalue="partnerLinkType"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/view/treeeditor/extension/bpel/resources/partnerlinktype.png"/> 
             </file>
             <folder name="MessageProperties">
                 <file name="property">
-                    <attr name="xsdFileName" stringvalue="wsbpel_msgprop-2005-12-22"/>
+                    <attr name="xsdFileName" stringvalue="ws-bpel_varprop"/>
                     <attr name="element" stringvalue="property"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/view/resources/property.png"/> 
                 </file>
                 <file name="propertyAlias">
-                    <attr name="xsdFileName" stringvalue="wsbpel_msgprop-2005-12-22"/>
+                    <attr name="xsdFileName" stringvalue="ws-bpel_varprop"/>
                     <attr name="element" stringvalue="propertyAlias"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/view/resources/propertyalias.png"/> 

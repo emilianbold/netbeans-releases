@@ -20,7 +20,6 @@
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 
 import org.netbeans.modules.xml.schema.model.Schema;
@@ -53,6 +52,7 @@ import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.SolicitResponseOperation;
 import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
 import org.netbeans.modules.xml.wsdl.ui.common.Constants;
 import org.netbeans.modules.xml.xam.Component;
@@ -164,12 +164,14 @@ public class NodesFactory {
         } else if (component instanceof WSDLSchema) {
             return createSchemaNode((WSDLSchema) component);
         } else if(component instanceof Documentation) {
-            return  new DocumentationNode((Documentation) component);
+            return new DocumentationNode((Documentation) component);
         } else if (component instanceof SchemaComponent) {
             // Those instances other than Schema, handled above.
             return createSchemaNode((SchemaComponent) component);
+        } else if (component instanceof PartnerLinkType) {
+            return new PartnerLinkTypeNode((PartnerLinkType) component);
         } else if (component instanceof ExtensibilityElement) {
-            return  new ExtensibilityElementNode((ExtensibilityElement)component);
+            return new ExtensibilityElementNode((ExtensibilityElement) component);
         }
         return null;
     }

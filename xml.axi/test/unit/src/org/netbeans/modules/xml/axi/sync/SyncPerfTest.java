@@ -19,24 +19,11 @@
 
 package org.netbeans.modules.xml.axi.sync;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.List;
 import junit.framework.*;
-import org.netbeans.modules.xml.axi.Element;
-import org.netbeans.modules.xml.schema.model.AttributeReference;
-import org.netbeans.modules.xml.schema.model.ElementReference;
-import org.netbeans.modules.xml.schema.model.GlobalAttribute;
-import org.netbeans.modules.xml.schema.model.GlobalAttributeGroup;
-import org.netbeans.modules.xml.schema.model.GlobalComplexType;
+import org.netbeans.modules.xml.axi.AXIModel;
+import org.netbeans.modules.xml.axi.visitor.DeepAXITreeVisitor;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
-import org.netbeans.modules.xml.schema.model.GlobalGroup;
-import org.netbeans.modules.xml.schema.model.GlobalType;
-import org.netbeans.modules.xml.schema.model.GroupReference;
-import org.netbeans.modules.xml.schema.model.LocalAttribute;
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.xml.schema.model.Sequence;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
 
         
 /**
@@ -47,14 +34,14 @@ import org.netbeans.modules.xml.schema.model.Sequence;
  */
 public class SyncPerfTest extends AbstractSyncTestCase {
                 
-    public static final String TEST_XSD  = "resources/OTA_TravelItinerary.xsd";
-    public static final String GLOBAL_ELEMENT   = "TravelItinerary";
+    public static final String OTA_XSD  = "resources/OTA_TravelItinerary.xsd";
+    public static final String HL7_XSD  = "resources/hl7/fields.xsd";
     
     /**
      * SyncElementTest
      */
     public SyncPerfTest(String testName) {
-        super(testName, TEST_XSD, GLOBAL_ELEMENT);
+        super(testName, HL7_XSD, null);
     }
         
     public static Test suite() {
@@ -62,26 +49,39 @@ public class SyncPerfTest extends AbstractSyncTestCase {
         return suite;
     }
 
-    public void testElementType() {
-        renameGlobalElement();
+    public void testHealthcareSchemaSyncPerformance() {
+        doRun(getSchemaModel(), getAXIModel(), false);
+        //doRun(getSchemaModel(), getAXIModel(), true);
     }
-        
-    private void renameGlobalElement() {
-        assert(globalElement.getName().equals(GLOBAL_ELEMENT));
+    
+//    public void testOTASyncPerformance() throws Exception {
+//        AXIModel hlModel = getModel(OTA_XSD);
+//        doRun(hlModel.getSchemaModel(), hlModel, false);
+//        doRun(hlModel.getSchemaModel(), hlModel, true);
+//    }
+    
+    private void doRun(SchemaModel sModel, AXIModel aModel, boolean worstCase) {
+        if(worstCase) {
+            DeepAXITreeVisitor visitor = new DeepAXITreeVisitor();
+            visitor.visit(aModel.getRoot());
+        }
+        int schemaChildCount = sModel.getSchema().getChildren().size();
+        int axiChildCount = aModel.getRoot().getChildren().size();
         try {
             getSchemaModel().startTransaction();
-            GlobalElement ge = (GlobalElement)globalElement.getPeer();
-            ge.setName(GLOBAL_ELEMENT + "1");
+            GlobalElement ge = getSchemaModel().getFactory().createGlobalElement();
+            ge.setName("NewGlobalElement");
+            getSchemaModel().getSchema().addElement(ge);
             getSchemaModel().endTransaction();
             long startTime = System.currentTimeMillis();
             getAXIModel().sync();
             long endTime = System.currentTimeMillis();
-            print("Time taken to sync AXI model for OTA: " +
+            print("Time taken to sync: " +
                     (endTime - startTime));
         } catch(Exception ex) {
             ex.printStackTrace();
         }
-        assert(globalElement.getName().equals(GLOBAL_ELEMENT + "1"));
+        assert(schemaChildCount+1 == sModel.getSchema().getChildren().size());
+        assert(axiChildCount+1 == aModel.getRoot().getChildren().size());
     }
-    
 }

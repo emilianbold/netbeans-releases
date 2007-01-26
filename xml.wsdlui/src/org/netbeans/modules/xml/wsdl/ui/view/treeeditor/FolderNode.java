@@ -28,13 +28,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-
 import javax.swing.Action;
-
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.netbeans.modules.xml.wsdl.ui.netbeans.module.ComponentPasteType;
+import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.ui.ComponentPasteType;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.netbeans.modules.xml.xam.ui.cookies.CountChildrenCookie;
 import org.netbeans.modules.xml.xam.ui.highlight.Highlight;
@@ -44,14 +43,16 @@ import org.openide.actions.NewAction;
 import org.openide.actions.PasteAction;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  * @author skini
@@ -63,7 +64,7 @@ public abstract class FolderNode extends AbstractNode
     private List<Highlight> highlights;
     private Class<? extends WSDLComponent> childType;
     private WSDLComponent mElement;
-    
+    private InstanceContent mLookupContents;
     protected Image BADGE_ICON; 
 
     private static final SystemAction[] ACTIONS = new SystemAction[] {
@@ -74,15 +75,20 @@ public abstract class FolderNode extends AbstractNode
 
     protected FolderNode(Children children, WSDLComponent comp,
             Class<? extends WSDLComponent> childType) {
-        this(children, null, comp, childType);
+        this(children, new InstanceContent(), comp, childType);
     }
 
-    protected FolderNode(Children children, Lookup lookup, WSDLComponent comp,
-            Class<? extends WSDLComponent> childType) {
-        super(children, lookup);
-        this.getCookieSet().add(this);
+    protected FolderNode(Children children, InstanceContent contents,
+            WSDLComponent comp, Class<? extends WSDLComponent> childType) {
+        super(children, new AbstractLookup(contents));
+        mLookupContents = contents;
         this.childType = childType;
         this.mElement = comp;
+        contents.add(this);
+        DataObject dobj = ActionHelper.getDataObject(comp);
+        if (dobj != null) {
+            contents.add(dobj);
+        }
 
         referenceSet = new HashSet<Component>();
         highlights = new LinkedList<Highlight>();
@@ -95,6 +101,10 @@ public abstract class FolderNode extends AbstractNode
             referenceSet.add(iter.next());
         }
         hm.addHighlighted(this);
+    }
+
+    protected InstanceContent getLookupContents() {
+        return mLookupContents;
     }
 
     @Override

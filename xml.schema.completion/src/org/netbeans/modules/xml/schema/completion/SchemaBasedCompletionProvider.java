@@ -20,15 +20,14 @@
 package org.netbeans.modules.xml.schema.completion;
 
 import javax.swing.text.JTextComponent;
-import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.ExtSyntaxSupport;
-import org.netbeans.modules.xml.schema.completion.util.CatalogModelHelper;
-import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
+import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider;
+import org.netbeans.modules.xml.schema.completion.util.DefaultModelProvider;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
 /**
@@ -36,9 +35,6 @@ import org.openide.windows.TopComponent;
  * @author Samaresh (Samaresh.Panda@Sun.Com)
  */
 public class SchemaBasedCompletionProvider implements CompletionProvider {
-            
-    private static final boolean ENABLED = true;
-    private CatalogModelHelper helper;
     
     /**
      * Creates a new instance of SchemaBasedCompletionProvider
@@ -47,31 +43,35 @@ public class SchemaBasedCompletionProvider implements CompletionProvider {
     }
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        TopComponent activatedTC = TopComponent .getRegistry().getActivated();
-        if(activatedTC == null)
-            return 0;
-        DataObject activeFile = (DataObject)activatedTC.getLookup().lookup(DataObject.class);
-        if(activeFile == null)
-            return 0;
-        FileObject primaryFile = activeFile.getPrimaryFile();
+        FileObject primaryFile = getPrimaryFile();
         if(primaryFile == null)
             return 0;
         
-        //no code completion for non-xml files.
-        if( !"xml".equals(primaryFile.getExt())) { //NOI18N
-            return 0;
-        }
+        //only for xml instance document and wsdl files.
+//        String extension = primaryFile.getExt();
+//        if( !"xml".equals(extension) && !"wsdl".equals(extension) ) { //NOI18N
+//            return 0;
+//        }
         
         return COMPLETION_QUERY_TYPE;
     }
     
     public CompletionTask createTask(int queryType, JTextComponent component) {
-        this.helper = new CatalogModelHelper();
-        
         if (queryType == COMPLETION_QUERY_TYPE)
-            return new AsyncCompletionTask(new CompletionQuery(helper), component);
+            return new AsyncCompletionTask(new CompletionQuery(getPrimaryFile()), component);
         
         return null;
+    }
+    
+    private FileObject getPrimaryFile() {
+        TopComponent activatedTC = TopComponent .getRegistry().getActivated();
+        if(activatedTC == null)
+            return null;
+        DataObject activeFile = (DataObject)activatedTC.getLookup().lookup(DataObject.class);
+        if(activeFile == null)
+            return null;
+        
+        return activeFile.getPrimaryFile();
     }
     
 }

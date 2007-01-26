@@ -19,13 +19,13 @@
 
 package org.netbeans.modules.xml.axi.impl;
 
-import com.sun.org.apache.xpath.internal.operations.Mod;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Map.Entry;
@@ -44,6 +44,7 @@ import org.netbeans.modules.xml.axi.Compositor;
 import org.netbeans.modules.xml.axi.ContentModel;
 import org.netbeans.modules.xml.axi.Element;
 import org.netbeans.modules.xml.axi.SchemaGenerator;
+import org.netbeans.modules.xml.axi.SchemaGenerator.PrimitiveCart;
 import org.netbeans.modules.xml.axi.SchemaGenerator.UniqueId;
 import org.netbeans.modules.xml.axi.datatype.Datatype;
 import org.netbeans.modules.xml.axi.visitor.AXINonCyclicVisitor;
@@ -59,6 +60,8 @@ public abstract class DefaultSchemaGenerator extends SchemaGenerator {
     protected SchemaModel sm;
     
     protected SchemaGenerator.UniqueId id;
+    
+    protected SchemaGenerator.PrimitiveCart pc;
     
     java.util.List<AXIComponent> path = new ArrayList<AXIComponent>();
     
@@ -90,6 +93,7 @@ public abstract class DefaultSchemaGenerator extends SchemaGenerator {
     public DefaultSchemaGenerator(SchemaGenerator.Mode mode) {
         super(mode);
         id = createUniqueId();
+        pc = createPrimitiveCart();
         fixNamesMap = new TreeMap<Integer, java.util.List<Object>>();
         createGlobals = new ArrayList<SchemaComponent>();
         refMap = new HashMap<SchemaComponent, SchemaComponent>();
@@ -130,7 +134,7 @@ public abstract class DefaultSchemaGenerator extends SchemaGenerator {
     }
     
     public void visit(Datatype d) {
-        SchemaGeneratorUtil.createInlineSimpleType(d, sm, this.datatypeParent);
+        SchemaGeneratorUtil.createInlineSimpleType(d, sm, this.datatypeParent, pc);
     }
     
     public void visit(ContentModel cm) {
@@ -396,8 +400,19 @@ public abstract class DefaultSchemaGenerator extends SchemaGenerator {
         int index = -1;
         if(getMode() != SchemaGenerator.Mode.TRANSFORM)
             index = attribute.getIndex();
-        LocalAttribute attr =
-                SchemaGeneratorUtil.createLocalAttribute(sm, attribute.getName(),
+        LocalAttribute attr = null;
+        if(scParent instanceof ComplexType && 
+                ((ComplexType)scParent).getDefinition() instanceof SimpleContent) {
+            SimpleContentDefinition def = ((SimpleContent)((ComplexType)scParent).
+                    getDefinition()).getLocalDefinition();
+            if(def instanceof SimpleContentRestriction)
+                attr = SchemaGeneratorUtil.createLocalAttribute(sm, attribute.getName(),
+                    (SimpleContentRestriction)def, index);
+            else if(def instanceof Extension)
+                attr = SchemaGeneratorUtil.createLocalAttribute(sm, attribute.getName(),
+                    (Extension)def, index);
+        } else
+            attr = SchemaGeneratorUtil.createLocalAttribute(sm, attribute.getName(),
                 scParent, index);
         assert attr != null;
         
@@ -432,11 +447,11 @@ public abstract class DefaultSchemaGenerator extends SchemaGenerator {
     
     public void createGlobalSimpleType(
             final Datatype d, final SchemaModel sm, final SchemaComponent sc,
-            final SchemaGenerator.UniqueId id) {
+            final SchemaGenerator.UniqueId id, SchemaGenerator.PrimitiveCart pc) {
         if(d != null) {
             NamedComponentReference<GlobalSimpleType> ref =null;
             if(SchemaGeneratorUtil.isPrimitiveType(d)) {
-                ref = SchemaGeneratorUtil.createPrimitiveType(d, sc);
+                ref = SchemaGeneratorUtil.createPrimitiveType(d, sc, pc);
             } else {
                 GlobalSimpleType gst;
                 gst = SchemaGeneratorUtil.createGlobalSimpleType(sm);
@@ -449,9 +464,9 @@ public abstract class DefaultSchemaGenerator extends SchemaGenerator {
                 sgh.addSimpleType(gst, -1);
                 if(d instanceof CustomDatatype)
                     SchemaGeneratorUtil.populateSimpleType(
-                            ((CustomDatatype)d).getBase(), sm, gst);
+                            ((CustomDatatype)d).getBase(), sm, gst, pc);
                 else
-                    SchemaGeneratorUtil.populateSimpleType(d, sm, gst);
+                    SchemaGeneratorUtil.populateSimpleType(d, sm, gst, pc);
                 ref = sc.createReferenceTo(gst, GlobalSimpleType.class);
             }
             SchemaGeneratorUtil.setSimpleType(sc, ref);
@@ -555,6 +570,36 @@ public abstract class DefaultSchemaGenerator extends SchemaGenerator {
         };
     }
     
+    private PrimitiveCart createPrimitiveCart() {
+        return new PrimitiveCart() {
+            private Map<SchemaComponent, Datatype> pc = new HashMap<SchemaComponent, Datatype>();
+            private Map<String, GlobalSimpleType> ptypes = new HashMap<String, GlobalSimpleType>();
+            private GlobalSimpleType def = null;
+            public void add(Datatype d, SchemaComponent referer) {
+                pc.put(referer, d);
+            }
+            public Set<Map.Entry<SchemaComponent, Datatype>> getEntries() {
+                return pc.entrySet();
+            }
+            public GlobalSimpleType getDefaultPrimitive() {
+                if(def==null) {
+                    def = getPrimitiveType("string");//NoI18n                    
+                }
+                return def;
+            }
+            public GlobalSimpleType getPrimitiveType(String typeName) {
+                if(ptypes.isEmpty()) {
+                    SchemaModel primitiveModel = SchemaModelFactory.getDefault().getPrimitiveTypesModel();
+                    Collection<GlobalSimpleType> primitives = primitiveModel.getSchema().getSimpleTypes();
+                    for(GlobalSimpleType ptype: primitives){
+                        ptypes.put(ptype.getName(), ptype);
+                    }
+                }
+                return ptypes.get(typeName);
+            }            
+        };
+    }
+    
     protected void addRef(SchemaComponent referer, SchemaComponent ref) {
         sgh.addRef(referer, ref);
     }
@@ -567,6 +612,20 @@ public abstract class DefaultSchemaGenerator extends SchemaGenerator {
         createGlobals.add(sc);
     }
     
+    private void fixPrimitiveTypes() {            
+        for(Map.Entry<SchemaComponent, Datatype> e: pc.getEntries()) {
+            Datatype d = (Datatype) e.getValue();
+            SchemaComponent referer = (SchemaComponent) e.getKey();
+            String typeName = d.getName();
+            if(d instanceof CustomDatatype)
+                typeName = ((CustomDatatype)d).getBase().getName();
+            GlobalSimpleType gst = pc.getPrimitiveType(typeName);
+            NamedComponentReference<GlobalSimpleType> ref = 
+                referer.createReferenceTo(gst, GlobalSimpleType.class);
+            SchemaGeneratorUtil.setSimpleType(referer, ref);
+        }
+    }
+        
     protected void clear() {
         path.clear();
         path = null;
@@ -641,9 +700,9 @@ public abstract class DefaultSchemaGenerator extends SchemaGenerator {
                     else if(type == SchemaUpdate.UpdateUnit.Type.CHILD_DELETED)
                         SchemaGeneratorUtil.removeSchemaComponent(source, u, sm);
                     else if(type == SchemaUpdate.UpdateUnit.Type.CHILD_MODIFIED)
-                        SchemaGeneratorUtil.modifySchemaComponent(source, u, sm);
+                        SchemaGeneratorUtil.modifySchemaComponent(source, u, sm, pc);
                 }
-//				addAllGlobals();
+//				addAllGlobals();             
             } finally {
                 clear();
                 sm.endTransaction();
@@ -901,9 +960,11 @@ public abstract class DefaultSchemaGenerator extends SchemaGenerator {
             addAllGlobals(schema, createGlobals);
 
             //fix global element names, make them unique           
-            fixGlobalElementNames();        
-        }
-        
+            fixGlobalElementNames();
+            
+            //fix primitive types
+            fixPrimitiveTypes();
+        }        
         
         //remove all previous global components
         private void removeAllGlobals(final Schema schema,

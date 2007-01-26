@@ -47,7 +47,7 @@ public class CorrelationPropertyImpl extends NamedExtensibilityElementBase imple
     }
     
     protected String getNamespaceURI() {
-        return BPELQName.BPWS_NS;
+        return BPELQName.VARPROP_NS;
     }
     
     public NamedComponentReference<GlobalType> getType() {

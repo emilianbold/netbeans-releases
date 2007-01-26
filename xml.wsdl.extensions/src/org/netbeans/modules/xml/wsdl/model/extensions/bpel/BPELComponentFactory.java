@@ -26,8 +26,11 @@
 
 package org.netbeans.modules.xml.wsdl.model.extensions.bpel;
 
+import javax.xml.namespace.QName;
+
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 
 /**
  *
@@ -71,7 +74,26 @@ public class BPELComponentFactory {
     }
     
     public Documentation createDocumentation(WSDLComponent context) {
-        return (Documentation) model.getFactory().create(context,
-                BPELQName.DOCUMENTATION.getQName());
+        QName qName = null;
+        if ( context instanceof AbstractDocumentComponent ) {
+            qName = ((AbstractDocumentComponent)context).getQName();
+        }
+        else {
+            throw new IllegalStateException("Couldn't create child " +   // NOI18N
+                    "documentation for unknown implementation parent");  // NOI18N
+        }
+        assert qName != null;
+        if ( BPELQName.VARPROP_NS.equals( qName.getNamespaceURI() )) {
+            return (Documentation) model.getFactory().create(context,
+                    BPELQName.DOCUMENTATION_VARPROP.getQName());
+        }
+        else if ( BPELQName.PLNK_NS.equals( qName.getNamespaceURI() )) {
+            return (Documentation) model.getFactory().create(context,
+                    BPELQName.DOCUMENTATION_PLNK.getQName());
+        }
+        else {
+            assert false;
+            return null;
+        }
     }
 }

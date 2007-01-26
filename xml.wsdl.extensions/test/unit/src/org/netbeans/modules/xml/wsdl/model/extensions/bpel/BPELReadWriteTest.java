@@ -2,16 +2,18 @@ package org.netbeans.modules.xml.wsdl.model.extensions.bpel;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import junit.framework.*;
+
+import junit.framework.TestCase;
+
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.visitor.FindSchemaComponentFromDOM;
-import org.netbeans.modules.xml.wsdl.model.Import;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Fault;
+import org.netbeans.modules.xml.wsdl.model.Import;
 import org.netbeans.modules.xml.wsdl.model.Input;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Output;
@@ -25,7 +27,6 @@ import org.netbeans.modules.xml.wsdl.model.extensions.Util;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.impl.PartnerLinkTypeImpl;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
 import org.netbeans.modules.xml.wsdl.model.visitor.FindWSDLComponent;
-import org.netbeans.modules.xml.xam.AbstractComponent;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
@@ -75,7 +76,7 @@ public class BPELReadWriteTest extends TestCase {
         PropertyAlias pa = pasl.get(2);
         assertEquals("PropertyAlias.property", d.getTargetNamespace(), pa.getPropertyName().getEffectiveNamespace());
         AbstractDocumentComponent ac = (AbstractDocumentComponent) pa;
-        assertEquals("property prefix", "bpws", ac.getPeer().getPrefix());
+        assertEquals("property prefix", BPELQName.VPROP_PREFIX, ac.getPeer().getPrefix());
         NamedComponentReference<CorrelationProperty> gr = pa.getPropertyName();
         assertEquals("PropertyAlias.propertyName", "tres:ItineraryRefId", gr.getRefString());
         NamedComponentReference<Message> msgRef = pa.getMessageType();
@@ -99,8 +100,8 @@ public class BPELReadWriteTest extends TestCase {
         PortType pt = d.getPortTypes().iterator().next();
         assertEquals("partnerLinkType.role1.portType", pt, ptRef.get());
         assertEquals("element prefix", "plnk", ((PartnerLinkTypeImpl)plt).getPeer().getPrefix());
-        assertNotNull("definitions.xmlns.plnk", ((AbstractDocumentComponent)d).getPrefixes().get("plnk"));
-        assertNotNull("definitions.xmlns.bpws", ((AbstractDocumentComponent)d).getPrefixes().get("bpws"));
+        assertNotNull("definitions.xmlns."+BPELQName.PLNK_PREFIX, ((AbstractDocumentComponent)d).getPrefixes().get(BPELQName.PLNK_PREFIX));
+        assertNotNull("definitions.xmlns."+BPELQName.VPROP_PREFIX, ((AbstractDocumentComponent)d).getPrefixes().get(BPELQName.VPROP_PREFIX));
     }
 
     private PropertyAlias addPropertyAlias(BPELComponentFactory fact, Definitions d, CorrelationProperty property, Message messageType) {

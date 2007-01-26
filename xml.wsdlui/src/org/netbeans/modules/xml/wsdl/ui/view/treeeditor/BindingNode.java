@@ -107,7 +107,7 @@ public class BindingNode extends WSDLExtensibilityElementNode {
         if (ee != null && ee.size() > 0) {
             Cookie cookie = getCookie(ExtensibilityElementCookie.class);
             if (cookie != null) {
-                getCookieSet().remove(cookie);
+                getLookupContents().remove(cookie);
             }
         }*/
     }
@@ -122,7 +122,7 @@ public class BindingNode extends WSDLExtensibilityElementNode {
         if (ee != null && ee.size() > 0) {
             Cookie cookie = getCookie(ExtensibilityElementCookie.class);
             if (cookie == null) {
-                getCookieSet().add(cookie);
+                getLookupContents().add(cookie);
             }
         }*/
     }

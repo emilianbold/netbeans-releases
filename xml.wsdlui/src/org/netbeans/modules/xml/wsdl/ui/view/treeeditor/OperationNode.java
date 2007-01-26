@@ -111,7 +111,7 @@ public abstract class OperationNode extends WSDLExtensibilityElementNode {
         
         this.mPropertyAdapter = new OperationPropertyAdapter();
         super.setNamedPropertyAdapter(this.mPropertyAdapter);
-        this.getCookieSet().add(new CreateBindingFromOperationCookie(mWSDLConstruct));
+        getLookupContents().add(new CreateBindingFromOperationCookie(mWSDLConstruct));
     }
     
     @Override

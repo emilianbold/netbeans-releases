@@ -25,4 +25,16 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 <project name="org.netbeans.modules.xml.wsdlui" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.modules.xml.wsdl.ui.</description>
     <import file="nbproject/build-impl.xml"/>
+    
+    <target name="release" depends="init">
+        <!--<ant dir="../external" target="unzip"/> -->
+        <mkdir dir="${cluster}/modules/ext/graph2"/>
+        <copy todir="${cluster}/modules/ext/graph2">
+            <fileset dir="external">
+                <include name="org-netbeans-api-visual.jar"/>
+                
+            </fileset>
+        </copy>
+    </target>
+    
 </project>

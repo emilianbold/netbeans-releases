@@ -2,7 +2,7 @@
 xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" 
 xmlns:xs="http://www.w3.org/2001/XMLSchema"  
 xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
-xmlns:plnk="http://schemas.xmlsoap.org/ws/2004/03/partner-link/" 
+xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype" 
 xmlns:tns="http://www.sun.com/javaone/05/TravelReservationService"
 xmlns:ares="http://www.sun.com/javaone/05/AirlineReservationService" 
 xmlns:hres="http://www.sun.com/javaone/05/HotelReservationService" 
@@ -10,7 +10,7 @@ xmlns:vres="http://www.sun.com/javaone/05/VehicleReservationService"
 xmlns:ota="http://www.opentravel.org/OTA/2003/05"  
 xmlns:tres="http://www.sun.com/javaone/05/TravelReservationService"  
 targetNamespace="http://www.sun.com/javaone/05/TravelReservationService"
-xmlns:bpws="http://schemas.xmlsoap.org/ws/2004/03/business-process/" >
+xmlns:vprop="http://docs.oasis-open.org/wsbpel/2.0/varprop" >
 
 	
 	<import namespace="http://www.sun.com/javaone/05/HotelReservationService" location="HotelReservationService.wsdl"/>
@@ -82,61 +82,61 @@ xmlns:bpws="http://schemas.xmlsoap.org/ws/2004/03/business-process/" >
 
 
 	   
-   <bpws:property name="ItineraryRefId" type="xs:string" /> 
+   <vprop:property name="ItineraryRefId" type="xs:string" /> 
 
 
-    <bpws:propertyAlias 
+    <vprop:propertyAlias 
       propertyName="tres:ItineraryRefId"
       messageType="tres:ItineraryIn"
       part="itinerary">
-      <bpws:query>/TravelItinerary/ItineraryRef/UniqueID</bpws:query>    
-    </bpws:propertyAlias>
+      <vprop:query>/TravelItinerary/ItineraryRef/UniqueID</vprop:query>    
+    </vprop:propertyAlias>
 
-   <bpws:propertyAlias 
+   <vprop:propertyAlias 
       propertyName="tres:ItineraryRefId"
       messageType="ares:AirlineReservedIn"
       part="itinerary">
-      <bpws:query>/TravelItinerary/ItineraryRef/UniqueID</bpws:query>    
-    </bpws:propertyAlias>
+      <vprop:query>/TravelItinerary/ItineraryRef/UniqueID</vprop:query>    
+    </vprop:propertyAlias>
      
 
 
-   <bpws:propertyAlias 
+   <vprop:propertyAlias 
       propertyName="tres:ItineraryRefId"
       messageType="ares:ReserveAirlineIn"
       part="itinerary">
-      <bpws:query>/TravelItinerary/ItineraryRef/UniqueID</bpws:query>    
-    </bpws:propertyAlias>
+      <vprop:query>/TravelItinerary/ItineraryRef/UniqueID</vprop:query>    
+    </vprop:propertyAlias>
 
-   <bpws:propertyAlias 
+   <vprop:propertyAlias 
       propertyName="tres:ItineraryRefId"
       messageType="vres:VehicleReservedIn"
       part="itinerary">
-      <bpws:query>/TravelItinerary/ItineraryRef/UniqueID</bpws:query>    
-    </bpws:propertyAlias>
+      <vprop:query>/TravelItinerary/ItineraryRef/UniqueID</vprop:query>    
+    </vprop:propertyAlias>
 
 
-   <bpws:propertyAlias 
+   <vprop:propertyAlias 
       propertyName="tres:ItineraryRefId"
       messageType="vres:ReserveVehicleIn"
       part="itinerary">
-      <bpws:query>/TravelItinerary/ItineraryRef/UniqueID</bpws:query>    
-    </bpws:propertyAlias>
+      <vprop:query>/TravelItinerary/ItineraryRef/UniqueID</vprop:query>    
+    </vprop:propertyAlias>
       
-   <bpws:propertyAlias 
+   <vprop:propertyAlias 
       propertyName="tres:ItineraryRefId"
       messageType="hres:HotelReservedIn"
       part="itinerary">
-      <bpws:query>/TravelItinerary/ItineraryRef/UniqueID</bpws:query>    
-    </bpws:propertyAlias>
+      <vprop:query>/TravelItinerary/ItineraryRef/UniqueID</vprop:query>    
+    </vprop:propertyAlias>
 
 
-   <bpws:propertyAlias 
+   <vprop:propertyAlias 
       propertyName="tres:ItineraryRefId"
       messageType="hres:ReserveHotelIn"
       part="itinerary">
-      <bpws:query>/TravelItinerary/ItineraryRef/UniqueID</bpws:query>    
-    </bpws:propertyAlias>   
+      <vprop:query>/TravelItinerary/ItineraryRef/UniqueID</vprop:query>    
+    </vprop:propertyAlias>   
 	
 	
     <plnk:partnerLinkType name="TravelReservationPartnerLinkType">

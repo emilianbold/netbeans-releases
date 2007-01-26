@@ -21,18 +21,12 @@ package org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype;
 
 import java.io.IOException;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
-import org.netbeans.modules.xml.wsdl.model.Import;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.UIUtilities;
-import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
-import org.netbeans.modules.xml.wsdl.ui.view.ImportWSDLCustomizer;
-import org.netbeans.modules.xml.xam.AbstractComponent;
-import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
+import org.netbeans.modules.xml.wsdl.ui.view.ImportWSDLCreator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.NewType;
 
@@ -66,30 +60,19 @@ public class ImportWSDLNewType extends NewType {
         WSDLModel model = component.getModel();
         Definitions def = model.getDefinitions();
         model.startTransaction();
-        Import imp = model.getFactory().createImport();
 
-        // Customize the new import.
+        // Create the new import(s).
         // Note this happens during the transaction, which is unforunate
         // but supposedly unavoidable.
-        ImportWSDLCustomizer customizer = new ImportWSDLCustomizer(imp);
+        ImportWSDLCreator customizer = new ImportWSDLCreator(def);
         DialogDescriptor descriptor = UIUtilities.getCustomizerDialog(
                 customizer, NbBundle.getMessage(ImportWSDLNewType.class,
                 "LBL_NewType_ImportCustomizer"), true);
         descriptor.setValid(false);
         Object result = DialogDisplayer.getDefault().notify(descriptor);
 
-        // If okay, add the import to the model.
-        if (result == DialogDescriptor.OK_OPTION) {
-            def.addImport(imp);
-            //Check whether namespace was added. Temporary fix till import dialog 
-            //mandates the prefix.
-            if (Utility.getNamespacePrefix(imp.getNamespace(), model) == null) {
-                //create a prefix for this namespace
-                String prefix = NameGenerator.getInstance().generateNamespacePrefix(null, model);
-                ((AbstractDocumentComponent) def).addPrefix(prefix, imp.getNamespace());
-            }
-        }
+        // Creator will have created the import(s) by now.
         // In either case, end the transaction.
-            model.endTransaction();
+        model.endTransaction();
     }
 }

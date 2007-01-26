@@ -26,6 +26,7 @@ import java.util.Collection;
 import javax.xml.namespace.QName;
 
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
 import org.netbeans.modules.xml.wsdl.ui.spi.ExtensibilityElementConfigurator;
 import org.openide.nodes.Node.Property;
 import org.openide.util.NbBundle;
@@ -33,8 +34,8 @@ import org.openide.util.NbBundle;
 public class PartnerLinkTypeConfigurator extends
         ExtensibilityElementConfigurator {
 
-    private static QName myQName = new QName("http://schemas.xmlsoap.org/ws/2004/03/partner-link/", "partnerLinkType");
-    private static QName documentationQName = new QName("http://schemas.xmlsoap.org/ws/2004/03/partner-link/", "documentation");
+    private static QName myQName = BPELQName.PARTNER_LINK_TYPE.getQName();
+    private static QName documentationQName = BPELQName.DOCUMENTATION_PLNK.getQName();
     
     private static QName[] supportedQNames = {myQName, documentationQName};
 

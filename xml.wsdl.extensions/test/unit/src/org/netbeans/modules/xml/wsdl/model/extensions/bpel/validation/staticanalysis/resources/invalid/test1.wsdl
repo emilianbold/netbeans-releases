@@ -116,7 +116,7 @@
             <soap:address location="http://localhost:12100/service/Test1"/>
         </port>
     </service>
-    <plnk:partnerLinkType xmlns:plnk="http://schemas.xmlsoap.org/ws/2004/03/partner-link/" name="Test1ServiceLinkType">
+    <plnk:partnerLinkType xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype" name="Test1ServiceLinkType">
 	<plnk:role name="Test1ServerRole" portType="Test1PortType"/>
    </plnk:partnerLinkType>
 </definitions>

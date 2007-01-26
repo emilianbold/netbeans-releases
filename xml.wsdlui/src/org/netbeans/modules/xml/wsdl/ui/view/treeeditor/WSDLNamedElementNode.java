@@ -147,7 +147,9 @@ public abstract class WSDLNamedElementNode extends WSDLElementContainerNode {
         if (mPropertyAdapter != null) {
             nameAttrValue = mPropertyAdapter.getName();
         } else {
-            nameAttrValue = wsdlComponent.getAttribute(new StringAttribute(nameAttributeName)); 
+        	if(nameAttributeName != null) {
+        		nameAttrValue = wsdlComponent.getAttribute(new StringAttribute(nameAttributeName));
+        	}
         }
         
         if(nameAttrValue != null && !nameAttrValue.equals(nodeName)) {

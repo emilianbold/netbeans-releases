@@ -28,6 +28,7 @@ import java.util.List;
 
 import javax.swing.ActionMap;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
 
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
@@ -161,14 +162,8 @@ public class TreeEditorView extends JPanel
      * @return  the parent TopComponent.
      */
     private TopComponent findParentTopComponent() {
-        java.awt.Component parent = getParent();
-        while (parent!=null) {
-            if (parent instanceof TopComponent) {
-                return (TopComponent) parent;
-            }
-            parent = parent.getParent();
-        }
-        return null;
+        return (TopComponent) SwingUtilities.getAncestorOfClass(
+                TopComponent.class, this);
     }
     
     public void showComponent(WSDLComponent sc) {

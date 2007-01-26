@@ -20,7 +20,6 @@
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor.extension.bpel;
 
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -28,6 +27,7 @@ import javax.xml.namespace.QName;
 
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
 import org.netbeans.modules.xml.wsdl.ui.api.property.ElementOrType;
 import org.netbeans.modules.xml.wsdl.ui.api.property.ElementOrTypeAttributeProperty;
 import org.netbeans.modules.xml.wsdl.ui.api.property.ElementOrTypeProvider;
@@ -41,7 +41,7 @@ import org.openide.util.NbBundle;
 public class PropertyConfigurator extends
         ExtensibilityElementConfigurator {
 
-    private static QName myQName = new QName("http://schemas.xmlsoap.org/ws/2004/03/business-process/", "property");//NOI18N
+    private static QName myQName = BPELQName.PROPERTY.getQName();
     
     private static QName[] supportedQNames = {myQName};
 

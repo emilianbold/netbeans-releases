@@ -39,6 +39,7 @@ import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.Import;
+import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
@@ -46,6 +47,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
 import org.netbeans.modules.xml.wsdl.ui.actions.schema.ExtensibilityElementCreatorVisitor;
 import org.netbeans.modules.xml.wsdl.ui.schema.visitor.OptionalAttributeFinderVisitor;
+import org.netbeans.modules.xml.xam.AbstractComponent;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.openide.ErrorManager;
 import org.openide.explorer.view.TreeView;
@@ -359,5 +361,39 @@ public class Utility {
             }
         }
         return specialList;
+    }
+    
+    /**
+     * This method finds the absolute index in the definitions where the component needs to be inserted, 
+     * such that the component is at given index with respect to its kind.
+     * 
+     * For example, There are 5 messages, and one needs to insert another at index 4. Then this method will insert
+     * it at some index on Definitions, which will make it look like the 4th Message.
+     * 
+     * it doesnt call startTransaction or endTransaction, so its the responsibility of the caller to do it.
+     * 
+     * @param index
+     * @param model
+     * @param compToInsert
+     * @param propertyName
+     */
+    public static void insertIntoDefinitionsAtIndex(int index, WSDLModel model, WSDLComponent compToInsert, String propertyName) {
+        assert model.isIntransaction() : "Need to call startTransaction on this model, before calling this method";
+        //find index among all definitions elements. 
+        //for inserting at index = 5, find index of the 4th PLT and insert after this index
+        int defIndex = -1;
+        int indexOfPreviousPLT = index - 1;
+        List<WSDLComponent> comps = model.getDefinitions().getChildren();
+        for (int i = 0; i < comps.size(); i++) {
+            WSDLComponent comp = comps.get(i);
+            if (compToInsert.getClass().isAssignableFrom(comp.getClass())) {
+                if (indexOfPreviousPLT > defIndex) {
+                    defIndex ++;
+                } else {
+                    ((AbstractComponent<WSDLComponent>) model.getDefinitions()).insertAtIndex(propertyName, compToInsert, i);
+                    break;
+                }
+            }
+        }
     }
 }

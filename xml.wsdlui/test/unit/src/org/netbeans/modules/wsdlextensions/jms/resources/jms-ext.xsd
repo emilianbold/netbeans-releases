@@ -1,0 +1,511 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:jms="http://schemas.sun.com/jbi/wsdl-extensions/jms/" targetNamespace="http://schemas.sun.com/jbi/wsdl-extensions/jms/">
+	<xs:import namespace="http://schemas.xmlsoap.org/wsdl/" schemaLocation="http://schemas.xmlsoap.org/wsdl/"/>
+
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+    <!-- Start complex type defintions to define JMS binding extensibility -->
+    <!-- elements                                                          -->
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+	<!-- JMS protocol "binding" definition -->
+	<xs:element name="binding" type="jms:tBinding">
+		<xs:annotation>
+                    <xs:appinfo>
+                        
+                    </xs:appinfo>
+			<xs:documentation>
+	      	"binding" indicates a JMS protocol based binding.
+	      </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="tBinding">
+		<xs:complexContent>
+			<xs:extension base="wsdl:tExtensibilityElement"/>
+			<!-- could add more attributes to the binding -->
+		</xs:complexContent>
+	</xs:complexType>
+
+	<!-- JMS protocol "address" definition -->
+	<xs:element name="address" type="jms:tAddress">
+		<xs:annotation>
+			<xs:documentation>
+	      	"address" indicates a JMS protocol based service address.
+	      </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="tAddress">
+		<xs:complexContent>
+			<xs:extension base="wsdl:tExtensibilityElement">
+				<xs:attribute name="connectionURL" type="xs:string" use="required">
+					<xs:annotation>
+                        <xs:documentation>The connectivity information to connect to a JMS server. Format is protocol://server:port?key1=value1&amp;key2=value2</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="username" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>The username to use to connect to the JMS server</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="password" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>The password to use to connect to the JMS server</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>        
+
+	<!-- JMS protocol "operation" definition -->
+	<xs:element name="operation" type="jms:tOperation">
+		<xs:annotation>
+			<xs:documentation>
+	      	"operation" indicates a JMS protocol based operation.
+	      </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="tOperation">
+		<xs:complexContent>
+			<xs:extension base="wsdl:tExtensibilityElement">
+                                <!-- common to both consumer and provider -->
+				<xs:sequence>
+					<xs:element ref="jms:options" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="destination" type="xs:string" use="required">
+					<xs:annotation>
+						<xs:documentation>Defines the destination where messages are sent or received</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="destinationType" type="jms:destinationTypes" use="required">
+					<xs:annotation>
+						<xs:documentation>Defines the type (domain) of the destination where message are sent or received</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="transaction" type="jms:transactionSupportTypes" use="optional" default="NoTransaction">
+					<xs:annotation>
+						<xs:documentation>Defines the transaction type for the JMS protocol based operation</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+                                <!-- only applies to provider -->
+				<xs:attribute name="deliveryMode" type="jms:deliveryModes" use="optional">
+					<xs:annotation>
+						<xs:documentation>Sets the message delivery mode to use when sending a message</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="timeToLive" type="xs:unsignedLong" use="optional">
+					<xs:annotation>
+						<xs:documentation>Time in milliseconds from its dispatch time that a produced message, from the message producer, should be retained by the message system</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="priority" type="jms:priorityType" use="optional">
+					<xs:annotation>
+						<xs:documentation>Sets the message priority level for messages sent; must be a value between 0 and 9; 0 is lowest, 9 is highest; default is 4</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="disableMessageID" type="xs:boolean" use="optional">
+					<xs:annotation>
+						<xs:documentation>Enables or disables the auto-generation of message IDs on messages sent</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="disableMessageTimeStamp" type="xs:boolean" use="optional">
+					<xs:annotation>
+						<xs:documentation>Enables or disables the auto-generation of timestamps on messages sent</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="timeout" type="xs:long" use="optional">
+					<xs:annotation>
+						<xs:documentation>Sets the timeout waiting for a reply message; applies only if the operation is an In-Out message exchange pattern</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+                                <!-- only applies to consumer -->
+				<xs:attribute name="clientID" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>Sets the unique client ID; if using a durable subscriber and this is not set then the durableName will be used as the clientID</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="messageSelector" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>Defines the JMS message selector to use for message consumption</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="subscriptionDurability" type="jms:subscriptionDurabilityTypes" use="optional">
+					<xs:annotation>
+						<xs:documentation>If true, and the destination is a Topic, creates a durable subscriber on that Topic</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="subscriptionName" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>Sets the durable subscription name; used only if using a durable subscriber (destination is a Topic and subscriptionDurability is set to true)</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="maxConcurrentConsumers" type="xs:positiveInteger" use="optional">
+					<xs:annotation>
+						<xs:documentation>If defined with a positive integer and the destination type is Queue, this element specifies the maximum number of concurrent receivers that can process messages</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="batchSize" type="xs:positiveInteger" use="optional">
+					<xs:annotation>
+						<xs:documentation>If defined with a positive integer, this attribute specifies that the messages received will be batched. The actual number of messages in the batch could be less than or equal to the specified size.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="redeliveryHandling" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>
+If defined, this attribute specifies what actions to take in the event that an error occurred in processing the JMS message received from the JMS destination (for example, putting the "poisoned" message in a dead letter queue). 
+   format := entry[; entry]*
+   entry := idx ":" action
+   idx := number (denotes the n-th time a msg was seen)
+   action := number (denotes delay in ms) | "delete" | "move"(args)
+   move := "queue"|"topic" | "same" ":" destname
+   destname :=  any string, may include "$" which will be replaced with the original destination name.
+
+Example:
+    5:1000; 10:5000; 50:move(queue:mydlq)
+
+This causes no delay up to the 5th delivery; a 1000 ms delay is invoked when the message is seen the 5th, 6th, 7th, 8th, and 9th time. A 5 second delay is invoked when the msg is invoked the 10th, 11th, ..., 49th time. When the msg is seen the 50th time the msg is moved to a queue with the name "mydlq".
+                                                </xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+        <!-- JMS protocol input and output definition -->
+	<xs:element name="message" type="jms:tMessage">
+		<xs:annotation>
+			<xs:documentation>
+	      	"message" indicates a JMS protocol based JMS message to/from WSDL message mapping
+	      </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="tMessage">
+		<xs:complexContent>
+			<xs:extension base="wsdl:tExtensibilityElement">
+                                <!-- common to both producer and consumer -->
+				<xs:sequence>
+					<xs:element ref="jms:properties"  minOccurs="0"/>
+					<xs:element ref="jms:mapmessage"  minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="messageType" type="jms:messageTypes" use="required">
+					<xs:annotation>
+						<xs:documentation>The type of JMS messages to be receiving</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>                                
+				<xs:attribute name="textPart" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>When messageType is TextMessage, this attribute is used to reference the message part where the TextMessage text payload will be retrieved or stored</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>                                
+
+                                <!-- reserved for later use with encoder library -->
+
+				<xs:attribute name="use" type="jms:useTypes" use="optional">
+					<xs:annotation>
+						<xs:documentation>When messageType is TextMessage, this attribute defines the use type which affects how the text message is interpreted, i.e., literal</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="encodingStyle" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>When use is encoded, this attribute defines the encoding style</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+
+				<xs:attribute name="correlationIdPart" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>This attribute is used to reference the message part where the JMSCorrelationID header value will be retrieved or stored</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="deliveryModePart" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>This attribute is used to reference the message part where the JMSDeliveryMode header value will be retrieved or stored</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="priorityPart" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>This attribute is used to reference the message part where the JMSPriority header value will be retrieved or stored</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="typePart" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>This attribute is used to reference the message part where the JMSType header value will be retrieved or stored</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>                                
+                                <!-- only applies to consumer -->
+				<xs:attribute name="messageIDPart" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>This attribute is used to reference the message part where the JMSMessageID header value will be stored</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="redeliveredPart" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>This attribute is used to reference the message part where the JMSRedelivered header value will be stored</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="timestampPart" type="xs:string" use="optional">
+					<xs:annotation>
+						<xs:documentation>This attribute is used to reference the message part where the JMSTimestamp header value will be stored</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>	
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+                
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+    <!-- Start complex type defintions to define elements referenced by    -->
+    <!-- JMS binding definitions                                           -->
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+            
+	<!-- JMS Message user properties definition -->
+	<xs:element name="properties" type="jms:tProperties">
+		<xs:annotation>
+			<xs:documentation>
+	      	"properties" defines the JMS Message user properties to WSDL Message part(s) mapping
+	      </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="tProperties">
+		<xs:complexContent>
+			<xs:extension base="wsdl:tExtensibilityElement">
+				<xs:sequence>
+					<xs:element ref="jms:property" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="property" type="jms:tProperty">
+		<xs:annotation>
+			<xs:documentation>
+	      	"property" defines a single JMS Message user property to a WSDL Message part mapping
+	      </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="tProperty">
+		<xs:complexContent>
+			<xs:extension base="wsdl:tExtensibilityElement">
+				<xs:attribute name="name" type="xs:string" use="required">
+					<xs:annotation>
+						<xs:documentation>The name of the JMS property to which the message part is mapped</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="part" type="xs:string" use="required">
+					<xs:annotation>
+						<xs:documentation>The name of the message part to which the JMS property is mapped</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="type" type="jms:propertyTypes" use="required">
+					<xs:annotation>
+						<xs:documentation>The type of the JMS property</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+        
+	<!-- JMS MapMessage definition for MapMessage to Message part(s) mapping -->
+	<xs:element name="mapmessage" type="jms:tMapParts">
+		<xs:annotation>
+			<xs:documentation>
+	      	"mapmessageparts" defines the JMS MapMessage entry(ies) to the WSDL Message part(s) mapping
+	      </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="tMapParts">
+		<xs:complexContent>
+			<xs:extension base="wsdl:tExtensibilityElement">
+				<xs:sequence>
+					<xs:element ref="jms:mappart" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="mappart" type="jms:tMapPart">
+		<xs:annotation>
+			<xs:documentation>
+	      	"mappart" defines a single JMS MapMessage entry to a WSDL Message part mapping
+	      </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="tMapPart">
+		<xs:complexContent>
+			<xs:extension base="wsdl:tExtensibilityElement">
+				<xs:attribute name="name" type="xs:string" use="required">
+					<xs:annotation>
+						<xs:documentation>The name of the MapMessage object</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>				
+				<xs:attribute name="part" type="xs:string" use="required">
+					<xs:annotation>
+						<xs:documentation>The name of the message part the MapMessage object is mapped to</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="type" type="jms:javaPrimitiveTypes" use="required">
+					<xs:annotation>
+						<xs:documentation>The Java type of the MapMessage object value</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>				
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<!-- Additional "connection" related usage options -->
+	<xs:element name="options" type="jms:tOptions">
+		<xs:annotation>
+			<xs:documentation>
+	      	"usageOptions" defines additonal connection related configuration option(s)
+	      </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="tOptions">
+		<xs:complexContent>
+			<xs:extension base="wsdl:tExtensibilityElement">
+				<xs:sequence>
+					<xs:element ref="jms:option" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:element name="option" type="jms:tOption">
+		<xs:annotation>
+			<xs:documentation>
+	      	"usageOption" defines a single additonal connection related usage option
+	      </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="tOption">
+		<xs:complexContent>
+			<xs:extension base="wsdl:tExtensibilityElement">
+				<xs:attribute name="name" type="xs:string" use="required">
+					<xs:annotation>
+						<xs:documentation>The name of the option</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="value" type="xs:string" use="required">
+					<xs:annotation>
+						<xs:documentation>The value of the option</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+    <!-- Start simple type defintions to define type enumerations          -->
+    <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+    <!-- Transactional support types -->
+	<xs:simpleType name="transactionSupportTypes">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="NoTransaction"/>
+			<xs:enumeration value="XATransaction"/>
+		</xs:restriction>
+	</xs:simpleType>	
+
+    <!-- Message delivery priority levels -->
+	<xs:simpleType name="priorityType">
+		<xs:restriction base="xs:int">
+			<xs:enumeration value="4"/>
+			<xs:enumeration value="0"/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+			<xs:enumeration value="3"/>
+			<xs:enumeration value="4"/>
+			<xs:enumeration value="5"/>
+			<xs:enumeration value="6"/>
+			<xs:enumeration value="7"/>
+			<xs:enumeration value="8"/>
+			<xs:enumeration value="9"/>
+		</xs:restriction>
+	</xs:simpleType>	
+
+	<!-- Message delivery modes -->
+	<xs:simpleType name="deliveryModes">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="NON_PERSISTENT"/>
+			<xs:enumeration value="PERSISTENT"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+	<!-- Message receiver acknowledgement modes -->
+	<xs:simpleType name="acknowledgeModes">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="AUTO_ACKNOWLEDGE"/>
+			<!--
+			<xs:enumeration value="CLIENT_ACKNOWLEDGE"/>
+			<xs:enumeration value="DUPS_OK_ACKNOWLEGE"/>
+			-->
+		</xs:restriction>
+	</xs:simpleType>
+
+    <!-- Message types -->
+	<xs:simpleType name="messageTypes">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="TextMessage"/>
+			<xs:enumeration value="MapMessage"/>
+			<!-- ToDo
+			<xs:enumeration value="StreamMessage"/>
+			<xs:enumeration value="BytesMessage"/>
+			-->	
+		</xs:restriction>
+	</xs:simpleType>
+
+    <!-- Destination types -->
+	<xs:simpleType name="destinationTypes">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Topic"/>
+			<xs:enumeration value="Queue"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+    <!-- Subscription Durability types -->
+	<xs:simpleType name="subscriptionDurabilityTypes">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="NonDurable"/>
+			<xs:enumeration value="Durable"/>
+		</xs:restriction>
+	</xs:simpleType>
+    
+    <!-- Use types -->
+	<xs:simpleType name="useTypes">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="literal"/>
+			<xs:enumeration value="encoded"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+
+    <!-- Message property types -->
+	<xs:simpleType name="propertyTypes">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="boolean"/>
+			<!--
+			<xs:enumeration value="byte"/>
+			-->
+			<xs:enumeration value="short"/>
+			<xs:enumeration value="int"/>
+			<xs:enumeration value="long"/>
+			<xs:enumeration value="float"/>
+			<xs:enumeration value="double"/>
+			<xs:enumeration value="string"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+
+    <!-- Java primitive types -->
+	<xs:simpleType name="javaPrimitiveTypes">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="boolean"/>
+			<!--
+			<xs:enumeration value="byte"/>
+			<xs:enumeration value="bytes"/>
+			-->
+			<xs:enumeration value="char"/>
+			<xs:enumeration value="double"/>
+			<xs:enumeration value="float"/>
+			<xs:enumeration value="int"/>
+			<xs:enumeration value="long"/>
+			<xs:enumeration value="short"/>
+			<xs:enumeration value="string"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+</xs:schema>

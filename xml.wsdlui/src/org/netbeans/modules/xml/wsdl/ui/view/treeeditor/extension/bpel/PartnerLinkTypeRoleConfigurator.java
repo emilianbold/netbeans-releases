@@ -27,6 +27,7 @@ import javax.xml.namespace.QName;
 
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.PortType;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
 import org.netbeans.modules.xml.wsdl.ui.api.property.ExtensibilityElementPropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.api.property.PortTypeAttributeProperty;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
@@ -39,7 +40,7 @@ import org.openide.util.NbBundle;
 public class PartnerLinkTypeRoleConfigurator extends
         ExtensibilityElementConfigurator {
     
-    private static QName myQName = new QName("http://schemas.xmlsoap.org/ws/2004/03/partner-link/", "role");
+    private static QName myQName = BPELQName.ROLE.getQName();
     
     private static QName[] supportedQNames = {myQName};
 

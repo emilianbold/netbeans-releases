@@ -228,12 +228,13 @@ public final class ElementImpl extends Element {
         if(!Util.canSetType(oldValue, newValue))
             return;
         
-        if(canVisitChildren())
-            updateChildren(oldValue, newValue);
-        
+        updateChildren(oldValue, newValue);        
         this.axiType = newValue;        
         firePropertyChangeEvent(PROP_TYPE, oldValue, newValue);
         setTypeSchemaComponent(getSchemaType(newValue));
+        if(newValue instanceof ContentModel) {
+            ((ContentModel)newValue).addListener(this);
+        }
     }
 
     private void setElementAsType(final AXIType newValue) {
@@ -261,7 +262,7 @@ public final class ElementImpl extends Element {
         }
         
         //populate children from the element's type
-        SchemaComponent type = Util.getSchemaType(getPeer());
+        SchemaComponent type = Util.getSchemaType((AXIModelImpl)getModel(), getPeer());
         setTypeSchemaComponent(type);
         
         if(type == null || type instanceof SimpleType)

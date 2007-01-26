@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -25,7 +25,6 @@ import org.openide.nodes.Node;
 /**
  * GetComponentCookie returns referenced xam component. 
  * 
- * 
  * @author Ajit Bhate
  */
 public interface GetComponentCookie extends Node.Cookie {
@@ -33,7 +32,15 @@ public interface GetComponentCookie extends Node.Cookie {
     /**
      * Returns referenced xam component.
      *
-	 * @return referenced xam component.
+     * @return referenced xam component.
      */
-    public Component getComponent();
+    Component getComponent();
+
+    /**
+     * Returns the type of the component, which depending on the model
+     * implementation, may not simply be the result of calling getClass().
+     *
+     * @return  component type.
+     */
+    Class<? extends Component> getComponentType();
 }

@@ -5,9 +5,11 @@
 <toc version="2.0">
 	<tocitem text="WSDL Editor">
 		<tocitem text="About the WSDL Editor" target="org.netbeans.modules.xml.wsdlui.about" />
-		<tocitem text="Working with WSDL Files">
-			<tocitem text="Creating a WSDL File" target="wsdlui_creating" />
-			<tocitem text="Views in the WSDL Editor" target="wsdlui_views" />
+		<tocitem text="Source View">
+			<tocitem text="About the Source View" target="wsdlui_source" />
+		</tocitem>
+		<tocitem text="WSDL View">
+			<tocitem text="About the WSDL View" target="wsdlui_views" />
 			<tocitem text="Configuring WSDL File Components" target="wsdlui_config" />
 			<tocitem text="Configuring WSDL Data Types" target="wsdlui_data" />
 			<tocitem text="Configuring WSDL Messages" target="wsdlui_messages" />
@@ -16,6 +18,15 @@
 			<tocitem text="Configuring WSDL Services" target="wsdlui_services" />
 			<tocitem text="Adding BPEL Extensibility Elements" target="wsdlui_prop" />
 			<tocitem text="Finding Usages of WSDL Components" target="wsdlui_wsdlview_showusages" />
+		</tocitem>
+		<tocitem text="Partner View">
+			<tocitem text="About the Partner View" target="wsdlui_partner" />
+			<tocitem text="Navigating in the Partner View" target="wsdlui_partner_nav" />
+			<tocitem text="Configuring Partner Link Types Using the Partner View" target="wsdlui_partner_types" />
+			<tocitem text="Configuring Messages Using the Partner View" target="wsdlui_partner_messages" />
+		</tocitem>
+		<tocitem text="Working with WSDL Files">
+			<tocitem text="Creating a WSDL File" target="wsdlui_creating" />
 		</tocitem>
 	</tocitem>
 </toc>

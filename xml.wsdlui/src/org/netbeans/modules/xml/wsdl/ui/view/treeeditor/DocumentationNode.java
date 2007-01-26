@@ -85,7 +85,7 @@ public class DocumentationNode extends WSDLElementNode {
     public DocumentationNode(Documentation wsdlConstruct) {
         super(Children.LEAF, wsdlConstruct);
         mWSDLConstruct = wsdlConstruct;
-        this.setDisplayName("documentation");
+        this.setDisplayName(NbBundle.getMessage(TypesNode.class, "DOCUMENTATION_NODE_NAME"));
         
         this.mPropertyAdapter = new DocumentationPropertyAdapter();
     }

@@ -16,42 +16,40 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/*
- * CompletionQuery.java
- *
- * Created on June 8, 2006, 9:54 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.xml.schema.completion;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.xml.schema.completion.util.CatalogModelHelper;
-import org.netbeans.modules.xml.schema.completion.util.CompletionQueryHelper;
+import org.netbeans.modules.xml.axi.AXIModel;
+import org.netbeans.modules.xml.axi.AXIModelFactory;
+import org.netbeans.modules.xml.axi.Element;
+import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
+import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider;
+import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.CompletionModel;
+import org.netbeans.modules.xml.schema.completion.util.CompletionContextImpl;
+import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Samaresh (Samaresh.Panda@Sun.Com)
  */
 public class CompletionQuery extends AsyncCompletionQuery {
-    
-    protected JTextComponent component;
-    protected CatalogModelHelper helper;
-    
+        
     /**
      * Creates a new instance of CompletionQuery
      */
-    CompletionQuery(CatalogModelHelper helper) {
-        this.helper = helper;
+    CompletionQuery(FileObject primaryFile) {
+        this.primaryFile = primaryFile;
     }    
     
     protected void prepareQuery(JTextComponent component) {
@@ -60,15 +58,52 @@ public class CompletionQuery extends AsyncCompletionQuery {
     
     protected void query(CompletionResultSet resultSet,
             Document doc, int caretOffset) {
-        
+        //Step 1: create a context
         XMLSyntaxSupport support = (XMLSyntaxSupport)Utilities.
                 getDocument(component).getSyntaxSupport();
-        CompletionQueryHelper cqh = new CompletionQueryHelper(helper, support, caretOffset);
-        if(cqh.isSchemaBasedCompletion()) {
-            List<CompletionResultItem> items = cqh.getCompletionItems();
-            if(items != null) resultSet.addAllItems(items);
-        }
+        context = new CompletionContextImpl(primaryFile, support, caretOffset);
+        
+        //Step 2: Accumulate all models
+        if(!context.initModels()) {
+            resultSet.finish();
+            return;
+        }            
+        
+        //Step 3: Query
+        List<CompletionResultItem> items = getCompletionItems();
+        if(items != null) resultSet.addAllItems(items);
         resultSet.finish();
     }
     
+    private List<CompletionResultItem> getCompletionItems() {
+        List<CompletionResultItem> completionItems = null;
+        
+        switch (context.getCompletionType()) {
+            case COMPLETION_TYPE_ELEMENT:
+                completionItems = CompletionUtil.getElements(context);
+                break;
+                
+            case COMPLETION_TYPE_ATTRIBUTE:
+                completionItems = CompletionUtil.getAttributes(context);
+                break;
+            
+            case COMPLETION_TYPE_VALUE:
+                break;            
+            
+            case COMPLETION_TYPE_ENTITY:
+                break;
+            
+            case COMPLETION_TYPE_NOTATION:
+                break;
+                
+            default:
+                break;
+        }
+        
+        return completionItems;
+    }
+            
+    private JTextComponent component;
+    private FileObject primaryFile;
+    private CompletionContextImpl context;
 }

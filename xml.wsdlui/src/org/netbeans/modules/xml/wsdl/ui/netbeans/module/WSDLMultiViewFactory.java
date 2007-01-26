@@ -38,10 +38,11 @@ public class WSDLMultiViewFactory {
     }
     
     public static CloneableTopComponent createMultiView(WSDLDataObject wsdlDataObject) {
-        MultiViewDescription views[] = new MultiViewDescription[2];
+        MultiViewDescription views[] = new MultiViewDescription[3];
         
         views[0] = getWSDLSourceMultiviewDesc(wsdlDataObject);
         views[1] = getWSDLTreeViewMultiViewDesc(wsdlDataObject);
+        views[2] = getWSDLDesignMultiviewDesc(wsdlDataObject);
         
         CloneableTopComponent multiview =
                 MultiViewFactory.createCloneableMultiView(
@@ -65,6 +66,10 @@ public class WSDLMultiViewFactory {
     
     private static MultiViewDescription getWSDLSourceMultiviewDesc(WSDLDataObject wsdlDataObject) {
         return new WSDLSourceMultiviewDesc(wsdlDataObject);
+    }
+    
+    private static MultiViewDescription getWSDLDesignMultiviewDesc(WSDLDataObject wsdlDataObject) {
+        return new WSDLDesignMultiViewDesc(wsdlDataObject);
     }
     
     /**

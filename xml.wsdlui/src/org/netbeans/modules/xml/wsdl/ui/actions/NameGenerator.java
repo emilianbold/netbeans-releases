@@ -622,6 +622,9 @@ public class NameGenerator {
     public static String generateUniquePartnerLinkType(String partnerLinkTypeNamePrefix, QName partnerLinkTypeElementQName, WSDLModel document) {
         int counter = counterStart;
         String partnerLinkTypeName = null;
+        if (partnerLinkTypeNamePrefix == null)
+            partnerLinkTypeNamePrefix = "new";
+        
         String partnerLinkType = partnerLinkTypeNamePrefix + "Partner"; 
         partnerLinkTypeName = partnerLinkType;
         while(isParterLinkTypeExists(partnerLinkTypeName, partnerLinkTypeElementQName, document)) {

@@ -94,13 +94,10 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
     
     void setNameTF(JTextField nameTF) {
         gui.attachFileNameListener(nameTF);
-        if(this.fileNameTextField != null) {
-            this.fileNameTextField.getDocument().removeDocumentListener(this.mListener);
-        }
-        
-        this.fileNameTextField = nameTF;
-        if(this.fileNameTextField != null) {
-            this.fileNameTextField.getDocument().addDocumentListener(this.mListener);
+        if(nameTF != null) {
+            nameTF.getDocument().removeDocumentListener(mListener);//remove existing one
+            nameTF.getDocument().addDocumentListener(mListener);
+            fileNameTextField = nameTF;
         }
     }
 
@@ -170,12 +167,12 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
         }
         
 //        ((WizardDescriptor)settings).putProperty ("NewFileWizard_Title", null); // NOI18N
-        String fileName = this.fileNameTextField.getText();
+        String fileName = Templates.getTargetName(wiz);
         ((WizardDescriptor)settings).putProperty (FILE_NAME, fileName); // NOI18N
         String targetNamespace = getNS();
         ((WizardDescriptor)settings).putProperty (WSDL_TARGETNAMESPACE, targetNamespace); // NOI18N
         
-        String definitionName = getWsName();
+        String definitionName = fileName;
         ((WizardDescriptor)settings).putProperty (WSDL_DEFINITION_NAME, definitionName); // NOI18N
         
         
@@ -251,10 +248,6 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
         return targetNamespace;
     }
     
-    String getWsName() {
-        return gui.getWsName();
-    }
-    
     WsdlUIPanel.SchemaInfo[] getSchemas() {
         return gui.getSchemas();
     }
@@ -305,7 +298,7 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
 
     
     class TextChangeListener implements DocumentListener {
-     
+         
          public void changedUpdate(DocumentEvent e) {
             validateFileName();
          }

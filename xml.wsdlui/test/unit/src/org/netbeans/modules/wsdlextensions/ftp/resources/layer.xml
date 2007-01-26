@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE filesystem PUBLIC '-//NetBeans//DTD Filesystem 1.0//EN' 'http://www.netbeans.org/dtds/filesystem-1_0.dtd'>
+
+<filesystem>
+    <folder name="WSDLEditor">
+        <file name="ftp_ext.xsd" url="ftp_ext.xsd">
+            <attr name="prefix" stringvalue="ftp" />
+        </file>
+        
+        <folder name ="Binding">
+            <file name="FTPBinding">
+                <attr name="xsdFileName" stringvalue="ftp_ext.xsd" />
+                <attr name="element" stringvalue="binding" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/throw16.png" /> 
+            </file>
+        </folder>
+     
+        <folder name ="BindingOperation">
+            <file name="FTPBindingOperation">
+                <attr name="xsdFileName" stringvalue="ftp_ext.xsd" />
+                <attr name="element" stringvalue="operation" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/onalarm16x16.png" /> 
+            </file>
+        </folder>
+			
+        <folder name ="BindingOperationInput">
+            <file name="FTPBindingTransfer">
+                <attr name="xsdFileName" stringvalue="ftp_ext.xsd" />
+                <attr name="element" stringvalue="transfer" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/onmessage16x16.png" /> 
+            </file>
+            <file name="FTPBindingMessage">
+                <attr name="xsdFileName" stringvalue="ftp_ext.xsd" />
+                <attr name="element" stringvalue="message" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/onmessage16x16.png" /> 
+            </file>
+            <file name="FTPBindingMessageActivePassive">
+                <attr name="xsdFileName" stringvalue="ftp_ext.xsd" />
+                <attr name="element" stringvalue="messageActivePassive" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/onmessage16x16.png" /> 
+            </file>
+            <!--file name="FTPBindingMessageNoArchive">
+                <attr name="xsdFileName" stringvalue="ftp_ext.xsd" />
+                <attr name="element" stringvalue="messageNoArchive" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/onmessage16x16.png" /> 
+            </file>
+            <file name="FTPBindingMessageNoProtect">
+                <attr name="xsdFileName" stringvalue="ftp_ext.xsd" />
+                <attr name="element" stringvalue="messageNoProtect" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/onmessage16x16.png" /> 
+            </file>
+            <file name="FTPBindingMessageNoProtectNoArchive">
+                <attr name="xsdFileName" stringvalue="ftp_ext.xsd" />
+                <attr name="element" stringvalue="messageNoProtectNoArchive" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/onmessage16x16.png" /> 
+            </file-->
+        </folder>	        
+	      
+        <folder name ="BindingOperationOutput">
+            <file name="FTPBindingTransfer">
+                <attr name="xsdFileName" stringvalue="ftp_ext.xsd" />
+                <attr name="element" stringvalue="transfer" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/scope16x16.png" /> 
+            </file>
+            <file name="FTPBindingMessage">
+                <attr name="xsdFileName" stringvalue="ftp_ext.xsd" />
+                <attr name="element" stringvalue="message" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/onmessage16x16.png" /> 
+            </file>
+            <file name="FTPBindingMessageActivePassive">
+                <attr name="xsdFileName" stringvalue="ftp_ext.xsd" />
+                <attr name="element" stringvalue="messageActivePassive" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/onmessage16x16.png" /> 
+            </file>
+            <!--file name="FTPBindingMessageNoArchive">
+                <attr name="xsdFileName" stringvalue="ftp_ext.xsd" />
+                <attr name="element" stringvalue="messageNoArchive" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/onmessage16x16.png" /> 
+            </file>
+            <file name="FTPBindingMessageNoProtect">
+                <attr name="xsdFileName" stringvalue="ftp_ext.xsd" />
+                <attr name="element" stringvalue="messageNoProtect" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/onmessage16x16.png" /> 
+            </file>
+            <file name="FTPBindingMessageNoProtectNoArchive">
+                <attr name="xsdFileName" stringvalue="ftp_ext.xsd" />
+                <attr name="element" stringvalue="messageNoProtectNoArchive" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/onmessage16x16.png" /> 
+            </file-->
+	</folder>	        
+
+        <folder name ="ServicePort">
+            <file name="FTPServicePort" >
+                <attr name="xsdFileName" stringvalue="ftp_ext.xsd" />
+                <attr name="element" stringvalue="address" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/while16x16.png" /> 
+            </file>
+        </folder>	        
+    </folder>
+  
+    <folder name="SeeBeyondJbiComponents">
+        <!-- JBI Component -->
+        <folder name="com.sun.ftpbc">
+            <!-- Must match the those attrs defined by soap-binding exactly -->
+            <attr name="id" stringvalue="com.sun.ftpbc-1.0-2"/>
+            <attr name="description" stringvalue="FTP Soap Binding to do FTP operations or send SOAP messages e.g. to and from BPEL service engine."/>
+            <attr name="type" stringvalue="Binding"/>
+            <file name="ftp.binding-1.0">
+                <attr name="namespace" stringvalue="http://schemas.sun.com/jbi/wsdl-extensions/ftp/"/>
+            </file>
+        </folder>
+     </folder>  
+</filesystem>

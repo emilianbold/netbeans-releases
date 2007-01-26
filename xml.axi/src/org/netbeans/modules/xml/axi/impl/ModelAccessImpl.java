@@ -16,16 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/*
- * ModelAccessImpl.java
- *
- * Created on April 12, 2006, 2:08 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.xml.axi.impl;
 
 import java.io.IOException;
@@ -51,29 +41,27 @@ public class ModelAccessImpl extends ModelAccess {
     }
         
     public void addUndoableEditListener(UndoableEditListener listener) {
-        getModel().addUndoableEditListener(listener);
+        model.addUndoableEditListener(listener);
     }
     
     public void removeUndoableEditListener(UndoableEditListener listener) {
-        getModel().removeUndoableEditListener(listener);
+        model.removeUndoableEditListener(listener);
     }
     
-    public void prepareForUndoRedo() {
-        //TODO: to be implemented
+    public void prepareForUndoRedo() {        
     }
     
     public void finishUndoRedo() {
-        //TODO: to be implemented
     }
     
     private SchemaModel getSchemaModel() {
 	return model.getSchemaModel();
     }
     
-    public Model.State sync() throws IOException {        
-        //update the referenced AXIModels
-        model.updateReferencedModelListener();
-            
+    public Model.State sync() throws IOException {
+        //build the ref cache and listens to referenced AXIModels
+        model.buildReferenceableCache();
+        
         //run the validator
         if(!model.validate()) {
             setAutoSync(true);
@@ -82,13 +70,13 @@ public class ModelAccessImpl extends ModelAccess {
         
         //initialize the AXIDocument for the first time.
         //and sets auto-sync to true.
-        if(!getModel().isAXIDocumentInitialized()) {
-            getModel().initializeAXIDocument();
+        if(!model.isAXIDocumentInitialized()) {
+            model.initializeAXIDocument();
             setAutoSync(true);
             return Model.State.VALID;
         }
         
-        if(!getModel().doSync()) {
+        if(!model.doSync()) {
             return Model.State.NOT_SYNCED;
         }
         
@@ -100,11 +88,6 @@ public class ModelAccessImpl extends ModelAccess {
         try {
             SchemaGeneratorFactory sgf = SchemaGeneratorFactory.getDefault();			
             sgf.updateSchema(model.getSchemaModel(), model.getSchemaDesignPattern());
-            //need to sync 'coz codegen can potentially make
-            //schema and axi model out of sync
-            if(!getModel().doSync()) {
-                throw new IllegalArgumentException("Exception during flush"); //NOI18N
-            }            
         } catch (Exception ex) {
             throw new IllegalArgumentException("Exception during flush: ",ex); //NOI18N
         } finally {
@@ -112,10 +95,6 @@ public class ModelAccessImpl extends ModelAccess {
         }
     }
     
-    private AXIModelImpl getModel() {
-        return model;
-    }
-	
     /**
      * Returns length in milliseconds since last edit if the model source buffer 
      * is dirty, or 0 if the model source is not dirty.

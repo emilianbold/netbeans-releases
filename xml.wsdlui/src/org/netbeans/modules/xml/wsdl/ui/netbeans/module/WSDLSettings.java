@@ -44,7 +44,8 @@ public class WSDLSettings {
     };
 
     public String displayName() {
-        return NbBundle.getMessage(getClass(), "CTL_WSDLSettings_name");
+        return NbBundle.getMessage(WSDLSettings.class,
+                "CTL_WSDLSettings_name");
     }
 
     private WSDLSettings() {

@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.xml.axi.util;
 
+import java.io.IOException;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIContainer;
 import org.netbeans.modules.xml.axi.AXIDocument;
@@ -28,6 +29,12 @@ import org.netbeans.modules.xml.axi.Compositor;
 import org.netbeans.modules.xml.axi.Compositor.CompositorType;
 import org.netbeans.modules.xml.axi.ContentModel;
 import org.netbeans.modules.xml.axi.Element;
+import org.netbeans.modules.xml.refactoring.RefactoringManager;
+import org.netbeans.modules.xml.refactoring.RenameRequest;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.xam.Nameable;
+import org.netbeans.modules.xml.xam.NamedReferenceable;
 
 /**
  *
@@ -155,5 +162,25 @@ public class SimulationHelper {
 	//for everything else, both parent and model should be valid
         return ( (c.getParent() != null) && (c.getModel() != null) && (c.getPeer() != null));
     }
+    
+    public boolean refactorRename(AXIContainer container, String name) {
+        assert(container.getParent() instanceof AXIDocument);
+        NamedReferenceable ref = null;
+        SchemaComponent comp = container.getPeer();
+        if (comp instanceof NamedReferenceable) {
+            ref = NamedReferenceable.class.cast(comp);
+        }
+        
+        RenameRequest request  = new RenameRequest((Nameable)ref, name);
+        request.setScopeLocal();
+        try {
+            SchemaModel sm = model.getSchemaModel();
+            RefactoringManager.getInstance().execute(request, false);
+            model.sync();
+        } catch (IOException ex) {
+            return false;
+        }
+        return true;
+    }    
 
 }

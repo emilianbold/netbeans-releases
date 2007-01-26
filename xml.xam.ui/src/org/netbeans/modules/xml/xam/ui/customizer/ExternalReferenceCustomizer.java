@@ -23,27 +23,23 @@ import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.Set;
 import javax.swing.ImageIcon;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
+import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
+import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.explorer.view.BeanTreeView;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.xml.xam.ui.ModelCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -57,16 +53,21 @@ import org.openide.util.Utilities;
  * @author  Nathan Fiedler
  */
 public abstract class ExternalReferenceCustomizer<T extends Component>
-        extends AbstractComponentCustomizer<T>
+        extends AbstractReferenceCustomizer<T>
         implements ExplorerManager.Provider, PropertyChangeListener {
+    /** silence compiler warnings */
     private static final long serialVersionUID = 1L;
+    /** Determines if the prefix was editor or auto-generated. */
     private transient DocumentListener prefixListener;
     /** If true, the prefix was generated and not edited by the user. */
     private transient boolean prefixGenerated;
-    private transient String editedLocation;
-    private BeanTreeView locationView;
-    private ExplorerManager explorerManager;
-
+    /** The file being modified (where the import will be added). */
+    private transient FileObject sourceFO;
+    /** The file selected by the user. */
+    private transient FileObject referencedFO;
+    /** Used to deal with project catalogs. */
+    private transient DefaultProjectCatalogSupport catalogSupport;
+    
     /**
      * Creates new form ExternalReferenceCustomizer
      *
@@ -75,26 +76,27 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
     public ExternalReferenceCustomizer(T component, Model model) {
         super(component);
         initComponents();
+        sourceFO = (FileObject) component.getModel().getModelSource().
+                getLookup().lookup(FileObject.class);
+        catalogSupport = DefaultProjectCatalogSupport.getInstance(sourceFO);
         init(component, model);
-        initializeLocationView();
         initializeUI();
+        Node root = createRootNode();
+        explorerManager.setRootContext(root);
     }
-
+    
     public void applyChanges() throws IOException {
         if (mustNamespaceDiffer() && isPrefixChanged()) {
             prefixTextField.setEditable(false);
         }
-    }
-
-    public void reset() {
-        // Rebuild the node tree and view to ensure we display the
-        // latest available files in the project.
-        initializeLocationView();
-        // Reset the input fields.
-        initializeUI();
-        setSaveEnabled(false);
-        setResetEnabled(false);
-        showMessage(null);
+        if (isLocationChanged() && referencedFO != null &&
+                catalogSupport.needsCatalogEntry(sourceFO, referencedFO)) {
+            try {
+                catalogSupport.createCatalogEntry(sourceFO, referencedFO);
+            } catch (IOException ioe) {
+            } catch (CatalogModelException cme) {
+            }
+        }
     }
 
     /**
@@ -103,9 +105,16 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
      * @return  new location value.
      */
     protected String getEditedLocation() {
-        return editedLocation;
+        if (referencedFO == null) {
+            return getReferenceLocation();
+        }
+        try {
+            return catalogSupport.getReferenceURI(sourceFO, referencedFO).toString();
+        } catch (URISyntaxException ex) {
+        }
+        return null;
     }
-
+    
     /**
      * Retrieves the namespace value from the interface.
      *
@@ -114,7 +123,7 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
     protected String getEditedNamespace() {
         return namespaceTextField.getText().trim();
     }
-
+    
     /**
      * Retrieves the prefix value from the interface.
      *
@@ -123,87 +132,35 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
     protected String getEditedPrefix() {
         return prefixTextField.getText().trim();
     }
-
+    
     /**
      * Returns the location value from the original component.
      *
      * @return  original location value.
      */
     protected abstract String getReferenceLocation();
-
+    
     /**
      * Returns the namespace value from the original component.
      *
      * @return  original namespace value.
      */
     protected abstract String getNamespace();
-
+    
     /**
      * Returns the prefix value from the original component.
      *
      * @return  original prefix value.
      */
     protected abstract String getPrefix();
-
-    /**
-     * Return the target namespace of the given model.
-     *
-     * @param  model  the model for which to get the namespace.
-     * @return  target namespace, or null if none.
-     */
-    protected abstract String getTargetNamespace(Model model);
-
+    
     /**
      * Generate a unique prefix value (e.g. "ns1") for the component.
      *
      * @return  unique prefix value.
      */
     protected abstract String generatePrefix();
-
-    /**
-     * Return the model of the component being customized.
-     *
-     * @return  component model.
-     */
-    public Model getComponentModel() {
-        return getModelComponent().getModel();
-    }
-
-    /**
-     * Return the target namespace of the model that contains the
-     * component being customized.
-     *
-     * @return  target namespace, or null if none.
-     */
-    public String getTargetNamespace() {
-        return getTargetNamespace(getModelComponent().getModel());
-    }
-
-    /**
-     * Return the existing external reference prefixes for the given model.
-     *
-     * @param  model  the model for which to get the namespace.
-     * @return  set of prefixes; empty if none.
-     */
-    protected abstract Map<String, String> getPrefixes(Model model);
-
-    /**
-     * Returns the NodeDecorator for this customizer, if any.
-     *
-     * @return  node decorator for files nodes, or null if none.
-     */
-    protected abstract ExternalReferenceDecorator getNodeDecorator();
-
-    /**
-     * Indicates if the namespace value must be different than that of
-     * the model containing the component being customized. If false,
-     * then the opposite must hold - the namespace must be the same.
-     * The one exception is if the namespace is not defined at all.
-     *
-     * @return  true if namespace must differ, false if same.
-     */
-    public abstract boolean mustNamespaceDiffer();
-
+    
     /**
      * Indicates if the location value was changed in the interface.
      *
@@ -217,7 +174,7 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
         }
         return !rl.equals(el);
     }
-
+    
     /**
      * Indicates if the namespace value was changed in the interface.
      *
@@ -234,7 +191,7 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
         }
         return !ns.equals(ens);
     }
-
+    
     /**
      * Indicates if the prefix value was changed in the interface.
      *
@@ -255,7 +212,7 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
         }
         return !p.equals(ep);
     }
-
+    
     /**
      * Called from constructor, after the interface components have been
      * constructed, but before they have been initialized. Gives subclasses
@@ -265,14 +222,22 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
      * @param  model      the model passed to the constructor (may be null).
      */
     protected void init(T component, Model model) {
-        // subclasses may override this
+        // Note, do not place any code here, as there is no guarantee
+        // that the subclasses will delegate to this method at all.
     }
-
-    /**
-     * Load the component values into the interface widgets.
-     */
-    private void initializeUI() {
-        editedLocation = getReferenceLocation();
+    
+    protected void initializeUI() {
+        // View for selecting a external ref.
+        BeanTreeView locationView = new BeanTreeView();
+        locationView.setPopupAllowed(false);
+        locationView.setDefaultActionAllowed(false);
+        locationView.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        locationView.setRootVisible(false);
+        locationView.getAccessibleContext().setAccessibleName(locationLabel.getToolTipText());
+        locationView.getAccessibleContext().setAccessibleDescription(locationLabel.getToolTipText());
+        locationPanel.add(locationView, BorderLayout.CENTER);
+        explorerManager = new ExplorerManager();
+        explorerManager.addPropertyChangeListener(this);
         // TODO select in panel
         if (mustNamespaceDiffer()) {
             namespaceTextField.setText(getNamespace());
@@ -292,11 +257,11 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
                         }
                         public void insertUpdate(DocumentEvent e) {
                             prefixGenerated = false;
-                            determineValidity();
+                            validateInput();
                         }
                         public void removeUpdate(DocumentEvent e) {
                             prefixGenerated = false;
-                            determineValidity();
+                            validateInput();
                         }
                     };
                 }
@@ -309,12 +274,20 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
             prefixTextField.setVisible(false);
         }
     }
-
+    
+    public ExternalReferenceDataNode createExternalReferenceNode(Node original) {
+        ExternalReferenceDataNode erdn = new ExternalReferenceDataNode(
+                original, getNodeDecorator());
+        erdn.addPropertyChangeListener(this);
+        return erdn;
+    }
+    
     /**
-     * Based on the current radio button status and node selections, decide
-     * if we are in a valid state for accepting the user's input.
+     * Determine if the user's input is valid or not. This will enable
+     * or disable the save/reset controls based on the results, as well
+     * as issue error messages.
      */
-    private void determineValidity() {
+    private void validateInput() {
         boolean lChanged = isLocationChanged();
         boolean nsChanged = isNamespaceChanged();
         boolean pChanged = isPrefixChanged();
@@ -336,17 +309,16 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
                             "LBL_ExternalReferenceCustomizer_InvalidPrefix");
                 }
             }
-            showMessage(msg);
+            // Changing the location should allow the prefix to change.
+            prefixTextField.setEditable(lChanged);
+            if (msg != null) {
+                showMessage(msg);
+            }
             setSaveEnabled(msg == null);
         }
     }
 
-    /**
-     * Display the given message, or reset the message label to blank.
-     *
-     * @param  msg  message to show, or null to hide messages.
-     */
-    private void showMessage(String msg) {
+    protected void showMessage(String msg) {
         if (msg == null) {
             messageLabel.setText(" ");
             messageLabel.setIcon(null);
@@ -358,62 +330,32 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
         }
     }
 
-    /**
-     * Construct the tree view and explorer manager for the location value.
-     */
-    private void initializeLocationView() {
-        // View for selecting a external ref.
-        locationView = new BeanTreeView();
-        locationView.setPopupAllowed(false);
-        locationView.setDefaultActionAllowed(false);
-        locationView.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        locationView.setRootVisible(false);
-        locationView.getAccessibleContext().setAccessibleName(locationLabel.getToolTipText());
-        locationView.getAccessibleContext().setAccessibleDescription(locationLabel.getToolTipText());
-        locationPanel.add(locationView, BorderLayout.CENTER);
-        explorerManager = new ExplorerManager();
-        explorerManager.setRootContext(createRootNode());
-        explorerManager.addPropertyChangeListener(this);
-    }
-
-    private Node createRootNode() {
-        // Get the project source roots, if the file lives in a project.
-        FileObject fo = (FileObject) getModelComponent().getModel().
-                getModelSource().getLookup().lookup(FileObject.class);
-        Project prj = FileOwnerQuery.getOwner(fo);
-        FileObject[] roots = null;
-        if (prj != null) {
-            Sources srcs = ProjectUtils.getSources(prj);
-            SourceGroup[] sgs = srcs.getSourceGroups(Sources.TYPE_GENERIC);
-            if (sgs == null || sgs.length == 0) {
-                roots = new FileObject[] {
-                    prj.getProjectDirectory()
-                };
-            } else {
-                roots = new FileObject[sgs.length];
-                for (int ii = 0; ii < sgs.length; ii++) {
-                    roots[ii] = sgs[ii].getRootFolder();
-                }
-            }
-        } else {
-            // The file may not be living in a project, in which case just
-            // use the folder in which this file resides.
-            roots = new FileObject[] {
-                fo.getParent()
-            };
+    protected Node createRootNode() {
+        Set refProjects = null;
+        if (catalogSupport.supportsCrossProject()) {
+            refProjects = catalogSupport.getProjectReferences();
         }
-
-        // Construct the By File node for the source roots.
         ExternalReferenceDecorator decorator = getNodeDecorator();
-        Node[] rootNodes = new Node[roots.length];
-        for (int ii = 0; ii < roots.length; ii++) {
-            try {
-                Node node = DataObject.find(roots[ii]).getNodeDelegate();
-                rootNodes[ii] = new ExternalReferenceDataNode(node, decorator);
-            } catch (DataObjectNotFoundException donfe) {
-                // ignore
+        Node[] rootNodes = new Node[1 + (refProjects == null ? 0: refProjects.size())];
+        Project prj = FileOwnerQuery.getOwner(sourceFO);
+        LogicalViewProvider viewProvider = (LogicalViewProvider) prj.getLookup().
+                lookup(LogicalViewProvider.class);
+        rootNodes[0] = decorator.createExternalReferenceNode(
+                viewProvider.createLogicalView());
+        int i = 1;
+        if (refProjects != null) {
+            for (Object o : refProjects) {
+                Project refPrj = (Project) o;
+                viewProvider = (LogicalViewProvider) refPrj.getLookup().
+                        lookup(LogicalViewProvider.class);
+                rootNodes[i++] = decorator.createExternalReferenceNode(
+                        viewProvider.createLogicalView());
             }
         }
+        FileObject[] roots = new FileObject [] {
+            prj.getProjectDirectory(),
+            // add ref project directories as well?
+        };
         Children fileChildren = new Children.Array();
         fileChildren.add(rootNodes);
         Node byFilesNode = new FolderNode(fileChildren);
@@ -445,7 +387,7 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
         categories.add(new Node[] { byFilesNode, byNSNode });
         return new AbstractNode(categories);
     }
-
+    
 //    private CatalogWriteModel getCatalogWriteModel() {
 //        try {
 //            FileObject myFobj = (FileObject) getModelComponent().getModel().
@@ -457,115 +399,45 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
 //        }
 //        return null;
 //    }
-
+    
     public void propertyChange(PropertyChangeEvent event) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(event.getPropertyName())) {
-            // Clear the message field first, then annotate later.
+            // Reset everything to assume an invalid selection.
             showMessage(null);
+            setSaveEnabled(false);
+            String ns = null;
+            referencedFO = null;
             Node[] nodes = (Node[]) event.getNewValue();
-            if (nodes != null && nodes.length >= 1) {
-                Node node = nodes[0];
-                String ns = null;
-                String newLocation = null;
-                if (node instanceof RetrievedFilesChildren.RetrievedFileNode) {
-                    RetrievedFilesChildren.RetrievedFileNode rNode =
-                            (RetrievedFilesChildren.RetrievedFileNode) node;
-                    if (!rNode.isValid()) {
-                        String msg = NbBundle.getMessage(ExternalReferenceCustomizer.class,
-                                "LBL_ExternalReferenceCustomizer_InvalidCatalogEntry");
-                        showMessage(msg);
-                        return;
+            // Validate the node selection.
+            if (nodes != null && nodes.length > 0 &&
+                    nodes[0] instanceof ExternalReferenceNode) {
+                ExternalReferenceNode node = (ExternalReferenceNode) nodes[0];
+                Model model = node.getModel();
+                // Without a model, the selection is completely invalid.
+                if (model != null) {
+                    ns = getTargetNamespace(model);
+                    if (model != getModelComponent().getModel()) {
+                        referencedFO = (FileObject) model.getModelSource().
+                                getLookup().lookup(FileObject.class);
                     }
-                    ns = rNode.getNamespace();
-                    if (ns == null || mustNamespaceDiffer() !=
-                            ns.equals(getTargetNamespace())) {
-                        newLocation = rNode.getLocation();
-                    }
-                } else {
-                    DataObject dobj = (DataObject) node.getLookup().
-                            lookup(DataObject.class);
-                    if (dobj != null && dobj.isValid()) {
-                        FileObject fileObj = dobj.getPrimaryFile();
-                        String sLocation = fileObj.getPath();
-                        ModelCookie cookie = (ModelCookie) dobj.getCookie(
-                                ModelCookie.class);
-                        Model model;
-                        try {
-                            if (cookie != null && (model = cookie.getModel()) !=
-                                    getModelComponent().getModel()) {
-                                ns = getTargetNamespace(model);
-                                if (ns == null || mustNamespaceDiffer() !=
-                                        ns.equals(getTargetNamespace())) {
-                                    newLocation = getRelativePath(sLocation);
-                                }
-                            }
-                        } catch (IOException ioe) {
-                        }
-                    }
-                }
-                if (newLocation != null) {
-                    try {
-                        URI uri = new URI("file", newLocation, null);
-                        uri = uri.normalize();
-                        newLocation = uri.getRawSchemeSpecificPart();
-                    } catch (URISyntaxException use) {
-                        showMessage(use.toString());
-                        // Push onward despite this exception.
-                    }
-                }
-                editedLocation = newLocation;
-                if (newLocation == null) {
-                    ns = null;
-                }
-                namespaceTextField.setText(ns);
-                determineValidity();
-                if (isLocationChanged()) {
-                    // Changing the location should allow the prefix to change.
-                    prefixTextField.setEditable(true);
-                }
-
-                if (node instanceof ExternalReferenceNode) {
-                    // Give decorator a chance to issue any warnings, errors.
-                    ExternalReferenceNode ern = (ExternalReferenceNode) node;
-                    ExternalReferenceDecorator decorator = getNodeDecorator();
-                    String msg = decorator.annotate(ern);
+                    // Ask decorator if selection is valid or not.
+                    String msg = getNodeDecorator().validate(node);
                     if (msg != null) {
                         showMessage(msg);
+                    } else {
+                        // If node is okay, validate the rest of the input.
+                        validateInput();
                     }
                 }
             }
+            namespaceTextField.setText(ns);
         }
     }
-
-    private String getRelativePath(final String sLocation) {
-        FileObject myFileObj = (FileObject)getModelComponent().
-                getModel().getModelSource().getLookup().lookup(
-                FileObject.class);
-        String myLocation = myFileObj.getPath();
-        StringTokenizer st1 = new StringTokenizer(myLocation,"/");
-        StringTokenizer st2 = new StringTokenizer(sLocation,"/");
-        String relativeLoc = "";
-        while (st1.hasMoreTokens() && st2.hasMoreTokens()) {
-            relativeLoc = st2.nextToken();
-            if (!st1.nextToken().equals(relativeLoc)) {
-                break;
-            }
-        }
-        while (st1.hasMoreTokens()) {
-            relativeLoc = "../".concat(relativeLoc);
-            st1.nextToken();
-        }
-        while(st2.hasMoreTokens()) {
-            relativeLoc = relativeLoc.concat("/");
-            relativeLoc = relativeLoc.concat(st2.nextToken());
-        }
-        return relativeLoc;
-    }
-
+    
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
-
+    
     /**
      * This method is called from within the constructor to
      * initializeTypeView the form.
@@ -583,24 +455,24 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
         messageLabel = new javax.swing.JLabel();
 
         locationLabel.setLabelFor(locationPanel);
-        org.openide.awt.Mnemonics.setLocalizedText(locationLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/xam/ui/customizer/Form").getString("LBL_ExternalReferenceCustomizer_Location"));
-        locationLabel.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/xam/ui/customizer/Form").getString("TIP_ExternalReferenceCustomizer_Location"));
+        org.openide.awt.Mnemonics.setLocalizedText(locationLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/xam/ui/customizer/Bundle").getString("LBL_ExternalReferenceCustomizer_Location"));
+        locationLabel.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/xam/ui/customizer/Bundle").getString("TIP_ExternalReferenceCustomizer_Location"));
 
         locationPanel.setLayout(new java.awt.BorderLayout());
 
         locationPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         namespaceLabel.setLabelFor(namespaceTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(namespaceLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/xam/ui/customizer/Form").getString("LBL_ExternalReferenceCustomizer_Namespace"));
-        namespaceLabel.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/xam/ui/customizer/Form").getString("TIP_ExternalReferenceCustomizer_Namespace"));
+        org.openide.awt.Mnemonics.setLocalizedText(namespaceLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/xam/ui/customizer/Bundle").getString("LBL_ExternalReferenceCustomizer_Namespace"));
+        namespaceLabel.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/xam/ui/customizer/Bundle").getString("TIP_ExternalReferenceCustomizer_Namespace"));
 
         namespaceTextField.setEditable(false);
 
         prefixLabel.setLabelFor(prefixTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(prefixLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/xam/ui/customizer/Form").getString("LBL_ExternalReferenceCustomizer_Prefix"));
-        prefixLabel.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/xam/ui/customizer/Form").getString("TIP_ExternalReferenceCustomizer_Prefix"));
+        org.openide.awt.Mnemonics.setLocalizedText(prefixLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/xam/ui/customizer/Bundle").getString("LBL_ExternalReferenceCustomizer_Prefix"));
+        prefixLabel.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/xam/ui/customizer/Bundle").getString("TIP_ExternalReferenceCustomizer_Prefix"));
 
-        prefixTextField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/xam/ui/customizer/Form").getString("TIP_ExternalReferenceCustomizer_Prefix"));
+        prefixTextField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/xam/ui/customizer/Bundle").getString("TIP_ExternalReferenceCustomizer_Prefix"));
 
         messageLabel.setForeground(new java.awt.Color(255, 0, 0));
         org.openide.awt.Mnemonics.setLocalizedText(messageLabel, " ");
@@ -645,7 +517,7 @@ public abstract class ExternalReferenceCustomizer<T extends Component>
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
-
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JLabel locationLabel;
     public javax.swing.JPanel locationPanel;

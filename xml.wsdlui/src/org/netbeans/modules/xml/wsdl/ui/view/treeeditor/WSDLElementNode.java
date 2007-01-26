@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -17,12 +17,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * Created on May 18, 2005
- *
- * To change the template for this generated file go to
- * Window - Preferences - Java - Code Generation - Code and Comments
- */
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
 import java.awt.datatransfer.Transferable;
@@ -36,10 +30,8 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.swing.Action;
 import javax.xml.namespace.QName;
-
 import org.netbeans.modules.xml.refactoring.actions.FindUsagesAction;
 import org.netbeans.modules.xml.refactoring.actions.RefactorAction;
 import org.netbeans.modules.xml.refactoring.ui.ReferenceableProvider;
@@ -53,7 +45,6 @@ import org.netbeans.modules.xml.wsdl.ui.commands.XMLAttributePropertyAdapter;
 import org.netbeans.modules.xml.wsdl.ui.cookies.RemoveWSDLElementCookie;
 import org.netbeans.modules.xml.wsdl.ui.cookies.WSDLAttributeCookie;
 import org.netbeans.modules.xml.wsdl.ui.cookies.WSDLElementCookie;
-import org.netbeans.modules.xml.wsdl.ui.netbeans.module.ComponentPasteType;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.property.BaseAttributeProperty;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.DocumentationNewType;
@@ -65,6 +56,7 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Referenceable;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.Attribute;
+import org.netbeans.modules.xml.xam.ui.ComponentPasteType;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.netbeans.modules.xml.xam.ui.actions.GoToAction;
 import org.netbeans.modules.xml.xam.ui.cookies.CountChildrenCookie;
@@ -88,9 +80,12 @@ import org.openide.nodes.Node.Cookie;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  * @author radval
@@ -109,9 +104,9 @@ public abstract class WSDLElementNode extends AbstractNode
     private NewTypesFactory mNewTypesFactory;
     
     public static final String WSDL_NAMESPACE = "http://schemas.xmlsoap.org/wsdl/";//NOI18N
-    
+    private InstanceContent mLookupContents;
     protected Sheet mSheet;
-
+    private ComponentListener weakComponentListener;
     /** Used for the highlighting API. */
     private Set<Component> referenceSet;
     /** Ordered list of highlights applied to this node. */
@@ -140,15 +135,38 @@ public abstract class WSDLElementNode extends AbstractNode
     }
 
     public WSDLElementNode(Children children, WSDLComponent element) {
-        super(children);
-        this.mElement = element;
-        
-        this.getCookieSet().add(new SaveCookieDelegate());
-        this.getCookieSet().add(new WSDLElementCookie(this.mElement));
-        this.getCookieSet().add(new RemoveWSDLElementCookie(this.mElement));
-        this.getCookieSet().add(this);
-        element.getModel().addComponentListener(this);
-        this.addNodeListener(new WSDLNodeListener(this));
+        this(children, element, new InstanceContent());
+    }
+
+    /**
+     * Constructor hack to allow creating our own Lookup.
+     *
+     * @param  children  Node children.
+     * @param  element   WSDL component.
+     * @param  contents  Lookup contents.
+     */
+    private WSDLElementNode(Children children, WSDLComponent element,
+            InstanceContent contents) {
+        super(children, new AbstractLookup(contents));
+        mElement = element;
+        mLookupContents = contents;
+
+        // Include the data object in order for the Navigator to
+        // show the structure of the current document.
+        DataObject dobj = getDataObject();
+        if (dobj != null) {
+            contents.add(dobj);
+        }
+        contents.add(new SaveCookieDelegate());
+        contents.add(new WSDLElementCookie(mElement));
+        contents.add(new RemoveWSDLElementCookie(mElement));
+        contents.add(this);
+        contents.add(element);
+        Model model = element.getModel();
+        weakComponentListener = (ComponentListener) WeakListeners.create(
+                ComponentListener.class, this, model);
+        model.addComponentListener(weakComponentListener);
+        addNodeListener(new WSDLNodeListener(this));
         mSheet = new Sheet();
         
         referenceSet = Collections.singleton((Component) element);
@@ -182,7 +200,7 @@ public abstract class WSDLElementNode extends AbstractNode
     @Override
     public void destroy () throws IOException {
         //remove the xml element listener when node is destroyed
-        getWSDLComponent().getModel().removeComponentListener(this);
+        getWSDLComponent().getModel().removeComponentListener(weakComponentListener);
         WSDLComponent parent = getWSDLComponent().getParent();
         WSDLComponent nextSelection = parent;
         if (parent == null) {
@@ -319,17 +337,19 @@ public abstract class WSDLElementNode extends AbstractNode
         refreshSheet();
         return mSheet;
     }
-    
+
+    protected InstanceContent getLookupContents() {
+        return mLookupContents;
+    }
+
     private final void refreshSheet() {
         refreshAttributesSheetSet();
         refreshOtherAttributesSheetSet();
         Cookie cookie = getCookie(WSDLAttributeCookie.class);
         if (hasOtherAttributesProperties()) {
-            this.getCookieSet().add(new WSDLAttributeCookie("attribute", getWSDLComponent()));//NOI18N
-        } else {
-            if (cookie != null) {
-                this.getCookieSet().remove(cookie);
-            }
+            mLookupContents.add(new WSDLAttributeCookie("attribute", getWSDLComponent()));//NOI18N
+        } else if (cookie != null) {
+            mLookupContents.remove(cookie);
         }
     }
     

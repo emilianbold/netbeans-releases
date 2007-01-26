@@ -29,14 +29,10 @@ import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
-import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.UIUtilities;
-import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.ImportSchemaCustomizer;
-import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.NewType;
 
@@ -94,15 +90,11 @@ public class ImportSchemaNewType extends NewType {
             schema = schemaModel.getSchema();
             schema.setTargetNamespace(model.getDefinitions().getTargetNamespace());
         }
-        
-        
-        org.netbeans.modules.xml.schema.model.Import schemaImport =
-            schema.getModel().getFactory().createImport();
 
-        // Customize the new import.
+        // The customizer will create the new import(s).
         // Note this happens during the transaction, which is unforunate
         // but supposedly unavoidable.
-        ImportSchemaCustomizer customizer = new ImportSchemaCustomizer(schemaImport, model);
+        ImportSchemaCustomizer customizer = new ImportSchemaCustomizer(schema, model);
         DialogDescriptor descriptor = UIUtilities.getCustomizerDialog(
                 customizer, NbBundle.getMessage(ImportSchemaNewType.class,
                 "LBL_NewType_ImportCustomizer"), true);
@@ -111,17 +103,16 @@ public class ImportSchemaNewType extends NewType {
         
         // If okay, add the import to the model.
         if (result == DialogDescriptor.OK_OPTION) {
+            // The customizer has, by this time, already made its changes
+            // to the model, so there is nothing for us to do here.
             if (def.getTypes() == null) {
                 def.setTypes(types);
             }
-            schema.addExternalReference(schemaImport);
             if (wsdlSchema != null) {
                 types.addExtensibilityElement(wsdlSchema);
             }
-            
-            
         }
         // In either case, end the transaction.
-            model.endTransaction();
+        model.endTransaction();
     }
 }

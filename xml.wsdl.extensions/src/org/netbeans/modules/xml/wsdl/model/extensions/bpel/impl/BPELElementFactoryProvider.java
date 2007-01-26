@@ -20,6 +20,7 @@
 package org.netbeans.modules.xml.wsdl.model.extensions.bpel.impl;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
@@ -84,7 +85,10 @@ public class BPELElementFactoryProvider {
 
     public static class DocumentationFactory extends ElementFactory{
         public Set<QName> getElementQNames() {
-            return Collections.singleton(BPELQName.DOCUMENTATION.getQName());
+            Set<QName> set = new HashSet<QName>();
+            set.add( BPELQName.DOCUMENTATION_VARPROP.getQName() );
+            set.add( BPELQName.DOCUMENTATION_PLNK.getQName() );
+            return set;
         }
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new DocumentationImpl(context.getModel(), element);

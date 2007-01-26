@@ -16,14 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/*
- * AbstractTestCase.java
- * JUnit based test
- *
- * Created on March 10, 2006, 3:04 PM
- */
-
 package org.netbeans.modules.xml.axi;
 
 import java.io.File;

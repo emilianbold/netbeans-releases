@@ -21,7 +21,6 @@ package org.netbeans.modules.xml.wsdl.ui.netbeans.module;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.event.FocusEvent;
@@ -37,11 +36,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.DefaultEditorKit;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.FolderNode;
-import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.WSDLElementNode;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.Visualizer;
@@ -160,16 +158,8 @@ public class WSDLColumn extends JPanel
      * @return  the parent TopComponent.
      */
     protected TopComponent findParentTopComponent() {
-        Component parent = getParent();
-        while (parent != null) {
-            if (parent instanceof TopComponent) {
-                return (TopComponent) parent;
-            } else {
-                parent = parent.getParent();
-            }
-        }
-        
-        return null;
+        return (TopComponent) SwingUtilities.getAncestorOfClass(
+                TopComponent.class, this);
     }
 
     public JComponent getComponent() {
@@ -340,42 +330,6 @@ public class WSDLColumn extends JPanel
                 }
             });
         }
-    }
-    
-    /**
-     * Selects the first matching node amongst the children under the
-     * top visible node in the nodeView.
-     * 
-     * @param sc  component for which to find node.
-     * @return  node for component, or null if not found.
-     */
-    private Node findNode(WSDLComponent sc) {
-        Node root = getExplorerManager().getRootContext();
-        if (root == null) {
-            return null; // no nodes to select from
-        }
-        Node[] children = null;
-        children = root.getChildren().getNodes();
-        if (root.isHidden()) {
-            if (children != null && children.length > 0) {
-                Node subRoot = children[0];
-                children = subRoot.getChildren().getNodes();
-                if (children == null || children.length < 0) {
-                    return null;  // no nodes to select from
-                }
-            } else {
-                return null; // no nodes to select from
-            }
-        }
-        for (Node n : children) {
-            if (n instanceof WSDLElementNode) {
-                WSDLComponent scomp = ((WSDLElementNode) n).getWSDLComponent();
-                if (scomp == sc) {
-                    return n;
-                }
-            }
-        }
-        return null;
     }
 
     protected WSDLColumnsView getColumnView() {

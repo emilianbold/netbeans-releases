@@ -28,10 +28,10 @@
 
 package org.netbeans.modules.xml.axi.impl;
 
+import java.util.HashMap;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIDocument;
 import org.netbeans.modules.xml.axi.AXIModel;
-import org.netbeans.modules.xml.axi.Element;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 
 /**
@@ -46,5 +46,24 @@ public final class AXIDocumentImpl extends AXIDocument {
      */
     public AXIDocumentImpl(AXIModel model, SchemaComponent schemaComponent) {
         super(model, schemaComponent);
-    }        
+    }
+    
+    public AXIComponent findChild(SchemaComponent child) {
+        //call getChildren so that the cache gets initialized
+        if(!canVisitChildren()) {
+            getChildren();
+        }
+        return globalChildrenCache.get(child);
+    }
+
+    public void addToCache(AXIComponent child) {
+        globalChildrenCache.put(child.getPeer(), child);
+    }
+    
+    public void removeFromCache(AXIComponent child) {
+        globalChildrenCache.remove(child.getPeer());
+    }
+    
+    private HashMap<SchemaComponent, AXIComponent> globalChildrenCache =
+            new HashMap<SchemaComponent, AXIComponent>();
 }

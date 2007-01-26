@@ -222,4 +222,11 @@ public class WSDLRefactoringEngine extends RefactoringEngine {
         return request.calculateNewLocationString(current);
     }
     
+    @Override
+    public String getModelReference(Component component) {
+        if (component instanceof Import) {
+            return ((Import)component).getLocation();
+        }
+        return null;
+    }
 }

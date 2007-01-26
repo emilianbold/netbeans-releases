@@ -22,7 +22,6 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ========= -->
     <!-- Compilers -->
     <!-- ========= -->
-    <property name="build.compiler.source" value="1.5"/>
     <property file="../nbproject/project.properties"/>
     
     <target name="default-compiler">

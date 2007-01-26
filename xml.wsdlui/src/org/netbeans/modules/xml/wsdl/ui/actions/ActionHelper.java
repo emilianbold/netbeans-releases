@@ -52,7 +52,8 @@ public class ActionHelper {
 	
     public static void selectNode(WSDLComponent comp) {
         ViewComponentCookie cookie = (ViewComponentCookie) getDataObject(comp).getCookie(ViewComponentCookie.class);
-        cookie.view(ViewComponentCookie.View.WSDL, comp, (Object[]) null);
+        // Do not switch views, use the currently showing view.
+        cookie.view(ViewComponentCookie.View.CURRENT, comp, (Object[]) null);
     }
     
     public static DataObject getDataObject(WSDLComponent comp) {

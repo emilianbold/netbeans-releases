@@ -27,7 +27,6 @@ import java.util.regex.PatternSyntaxException;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.visitor.ChildVisitor;
-import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.ui.category.Category;
 import org.netbeans.modules.xml.xam.ui.search.Query;
 import org.netbeans.modules.xml.xam.ui.search.SearchException;
@@ -52,7 +51,7 @@ public class AttributeNameSearchProvider extends ChildVisitor
     /** Model in which to perform the search. */
     private WSDLModel model;
     /** List of matching schema components. */
-    private List<Component> results;
+    private List<Object> results;
     /** Provides the selected component, if needed. */
     private Category category;
     /** The compiled regular expression pattern, if provided. */
@@ -84,7 +83,7 @@ public class AttributeNameSearchProvider extends ChildVisitor
                 "HINT_SearchProvider_AttributeName");
     }
 
-    public List<Component> search(Query query) throws SearchException {
+    public List<Object> search(Query query) throws SearchException {
         if (query.isRegularExpression()) {
             try {
                 pattern = Pattern.compile(query.getQuery());
@@ -97,7 +96,7 @@ public class AttributeNameSearchProvider extends ChildVisitor
             phrase = query.getQuery().toLowerCase();
             wildcarded = WildcardStringMatcher.containsWildcards(phrase);
         }
-        results = new ArrayList<Component>();
+        results = new ArrayList<Object>();
         // Search for components with the given attribute name.
         WSDLComponent component = Providers.getSelectedComponent(category);
         if (query.useSelected() && component != null) {

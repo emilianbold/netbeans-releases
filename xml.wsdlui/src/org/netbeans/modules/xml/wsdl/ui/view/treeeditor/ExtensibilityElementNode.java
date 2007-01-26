@@ -170,7 +170,7 @@ public class ExtensibilityElementNode extends WSDLNamedElementNode{
                         
                         this.mSchemaElement = info.getElement();
                         /*SchemaElementCookie sCookie = new SchemaElementCookie(mElement);
-                        this.getCookieSet().add(sCookie);*/
+                        getLookupContents().add(sCookie);*/
                     }
                 }
             } else {
@@ -185,7 +185,7 @@ public class ExtensibilityElementNode extends WSDLNamedElementNode{
                         this.mElement = seFinder.getSuccessorElement();
                         if(this.mElement != null) {
                             sCookie = new SchemaElementCookie(mElement);
-                            this.getCookieSet().add(sCookie);
+                            getLookupContents().add(sCookie);
                         }
                     }
                     XMLType type = parentElement.getType();
@@ -194,7 +194,7 @@ public class ExtensibilityElementNode extends WSDLNamedElementNode{
                      this.mElement = cType.getElementDecl(this.mWSDLConstruct.getLocalName());
                      if(this.mElement != null) {
                      sCookie = new SchemaElementCookie(mElement);
-                     this.getCookieSet().add(sCookie);
+                     getLookupContents().add(sCookie);
                      }
                      }
                 } else {
@@ -291,6 +291,10 @@ public class ExtensibilityElementNode extends WSDLNamedElementNode{
             }
             actions.add(null);
             actions.add(SystemAction.get(PropertiesAction.class));
+        } else {
+            actions.add(SystemAction.get(GoToAction.class));
+            actions.add(null);
+            actions.add(SystemAction.get(PropertiesAction.class));
         }
         
         return actions.toArray(new Action[actions.size()]);
@@ -328,6 +332,24 @@ public class ExtensibilityElementNode extends WSDLNamedElementNode{
                     ErrorManager.getDefault().notify(e);
                 }
             }
+            
+            List<Node.Property> properties = null;
+            try {
+                properties = createAlwaysPresentAttributeProperty();
+            } catch (Exception e) {
+                ErrorManager.getDefault().notify(e);
+            }
+            if(properties != null) {
+                Iterator<Node.Property> itP = properties.iterator();
+                while(itP.hasNext()) {
+                    Node.Property property = itP.next();
+                    //if property is not present then add it
+                    if(ss.get(property.getName()) == null) {
+                        ss.put(property);
+                    }
+                }
+            }
+            
         } else {
             super.refreshAttributesSheetSet();
         }

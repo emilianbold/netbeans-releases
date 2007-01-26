@@ -16,8 +16,6 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- *  
- * $Id$
  */
 package org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation;
 

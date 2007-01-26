@@ -53,7 +53,7 @@ public class PropertyAliasImpl extends GenericExtensibilityElement implements
     }
 
     protected String getNamespaceURI() {
-        return BPELQName.BPWS_NS;
+        return BPELQName.VARPROP_NS;
     }
 
     public NamedComponentReference<CorrelationProperty> getPropertyName() {

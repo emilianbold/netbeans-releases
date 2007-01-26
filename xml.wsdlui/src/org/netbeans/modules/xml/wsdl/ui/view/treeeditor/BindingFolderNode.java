@@ -53,7 +53,7 @@ public class BindingFolderNode extends FolderNode {
         this.setDisplayName(NbBundle.
                     getMessage(BindingFolderNode.class, 
                                "BINDING_FOLDER_NODE_NAME"));
-        getCookieSet().add(new AddChildWSDLElementCookie(element));
+        getLookupContents().add(new AddChildWSDLElementCookie(element));
         this.addNodeListener(new WSDLNodeListener(this));
         BADGE_ICON  = Utilities.loadImage
         ("org/netbeans/modules/xml/wsdl/ui/view/resources/binding_badge.png");

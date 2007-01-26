@@ -16,19 +16,11 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/*
- * DeepAXITreeVisitor.java
- *
- * Created on March 10, 2006, 12:08 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.xml.axi.visitor;
 
+import java.util.Stack;
 import org.netbeans.modules.xml.axi.AXIComponent;
+import org.netbeans.modules.xml.axi.AXIComponent.ComponentType;
 import org.netbeans.modules.xml.axi.AXIDocument;
 import org.netbeans.modules.xml.axi.AnyAttribute;
 import org.netbeans.modules.xml.axi.AnyElement;
@@ -36,6 +28,7 @@ import org.netbeans.modules.xml.axi.Attribute;
 import org.netbeans.modules.xml.axi.Compositor;
 import org.netbeans.modules.xml.axi.Element;
 import org.netbeans.modules.xml.axi.ContentModel;
+import org.netbeans.modules.xml.axi.impl.ElementRef;
 
 /**
  *
@@ -43,6 +36,8 @@ import org.netbeans.modules.xml.axi.ContentModel;
  */
 public class DeepAXITreeVisitor extends DefaultVisitor {
         
+    Stack<AXIComponent> pathToRoot = new Stack<AXIComponent>();
+    
     /**
      * Creates a new instance of DeepAXITreeVisitor
      */
@@ -79,9 +74,32 @@ public class DeepAXITreeVisitor extends DefaultVisitor {
     }
         
     protected void visitChildren(AXIComponent component) {
+        if( !canVisit(component) )
+            return;
+                
+        pathToRoot.push(component.getOriginal());
         for(AXIComponent child: component.getChildren()) {
             child.accept(this);
         }
-    }    
+        pathToRoot.pop();
+    }
+        
+    private boolean canVisit(AXIComponent component) {        
+        if(pathToRoot.contains(component))
+            return false;
+        
+        if(component.getComponentType() == ComponentType.PROXY)
+            return canVisit(component.getOriginal());
+
+        if(component.getComponentType() == ComponentType.REFERENCE &&
+           component instanceof ElementRef) {
+            ElementRef ref = (ElementRef)component;
+            Element e = ref.getReferent();
+            if(pathToRoot.contains(e))
+                return false;
+        }
+        
+        return true;
+    }
     
 }

@@ -55,7 +55,7 @@ public class GardenOfEden extends DefaultSchemaGenerator {
     }
     
     public void visit(Datatype d) {
-        createGlobalSimpleType(d, sm, datatypeParent, id);
+        createGlobalSimpleType(d, sm, datatypeParent, id, pc);
     }
     
     protected void setPeer(final Element element,

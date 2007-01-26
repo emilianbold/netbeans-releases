@@ -328,10 +328,6 @@ public class WsdlUIPanel extends javax.swing.JPanel {
         return nsTF.getText();
     }
     
-    String getWsName() {
-        return fileNameTF.getText();
-    }
-    
     boolean isImport() {
         return cbImport.isSelected();
     }

@@ -124,9 +124,11 @@ public class SchemaDocumentationFinderVisitor extends AbstractXSDVisitor {
 
     @Override
     public void visit(GlobalSimpleType gst) {
+        if(gst != null) {
         Annotation ann = gst.getAnnotation();
         if(ann != null) {
             visit(ann);
+            }
         }
     }
 

@@ -29,9 +29,11 @@ package org.netbeans.modules.xml.wsdl.model.extensions.bpel;
  */
 public interface Documentation extends BPELExtensibilityComponent {
 
-    String CONTENT_PROPERTY = "<content>";
+    String CONTENT_PROPERTY = "<content>";      // NOI18N
     
-    String SOURCE = "source";
+    String SOURCE = "source";                   // NOI18N
+    
+    String LANG = "xml:lang";                   // NOI18N
     
     String getContent();
     
@@ -42,5 +44,11 @@ public interface Documentation extends BPELExtensibilityComponent {
     void setSource( String value );
     
     void removeSource();
+    
+    String getLang();
+    
+    void setLang( String value );
+    
+    void removeLang();
     
 }

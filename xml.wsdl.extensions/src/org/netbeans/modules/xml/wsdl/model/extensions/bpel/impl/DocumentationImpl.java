@@ -22,12 +22,8 @@
  */
 package org.netbeans.modules.xml.wsdl.model.extensions.bpel.impl;
 
-import javax.xml.namespace.QName;
-
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Documentation;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Query;
 import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement;
 import org.w3c.dom.Element;
 
@@ -42,10 +38,10 @@ public class DocumentationImpl extends GenericExtensibilityElement implements Do
         super(model, e);
     }
 
-    public DocumentationImpl( WSDLModel model, QName qname ) {
+/*    public DocumentationImpl( WSDLModel model, QName qname ) {
         this(model, createPrefixedElement(BPELQName.DOCUMENTATION.getQName(),
                 model));
-    }
+    }*/
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.xml.wsdl.model.extensions.bpel.Documentation#getContent()
@@ -87,6 +83,27 @@ public class DocumentationImpl extends GenericExtensibilityElement implements Do
      */
     public void removeSource() {
         setAttribute( SOURCE , BPELAttribute.SOURCE , null );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.xml.wsdl.model.extensions.bpel.Documentation#getLang()
+     */
+    public String getLang() {
+        return getAttribute( BPELAttribute.LANG );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.xml.wsdl.model.extensions.bpel.Documentation#removeLang()
+     */
+    public void removeLang() {
+        setAttribute( LANG , BPELAttribute.LANG, null );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.xml.wsdl.model.extensions.bpel.Documentation#setLang(java.lang.String)
+     */
+    public void setLang( String value ) {
+        setAttribute( LANG , BPELAttribute.LANG, value );
     }
 
 }

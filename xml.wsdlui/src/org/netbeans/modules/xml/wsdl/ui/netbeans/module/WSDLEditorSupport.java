@@ -45,7 +45,6 @@ import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
-import org.openide.cookies.PrintCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -69,7 +68,7 @@ import org.openide.windows.WindowManager;
  */
 public class WSDLEditorSupport extends DataEditorSupport
         implements WSDLModelCookie, OpenCookie, EditCookie,
-        EditorCookie.Observable, LineCookie, CloseCookie, PrintCookie {
+        EditorCookie.Observable, LineCookie, CloseCookie {
     /** Used for managing the prepareTask listener. */
     private transient Task prepareTask2;
 

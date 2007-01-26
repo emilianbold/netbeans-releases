@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
 import org.netbeans.modules.xml.axi.Compositor.CompositorType;
+import org.netbeans.modules.xml.axi.impl.AXIDocumentImpl;
 import org.netbeans.modules.xml.axi.impl.AXIModelBuilder;
 import org.netbeans.modules.xml.axi.impl.AXIModelImpl;
 import org.netbeans.modules.xml.axi.impl.Util;
@@ -542,6 +543,9 @@ public abstract class AXIComponent extends AbstractComponent<AXIComponent>
         super.appendChild(property, child);
         if(pcs != null)
             pcs.firePropertyChange(PROP_CHILD_ADDED, null, child);        
+        
+        if(this instanceof AXIDocumentImpl)
+            ((AXIDocumentImpl)this).addToCache(child);
     }
     
     /**
@@ -554,6 +558,9 @@ public abstract class AXIComponent extends AbstractComponent<AXIComponent>
         super.insertAtIndex(property, child, index);
         if(pcs != null)
             pcs.firePropertyChange(PROP_CHILD_ADDED, null, child);
+        
+        if(this instanceof AXIDocumentImpl)
+            ((AXIDocumentImpl)this).addToCache(child);
     }
     
     /**
@@ -566,11 +573,12 @@ public abstract class AXIComponent extends AbstractComponent<AXIComponent>
         super.removeChild(property, child);
         if(pcs != null) {
             //fire event so that proxy children get deleted from their parents
-            pcs.firePropertyChange(PROP_CHILD_REMOVED, child, null);
-            
+            pcs.firePropertyChange(PROP_CHILD_REMOVED, child, null);            
             //finally, remove all listeners from the shared child
             child.removeAllListeners();
         }
+        if(this instanceof AXIDocumentImpl)
+            ((AXIDocumentImpl)this).removeFromCache(child);
     }
     
     /**
@@ -660,12 +668,7 @@ public abstract class AXIComponent extends AbstractComponent<AXIComponent>
             onChildDeleted(evt);
             return;
         }
-        
-        //special case: the rename in original will cause refactoring.
-        //proxy should ignore
-        if(source.isGlobal() && property.equals(AXIContainer.PROP_NAME))
-            return;
-        
+                
         firePropertyChangeEvent(evt.getPropertyName(),
                 evt.getOldValue(), evt.getNewValue());
     }

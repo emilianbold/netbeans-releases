@@ -21,10 +21,10 @@ package org.netbeans.modules.xml.axi.impl;
 import java.util.List;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIDocument;
-import org.netbeans.modules.xml.axi.AXIModelFactory;
 import org.netbeans.modules.xml.axi.ContentModel;
 import org.netbeans.modules.xml.schema.model.*;
 import org.netbeans.modules.xml.schema.model.visitor.DeepSchemaVisitor;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
 /**
  * Creates and populates children for a parent AXIComponent.
@@ -172,7 +172,13 @@ public class AXIModelBuilder extends DeepSchemaVisitor {
      * Visit GroupReference.
      */
     public void visit(GroupReference component) {
-        AXIComponent child = getAXIComponent(component.getRef().get(), true);
+        NamedComponentReference ref = component.getRef();
+        if(ref == null)
+            return;
+        SchemaComponent sc = model.getReferenceableSchemaComponent(ref);
+        if(sc == null)
+            return;
+        AXIComponent child = getAXIComponent(sc, true);
         addChild(child);
     }
     
@@ -188,7 +194,13 @@ public class AXIModelBuilder extends DeepSchemaVisitor {
      * Visit AttributeGroupReference.
      */
     public void visit(AttributeGroupReference component) {
-        AXIComponent child = getAXIComponent(component.getGroup().get(), true);
+        NamedComponentReference ref = component.getGroup();
+        if(ref == null)
+            return;
+        SchemaComponent sc = model.getReferenceableSchemaComponent(ref);
+        if(sc == null)
+            return;        
+        AXIComponent child = getAXIComponent(sc, true);
         addChild(child);
     }
         
@@ -225,9 +237,13 @@ public class AXIModelBuilder extends DeepSchemaVisitor {
      * Visit ComplexExtension.
      */
     public void visit(SimpleExtension component) {
-        if(component.getBase() != null && component.getBase().get() != null) {
-            AXIComponent child = getAXIComponent(component.getBase().get(), true);
-            addChild(child);
+        NamedComponentReference ref = component.getBase();        
+        if(ref != null) {
+            SchemaComponent type = model.getReferenceableSchemaComponent(ref);
+            if(type != null) {
+                AXIComponent child = getAXIComponent(type, true);
+                addChild(child);
+            }
         }
         visitChildren(component);
     }
@@ -236,9 +252,13 @@ public class AXIModelBuilder extends DeepSchemaVisitor {
      * Visit ComplexExtension.
      */
     public void visit(ComplexExtension component) {
-        if(component.getBase() != null && component.getBase().get() != null) {
-            AXIComponent child = getAXIComponent(component.getBase().get(), true);
-            addChild(child);
+        NamedComponentReference ref = component.getBase();        
+        if(ref != null) {
+            SchemaComponent type = model.getReferenceableSchemaComponent(ref);
+            if(type != null) {
+                AXIComponent child = getAXIComponent(type, true);
+                addChild(child);
+            }
         }
         visitChildren(component);
     }
@@ -273,15 +293,17 @@ public class AXIModelBuilder extends DeepSchemaVisitor {
         if(child == null)
             return;
         
-        if(child instanceof ContentModel) {
-            if(parent instanceof AXIDocument) {
-                children.add(child);
-            } else {
-                Util.addProxyChildren(parent, child, children);
-            }
-        } else {
+        if(parent instanceof AXIDocument) {
             children.add(child);
+            ((AXIDocumentImpl)parent).addToCache(child);
+            return;
         }
+                
+        if(child instanceof ContentModel) {
+            Util.addProxyChildren(parent, child, children);
+            return;
+        }
+        children.add(child);
     }
     
     private AXIModelImpl getModel() {

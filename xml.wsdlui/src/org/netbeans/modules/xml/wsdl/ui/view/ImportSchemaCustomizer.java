@@ -21,18 +21,19 @@ package org.netbeans.modules.xml.wsdl.ui.view;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.netbeans.modules.xml.schema.model.Import;
+import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
-import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceCustomizer;
+import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceCreator;
+import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceDataNode;
 import org.netbeans.modules.xml.xam.ui.customizer.ExternalReferenceDecorator;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 /**
  * An import customizer for schema in a WSDL document.
@@ -40,7 +41,8 @@ import org.openide.util.NbBundle;
  * @author  Administrator
  * @author  Nathan Fiedler
  */
-public class ImportSchemaCustomizer extends ExternalReferenceCustomizer<Import> {
+public class ImportSchemaCustomizer extends ExternalReferenceCreator<Schema> {
+    /** silence compiler warnings */
     private static final long serialVersionUID = 1L;
     private ExternalReferenceDecorator decorator;
     /** The real model from which we get the namespace prefixes. */
@@ -49,14 +51,14 @@ public class ImportSchemaCustomizer extends ExternalReferenceCustomizer<Import> 
     /**
      * Creates a new instance of ImportCustomizer
      *
-     * @param  _import  component to customize.
+     * @param  schema  component to contain the import(s).
      */
-    public ImportSchemaCustomizer(Import _import, WSDLModel model) {
-        super(_import, model);
+    public ImportSchemaCustomizer(Schema schema, WSDLModel model) {
+        super(schema, model);
     }
 
     @Override
-    protected void init(Import component, Model model) {
+    protected void init(Schema component, Model model) {
         // Set the model reference now, before the UI initialization occurs.
         mModel = (WSDLModel) model;
     }
@@ -64,71 +66,46 @@ public class ImportSchemaCustomizer extends ExternalReferenceCustomizer<Import> 
     @Override
     public void applyChanges() throws IOException {
         super.applyChanges();
-        Import _import = getModelComponent();
-        if (isLocationChanged()) {
+        Schema schema = getModelComponent();
+        List<Node> nodes = getSelectedNodes();
+        for (Node node : nodes) {
+            Import schemaImport = schema.getModel().getFactory().createImport();
             // Save the location.
-            _import.setSchemaLocation(getEditedLocation());
-        }
+            schemaImport.setSchemaLocation(getLocation(node));
 
-        String namespace = getEditedNamespace();
-        if (mustNamespaceDiffer() && isNamespaceChanged()) {
-            // Save the namespace.
-            _import.setNamespace(namespace);
-        }
-
-        // Save the prefix.
-        String prefix = getEditedPrefix();
-        if (prefix.length() > 0) {
-            if (mModel != null) {
-                AbstractDocumentComponent def = (AbstractDocumentComponent)mModel.getDefinitions();
-                Map prefixes = def.getPrefixes();
-                if (!prefixes.containsKey(prefix)) {
-                    def.addPrefix(prefix, namespace);
-                }
-                
+            String namespace = getNamespace(node);
+            if (mustNamespaceDiffer()) {
+                // Save the namespace.
+                schemaImport.setNamespace(namespace);
             }
-        }
-    }
 
-    @Override
-    protected String getReferenceLocation() {
-        Import _import = getModelComponent();
-        return _import.getSchemaLocation();
-    }
+            // Save the prefix.
+            if (node instanceof ExternalReferenceDataNode) {
+                String prefix = ((ExternalReferenceDataNode) node).getPrefix();
+                if (prefix.length() > 0) {
+                    if (mModel != null) {
+                        AbstractDocumentComponent def =
+                                (AbstractDocumentComponent) mModel.getDefinitions();
+                        Map prefixes = def.getPrefixes();
+                        if (!prefixes.containsKey(prefix)) {
+                            def.addPrefix(prefix, namespace);
+                        }
 
-    @Override
-    protected String getNamespace() {
-        Import _import = getModelComponent();
-        return _import.getNamespace();
-    }
-
-    @Override
-    protected String getPrefix() {
-        Import _import = getModelComponent();
-        String namespace = _import.getNamespace();
-        if (mModel != null) {
-            Map<String, String> prefixMap = ((AbstractDocumentComponent) mModel.
-                    getDefinitions()).getPrefixes();
-            for (Map.Entry<String, String> entry : prefixMap.entrySet()) {
-                if (entry.getValue().equals(namespace)) {
-                    return entry.getKey();
+                    }
                 }
             }
+            schema.addExternalReference(schemaImport);
         }
-        return null;
     }
 
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ImportWSDLCustomizer.class);
+        return new HelpCtx(ImportSchemaCustomizer.class);
     }
-    
-    
-    @Override
+
     protected String getTargetNamespace(Model model) {
         return ((SchemaModel) model).getSchema().getTargetNamespace();
     }
 
-    @Override
     protected Map<String, String> getPrefixes(Model model) {
         if (mModel != null) {
             return ((AbstractDocumentComponent) mModel.getDefinitions()).getPrefixes();
@@ -136,7 +113,6 @@ public class ImportSchemaCustomizer extends ExternalReferenceCustomizer<Import> 
         return new HashMap();
     }
 
-    @Override
     protected ExternalReferenceDecorator getNodeDecorator() {
         if (decorator == null) {
             decorator = new SchemaReferenceDecorator(this);
@@ -144,13 +120,6 @@ public class ImportSchemaCustomizer extends ExternalReferenceCustomizer<Import> 
         return decorator;
     }
 
-    @Override
-    protected String generatePrefix() {
-        //prefix is added on the definitions, create unique prefix based on the prefixes at the definitions.
-        return NameGenerator.getInstance().generateNamespacePrefix(null, mModel);
-    }
-
-    @Override
     public boolean mustNamespaceDiffer() {
         return true;
     }

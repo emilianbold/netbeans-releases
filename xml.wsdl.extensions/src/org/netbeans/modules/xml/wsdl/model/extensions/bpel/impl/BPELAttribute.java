@@ -39,7 +39,10 @@ public enum BPELAttribute implements Attribute {
     QUERY("query"),
     QUERY_LANGUAGE( Query.QUERY_LANGUAGE ),
     ELEMENT( CorrelationProperty.ELEMENT_PROPERTY ),
-    SOURCE(Documentation.SOURCE);
+    SOURCE(Documentation.SOURCE),
+    LANG( Documentation.LANG ),
+    ;
+    
     
     private String name;
     private Class type;

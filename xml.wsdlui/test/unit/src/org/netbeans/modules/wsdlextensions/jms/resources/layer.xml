@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="WSDLEditor">
+        <file  name="jms-ext.xsd" url="jms-ext.xsd" >
+            <attr name="prefix" stringvalue="jms" />
+            <attr name="namespace" stringvalue="http://schemas.sun.com/jbi/wsdl-extensions/jms/"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.jms.resources.Bundle" />
+        </file>
+		
+        <folder name ="Binding">
+	    <file name="JMSBinding" >
+                <attr name="xsdFileName" stringvalue="jms-ext.xsd" />
+                <attr name="element" stringvalue="binding" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.jms.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/jms/resources/throw16.png" /> 
+            </file>
+        </folder>
+
+        <folder name ="BindingOperation">
+            <file name="JMSBindingOperation">
+                <attr name="xsdFileName" stringvalue="jms-ext.xsd" />
+                <attr name="element" stringvalue="operation" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.jms.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/jms/resources/onalarm16x16.png" /> 
+            </file>
+        </folder>
+			
+        <folder name ="BindingOperationInput">
+            <file name="JMSBindingOperationInput">
+                <attr name="xsdFileName" stringvalue="jms-ext.xsd" />
+                <attr name="element" stringvalue="message" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.jms.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/jms/resources/onmessage16x16.png" /> 
+            </file>            
+        </folder>
+        
+        <folder name ="BindingOperationOutput">
+            <file name="JMSBindingOperationOutput">
+                <attr name="xsdFileName" stringvalue="jms-ext.xsd" />
+                <attr name="element" stringvalue="message" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.jms.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/jms/resources/onmessage16x16.png" /> 
+            </file>
+	</folder>
+	
+        <!--
+        <folder name ="BindingOperationFault">
+            <file name="JMSBindingOperationFault">
+                <attr name="xsdFileName" stringvalue="jms-ext.xsd" />
+                <attr name="element" stringvalue="fault" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.jms.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/jms/resources/scope16x16.png" /> 
+            </file>
+        </folder>
+        -->     
+	
+        <folder name ="ServicePort">
+            <file name="JMSServicePort">
+                <attr name="xsdFileName" stringvalue="jms-ext.xsd" />
+                <attr name="element" stringvalue="address" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.jms.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/jms/resources/while16x16.png" /> 
+            </file>
+        </folder>    
+    </folder>
+  
+  
+    <folder name="SeeBeyondJbiComponents">
+        <!-- JBI Component -->
+        <folder name="com.sun.jmsbc">
+            <attr name="id" stringvalue="com.sun.jmsbc-1.0-2"/>
+            <attr name="description" stringvalue="JMS Binding"/>
+            <attr name="type" stringvalue="Binding"/>
+            <file name="jms.binding-1.0">
+                <attr name="namespace" stringvalue="http://schemas.sun.com/jbi/wsdl-extensions/jms/"/>
+            </file>
+        </folder>
+    </folder>    
+</filesystem>
+

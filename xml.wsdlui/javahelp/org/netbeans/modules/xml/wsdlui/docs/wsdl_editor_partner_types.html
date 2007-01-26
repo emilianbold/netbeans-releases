@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Configuring Partner Link Types Using the Partner View</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+
+<body>
+
+<h2>Configuring Partner Link Types Using the Partner View</h2>
+
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>The PartnerLinkTypes box contains one configuration box for each partner link type in the WSDL file.</p>
+<p>A partner link type can have one or two roles. The first role appears in the right side of the configuration box. The second role appears in the left side of the configuration box.</p>
+<p>The role's port type appears below the role. A port type has one or more operations, which are illustrated in the space below the port types. A solid horizontal arrow indicates an input message. A dashed horizontal arrow indicates an output message. If the category of operation is Request-Response or Solicit-Response, then you can optionally add a fault.</p>
+
+<ul class="note">
+  <li>The configuration box resembles a sequence diagram in Unified Modeling Language (UML).</li>
+</ul>    
+
+<p><b>To create a partner link type:</b></p>
+<ol>
+  <li>Click Add PartnerLinkType.<br>The configuration box for the partner link type appears. The default role appears in the right side of the configuration box.</li>
+  <li>In the right side of the configuration box, double-click Enter or Select an Existing Port Type and specify the port type that the service will use to receive messages. To create a new port type, enter the name. To use an existing port type, select the port type from the drop-down menu.</li>
+  <li>If you created a new port type, then drag one or more operations from the Palette window onto the vertical line that extends below the port type.</li>
+  <li>(Optional) To add a second role, do the following:</li>
+  <ol type="a">
+    <li>In the left side of the configuration box, double-click [External] and enter the role name.</li>
+    <li>In the left side of the configuration box, double-click Enter or Select an Existing Port Type and specify the port type that the external service will use to receive messages.</li>
+  </ol>
+</ol>
+
+<p><b>To change the name of a partner link type:</b></p>
+<ol>
+  <li>Double-click the partner link type name.</li>
+  <li>Change the name.</li>
+  <li>Press Enter.</li>
+</ol>
+
+<p><b>To change the name of a role:</b></p>
+<ol>
+  <li>Double-click the role name.</li>
+  <li>Change the name.</li>
+  <li>Press Enter.</li>
+</ol>
+
+<p><b>To change the port type of a role:</b></p>
+<ol>
+  <li>Double-click the port type.</li>
+  <li>Change the port type. To create a new port type, enter the name. To use an existing port type, select the port type from the drop-down menu.</li>
+</ol>
+
+<p><b>To add a fault to a request-response or solicit-response operation:</b></p>
+<ol>
+  <li>Right-click the operation name and choose Add &gt; Fault.<br>The fault appears with a blank message.</li>
+  <li>Specify the fault message.</li>
+</ol>
+
+<p><b>To delete a role:</b></p>
+<ol>
+  <li>Select the role.</li>
+  <li>Press Delete.</li>
+</ol>
+
+<p><b>To remove a partner link type:</b></p>
+<ol>
+  <li>Select the configuration box for the partner link type.</li>
+  <li>Click Remove PartnerLinkType.</li>
+</ol>
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="wsdl_editor_partner.html" title="About the Partner View">About the Partner View</a></dd>
+</dl>
+<hr>
+<small>  
+<a href="credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

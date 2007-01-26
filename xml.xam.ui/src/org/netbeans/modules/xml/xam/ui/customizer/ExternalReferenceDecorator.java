@@ -21,6 +21,7 @@ package org.netbeans.modules.xml.xam.ui.customizer;
 
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.Model;
+import org.openide.nodes.Node;
 
 /**
  * An ExternalReferenceDecorator is used to control the appearance of the
@@ -31,16 +32,21 @@ import org.netbeans.modules.xml.xam.Model;
 public interface ExternalReferenceDecorator {
 
     /**
-     * Return a message appropriate for the given node. Normally the
-     * implementation will return null, but if the node represents an
-     * invalid selection, this method should return a localized error
-     * message. It will be displayed in the customizer interface to
-     * alert the user as to any conditions they should be made aware of.
+     * Create an ExternalReferenceNode with the given delegate node.
+     * Implementors may wish to delegate to the customizer.
      *
-     * @param  node  external reference node to annotate.
-     * @return  message indicating error, warning, or the like; null if none.
+     * @param  node  delegate Node.
+     * @return  new ExternalReferenceNode.
      */
-    String annotate(ExternalReferenceNode node);
+    ExternalReferenceDataNode createExternalReferenceNode(Node original);
+
+    /**
+     * Generate a unique prefix value for the component.
+     *
+     * @param  node  node from which to retrieve model.
+     * @return  unique prefix value (e.g. "ns1"); should not be null.
+     */
+    String generatePrefix(ExternalReferenceNode node);
 
     /**
      * Return the document type that this decorator wants to show in the
@@ -65,4 +71,13 @@ public interface ExternalReferenceDecorator {
      * @return  the namespace value, or null if none.
      */
     String getNamespace(Model model);
+
+    /**
+     * Validate the given node, returning a non-null value if the node
+     * is not a valid selection. Otherwise, return null if it is valid.
+     *
+     * @param  node  external reference node to validate.
+     * @return  message describing the issue; null if valid.
+     */
+    String validate(ExternalReferenceNode node);
 }

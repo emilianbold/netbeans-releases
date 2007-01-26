@@ -58,7 +58,7 @@ public class ExtensibilityElementsFolderNode extends FolderNode {
         this.setDisplayName(NbBundle.
                 getMessage(ExtensibilityElementsFolderNode.class,
                 "EXTENSIBILITY_ELEMENTS_FOLDER_NODE_NAME"));
-        getCookieSet().add(new AddChildWSDLElementCookie(element));
+        getLookupContents().add(new AddChildWSDLElementCookie(element));
         this.addNodeListener(new WSDLNodeListener(this));
     }
 

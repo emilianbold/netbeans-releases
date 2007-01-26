@@ -20,8 +20,10 @@
 package org.netbeans.modules.xml.axi.impl;
 
 import org.netbeans.modules.xml.axi.AXIComponent;
+import org.netbeans.modules.xml.axi.AXIComponent.ComponentType;
 import org.netbeans.modules.xml.axi.AXIModel;
 import org.netbeans.modules.xml.axi.AnyAttribute;
+import org.netbeans.modules.xml.schema.model.Any.ProcessContents;
 
 /**
  * Proxy for AnyAttribute, acts on behalf of an AnyAttribute.
@@ -46,7 +48,23 @@ public class AnyAttributeProxy extends AnyAttribute implements AXIComponentProxy
         return (AnyAttribute)getSharedComponent();
     }
 	
+    public String getTargetNamespace() {
+        return getShared().getTargetNamespace();
+    }
+
+    public void setTargetNamespace(String value) {
+        getShared().setTargetNamespace(value);
+    }
+    
+    public ProcessContents getProcessContents() {
+        return getShared().getProcessContents();
+    }
+    
+    public void setProcessContents(ProcessContents value) {
+        getShared().setProcessContents(value);
+    }
+    
     public String toString() {
-        return getSharedComponent().toString();
+        return getShared().toString();
     }
 }

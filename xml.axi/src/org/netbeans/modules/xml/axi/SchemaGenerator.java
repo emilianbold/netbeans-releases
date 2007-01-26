@@ -19,8 +19,13 @@
 package org.netbeans.modules.xml.axi;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
 import javax.swing.text.BadLocationException;
+import org.netbeans.modules.xml.axi.datatype.Datatype;
 import org.netbeans.modules.xml.axi.visitor.*;
+import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 
 /**
@@ -94,5 +99,12 @@ public abstract class SchemaGenerator extends DefaultVisitor {
     
     public static interface UniqueId {
         int nextId();
+    }
+    
+    public static interface PrimitiveCart {
+        void add(Datatype d, SchemaComponent referer);
+        Set<Map.Entry<SchemaComponent, Datatype>> getEntries();
+        GlobalSimpleType getDefaultPrimitive();
+        public GlobalSimpleType getPrimitiveType(String typeName);
     }
 }

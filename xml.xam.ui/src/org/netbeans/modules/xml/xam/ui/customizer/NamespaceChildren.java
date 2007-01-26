@@ -71,8 +71,7 @@ public class NamespaceChildren extends Children.Keys {
                 for (FileObject fobj:fobjs) {
                     try {
                         Node node = DataObject.find(fobj).getNodeDelegate();
-                        filterNodes[i++] = new ExternalReferenceDataNode(
-                                node, Children.LEAF, decorator);
+                        filterNodes[i++] = decorator.createExternalReferenceNode(node);
                     } catch (DataObjectNotFoundException donfe) {
                     }
                 }

@@ -100,7 +100,8 @@ public class SimulationTest extends AbstractSyncTestCase {
         simulateChangeCompositor1();
         simulateChangeCompositor2();
         simulateDropOnRussianDoll();
-        simulateDropOnGardenOfEden();
+        //simulateDropOnGardenOfEden();  //not needed anymore
+        simulateRenameElementAndCheckReference();
     }
     
     //drop E1, add E2 to E1, drop GCT1, add A1, A2 to GCT1 then
@@ -114,7 +115,8 @@ public class SimulationTest extends AbstractSyncTestCase {
         assert(doc.getChildren().size() == 1);
         assert(model.getSchemaModel().getSchema().getChildren().size() == 1);
         assert(helper.inModel(e1) && helper.inModel(e2));
-        assert(e1.getType() instanceof AnonymousType);
+        //assert(e1.getType() instanceof AnonymousType);
+        assert(e1.getType() == null);
         
         //drop a GCT named GCT1
         ContentModel gct1 = helper.dropGlobalComplexType("GCT1");
@@ -188,7 +190,8 @@ public class SimulationTest extends AbstractSyncTestCase {
         Element e2 = helper.dropElement(e1, "E2");
         assert(helper.inModel(e2));
         assert(e1.getChildElements().size() == 1);
-        assert(e1.getType() instanceof AnonymousType);
+        //assert(e1.getType() instanceof AnonymousType);
+        assert(e1.getType() == null);
         Compositor c = (Compositor)e1.getChildren().get(0);
         assert(c.getChildren().get(0) == e2);
     }
@@ -229,7 +232,8 @@ public class SimulationTest extends AbstractSyncTestCase {
         
         Compositor sequence = helper.dropCompositor(e1, CompositorType.SEQUENCE);
         assert(helper.inModel(sequence));
-        assert(e1.getType() instanceof AnonymousType);
+        //assert(e1.getType() instanceof AnonymousType);
+        assert(e1.getType() == null);
         
         Element e11 = helper.dropElementOnCompositor(sequence, "E11");
         Element e12 = helper.dropElementOnCompositor(sequence, "E12");
@@ -263,7 +267,8 @@ public class SimulationTest extends AbstractSyncTestCase {
         
         Compositor sequence = helper.dropCompositor(e1, CompositorType.SEQUENCE);
         assert(helper.inModel(sequence));
-        assert(e1.getType() instanceof AnonymousType);
+        //assert(e1.getType() instanceof AnonymousType);
+        assert(e1.getType() == null);
         
         Element e2 = helper.dropElementOnCompositor(sequence, "E2");
         assert(helper.inModel(e2));
@@ -349,6 +354,42 @@ public class SimulationTest extends AbstractSyncTestCase {
         assert(ref2.getReferent().isGlobal());
         assert(ref2.getReferent() instanceof ElementImpl);
         assert(ref2.getReferent().getName().equals("E2"));
+    }
+    
+    //drop E1, add a sequence to E1, add two children E11, E12 to sequence
+    //change the sequence to a choice, verify the result.
+    public void simulateRenameElementAndCheckReference() throws Exception {
+        init(Pattern.RUSSIAN_DOLL);
+        class Status {
+            boolean status = false;
+            public boolean getStatus() {return status;}
+            public void setStatus(boolean status) {this.status = status;}
+        }
+        final Status status = new Status();
+        //drop two global elements
+        final Element e1 = helper.dropGlobalElement("E1");
+        Element e2 = helper.dropGlobalElement("E2");
+        assert(helper.inModel(e1) && helper.inModel(e2));
+        assert(doc.getChildren().size() == 2);
+        assert(model.getSchemaModel().getSchema().getChildren().size() == 2);
+        Element e3 = helper.dropElement(e2, "E3");
+        helper.setElementType(e3, e1);
+        final Element e4 = (Element)e2.getChildren().get(0).getChildren().get(0);
+        assert(!helper.inModel(e3) && helper.inModel(e4) && e4.isReference());
+        e4.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(evt.getPropertyName().equals(Element.PROP_NAME)) {
+                    assert(evt.getSource() == e4);
+                    assert(e4.getReferent() == e1);
+                    status.setStatus(true);
+                }
+            }
+        });
+        helper.refactorRename(e1, "xxx");
+        while(!status.getStatus()) {
+            Thread.sleep(2000);
+        }
+        assert(status.getStatus());
     }
         
     public static class ModelPCL implements PropertyChangeListener {
