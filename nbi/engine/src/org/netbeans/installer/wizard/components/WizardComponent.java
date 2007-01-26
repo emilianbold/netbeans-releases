@@ -21,7 +21,6 @@
 package org.netbeans.installer.wizard.components;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +30,6 @@ import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.UiUtils;
-import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.containers.SwingContainer;
@@ -243,8 +241,6 @@ public abstract class WizardComponent {
             } else {
                 ErrorManager.notifyError(errorMessage);
             }
-            
-            throw (NullPointerException) new NullPointerException("asdkalskdjaslkjd").initCause(new IOException("IOIOIO"));
         }
         
         public void evaluateCancelButtonClick() {
