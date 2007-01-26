@@ -86,7 +86,7 @@ public class InputGestureTest extends NbTestCase {
 
             InputGesture g = InputGesture.valueOf(r);
             InputGesture exp = expectedGestures.get((int)r.getSequenceNumber());
-            assertEquals("For: " + r.getSequenceNumber() + " txt:\n`"+ r.getMessage() +
+            assertEquals(cnt + ": For: " + r.getSequenceNumber() + " txt:\n`"+ r.getMessage() +
                 "\nkey: " + r.getResourceBundleName()
                 , exp, g);
         }
@@ -111,7 +111,7 @@ public class InputGestureTest extends NbTestCase {
 
             InputGesture g = InputGesture.valueOf(r);
             InputGesture exp = expectedGestures.get((int)r.getSequenceNumber());
-            assertEquals("For: " + r.getSequenceNumber() + " txt:\n`"+ r.getMessage() +
+            assertEquals(cnt + ": For: " + r.getSequenceNumber() + " txt:\n`"+ r.getMessage() +
                 "\nkey: " + r.getResourceBundleName()
                 , exp, g);
         }

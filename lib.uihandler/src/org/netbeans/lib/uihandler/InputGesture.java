@@ -18,6 +18,7 @@
 package org.netbeans.lib.uihandler;
 
 import java.util.logging.LogRecord;
+import java.util.logging.XMLFormatter;
 
 /** Represents a gesture that initiated the given LogRecord.
  *
@@ -26,20 +27,24 @@ import java.util.logging.LogRecord;
 public enum InputGesture {
     KEYBOARD, MENU, TOOLBAR;
     
+    
+    private static final XMLFormatter F = new XMLFormatter();
+    
     /** Finds the right InputGesture for given LogRecord.
      * @param rec the record
      * @return the gesture that initated the record or null if unknown
      */
     public static InputGesture valueOf(LogRecord rec) {
-        if ("UI_ACTION_BUTTON_PRESS".equals(rec.getResourceBundleName())) {
-            if (rec.getMessage().indexOf("Actions$Menu") >= 0) {
+        if ("UI_ACTION_BUTTON_PRESS".equals(rec.getMessage())) {
+            String fullMsg = F.format(rec);
+            if (fullMsg.indexOf("Actions$Menu") >= 0) {
                 return MENU;
             }
-            if (rec.getMessage().indexOf("Actions$Toolbar") >= 0) {
+            if (fullMsg.indexOf("Actions$Toolbar") >= 0) {
                 return TOOLBAR;
             }
         }
-        if ("UI_ACTION_KEY_PRESS".equals(rec.getResourceBundleName())) {
+        if ("UI_ACTION_KEY_PRESS".equals(rec.getMessage())) {
             return KEYBOARD;
         }
         return null;

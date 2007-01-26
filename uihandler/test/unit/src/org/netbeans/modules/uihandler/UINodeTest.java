@@ -19,15 +19,19 @@
 
 package org.netbeans.modules.uihandler;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.ResourceBundle;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import junit.framework.TestCase;
 import java.util.logging.LogRecord;
+import org.netbeans.lib.uihandler.LogRecords;
 import org.openide.nodes.Node;
 
 /**
  *
- * @author jarda
+ * @author Jaroslav Tulach
  */
 public class UINodeTest extends TestCase {
     
@@ -43,6 +47,7 @@ public class UINodeTest extends TestCase {
 
     public void testDisplayNameOfTheNode() throws Exception {
         LogRecord r = new LogRecord(Level.INFO, "test_msg");
+        r.setResourceBundleName("org.netbeans.modules.uihandler.TestBundle");
         r.setResourceBundle(ResourceBundle.getBundle("org.netbeans.modules.uihandler.TestBundle"));
         r.setParameters(new Object[] { new Integer(1), "Ahoj" });
         
@@ -52,21 +57,73 @@ public class UINodeTest extends TestCase {
         if (!n.getDisplayName().matches(".*Ahoj.*1.*")) {
             fail("wrong display name, shall contain Ahoj and 1: " + n.getDisplayName());
         }
+        assertSerializedWell(n);
     }
     
-    public void testSomeNPE() {
+    public void testSomeNPE() throws Exception {
         LogRecord r = new LogRecord(Level.FINE, "UI_ACTION_EDITOR");
         Node n = UINode.create(r);
         assertNotNull(n);
         assertEquals("No name", "", n.getDisplayName());
         assertNotNull(n.getName());
+        assertSerializedWell(n);
     }
     
-    public void testHasNonNullName() {
+    public void testHasNonNullName() throws Exception {
         LogRecord r = new LogRecord(Level.WARNING, null);
         r.setThrown(new Exception());
         Node n = UINode.create(r);
         assertNotNull(n);
         assertNotNull(n.getName());
+   //     assertSerializedWell(n);
+    }
+    
+    private static void assertSerializedWell(Node n) throws Exception {
+        LogRecord r = n.getLookup().lookup(LogRecord.class);
+        assertNotNull("There is a log record", r);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        LogRecords.write(os, r);
+        os.close();
+
+        {
+            ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray());
+            LogRecord nr = LogRecords.read(is);
+            is.close();
+
+            Node newNode = UINode.create(nr);
+
+            assertEquals("name", n.getName(), newNode.getName());
+            assertEquals("displayName", n.getDisplayName(), newNode.getDisplayName());
+            assertEquals("htmlName", n.getHtmlDisplayName(), newNode.getHtmlDisplayName());
+        }
+        
+        class H extends Handler {
+            LogRecord one;
+            
+            public void publish(LogRecord a) {
+                assertNull("This is first one: " + a, one);
+                one = a;
+            }
+
+            public void flush() {
+            }
+
+            public void close() throws SecurityException {
+            }
+        }
+        
+        H handler = new H();
+        
+        {
+            ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray());
+            LogRecords.scan(is, handler);
+            is.close();
+
+            Node newNode = UINode.create(handler.one);
+
+            assertEquals("name", n.getName(), newNode.getName());
+            assertEquals("displayName", n.getDisplayName(), newNode.getDisplayName());
+            assertEquals("htmlName", n.getHtmlDisplayName(), newNode.getHtmlDisplayName());
+        }
     }
 }

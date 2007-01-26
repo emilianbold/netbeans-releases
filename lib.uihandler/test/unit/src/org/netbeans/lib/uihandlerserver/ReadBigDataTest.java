@@ -48,7 +48,7 @@ public class ReadBigDataTest extends NbTestCase {
     }
     
     protected Level logLevel() {
-        return null; //Level.FINEST;
+        return Level.FINEST;
     }
 
     protected void setUp() throws Exception {

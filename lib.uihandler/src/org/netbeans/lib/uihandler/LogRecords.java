@@ -24,8 +24,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PushbackInputStream;
 import java.io.SequenceInputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -51,7 +57,12 @@ public final class LogRecords {
 
     private static final Logger LOG = Logger.getLogger(LogRecords.class.getName());
     
-    private static final Formatter FORMATTER = new XMLFormatter();
+    private static final Formatter FORMATTER = new XMLFormatter() {
+        public String formatMessage(LogRecord r) {
+            return super.formatMessage(r);
+        //    return r.getMessage();
+        }
+    };
     
     public static void write(OutputStream os, LogRecord rec) throws IOException {
         String formated = FORMATTER.format(rec);
@@ -140,12 +151,36 @@ public final class LogRecords {
         String thread = content(s, "thread", true);
         String msg = content(s, "message", true);
         String key = content(s, "key", false);
+        String catalog = content(s, "catalog", false);
         
-        LogRecord r = new LogRecord(parseLevel(lev), msg);
+        LogRecord r = new LogRecord(parseLevel(lev), key != null && catalog != null ? key : msg);
         r.setThreadID(Integer.parseInt(thread));
         r.setSequenceNumber(Long.parseLong(seq));
         r.setMillis(Long.parseLong(millis));
-        r.setResourceBundleName(key);
+        if (catalog != null && key != null) {
+            r.setResourceBundleName(catalog);
+            try {
+                ResourceBundle b = ResourceBundle.getBundle(catalog);
+                b.getObject(key);
+                // ok, the key is there
+                r.setResourceBundle(b);
+            } catch (MissingResourceException e) {
+                LOG.log(Level.INFO, "Cannot find resource bundle for {0} and key {1}", new Object[] { catalog, key });
+                r.setResourceBundle(new FakeBundle(key, msg));
+            }
+        
+            int[] paramFrom = new int[1];
+            List<String> params = new ArrayList<String>();
+            for (;;) {
+                String p = content(s, "param", false, paramFrom);
+                if (p == null) {
+                    break;
+                }
+                params.add(p);
+            }
+            
+            r.setParameters(params.toArray());
+        }
         
         return r;
     }
@@ -154,7 +189,10 @@ public final class LogRecords {
         return "USER".equals(lev) ? Level.SEVERE : Level.parse(lev);
     }
     private static String content(String where, String what, boolean fail) throws IOException {
-        int indx = where.indexOf("<" + what + ">");
+        return content(where, what, fail, new int[1]);
+    }
+    private static String content(String where, String what, boolean fail, int[] from) throws IOException {
+        int indx = where.indexOf("<" + what + ">", from[0]);
         if (indx == -1) {
             if (fail) {
                 throw new IOException("Not found: <" + what + "> inside of:\n"+ where); // NOI18N
@@ -168,6 +206,7 @@ public final class LogRecords {
         if (indx == -1) {
             throw new IOException("Not found: </" + what + "> inside of:\n"+ where); // NOI18N
         }
+        from[0] = end;
         
         return where.substring(begin, end);
     }
@@ -268,6 +307,7 @@ public final class LogRecords {
         }
         private Map<Elem,String> values = new EnumMap<Elem,String>(Elem.class);
         private Elem current;
+        private List<String> params;
         private StringBuilder chars = new StringBuilder();
         
         public Parser(Handler c) {
@@ -307,10 +347,19 @@ public final class LogRecords {
 
         public void endElement(String uri, String localName, String qName) throws SAXException {
             if (current != null) {
-                values.put(current, chars.toString());
+                String v = chars.toString();
+                values.put(current, v);
+                if (current == Elem.PARAM) {
+                    if (params == null) {
+                        params = new ArrayList<String>();
+                    }
+                    params.add(v);
+                }
             }
             current = null;
             chars.setLength(0);
+            
+            
             
             if ("record".equals(qName)) { // NOI18N
                 String millis = Elem.MILLIS.parse(values);
@@ -319,12 +368,28 @@ public final class LogRecords {
                 String thread = Elem.THREAD.parse(values);
                 String msg = Elem.MESSAGE.parse(values);
                 String key = Elem.KEY.parse(values);
+                String catalog = Elem.CATALOG.parse(values);
                 
-                LogRecord r = new LogRecord(parseLevel(lev), msg);
+                LogRecord r = new LogRecord(parseLevel(lev), key != null && catalog != null ? key : msg);
                 r.setThreadID(Integer.parseInt(thread));
                 r.setSequenceNumber(Long.parseLong(seq));
                 r.setMillis(Long.parseLong(millis));
                 r.setResourceBundleName(key);
+                if (catalog != null && key != null) {
+                    r.setResourceBundleName(catalog);
+                    try {
+                        ResourceBundle b = ResourceBundle.getBundle(catalog);
+                        b.getObject(key);
+                        // ok, the key is there
+                        r.setResourceBundle(b);
+                    } catch (MissingResourceException e) {
+                        LOG.log(Level.INFO, "Cannot find resource bundle {0} for key {1}", new Object[] { catalog, key });
+                        r.setResourceBundle(new FakeBundle(key, msg));
+                    }
+                    if (params != null) {
+                        r.setParameters(params.toArray());
+                    }
+                }
                 callback.publish(r);
                 
                 values.clear();
@@ -350,4 +415,27 @@ public final class LogRecords {
         }
         
     }
+    
+    private static final class FakeBundle extends ResourceBundle {
+        private String key;
+        private String value;
+         
+        public FakeBundle(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+
+    
+        protected Object handleGetObject(String arg0) {
+            if (key.equals(arg0)) {
+                return value;
+            } else {
+                return null;
+            }
+        }
+
+        public Enumeration<String> getKeys() {
+            return Collections.enumeration(Collections.singleton(key));
+        }
+}
 }
