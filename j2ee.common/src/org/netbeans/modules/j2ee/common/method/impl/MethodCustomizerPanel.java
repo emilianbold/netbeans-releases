@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -19,6 +19,11 @@
 
 package org.netbeans.modules.j2ee.common.method.impl;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 
 /**
@@ -27,20 +32,18 @@ import org.netbeans.modules.j2ee.common.method.MethodModel;
  */
 public final class MethodCustomizerPanel extends javax.swing.JPanel {
     
-    @Deprecated
-    public static final String OK_ENABLED = "ok_enabled";
-    
-    @Deprecated
-    public void isOK() {
-    }
+    public static final String NAME = "name";
+    public static final String RETURN_TYPE = "returnType";
+    public static final String INTERFACES = "interfaces";
     
     private final MethodModel methodModel;
     
-    public MethodCustomizerPanel(
+    private MethodCustomizerPanel(
             MethodModel methodModel,
             boolean hasLocal,
             boolean hasRemote,
             boolean selectLocal,
+            boolean selectRemote,
             boolean hasReturnType,
             String  ejbql,
             boolean hasFinderCardinality,
@@ -50,11 +53,8 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
         this.methodModel = methodModel;
         localCheckBox.setEnabled(hasLocal);
         remoteCheckBox.setEnabled(hasRemote);
-        if (selectLocal) {
-            localCheckBox.setSelected(true);
-        } else {
-            remoteCheckBox.setSelected(true);
-        }
+        localCheckBox.setSelected(selectLocal);
+        remoteCheckBox.setSelected(selectRemote);
         if (!hasReturnType) {
             returnTypeLabel.setVisible(false);
             returnTypeTextField.setVisible(false);
@@ -73,6 +73,28 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
         if (!hasInterfaces) {
             interfacePanel.setVisible(false);
         }
+        
+        // listeners
+        nameTextField.getDocument().addDocumentListener(new SimpleListener(NAME));
+        returnTypeTextField.getDocument().addDocumentListener(new SimpleListener(RETURN_TYPE));
+        SimpleListener interfacesListener = new SimpleListener(INTERFACES);
+        localCheckBox.addActionListener(interfacesListener);
+        remoteCheckBox.addActionListener(interfacesListener);
+    }
+    
+    public static MethodCustomizerPanel create(MethodModel methodModel, boolean hasLocal, boolean hasRemote, boolean selectLocal, boolean selectRemote,
+            boolean hasReturnType, String  ejbql, boolean hasFinderCardinality, boolean hasExceptions, boolean hasInterfaces) {
+        return new MethodCustomizerPanel(methodModel, hasLocal, hasRemote, selectLocal, selectRemote,
+                hasReturnType, ejbql, hasFinderCardinality, hasExceptions, hasInterfaces);
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+	super.addPropertyChangeListener(listener);
+         // first validation before any real event is send
+        firePropertyChange(NAME, null, null);
+        firePropertyChange(RETURN_TYPE, null, null);
+        firePropertyChange(INTERFACES, null, null);
     }
     
     /** This method is called from within the constructor to
@@ -83,6 +105,7 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        finderCardinalityButtonGroup = new javax.swing.ButtonGroup();
         finderCardinalityPanel = new javax.swing.JPanel();
         oneRadioButton = new javax.swing.JRadioButton();
         manyRadioButton = new javax.swing.JRadioButton();
@@ -104,10 +127,12 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
 
         finderCardinalityPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "MethodCustomizerPanel.finderCardinalityPanel.border.title"))); // NOI18N
 
+        finderCardinalityButtonGroup.add(oneRadioButton);
         oneRadioButton.setText(org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "MethodCustomizerPanel.oneRadioButton.text")); // NOI18N
         oneRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         oneRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
+        finderCardinalityButtonGroup.add(manyRadioButton);
         manyRadioButton.setText(org.openide.util.NbBundle.getMessage(MethodCustomizerPanel.class, "MethodCustomizerPanel.manyRadioButton.text")); // NOI18N
         manyRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         manyRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -267,7 +292,7 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
                 .add(exceptionAndParameterPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 100, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(errorTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(15, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -278,6 +303,7 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
     private javax.swing.JTextField errorTextField;
     private javax.swing.JTabbedPane exceptionAndParameterPane;
     private javax.swing.JPanel exceptionsPanel;
+    private javax.swing.ButtonGroup finderCardinalityButtonGroup;
     private javax.swing.JPanel finderCardinalityPanel;
     private javax.swing.JPanel interfacePanel;
     private javax.swing.JLabel jLabel1;
@@ -292,5 +318,54 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
     private javax.swing.JLabel returnTypeLabel;
     private javax.swing.JTextField returnTypeTextField;
     // End of variables declaration//GEN-END:variables
+    
+    public void setError(String message) {
+        errorTextField.setText(message);
+    }
+    
+    public String getMethodName() {
+            return nameTextField.getText().trim();
+    }
+    
+    public String getReturnType() {
+        return returnTypeTextField.getText().trim();
+    }
+
+    public boolean hasLocal() {
+        return localCheckBox.isEnabled() & localCheckBox.isSelected();
+    }
+    
+    public boolean hasRemote() {
+        return remoteCheckBox.isEnabled() && remoteCheckBox.isSelected();
+    }
+    
+    /**
+     * Listener on text fields. 
+     * Fires change event for specified property of this JPanel, 
+     * old and new value of event is null. 
+     * After receiving event, client can get property value by 
+     * calling {@link #getProperty(String)}
+     */
+    private class SimpleListener implements DocumentListener, ActionListener {
+        
+        private final String propertyName;
+        
+        public SimpleListener(String propertyName) {
+            this.propertyName = propertyName;
+        }
+        
+        public void insertUpdate(DocumentEvent documentEvent) { fire(); }
+        
+        public void removeUpdate(DocumentEvent documentEvent) { fire(); }
+        
+        public void changedUpdate(DocumentEvent documentEvent) {}
+        
+        public void actionPerformed(ActionEvent actionEvent) { fire(); }
+
+        private void fire() {
+            firePropertyChange(propertyName, null, null);
+        }
+        
+    }
     
 }

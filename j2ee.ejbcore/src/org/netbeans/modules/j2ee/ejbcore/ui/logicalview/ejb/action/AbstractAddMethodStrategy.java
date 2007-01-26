@@ -71,7 +71,7 @@ public abstract class AbstractAddMethodStrategy {
         }
         MethodType pType = getPrototypeMethod(fileObject, className);
         MethodCustomizer methodCustomizer = createDialog(fileObject, pType);
-        if (methodCustomizer.customizeMethod(name)) {
+        if (methodCustomizer.customizeMethod()) {
             try {
                 okButtonPressed(methodCustomizer, pType, fileObject, className);
             } catch (IOException ioe) {

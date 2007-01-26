@@ -76,10 +76,12 @@ public class AddFinderMethodStrategy extends AbstractAddMethodStrategy {
         }
         MethodsNode methodsNode = getMethodsNode();
         return MethodCustomizerFactory.finderMethod(
+                getTitle(),
                 pType.getMethodElement(), 
                 ejbMethodController.hasRemote(), 
                 ejbMethodController.hasLocal(), 
-                methodsNode == null ? ejbMethodController.hasLocal() : methodsNode.isLocal(), // fallback to local if method node not found
+                methodsNode == null ? ejbMethodController.hasLocal() : methodsNode.isLocal(),
+                methodsNode == null ? ejbMethodController.hasRemote() : !methodsNode.isLocal(),
                 ejbql,
                 Collections.<MethodModel>emptySet()
                 );

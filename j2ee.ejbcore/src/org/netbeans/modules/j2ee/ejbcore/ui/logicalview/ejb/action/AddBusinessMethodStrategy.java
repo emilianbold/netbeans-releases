@@ -61,10 +61,12 @@ public class AddBusinessMethodStrategy extends AbstractAddMethodStrategy {
         EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
         MethodsNode methodsNode = getMethodsNode();
         return MethodCustomizerFactory.businessMethod(
+                getTitle(),
                 pType.getMethodElement(), 
                 ejbMethodController.hasRemote(), 
                 ejbMethodController.hasLocal(),
-                methodsNode == null ? ejbMethodController.hasLocal() : methodsNode.isLocal(), // fallback to local if method node not found
+                methodsNode == null ? ejbMethodController.hasLocal() : methodsNode.isLocal(),
+                methodsNode == null ? ejbMethodController.hasRemote() : !methodsNode.isLocal(),
                 Collections.<MethodModel>emptySet() //TODO: RETOUCHE collect all methods
                 );
     }

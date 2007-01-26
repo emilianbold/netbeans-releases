@@ -19,11 +19,9 @@
 
 package org.netbeans.modules.j2ee.common.method;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import javax.swing.JPanel;
 import org.netbeans.modules.j2ee.common.method.impl.MethodCustomizerPanel;
+import org.netbeans.modules.j2ee.common.method.impl.ValidatingPropertyChangeListener;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -34,65 +32,46 @@ import org.openide.NotifyDescriptor;
 public final class MethodCustomizer {
     
     private final MethodCustomizerPanel panel;
+    private final String title;
     private final String prefix;
     private final Collection<MethodModel> existingMethods;
-
+    
     // factory should be used to create instances
-    protected MethodCustomizer(MethodModel methodModel, boolean hasLocal, boolean hasRemote, boolean selectLocal,
+    protected MethodCustomizer(String title, MethodModel methodModel, boolean hasLocal, boolean hasRemote, boolean selectLocal, boolean selectRemote,
             boolean hasReturnType, String  ejbql, boolean hasFinderCardinality, boolean hasExceptions, boolean hasInterfaces,
             String prefix, Collection<MethodModel> existingMethods) {
-            panel = new MethodCustomizerPanel(
-                    methodModel,
-                    hasLocal,
-                    hasRemote,
-                    selectLocal,
-                    hasReturnType,
-                    ejbql,
-                    hasFinderCardinality,
-                    hasExceptions,
-                    hasInterfaces
-                    );
-            this.prefix = prefix;
-            this.existingMethods = existingMethods;
+        this.panel = MethodCustomizerPanel.create(methodModel, hasLocal, hasRemote, selectLocal, selectRemote,
+                hasReturnType, ejbql, hasFinderCardinality, hasExceptions, hasInterfaces);
+        this.title = title;
+        this.prefix = prefix;
+        this.existingMethods = existingMethods;
     }
     
-    public boolean customizeMethod(String title) {
-        final NotifyDescriptor notifyDescriptor = new NotifyDescriptor(panel, title,
+    public boolean customizeMethod() {
+        NotifyDescriptor notifyDescriptor = new NotifyDescriptor(panel, title,
                 NotifyDescriptor.OK_CANCEL_OPTION,
                 NotifyDescriptor.PLAIN_MESSAGE,
                 null, null
                 );
-        new JPanel().addPropertyChangeListener(null);
-        panel.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(MethodCustomizerPanel.OK_ENABLED)) {
-                    Object newvalue = evt.getNewValue();
-                    if ((newvalue != null) && (newvalue instanceof Boolean)) {
-                        notifyDescriptor.setValid(((Boolean)newvalue).booleanValue());
-                    }
-                }
-            }
-        });
-        Object resultValue = DialogDisplayer.getDefault().notify(notifyDescriptor);
-        panel.isOK(); // apply possible changes in dialog fields
-        return resultValue == NotifyDescriptor.OK_OPTION;
+        panel.addPropertyChangeListener(new ValidatingPropertyChangeListener(panel, notifyDescriptor));
+        return DialogDisplayer.getDefault().notify(notifyDescriptor) == NotifyDescriptor.OK_OPTION;
     }
     
     public boolean finderReturnIsSingle() {
         return false;
     }
-
+    
     public boolean publishToLocal() {
-        return true;
+        return panel.hasLocal();
     }
-
+    
     public boolean publishToRemote() {
-        return false;
+        return panel.hasRemote();
     }
     
     public String getEjbQL() {
         return null;
-
+        
     }
-
+    
 }

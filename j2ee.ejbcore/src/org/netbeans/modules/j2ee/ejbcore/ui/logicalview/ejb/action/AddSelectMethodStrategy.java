@@ -72,6 +72,7 @@ public class AddSelectMethodStrategy extends AbstractAddMethodStrategy {
             ejbql = ejbMethodController.createDefaultQL(pType);
         }
         return MethodCustomizerFactory.selectMethod(
+                getTitle(),
                 pType.getMethodElement(),
                 ejbql,
                 Collections.<MethodModel>emptySet() //TODO: RETOUCHE collect all methods
