@@ -271,7 +271,7 @@ public class DDApiTest extends NbTestCase {
         System.out.println("Comparing result with golden file");
 
         String testDataDirS = System.getProperty("test.data.dir");     
-        java.io.File pass = new File(System.getProperty("test.data.dir")+"/web.pass");
+        java.io.File pass = new File(getDataDir(),"/web.pass");
         File test = FileUtil.toFile(fo);
         try {
             BufferedReader reader1 = new BufferedReader(new FileReader(test));
@@ -314,7 +314,7 @@ public class DDApiTest extends NbTestCase {
         assertTrue("DDProvider object not found",null != ddProvider);
 
         if (fo==null) {
-            File dataDir = new File(System.getProperty("test.data.dir"));
+            File dataDir = getDataDir();
             FileObject dataFolder = FileUtil.toFileObject(dataDir);
             fo = dataFolder.getFileObject("web","xml");
         };
