@@ -31,7 +31,6 @@ import org.netbeans.modules.xml.refactoring.UsageGroup;
 import org.netbeans.modules.xml.refactoring.spi.RefactoringEngine;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.refactoring.spi.UIHelper;
-import org.netbeans.modules.xml.schema.model.Import;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
@@ -41,6 +40,7 @@ import org.netbeans.modules.xml.schema.model.visitor.FindUsageVisitor;
 import org.netbeans.modules.xml.schema.model.visitor.Preview;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.filesystems.FileObject;
 
@@ -170,5 +170,13 @@ public class SchemaRefactoringEngine extends RefactoringEngine {
                 RefactoringUtil.prepareDescription((FileRenameRequest)request, SchemaModel.class);
             }
         }
+    }
+    
+    @Override
+    public String getModelReference(Component component) {
+        if (component instanceof SchemaModelReference) {
+            return ((SchemaModelReference)component).getSchemaLocation();
+        }
+        return null;
     }
 }

@@ -49,7 +49,7 @@ import org.netbeans.modules.xml.schema.ui.nodes.SchemaUIContext;
 import org.netbeans.modules.xml.schema.ui.nodes.categorized.customizer.DocumentationCustomizer;
 import org.netbeans.modules.xml.schema.ui.nodes.schema.properties.BaseSchemaProperty;
 import org.netbeans.modules.xml.schema.ui.nodes.schema.properties.NamespaceProperty;
-import org.netbeans.modules.xml.xam.ui.actions.ShowSchemaAction;
+import org.openide.nodes.PropertySupport;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -106,8 +106,23 @@ public class DocumentationNode extends SchemaComponentNode<Documentation> {
     @Override
     protected Sheet createSheet() {
         Sheet sheet = null;
-        sheet = super.createSheet();
+        //sheet = super.createSheet();
+        sheet = Sheet.createDefault();
         Sheet.Set props = sheet.get(Sheet.PROPERTIES);
+        Sheet.Set set=sheet.get(Sheet.PROPERTIES);
+        set.put(
+                new PropertySupport("kind",String.class,
+                NbBundle.getMessage(SchemaComponentNode.class,
+                "PROP_SchemaComponentNode_Kind"),
+                "",true,false) {
+            public Object getValue() {
+                return getTypeDisplayName();
+            }
+            
+            public void setValue(Object value) {
+                // Not modifiable
+            }
+        });        
         if (props == null) {
             props = Sheet.createPropertiesSet();
             sheet.put(props);

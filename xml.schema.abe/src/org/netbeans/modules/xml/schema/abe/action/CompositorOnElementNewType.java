@@ -30,12 +30,12 @@ package org.netbeans.modules.xml.schema.abe.action;
 
 import java.io.IOException;
 import java.util.List;
-import org.netbeans.modules.xml.axi.AXIContainer;
 import org.netbeans.modules.xml.axi.Compositor;
 import org.netbeans.modules.xml.schema.abe.ABEBaseDropPanel;
 import org.netbeans.modules.xml.schema.abe.InstanceUIContext;
 import org.netbeans.modules.xml.schema.abe.StartTagPanel;
-import org.netbeans.modules.xml.schema.abe.palette.DnDHelper;
+import org.netbeans.modules.xml.schema.abe.nodes.ABEAbstractNode;
+import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.NewType;
 
 /**
@@ -73,13 +73,13 @@ public class CompositorOnElementNewType extends NewType{
         String comp = null;
         switch(compType){
             case SEQUENCE:
-                comp = Compositor.CompositorType.SEQUENCE.getName();
+                comp = NbBundle.getMessage(ABEAbstractNode.class,"LBL_Sequence");
                 break;
             case CHOICE:
-                comp = Compositor.CompositorType.CHOICE.getName();
+                comp = NbBundle.getMessage(ABEAbstractNode.class,"LBL_Choice");
                 break;
             case ALL:
-                comp = Compositor.CompositorType.ALL.getName();
+                comp = NbBundle.getMessage(ABEAbstractNode.class,"LBL_All");
                 break;
         }
         return comp;

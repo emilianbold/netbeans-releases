@@ -67,7 +67,11 @@ public class NamespaceEditor  extends StringEditor {
         if(component.getPeer() instanceof Schema) {
             Schema schema = (Schema)component.getPeer();
             this.initialUri = schema.getTargetNamespace();
-            this.uris = schema.getPrefixes().values();
+            this.uris = new ArrayList<String>();
+            for(String uri: schema.getPrefixes().values()) {
+                if(!uris.contains(uri))
+                    uris.add(uri);
+            }            
             options.add(Option.None);
             options.add(Option.Declared);
             options.add(Option.Other);
@@ -114,7 +118,6 @@ public class NamespaceEditor  extends StringEditor {
         });
         panel.checkValidity();
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-        dlg.setPreferredSize(new Dimension(400,300));
         return dlg;
     }
     

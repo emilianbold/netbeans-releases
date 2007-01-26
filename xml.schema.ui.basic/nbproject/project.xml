@@ -130,6 +130,15 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.xml.wsdl.model</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.1.21</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.xml.xam</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -257,13 +266,16 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.bpel.editors</friend>
+                <friend>org.netbeans.modules.encoder.custom.aip</friend>
+                <friend>org.netbeans.modules.encoder.hl7.aip</friend>
                 <friend>org.netbeans.modules.xml.schema.abe</friend>
                 <friend>org.netbeans.modules.xml.schema.core</friend>
                 <friend>org.netbeans.modules.xml.schema.refactoring</friend>
                 <friend>org.netbeans.modules.xml.schema.ui.analysis</friend>
                 <friend>org.netbeans.modules.xml.wsdlui</friend>
+                <friend>org.netbeans.modules.xslt.project</friend>
                 <package>org.netbeans.modules.xml.schema.ui.basic</package>
-                <package>org.netbeans.modules.xml.schema.ui.basic.actions</package>
+                <package>org.netbeans.modules.xml.schema.ui.basic.spi</package>
                 <package>org.netbeans.modules.xml.schema.ui.nodes</package>
                 <package>org.netbeans.modules.xml.schema.ui.nodes.categorized</package>
                 <package>org.netbeans.modules.xml.schema.ui.nodes.schema</package>

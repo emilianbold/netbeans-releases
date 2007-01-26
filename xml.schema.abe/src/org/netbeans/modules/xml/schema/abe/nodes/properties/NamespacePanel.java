@@ -63,7 +63,6 @@ public class NamespacePanel extends javax.swing.JPanel
         jScrollPane1 = new javax.swing.JScrollPane();
         uriList = new javax.swing.JList();
         otherNamespaceTextField = new javax.swing.JTextField();
-        dummyLabel1 = new javax.swing.JLabel();
 
         noNamespaceRadioButton.setText(org.openide.util.NbBundle.getBundle(NamespacePanel.class).getString("LBL_NoNamespace"));
         noNamespaceRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -101,9 +100,6 @@ public class NamespacePanel extends javax.swing.JPanel
                     .add(layout.createSequentialGroup()
                         .add(17, 17, 17)
                         .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 363, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(dummyLabel1)
-                        .add(255, 255, 255))
                     .add(schemaNamespaceRadioButton)
                     .add(otherNamespaceRadioButton)
                     .add(noNamespaceRadioButton))
@@ -113,9 +109,7 @@ public class NamespacePanel extends javax.swing.JPanel
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(dummyLabel1)
-                    .add(noNamespaceRadioButton))
+                .add(noNamespaceRadioButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(schemaNamespaceRadioButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -124,7 +118,7 @@ public class NamespacePanel extends javax.swing.JPanel
                 .add(otherNamespaceRadioButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(otherNamespaceTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(94, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -221,7 +215,6 @@ public class NamespacePanel extends javax.swing.JPanel
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.ButtonGroup buttonGroup1;
-    public javax.swing.JLabel dummyLabel1;
     public javax.swing.JScrollPane jScrollPane1;
     public javax.swing.JRadioButton noNamespaceRadioButton;
     public javax.swing.JRadioButton otherNamespaceRadioButton;

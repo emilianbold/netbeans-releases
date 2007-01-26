@@ -128,5 +128,14 @@ public abstract class RefactoringEngine {
     public void refactorUsages(RefactorRequest request) throws IOException {
     }
 
+    /**
+     * @param component the component to check for model reference.
+     * @return the reference string if this component is a reference to an 
+     * external model, for example, the schema <import> component, 
+     * otherwise returns null.
+     */
+    public String getModelReference(Component component) {
+        return null;
+    }
 }
      

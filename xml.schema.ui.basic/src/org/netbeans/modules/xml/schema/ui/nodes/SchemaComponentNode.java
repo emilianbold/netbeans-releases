@@ -49,6 +49,8 @@ import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.ui.basic.SchemaSettings;
 import org.netbeans.modules.xml.schema.ui.basic.UIUtilities;
 import org.netbeans.modules.xml.xam.dom.Utils;
+import org.netbeans.modules.xml.xam.ui.ComponentPasteType;
+import org.netbeans.modules.xml.xam.ui.cookies.GetComponentCookie;
 import org.netbeans.modules.xml.xam.ui.cookies.GetSuperCookie;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.ComponentEvent;
@@ -108,7 +110,8 @@ import org.openide.util.lookup.ProxyLookup;
 public abstract class SchemaComponentNode<T extends SchemaComponent>
         extends AbstractNode
         implements Node.Cookie, ComponentListener, PropertyChangeListener,
-        Highlighted, ReferenceableProvider, CountChildrenCookie, GetSuperCookie {
+        Highlighted, ReferenceableProvider, CountChildrenCookie,
+        GetComponentCookie, GetSuperCookie {
 
     /**
      *
@@ -476,6 +479,14 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
         return getReference().get().getChildren().size();
     }
 
+    public Component getComponent() {
+        return getReference().get();
+    }
+
+    public Class<? extends Component> getComponentType() {
+        return getReference().get().getComponentType();
+    }
+
 	// implementation of get super cookie
 	public SchemaComponent getSuper()
 	{
@@ -521,7 +532,7 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
     protected void createPasteTypes(Transferable transferable, List list) {
         if (isValid() && isEditable()) {
             PasteType type = ComponentPasteType.getPasteType(
-                    reference, transferable, null);
+                    reference.get(), transferable, null);
             if (type != null) {
                 list.add(type);
             }
@@ -533,7 +544,7 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
     public PasteType getDropType(Transferable transferable, int action, int index) {
         if (isValid() && isEditable()) {
             PasteType type = ComponentPasteType.getDropType(
-                    reference, transferable, null, action, index);
+                    reference.get(), transferable, null, action, index);
             if (type != null) {
                 return type;
             }

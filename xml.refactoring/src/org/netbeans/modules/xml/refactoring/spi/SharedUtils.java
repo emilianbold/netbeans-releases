@@ -20,10 +20,10 @@ package org.netbeans.modules.xml.refactoring.spi;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.refactoring.DeleteRequest;
 import org.netbeans.modules.xml.refactoring.ErrorItem;
 import org.netbeans.modules.xml.refactoring.FileRenameRequest;
@@ -31,8 +31,8 @@ import org.netbeans.modules.xml.refactoring.RenameRequest;
 import org.netbeans.modules.xml.refactoring.Usage;
 import org.netbeans.modules.xml.refactoring.UsageGroup;
 import org.netbeans.modules.xml.refactoring.impl.RefactoringUtil;
-import org.netbeans.modules.xml.retriever.catalog.CatalogEntry;
-import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel;
+import org.netbeans.modules.xml.retriever.catalog.ProjectCatalogSupport;
+import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.openide.filesystems.FileLock;
@@ -125,22 +125,26 @@ public class SharedUtils {
     }
     
     public static void renameFile(FileRenameRequest request) throws IOException {
-        CatalogModel cat = (CatalogModel)
-            request.getTargetModel().getModelSource().getLookup().lookup(CatalogModel.class);
-        FileObject fo = request.getFileObject();
-        String systemId = getURI(fo);
+        FileObject referencedFO = request.getFileObject();
         RefactoringUtil.saveTargetFile(request);
-        fo = renameFile(fo, request.getNewFileName());
-        refreshCatalogModel(cat, systemId, fo);
+        referencedFO = renameFile(referencedFO, request.getNewFileName());
+        refreshCatalogModel(request, referencedFO);
     }
 
+    public static ProjectCatalogSupport getCatalogSupport(FileObject file) {
+        Project p = FileOwnerQuery.getOwner(file);
+        if (p != null) {
+            return (ProjectCatalogSupport) p.getLookup().lookup(ProjectCatalogSupport.class);
+        }
+        return null;
+    }
+    
     public static void undoRenameFile(FileRenameRequest request) throws IOException {
         CatalogModel cat = (CatalogModel)
             request.getTargetModel().getModelSource().getLookup().lookup(CatalogModel.class);
         FileObject fo = request.getFileObject();
-        String systemId = getURI(fo);
         fo = renameFile(fo, request.getOldFileName());
-        refreshCatalogModel(cat, systemId, fo);
+        refreshCatalogModel(request, fo);
     }
 
     public static FileObject renameFile(FileObject fo, String newName) throws IOException {
@@ -155,25 +159,20 @@ public class SharedUtils {
         }
     }
     
-    public static void refreshCatalogModel(
-        CatalogModel cat, String currentId, FileObject fo) {
-        assert(cat != null) : "Model source does not provide any catalog in lookup!";
-        if (cat instanceof CatalogWriteModel) {
-            CatalogWriteModel wcat = (CatalogWriteModel) cat;
-            List<CatalogEntry> found = new ArrayList<CatalogEntry>();
-            for (CatalogEntry e : wcat.getCatalogEntries()) {
-                if (e.getSource().equals(currentId)) {
-                    found.add(e);
-                }
-            }
-            for (CatalogEntry e : found) {
+    public static void refreshCatalogModel(FileRenameRequest request, FileObject referencedFO) {
+        for (UsageGroup ug : request.getUsages().getUsages()) {
+            FileObject referencingFO = ug.getFileObject();
+            ProjectCatalogSupport pcs = getCatalogSupport(referencingFO);
+            if (pcs == null) continue;
+            for (Component uc : ug.getRefactorComponents()) {
+                String reference = ug.getEngine().getModelReference(uc);
+                if (reference == null) continue;
                 try {
-                    URI uri = new URI(e.getTarget());
-                    wcat.removeURI(uri);
-                    wcat.addURI(uri, fo);
+                    if (pcs != null && pcs.removeCatalogEntry(new URI(reference))) {
+                        pcs.createCatalogEntry(referencingFO, referencedFO);
+                    }
                 } catch(Exception ex) {
-                    String msg = "Error updating catalog";
-                    Logger.getLogger(SharedUtils.class.getName()).log(Level.WARNING, msg, ex);
+                    Logger.getLogger(SharedUtils.class.getName()).log(Level.FINE, ex.getMessage());
                 }
             }
         }

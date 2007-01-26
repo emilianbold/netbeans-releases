@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -31,7 +31,6 @@ import javax.swing.Action;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaComponentReference;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.modules.xml.schema.ui.nodes.ComponentPasteType;
 import org.netbeans.modules.xml.schema.ui.nodes.DefaultExpandedCookie;
 import org.netbeans.modules.xml.schema.ui.nodes.ReadOnlyCookie;
 import org.netbeans.modules.xml.schema.ui.nodes.RefreshableChildren;
@@ -39,6 +38,7 @@ import org.netbeans.modules.xml.schema.ui.nodes.SchemaUIContext;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
+import org.netbeans.modules.xml.xam.ui.ComponentPasteType;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.netbeans.modules.xml.xam.ui.cookies.CountChildrenCookie;
 import org.netbeans.modules.xml.xam.ui.highlight.Highlight;
@@ -322,7 +322,7 @@ public class CategoryNode extends AbstractNode
         protected void createPasteTypes(Transferable transferable, List list) {
             if (isValid() && isEditable()) {
                 PasteType type = ComponentPasteType.getPasteType(
-                        reference, transferable, childType);
+                        reference.get(), transferable, childType);
                 if (type != null) {
                     list.add(type);
                 }
@@ -334,7 +334,7 @@ public class CategoryNode extends AbstractNode
         public PasteType getDropType(Transferable transferable, int action, int index) {
             if (isValid() && isEditable()) {
                 PasteType type = ComponentPasteType.getDropType(
-                        reference, transferable, childType, action, index);
+                        reference.get(), transferable, childType, action, index);
                 if (type != null) {
                     return type;
                 }

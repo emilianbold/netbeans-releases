@@ -27,7 +27,6 @@ import java.util.regex.PatternSyntaxException;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.visitor.DeepSchemaVisitor;
-import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.ui.category.Category;
 import org.netbeans.modules.xml.xam.ui.search.Query;
 import org.netbeans.modules.xml.xam.ui.search.SearchException;
@@ -48,7 +47,7 @@ public class AttributeValueSearchProvider extends DeepSchemaVisitor
     /** Model in which to perform the search. */
     private SchemaModel model;
     /** List of matching schema components. */
-    private List<Component> results;
+    private List<Object> results;
     /** Provides the selected component, if needed. */
     private Category category;
     /** The last query submitted by the user, if any, lower-cased. */
@@ -84,7 +83,7 @@ public class AttributeValueSearchProvider extends DeepSchemaVisitor
                 "HINT_SearchProvider_AttributeValue");
     }
 
-    public List<Component> search(Query query) throws SearchException {
+    public List<Object> search(Query query) throws SearchException {
         if (query.isRegularExpression()) {
             try {
                 pattern = Pattern.compile(query.getQuery());
@@ -97,7 +96,7 @@ public class AttributeValueSearchProvider extends DeepSchemaVisitor
             phrase = query.getQuery().toLowerCase();
             wildcarded = WildcardStringMatcher.containsWildcards(phrase);
         }
-        results = new ArrayList<Component>();
+        results = new ArrayList<Object>();
         // Search for components with the given attribute value.
         SchemaComponent component = Providers.getSelectedComponent(category);
         if (query.useSelected() && component != null) {

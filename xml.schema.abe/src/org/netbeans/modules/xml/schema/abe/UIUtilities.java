@@ -165,8 +165,10 @@ public class UIUtilities {
             if(dt == null)
                 return null;
             String value = dt.getName();
-            if(value == null)
-                return null;
+            if(value == null) {
+                contentModelInfoLabel.setText(NbBundle.getMessage(UIUtilities.class, "LBL_ANONYMOUS_TYPE"));                
+                return contentModelInfoLabel;
+            }
             
             contentModelInfoLabel.setText(value);
             String typeStr = null;

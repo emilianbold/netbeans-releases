@@ -165,7 +165,7 @@ public abstract class ContainerPanel extends AnnotatedBorderPanel implements AXI
             axiComp.accept(this);
             Component compToAdd = visitorResult;
             if(visitorResult != null){
-                appendChild(compToAdd);
+                appendChild(compToAdd, false);
                 childAdded = true;
             }else{
                 continue;
@@ -173,20 +173,22 @@ public abstract class ContainerPanel extends AnnotatedBorderPanel implements AXI
             if(childAdded){
                 TweenerPanel tweener = new TweenerPanel(SwingConstants.HORIZONTAL, context);
                 addTweenerListener(tweener);
-                appendChild(tweener);
+                appendChild(tweener, false);
             }
         }
+        adjustChildrenPanelSize();
+        revalidate();
     }
     
     public int getChildrenIndent(){
         return getPanelIndendation()+InstanceDesignConstants.COMPOSITOR_CHILDREN_INDENT;//+ExpandCollapseButton.WIDTH;
     }
     
-    public void appendChild(Component component){
-        appendChild(component, 0);
+    public void appendChild(Component component, boolean resize){
+        appendChild(component, 0, resize);
     }
     
-    public void appendChild(Component component, int vPadding){
+    public void appendChild(Component component, int vPadding, boolean resize){
         childrenPanel.add(component);
         getChildrenList().add(component);
         //always compensate the expand button of the compositor panel
@@ -195,9 +197,11 @@ public abstract class ContainerPanel extends AnnotatedBorderPanel implements AXI
         childrenPanelLayout.putConstraint(SpringLayout.NORTH, component,
                 getInterComponentVerticalSpacing() + vPadding, SpringLayout.SOUTH, childrenPanelLastComponent);
         
-        adjustChildrenPanelSize();
         childrenPanelLastComponent = component;
-        revalidate();
+        if(resize){
+            adjustChildrenPanelSize();
+            revalidate();
+        }
         addComponentEventListener(component);
     }
     
@@ -300,7 +304,7 @@ public abstract class ContainerPanel extends AnnotatedBorderPanel implements AXI
             int callCount = 1;
             public void componentResized(ComponentEvent e) {
                 if( (callCount <= 2) && ( (ContainerPanel.this instanceof GlobalComplextypeContainerPanel)
-                        ||(ContainerPanel.this instanceof GlobalElementsContainerPanel) ) ){
+                ||(ContainerPanel.this instanceof GlobalElementsContainerPanel) ) ){
                     //skip this event for the first time.
                     //If not done then there is a 10 sec delay in the UI after expanding
                     //many nodes in a huge schema.
@@ -330,15 +334,17 @@ public abstract class ContainerPanel extends AnnotatedBorderPanel implements AXI
     public void adjustChildrenPanelSize() {
         int width = 0;
         int height = 0;
+        int indent = getChildrenIndent();
+        int spacing = getInterComponentVerticalSpacing();
         for(Component child: childrenPanel.getComponents()){
             if(!child.isVisible())
-                continue;
+                break;
             Dimension dim = child.getPreferredSize();
             int curWidth = dim.width +
-                    getChildrenIndent();//+50;
+                    indent;//+50;
             if(curWidth > width)
                 width = curWidth;
-            height += dim.height + getInterComponentVerticalSpacing();
+            height += dim.height + spacing;
         }
         //add some fudge
         width += 20;
@@ -377,7 +383,7 @@ public abstract class ContainerPanel extends AnnotatedBorderPanel implements AXI
         int height = 0;
         for(Component child: this.getComponents()){
             if(!child.isVisible())
-                continue;
+                break;
             Dimension dim = child.getPreferredSize();
             height += dim.getHeight();
             int thisW = dim.width ;

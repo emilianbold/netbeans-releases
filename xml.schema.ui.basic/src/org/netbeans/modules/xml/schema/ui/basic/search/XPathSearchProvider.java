@@ -25,7 +25,6 @@ import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.visitor.FindSchemaComponentFromDOM;
-import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xdm.nodes.Document;
 import org.netbeans.modules.xml.xdm.nodes.Element;
 import org.netbeans.modules.xml.xdm.nodes.Node;
@@ -44,7 +43,7 @@ public class XPathSearchProvider implements SearchProvider {
     /** Model in which to perform the search. */
     private SchemaModel model;
     /** List of matching schema components. */
-    private List<Component> results;
+    private List<Object> results;
 
     /**
      * Creates a new instance of XPathSearchProvider.
@@ -70,8 +69,8 @@ public class XPathSearchProvider implements SearchProvider {
                 "HINT_SearchProvider_XPath");
     }
 
-    public List<Component> search(Query query) throws SearchException {
-        results = new ArrayList<Component>();
+    public List<Object> search(Query query) throws SearchException {
+        results = new ArrayList<Object>();
         Schema schema = model.getSchema();
         org.w3c.dom.Document document = model.getDocument();
         if (document instanceof Document) {

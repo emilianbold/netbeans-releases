@@ -33,7 +33,9 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     </folder>
     
     <folder name="xmlschema-abe-palette">
-	<folder name="XML Components">
+	<folder name="XMLComponents">
+            <attr name="SystemFileSystem.localizingBundle"
+            stringvalue="org.netbeans.modules.xml.schema.abe.resources.Bundle"/>
             <attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_XML_COMPONENTS"/> 
 	    <file name="Element.xml" url="../palette/ElementPaletteItem.xml">
                 <attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_ELEMENT"/> 
@@ -42,7 +44,9 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                 <attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_ATTRIBUTE"/> 
 	    </file>
 	</folder>
-	<folder name="XML Schema Components">
+	<folder name="XMLSchemaComponents">
+            <attr name="SystemFileSystem.localizingBundle"
+            stringvalue="org.netbeans.modules.xml.schema.abe.resources.Bundle"/>
             <attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_XML_SCHEMA_COMPONENTS"/> 
 	    <file name="Sequence.xml" url="../palette/SequencePaletteItem.xml">
                 <attr name="helpId" stringvalue="PALETTE_ITEM_HELP_ID_SEQUENCE"/> 

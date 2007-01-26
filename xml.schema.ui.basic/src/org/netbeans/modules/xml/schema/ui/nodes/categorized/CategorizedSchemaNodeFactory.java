@@ -129,8 +129,8 @@ public class CategorizedSchemaNodeFactory extends SchemaNodeFactory
 	protected Node createAnnotationNode(
 			SchemaComponentReference<Annotation> reference)
 	{
-		// Create our "custom" node instead of the default
-		Children children=createChildren(reference);
+		// Create our "custom" node and children instead of the default
+		Children children=new AnnotationChildren(getContext(), reference);
 		return new AdvancedAnnotationNode(getContext(),reference,children);
 	}
 	

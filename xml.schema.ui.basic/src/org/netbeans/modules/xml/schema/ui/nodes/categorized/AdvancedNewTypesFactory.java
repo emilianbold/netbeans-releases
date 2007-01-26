@@ -30,6 +30,7 @@ import org.netbeans.modules.xml.schema.model.All;
 import org.netbeans.modules.xml.schema.model.Annotation;
 import org.netbeans.modules.xml.schema.model.AnyAttribute;
 import org.netbeans.modules.xml.schema.model.AnyElement;
+import org.netbeans.modules.xml.schema.model.AppInfo;
 import org.netbeans.modules.xml.schema.model.AttributeGroupReference;
 import org.netbeans.modules.xml.schema.model.AttributeReference;
 import org.netbeans.modules.xml.schema.model.Choice;
@@ -232,6 +233,7 @@ public class AdvancedNewTypesFactory extends NewTypesFactory {
 
     public void visit(Annotation ann) {
         addChildType(Documentation.class);
+        addChildType(AppInfo.class);
         super.visit(ann);
     }
     

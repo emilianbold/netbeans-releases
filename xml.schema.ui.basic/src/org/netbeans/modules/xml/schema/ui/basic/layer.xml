@@ -83,8 +83,8 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     </folder>
 
     <folder name="Editors">
-	<folder name="text">
-	    <folder name="xml">
+	<folder name="application">
+	    <folder name="x-schema+xml">
 		<folder name="Popup">
                     <file name="org-netbeans-modules-xml-xam-ui-actions-GoToAction.instance"/>                 
 		</folder>

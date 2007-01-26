@@ -50,7 +50,8 @@ public class SchemaSettings {
     }
     
     public String displayName() {
-        return NbBundle.getMessage(getClass(), "CTL_SchemaSettings_name");
+        return NbBundle.getMessage(SchemaSettings.class,
+                "CTL_SchemaSettings_name");
     }
 
     /**
@@ -137,5 +138,4 @@ public class SchemaSettings {
     protected final String getProperty(String key) {
         return NbPreferences.forModule(SchemaSettings.class).get(key, ViewMode.COLUMN.toString());
     }
-
 }

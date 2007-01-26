@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- 
+
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -17,46 +17,17 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * AbstractUIVisitor.java
- *
- * Created on August 30, 2006, 8:31 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+package org.netbeans.modules.xml.schema.ui.basic.spi;
 
-package org.netbeans.modules.xml.schema.abe;
+import java.util.List;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.openide.nodes.Node;
 
 /**
  *
- * @author girix
+ * @author Ajit
  */
-public abstract class AbstractUIVisitor implements UIVisitor{
-    
-    /** Creates a new instance of AbstractUIVisitor */
-    public AbstractUIVisitor() {
-    }
-
-    public void visit(StartTagPanel panel) {
-    }
-
-    public void visit(GlobalElementsContainerPanel panel) {
-    }
-
-    public void visit(GlobalComplextypeContainerPanel panel) {
-    }
-
-    public void visit(AttributePanel panel) {
-    }
-
-    public void visit(NamespacePanel panel) {
-    }
-
-    public void visit(CompositorPanel panel) {
-    }
-
-    public void visit(ElementPanel elementPanel) {
-    }
-    
+public abstract class AppInfoProvider {
+    public abstract boolean isActive(SchemaModel sm);
+    public abstract Node getNode(List<Node> path);
 }

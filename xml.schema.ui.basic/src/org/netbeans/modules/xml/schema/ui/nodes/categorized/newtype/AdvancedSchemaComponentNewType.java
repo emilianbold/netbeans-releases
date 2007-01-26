@@ -30,20 +30,25 @@ package org.netbeans.modules.xml.schema.ui.nodes.categorized.newtype;
 
 // java imports
 import java.awt.Dialog;
-import java.io.IOException;
+import org.netbeans.modules.xml.schema.model.Import;
+import org.netbeans.modules.xml.schema.model.Include;
+import org.netbeans.modules.xml.schema.model.Redefine;
+import org.netbeans.modules.xml.schema.model.Schema;
 
 //netbeans imports
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.NewType;
-import org.openide.ErrorManager;
 
 //local imports
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaComponentReference;
 import org.netbeans.modules.xml.schema.ui.basic.UIUtilities;
+import org.netbeans.modules.xml.schema.ui.nodes.categorized.customizer.ImportCreator;
+import org.netbeans.modules.xml.schema.ui.nodes.categorized.customizer.IncludeCreator;
+import org.netbeans.modules.xml.schema.ui.nodes.categorized.customizer.RedefineCreator;
 import org.netbeans.modules.xml.xam.ui.cookies.ViewComponentCookie;
 import org.netbeans.modules.xml.xam.ui.customizer.Customizer;
 import org.openide.DialogDescriptor;
@@ -198,7 +203,28 @@ public class AdvancedSchemaComponentNewType extends NewType {
      * if customizer is not needed or if user OKs customization, false otherwise.
      */
     protected boolean customize() {
-        Customizer customizer = getCreator().createCustomizer(getComponent(),getContainer());
+        // XXX: This bit is an ugly hack, need a better way to create a
+        //      different customizer depending on whether the component
+        //      is new versus existing.
+        SchemaComponent comp = getComponent();
+        Customizer customizer;
+        boolean created = true;
+        if (comp instanceof Import) {
+            SchemaModel model = getSchemaComponent().getModel();
+            Schema schema = model.getSchema();
+            customizer = new ImportCreator(schema);
+        } else if (comp instanceof Include) {
+            SchemaModel model = getSchemaComponent().getModel();
+            Schema schema = model.getSchema();
+            customizer = new IncludeCreator(schema);
+        } else if (comp instanceof Redefine) {
+            SchemaModel model = getSchemaComponent().getModel();
+            Schema schema = model.getSchema();
+            customizer = new RedefineCreator(schema);
+        } else {
+            customizer = getCreator().createCustomizer(comp, getContainer());
+            created = false;
+        }
         if(customizer==null || customizer.getComponent()==null) return true;
         DialogDescriptor descriptor = UIUtilities.
                 getCustomizerDialog(customizer,getName(),true);
@@ -207,7 +233,10 @@ public class AdvancedSchemaComponentNewType extends NewType {
                 "LBL_Customizer_".concat(getChildType().getSimpleName())));
         dlg.getAccessibleContext().setAccessibleDescription(dlg.getTitle());
         dlg.setVisible(true);
-        return descriptor.getValue()==DialogDescriptor.OK_OPTION;
+        // For the created case, return false so that the component will not
+        // be created again, and then not have any customization performed
+        // on it; the creators have already created the component(s).
+        return !created && descriptor.getValue() == DialogDescriptor.OK_OPTION;
     }
     /**
      * This will show a message to user if this newtype can't be created
