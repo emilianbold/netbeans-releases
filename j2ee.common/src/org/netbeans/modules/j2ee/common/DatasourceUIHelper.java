@@ -43,6 +43,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JSeparator;
+import javax.swing.MutableComboBoxModel;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -78,14 +79,14 @@ public final class DatasourceUIHelper {
         }
     };
     
-    private static class DatasourceComboBoxModel extends AbstractListModel implements ComboBoxModel {
+    private static class DatasourceComboBoxModel extends AbstractListModel implements MutableComboBoxModel {
         
-        private Object[] items;
+        private List<Object> items;
         private Object selectedItem;
         private List<Datasource> datasources;
         private Object previousItem;
         
-        private DatasourceComboBoxModel(List<Datasource> datasources, Object[] items) {
+        private DatasourceComboBoxModel(List<Datasource> datasources, List<Object> items) {
             this.datasources = datasources;
             this.items = items;
         }
@@ -106,11 +107,11 @@ public final class DatasourceUIHelper {
         }
         
         public Object getElementAt(int index) {
-            return items[index];
+            return items.get(index);
         }
         
         public int getSize() {
-            return items.length;
+            return items.size();
         }
         
         Object getPreviousItem() {
@@ -120,6 +121,23 @@ public final class DatasourceUIHelper {
         List<Datasource> getDatasources() {
             return datasources;
         }
+        
+        public void addElement(Object elem) {
+           items.add(elem);
+        }
+
+        public void removeElement(Object elem) {
+            items.remove(elem);
+        }
+
+        public void insertElementAt(Object elem, int index) {
+            items.set(index, elem);
+        }
+
+        public void removeElementAt(int index) {
+            items.remove(index);
+        }
+        
     }
     
     private static class DatasourceListCellRenderer extends DefaultListCellRenderer {
@@ -431,8 +449,7 @@ public final class DatasourceUIHelper {
         }
         
         
-        Object[] itemsArray = items.toArray();
-        DatasourceComboBoxModel model = new DatasourceComboBoxModel(datasources, itemsArray);
+        DatasourceComboBoxModel model = new DatasourceComboBoxModel(datasources, items);
 
         combo.setModel(model);
         
