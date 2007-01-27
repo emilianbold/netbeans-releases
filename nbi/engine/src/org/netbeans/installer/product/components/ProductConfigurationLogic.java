@@ -29,6 +29,7 @@ import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
+import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.Text;
 import org.netbeans.installer.utils.helper.Text.ContentType;
 import org.netbeans.installer.utils.progress.Progress;
@@ -57,6 +58,26 @@ public abstract class ProductConfigurationLogic {
     
     public final void setProduct(final Product product) {
         this.product = product;
+    }
+    
+    // validation ///////////////////////////////////////////////////////////////////
+    public String validateInstallation() {
+        if (getProduct().getStatus() == Status.INSTALLED) {
+            final File installLocation = getProduct().getInstallationLocation();
+            
+            if (!installLocation.exists()) {
+                return getString(
+                        "PCL.validation.directory.missing",
+                        installLocation);
+            }
+            if (!installLocation.isDirectory()) {
+                return getString(
+                        "PCL.validation.directory.file",
+                        installLocation);
+            }
+        }
+        
+        return null;
     }
     
     // product properties ///////////////////////////////////////////////////////////

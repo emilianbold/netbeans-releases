@@ -45,6 +45,7 @@ import org.netbeans.installer.product.filters.ProductFilter;
 import org.netbeans.installer.product.filters.GroupFilter;
 import org.netbeans.installer.product.filters.RegistryFilter;
 import org.netbeans.installer.product.filters.TrueFilter;
+import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.helper.DetailedStatus;
 import org.netbeans.installer.utils.helper.ExtendedURI;
 import org.netbeans.installer.utils.helper.Status;
@@ -196,6 +197,7 @@ public class Registry {
             SystemUtils.sleep(200);
         }
         
+        validateInstallations();
         validateDependencies();
         
         if (System.getProperty(SOURCE_STATE_FILE_PATH_PROPERTY) != null) {
@@ -220,9 +222,10 @@ public class Registry {
                 if (uri.getLocal() != null) {
                     try {
                         FileUtils.deleteFile(new File(uri.getLocal()));
+                        uri.setLocal(null);
                     } catch (IOException e) {
                         ErrorManager.notifyWarning(
-                                "Cannot delete the cached installation data", 
+                                "Cannot delete the cached installation data",
                                 e);
                     }
                 }
@@ -291,7 +294,7 @@ public class Registry {
         if (!localRegistryFile.exists()) {
             try {
                 FileUtils.copyFile(
-                        FileProxy.getInstance().getFile(localRegistryStubUri), 
+                        FileProxy.getInstance().getFile(localRegistryStubUri),
                         localRegistryFile);
             } catch (DownloadException e) {
                 throw new InitializationException("Cannot create local registry", e);
@@ -542,6 +545,31 @@ public class Registry {
                 validateRequirements(requiree, newProhibitedList);
             }
             
+        }
+    }
+    
+    private void validateInstallations() throws InitializationException {
+        for (Product product: getProducts()) {
+            if (product.getStatus() == Status.INSTALLED) {
+                final String message = product.getLogic().validateInstallation();
+                
+                if (message != null) {
+                    boolean result = UiUtils.showYesNoDialog(
+                            "Validation Problem",
+                            "It seems that the installation of " +
+                            product.getDisplayName() + "is corrupted. The " +
+                            "validation procedure issued the following " +
+                            "warning:\n\n" + message + "\n\n Would you like to " +
+                            "mark this product as not installed and continue? If " +
+                            "you click No the installer will exit.");
+                    
+                    if (result) {
+                        product.setStatus(Status.NOT_INSTALLED);
+                    } else {
+                        Installer.getInstance().criticalExit();
+                    }
+                }
+            }
         }
     }
     
@@ -833,19 +861,19 @@ public class Registry {
     
     private Product getNextComponentToInstall(List<Product> currentList) {
         for (Product product: getProducts()) {
-            if ((product.getStatus() == Status.TO_BE_INSTALLED) && 
-                    !currentList.contains(product) && 
+            if ((product.getStatus() == Status.TO_BE_INSTALLED) &&
+                    !currentList.contains(product) &&
                     product.checkDependenciesForInstall()) {
                 boolean productIsGood = true;
                 
-                // all products satisfying the requirement and install-after 
-                // dependencies which are planned for installation should be already 
+                // all products satisfying the requirement and install-after
+                // dependencies which are planned for installation should be already
                 // present in the list
                 for (Dependency dependency: product.getDependencies(
-                        DependencyType.REQUIREMENT, 
+                        DependencyType.REQUIREMENT,
                         DependencyType.INSTALL_AFTER)) {
                     for (Product dependee: getProducts(dependency)) {
-                        if ((dependee.getStatus() == Status.TO_BE_INSTALLED) && 
+                        if ((dependee.getStatus() == Status.TO_BE_INSTALLED) &&
                                 !currentList.contains(dependee)) {
                             productIsGood = false;
                         }
@@ -863,14 +891,14 @@ public class Registry {
     
     private Product getNextComponentToUninstall(List<Product> currentList) {
         for (Product product: getProducts()) {
-            if ((product.getStatus() == Status.TO_BE_UNINSTALLED) && 
-                    !currentList.contains(product) && 
+            if ((product.getStatus() == Status.TO_BE_UNINSTALLED) &&
+                    !currentList.contains(product) &&
                     product.checkDependenciesForUninstall()) {
                 boolean productIsGood = true;
                 
                 for (Product dependent: getProducts()) {
-                    if ((dependent.getStatus() != Status.NOT_INSTALLED) && 
-                            !currentList.contains(dependent) && 
+                    if ((dependent.getStatus() != Status.NOT_INSTALLED) &&
+                            !currentList.contains(dependent) &&
                             product.satisfiesRequirement(dependent)) {
                         productIsGood = false;
                         break;
@@ -1163,7 +1191,7 @@ public class Registry {
     // Constants
     public static final String DEFAULT_LOCAL_PRODUCT_CACHE_DIRECTORY_NAME =
             "product-cache";
-
+    
     
     public static final String LOCAL_PRODUCT_CACHE_DIRECTORY_PROPERTY =
             "nbi.product.local.cache.directory.name";
@@ -1175,14 +1203,14 @@ public class Registry {
             "nbi.product.local.registry.file.name";
     
     public static final String DEFAULT_LOCAL_PRODUCT_REGISTRY_STUB_URI =
-            FileProxy.RESOURCE_SCHEME_PREFIX + 
+            FileProxy.RESOURCE_SCHEME_PREFIX +
             "org/netbeans/installer/product/default-registry.xml";
     
     public static final String LOCAL_PRODUCT_REGISTRY_STUB_PROPERTY =
             "nbi.product.local.registry.stub";
     
     public static final String DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI =
-            FileProxy.RESOURCE_SCHEME_PREFIX + 
+            FileProxy.RESOURCE_SCHEME_PREFIX +
             Installer.DATA_DIRECTORY + "/bundled-registry.xml";
     
     public static final String BUNDLED_PRODUCT_REGISTRY_URI_PROPERTY =
