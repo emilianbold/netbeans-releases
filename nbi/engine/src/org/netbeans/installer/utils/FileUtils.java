@@ -391,18 +391,18 @@ public final class FileUtils {
         }
     }
     
-    public static void deleteWithEmptyParents(File fromFile) throws IOException {
-        File file = fromFile;
-        if (file==null) {
+    public static void deleteWithEmptyParents(File file) throws IOException {
+        if (file == null) {
             return;
         }
-            
-        do  {
-            deleteFile(file);            
-            file = file.getParentFile();            
-        }
-        while (file!=null && isEmpty(file));
+        
+        File probe = file;
+        do {
+            deleteFile(probe);            
+            probe = probe.getParentFile();            
+        } while ((probe != null) && isEmpty(probe));
     }
+    
     public static File createTempFile() throws IOException {
         return createTempFile(SystemUtils.getTempDirectory());
     }
@@ -809,6 +809,16 @@ public final class FileUtils {
         }
         
         return (parent != null) && candidate.equals(parent);
+    }
+    
+    public static File getRoot(File file) {
+        File parent = file;
+        
+        while (parent.getParentFile() != null) {
+            parent = parent.getParentFile();
+        }
+        
+        return parent;
     }
     
     public static File createLauncher(NativeLauncher nl, Platform platform, Progress progress) throws IOException {
