@@ -4,7 +4,6 @@
         <property name="platform.device" value=""/>
         <property name="dist.jad.url" value="file://"/>
         <property name="run.cmd.options" value=""/>
-        <property name="platform.trigger" value="CLDC"/>
         <condition property="evaluated.run.security.domain" value="">
             <isfalse value="${{run.use.security.domain}}"/>
         </condition>

@@ -1,0 +1,9 @@
+<xsl:comment>do-jar-no-manifest</xsl:comment>
+
+    <target name="do-jar-no-manifest" unless="manifest.available">
+        <dirname file="${{dist.dir}}/${{dist.jar}}" property="dist.jar.dir"/>
+        <mkdir dir="${{dist.jar.dir}}"/>
+        <jar compress="${{jar.compress}}" jarfile="${{dist.dir}}/${{dist.jar}}">
+            <fileset dir="${{buildsystem.baton}}"/>
+        </jar>
+    </target>

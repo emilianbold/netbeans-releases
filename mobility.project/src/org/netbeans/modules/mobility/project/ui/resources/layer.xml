@@ -199,7 +199,9 @@ Microsystems, Inc. All Rights Reserved.
                         <file name="set-password" url="buildscript/set-password"/>
                         <attr name="set-password/do-jar" boolvalue="true"/>
                         <file name="do-jar" url="buildscript/do-jar"/>
-                        <attr name="do-jar/update-jad" boolvalue="true"/>
+                        <attr name="do-jar/do-jar-no-manifest" boolvalue="true"/>
+                        <file name="do-jar-no-manifest" url="buildscript/do-jar-no-manifest"/>
+                        <attr name="do-jar-no-manifest/update-jad" boolvalue="true"/>
                         <file name="update-jad" url="buildscript/update-jad"/>
                     </folder>
                     <attr name="jar-subtargets/jar" boolvalue="true"/>

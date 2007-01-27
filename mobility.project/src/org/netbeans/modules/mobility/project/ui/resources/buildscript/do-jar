@@ -1,9 +1,9 @@
 <xsl:comment>do-jar</xsl:comment>    
     
-    <target name="do-jar">
+    <target name="do-jar" if="manifest.available">
         <dirname file="${{dist.dir}}/${{dist.jar}}" property="dist.jar.dir"/>
         <mkdir dir="${{dist.jar.dir}}"/>
-        <jar compress="${{jar.compress}}" jarfile="${{dist.dir}}/${{dist.jar}}" manifest="${{build.dir}}/manifest.mf" manifestencoding="UTF-8">
+        <jar compress="${{jar.compress}}" jarfile="${{dist.dir}}/${{dist.jar}}" manifest="${{manifest.file}}" manifestencoding="UTF-8">
             <fileset dir="${{buildsystem.baton}}"/>
         </jar>
     </target>

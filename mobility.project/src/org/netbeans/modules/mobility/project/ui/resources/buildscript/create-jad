@@ -3,18 +3,19 @@
     <target name="add-configuration" unless="contains.manifest.configuration">
         <nb-output file="${{dist.dir}}/${{dist.jad}}" encoding="UTF-8" append="true">MicroEdition-Configuration: ${platform.configuration}
 </nb-output>
-        <nb-output file="${{build.dir}}/manifest.mf" encoding="UTF-8" append="true">MicroEdition-Configuration: ${platform.configuration}
+        <nb-output file="${{manifest.file}}" encoding="UTF-8" append="true">MicroEdition-Configuration: ${platform.configuration}
 </nb-output>
     </target>
 
     <target name="add-profile" unless="contains.manifest.profile">
         <nb-output file="${{dist.dir}}/${{dist.jad}}" encoding="UTF-8" append="true">MicroEdition-Profile: ${platform.profile}
 </nb-output>
-        <nb-output file="${{build.dir}}/manifest.mf" encoding="UTF-8" append="true">MicroEdition-Profile: ${platform.profile}
+        <nb-output file="${{manifest.file}}" encoding="UTF-8" append="true">MicroEdition-Profile: ${platform.profile}
 </nb-output>
     </target>
 
     <target name="create-jad" depends="__DEPENDS__" if="cldc-platform.trigger">
+        <property name="manifest.file" location="${{build.dir}}/manifest.mf"/>
         <fail unless="dist.jad">Must set dist.jad</fail>
         <mkdir dir="${{build.dir}}"/>
         <dirname file="${{dist.dir}}/${{dist.jad}}" property="dist.jad.dir"/>
@@ -40,8 +41,9 @@
         <property name="manifest.jad" value=""/>
         <property name="manifest.manifest" value=""/>
         <nb-output file="${{dist.dir}}/${{dist.jad}}" encoding="UTF-8">${manifest.midlets}${evaluated.manifest.apipermissions}${evaluated.manifest.pushregistry}${manifest.others}${manifest.jad}</nb-output>
-        <nb-output file="${{build.dir}}/manifest.mf" encoding="UTF-8">${manifest.midlets}${evaluated.manifest.apipermissions}${evaluated.manifest.pushregistry}${manifest.others}${manifest.manifest}</nb-output>
+        <nb-output file="${{manifest.file}}" encoding="UTF-8">${manifest.midlets}${evaluated.manifest.apipermissions}${evaluated.manifest.pushregistry}${manifest.others}${manifest.manifest}</nb-output>
         <antcall target="add-configuration" inheritall="true" inheritrefs="true"/>
         <antcall target="add-profile" inheritall="true" inheritrefs="true"/>
+        <property name="manifest.available" value="true"/>
     </target>
     
