@@ -77,7 +77,6 @@ public interface Pumping {
   
   /////////////////////////////////////////////////////////////////////////////////
   // Inner Classes
-  
   interface Section {
     /**
      * range of bytes this section responsible for.
