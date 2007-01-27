@@ -29,10 +29,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.net.URL;
-import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
-import org.netbeans.installer.utils.helper.swing.NbiContentPane;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiFrame;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
@@ -151,7 +148,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         });
     }
     
-    public static class WizardContentPane extends NbiContentPane {
+    public class WizardContentPane extends NbiFrameContentPane {
         private NbiPanel     titlePanel;
         private NbiLabel     titleLabel;
         private NbiTextPane  descriptionPane;

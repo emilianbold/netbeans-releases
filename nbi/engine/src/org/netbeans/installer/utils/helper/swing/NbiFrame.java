@@ -20,12 +20,14 @@
  */
 package org.netbeans.installer.utils.helper.swing;
 
+import java.awt.Graphics;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
-import java.awt.Toolkit;
 import java.net.URL;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
-import org.netbeans.installer.wizard.containers.SwingFrameContainer;
 
 /**
  *
@@ -36,24 +38,29 @@ public class NbiFrame extends JFrame {
     private int frameHeight;
     private URL frameIcon;
     
-    private NbiContentPane contentPane;
+    private NbiFrameContentPane contentPane;
     
     public NbiFrame() {
         super();
         
         frameWidth      = DEFAULT_FRAME_WIDTH;
         frameHeight     = DEFAULT_FRAME_HEIGHT;
-        frameIcon       = DEFAULT_WIZARD_FRAME_ICON;
+        frameIcon       = DEFAULT_FRAME_ICON;
         
         initComponents();
     }
     
     public void setVisible(boolean visible) {
-        int screenWidth  = Toolkit.getDefaultToolkit().getScreenSize().width;
-        int screenHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
+        final GraphicsDevice screen = GraphicsEnvironment.
+                getLocalGraphicsEnvironment().
+                getScreenDevices()[0];
+        final GraphicsConfiguration config = screen.getDefaultConfiguration();
+        
+        final int screenWidth  = config.getBounds().width;
+        final int screenHeight = config.getBounds().height;
         
         setLocation(
-                (screenWidth - getSize().width) / 2, 
+                (screenWidth - getSize().width) / 2,
                 (screenHeight - getSize().height) / 2);
         
         super.setVisible(visible);
@@ -75,13 +82,47 @@ public class NbiFrame extends JFrame {
         setIconImage(new ImageIcon(frameIcon).getImage());
         
         // content pane
-        contentPane = new NbiContentPane();
+        contentPane = new NbiFrameContentPane();
         setContentPane(contentPane);
     }
     
-    public static final int DEFAULT_FRAME_WIDTH             = 600;
-    public static final int DEFAULT_FRAME_HEIGHT            = 500;
-    public static final URL DEFAULT_WIZARD_FRAME_ICON       = NbiFrame.class.getClassLoader().getResource("org/netbeans/installer/wizard/wizard-icon.png");
+    public class NbiFrameContentPane extends NbiPanel {
+        private Image backgroundImage;
+        
+        protected void paintComponent(Graphics graphics) {
+            super.paintComponent(graphics);
+            
+            if (backgroundImage != null) {
+                graphics.drawImage(backgroundImage, 0, 0, this);
+            }
+        }
+        
+        public Image getBackgroundImage() {
+            return backgroundImage;
+        }
+        
+        public void setBackgroundImage(URL url) {
+            if (url != null) {
+                backgroundImage = new ImageIcon(url).getImage();
+            } else {
+                backgroundImage = null;
+            }
+        }
+        
+        public void setBackgroundImage(Image image) {
+            if (image != null) {
+                backgroundImage = image;
+            } else {
+                backgroundImage = null;
+            }
+        }
+    }
+    
+    public static final int DEFAULT_FRAME_WIDTH  = 600;
+    public static final int DEFAULT_FRAME_HEIGHT = 500;
+    public static final URL DEFAULT_FRAME_ICON   = NbiFrame.class.
+            getClassLoader().
+            getResource("org/netbeans/installer/wizard/wizard-icon.png");
     
     public static final String WIZARD_FRAME_WIDTH_PROPERTY  = "nbi.wizard.frame.width";
     public static final String WIZARD_FRAME_HEIGHT_PROPERTY = "nbi.wizard.frame.height";

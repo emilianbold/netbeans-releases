@@ -25,10 +25,12 @@ import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
-import java.awt.Toolkit;
+import java.net.URL;
 import javax.swing.JDialog;
-import javax.swing.JPanel;
 
 /**
  *
@@ -36,6 +38,12 @@ import javax.swing.JPanel;
  */
 public class NbiDialog extends JDialog {
     protected NbiFrame owner;
+    
+    protected int dialogWidth;
+    protected int dialogHeight;
+    protected URL dialogIcon;
+    
+    protected NbiDialogContentPane contentPane;
     
     public NbiDialog() {
         super();
@@ -53,28 +61,39 @@ public class NbiDialog extends JDialog {
     
     private void initComponents() {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setContentPane(new NbiContentPane());
         
-        if (owner != null) {
-            setSize(owner.getSize());
-        } else {
-            setSize(NbiFrame.DEFAULT_FRAME_WIDTH, NbiFrame.DEFAULT_FRAME_HEIGHT);
-        }
+        contentPane = new NbiDialogContentPane();
+        setContentPane(contentPane);
+        
+        setSize(DEFAULT_DIALOG_WIDTH, DEFAULT_DIALOG_HEIGHT);
     }
     
     public void setVisible(boolean visible) {
-        int screenWidth = Toolkit.getDefaultToolkit().getScreenSize().width;
-        int screenHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
-        
-        setLocation(((screenWidth - getSize().width) / 2) + 50, ((screenHeight - getSize().height) / 2) + 50);
+        if (owner == null) {
+            final GraphicsDevice screen = GraphicsEnvironment.
+                    getLocalGraphicsEnvironment().
+                    getScreenDevices()[0];
+            final GraphicsConfiguration config = screen.getDefaultConfiguration();
+            
+            final int screenWidth  = config.getBounds().width;
+            final int screenHeight = config.getBounds().height;
+            
+            setLocation(
+                    (screenWidth - getSize().width) / 2,
+                    (screenHeight - getSize().height) / 2);
+        } else {
+            setLocation(
+                    owner.getLocation().x + DIALOG_FRAME_WIDTH_DELTA,
+                    owner.getLocation().y + DIALOG_FRAME_WIDTH_DELTA);
+        }
         
         super.setVisible(visible);
     }
     
-    public class NbiContentPane extends JPanel {
+    public class NbiDialogContentPane extends NbiPanel {
         private Image backgroundImage;
         
-        public NbiContentPane() {
+        public NbiDialogContentPane() {
             if (NbiDialog.this.owner != null) {
                 backgroundImage = NbiDialog.this.owner.getBackgroundImage();
             }
@@ -98,4 +117,18 @@ public class NbiDialog extends JDialog {
             graphics2d.setComposite(oldComposite);
         }
     }
+    
+    public static final int DIALOG_FRAME_WIDTH_DELTA = 100;
+    
+    public static final int DIALOG_FRAME_HEIGHT_DELTA = 100;
+    
+    public static final int DEFAULT_DIALOG_WIDTH =
+            NbiFrame.DEFAULT_FRAME_WIDTH - DIALOG_FRAME_WIDTH_DELTA;
+    
+    public static final int DEFAULT_DIALOG_HEIGHT =
+            NbiFrame.DEFAULT_FRAME_HEIGHT - DIALOG_FRAME_HEIGHT_DELTA;
+    
+    public static final URL DEFAULT_DIALOG_ICON = NbiDialog.class.
+            getClassLoader().
+            getResource("org/netbeans/installer/wizard/wizard-icon.png");
 }
