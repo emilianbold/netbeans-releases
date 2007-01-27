@@ -46,6 +46,7 @@ import org.netbeans.installer.product.filters.GroupFilter;
 import org.netbeans.installer.product.filters.RegistryFilter;
 import org.netbeans.installer.product.filters.TrueFilter;
 import org.netbeans.installer.utils.helper.DetailedStatus;
+import org.netbeans.installer.utils.helper.ExtendedURI;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileProxy;
@@ -213,6 +214,23 @@ public class Registry {
         
         progress.setPercentage(Progress.START);
         
+        // remove installation data for all the products
+        for (Product product: getProducts()) {
+            for (ExtendedURI uri: product.getDataUris()) {
+                if (uri.getLocal() != null) {
+                    try {
+                        FileUtils.deleteFile(new File(uri.getLocal()));
+                    } catch (IOException e) {
+                        ErrorManager.notifyWarning(
+                                "Cannot delete the cached installation data", 
+                                e);
+                    }
+                }
+            }
+        }
+        
+        // save the local registry if we're executing in normal mode (i.e. not
+        // creating a bundle)
         if (Installer.getInstance().getExecutionMode() ==
                 InstallerExecutionMode.NORMAL) {
             progress.setTitle("Saving local registry");
@@ -223,6 +241,8 @@ public class Registry {
                     new ProductFilter(Status.INSTALLED));
         }
         
+        // save the state file if it is required (i.e. --record command line option
+        // was specified)
         if (System.getProperty(TARGET_STATE_FILE_PATH_PROPERTY) != null) {
             File stateFile =
                     new File(System.getProperty(TARGET_STATE_FILE_PATH_PROPERTY));
