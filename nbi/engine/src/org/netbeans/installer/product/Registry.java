@@ -370,14 +370,15 @@ public class Registry {
     private void applyRegistryFilters() {
         // if a target component was specified, hide everything except:
         //   * the target itself
-        //   * products, whose requirement the target satisfies
-        //   * ancestors of the target of any of the above
+        //   * products, whose requirement(s) the target satisfies
+        //   * ancestors of any of the above
         if ((System.getProperty(TARGET_COMPONENT_UID_PROPERTY) != null) &&
                 (System.getProperty(TARGET_COMPONENT_VERSION_PROPERTY) != null)) {
-            String uid = System.getProperty(TARGET_COMPONENT_UID_PROPERTY);
-            Version version = Version.getVersion(System.getProperty(TARGET_COMPONENT_VERSION_PROPERTY));
+            final String uid = System.getProperty(TARGET_COMPONENT_UID_PROPERTY);
+            final Version version = Version.getVersion(
+                    System.getProperty(TARGET_COMPONENT_VERSION_PROPERTY));
             
-            Product target = getProduct(uid, version);
+            final Product target = getProduct(uid, version);
             
             List<Product> dependents = new ArrayList<Product>();
             for (Product product: getProducts()) {
@@ -387,23 +388,19 @@ public class Registry {
             }
             
             for (Product product: getProducts()) {
-                if (target.equals(product) ||
-                        dependents.contains(product) ||
-                        product.isAncestor(target) ||
-                        product.isAncestor(dependents)) {
-                    product.setVisible(true);
-                } else {
+                if (!target.equals(product) &&
+                        !dependents.contains(product) &&
+                        !product.isAncestor(target) &&
+                        !product.isAncestor(dependents)) {
                     product.setVisible(false);
                 }
             }
         }
         
         // hide products that do not support the current platform
-        for (Product component: queryProducts(TrueFilter.INSTANCE)) {
-            if (component.getSupportedPlatforms().contains(targetPlatform)) {
-                component.setVisible(true);
-            } else {
-                component.setVisible(false);
+        for (Product product: queryProducts(TrueFilter.INSTANCE)) {
+            if (!product.getSupportedPlatforms().contains(targetPlatform)) {
+                product.setVisible(false);
             }
         }
         
@@ -733,6 +730,10 @@ public class Registry {
         }
         
         return groups;
+    }
+    
+    public List<RegistryNode> getNodes() {
+        return query(TrueFilter.INSTANCE);
     }
     
     // products queries /////////////////////////////////////////////////////////////
@@ -1168,28 +1169,28 @@ public class Registry {
             "nbi.product.local.cache.directory.name";
     
     public static final String DEFAULT_LOCAL_REGISTRY_FILE_NAME =
-            "product-registry.xml";
+            "registry.xml";
     
     public static final String LOCAL_PRODUCT_REGISTRY_PROPERTY =
             "nbi.product.local.registry.file.name";
     
     public static final String DEFAULT_LOCAL_PRODUCT_REGISTRY_STUB_URI =
             FileProxy.RESOURCE_SCHEME_PREFIX + 
-            "org/netbeans/installer/product/default-product-registry.xml";
+            "org/netbeans/installer/product/default-registry.xml";
     
     public static final String LOCAL_PRODUCT_REGISTRY_STUB_PROPERTY =
             "nbi.product.local.registry.stub";
     
     public static final String DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI =
             FileProxy.RESOURCE_SCHEME_PREFIX + 
-            Installer.DATA_DIRECTORY + "/bundled-product-registry.xml";
+            Installer.DATA_DIRECTORY + "/bundled-registry.xml";
     
     public static final String BUNDLED_PRODUCT_REGISTRY_URI_PROPERTY =
             "nbi.product.bundled.registry.uri";
     
     public static final String DEFAULT_PRODUCT_REGISTRY_SCHEMA_URI =
             FileProxy.RESOURCE_SCHEME_PREFIX +
-            "org/netbeans/installer/product/product-registry.xsd";
+            "org/netbeans/installer/product/registry.xsd";
     
     public static final String PRODUCT_REGISTRY_SCHEMA_URI_PROPERTY =
             "nbi.product.registry.schema.uri";

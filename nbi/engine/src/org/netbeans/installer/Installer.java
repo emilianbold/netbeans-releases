@@ -587,7 +587,7 @@ public class Installer {
             jos.putNextEntry(new JarEntry(DATA_DIRECTORY + StringUtils.FORWARD_SLASH));            
             
             jos.putNextEntry(new JarEntry(DATA_DIRECTORY + StringUtils.FORWARD_SLASH + 
-                    "bundled-product-registry.xml"));
+                    "bundled-registry.xml"));
             
             Document doc = Registry.getInstance().getEmptyRegistryDocument();
             Registry.getInstance().saveRegistryDocument(doc,jos);

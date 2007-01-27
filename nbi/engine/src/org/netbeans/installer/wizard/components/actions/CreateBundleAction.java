@@ -196,7 +196,7 @@ public class CreateBundleAction extends WizardAction {
                     new UriCorrectingFilter(components));
             
             output.putNextEntry(new JarEntry(
-                    Installer.DATA_DIRECTORY + "/bundled-product-registry.xml"));
+                    Installer.DATA_DIRECTORY + "/bundled-registry.xml"));
             Registry.getInstance().saveRegistryDocument(document, output);
         } catch (IOException e) {
             ErrorManager.notifyError("Failed to create the bundle", e);

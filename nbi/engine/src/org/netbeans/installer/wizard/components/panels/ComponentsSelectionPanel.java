@@ -324,25 +324,28 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                     new EmptyBorder(5, 5, 5, 5));
             componentsTree.setEditable(
                     true);
-            componentsTree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
+            componentsTree.getSelectionModel().addTreeSelectionListener(
+                    new TreeSelectionListener() {
                 public void valueChanged(TreeSelectionEvent event) {
                     updateDescription();
                 }
             });
-            componentsTree.getModel().addTreeModelListener(new TreeModelListener() {
+            componentsTree.getModel().addTreeModelListener(
+                    new TreeModelListener() {
                 public void treeNodesChanged(TreeModelEvent event) {
-                    updateSizes();
-                    updateErrorMessage();
+                    handleEvent(event);
                 }
                 public void treeNodesInserted(TreeModelEvent event) {
-                    updateSizes();
-                    updateErrorMessage();
+                    handleEvent(event);
                 }
                 public void treeNodesRemoved(TreeModelEvent event) {
-                    updateSizes();
-                    updateErrorMessage();
+                    handleEvent(event);
                 }
                 public void treeStructureChanged(TreeModelEvent event) {
+                    handleEvent(event);
+                }
+                
+                private void handleEvent(TreeModelEvent event) {
                     updateSizes();
                     updateErrorMessage();
                 }
@@ -366,6 +369,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             // sizesLabel
             sizesLabel = new NbiLabel();
             
+            // add the components
             add(messagePane, new GridBagConstraints(
                     0, 0,                             // x, y
                     2, 1,                             // width, height
@@ -398,6 +402,14 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                     GridBagConstraints.HORIZONTAL,    // fill
                     new Insets(6, 11, 0, 11),         // padding
                     0, 0));                           // padx, pady - ???
+            
+            // run through all nodes and expand those that have the expand flag set 
+            // to true
+            for (RegistryNode node: Registry.getInstance().getNodes()) {
+                if (node.getExpand()) {
+                    componentsTree.expandPath(node.getTreePath());
+                }
+            }
         }
         
         private void updateDescription() {

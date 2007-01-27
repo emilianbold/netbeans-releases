@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Properties;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.tree.TreePath;
 import org.netbeans.installer.product.filters.RegistryFilter;
 import org.netbeans.installer.product.filters.TrueFilter;
 import org.netbeans.installer.utils.FileProxy;
@@ -70,14 +71,6 @@ public abstract class RegistryNode implements PropertyContainer {
     protected List<RegistryNode>    children      = new ArrayList<RegistryNode>();
     
     protected Properties            properties    = new Properties();
-    
-    public RegistryNode getParent() {
-        return parent;
-    }
-    
-    public void setParent(final RegistryNode parent) {
-        this.parent = parent;
-    }
     
     public String getUid() {
         return uid;
@@ -151,7 +144,15 @@ public abstract class RegistryNode implements PropertyContainer {
         return built;
     }
     
-    // children /////////////////////////////////////////////////////////////////////
+    // tree /////////////////////////////////////////////////////////////////////////
+    public RegistryNode getParent() {
+        return parent;
+    }
+    
+    public void setParent(final RegistryNode parent) {
+        this.parent = parent;
+    }
+    
     public List<RegistryNode> getChildren() {
         return children;
     }
@@ -220,6 +221,18 @@ public abstract class RegistryNode implements PropertyContainer {
         }
         
         return false;
+    }
+    
+    public TreePath getTreePath() {
+        List<RegistryNode> nodes = new LinkedList<RegistryNode>();
+        
+        RegistryNode node = this;
+        while (node != null) {
+            nodes.add(0, node);
+            node = node.getParent();
+        }
+        
+        return new TreePath(nodes.toArray());
     }
     
     // properties ///////////////////////////////////////////////////////////////////
@@ -358,12 +371,14 @@ public abstract class RegistryNode implements PropertyContainer {
             
             iconUri = XMLUtils.parseExtendedUri(XMLUtils.getChild(element, "icon"));
             
-            File iconFile = FileProxy.getInstance().getFile(iconUri.getRemote());
+            final File iconFile = 
+                    FileProxy.getInstance().getFile(iconUri.getRemote());
             
-            icon    = new ImageIcon(iconFile.getPath());
+            icon = new ImageIcon(iconFile.getPath());
             iconUri.setLocal(iconFile.toURI());
             
             offset = Long.parseLong(element.getAttribute("offset"));
+            visible = Boolean.parseBoolean(element.getAttribute("visible"));
             expand = Boolean.parseBoolean(element.getAttribute("expand"));
             
             built = new Date(Long.parseLong(element.getAttribute("built")));

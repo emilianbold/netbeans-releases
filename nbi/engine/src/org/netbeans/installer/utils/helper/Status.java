@@ -41,13 +41,13 @@ public enum Status {
     public String getDisplayName() {
         switch (this) {
             case NOT_INSTALLED:
-                return "Not Installed";
+                return "Not installed";
             case TO_BE_INSTALLED:
-                return "To Be Installed";
+                return "To be installed";
             case INSTALLED:
                 return "Installed";
             case TO_BE_UNINSTALLED:
-                return "To Be Uninstalled";
+                return "To be uninstalled";
         }
         
         return null;
