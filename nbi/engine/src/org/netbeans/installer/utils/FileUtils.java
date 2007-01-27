@@ -386,18 +386,23 @@ public final class FileUtils {
     }
     
     public static void deleteEmptyParents(File file) throws IOException {
-        if (!file.exists() || file.isFile()) {
-            deleteEmptyParents(file.getParentFile());
-        } else if (file.isDirectory()) {
-            File parent = file;
-            while (parent != null && isEmpty(parent) && parent.exists()) {
-                file = parent;
-                parent = parent.getParentFile();
-                deleteFile(parent);
-            }
+        if (!file.exists()) {
+            deleteWithEmptyParents(file.getParentFile());
         }
     }
     
+    public static void deleteWithEmptyParents(File fromFile) throws IOException {
+        File file = fromFile;
+        if (file==null) {
+            return;
+        }
+            
+        do  {
+            deleteFile(file);            
+            file = file.getParentFile();            
+        }
+        while (file!=null && isEmpty(file));
+    }
     public static File createTempFile() throws IOException {
         return createTempFile(SystemUtils.getTempDirectory());
     }
