@@ -173,7 +173,9 @@ public abstract class WizardAction extends WizardComponent {
         }
         
         public void evaluateCancelButtonClick() {
-            if (!UiUtils.showYesNoDialog("Are you sure you want to cancel?")) {
+            if (!UiUtils.showYesNoDialog(
+                    "Cancel", 
+                    "Are you sure you want to cancel?")) {
                 return;
             }
             

@@ -70,10 +70,13 @@ public abstract class WizardComponent {
     // Instance
     private Wizard wizard;
     
-    private List<WizardComponent> components = new ArrayList<WizardComponent>();
-    private Properties            properties = new Properties();
+    private List<WizardComponent> components;
+    private Properties            properties;
     
     protected WizardComponent() {
+        components = new ArrayList<WizardComponent>();
+        properties = new Properties();
+        
         setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
         setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
         
@@ -244,7 +247,7 @@ public abstract class WizardComponent {
         }
         
         public void evaluateCancelButtonClick() {
-            if (!UiUtils.showYesNoDialog("Are you sure you want to cancel?")) {
+            if (!UiUtils.showYesNoDialog("Cancel", "Are you sure you want to cancel?")) {
                 return;
             }
             

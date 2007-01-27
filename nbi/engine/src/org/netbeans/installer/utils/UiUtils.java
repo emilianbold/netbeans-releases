@@ -29,15 +29,21 @@ import static javax.swing.JOptionPane.NO_OPTION;
  *
  * @author Kirill Sorokin
  */
-public class UiUtils {
-    public static boolean showYesNoDialog(String message) {
-        int result = JOptionPane.showConfirmDialog(null, message, "", YES_NO_OPTION);
+public final class UiUtils {
+    /////////////////////////////////////////////////////////////////////////////////
+    // Static
+    public static boolean showYesNoDialog(String title, String message) {
+        final int result = JOptionPane.showConfirmDialog(
+                null, 
+                message, 
+                title, 
+                YES_NO_OPTION);
         
         return result == YES_OPTION;
     }
     
-    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
     private UiUtils() {
     }
-    
 }

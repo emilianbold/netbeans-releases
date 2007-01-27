@@ -26,7 +26,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.jar.JarEntry;
@@ -37,19 +36,15 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.product.Registry;
-import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.XMLException;
-import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
-import org.netbeans.installer.wizard.components.actions.FinalizeRegistryAction;
-import org.netbeans.installer.wizard.components.actions.InitializeRegistryAction;
 import static org.netbeans.installer.utils.helper.ErrorLevel.DEBUG;
 import static org.netbeans.installer.utils.helper.ErrorLevel.MESSAGE;
 import static org.netbeans.installer.utils.helper.ErrorLevel.WARNING;
@@ -705,6 +700,7 @@ public class Installer {
                 LogManager.log("... lock file already exists");
                 
                 if(!UiUtils.showYesNoDialog(
+                        "NetBeans Installer is already running", 
                         "It seems that another instance of installer is already " +
                         "running!\nIt can be dangerous running another one in " +
                         "the same time.\nAre you sure you want to run one more " +
