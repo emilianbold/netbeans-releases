@@ -30,12 +30,16 @@ import org.netbeans.modules.websvc.jaxws.spi.JAXWSViewProvider;
 public class ProjectJAXWSViewProvider implements JAXWSViewProvider {
     
     private ProjectJAXWSView wsView = new ProjectJAXWSView();
+    private JAXWSView apiJaxWsView;
     /** Creates a new instance of ProjectJAXWSViewProvider */
     public ProjectJAXWSViewProvider() {
     }
 
-    public JAXWSView findJAXWSView() {
-        return JAXWSViewFactory.createJAXWSView(wsView);
+    public synchronized JAXWSView findJAXWSView() {
+        if (apiJaxWsView==null) {
+            apiJaxWsView = JAXWSViewFactory.createJAXWSView(wsView);
+        }
+        return apiJaxWsView;
     }
     
 }
