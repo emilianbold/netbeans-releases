@@ -164,6 +164,9 @@ public class WsdlModeler {
                 entityResolver = new CatalogResolver(manager);
                 options.entityResolver = entityResolver;
             }
+            
+            options.parseBindings(new IdeErrorReceiver());
+            
             ideWSDLModeler =
                     new WSDLModeler(options, new IdeErrorReceiver());
             Model tmpModel = ideWSDLModeler.buildModel();
@@ -196,19 +199,24 @@ public class WsdlModeler {
     }
     
     private class IdeErrorReceiver extends ErrorReceiver{
-        public void warning(SAXParseException sAXParseException) throws AbortException {
+        public void warning(SAXParseException ex) throws AbortException {
+            Logger.getLogger(this.getClass().getName()).log(Level.FINE, 
+                    "WsdlModeler.generateWsdlModel", ex); //NOI18N
         }
         
-        public void info(SAXParseException sAXParseException) {
-            System.out.println("info");
+        public void info(SAXParseException ex) {
+            Logger.getLogger(this.getClass().getName()).log(Level.FINE, 
+                    "WsdlModeler.generateWsdlModel", ex); //NOI18N
         }
         
-        public void fatalError(SAXParseException sAXParseException) throws AbortException {
-            System.out.println("fatalError");
+        public void fatalError(SAXParseException ex) throws AbortException {
+            Logger.getLogger(this.getClass().getName()).log(Level.FINE, 
+                    "WsdlModeler.generateWsdlModel", ex); //NOI18N
         }
         
-        public void error(SAXParseException sAXParseException) throws AbortException {
-            System.out.println("error");
+        public void error(SAXParseException ex) throws AbortException {
+            Logger.getLogger(this.getClass().getName()).log(Level.FINE, 
+                    "WsdlModeler.generateWsdlModel", ex); //NOI18N
         }
         
     }
