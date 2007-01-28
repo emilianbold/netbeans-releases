@@ -47,7 +47,7 @@ import org.netbeans.installer.product.filters.RegistryFilter;
 import org.netbeans.installer.product.filters.TrueFilter;
 import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.helper.DetailedStatus;
-import org.netbeans.installer.utils.helper.ExtendedURI;
+import org.netbeans.installer.utils.helper.ExtendedUri;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileProxy;
@@ -216,9 +216,10 @@ public class Registry {
         
         progress.setPercentage(Progress.START);
         
-        // remove installation data for all the products
+        // remove installation data for all the products, if it still exists (should
+        // be removed right upon installation)
         for (Product product: getProducts()) {
-            for (ExtendedURI uri: product.getDataUris()) {
+            for (ExtendedUri uri: product.getDataUris()) {
                 if (uri.getLocal() != null) {
                     try {
                         FileUtils.deleteFile(new File(uri.getLocal()));

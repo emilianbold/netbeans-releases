@@ -45,7 +45,7 @@ import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.XMLException;
-import org.netbeans.installer.utils.helper.ExtendedURI;
+import org.netbeans.installer.utils.helper.ExtendedUri;
 import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.components.WizardAction;
@@ -160,7 +160,7 @@ public class CreateBundleAction extends WizardAction {
                 component.getIconUri().setLocal(new URI(uriPrefix + "/icon.png"));
                 
                 
-                final List<ExtendedURI> logicUris = component.getLogicUris();
+                final List<ExtendedUri> logicUris = component.getLogicUris();
                 for (int i = 0; i < logicUris.size(); i++) {
                     if (canceled) return; // check for cancel status
                     
@@ -172,7 +172,7 @@ public class CreateBundleAction extends WizardAction {
                     logicUris.get(i).setLocal(new URI(uriPrefix + "/configuration-logic/logic-" + (i + 1) + ".jar"));
                 }
                 
-                final List<ExtendedURI> dataUris = component.getDataUris();
+                final List<ExtendedUri> dataUris = component.getDataUris();
                 for (int i = 0; i < dataUris.size(); i++) {
                     if (canceled) return; // check for cancel status
                     
@@ -251,11 +251,11 @@ public class CreateBundleAction extends WizardAction {
                     node.getIconUri().setLocal(null);
                     
                     if (node instanceof Product) {
-                        for (ExtendedURI uri: ((Product) node).getLogicUris()) {
+                        for (ExtendedUri uri: ((Product) node).getLogicUris()) {
                             uri.setLocal(null);
                         }
                         
-                        for (ExtendedURI uri: ((Product) node).getDataUris()) {
+                        for (ExtendedUri uri: ((Product) node).getDataUris()) {
                             uri.setLocal(null);
                         }
                     }

@@ -51,7 +51,7 @@ import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.ErrorLevel;
-import org.netbeans.installer.utils.helper.ExtendedURI;
+import org.netbeans.installer.utils.helper.ExtendedUri;
 import org.netbeans.installer.utils.helper.Version;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -310,16 +310,16 @@ public abstract class XMLUtils {
         return new Dependency(type, uid, lower, upper, resolved);
     }
     
-    public static ExtendedURI parseExtendedUri(Element element) throws ParseException {
+    public static ExtendedUri parseExtendedUri(Element element) throws ParseException {
         try {
             URI    uri  = new URI(XMLUtils.getChildNodeTextContent(element, "default-uri"));
             long   size = Long.parseLong(XMLUtils.getAttribute(element, "size"));
             String md5  = XMLUtils.getAttribute(element, "md5");
             
             if (uri.getScheme().equals("file")) {
-                return new ExtendedURI(uri, uri, size, md5);
+                return new ExtendedUri(uri, uri, size, md5);
             } else {
-                return new ExtendedURI(uri, size, md5);
+                return new ExtendedUri(uri, size, md5);
             }
         } catch (URISyntaxException e) {
             throw new ParseException("Cannot parse extended URI", e);

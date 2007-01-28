@@ -35,7 +35,7 @@ import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.ExecutionResults;
-import org.netbeans.installer.utils.helper.ExtendedURI;
+import org.netbeans.installer.utils.helper.ExtendedUri;
 import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.Version;
@@ -232,14 +232,14 @@ public class ManagerBean implements Manager {
             
             parent.addChild(component);
             
-            for (ExtendedURI uri: component.getLogicUris()) {
+            for (ExtendedUri uri: component.getLogicUris()) {
                 string = uri.getRemote().getSchemeSpecificPart();
                 string = string.substring(componentsDir.toURI().getSchemeSpecificPart().length());
                 string = URLEncoder.encode("components/" + string, "UTF-8");
                 uri.setLocal(new URI(uriPrefix + string));
             }
             
-            for (ExtendedURI uri: component.getDataUris()) {
+            for (ExtendedUri uri: component.getDataUris()) {
                 string = uri.getRemote().getSchemeSpecificPart();
                 string = string.substring(componentsDir.toURI().getSchemeSpecificPart().length());
                 string = URLEncoder.encode("components/" + string, "UTF-8");

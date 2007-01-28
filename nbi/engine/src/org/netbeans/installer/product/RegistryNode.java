@@ -41,7 +41,7 @@ import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.FinalizationException;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.ParseException;
-import org.netbeans.installer.utils.helper.ExtendedURI;
+import org.netbeans.installer.utils.helper.ExtendedUri;
 import org.netbeans.installer.utils.helper.PropertyContainer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -56,7 +56,7 @@ public abstract class RegistryNode implements PropertyContainer {
     
     protected String                uid           = null;
     
-    protected ExtendedURI           iconUri       = null;
+    protected ExtendedUri           iconUri       = null;
     protected Icon                  icon          = null;
     
     protected long                  offset        = 0;
@@ -116,7 +116,7 @@ public abstract class RegistryNode implements PropertyContainer {
         descriptions.put(locale, description);
     }
     
-    public ExtendedURI getIconUri() {
+    public ExtendedUri getIconUri() {
         return iconUri;
     }
     

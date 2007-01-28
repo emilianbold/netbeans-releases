@@ -50,7 +50,7 @@ import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.helper.Version;
-import org.netbeans.installer.utils.helper.ExtendedURI;
+import org.netbeans.installer.utils.helper.ExtendedUri;
 import org.netbeans.installer.utils.helper.Dependency;
 import org.netbeans.installer.utils.helper.DependencyType;
 import org.netbeans.installer.utils.helper.Text;
@@ -75,8 +75,8 @@ public final class Product extends RegistryNode {
     private Status initialStatus;
     private Status currentStatus;
     
-    private List<ExtendedURI> logicUris;
-    private List<ExtendedURI> dataUris;
+    private List<ExtendedUri> logicUris;
+    private List<ExtendedUri> dataUris;
     
     private long requiredDiskSpace;
     
@@ -98,8 +98,8 @@ public final class Product extends RegistryNode {
     // constructor //////////////////////////////////////////////////////////////////
     public Product() {
         supportedPlatforms = new ArrayList<Platform>();
-        logicUris          = new ArrayList<ExtendedURI>();
-        dataUris           = new ArrayList<ExtendedURI>();
+        logicUris          = new ArrayList<ExtendedUri>();
+        dataUris           = new ArrayList<ExtendedUri>();
         dependencies       = new ArrayList<Dependency>();
     }
     
@@ -194,17 +194,20 @@ public final class Product extends RegistryNode {
         }
         
         // extract each of the defined installation data files
-        for (ExtendedURI uri: dataUris) {
+        for (ExtendedUri uri: dataUris) {
+            // get the uri of the current data file
             final URI dataUri = uri.getLocal();
             if (dataUri == null) {
                 throw new InstallationException("Installation data is not cached");
             }
             
+            // convert it to a file and do some additional checks
             final File dataFile = new File(uri.getLocal());
             if (!dataFile.exists()) {
                 throw new InstallationException("Installation data is not cached");
             }
             
+            // exract it and add the files to the installed files list
             try {
                 installedFiles.add(FileUtils.unjar(
                         dataFile,
@@ -214,6 +217,14 @@ public final class Product extends RegistryNode {
                 throw new InstallationException("Cannot extract installation data", e);
             } catch (XMLException e) {
                 throw new InstallationException("Cannot extract installation data", e);
+            }
+            
+            // finally remove the data file
+            try {
+                FileUtils.deleteFile(dataFile);
+                uri.setLocal(null);
+            } catch (IOException e) {
+                throw new InstallationException("Cannot clear installation data cache", e);
             }
         }
         
@@ -413,7 +424,7 @@ public final class Product extends RegistryNode {
     }
     
     // configuration logic //////////////////////////////////////////////////////////
-    public List<ExtendedURI> getLogicUris() {
+    public List<ExtendedUri> getLogicUris() {
         return logicUris;
     }
     
@@ -427,7 +438,7 @@ public final class Product extends RegistryNode {
         overallProgress.synchronizeTo(progress);
         overallProgress.synchronizeDetails(true);
         
-        for (ExtendedURI uri: logicUris) {
+        for (ExtendedUri uri: logicUris) {
             final Progress currentProgress = new Progress();
             overallProgress.addChild(currentProgress, percentageChunk);
             
@@ -439,7 +450,7 @@ public final class Product extends RegistryNode {
     }
     
     public boolean isLogicDownloaded() {
-        for (ExtendedURI uri: logicUris) {
+        for (ExtendedUri uri: logicUris) {
             if (uri.getLocal() == null) {
                 return false;
             }
@@ -459,7 +470,7 @@ public final class Product extends RegistryNode {
         
         try {
             String classname = null;
-            for (ExtendedURI uri: logicUris) {
+            for (ExtendedUri uri: logicUris) {
                 classname = FileUtils.getJarAttribute(
                         new File(uri.getLocal()),
                         MANIFEST_LOGIC_CLASS);
@@ -488,7 +499,7 @@ public final class Product extends RegistryNode {
     }
     
     // installation data ////////////////////////////////////////////////////////////
-    public List<ExtendedURI> getDataUris() {
+    public List<ExtendedUri> getDataUris() {
         return dataUris;
     }
     
@@ -502,7 +513,7 @@ public final class Product extends RegistryNode {
         overallProgress.synchronizeTo(progress);
         overallProgress.synchronizeDetails(true);
         
-        for (ExtendedURI uri: dataUris) {
+        for (ExtendedUri uri: dataUris) {
             final Progress currentProgress = new Progress();
             overallProgress.addChild(currentProgress, percentageChunk);
             
@@ -514,7 +525,7 @@ public final class Product extends RegistryNode {
     }
     
     public boolean isDataDownloaded() {
-        for (ExtendedURI uri: dataUris) {
+        for (ExtendedUri uri: dataUris) {
             if (uri.getLocal() == null) {
                 return false;
             }
@@ -774,7 +785,7 @@ public final class Product extends RegistryNode {
         element.setAttribute("status", getStatus().toString());
         
         final Element logicNode = document.createElement("configuration-logic");
-        for (ExtendedURI uri: logicUris) {
+        for (ExtendedUri uri: logicUris) {
             final Element node = document.createElement("file");
             node.setAttribute("size", Long.toString(uri.getSize()));
             node.setAttribute("md5", uri.getMd5());
@@ -792,7 +803,7 @@ public final class Product extends RegistryNode {
         element.appendChild(logicNode);
         
         final Element dataNode = document.createElement("installation-data");
-        for (ExtendedURI uri: dataUris) {
+        for (ExtendedUri uri: dataUris) {
             final Element node = document.createElement("file");
             node.setAttribute("size", Long.toString(uri.getSize()));
             node.setAttribute("md5", uri.getMd5());
@@ -935,10 +946,10 @@ public final class Product extends RegistryNode {
     public long getDownloadSize() {
         long downloadSize = 0;
         
-        for (ExtendedURI uri: logicUris) {
+        for (ExtendedUri uri: logicUris) {
             downloadSize += uri.getSize();
         }
-        for (ExtendedURI uri: dataUris) {
+        for (ExtendedUri uri: dataUris) {
             downloadSize += uri.getSize();
         }
         

@@ -32,10 +32,10 @@ import org.netbeans.installer.Installer;
 // Inner Classes
 
 public class NbiClassLoader extends URLClassLoader {
-    public NbiClassLoader(final List<ExtendedURI> uris) throws MalformedURLException {
+    public NbiClassLoader(final List<ExtendedUri> uris) throws MalformedURLException {
         super(new URL[]{}, Installer.getInstance().getClass().getClassLoader());
         
-        for(ExtendedURI uri : uris) {
+        for(ExtendedUri uri : uris) {
             addURL(uri.getLocal().toURL());
         }
     }
