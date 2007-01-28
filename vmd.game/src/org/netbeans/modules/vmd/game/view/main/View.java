@@ -21,7 +21,7 @@ package org.netbeans.modules.vmd.game.view.main;
 
 /**
  *
- * @author  kaja
+ * @author  kherink
  */
 public class View extends javax.swing.JFrame {
 	

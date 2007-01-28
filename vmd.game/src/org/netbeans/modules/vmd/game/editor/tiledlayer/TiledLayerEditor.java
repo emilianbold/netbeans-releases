@@ -21,6 +21,7 @@ package org.netbeans.modules.vmd.game.editor.tiledlayer;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -32,9 +33,11 @@ import org.netbeans.modules.vmd.game.model.Layer;
 import org.netbeans.modules.vmd.game.model.Tile;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
 import org.netbeans.modules.vmd.game.model.TiledLayerListener;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 /**
  *
- * @author  kaja
+ * @author  kherink
  */
 public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerListener, PropertyChangeListener {
 	
@@ -53,7 +56,13 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
 		initComponents();
 		this.buttonAddAnimatedTile.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				new NewAnimatedTileDialog(TiledLayerEditor.this.tiledLayer.getImageResource());
+				NewAnimatedTileDialog dialog = new NewAnimatedTileDialog(TiledLayerEditor.this.tiledLayer.getImageResource());
+				DialogDescriptor dd = new DialogDescriptor(dialog, "Create a new Scene");
+				dd.setButtonListener(dialog);
+				dd.setValid(false);
+				dialog.setDialogDescriptor(dd);
+				Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+				d.setVisible(true);
 			}
 		});
 		this.editorScroll.setColumnHeaderView(this.editorComponent.rulerHorizontal);

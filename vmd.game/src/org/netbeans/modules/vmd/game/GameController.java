@@ -65,7 +65,6 @@ import org.netbeans.modules.vmd.game.model.SequenceListener;
 import org.netbeans.modules.vmd.game.model.Sprite;
 import org.netbeans.modules.vmd.game.model.SpriteCD;
 import org.netbeans.modules.vmd.game.model.StaticTile;
-import org.netbeans.modules.vmd.game.model.Tile;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
 import org.netbeans.modules.vmd.game.model.TiledLayerCD;
 import org.netbeans.modules.vmd.game.model.TiledLayerListener;

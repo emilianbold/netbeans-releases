@@ -23,7 +23,7 @@ import java.util.EventListener;
 
 /**
  *
- * @author kaja
+ * @author kherink
  */
 public interface ImageResourceListener extends EventListener {
 	

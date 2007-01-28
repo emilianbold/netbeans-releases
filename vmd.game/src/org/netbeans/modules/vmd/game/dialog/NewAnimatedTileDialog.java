@@ -26,9 +26,9 @@ import org.netbeans.modules.vmd.game.view.main.MainView;
 
 /**
  *
- * @author kaja
+ * @author kherink
  */
-public class NewAnimatedTileDialog extends AbstractNamingDialog {
+public class NewAnimatedTileDialog extends AbstractNameValidationDialog {
 	
 	private ImageResource imageResource;
 	
@@ -51,9 +51,13 @@ public class NewAnimatedTileDialog extends AbstractNamingDialog {
 	
 	protected String getCurrentStateErrorText() {
 		String errMsg = null; 
-		String seqName = this.fieldName.getText();
 		
-		if (this.imageResource.getAnimatedTileByName(seqName) != null) {
+		String name = this.fieldName.getText();
+
+		if (name.equals("")) {
+			return this.getInitialStateDescriptionText();
+		}
+		if (this.imageResource.getAnimatedTileByName(name) != null) {
 			errMsg = "Animated Tile name already exists.";
 		}
 		return errMsg;
@@ -62,7 +66,6 @@ public class NewAnimatedTileDialog extends AbstractNamingDialog {
 	protected void handleOKButton() {
 		AnimatedTile tile = this.imageResource.createAnimatedTile(this.fieldName.getText(), Tile.EMPTY_TILE_INDEX);
 		MainView.getInstance().requestEditing(tile);
-		this.frame.dispose();
 	}
 
 }

@@ -20,14 +20,11 @@
 package org.netbeans.modules.vmd.game.editor.grid;
 
 import javax.swing.JScrollPane;
-import javax.swing.event.ListSelectionEvent;
 import org.netbeans.modules.vmd.game.model.ImageResource;
-import org.netbeans.modules.vmd.game.model.Tile;
-import org.netbeans.modules.vmd.game.view.main.MainView;
 
 /**
  *
- * @author  kaja
+ * @author  kherink
  */
 public class ResourceImageEditor extends javax.swing.JPanel {
 	
@@ -42,7 +39,7 @@ public class ResourceImageEditor extends javax.swing.JPanel {
 	
 	public void setImageResource(ImageResource imageResource) {
 		this.textFieldImage.setText(imageResource.getURL().toString());
-		this.textFieldNumTiles.setText(Integer.toString(imageResource.getStaticTileCount() -1)); //-1 for EMPTY tile
+		this.textFieldNumTiles.setText(Integer.toString(imageResource.getStaticTileCount()));
 		this.textFieldSize.setText(imageResource.getCellWidth()  + "x" + imageResource.getCellHeight());
 		this.resourceComponent.setImageResource(imageResource);
 	}

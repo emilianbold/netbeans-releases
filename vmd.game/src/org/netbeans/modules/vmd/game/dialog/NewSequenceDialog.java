@@ -20,15 +20,14 @@ package org.netbeans.modules.vmd.game.dialog;
 
 import org.netbeans.modules.vmd.game.model.Sequence;
 import org.netbeans.modules.vmd.game.model.SequenceContainer;
-import org.netbeans.modules.vmd.game.view.main.MainView;
 
-public class NewSequenceDialog extends AbstractNamingDialog  {
+public class NewSequenceDialog extends AbstractNameValidationDialog  {
 
 	private SequenceContainer sequenceContainer;
 	private Sequence sequence;
 
 	public NewSequenceDialog(SequenceContainer sequenceContainer) {
-		this.sequenceContainer = sequenceContainer;
+		this(sequenceContainer, null);
 	}
 	
 	public NewSequenceDialog(SequenceContainer sequenceContainer, Sequence toCopy) {
@@ -68,7 +67,6 @@ public class NewSequenceDialog extends AbstractNamingDialog  {
 		else {
 			this.sequenceContainer.createSequence(this.fieldName.getText(), this.sequence);
 		}
-		this.frame.dispose();
 	}
 	
 }

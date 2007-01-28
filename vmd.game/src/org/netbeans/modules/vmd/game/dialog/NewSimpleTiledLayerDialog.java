@@ -21,13 +21,12 @@ package org.netbeans.modules.vmd.game.dialog;
 
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.ImageResource;
-import org.netbeans.modules.vmd.game.model.TiledLayer;
 
 /**
  *
- * @author kaja
+ * @author kherink
  */
-public class NewSimpleTiledLayerDialog extends AbstractNamingDialog {
+public class NewSimpleTiledLayerDialog extends AbstractNameValidationDialog {
 	
 	private ImageResource imgRes;
 	private int[][] grid;
@@ -65,7 +64,6 @@ public class NewSimpleTiledLayerDialog extends AbstractNamingDialog {
 
 	protected void handleOKButton() {
 		GlobalRepository.getInstance().createTiledLayer(this.fieldName.getText(), this.imgRes, this.grid);
-		this.frame.dispose();
 	}
 	
 }

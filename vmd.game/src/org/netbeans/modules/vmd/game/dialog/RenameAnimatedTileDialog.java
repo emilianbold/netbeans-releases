@@ -19,11 +19,8 @@
 package org.netbeans.modules.vmd.game.dialog;
 
 import org.netbeans.modules.vmd.game.model.AnimatedTile;
-import org.netbeans.modules.vmd.game.model.GlobalRepository;
-import org.netbeans.modules.vmd.game.model.ImageResource;
-import org.netbeans.modules.vmd.game.model.Sprite;
 
-public class RenameAnimatedTileDialog extends AbstractNamingDialog {
+public class RenameAnimatedTileDialog extends AbstractNameValidationDialog {
 
 	private AnimatedTile tile;
 	
@@ -43,9 +40,13 @@ public class RenameAnimatedTileDialog extends AbstractNamingDialog {
 	}
 	protected String getCurrentStateErrorText() {
 		String errMsg = null; 
-		String tileName = this.fieldName.getText();
+		String name = this.fieldName.getText();
+
+		if (name.equals("")) {
+			return this.getInitialStateDescriptionText();
+		}
 		
-		if (this.tile.getImageResource().getAnimatedTileByName(tileName) != null) {
+		if (this.tile.getImageResource().getAnimatedTileByName(name) != null) {
 			errMsg = "Animated tile name already exists.";
 		}
 		return errMsg;
@@ -53,7 +54,6 @@ public class RenameAnimatedTileDialog extends AbstractNamingDialog {
 	
 	protected void handleOKButton() {
 		this.tile.setName(this.fieldName.getText());
-		this.frame.dispose();
 	}
 	
 }

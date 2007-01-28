@@ -28,12 +28,7 @@ import java.awt.dnd.DragSourceAdapter;
 import java.awt.dnd.DragSourceDropEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import javax.swing.JList;
-import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.vmd.game.editor.common.TileCellRenderer;
@@ -45,7 +40,7 @@ import org.netbeans.modules.vmd.game.view.main.MainView;
 
 /**
  *
- * @author kaja
+ * @author kherink
  */
 class ResourceImageList extends JList {
 	

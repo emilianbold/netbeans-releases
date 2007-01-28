@@ -77,7 +77,7 @@ import org.openide.DialogDisplayer;
 
 /**
  *
- * @author kaja
+ * @author kherink
  */
 public class TiledLayerEditorComponent extends JComponent implements MouseListener, Scrollable, TiledLayerListener {
 	
@@ -549,6 +549,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		
 		public void actionPerformed(ActionEvent e) {
 			NewLayerDialog nld = new NewLayerDialog(null);
+			nld.selectTiledLayer();
 			DialogDescriptor dd = new DialogDescriptor(nld, "Create a new layer");
 			dd.setButtonListener(nld);
 			dd.setValid(false);
@@ -564,7 +565,13 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		}
 		
 		public void actionPerformed(ActionEvent e) {
-			new DuplicateTiledLayerDialog(TiledLayerEditorComponent.this.tiledLayer);
+			DuplicateTiledLayerDialog dialog = new DuplicateTiledLayerDialog(TiledLayerEditorComponent.this.tiledLayer);
+			DialogDescriptor dd = new DialogDescriptor(dialog, "Duplicate Tiled Layer");
+			dd.setButtonListener(dialog);
+			dd.setValid(false);
+			dialog.setDialogDescriptor(dd);
+			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+			d.setVisible(true);
 		}
 	}
 	
@@ -610,7 +617,14 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 					grid[position.getRow()-top] [position.getCol()-left] = TiledLayerEditorComponent.this.tiledLayer.getTileIndexAt(position);
 				}
 			}
-			new NewSimpleTiledLayerDialog(TiledLayerEditorComponent.this.tiledLayer.getImageResource(), grid);
+			
+			NewSimpleTiledLayerDialog dialog = new NewSimpleTiledLayerDialog(TiledLayerEditorComponent.this.tiledLayer.getImageResource(), grid);
+			DialogDescriptor dd = new DialogDescriptor(dialog, "Create new Tiled Layer from selection");
+			dd.setButtonListener(dialog);
+			dd.setValid(false);
+			dialog.setDialogDescriptor(dd);
+			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+			d.setVisible(true);
 		}
 	}
 	

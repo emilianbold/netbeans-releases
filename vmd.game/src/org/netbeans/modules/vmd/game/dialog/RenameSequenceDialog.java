@@ -19,11 +19,9 @@
 package org.netbeans.modules.vmd.game.dialog;
 
 
-import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.Sequence;
-import org.netbeans.modules.vmd.game.model.Sprite;
 
-public class RenameSequenceDialog extends AbstractNamingDialog {
+public class RenameSequenceDialog extends AbstractNameValidationDialog {
 
 	private Sequence sequence;
 	
@@ -45,9 +43,13 @@ public class RenameSequenceDialog extends AbstractNamingDialog {
 	
 	protected String getCurrentStateErrorText() {
 		String errMsg = null;
-		String sequenceName = this.fieldName.getText();
+		String name = this.fieldName.getText();
+
+		if (name.equals("")) {
+			return this.getInitialStateDescriptionText();
+		}
 		
-		if (this.sequence.getImageResource().getSequenceByName(sequenceName) != null) {
+		if (this.sequence.getImageResource().getSequenceByName(name) != null) {
 			errMsg = "Sequence name already exists.";
 		}
 		return errMsg;
@@ -55,7 +57,6 @@ public class RenameSequenceDialog extends AbstractNamingDialog {
 	
 	protected void handleOKButton() {
 		this.sequence.setName(this.fieldName.getText());
-		this.frame.dispose();
 	}
 
 

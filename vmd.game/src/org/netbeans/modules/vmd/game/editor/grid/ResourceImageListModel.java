@@ -24,7 +24,7 @@ import org.netbeans.modules.vmd.game.model.ImageResource;
 
 /**
  *
- * @author kaja
+ * @author kherink
  */
 public class ResourceImageListModel extends AbstractListModel {
 	
@@ -36,7 +36,7 @@ public class ResourceImageListModel extends AbstractListModel {
 	}
 	
     public int getSize() {
-		return this.imgResource.getStaticTileCount();
+		return this.imgResource.getStaticTileCount() + 1;
     }
 
     public Object getElementAt(int index) {

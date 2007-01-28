@@ -28,7 +28,7 @@ import java.util.Collection;
 
 /**
  *
- * @author kaja
+ * @author kherink
  */
 public class GameAccessController implements AccessController {
 

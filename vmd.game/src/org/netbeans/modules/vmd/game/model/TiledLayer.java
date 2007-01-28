@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.vmd.game.model;
 
+import java.awt.Dialog;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -35,6 +36,8 @@ import javax.swing.JComponent;
 import javax.swing.event.EventListenerList;
 import org.netbeans.modules.vmd.game.dialog.RenameTiledLayerDialog;
 import org.netbeans.modules.vmd.game.preview.TiledLayerPreview;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 
 public class TiledLayer extends Layer {
 
@@ -385,8 +388,13 @@ public class TiledLayer extends Layer {
 			this.putValue(NAME, "Rename " + getDisplayableTypeName());
 		}
 		public void actionPerformed(ActionEvent e) {
-			//if (DEBUG) System.out.println("Not implemented - needs a rename dialog.");
-			new RenameTiledLayerDialog(TiledLayer.this);
+			RenameTiledLayerDialog dialog = new RenameTiledLayerDialog(TiledLayer.this);
+			DialogDescriptor dd = new DialogDescriptor(dialog, "Rename Tiled Layer");
+			dd.setButtonListener(dialog);
+			dd.setValid(false);
+			dialog.setDialogDescriptor(dd);
+			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+			d.setVisible(true);
 		}
 	}
 

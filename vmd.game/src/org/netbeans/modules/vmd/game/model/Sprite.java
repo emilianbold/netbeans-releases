@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.vmd.game.model;
 
+import java.awt.Dialog;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.io.PrintStream;
@@ -26,15 +27,15 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
-
 import org.netbeans.modules.vmd.game.dialog.NewSequenceDialog;
 import org.netbeans.modules.vmd.game.dialog.RenameSpriteDialog;
 import org.netbeans.modules.vmd.game.editor.sequece.SequenceContainerEditor;
 import org.netbeans.modules.vmd.game.editor.sequece.SequenceContainerNavigator;
 import org.netbeans.modules.vmd.game.preview.SequenceContainerPreview;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 
 
 public class Sprite extends Layer implements SequenceContainer {
@@ -152,7 +153,13 @@ public class Sprite extends Layer implements SequenceContainer {
 			this.putValue(NAME, "Add sequence");
 		}
 		public void actionPerformed(ActionEvent e) {
-			new NewSequenceDialog(Sprite.this);
+			NewSequenceDialog dialog = new NewSequenceDialog(Sprite.this);
+			DialogDescriptor dd = new DialogDescriptor(dialog, "Add Sequence");
+			dd.setButtonListener(dialog);
+			dd.setValid(false);
+			dialog.setDialogDescriptor(dd);
+			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+			d.setVisible(true);
 		}
 	}
 
@@ -161,7 +168,13 @@ public class Sprite extends Layer implements SequenceContainer {
 			this.putValue(NAME, "Rename " + getDisplayableTypeName());
 		}
 		public void actionPerformed(ActionEvent e) {
-			new RenameSpriteDialog(Sprite.this);
+			RenameSpriteDialog dialog = new RenameSpriteDialog(Sprite.this);
+			DialogDescriptor dd = new DialogDescriptor(dialog, "Rename Sprite");
+			dd.setButtonListener(dialog);
+			dd.setValid(false);
+			dialog.setDialogDescriptor(dd);
+			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+			d.setVisible(true);
 		}
 	}
 	

@@ -188,7 +188,6 @@ public class ImageResource implements CodeGenerator {
 					if (num > biggestNum)
 						biggestNum = num;
 				} catch (NumberFormatException nfe) {
-					//ignore
 				}
 			}
 		}

@@ -21,7 +21,7 @@ package org.netbeans.modules.vmd.game.dialog;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.Sprite;
 
-public class RenameSpriteDialog extends AbstractNamingDialog {
+public class RenameSpriteDialog extends AbstractNameValidationDialog {
 
 	private Sprite sprite;
 	
@@ -41,9 +41,13 @@ public class RenameSpriteDialog extends AbstractNamingDialog {
 	}
 	protected String getCurrentStateErrorText() {
 		String errMsg = null; 
-		String spriteName = this.fieldName.getText();
+		String name = this.fieldName.getText();
+
+		if (name.equals("")) {
+			return this.getInitialStateDescriptionText();
+		}
 		
-		if (GlobalRepository.getInstance().getLayerByName(spriteName) != null) {
+		if (GlobalRepository.getInstance().getLayerByName(name) != null) {
 			errMsg = "Sprite name already exists.";
 		}
 		return errMsg;
@@ -51,7 +55,6 @@ public class RenameSpriteDialog extends AbstractNamingDialog {
 	
 	protected void handleOKButton() {
 		this.sprite.setName(this.fieldName.getText());
-		this.frame.dispose();
 	}
 
 

@@ -21,7 +21,7 @@ package org.netbeans.modules.vmd.game.dialog;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.Scene;
 
-public class RenameSceneDialog extends AbstractNamingDialog {
+public class RenameSceneDialog extends AbstractNameValidationDialog {
 
 	private Scene scene;
 	
@@ -43,9 +43,13 @@ public class RenameSceneDialog extends AbstractNamingDialog {
 	
 	protected String getCurrentStateErrorText() {
 		String errMsg = null; 
-		String tiledLayerName = this.fieldName.getText();
+		String name = this.fieldName.getText();
+
+		if (name.equals("")) {
+			return this.getInitialStateDescriptionText();
+		}
 		
-		if (GlobalRepository.getInstance().getLayerByName(tiledLayerName) != null) {
+		if (GlobalRepository.getInstance().getLayerByName(name) != null) {
 			errMsg = "Scene name already exists.";
 		}
 		return errMsg;
@@ -53,7 +57,6 @@ public class RenameSceneDialog extends AbstractNamingDialog {
 	
 	protected void handleOKButton() {
 		this.scene.setName(this.fieldName.getText());
-		this.frame.dispose();
 	}
 
 

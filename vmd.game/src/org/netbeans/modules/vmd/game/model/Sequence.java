@@ -17,6 +17,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.vmd.game.model;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
@@ -26,8 +27,10 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -35,6 +38,8 @@ import javax.swing.event.EventListenerList;
 import org.netbeans.modules.vmd.game.dialog.RenameSequenceDialog;
 import org.netbeans.modules.vmd.game.editor.sequece.SequenceEditingPanel;
 import org.netbeans.modules.vmd.game.preview.SequencePreviewPanelSidebar;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 
 public class Sequence implements Previewable, Editable, CodeGenerator {
 
@@ -117,11 +122,16 @@ public class Sequence implements Previewable, Editable, CodeGenerator {
 		this.fireFrameRemoved(frame, index);
 	}
 	
-	public void removeFrame(StaticTile frame) {
-		int index = this.frames.indexOf(frame);
-		if (index != -1) {
-			this.frames.remove(frame);
-			this.fireFrameRemoved(frame, index);
+	public void removeFrames(Set<Integer> indexes) {
+		//sort from largest to smallest so that we remove the largest indexes first
+		List<Integer> tmp = new ArrayList<Integer>(indexes);
+		Collections.sort(tmp, new Comparator<Integer>() {
+            public int compare(Integer a, Integer b) {
+				return (a.intValue() > b.intValue() ? -1 : (a.intValue() == b.intValue() ? 0 : 1) );
+            }
+		});
+		for (Integer integer : tmp) {
+			this.removeFrame(integer);
 		}
 	}
 	
@@ -286,7 +296,13 @@ public class Sequence implements Previewable, Editable, CodeGenerator {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			new RenameSequenceDialog(Sequence.this);
+			RenameSequenceDialog dialog = new RenameSequenceDialog(Sequence.this);
+			DialogDescriptor dd = new DialogDescriptor(dialog, "Rename Sequence");
+			dd.setButtonListener(dialog);
+			dd.setValid(false);
+			dialog.setDialogDescriptor(dd);
+			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+			d.setVisible(true);
 		}
 	}
 	//----------------CodeGenerator----------------

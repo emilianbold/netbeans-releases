@@ -20,6 +20,7 @@ package org.netbeans.modules.vmd.game.editor.scene;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -43,7 +44,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
@@ -51,10 +51,7 @@ import javax.swing.JMenu;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.ToolTipManager;
-
 import org.netbeans.modules.vmd.game.dialog.NewSceneDialog;
-import org.netbeans.modules.vmd.game.dialog.NewSpriteDialog;
-import org.netbeans.modules.vmd.game.dialog.NewTiledLayerDialog;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.Layer;
 import org.netbeans.modules.vmd.game.model.Position;
@@ -69,7 +66,10 @@ import org.netbeans.modules.vmd.game.model.Scene.CreateTiledLayerAction;
 import org.netbeans.modules.vmd.game.model.Scene.LayerInfo;
 import org.netbeans.modules.vmd.game.model.Scene.RemoveSceneAction;
 import org.netbeans.modules.vmd.game.model.Scene.RenameSceneAction;
+import org.netbeans.modules.vmd.game.nbdialog.NewLayerDialog;
 import org.netbeans.modules.vmd.game.view.main.MainView;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 
 public class ScenePanel extends JPanel implements SceneListener,
 		TiledLayerListener, PropertyChangeListener, MouseMotionListener,
@@ -1330,7 +1330,13 @@ public class ScenePanel extends JPanel implements SceneListener,
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			new NewSceneDialog();
+			NewSceneDialog dialog = new NewSceneDialog();
+			DialogDescriptor dd = new DialogDescriptor(dialog, "Create a new Scene");
+			dd.setButtonListener(dialog);
+			dd.setValid(false);
+			dialog.setDialogDescriptor(dd);
+			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+			d.setVisible(true);
 		}		
 	}
 	
@@ -1340,7 +1346,13 @@ public class ScenePanel extends JPanel implements SceneListener,
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			new NewSceneDialog(ScenePanel.this.scene);
+			NewSceneDialog dialog = new NewSceneDialog(ScenePanel.this.scene);
+			DialogDescriptor dd = new DialogDescriptor(dialog, "Duplicate scene");
+			dd.setButtonListener(dialog);
+			dd.setValid(false);
+			dialog.setDialogDescriptor(dd);
+			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+			d.setVisible(true);
 		}
 	}
 	
@@ -1350,7 +1362,14 @@ public class ScenePanel extends JPanel implements SceneListener,
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			new NewTiledLayerDialog(ScenePanel.this.scene);
+			NewLayerDialog nld = new NewLayerDialog(ScenePanel.this.scene);
+			nld.selectTiledLayer();
+			DialogDescriptor dd = new DialogDescriptor(nld, "Create a new Tiled Layer");
+			dd.setButtonListener(nld);
+			dd.setValid(false);
+			nld.setDialogDescriptor(dd);
+			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+			d.setVisible(true);
 		}
 	}
 	public class AddNewSpriteAction extends AbstractAction {
@@ -1359,7 +1378,14 @@ public class ScenePanel extends JPanel implements SceneListener,
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			new NewSpriteDialog(ScenePanel.this.scene);
+			NewLayerDialog nld = new NewLayerDialog(ScenePanel.this.scene);
+			nld.selectSprite();
+			DialogDescriptor dd = new DialogDescriptor(nld, "Create a new Sprite");
+			dd.setButtonListener(nld);
+			dd.setValid(false);
+			nld.setDialogDescriptor(dd);
+			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+			d.setVisible(true);
 		}
 	}
 	public class AddLayerAction extends AbstractAction {

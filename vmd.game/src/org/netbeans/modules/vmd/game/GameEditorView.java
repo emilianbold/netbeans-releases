@@ -19,6 +19,9 @@
 
 package org.netbeans.modules.vmd.game;
 
+import java.awt.Component;
+import java.awt.Dialog;
+import java.awt.Font;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.game.dialog.NewSceneDialog;
@@ -29,12 +32,15 @@ import org.netbeans.modules.vmd.game.nbdialog.NewLayerDialog;
 import org.netbeans.modules.vmd.game.view.main.MainView;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-
-import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JList;
+import javax.swing.JToolBar;
 
 /**
  *
@@ -125,7 +131,13 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
             JButton buttonCreateScene = new JButton("New scene");
             buttonCreateScene.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    new NewSceneDialog();
+                    NewSceneDialog dialog = new NewSceneDialog();
+                    DialogDescriptor dd = new DialogDescriptor(dialog, "Create a new Scene");
+                    dd.setButtonListener(dialog);
+                    dd.setValid(false);
+                    dialog.setDialogDescriptor(dd);
+                    Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+                    d.setVisible(true);
                 }
             });
 
@@ -142,16 +154,8 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
                 }
             });
 
-            JButton buttonCreateSequence = new JButton("New sequence");
-            buttonCreateSequence.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    //new NewSequenceDialog(null);
-                }
-            });
-
             tool.add(buttonCreateScene);
             tool.add(buttonCreateTiledLayer);
-            //tool.add(buttonCreateSequence);
 
             this.toolBarRepresentation = tool;
         }

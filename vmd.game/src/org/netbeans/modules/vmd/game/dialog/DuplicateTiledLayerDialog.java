@@ -20,14 +20,13 @@
 package org.netbeans.modules.vmd.game.dialog;
 
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
-import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
 
 /**
  *
- * @author kaja
+ * @author kherink
  */
-public class DuplicateTiledLayerDialog extends AbstractNamingDialog {
+public class DuplicateTiledLayerDialog extends AbstractNameValidationDialog {
 	
 	private TiledLayer tiledLayer;
 	
@@ -50,12 +49,12 @@ public class DuplicateTiledLayerDialog extends AbstractNamingDialog {
 
 	protected String getCurrentStateErrorText() {
 		String errMsg = null; 
-		String layerName = this.fieldName.getText();
+		String name = this.fieldName.getText();
 
-		if (layerName.equals("")) {
+		if (name.equals("")) {
 			return this.getInitialStateDescriptionText();
 		}
-		if (GlobalRepository.getInstance().getLayerByName(layerName) != null) {
+		if (GlobalRepository.getInstance().getLayerByName(name) != null) {
 			errMsg = "Layer name already exists.";
 		}
 		return errMsg;
@@ -63,7 +62,6 @@ public class DuplicateTiledLayerDialog extends AbstractNamingDialog {
 
 	protected void handleOKButton() {
 		GlobalRepository.getInstance().duplicateTiledLayer(this.fieldName.getText(), this.tiledLayer);
-		this.frame.dispose();
 	}
 	
 }

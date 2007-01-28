@@ -21,7 +21,7 @@ package org.netbeans.modules.vmd.game.dialog;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.Scene;
 
-public class NewSceneDialog extends AbstractNamingDialog {
+public class NewSceneDialog extends AbstractNameValidationDialog {
 
 	private Scene scene;
 
@@ -43,13 +43,15 @@ public class NewSceneDialog extends AbstractNamingDialog {
 		return "Create a new Scene";
 	}
 	protected String getCurrentStateErrorText() {
-		String errMsg = null; 
 		String sceneName = this.fieldName.getText();
 		
-		if (GlobalRepository.getInstance().getSceneByName(sceneName) != null) {
-			errMsg = "Scene name already exists.";
+		if (sceneName == null || "".equals(sceneName)) {
+			return this.getInitialStateDescriptionText();
 		}
-		return errMsg;
+		if (GlobalRepository.getInstance().getSceneByName(sceneName) != null) {
+			return "Scene name already exists.";
+		}
+		return null;
 	}
 	
 	protected void handleOKButton() {
@@ -59,7 +61,6 @@ public class NewSceneDialog extends AbstractNamingDialog {
 		else {
 			GlobalRepository.getInstance().createScene(this.fieldName.getText(), scene);
 		}
-		this.frame.dispose();
 	}
 	
 }

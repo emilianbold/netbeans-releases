@@ -193,12 +193,12 @@ public class PartialImageGridPreview extends JComponent {
 	}
 	
 	
-	public List getValidTileWidths() {
+	public List<Integer> getValidTileWidths() {
 		int imgWidth = this.originalImage.getWidth(null);
 		return this.getEvenDivisors(imgWidth);
 	}
 	
-	public List getValidTileHeights() {
+	public List<Integer> getValidTileHeights() {
 		int imgHeight = this.originalImage.getHeight(null);
 		return this.getEvenDivisors(imgHeight);
 	}

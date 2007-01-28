@@ -31,7 +31,7 @@ import org.netbeans.modules.vmd.game.editor.sequece.SequenceContainerEditor;
 
 /**
  *
- * @author kaja
+ * @author kherink
  */
 public interface SequenceContainer extends Editable {
 	

@@ -21,7 +21,7 @@ package org.netbeans.modules.vmd.game.model;
 import java.util.EventListener;
 
 /**
- * @author kaja
+ * @author kherink
  */
 public interface SequenceContainerListener extends EventListener {
 	

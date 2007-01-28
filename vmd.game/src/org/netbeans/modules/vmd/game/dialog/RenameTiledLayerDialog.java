@@ -21,7 +21,7 @@ package org.netbeans.modules.vmd.game.dialog;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
 
-public class RenameTiledLayerDialog extends AbstractNamingDialog {
+public class RenameTiledLayerDialog extends AbstractNameValidationDialog {
 
 	private TiledLayer tiledLayer;
 	
@@ -41,9 +41,13 @@ public class RenameTiledLayerDialog extends AbstractNamingDialog {
 	}
 	protected String getCurrentStateErrorText() {
 		String errMsg = null; 
-		String tiledLayerName = this.fieldName.getText();
+		String name = this.fieldName.getText();
+
+		if (name.equals("")) {
+			return this.getInitialStateDescriptionText();
+		}
 		
-		if (GlobalRepository.getInstance().getLayerByName(tiledLayerName) != null) {
+		if (GlobalRepository.getInstance().getLayerByName(name) != null) {
 			errMsg = "Tiled layer name already exists.";
 		}
 		return errMsg;
@@ -51,8 +55,6 @@ public class RenameTiledLayerDialog extends AbstractNamingDialog {
 	
 	protected void handleOKButton() {
 		this.tiledLayer.setName(this.fieldName.getText());
-		this.frame.dispose();
 	}
-
 
 }

@@ -17,6 +17,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.vmd.game.model;
+import java.awt.Dialog;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -31,6 +32,8 @@ import org.netbeans.modules.vmd.game.dialog.RenameAnimatedTileDialog;
 import org.netbeans.modules.vmd.game.editor.sequece.SequenceContainerEditor;
 import org.netbeans.modules.vmd.game.editor.sequece.SequenceContainerNavigator;
 import org.netbeans.modules.vmd.game.preview.SequenceContainerPreview;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 
 public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 
@@ -148,7 +151,13 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 			this.putValue(NAME, "Add sequence");
 		}
 		public void actionPerformed(ActionEvent e) {
-			new NewSequenceDialog(AnimatedTile.this);
+			NewSequenceDialog dialog = new NewSequenceDialog(AnimatedTile.this);
+			DialogDescriptor dd = new DialogDescriptor(dialog, "Add Sequence");
+			dd.setButtonListener(dialog);
+			dd.setValid(false);
+			dialog.setDialogDescriptor(dd);
+			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+			d.setVisible(true);
 		}
 	}
 
@@ -157,7 +166,13 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 			this.putValue(NAME, "Rename " + getDisplayableTypeName());
 		}
 		public void actionPerformed(ActionEvent e) {
-			new RenameAnimatedTileDialog(AnimatedTile.this);
+			RenameAnimatedTileDialog dialog = new RenameAnimatedTileDialog(AnimatedTile.this);
+			DialogDescriptor dd = new DialogDescriptor(dialog, "Rename " + getDisplayableTypeName());
+			dd.setButtonListener(dialog);
+			dd.setValid(false);
+			dialog.setDialogDescriptor(dd);
+			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+			d.setVisible(true);
 		}
 	}
 

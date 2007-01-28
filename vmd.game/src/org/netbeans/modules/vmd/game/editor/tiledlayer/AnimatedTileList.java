@@ -48,7 +48,7 @@ import org.netbeans.modules.vmd.game.model.TileTransferable;
 import org.netbeans.modules.vmd.game.view.main.MainView;
 /**
  *
- * @author kaja
+ * @author kherink
  */
 public class AnimatedTileList extends JList {
 	

@@ -19,6 +19,7 @@
 package org.netbeans.modules.vmd.game.editor.sequece;
 
 import java.awt.Color;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -69,11 +70,14 @@ import org.netbeans.modules.vmd.game.model.SequenceListener;
 import org.netbeans.modules.vmd.game.model.StaticTile;
 import org.netbeans.modules.vmd.game.model.Tile;
 import org.netbeans.modules.vmd.game.model.TileDataFlavor;
-import org.netbeans.modules.vmd.game.view.main.MainView;/**
- *
- * @author kaja
+import org.netbeans.modules.vmd.game.view.main.MainView;import org.openide.DialogDisplayer;
+import org.openide.DialogDescriptor;
+
+
+/**
+ * @author kherink
  */
-public class SequenceEditingPanel extends JComponent implements Scrollable, MouseMotionListener, MouseListener, SequenceListener {
+ public class SequenceEditingPanel extends JComponent implements Scrollable, MouseMotionListener, MouseListener, SequenceListener {
 	
 	public static final boolean DEBUG = false;
 
@@ -668,7 +672,13 @@ public class SequenceEditingPanel extends JComponent implements Scrollable, Mous
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			new NewSequenceDialog(SequenceEditingPanel.this.sequenceContainer);
+			NewSequenceDialog dialog = new NewSequenceDialog(SequenceEditingPanel.this.sequenceContainer);
+			DialogDescriptor dd = new DialogDescriptor(dialog, "Create new Sequence");
+			dd.setButtonListener(dialog);
+			dd.setValid(false);
+			dialog.setDialogDescriptor(dd);
+			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+			d.setVisible(true);
 		}
 	}
 
@@ -679,7 +689,13 @@ public class SequenceEditingPanel extends JComponent implements Scrollable, Mous
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			new NewSequenceDialog(SequenceEditingPanel.this.sequenceContainer, SequenceEditingPanel.this.sequence);
+			NewSequenceDialog dialog = new NewSequenceDialog(SequenceEditingPanel.this.sequenceContainer, SequenceEditingPanel.this.sequence);
+			DialogDescriptor dd = new DialogDescriptor(dialog, "Duplicate Sequence");
+			dd.setButtonListener(dialog);
+			dd.setValid(false);
+			dialog.setDialogDescriptor(dd);
+			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+			d.setVisible(true);
 		}
 	}
 
@@ -761,10 +777,8 @@ public class SequenceEditingPanel extends JComponent implements Scrollable, Mous
 		}
 		
         public void actionPerformed(ActionEvent e) {
-			Set<StaticTile> frames = SequenceEditingPanel.this.selection.getSelectedFrames();
-			for (StaticTile frame : frames) {
-				SequenceEditingPanel.this.sequence.removeFrame(frame);
-			}
+			Set<Integer> indexes = SequenceEditingPanel.this.selection.getSelectedIndexes();			
+			SequenceEditingPanel.this.sequence.removeFrames(indexes);
 		}
 	}
 	
@@ -956,16 +970,6 @@ public class SequenceEditingPanel extends JComponent implements Scrollable, Mous
 				}
 			}
 			return indexes;
-		}
-		
-		public Set<StaticTile> getSelectedFrames() {
-			Set<StaticTile> frames = new HashSet();
-			for (int i = 0; i < this.frameSelections.size(); i++) {
-				if (this.frameSelections.get(i).equals(Boolean.TRUE)) {
-					frames.add(SequenceEditingPanel.this.sequence.getFrame(i));
-				}
-			}
-			return frames;
 		}
 		
 		public boolean isSelectionEmpty() {

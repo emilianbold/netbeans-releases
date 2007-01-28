@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.vmd.game.model;
 
+import java.awt.Dialog;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -38,11 +39,12 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.event.EventListenerList;
-import org.netbeans.modules.vmd.game.dialog.NewSpriteDialog;
-import org.netbeans.modules.vmd.game.dialog.NewTiledLayerDialog;
 import org.netbeans.modules.vmd.game.dialog.RenameSceneDialog;
 import org.netbeans.modules.vmd.game.editor.scene.SceneEditor;
 import org.netbeans.modules.vmd.game.editor.scene.SceneLayerNavigator;
+import org.netbeans.modules.vmd.game.nbdialog.NewLayerDialog;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 
 public class Scene implements GlobalRepositoryListener, PropertyChangeListener, Previewable, Editable, CodeGenerator {
 
@@ -479,7 +481,13 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			new RenameSceneDialog(Scene.this);
+			RenameSceneDialog dialog = new RenameSceneDialog(Scene.this);
+			DialogDescriptor dd = new DialogDescriptor(dialog, "Rename Scene");
+			dd.setButtonListener(dialog);
+			dd.setValid(false);
+			dialog.setDialogDescriptor(dd);
+			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+			d.setVisible(true);
 		}
 	}
 	
@@ -502,7 +510,14 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			new NewSpriteDialog(Scene.this);
+			NewLayerDialog nld = new NewLayerDialog(Scene.this);
+			nld.selectSprite();
+			DialogDescriptor dd = new DialogDescriptor(nld, "Create a new Sprite");
+			dd.setButtonListener(nld);
+			dd.setValid(false);
+			nld.setDialogDescriptor(dd);
+			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+			d.setVisible(true);
 		}
 	}
 
@@ -512,7 +527,14 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			new NewTiledLayerDialog(Scene.this);
+			NewLayerDialog nld = new NewLayerDialog(Scene.this);
+			nld.selectTiledLayer();
+			DialogDescriptor dd = new DialogDescriptor(nld, "Create a new Tiled Layer");
+			dd.setButtonListener(nld);
+			dd.setValid(false);
+			nld.setDialogDescriptor(dd);
+			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+			d.setVisible(true);
 		}
 	}
 
