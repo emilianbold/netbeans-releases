@@ -39,17 +39,10 @@ public class WebServicesRootNode extends AbstractNode {
     private static Image WEB_SERVICES_BADGE = Utilities.loadImage( "org/netbeans/modules/websvc/core/webservices/ui/resources/webservicegroup.png", true ); // NOI18N
     private static Icon folderIconCache;
     private static Icon openedFolderIconCache;	
-    private DataFolder srcFolder;
     
     public WebServicesRootNode(FileObject srcRoot) {
 		super((srcRoot != null) ? new WebServicesChildren(srcRoot) : Children.LEAF, createLookup(srcRoot));
         setDisplayName(NbBundle.getBundle(WebServicesRootNode.class).getString("LBL_WebServices"));
-        
-        if(srcRoot.isFolder()) {
-            srcFolder = DataFolder.findFolder(srcRoot);
-        } else {
-            srcFolder = null;
-        }
     }
     
     public Image getIcon( int type ) {
