@@ -32,6 +32,7 @@ import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -386,9 +387,19 @@ public final class SystemUtils {
         return getNativeUtils().isPathValid(path);
     }
     
-    public static boolean isPortAvailable(int port) {
-        ServerSocket socket = null;
+    public static boolean isPortAvailable(int port, int... forbiddenPorts) {
+        // check whether the port is in the restricted list, if it is, there is no
+        // sense to check whether it is physically available
+        for (int forbidden: forbiddenPorts) {
+            if (port == forbidden) {
+                return false;
+            }
+        }
         
+        // if the port is not in the restricted list, we'll try to open a server
+        // socket on it, if we fail, then someone is already listening on this port 
+        // and it is occupied
+        ServerSocket socket = null;
         try {
             socket = new ServerSocket(port);
             return true;
@@ -399,16 +410,18 @@ public final class SystemUtils {
                 try {
                     socket.close();
                 } catch (IOException e) {
-                    ErrorManager.notifyError("Could not close server socket on port " + port, e);
+                    ErrorManager.notifyError(
+                            "Could not close server socket on port " + port, 
+                            e);
                 }
             }
         }
     }
     
-    public static int getAvailablePort(int basePort) {
+    public static int getAvailablePort(int basePort, int... forbiddenPorts) {
+        // increment the port value until we find an available port
         int port = basePort;
-        
-        while (!isPortAvailable(port)) {
+        while (!isPortAvailable(port, forbiddenPorts)) {
             port++;
         }
         
