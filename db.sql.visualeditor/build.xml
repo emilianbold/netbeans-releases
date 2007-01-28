@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. See harness/README in the NetBeans platform -->
+<!-- for some information on what you could do (e.g. targets to override). -->
+<!-- If you delete this file and reopen the project it will be recreated. -->
+<project name="org.netbeans.modules.db.sql.visualeditor" default="netbeans" basedir=".">
+    <description>Builds, tests, and runs the project org.netbeans.modules.db.sql.visualeditor.</description>
+    <import file="nbproject/build-impl.xml"/>
+    <import file="${suite.dir}/templates/common.xml"/>
+
+    <target name="clean" depends="projectized-common.clean">
+      <delete>
+	<fileset dir="src/org/netbeans/modules/db/sql/visualeditor/parser">
+	  <include name="*.java" />
+        </fileset>
+      </delete>
+    </target>
+
+    <target name="sql">
+      <javacc target="src/org/netbeans/modules/db/sql/visualeditor/parser/SQLParser.jj"
+	   javacchome="external/">
+      </javacc>
+    </target>
+
+    <!-- Obsolete method for generating parser files; now use javacc command -->
+    <!--
+    <target name="init-sql">
+      <uptodate property="sql.gen.done"
+		targetfile="src/org/netbeans/modules/db/sql/visualeditor/parser/SQLParser.java"
+		srcfile="src/org/netbeans/modules/db/sql/visualeditor/parser/SQLParser.jj"/>
+    </target>
+    <target name="sql" depends="init-sql" unless="sql.gen.done">
+      <java fork="true" classname="org.javacc.parser.Main"
+        classpath="external/javacc-3.2.jar">
+        <arg value="-OUTPUT_DIRECTORY=src/org/netbeans/modules/db/sql/visualeditor/parser" />
+        <arg value="src/org/netbeans/modules/db/sql/visualeditor/parser/SQLParser.jj" />
+      </java>
+    </target>
+    -->
+
+    <target name="compile" depends="sql,projectized-common.compile"/>
+
+</project>
