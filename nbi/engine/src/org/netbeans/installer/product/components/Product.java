@@ -78,6 +78,8 @@ public final class Product extends RegistryNode {
     private List<ExtendedUri> logicUris;
     private List<ExtendedUri> dataUris;
     
+    private List<String> features;
+    
     private long requiredDiskSpace;
     
     private List<Dependency> dependencies;
@@ -780,9 +782,10 @@ public final class Product extends RegistryNode {
         
         final Document document = element.getOwnerDocument();
         
-        element.setAttribute("version", getVersion().toString());
-        element.setAttribute("platform", StringUtils.asString(getSupportedPlatforms(), " "));
-        element.setAttribute("status", getStatus().toString());
+        element.setAttribute("version", version.toString());
+        element.setAttribute("platforms", StringUtils.asString(supportedPlatforms, " "));
+        element.setAttribute("status", currentStatus.toString());
+        element.setAttribute("features", StringUtils.asString(features, " "));
         
         final Element logicNode = document.createElement("configuration-logic");
         for (ExtendedUri uri: logicUris) {
@@ -869,12 +872,14 @@ public final class Product extends RegistryNode {
             version =
                     Version.getVersion(element.getAttribute("version"));
             supportedPlatforms =
-                    StringUtils.parsePlatforms(element.getAttribute("platform"));
+                    StringUtils.parsePlatforms(element.getAttribute("platforms"));
             
             initialStatus =
                     StringUtils.parseStatus(element.getAttribute("status"));
             currentStatus =
                     initialStatus;
+            
+            features = StringUtils.asList(element.getAttribute("features"), " ");
             
             nodes = XMLUtils.getChildList(element, "./configuration-logic/file");
             for (Node node: nodes) {

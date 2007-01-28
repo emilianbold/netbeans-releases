@@ -526,10 +526,6 @@ is divided into following sections:
         <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
         <j2seproject3:debug classname="junit.textui.TestRunner" classpath="${debug.test.classpath}">
             <customize>
-                <syspropertyset>
-                    <propertyref prefix="test-sys-prop."/>
-                    <mapper type="glob" from="test-sys-prop.*" to="*"/>
-                </syspropertyset>
                 <arg line="${test.class}"/>
             </customize>
         </j2seproject3:debug>

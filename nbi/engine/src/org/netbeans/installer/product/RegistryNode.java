@@ -52,25 +52,39 @@ import org.w3c.dom.Node;
  * @author Kirill Sorokin
  */
 public abstract class RegistryNode implements PropertyContainer {
-    protected RegistryNode          parent        = null;
+    protected RegistryNode        parent;
     
-    protected String                uid           = null;
+    protected String              uid;
     
-    protected ExtendedUri           iconUri       = null;
-    protected Icon                  icon          = null;
+    protected ExtendedUri         iconUri;
+    protected Icon                icon;
     
-    protected long                  offset        = 0;
-    protected boolean               expand        = false;
-    protected boolean               visible       = true;
+    protected long                offset;
+    protected boolean             expand;
+    protected boolean             initialVisible;
+    protected boolean             currentVisible;
     
-    protected Date                  built         = new Date();
+    protected Date                built;
     
-    protected Map<Locale, String>   displayNames  = new HashMap<Locale, String>();
-    protected Map<Locale, String>   descriptions  = new HashMap<Locale, String>();
+    protected Map<Locale, String> displayNames;
+    protected Map<Locale, String> descriptions;
     
-    protected List<RegistryNode>    children      = new ArrayList<RegistryNode>();
+    protected List<RegistryNode>  children;
     
-    protected Properties            properties    = new Properties();
+    protected Properties          properties;
+    
+    protected RegistryNode() {
+        initialVisible = true;
+        currentVisible  = true;
+        built          = new Date();
+        
+        displayNames   = new HashMap<Locale, String>();
+        descriptions   = new HashMap<Locale, String>();
+        
+        children       = new ArrayList<RegistryNode>();
+        
+        properties     = new Properties();
+    }
     
     public String getUid() {
         return uid;
@@ -129,11 +143,11 @@ public abstract class RegistryNode implements PropertyContainer {
     }
     
     public boolean isVisible() {
-        return visible;
+        return currentVisible;
     }
     
     public void setVisible(final boolean visible) {
-        this.visible = visible;
+        this.currentVisible = visible;
     }
     
     public boolean getExpand() {
@@ -288,9 +302,10 @@ public abstract class RegistryNode implements PropertyContainer {
     protected Element saveToDom(Element element) throws FinalizationException {
         Document document = element.getOwnerDocument();
         
-        element.setAttribute("uid", getUid());
-        element.setAttribute("offset", Long.toString(getOffset()));
-        element.setAttribute("expand", Boolean.toString(getExpand()));
+        element.setAttribute("uid", uid);
+        element.setAttribute("offset", Long.toString(offset));
+        element.setAttribute("expand", Boolean.toString(expand));
+        element.setAttribute("visible", Boolean.toString(initialVisible));
         
         element.setAttribute("built", Long.toString(built.getTime()));
         
@@ -378,7 +393,8 @@ public abstract class RegistryNode implements PropertyContainer {
             iconUri.setLocal(iconFile.toURI());
             
             offset = Long.parseLong(element.getAttribute("offset"));
-            visible = Boolean.parseBoolean(element.getAttribute("visible"));
+            initialVisible = Boolean.parseBoolean(element.getAttribute("visible"));
+            currentVisible = initialVisible;
             expand = Boolean.parseBoolean(element.getAttribute("expand"));
             
             built = new Date(Long.parseLong(element.getAttribute("built")));

@@ -33,6 +33,7 @@ import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -50,63 +51,6 @@ import org.netbeans.installer.utils.helper.Platform;
  * @author Kirill Sorokin
  */
 public abstract class StringUtils {
-    ////////////////////////////////////////////////////////////////////////////
-    // Constants
-    public static final String BACK_SLASH = "\\"; //NOI18N
-    public static final String FORWARD_SLASH = "/"; //NOI18N
-    public static final String DOUBLE_BACK_SLASH = "\\\\"; //NOI18N
-    
-    public static final String CR = "\r";
-    public static final String LF = "\n";
-    public static final String DOT = ".";
-    public static final String EMPTY_STRING = "";
-    public static final String CRLF = CR + LF;
-    public static final String CRLFCRLF = CRLF + CRLF;
-    public static final String SPACE = " ";
-    
-    public static final String NEW_LINE_PATTERN = "(?:\r\n|\n|\r)";
-    
-    private static final String LEFT_WHITESPACE  = "^\\s+";
-    private static final String RIGHT_WHITESPACE = "\\s+$";
-    
-    
-    private static final char   MNEMONIC_CHAR    = '&';
-    private static final String MNEMONIC         = "&";
-    private static final char   NO_MNEMONIC      = '\u0000';
-    
-    private static final char[] BASE64_TABLE = new char[] {
-        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
-        'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-        'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd',
-        'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
-        'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
-        'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7',
-        '8', '9', '+', '/'
-    };
-    
-    private static final byte[] BASE64_REVERSE_TABLE = new byte[] {
-        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-        -1, -1, -1, 62, -1, -1, -1, 63, 52, 53,
-        54, 55, 56, 57, 58, 59, 60, 61, -1, -1,
-        -1, -1, -1, -1, -1,  0,  1,  2,  3,  4,
-        5,  6,  7,  8,  9, 10, 11, 12, 13, 14,
-        15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
-        25, -1, -1, -1, -1, -1, -1, 26, 27, 28,
-        29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
-        39, 40, 41, 42, 43, 44, 45, 46, 47, 48,
-        49, 50, 51
-    };
-    
-    private static final char BASE64_PAD = '=';
-    
-    private static final int BIN_11111111 = 0xff;
-    private static final int BIN_00110000 = 0x30;
-    private static final int BIN_00111100 = 0x3c;
-    private static final int BIN_00111111 = 0x3f;
-    
     ////////////////////////////////////////////////////////////////////////////
     // Static
     public static String format(String message, Object... arguments) {
@@ -186,11 +130,11 @@ public abstract class StringUtils {
         return result.toString();
     }
     
-    public static String asString(Object [] strings) {
+    public static String asString(Object[] strings) {
         return asString(strings, ", ");
     }
     
-    public static String asString(Object [] strings, String separator) {
+    public static String asString(Object[] strings, String separator) {
         StringBuilder result = new StringBuilder();
         
         for (int i = 0; i < strings.length; i++) {
@@ -203,6 +147,14 @@ public abstract class StringUtils {
         }
         
         return result.toString();
+    }
+    
+    public static List<String> asList(String string) {
+        return asList(string, ", ");
+    }
+    
+    public static List<String> asList(String string, String separator) {
+        return Arrays.asList(string.split(separator));
     }
     
     public static String formatSize(long longBytes) {
@@ -257,9 +209,8 @@ public abstract class StringUtils {
     }
     
     public static String base64Encode(String string, String charset) throws UnsupportedEncodingException {
-        StringBuilder builder = new StringBuilder();
-        
-        byte[] bytes = string.getBytes(charset);
+        final StringBuilder builder = new StringBuilder();
+        final byte[] bytes = string.getBytes(charset);
         
         int i;
         for (i = 0; i < bytes.length - 2; i += 3) {
@@ -267,29 +218,41 @@ public abstract class StringUtils {
             int byte2 = bytes[i + 1] & BIN_11111111;
             int byte3 = bytes[i + 2] & BIN_11111111;
             
-            builder.append(BASE64_TABLE[byte1 >> 2]);
-            builder.append(BASE64_TABLE[((byte1 << 4) & BIN_00110000) | (byte2 >> 4)]);
-            builder.append(BASE64_TABLE[((byte2 << 2) & BIN_00111100) | (byte3 >> 6)]);
-            builder.append(BASE64_TABLE[byte3 & BIN_00111111]);
+            builder.append(
+                    BASE64_TABLE[byte1 >> 2]);
+            builder.append(
+                    BASE64_TABLE[((byte1 << 4) & BIN_00110000) | (byte2 >> 4)]);
+            builder.append(
+                    BASE64_TABLE[((byte2 << 2) & BIN_00111100) | (byte3 >> 6)]);
+            builder.append(
+                    BASE64_TABLE[byte3 & BIN_00111111]);
         }
         
         if (i == bytes.length - 2) {
             int byte1 = bytes[i] & BIN_11111111;
             int byte2 = bytes[i + 1] & BIN_11111111;
             
-            builder.append(BASE64_TABLE[byte1 >> 2]);
-            builder.append(BASE64_TABLE[((byte1 << 4) & BIN_00110000) | (byte2 >> 4)]);
-            builder.append(BASE64_TABLE[(byte2 << 2) & BIN_00111100]);
-            builder.append(BASE64_PAD);
+            builder.append(
+                    BASE64_TABLE[byte1 >> 2]);
+            builder.append(
+                    BASE64_TABLE[((byte1 << 4) & BIN_00110000) | (byte2 >> 4)]);
+            builder.append(
+                    BASE64_TABLE[(byte2 << 2) & BIN_00111100]);
+            builder.append(
+                    BASE64_PAD);
         }
         
         if (i == bytes.length - 1) {
             int byte1 = bytes[i] & BIN_11111111;
             
-            builder.append(BASE64_TABLE[byte1 >> 2]);
-            builder.append(BASE64_TABLE[(byte1 << 4) & BIN_00110000]);
-            builder.append(BASE64_PAD);
-            builder.append(BASE64_PAD);
+            builder.append(
+                    BASE64_TABLE[byte1 >> 2]);
+            builder.append(
+                    BASE64_TABLE[(byte1 << 4) & BIN_00110000]);
+            builder.append(
+                    BASE64_PAD);
+            builder.append(
+                    BASE64_PAD);
         }
         
         return builder.toString();
@@ -377,14 +340,16 @@ public abstract class StringUtils {
     }
     
     public static String parseAscii(String string) {
-        Properties properties = new Properties();
+        final Properties properties = new Properties();
         
         // we don't really care about enconding here, as the input string is
         // expected to be ASCII-only, which means it's the same for any encoding
         try {
             properties.load(new ByteArrayInputStream(("key=" + string).getBytes()));
         } catch (IOException e) {
-            ErrorManager.notify(ErrorLevel.WARNING, "Cannot parse string", e);
+            ErrorManager.notifyWarning(
+                    "Cannot parse string", 
+                    e);
             return string;
         }
         
@@ -392,19 +357,23 @@ public abstract class StringUtils {
     }
     
     public static String convertToAscii(String string) {
-        Properties properties = new Properties();
+        final Properties properties = new Properties();
         
         properties.put("uberkey", string);
         
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
-            properties.store(outputStream, EMPTY_STRING);
+            properties.store(baos, EMPTY_STRING);
         } catch (IOException e) {
-            ErrorManager.notify(ErrorLevel.WARNING, "Cannot convert string", e);
+            ErrorManager.notifyWarning(
+                    "Cannot convert string", 
+                    e);
             return string;
         }
         
-        Matcher matcher = Pattern.compile("uberkey=(.*)$", Pattern.MULTILINE).matcher(outputStream.toString());
+        final Matcher matcher = Pattern.
+                compile("uberkey=(.*)$", Pattern.MULTILINE).
+                matcher(baos.toString());
         
         if (matcher.find()) {
             return matcher.group(1);
@@ -422,8 +391,10 @@ public abstract class StringUtils {
     }
     
     // parsing //////////////////////////////////////////////////////////////////////
-    public static Locale parseLocale(String string) {
-        String[] parts = string.split("_");
+    public static Locale parseLocale(
+            final String string) {
+        final String[] parts = string.split("_");
+        
         switch (parts.length) {
             case 1:
                 return new Locale(parts[0]);
@@ -434,7 +405,8 @@ public abstract class StringUtils {
         }
     }
     
-    public static URL parseUrl(String string) throws ParseException {
+    public static URL parseUrl(
+            final String string) throws ParseException {
         try {
             return new URL(string);
         } catch (MalformedURLException e) {
@@ -442,7 +414,8 @@ public abstract class StringUtils {
         }
     }
     
-    public static Platform parsePlatform(String string) throws ParseException {
+    public static Platform parsePlatform(
+            final String string) throws ParseException {
         for (Platform platform: Platform.values()) {
             if (platform.getName().equals(string)) {
                 return platform;
@@ -452,23 +425,23 @@ public abstract class StringUtils {
         throw new ParseException("Platform \"" + string + "\" is not recognized.");
     }
     
-    public static List<Platform> parsePlatforms(String string) throws ParseException {
-        if (string.equals("all")) {
-            return Arrays.asList(Platform.values());
-        } else {
-            List<Platform> platforms = new ArrayList<Platform>();
+    public static List<Platform> parsePlatforms(
+            final String string) throws ParseException {
+        final List<Platform> platforms = new ArrayList<Platform>();
+        
+        for (String name: asList(string, " ")) {
+            final Platform platform = parsePlatform(name);
             
-            for (String name: string.split(SPACE)) {
-                Platform platform = parsePlatform(name);
-                if (!platforms.contains(platform)) {
-                    platforms.add(platform);
-                }
+            if (!platforms.contains(platform)) {
+                platforms.add(platform);
             }
-            return platforms;
         }
+        
+        return platforms;
     }
     
-    public static Status parseStatus(final String string) throws ParseException {
+    public static Status parseStatus(
+            final String string) throws ParseException {
         for (Status status: Status.values()) {
             if (status.getName().equals(string)) {
                 return status;
@@ -488,4 +461,61 @@ public abstract class StringUtils {
         
         throw new ParseException("Cannot parse dependency type: " + string);
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String BACK_SLASH = "\\"; //NOI18N
+    public static final String FORWARD_SLASH = "/"; //NOI18N
+    public static final String DOUBLE_BACK_SLASH = "\\\\"; //NOI18N
+    
+    public static final String CR = "\r";
+    public static final String LF = "\n";
+    public static final String DOT = ".";
+    public static final String EMPTY_STRING = "";
+    public static final String CRLF = CR + LF;
+    public static final String CRLFCRLF = CRLF + CRLF;
+    public static final String SPACE = " ";
+    
+    public static final String NEW_LINE_PATTERN = "(?:\r\n|\n|\r)";
+    
+    private static final String LEFT_WHITESPACE  = "^\\s+";
+    private static final String RIGHT_WHITESPACE = "\\s+$";
+    
+    
+    private static final char   MNEMONIC_CHAR    = '&';
+    private static final String MNEMONIC         = "&";
+    private static final char   NO_MNEMONIC      = '\u0000';
+    
+    private static final char[] BASE64_TABLE = new char[] {
+        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+        'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
+        'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd',
+        'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+        'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
+        'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7',
+        '8', '9', '+', '/'
+    };
+    
+    private static final byte[] BASE64_REVERSE_TABLE = new byte[] {
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, 62, -1, -1, -1, 63, 52, 53,
+        54, 55, 56, 57, 58, 59, 60, 61, -1, -1,
+        -1, -1, -1, -1, -1,  0,  1,  2,  3,  4,
+        5,  6,  7,  8,  9, 10, 11, 12, 13, 14,
+        15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+        25, -1, -1, -1, -1, -1, -1, 26, 27, 28,
+        29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
+        39, 40, 41, 42, 43, 44, 45, 46, 47, 48,
+        49, 50, 51
+    };
+    
+    private static final char BASE64_PAD = '=';
+    
+    private static final int BIN_11111111 = 0xff;
+    private static final int BIN_00110000 = 0x30;
+    private static final int BIN_00111100 = 0x3c;
+    private static final int BIN_00111111 = 0x3f;
 }

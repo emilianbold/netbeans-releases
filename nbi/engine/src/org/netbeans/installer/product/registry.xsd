@@ -154,7 +154,7 @@
                        type="uid-type"/>
         <xsd:attribute name="version" 
                        type="version-type"/>
-        <xsd:attribute name="platform" 
+        <xsd:attribute name="platforms" 
                        type="platforms-list-type"/>
         <xsd:attribute name="status" 
                        type="status-type"/>
@@ -166,9 +166,8 @@
                        type="xsd:boolean"/>
         <xsd:attribute name="built" 
                        type="xsd:long"/>
-        <xsd:attribute name="feature" 
-                       type="xsd:string" 
-                       use="optional"/>
+        <xsd:attribute name="features" 
+                       type="xsd:string"/>
     </xsd:complexType>
     
     <xsd:simpleType name="uid-type">
