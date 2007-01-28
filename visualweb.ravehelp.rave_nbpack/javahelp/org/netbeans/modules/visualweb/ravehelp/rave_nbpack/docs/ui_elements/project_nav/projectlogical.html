@@ -1,0 +1,145 @@
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Projects Window for a Visual Web Application Project</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h1>Projects Window for a Visual Web Application Project</h1>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>The <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+    <param name="content" value="project_nav_win.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="315,525">
+        <param name="text" value="Projects window"></object>&nbsp;
+ groups  logical objects by category within projects.  
+Choose Window &gt; Projects  to display this window. 
+The following table describes the top-level nodes.</p>
+
+<table border="1" cellpadding="5" cellspacing="0" alt="table of nodes in the Projects window">
+  <tr> 
+    <th scope="col"><b>Icon</b></th>
+    <th scope="col"><b>Folder</b></th>
+    <th scope="col"><b>Description</b></th>
+  </tr>
+  <tr> 
+    <td valign="top"><img src="../../images/webapp.gif" alt="Project icon"></td>
+    <td valign="top"><i>Project Name</i> </td>
+    <td valign="top">The root node for a Visual Web Application project. </td>
+  </tr>
+  <tr> 
+    <td valign="top"><img src="../../images/folder.gif" alt="Web pages folder icon"></td>
+    <td valign="top">Web Pages</td>
+    <td valign="top">The <code>.jsp</code> pages, which include 
+      the visual presentation of a web page, such as JavaServer 
+      Faces components and static text. Also contains resources, such as stylesheets.</td>
+  </tr>
+  <tr>
+    <td valign="top"><img src="../../images/theme_current.gif" alt="Theme icon"></td>
+    <td valign="top">Themes</td>
+    <td valign="top">Coordinated sets of cascading stylesheet files, 
+JavaScript files, and icon images that are applied to  a page and the components in the page</td>
+  </tr>
+  <tr>
+    <td valign="top"><img src="../../images/page_nav.gif" alt="Folder icon"></td>
+    <td valign="top">Page Navigation</td>
+    <td valign="top">Provides access to the Page Navigation editor, which enables you to connect pages to one another in a multi-page web application. </td>
+  </tr>
+  <tr>
+    <td valign="top"><img src="../../images/man_beans.gif" alt="Managed Beans icon"></td>
+    <td valign="top">Managed Beans </td>
+    <td valign="top"><p>Provides access to the <code>managed-beans.xml</code> file containing configuration information for JavaBeans objects that are used by the application. </p></td>
+  </tr>
+  <tr>
+    <td valign="top"><img src="../../images/bean_icon.gif" alt="Application Bean icon"></td>
+    <td valign="top">Application Bean </td>
+    <td valign="top">By default, there is one application bean for each project. This bean has a runtime scope of Application and is where you store information that you want to preserve across all user sessions. Double-click this bean to view it in the Java Editor.</td>
+  </tr>
+  <tr>
+    <td valign="top"><img src="../../images/bean_icon.gif" alt="Request Bean icon"></td>
+    <td valign="top">Request Bean </td>
+    <td valign="top">By default, there is one request bean for each project. This bean has a runtime scope of Request and is where you store information from the current page for use by the next page your application opens.  Double-click this bean to view it in the Java Editor. </td>
+  </tr>
+  <tr>
+    <td valign="top"><img src="../../images/bean_icon.gif" alt="Session Bean icon"></td>
+    <td valign="top">Session Bean </td>
+    <td valign="top">By default, there is one session bean for each project. This bean has a runtime scope of Session and is where you store information that you want to preserve across page requests for a single user session.
+        <!--Bean descriptions taken from about_app_outline.html -->
+    Double-click this bean to view it in the Java Editor. </td>
+  </tr>
+  <tr>
+    <td valign="top"><img src="../../images/config_files_icon.gif" alt="Configuration Files icon"></td>
+    <td valign="top">Configuration Files </td>
+    <td valign="top">Deployment descriptor files,  XML-based text files whose elements describe how to assemble and deploy a module to a specific environment. The elements also contain behavioral information about components not included directly in code.</td>
+  </tr>
+  <tr>
+    <td valign="top"><img src="../../images/server_resources_icon.gif" alt="Server Resources icon"></td>
+    <td valign="top">Server Resources </td>
+    <td valign="top">&nbsp;</td>
+  </tr>
+  <tr> 
+    <td valign="top"><img src="../../images/source_pkg.gif" alt="Source packages icon"></td>
+    <td valign="top">Source Packages</td>
+    <td valign="top">The  Java files in your project, such as the page beans containing the event handling and business logic for your application</td>
+  </tr>
+  <tr>
+    <td valign="top"><img src="../../images/source_pkg.gif" alt="Source packages icon"></td>
+    <td valign="top">Test Packages</td>
+    <td valign="top">The test files in your project.</td>
+  </tr>
+  <tr>
+    <td valign="top"><img src="../../images/library_ref_icon.gif" alt="Libraries icon"></td>
+    <td valign="top">Libraries</td>
+    <td valign="top">Library JAR files used by the application</td>
+  </tr>
+  <tr>
+    <td valign="top"><img src="../../images/library_ref_icon.gif" alt="Libraries icon"></td>
+    <td valign="top">Test Libraries</td>
+    <td valign="top">Library JAR files used by the test files for your application</td>
+  </tr>
+  <tr>
+    <td valign="top"><img src="../../images/complib_icon.gif" alt="Component Libraries icon"></td>
+    <td valign="top">Component Libraries</td>
+    <td valign="top">Library JAR files for libraries containing JavaServer Faces components that you have imported. </td>
+  </tr>
+  <tr>
+    <td valign="top"><img src="../../images/data_source_ref_icon.gif" alt="Data Source References icon"></td>
+    <td valign="top">Data Source References</td>
+    <td valign="top">A node used to resolve data connection problems, especially with projects imported from Java Studio Creator 2 and Java Studio Creator 2 Update 1.</td>
+  </tr>
+</table>
+<p>The Projects window enables you to work efficiently with the primary elements of your application without exposing the underlying details of the application infrastructure. You can switch to a more detailed filesystem view of the project by selecting Window &gt; Files from the main menu. </p>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="projectfilesystem.html">Files Window</a></dd>
+  <dd><a href="../../projects/howtoprojects/projects_quickref.html">Visual Web Application Project Tasks: Quick Reference</a></dd>
+  <dd><a href="../../projects/aboutprojects.html">About Visual Web Application Projects</a></dd>
+  <dd> <a href="../../design/web_app_concepts.html">About Web Applications</a></dd>
+</dl>
+<hr>
+<!-- Start Customer Feedback Link -->
+<p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Pack 
+contact page.
+</p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Visual%20Web%20Pack%20Help:%20Projects Window for a Visual Web Application Project">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br>
+<!-- End Customer Feedback Link -->
+  <small><a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

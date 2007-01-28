@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="xml"> 
+        <folder name="entities">
+            <folder name="NetBeans" >
+                <file name="CodeClip_Palette_Item_1_0" url="codeclips/resources/codeclip-palette-item-1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//CodeClip Palette Item 1.0//EN"/>
+                </file>
+            </folder>
+        </folder>
+        
+        <folder name="lookups">
+            <folder name="NetBeans">
+                <file name="CodeClip_Palette_Item_1_0.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.visualweb.palette.codeclips.CodeClipEnvironmentProvider"/>
+                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment.Provider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.visualweb.palette.codeclips.CodeClipEnvironmentProvider.createProvider"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    
+    <!--
+    <folder name="CreatorJavaPalette">  
+        <folder name="Testing">  
+            <file name="TestingClip.xml" url="codeclips/resources/TestingClip.xml"/>
+        </folder>
+    </folder>
+    -->
+    
+    <folder name="CreatorDesignerPalette">
+        <attr name="helpId" stringvalue="projrave_ui_elements_palette_palette"/>        
+        <attr name="isReadonly" boolvalue="false"/>
+    </folder>
+    
+    <folder name="CreatorDesignerPalette5">
+        <attr name="helpId" stringvalue="projrave_ui_elements_palette_palette"/>
+        <attr name="isReadonly" boolvalue="false"/>
+    </folder>
+    
+    <!-- Palette Item Lookup 
+        Palette Components are located in their relavent modules.  The avoids unnessary dependencies and higher high cohesion.
+        For example, when the sampleapp module is turned off, all codeclips will be automatically removed.
+        Basic: webui/designtime
+        Layout:  xhtml, webui/designtime, jsfsupport/designtime
+        Componsite:  webui/designtime
+        Converters:  jsfsupport/designtime
+        Validators: jsfsupport/designtime
+        Standard: jsfsupport/designtime
+        Advanced:  xhtml, webui/designtime, jsfsupport/designtime, dataprovider/designtime
+        Data Providers:  dataprovider/designtime, 
+        Advanced Data Providers:  webui/designtime
+        Woodstock: complib/woodstock
+    -->
+    
+</filesystem>

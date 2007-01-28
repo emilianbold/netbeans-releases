@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="CreatorDesignerPalette5">
+        
+        <!-- Sorting -->              
+        <attr name="Converters/Standard" boolvalue="true"/>
+        <attr name="Standard/Advanced" boolvalue="true"/>
+        
+        <folder name="Converters">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.jsfsupport.designtime_1_2.resources.Bundle"/>
+            
+            <attr name="DoubleConverter.comp_palette_item/EnumConverter.comp_palette_item" boolvalue="true"/>              
+            <attr name="EnumConverter.comp_palette_item/FloatConverter.comp_palette_item" boolvalue="true"/>   
+                     
+            <file name="EnumConverter.comp_palette_item" url="resources/EnumConverter.comp_palette_item"/>
+        </folder>
+        
+        <folder name="Standard">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.jsfsupport.designtime_1_2.resources.Bundle"/>
+            
+            <!-- Begin Sort -->            
+            <attr name="HtmlOutputText.comp_palette_item/HtmlInputText.comp_palette_item" boolvalue="true"/>              
+            <attr name="HtmlInputText.comp_palette_item/HtmlInputTextarea.comp_palette_item" boolvalue="true"/>            
+            <attr name="HtmlInputTextarea.comp_palette_item/HtmlCommandButton.comp_palette_item" boolvalue="true"/>       
+            <attr name="HtmlCommandButton.comp_palette_item/HtmlOutputLink.comp_palette_item" boolvalue="true"/>      
+            <attr name="HtmlOutputLink.comp_palette_item/HtmlCommandLink.comp_palette_item" boolvalue="true"/> 
+            <attr name="HtmlCommandLink.comp_palette_item/HtmlSelectOneMenu.comp_palette_item" boolvalue="true"/> 
+            <attr name="HtmlSelectOneMenu.comp_palette_item/HtmlSelectOneListbox.comp_palette_item" boolvalue="true"/> 
+            <attr name="HtmlSelectOneListbox.comp_palette_item/HtmlSelectBooleanCheckbox.comp_palette_item" boolvalue="true"/> 
+            <attr name="HtmlSelectBooleanCheckbox.comp_palette_item/HtmlSelectManyCheckbox.comp_palette_item" boolvalue="true"/> 
+            <attr name="HtmlSelectManyCheckbox.comp_palette_item/HtmlSelectOneRadio.comp_palette_item" boolvalue="true"/>
+            <attr name="HtmlSelectOneRadio.comp_palette_item/HtmlGraphicImage.comp_palette_item" boolvalue="true"/>
+            <attr name="HtmlGraphicImage.comp_palette_item/HtmlDataTable.comp_palette_item" boolvalue="true"/>
+            <attr name="HtmlDataTable.comp_palette_item/HtmlInputHidden.comp_palette_item" boolvalue="true"/>
+            <attr name="HtmlInputHidden.comp_palette_item/HtmlInputSecret.comp_palette_item" boolvalue="true"/>
+            <attr name="HtmlInputSecret.comp_palette_item/HtmlOutputFormat.comp_palette_item" boolvalue="true"/>
+            <attr name="HtmlOutputFormat.comp_palette_item/HtmlOutputLabel.comp_palette_item" boolvalue="true"/>
+            <attr name="HtmlOutputLabel.comp_palette_item/HtmlMessage.comp_palette_item" boolvalue="true"/>
+            <attr name="HtmlMessage.comp_palette_item/HtmlMessages.comp_palette_item" boolvalue="true"/>
+            <attr name="HtmlMessages.comp_palette_item/HtmlPanelGroup.comp_palette_item" boolvalue="true"/>
+            <attr name="HtmlPanelGroup.comp_palette_item/HtmlPanelGrid.comp_palette_item" boolvalue="true"/>
+            <attr name="HtmlPanelGrid.comp_palette_item/HtmlForm.comp_palette_item" boolvalue="true"/>
+            <!-- End Sort -->
+            
+            <file name="HtmlOutputText.comp_palette_item" url="resources/HtmlOutputText.comp_palette_item"/>
+            <file name="HtmlInputText.comp_palette_item" url="resources/HtmlInputText.comp_palette_item"/>
+            <file name="HtmlInputTextarea.comp_palette_item" url="resources/HtmlInputTextarea.comp_palette_item"/>
+            <file name="HtmlCommandButton.comp_palette_item" url="resources/HtmlCommandButton.comp_palette_item"/>            
+            <file name="HtmlOutputLink.comp_palette_item" url="resources/HtmlOutputLink.comp_palette_item"/>
+            <file name="HtmlCommandLink.comp_palette_item" url="resources/HtmlCommandLink.comp_palette_item"/>
+            <file name="HtmlSelectOneMenu.comp_palette_item" url="resources/HtmlSelectOneMenu.comp_palette_item"/>
+            <file name="HtmlSelectOneListbox.comp_palette_item" url="resources/HtmlSelectOneListbox.comp_palette_item"/>
+            <file name="HtmlSelectManyListbox.comp_palette_item" url="resources/HtmlSelectManyListbox.comp_palette_item"/>
+            <file name="HtmlSelectBooleanCheckbox.comp_palette_item" url="resources/HtmlSelectBooleanCheckbox.comp_palette_item"/>
+            <file name="HtmlSelectManyCheckbox.comp_palette_item" url="resources/HtmlSelectManyCheckbox.comp_palette_item"/>
+            <file name="HtmlSelectOneRadio.comp_palette_item" url="resources/HtmlSelectOneRadio.comp_palette_item"/>
+            <file name="HtmlGraphicImage.comp_palette_item" url="resources/HtmlGraphicImage.comp_palette_item"/>
+            <file name="HtmlDataTable.comp_palette_item" url="resources/HtmlDataTable.comp_palette_item"/>
+            <file name="HtmlInputHidden.comp_palette_item" url="resources/HtmlInputHidden.comp_palette_item"/>
+            <file name="HtmlInputSecret.comp_palette_item" url="resources/HtmlInputSecret.comp_palette_item"/>
+            <file name="HtmlOutputFormat.comp_palette_item" url="resources/HtmlOutputFormat.comp_palette_item"/>
+            <file name="HtmlOutputLabel.comp_palette_item" url="resources/HtmlOutputLabel.comp_palette_item"/>
+            <file name="HtmlMessage.comp_palette_item" url="resources/HtmlMessage.comp_palette_item"/>
+            <file name="HtmlMessages.comp_palette_item" url="resources/HtmlMessages.comp_palette_item"/>
+        </folder>
+    </folder>
+    
+</filesystem>

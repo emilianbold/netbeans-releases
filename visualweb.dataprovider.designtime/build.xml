@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="org.netbeans.modules.visualweb.dataprovider.designtime" default="netbeans" basedir=".">
+
+    <description>Builds and tests the project org.netbeans.modules.visualweb.dataprovider.designtime</description>
+    <import file="nbproject/build-impl.xml"/>
+    <import file="${suite.dir}/templates/common.xml"/>
+    
+    <target name="init" depends="harness.init,generate"/>
+    
+    <target name="generate" depends="harness.init,pre-generate" unless="generated-uptodate">
+        <antcall target="validate"/>
+        <echo>Generating BeanInfo classes...</echo>
+        <java classname="com.sun.rave.jsfmeta.generators.Main" fork="true">
+            <arg line="-d ${src.dir}"/>
+            <arg line="-f ${gen.file.sun_faces_config}"/>
+            <arg line="-v"/>
+            <arg line="-c com.sun.rave.designtime.base.CategoryDescriptors"/>
+            <arg line="-P org.netbeans.modules.visualweb.dataprovider.designtime.impl"/>
+            <arg line="--cpBeanInfoBase"/>
+            <classpath>
+                <pathelement path="${gen.classpath}"/>
+            </classpath>
+        </java>
+        <touch file="${gen.timestamp.file}"/>
+    </target>
+    
+    <target name="pre-generate">
+        <uptodate property="generated-uptodate" targetfile="${gen.timestamp.file}">
+            <srcfiles dir="conf" includes="**/*.xml"/>
+        </uptodate>
+    </target>
+
+    <target name="validate" depends="harness.init">
+        <xmlcatalog id="faces-catalog">
+            <dtd publicId="-//Sun Microsystems, Inc.//DTD JavaServer Faces Overlay 1.0//EN"
+              location="../../ravelibs/jsf-api/conf/web-facesconfig-overlay_1_0.dtd"/>
+            <dtd publicId="-//Sun Microsystems, Inc.//DTD JavaServer Faces Overlay 1.1//EN"
+              location="../../ravelibs/jsf-api/conf/web-facesconfig-overlay_1_1.dtd"/>
+            <dtd publicId="-//Sun Microsystems, Inc.//DTD JavaServer Faces Overlay 1.2//EN"
+              location="../../ravelibs/jsf-api/conf/web-facesconfig-overlay_1_2.dtd"/>
+        </xmlcatalog>
+        <xmlvalidate file="conf/sun-faces-config.xml" failonerror="true">
+            <xmlcatalog refid="faces-catalog"/>
+        </xmlvalidate>
+    </target>
+    
+    <target name="clean" depends="projectized-common.clean">
+        <delete failonerror="false">
+            <fileset dir="${src.dir}/org/netbeans/modules/visualweb/dataprovider/designtime/impl" includes="*BeanInfoBase.java,Bundle-JSF.properties"/>
+        </delete>
+        <delete file="${gen.timestamp.file}"/>
+    </target>
+    
+</project>

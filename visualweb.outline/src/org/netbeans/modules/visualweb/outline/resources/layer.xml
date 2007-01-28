@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+
+    <!-- XXX For now disabled inside the navigator, and used as standalone window.
+    That should be temporary only (for shortfin), until the NB navigator issues will be fixed.
+    <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="application">
+                <folder name="x-designer">
+                    <file name="org-netbeans-modules-visualweb-outline-OutlinePanelProvider.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    -->
+    
+    <folder name="Windows2">
+        <folder name="Modes">
+            <folder name="navigator">
+                <file name="outlineNew.wstcref" url="outlineNew.wstcref"/>
+            </folder>
+        </folder>
+        
+        <folder name="Components">
+            <file name="outlineNew.settings" url="OutlineTopComponent.settings"/>
+        </folder>
+    </folder>
+    
+    <folder name="Actions">
+        <folder name="Window">
+            <file name="org-netbeans-modules-visualweb-outline-ViewOutlineAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.visualweb.outline.ViewOutlineAction.getDefault"/>
+            </file>
+        </folder>
+    </folder>
+    
+    <folder name="Shortcuts">
+        <file name="CA-O.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-visualweb-outline-ViewOutlineAction.instance"/>
+	</file>
+    </folder>
+    
+    <folder name="Menu">
+        <folder name="Window">
+            <attr name="org-netbeans-modules-navigator-ShowNavigatorAction.instance/ViewOutlineAction.shadow" boolvalue="true"/>
+             <file name="ViewOutlineAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-visualweb-outline-ViewOutlineAction.instance"/>
+            </file>
+            <attr name="ViewOutlineAction.shadow/ShowPaletteAction.shadow" boolvalue="true"/>
+        </folder>
+    </folder>
+</filesystem>

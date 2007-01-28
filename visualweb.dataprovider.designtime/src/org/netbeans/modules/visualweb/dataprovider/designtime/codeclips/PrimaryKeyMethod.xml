@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE codeclip_palette_item PUBLIC "-//NetBeans//CodeClip Palette Item 1.0//EN"
+  "http://www.netbeans.org/dtds/codeclip-palette-item-1_0.dtd">
+
+<codeclip_palette_item version="1.0">
+    <body>
+      <![CDATA[   
+        // ~PrimaryKeyMethod1~
+        // ~PrimaryKeyMethod2~
+        private Integer nextPK() throws java.sql.SQLException {
+            // ~PrimaryKeyMethod3~
+                com.sun.sql.rowset.CachedRowSetXImpl pkRowSet = new com.sun.sql.rowset.CachedRowSetXImpl();
+                try {
+                // ~PrimaryKeyMethod4~
+                    pkRowSet.setDataSourceName("java:comp/env/jdbc/Travel");
+                // ~PrimaryKeyMethod5~
+                    pkRowSet.setCommand("SELECT MAX(TRAVEL.PERSON.PERSONID) + 1 FROM TRAVEL.PERSON");
+                pkRowSet.setTableName("TRAVEL.PERSON");
+                // ~PrimaryKeyMethod6~
+                pkRowSet.execute();    
+                pkRowSet.next();
+                // ~PrimaryKeyMethod7~
+                int counter = pkRowSet.getInt(1);
+                log ("New PK is :" + counter);
+                return new Integer(counter);
+                }catch(Exception e) {
+                    error("Error fetching Max(PERSONID)+1 : " + e.getMessage());
+                }finally {
+                pkRowSet.close();
+                }
+                return null;
+        }
+        // ~PrimaryKeyMethod8~
+        // ~PrimaryKeyMethod9~
+      ]]> 
+    </body>
+    <icon16 urlvalue="org/netbeans/modules/visualweb/spi/palette/resources/Codesnippet_C16.png" />
+    <icon32 urlvalue="org/netbeans/modules/visualweb/spi/palette/resources/Codesnippet_C32.png" />
+    <description localizing-bundle="org.netbeans.modules.visualweb.dataprovider.designtime.codeclips.Bundle"    
+        display-name-key="NAME_java-PrimaryKeyMethod"
+        tooltip-key="HINT_java-PrimaryKeyMethod" />
+</codeclip_palette_item>

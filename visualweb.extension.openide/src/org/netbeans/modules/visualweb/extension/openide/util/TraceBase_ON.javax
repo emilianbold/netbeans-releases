@@ -1,0 +1,9 @@
+package com.sun.rave.extension.openide.util;
+
+/**
+ * @author Joe Nuxoll
+ */
+public class TraceBase {
+    public static final boolean ON  = true;
+    public static final boolean OFF = false;
+}

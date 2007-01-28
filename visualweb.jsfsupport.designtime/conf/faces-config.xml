@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+
+<!DOCTYPE faces-config PUBLIC
+  "-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.1//EN"
+  "http://java.sun.com/dtd/web-facesconfig_1_1.dtd">
+
+<faces-config>
+    
+    <application>
+        <!-- Design time ViewHandler -->
+        <view-handler>
+            org.netbeans.modules.visualweb.jsfsupport.designtime.DesigntimeViewHandler
+        </view-handler>
+        <property-resolver>
+            org.netbeans.modules.visualweb.jsfsupport.designtime.DesignTimePropertyResolver
+        </property-resolver>
+        <variable-resolver>
+            org.netbeans.modules.visualweb.jsfsupport.designtime.DesignTimeVariableResolver
+        </variable-resolver>
+        <variable-resolver>
+            org.netbeans.modules.visualweb.jsfsupport.designtime.LoadBundleVariableResolver
+        </variable-resolver>
+    </application>
+    
+    <render-kit>
+        
+        <!-- Design-time delegating renderer declarations. -->
+        
+        <renderer>
+            <!-- For javax.faces.component.html.HtmlMessage -->
+            <component-family>javax.faces.Message</component-family>
+            <renderer-type>javax.faces.Message</renderer-type>
+            <renderer-class>org.netbeans.modules.visualweb.faces.dt.renderer.MessageDesignTimeRenderer</renderer-class>
+        </renderer>
+        
+        <renderer>
+            <!-- For javax.faces.component.html.HtmlMessages -->
+            <component-family>javax.faces.Messages</component-family>
+            <renderer-type>javax.faces.Messages</renderer-type>
+            <renderer-class>org.netbeans.modules.visualweb.faces.dt.renderer.MessagesDesignTimeRenderer</renderer-class>
+        </renderer>
+        
+        <renderer>
+            <!-- For javax.faces.component.html.HtmlOutputText -->
+            <component-family>javax.faces.Output</component-family>
+            <renderer-type>javax.faces.Text</renderer-type>
+            <renderer-class>org.netbeans.modules.visualweb.faces.dt.renderer.TextDesignTimeRenderer</renderer-class>
+        </renderer>
+        
+    </render-kit>
+    
+</faces-config>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="org.netbeans.modules.visualweb.dataconnectivity" default="netbeans" basedir=".">
+    <description>Builds, tests, and runs the project org.netbeans.modules.visualweb.dataconnectivity.</description>
+    <import file="nbproject/build-impl.xml"/>
+    <import file="${suite.dir}/templates/common.xml"/>
+
+  <target name="init" depends="harness.init"/>
+
+  <target name="derby-shutdown-init">
+    <available file="${cluster}/startup/bin/derby-stop.bat"
+        type="file" property="derbyStop.bat.exists">
+    </available>
+    <available file="${cluster}/startup/bin/derby-stop.sh"
+        type="file" property="derbyStop.sh.exists">
+    </available>
+  </target>
+
+  <!-- shutdown the derby process -->
+  <target name="shutdown-derby-windows" depends="derby-shutdown-init" if="derbyStop.bat.exists">
+    <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows XP"
+        dir="${cluster}/startup/bin" executable="cmd"
+        failonerror="false" failifexecutionfails="false" timeout="12000">
+      <arg line="/c derby-stop.bat" />
+    </exec>
+  </target>
+  <target name="shutdown-derby-unix" depends="derby-shutdown-init" if="derbyStop.sh.exists">
+    <exec os="Linux SunOS Solaris Mac OS X"
+        executable="${cluster}/startup/bin/derby-stop.sh"
+        failonerror="false" failifexecutionfails="false" timeout="12000">
+    </exec>
+  </target>
+
+  <target name="release" depends="init">
+    <copy todir="${cluster}">
+      <fileset dir="release">
+        <exclude name="**/*pb*"/>
+        <exclude name="**/*-bin.bat"/> <!--these get copied to /bin-->
+        <exclude name="**/*-bin.sh"/> <!--these get copied to /bin-->
+      </fileset>
+    </copy>
+
+    <!-- Remove Derby runtime jars from Shortfin
+    <mkdir dir="${cluster}/derby"/>
+    <copy todir="${cluster}/derby">
+      <fileset dir="external/derby"/>
+    </copy>   
+    -->
+
+    <!-- move stuff to /bin  -->
+    <basename property="my.cluster.dir" file="${cluster}"/>
+    <filter token="CLUSTER_DIR" value="${my.cluster.dir}"/>
+      <copy file="release/startup/bin/db-start-bin.bat" toFile="${netbeans.dest.dir}/bin/db-start.bat" filtering="on"/>
+      <copy file="release/startup/bin/db-stop-bin.bat" toFile="${netbeans.dest.dir}/bin/db-stop.bat" filtering="on"/>
+      <copy file="release/startup/bin/db-start-bin.sh" toFile="${netbeans.dest.dir}/bin/db-start.sh" filtering="on"/>
+      <copy file="release/startup/bin/db-stop-bin.sh" toFile="${netbeans.dest.dir}/bin/db-stop.sh" filtering="on"/>
+      <copy file="release/startup/bin/create-travel-db-bin.sh" toFile="${netbeans.dest.dir}/bin/create-travel-db.sh" filtering="on"/>
+      <copy file="release/startup/bin/create-travel-db-bin.bat" toFile="${netbeans.dest.dir}/bin/create-travel-db.bat" filtering="on"/>
+      <copy file="release/startup/bin/create-sample-db-bin.sh" toFile="${netbeans.dest.dir}/bin/create-sample-db.sh" filtering="on"/>
+      <copy file="release/startup/bin/create-sample-db-bin.bat" toFile="${netbeans.dest.dir}/bin/create-sample-db.bat" filtering="on"/>
+      <copy file="release/startup/bin/db-runsql-bin.sh" toFile="${netbeans.dest.dir}/bin/db-runsql.sh" filtering="on"/>
+      <copy file="release/startup/bin/db-runsql-bin.bat" toFile="${netbeans.dest.dir}/bin/db-runsql.bat" filtering="on"/>
+      <copy file="release/startup/bin/restore-sample-db-bin.sh" toFile="${netbeans.dest.dir}/bin/restore-sample-db.sh" filtering="on"/>
+      <copy file="release/startup/bin/restore-sample-db-bin.bat" toFile="${netbeans.dest.dir}/bin/restore-sample-db.bat" filtering="on"/>
+      <copy file="release/startup/bin/import-datasource-bin.bat" toFile="${netbeans.dest.dir}/bin/import-datasource.bat" filtering="on"/>
+      <copy file="release/startup/bin/import-datasource-bin.sh" toFile="${netbeans.dest.dir}/bin/import-datasource.sh" filtering="on"/>
+      <copy file="external/travel.zip" tofile="${cluster}/modules/ext/travel.zip" /> 
+      <chmod perm="ugo+x">
+        <fileset dir="${cluster}/startup/bin">
+          <include name="*.sh"/>
+        </fileset>
+        <fileset dir="${netbeans.dest.dir}/bin">
+          <include name="*.sh"/>
+        </fileset>
+      </chmod>
+    </target>
+</project>
+

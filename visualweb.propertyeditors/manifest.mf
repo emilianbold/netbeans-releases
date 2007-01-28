@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+OpenIDE-Module: com.sun.rave.propertyeditors/1
+OpenIDE-Module-Localizing-Bundle: com/sun/rave/propertyeditors/module/Bundle.properties
+OpenIDE-Module-Specification-Version: 2.0

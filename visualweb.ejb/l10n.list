@@ -1,0 +1,2 @@
+ejb/support/src/**/Bundle.properties
+exclude ejb/src/**/Bundle.properties 

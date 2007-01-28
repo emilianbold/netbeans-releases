@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="ServerNavigator"/>
+
+    <!-- Remove Data Menu from Shortfin
+    <folder name="Menu">
+      
+        <attr name="CVS/Data" boolvalue="true"/>
+        <folder name="Data">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+
+            <attr name="Separator1.instance/org-netbeans-modules-visualweb-ejb-actions-AddEjbGroupAction.instance" boolvalue="true"/>
+
+            <file name="org-netbeans-modules-visualweb-ejb-actions-AddEjbGroupAction.instance">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif"/>
+            </file>
+	       
+            <attr name="org-netbeans-modules-visualweb-ejb-actions-AddEjbGroupAction.instance/org-netbeans-modules-visualweb-ejb-actions-ImportEjbDataSourceAction.instance" boolvalue="true"/>
+
+            <file name="org-netbeans-modules-visualweb-ejb-actions-ImportEjbDataSourceAction.instance">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif"/>
+            </file>
+            <attr name="org-netbeans-modules-visualweb-ejb-actions-ImportEjbDataSourceAction.instance/org-netbeans-modules-visualweb-ejb-actions-ExportAllEjbDataSourcesAction.instance" boolvalue="true"/>
+
+            <file name="org-netbeans-modules-visualweb-ejb-actions-ExportAllEjbDataSourcesAction.instance">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif"/>
+            </file>
+            <attr name="org-netbeans-modules-visualweb-ejb-actions-ExportAllEjbDataSourcesAction.instance/Separator2.instance" boolvalue="true"/>
+         
+            <file name="Separator2.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            <attr name="Separator2.instance/com-sun-rave-websvc-actions-AddWebServiceAction.instance" boolvalue="true"/>          
+        </folder>
+        <attr name="Data/Tools" boolvalue="true"/>
+    </folder>
+    -->
+
+    <!-- Remove Data Toolbar from Shortfin
+    <folder name="Toolbars">
+        <folder name="Data">
+            <attr name="org-netbeans-modules-visualweb-dataconnectivity-actions-AddDataSourceAction.instance/org-netbeans-modules-visualweb-ejb-actions-AddEjbGroupAction.instance" boolvalue="true"/>
+            <file name="org-netbeans-modules-visualweb-ejb-actions-AddEjbGroupAction.instance"/>
+        </folder>
+    </folder>
+    -->
+    
+    <folder name="Services">
+        <folder name="EjbDataSource">
+            <file name="org-netbeans-modules-visualweb-ejb-dataService.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.visualweb.project.jsf.services.EjbDataSourceService"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.visualweb.ejb.EjbDataSourceServiceImpl"/>          
+            </file>
+        </folder>
+    </folder> <!-- Services -->
+    
+    <folder name="UI">
+        <folder name="Runtime">
+            <file name="org-netbeans-modules-visualweb-ejb-nodes-EjbRootNode.instance" url="org-netbeans-modules-visualweb-ejb-nodes-EjbRootNode.instance"/>
+        </folder>
+    </folder>
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+            <file name="ejbsupport-designtime.xml" url="/org/netbeans/modules/visualweb/ejb/libraries/ejbsupport-designtime.xml"/>
+        </folder>
+    </folder>
+    
+    <folder name="CreatorJavaPalette">       
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.ejb.codeclips.Bundle"/>
+        <attr name="JavaBasics/EnterpriseJavaBeans" boolvalue="true"/>
+        
+        <folder name="EnterpriseJavaBeans">   
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.ejb.codeclips.Bundle"/>
+            
+            <!-- Ordering -->
+            <attr name="GetFirstPerson.xml/FirstPersonSelected.xml" boolvalue="true"/>  
+            <attr name="FirstPersonSelected.xml/DropDownProcessValueChanged.xml" boolvalue="true"/>  
+            <!-- End Ordering -->
+
+            <file name="DropDownProcessValueChanged.xml" url="codeclips/DropDownProcessValueChanged.xml"/>
+            <file name="FirstPersonSelected.xml" url="codeclips/FirstPersonSelected.xml"/>
+            <file name="GetFirstPerson.xml" url="codeclips/GetFirstPerson.xml"/>
+        </folder>
+    </folder>
+    
+   <folder name="CreatorJavaPalette5">       
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.ejb.codeclips.Bundle"/>
+        <attr name="JavaBasics/EnterpriseJavaBeans" boolvalue="true"/>
+        
+        <folder name="EnterpriseJavaBeans">   
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.ejb.codeclips.Bundle"/>
+            
+            <!-- Ordering -->
+            <attr name="GetFirstPerson.xml/FirstPersonSelected.xml" boolvalue="true"/>  
+            <attr name="FirstPersonSelected.xml/DropDownProcessValueChanged.xml" boolvalue="true"/>  
+            <!-- End Ordering -->
+
+            <file name="DropDownProcessValueChanged.xml" url="codeclips/DropDownProcessValueChanged.xml"/>
+            <file name="FirstPersonSelected.xml" url="codeclips/FirstPersonSelected.xml"/>
+            <file name="GetFirstPerson.xml" url="codeclips/GetFirstPerson.xml"/>
+        </folder>
+    </folder>
+</filesystem>

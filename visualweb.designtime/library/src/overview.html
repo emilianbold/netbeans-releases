@@ -1,0 +1,34 @@
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<body>
+
+<h2>The Java Studio Creator Design-Time API</h2>
+
+<p>The Java Studio Creator Design-Time API provides component authors with access to the rich design-time interactions available in the visual design environment.  This API is essentially divided into two parts:</p>
+
+<p><ul>
+<li>Interfaces that are implemented by the Sun Java Studio Creator IDE itself.  These interfaces are referenced by the component author in their design-time code to access the live component instances being designed and to retrieve contextual information.  These interfaces are discussed in section 2.1 of the user's guide document.<br><br>
+
+<li>Interfaces to be implemented by the design-time classes supplied by the component author.  The Sun Java Studio Creator IDE uses these classes at design-time to perform the specified functions while the end user (the developer using the IDE) manipulates the components in the visual designer.  These interfaces are discussed in section 2.2 of the user guide document.
+</ul></p>
+
+<p>CDT was conceived and implemented as an integral part of the Sun Java Studio Creator IDE (the IDE). The initial version of the IDE focused on JavaServer FacesTM (JSF) components, but the Java Studio Creator Design-Time API was designed to handle JSF components, GUI components (like Swing), and beyond.  Due to time and resource constraints during development of the API, JavaServer Faces components received the greatest attention.  It is expected that this API will evolve as the Sun Java Studio Creator IDE provides support for client GUI and mobile application development in the future.</p>
+
+</body>

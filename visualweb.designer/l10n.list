@@ -1,0 +1,10 @@
+designer/api/src/**/Bundle.properties
+designer/cssengine/src/**/Bundle.properties
+designer/jsf/src/**/Bundle.properties
+designer/markup/src/**/Bundle.properties
+designer/src/**/Bundle.properties
+designer/virtualforms/src/**/Bundle.properties
+designer/html/src/**/Bundle.properties
+
+exclude designer/decoration/src/**/Bundle.properties
+

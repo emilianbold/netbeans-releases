@@ -1,0 +1,559 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+package org.netbeans.modules.visualweb.insync.beans;
+
+import org.netbeans.modules.visualweb.insync.UndoEvent;
+import org.netbeans.modules.visualweb.insync.java.JavaClassAdapter;
+import org.netbeans.modules.visualweb.insync.java.JavaUnit;
+import org.netbeans.modules.visualweb.insync.java.JMIMethodUtils;
+import java.beans.MethodDescriptor;
+import java.io.File;
+import java.util.List;
+import java.util.ListIterator;
+import org.netbeans.jmi.javamodel.CallableFeature;
+import org.netbeans.jmi.javamodel.Method;
+import org.netbeans.jmi.javamodel.Statement;
+import org.netbeans.jmi.javamodel.StatementBlock;
+import org.netbeans.jmi.javamodel.TryStatement;
+import org.netbeans.jmi.javamodel.TypeReference;
+
+import org.openide.util.NbBundle;
+
+import org.netbeans.modules.visualweb.extension.openide.util.Trace;
+import org.netbeans.modules.visualweb.insync.java.JMIUtils;
+import java.lang.reflect.Modifier;
+import org.netbeans.jmi.javamodel.Field;
+
+/**
+ * Manage the methods, fields and such that should be defined for the bean described by my model.
+ *
+ * @author eric
+ *
+ */
+public class BeanStructureScanner {
+    public static String ENSURE_INITBLOCK = "ensureInitBlock";
+    public static String ENSURE_EMPTYBLOCK = "ensureBlock";
+    public static String CTOR = "<init>";
+
+    // TODO: add code to read the user preference over explicit and
+    // implicit imports.
+    protected boolean explicitImport = true;
+
+    protected BeansUnit beansUnit;
+    protected JavaUnit javaUnit;
+
+    //Method info contains the nature of methods need to be in a managed bean.
+    //Sub-classes may alter the method infos according to requirement
+    protected MethodInfo ctorInfo = new MethodInfo(CTOR, Modifier.PUBLIC, Void.TYPE, "", ENSURE_INITBLOCK);
+    protected MethodInfo propertiesInitInfo = ctorInfo;
+    protected MethodInfo destroyInfo;
+
+    protected Object propertyRegionInsertPosition;
+
+    public BeanStructureScanner(BeansUnit unit) {
+        super();
+        this.beansUnit = unit;
+        this.javaUnit = unit.getJavaUnit();
+    }
+
+    //Methods that need to be in a managed bean
+    protected MethodInfo[] getMethodInfos(){
+        return new MethodInfo[]{ctorInfo};
+    }
+
+    /**
+    *
+    */
+   protected StatementBlock ensureInitBlock(MethodInfo mi) {
+       UndoEvent event = null;
+       try {
+           String eventName = NbBundle.getMessage(BeanStructureScanner.class, "EnsureInitBlock"); //NOI18N
+           event = beansUnit.getModel().writeLock(eventName);
+           boolean rollback = true;
+           try {
+               JMIUtils.beginTrans(true);
+               StatementBlock body = mi.getMethod().getBody();
+
+               List stats = body.getStatements();
+               ListIterator iter = stats.listIterator();
+               while(iter.hasNext()) {
+                   Statement s = (Statement)iter.next();
+                   if(s instanceof TryStatement)
+                       return null;
+               }
+
+               String bodyText = "// "+ NbBundle.getMessage(BeansUnit.class, "COMMENT_InitMethodToDoMarker") + "\n" + //NOI18N
+                       "// <editor-fold defaultstate=\"collapsed\" desc=\"" +
+                       NbBundle.getMessage(BeansUnit.class, "COMMENT_InitDescription") + "\">" + //NOI18N
+                       "try {\n" + //NOI18N
+                       "} catch (Exception e) {\n" +
+                       "log(\"Page1 Initialization Failure\", e);\n" + //NOI18N
+                       "throw e instanceof FacesException ? (FacesException) e: new FacesException(e);\n" + //NOI18N
+                       "}\n" + //NOI18N
+                       "// </editor-fold>\n" + //NOI18N
+                       "// " + NbBundle.getMessage(BeanStructureScanner.class, "COMMENT_AdditionalCode"); //NOI18N
+               JMIMethodUtils.replaceMethodBody(mi.getMethod(), bodyText);
+               rollback = false;
+               return body;
+           }finally {
+               JMIUtils.endTrans(rollback);
+           }
+       }finally {
+           if(event != null) {
+               beansUnit.getModel().writeUnlock(event);
+           }
+       }
+   }
+
+    /**
+     * Add as needed an event method with a given name and event type, and return type. Do nothing
+     * if the method is already present.
+     *
+     * @param md  The MethodDescriptor that identifies the method signature+return.
+     * @param name  The name of the metod to find or create.
+     * @param defaultBody The default body to be inserted for the event if one does not
+     *     already exist, or null to get a generic comment body
+     * @param parameterNames An array of names to be used for the parameters, or null
+     *     to use a default algorithm which will derive names from the types
+     * @param requiredImports An array of classes to be imported, or null to import nothing
+     * @return The existing or newly created method.
+     */
+    public  Method ensureEventMethod(MethodDescriptor md, String name, 
+                                    String defaultBody, String[] parameterNames,
+                                    String[] requiredImports) {
+        Class retType = md.getMethod().getReturnType();
+        String body = defaultBody;
+        if(defaultBody == null) {
+            body = "// " + NbBundle.getMessage(BeanStructureScanner.class, "COMMENT_EventMethodBody"); //NOI18N
+        }
+        body += "\n\n";
+        if (retType != Void.TYPE) {  
+            body = body + "return null;"; //NOI18N
+        }
+        
+        String[] pns = parameterNames;
+        Class[] pts = md.getMethod().getParameterTypes();
+        if (pns == null) {
+            pns = Naming.paramNames(pts, md.getParameterDescriptors());
+        }
+        
+        UndoEvent event = null;
+        try {
+            String eventName = NbBundle.getMessage(BeanStructureScanner.class, "EnsureEventMethod"); //NOI18N
+            event = beansUnit.getModel().writeLock(eventName);
+            boolean rollback = true;
+            try {
+                JMIUtils.beginTrans(true);
+                if (requiredImports != null) {
+                    for (int i = 0; i < requiredImports.length; i++) {
+                        JMIUtils.addImport(javaUnit.getJavaClass(), requiredImports[i]);
+                    }
+                }
+                
+                org.netbeans.modules.visualweb.insync.java.MethodInfo info =
+                        new org.netbeans.modules.visualweb.insync.java.MethodInfo(name, retType, Modifier.PUBLIC,
+                        pns, pts, body, null);
+                
+                Method m = (Method)beansUnit.getThisClass().addMethod(info);
+                rollback = false;
+                return m;
+            }finally {
+                JMIUtils.endTrans(rollback);
+            }
+        }finally {
+            if(event != null) {
+                beansUnit.getModel().writeUnlock(event);
+            }
+        }
+    }
+
+    /**
+     * Use the junit method to enure that we have an import for this type so that 
+     * the identifier can use its short form. By default explicit imports are ensured
+     * 
+     * @param type  fully-qualified type name 
+     */
+    public void ensureImportForType(String type) {
+        if(explicitImport) {
+            javaUnit.ensureImport(type);
+        }else {
+            int dot = type.lastIndexOf('.');
+            if (dot > 0)
+                javaUnit.ensureImport(type.substring(0, dot+1) + "*");
+        }
+    }
+
+   protected StatementBlock ensureBlock(MethodInfo mi) {
+       return mi.getMethod().getBody();
+   }   
+
+    /**
+    *
+    */
+   protected StatementBlock ensurePropertiesInitBlock() {
+       return getPropertiesInitMethod().getBody();
+   }
+
+   
+   protected CallableFeature ensureMethod(Object location, MethodInfo mi) {
+        org.netbeans.modules.visualweb.insync.java.MethodInfo info = 
+                new org.netbeans.modules.visualweb.insync.java.MethodInfo(mi.getName(), 
+                mi.getReturnType(), mi.getModifiers(), null, null, 
+                null, mi.getComment());
+        UndoEvent event = null;
+        CallableFeature cf = null;
+        try {
+            String eventName = NbBundle.getMessage(BeanStructureScanner.class, "EnsureMethod"); //NOI18N
+            event = beansUnit.getModel().writeLock(eventName);
+            boolean rollback = true;
+            try {
+                JMIUtils.beginTrans(true);
+                cf = beansUnit.getThisClass().addMethod(info);
+                rollback = false;
+            }finally {
+                JMIUtils.endTrans(rollback);
+            }
+        }finally {
+            if(event != null) {
+                beansUnit.getModel().writeUnlock(event);
+            }
+        }
+        return cf;
+    }
+
+   /**
+    * Return the last method added.
+    * 
+    * @return
+    */
+    protected CallableFeature ensureMethods() {
+        CallableFeature m = null;
+        MethodInfo[] methodInfos = getMethodInfos();
+        for(int i = 0;i < methodInfos.length; i++) {
+            m = ensureMethod(null, methodInfos[i]);
+            methodInfos[i].setMethod(m);
+            try {
+                java.lang.reflect.Method m1 = BeanStructureScanner.class.getDeclaredMethod(
+                        methodInfos[i].getEnsureMethodName(), new Class[]{MethodInfo.class});
+                StatementBlock b = (StatementBlock)m1.invoke(this, new Object[]{methodInfos[i]});
+            }catch(Exception e){
+                //This should not happen
+               assert Trace.trace("insync.beans", e.getMessage()); //NOI18N
+            }
+        }
+            
+        return m;
+    }
+    
+    /**
+     * TODO: We need to change how this region is created.
+     */
+    protected Field ensurePropertyRegion() {
+        JavaClassAdapter javaClass = beansUnit.getThisClass();
+        UndoEvent event = null;
+        try {
+            String eventName = NbBundle.getMessage(BeanStructureScanner.class, "EnsurePropertyRegion"); //NOI18N
+            event = beansUnit.getModel().writeLock(eventName);
+            boolean rollback = true;
+            try {
+                JMIUtils.beginTrans(true);
+                Field ph = javaClass.getField("__placeholder"); //NOI18N
+                
+                // Insert a placeholder field at the top of the class and put a region fold comment above it
+                if (ph == null) {
+                    ph = javaClass.addField("__placeholder", Integer.TYPE, null, false); //NOI18N
+                    ph.setModifiers(Modifier.PRIVATE);
+                    ph.setJavadocText("<editor-fold defaultstate=\"collapsed\" desc=\"" + //NOI18N
+                            NbBundle.getMessage(BeanStructureScanner.class, "COMMENT_DefDescription") + "\">"); //NOI18N
+                }
+                rollback = false;
+                return ph;
+            }finally {
+                JMIUtils.endTrans(rollback);
+            }
+        }finally {
+            if(event != null) {
+                beansUnit.getModel().writeUnlock(event);
+            }
+        }
+    }
+    
+
+    /**
+    *
+    */
+   protected JavaClassAdapter ensureThisClass() {
+
+       /*TODO - Deva
+       // get the expected classname from the filename
+       String cname = thisClassName(getJavaUnit().getName());
+
+       // scan for class by name. if it is there return it, possibly tweaking it first
+       Clazz[] classes = getJavaUnit().getClazzes();
+       for (int i = 0; i < classes.length; i++) {
+           Clazz cls = classes[i];
+           assert Trace.trace("insync.beans", "BU.findThisClass name:" + cls.getName() + " mods:"   //NOI18N
+                   + cls.getModifiers());
+
+           // grab the one with the matching name, making it the only public one if necessary
+           if (cls.getName().equals(cname)) {
+               if (cls.getAccessModifiers() != Modifiers.PUBLIC)
+                   cls.setAccessModifiers(Modifiers.PUBLIC);
+               for (int j = 0; j < classes.length; j++)
+                   if (j != i && classes[j].getAccessModifiers() == Modifiers.PUBLIC)
+                       classes[j].setAccessModifiers(0);
+               return cls;
+           }
+       }
+
+       // no match--grab the public one & rename it
+       for (int i = 0; i < classes.length; i++) {
+           Clazz cls = classes[i];
+           assert Trace.trace("insync.beans", "BU.findThisClass name:" + cls.getName() + " mods:"   //NOI18N
+                       + cls.getModifiers());
+
+           if (cls.getAccessModifiers() == Modifiers.PUBLIC) {
+               cls.setName(cname);
+               return cls;
+           }
+       }
+
+       // no match and no public class--
+       // create the class definition & add a comment
+       Clazz clazz = getJavaUnit().addClass(null, cname);
+       clazz.setModifiers(Modifiers.PUBLIC);
+       String suggestedSuperclass = getSuggestedThisClassSuperclass();
+       if (suggestedSuperclass != null) {
+           clazz.setSuperclass(suggestedSuperclass);
+           ensureImportForType(suggestedSuperclass);
+       }
+       Comment c = clazz.addComment(Comment.STYLE_DOC);
+       c.setBody(getThisClassComment());
+       c.setPrewhite(LineColumn.make(2, 0));
+       clazz.setPrewhite(LineColumn.make(1, 0));
+
+       return clazz;
+        **/
+       return null;
+   }
+
+   /**
+    * Ensures that a cross-reference accessor to a sibling bean is in place. Accessor method is of
+    * the form:
+    *      public <type> get<Mname>() {
+    *          return (<type>) getBean("<bname>");
+    *      }
+    *
+    * @param bname
+    * @param type
+    */
+   public void ensureXRefAccessor(String bname, String type) {
+       String mname = bname.replaceAll("/", "_");
+       if (findXRefAccessor(mname) != null)
+           return;
+       // Identify whether type has a package name, if not then skip creating an accessor for it
+       int index = type.lastIndexOf('.');
+       if (index == -1)
+           return;
+       
+       UndoEvent event = null;
+       try {
+           String eventName = NbBundle.getMessage(BeanStructureScanner.class, "EnsureXrefAccessor"); //NOI18N
+           event = beansUnit.getModel().writeLock(eventName);
+           boolean rollback = true;
+           try {
+               JMIUtils.beginTrans(true);
+               TypeReference typeRef = beansUnit.getThisClass().resolveImportsForType(type);
+               String body = "return (" + typeRef.getName() + ")getBean(\"" + bname + "\");"; //NOI18N
+               String comment = NbBundle.getMessage(BeanStructureScanner.class, "COMMENT_GetScopedBeanComment"); //NOI18N
+               org.netbeans.modules.visualweb.insync.java.MethodInfo info =
+                       new org.netbeans.modules.visualweb.insync.java.MethodInfo("get" + mname, //NOI18N
+                       null, Modifier.PROTECTED, null, null, body, comment);
+               info.setReturnTypeName(type);
+               
+               Method m = (Method) beansUnit.getThisClass().addMethod(info);
+               rollback = false;
+           }finally {
+               JMIUtils.endTrans(rollback);
+           }
+       }finally {
+           if(event != null) {
+               beansUnit.getModel().writeUnlock(event);
+           }
+       }
+   }
+
+   /**
+    * Finds a possibly existing cross-reference accessor to a sibling bean
+    */
+   protected Method findXRefAccessor(String name) {
+       return beansUnit.getThisClass().getMethod("get" + name, new Class[] {}); //NOI18N
+   }
+
+   public StatementBlock getPropertiesInitBlock() {
+       return propertiesInitInfo.getBlock();
+   }
+   
+   public String getComment(String id) {
+       return NbBundle.getMessage(BeanStructureScanner.class, id);
+   }
+   
+   public CallableFeature getConstructorMethod() {
+       return ctorInfo.getMethod();
+   }
+   
+   public CallableFeature getPropertiesInitMethod() {
+       return propertiesInitInfo.getMethod();
+   }
+   
+   /**
+    * @return
+    */
+   public StatementBlock getDestroyBlock() {
+       return destroyInfo.getBlock();
+   }
+   
+   /**
+    * @return
+    */
+   public Method getDestroyMethod() {
+       return beansUnit.getThisClass().getMethod(destroyInfo.getName(), new Class[]{});
+   }
+   
+
+   public StatementBlock[] getPropertiesInitBlocks() {
+       return new StatementBlock[]{propertiesInitInfo.getBlock()};
+   }    
+
+    public JavaUnit getJavaUnit() {
+        return javaUnit;
+    }
+    
+    public String getSuggestedThisClassSuperclass() {
+        return null;
+    }
+    
+    public String getThisClassComment() {
+        return NbBundle.getMessage(BeanStructureScanner.class, "COMMENT_BeanClassComment"); //NOI18N
+    }
+    
+    /**
+     * Removes a possibly existing cross-reference accessor to a sibling bean
+     */
+    /**
+     * @param name
+     */
+    public void removeXRefAccessor(String name) {
+        Method m = findXRefAccessor(name);
+        if (m != null)
+            beansUnit.getThisClass().removeMethod(m);
+    }
+
+    public void scan() {
+        //clazz = ensureThisClass();
+        ensureMethods();
+        ensurePropertyRegion();
+    }
+
+    /**
+    *
+    */
+   protected String thisClassName(String filename) {
+       int suffix = filename.lastIndexOf('.');
+       int dir = filename.lastIndexOf(File.separatorChar);
+       int start = (dir >= 0) ? dir+1 : 0;
+       if (suffix > 0)
+           return filename.substring(start, suffix);
+       return filename.substring(start);
+   }
+
+  
+   public class MethodInfo {
+       String name, comment, ensureMethodName, exception;
+       Class retType;
+       int modifiers;
+       CallableFeature method;
+       StatementBlock block;
+       
+       public MethodInfo(String name, int modifiers, Class retType, String comment, String ensureMethodName, String exception) {
+           this.retType = retType;
+           this.modifiers = modifiers;
+           this.name = name;
+           this.comment = comment;
+           this.ensureMethodName = ensureMethodName;
+           this.exception = exception;
+       }
+       
+       public MethodInfo(String name, int modifiers, Class retType, String comment, String ensureMethodName) {
+           this(name, modifiers, retType, comment, ensureMethodName, null);
+       }
+
+       public MethodInfo(String name, String comment) {
+           this(name, Modifier.PUBLIC, Void.TYPE, comment, ENSURE_EMPTYBLOCK, null); //NOI18N
+       }
+       
+       public MethodInfo(String name) {
+           this(name, Modifier.PUBLIC, Void.TYPE, "", ENSURE_EMPTYBLOCK, null); //NOI18N
+       }
+       
+       public String getName() {
+           return name;
+       }
+       
+       public int getModifiers() {
+           return modifiers;
+       }
+       
+       public Class getReturnType() {
+           return retType;
+       }
+       
+       public String getExceptionName() {
+           return exception;
+       }
+
+       public StatementBlock getBlock() {
+           return method.getBody();
+       }
+       
+       public CallableFeature getMethod() {
+           return method;
+       }
+       
+       public void setMethod(CallableFeature method) {
+           this.method = method;
+       }
+
+       public void setEnsureMethodName(String ensureMethodName) {
+           this.ensureMethodName = ensureMethodName;
+       }
+       
+       public String getEnsureMethodName() {
+           return ensureMethodName;
+       }
+       
+       public String getComment() {
+           return comment;
+       }
+       
+       public void setComment(String comment) {
+           this.comment = comment;
+       }
+   }
+}

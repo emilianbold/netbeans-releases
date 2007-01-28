@@ -1,0 +1,5 @@
+#!/bin/perl
+
+while(<>) {
+  print unless (/^(\s*)propertyDescriptorList.addAll\(Properties.getOutputPropertyList/);
+}

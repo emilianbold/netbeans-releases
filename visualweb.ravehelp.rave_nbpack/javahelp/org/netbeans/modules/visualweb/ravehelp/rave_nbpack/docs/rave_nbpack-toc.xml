@@ -1,0 +1,454 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
+                     "http://java.sun.com/products/javahelp/toc_2_0.dtd">
+
+<toc version="2.0">
+	<tocitem text="Visual Web Pack" expand="true">
+		<tocitem text="Introduction and Setup" expand="false">
+			<tocitem text="Introducing the Visual Web Pack" target="projrave_intro_creator" />
+			<tocitem text="About Web Applications" target="projrave_design_web_app_concepts" />
+			<tocitem text="Working With Web Applications" target="projrave_general_process" />
+			<tocitem text="Introductory Tutorials" target="projrave_intro_web_walkthru" />
+			<tocitem text="Creating a Sample Application" target="projrave_projects_howtoprojects_create_sample_app" />
+			<tocitem text="Importing a Java Studio Creator Project" target="projrave_projects_howtoprojects_import_creator_project" />
+			<tocitem text="About Accessibility" target="projrave_a11y_abouta11y" />
+			<tocitem text=" Keyboard Shortcuts">
+				<tocitem text="Dynamic Help Window Keyboard Shortcuts" target="projrave_a11y_dynamic_help_shortcuts" />
+				<tocitem text="Page Navigation Editor Keyboard Shortcuts" target="projrave_a11y_navigation_editor_shortcuts" />
+				<tocitem text="Palette Keyboard Shortcuts" target="projrave_a11y_component_palette_shortcuts" />
+				<tocitem text="Query Editor Keyboard Shortcuts" target="projrave_a11y_query_editor_shortcuts" />
+			</tocitem>
+			<tocitem text="Setting Up">
+				<tocitem text="Data Source Drag and Drop" target="projrave_ui_elements_options_options_data_source_dnd" />
+				<tocitem text=" Tooltips" target="projrave_config_setup_tooltip_setting" />
+				<tocitem text="Visual Designer" target="projrave_ui_elements_options_visual_editor" />
+			</tocitem>
+		</tocitem>
+		<tocitem text="Starting With Visual Web Application Projects" expand="false">
+			<tocitem text="About Visual Web Application Projects" target="projrave_projects_aboutprojects" />
+			<tocitem text="Working With Visual Web Application Projects" target="projrave_projects_project_process" />
+			<tocitem text="Visual Web Application Project Tasks: Quick Reference" target="projrave_projects_howtoprojects_howtoprojects" />
+			<tocitem text="Creating and Opening Visual Web Application Projects">
+				<tocitem text="Creating a Visual Web Application Project" target="projrave_projects_howtoprojects_create_project" />
+				<tocitem text="Setting the Main Project" target="projrave_projects_howtoprojects_proj_main" />
+				<tocitem text="Opening a Project" target="projrave_projects_howtoprojects_open_project" />
+				<tocitem text="Copying a Project" target="projrave_projects_howtoprojects_copy_project" />
+			</tocitem>
+			<tocitem text="Developing a Visual Web Application Project">
+				<tocitem text="Saving a Project" target="projrave_projects_howtoprojects_save_project" />
+				<tocitem text="Running a Project" target="projrave_projects_howtoprojects_run_project" />
+				<tocitem text="Setting Project Properties" target="projrave_projects_howtoprojects_set_project_properties" />
+				<tocitem text="Deleting a Project" target="projrave_projects_howtoprojects_delete_project" />
+			</tocitem>
+			<tocitem text="Working Inside a Visual Web Application Project">
+				<tocitem text="Finding Files or Items in a Project" target="projrave_projects_howtoprojects_find_files" />
+				<tocitem text="Setting the Start Page in a Project" target="projrave_projects_howtoprojects_set_start_page" />
+				<tocitem text="Adding a Project Item" target="projrave_projects_howtoprojects_add_object" />
+				<tocitem text="Adding an Image File to a Visual Web Application Project" target="projrave_projects_howtoprojects_add_image" />
+				<tocitem text="Adding a CSS File to a Project" target="projrave_projects_howtoprojects_add_css_file" />
+				<tocitem text="Adding a Theme" target="projrave_projects_howtoprojects_add_theme" />
+				<tocitem text="Deleting a Project Item" target="projrave_projects_howtoprojects_delete_proj_item" />
+				<tocitem text="About Regular Expressions" target="projrave_projects_howtoprojects_aboutregularexpn" />
+				<tocitem text="Library References">
+					<tocitem text="About Library References in Visual Web Application Projects" target="projrave_projects_about_lib_refs" />
+					<tocitem text="Creating a Library Reference" target="projrave_projects_howtoprojects_create_library" />
+					<tocitem text="Adding a Library Reference to a Project" target="projrave_projects_howtoprojects_import_libraries" />
+					<tocitem text="Modifying a Library Reference" target="projrave_projects_howtoprojects_modify_library" />
+					<tocitem text="Removing a Library Reference" target="projrave_projects_howtoprojects_delete_lib_ref" />
+				</tocitem>
+			</tocitem>
+			<tocitem text="Building and Compiling">
+				<tocitem text="Building a Visual Web Application Project" target="projrave_projects_howtoprojects_build_project" />
+				<tocitem text="Compiling a File" target="projrave_projects_howtoprojects_compile_file" />
+				<tocitem text="Cleaning a Project" target="projrave_projects_howtoprojects_clean_project" />
+			</tocitem>
+		</tocitem>
+		<tocitem text="Adding Components to Pages" expand="false">
+			<tocitem text="About Pages" target="projrave_components_webform" />
+			<tocitem text="About the Palette" target="projrave_ui_elements_palette_palette" />
+			<tocitem text="About Components" target="projrave_components_aboutcomponents" />
+			<tocitem text="About Virtual Forms" target="projrave_components_aboutvirtualforms" />
+			<tocitem text="About Themes" target="projrave_components_aboutthemes" />
+			<tocitem text="Common Component Properties" target="projrave_components_common_comp_props" />
+			<tocitem text="Adding and Managing Code Clips" target="projrave_components_howtocomponents_add_clip" />
+			<tocitem text="Working With Components" target="projrave_components_component_process" />
+			<tocitem text="Component Tasks: Quick Reference" target="projrave_components_howtocomponents_howtocomponents" />
+			<tocitem text="Adding and Viewing Components">
+				<tocitem text="Adding Components to a Page" target="projrave_components_howtocomponents_add_component" />
+				<tocitem text="Selecting Components in a Page" target="projrave_components_howtocomponents_select_comp" />
+				<tocitem text="Deleting a Component From a Page" target="projrave_components_howtocomponents_delete_comp" />
+				<tocitem text="Previewing a Page" target="projrave_components_howtocomponents_preview_form" />
+				<tocitem text="Viewing and Zooming an Image" target="projrave_projects_howtoprojects_view_zoom_image" />
+				<tocitem text="Viewing a Page at Different Resolutions" target="projrave_components_howtocomponents_view_browser_size" />
+			</tocitem>
+			<tocitem text="Positioning Components">
+				<tocitem text="Aligning Components" target="projrave_components_howtocomponents_align_components" />
+				<tocitem text="Nesting Components" target="projrave_components_howtocomponents_nest_comp" />
+				<tocitem text="Stacking Components" target="projrave_components_howtocomponents_layer_comp" />
+				<tocitem text="Setting the Grid" target="projrave_components_howtocomponents_snap2grip" />
+				<tocitem text="Setting Page Layout" target="projrave_components_howtocomponents_layout_comp" />
+			</tocitem>
+			<tocitem text="Defining Behavior and Appearance of Components">
+				<tocitem text="About Property Methods" target="projrave_components_about_prop_methods" />
+				<tocitem text="Setting CSS Styles for a Component" target="projrave_components_howtocomponents_set_style_property" />
+				<tocitem text="Connecting Components to Data" target="projrave_components_howtocomponents_data_source_ref" />
+				<tocitem text="Setting Tab Order" target="projrave_components_howtocomponents_set_tab_order" />
+				<tocitem text="Setting Component Properties" target="projrave_components_howtocomponents_set_comp_props" />
+				<tocitem text="Binding Component Properties" target="projrave_components_howtocomponents_bind_comp_props" />
+				<tocitem text="Adding a Category to the Palette" target="projrave_components_howtocomponents_add_section_to_palette" />
+				<tocitem text="Using Cascading Style Sheets" target="projrave_components_howtocomponents_style_sheet" />
+				<tocitem text="About Component Libraries" target="projrave_components_about_complibs" />
+				<tocitem text="Importing Components" target="projrave_components_howtocomponents_import_complib" />
+				<tocitem text="Removing a Component Library" target="projrave_components_howtocomponents_remove_comp_lib" />
+				<tocitem text="Updating a Component Library" target="projrave_components_howtocomponents_update_comp_lib" />
+			</tocitem>
+		</tocitem>
+		<tocitem text="Connecting Components to Data" expand="false">
+			<tocitem text="About Binding Components to Data" target="projrave_connect_data_about_data_binding" />
+			<tocitem text="Databases">
+				<tocitem text="About Components and Data" target="projrave_connect_data_aboutcompdata" />
+				<tocitem text="Database Tasks: Quick Reference" target="projrave_connect_data_howtodata_howtoconnectdata" />
+				<tocitem text="Working With Databases" target="projrave_connect_data_working_with_databases" />
+				<tocitem text="Supported SQL Queries" target="projrave_connect_data_sql_query_supported" />
+				<tocitem text="JDBC Type Conversions for RowSets" target="projrave_connect_data_jdbc_type_conversions" />
+				<tocitem text="Setting Up Database Connections">
+					<tocitem text="Adding a Database Connection" target="projrave_connect_data_howtodata_add_database" />
+					<tocitem text="Adding a Data Source" target="projrave_ui_elements_dialogs_add_data_source_db" />
+					<tocitem text="Adding a JDBC Driver" target="projrave_connect_data_howtodata_add_jdbc_driver" />
+					<tocitem text="Deleting a Database Server Type" target="projrave_connect_data_howtodata_delete_server_type" />
+					<tocitem text="Deleting a JDBC Driver" target="projrave_connect_data_howtodata_delete_server_type" />
+					<tocitem text="Editing a Database Server Type" target="projrave_connect_data_howtodata_configure_jdbc_driver" />
+					<tocitem text="Modifying a Database Connection" target="projrave_connect_data_howtodata_modify_database_connection" />
+					<tocitem text="Modifying Database Connection Properties" target="projrave_connect_data_howtodata_modify_ds_properties" />
+					<tocitem text="Removing a Database Connection from the Runtime Window" target="projrave_connect_data_howtodata_remove_data_source" />
+					<tocitem text="Resolving a Data Source" target="projrave_ui_elements_dialogs_resolve_data_source_db" />
+				</tocitem>
+				<tocitem text="Accessing the Data">
+					<tocitem text="Adding a Database Table  to a Page" target="projrave_connect_data_howtodata_add_tables2form" />
+					<tocitem text="Deleting a Database Table from a Page" target="projrave_connect_data_howtodata_delete_table" />
+					<tocitem text="Binding a Simple Component to a Database" target="projrave_connect_data_howtodata_bind_components" />
+					<tocitem text="Binding a Table Component to a Database" target="projrave_connect_data_howtodata_binding_data_2_table_component" />
+					<tocitem text="Binding a List Component to a Database" target="projrave_connect_data_howtodata_binding_data_2_list_component" />
+					<tocitem text="Creating an SQL Query" target="projrave_connect_data_howtodata_create_sql_query" />
+					<tocitem text="Viewing Data in a Database Table" target="projrave_connect_data_howtodata_view_data" />
+				</tocitem>
+				<tocitem text="Using the Java DB Database Server" expand="false">
+					<tocitem text="Java DB Database Status" target="projrave_connect_data_howtodata_refresh_bundled_db" />
+					<tocitem text="Java DB Database Tasks: Quick Reference" target="projrave_connect_data_howtodata_howtoconnectdata" />
+					<tocitem text="Refreshing the Java DB Database Server" target="projrave_connect_data_howtodata_refresh_java_db" />
+					<tocitem text="Starting the Java DB Database Server" target="projrave_connect_data_howtodata_start_java_db" />
+					<tocitem text="Stopping the Java DB Database Server" target="projrave_connect_data_howtodata_stop_java_db" />
+				</tocitem>
+			</tocitem>
+			<tocitem text="Web Services">
+				<tocitem text="Adding a Web Service Client" target="projrave_connect_data_howtodata_add_web_service" />
+				<tocitem text="Deleting a Web Service Client" target="projrave_connect_data_howtodata_del_web_service" />
+			</tocitem>
+		</tocitem>
+		<tocitem text="Creating Multiple Pages" expand="false">
+			<tocitem text="About Multiple Pages and Navigation" target="projrave_multiple_forms_aboutmultiforms" />
+			<tocitem text="Working With Multiple Pages" target="projrave_multiple_forms_multiform_process" />
+			<tocitem text="Page Navigation Tasks: Quick Reference" target="projrave_multiple_forms_howtomultiforms_howtomultiforms" />
+			<tocitem text="Creating Pages and Components">
+				<tocitem text="Creating a Page in a Visual Web Project" target="projrave_multiple_forms_howtomultiforms_create_form" />
+				<tocitem text="Adding Components in the Page Navigation Editor" target="projrave_multiple_forms_howtomultiforms_add_comp_nav_editor" />
+				<tocitem text="Opening Pages From the Page Navigation Editor" target="projrave_multiple_forms_howtomultiforms_open_page_nav_editor" />
+				<tocitem text="Deleting a Page in a Visual Web Project" target="projrave_multiple_forms_howtomultiforms_delete_page" />
+				<tocitem text="Viewing Page Contents in the Page Navigation Editor" target="projrave_multiple_forms_howtomultiforms_preview_nav_page" />
+			</tocitem>
+			<tocitem text=" Connecting Multiple Pages">
+				<tocitem text="Setting Up Static Page Navigation" target="projrave_multiple_forms_howtomultiforms_set_form_navigation" />
+				<tocitem text="Setting Up Dynamic Page Navigation" target="projrave_multiple_forms_howtomultiforms_dynamic_form_navigation" />
+				<tocitem text="Deleting a Page Navigation Connector" target="projrave_multiple_forms_howtomultiforms_delete_connector" />
+				<tocitem text="Renaming a Page Navigation Connector" target="projrave_multiple_forms_howtomultiforms_rename_connector" />
+			</tocitem>
+		</tocitem>
+		<tocitem text="Working With JSP Source Code" expand="false">
+			<tocitem text="About the JSP Editor" target="projrave_ui_elements_editors_about_jsp_editor" />
+			<tocitem text="JavaServer Faces Expression Language" target="projrave_jsp-jsfel_jsf_expression_language_intro" />
+		</tocitem>
+		<tocitem text="Reference" expand="false">
+			<tocitem text="Outline Window" target="projrave_ui_elements_project_nav_about_app_outline" />
+			<tocitem text="Properties Window" target="projrave_ui_elements_propsheets_propsheet_win" />
+			<tocitem text="Editors" mergetype="javax.help.SortMerge" expand="false">
+				<tocitem text="About the JSP Editor" target="projrave_ui_elements_editors_about_jsp_editor" />
+				<tocitem text="About the Page Navigation Editor" target="projrave_ui_elements_editors_about_navigation_editor" />
+				<tocitem text="About the Properties Editor" target="propfiles.prop" />
+				<tocitem text="About the Query Editor">
+					<tocitem text="About the Query Editor" target="projrave_ui_elements_editors_about_query_editor" />
+					<tocitem text="About the Diagram Pane" target="projrave_ui_elements_editors_qe_diagram_pane" />
+					<tocitem text="About the Grid Pane" target="projrave_ui_elements_editors_qe_grid_pane" />
+					<tocitem text="About the SQL Pane" target="projrave_ui_elements_editors_qe_sql_pane" />
+					<tocitem text="About the Results Pane" target="projrave_ui_elements_editors_qe_results_pane" />
+				</tocitem>
+				<tocitem text="About the Visual Designer" target="projrave_ui_elements_editors_about_visual_editor" />
+			</tocitem>
+			<tocitem text="Java Editing and Coding" expand="false">
+				<tocitem text="About the Properties Editor" target="propfiles.prop" />
+			</tocitem>
+			<tocitem text="Projects and Files Windows" expand="false">
+				<tocitem text="About the Projects and Files Windows" target="projrave_ui_elements_project_nav_about_project_nav" />
+				<tocitem text="About the Files Window" target="projrave_ui_elements_project_nav_portfoliofilesystem" />
+				<tocitem text="build.xml Node" target="projrave_ui_elements_project_nav_buildxml_node" />
+				<tocitem text="New Project Dialog Box" target="projrave_ui_elements_welcome_window_newprojectdb" />
+				<tocitem text="Projects View">
+					<tocitem text="Projects Window" target="projrave_ui_elements_project_nav_portfoliological" />
+					<tocitem text="Project Node" target="projrave_ui_elements_project_nav_webapp_node" />
+					<tocitem text="Web Pages Node" target="projrave_ui_elements_project_nav_webforms_node" />
+					<tocitem text="Page Navigation Node" target="projrave_ui_elements_project_nav_pagenav_node" />
+					<tocitem text="Managed Beans Node" target="projrave_ui_elements_project_nav_man_beans_node" />
+					<tocitem text="Session Bean Node" target="projrave_ui_elements_project_nav_session_bean_node" />
+					<tocitem text="Request Bean Node" target="projrave_ui_elements_project_nav_request_bean_node" />
+					<tocitem text="Application Bean Node" target="projrave_ui_elements_project_nav_application_bean_node" />
+					<tocitem text="Source Packages Node" target="projrave_ui_elements_project_nav_java_sources_node" />
+					<tocitem text="Libraries Node" target="projrave_ui_elements_project_nav_references_node" />
+					<tocitem text="Component Libraries Node" target="projrave_ui_elements_project_nav_complib_node" />
+				</tocitem>
+				<tocitem text="Properties">
+					<tocitem text="Application Bean Node Properties" target="projrave_ui_elements_project_nav_node_prop_sheets_application_bean_node_props" />
+					<tocitem text="Dist Node Properties" target="projrave_ui_elements_project_nav_node_prop_sheets_dist_node_props" />
+					<tocitem text="Source Packages Node Properties" target="projrave_ui_elements_project_nav_node_prop_sheets_java_sources_node_props" />
+					<tocitem text="Managed Beans Node Properties" target="projrave_ui_elements_project_nav_node_prop_sheets_man_beans_node_props" />
+					<tocitem text="Page Navigation Node Properties" target="projrave_ui_elements_project_nav_node_prop_sheets_page_nav_node_props" />
+					<tocitem text="Project Properties: Build Category" target="projrave_ui_elements_project_nav_project_props_build" />
+					<tocitem text="Project Properties: Libraries Category" target="projrave_ui_elements_project_nav_project_props_libraries" />
+					<tocitem text="Project Properties: Run Category" target="projrave_ui_elements_project_nav_project_props_run" />
+					<tocitem text="Project Properties: Sources Category" target="projrave_ui_elements_project_nav_project_props_sources" />
+					<tocitem text="Request Bean Node Properties" target="projrave_ui_elements_project_nav_node_prop_sheets_request_bean_node_props" />
+					<tocitem text="Session Bean Node Properties" target="projrave_ui_elements_project_nav_node_prop_sheets_session_bean_node_props" />
+					<tocitem text="Web Pages Node Properties" target="projrave_ui_elements_project_nav_node_prop_sheets_web_pages_node_props" />
+				</tocitem>
+				<tocitem text="Dialog Boxes">
+					<tocitem text="Add Project Dialog Box" target="projrave_ui_elements_dialogs_add_project" />
+					<tocitem text="Add Library Dialog Box" target="projrave_ui_elements_dialogs_add_library" />
+				</tocitem>
+			</tocitem>
+			<tocitem text="Palette" expand="false">
+				<tocitem text="About the Visual Web Pack Palette" target="projrave_ui_elements_palette_palette" />
+				<tocitem text="Basic Components (JSF 1.1)">
+					<tocitem text="Anchor Component" target="projrave_ui_elements_palette_bh_anchor" />
+					<tocitem text="Button Component" target="projrave_ui_elements_palette_bh_button" />
+					<tocitem text="Calendar Component" target="projrave_ui_elements_palette_bh_calendar" />
+					<tocitem text="Checkbox Component" target="projrave_ui_elements_palette_bh_checkbox" />
+					<tocitem text="Checkbox Group Component" target="projrave_ui_elements_palette_bh_checkbox_group" />
+					<tocitem text="File Upload Component" target="projrave_ui_elements_palette_bh_file_upload" />
+					<tocitem text="Hidden Field Component" target="projrave_ui_elements_palette_bh_hidden_field" />
+					<tocitem text="Hyperlink Component" target="projrave_ui_elements_palette_bh_hyperlink" />
+					<tocitem text="Image Component" target="projrave_ui_elements_palette_bh_image" />
+					<tocitem text="Image Hyperlink Component" target="projrave_ui_elements_palette_bh_image_hyperlink" />
+					<tocitem text="Label Component" target="projrave_ui_elements_palette_bh_label" />
+					<tocitem text="Listbox Component" target="projrave_ui_elements_palette_bh_listbox" />
+					<tocitem text="Message Component" target="projrave_ui_elements_palette_bh_message" />
+					<tocitem text="Message Group Component" target="projrave_ui_elements_palette_bh_message_group" />
+					<tocitem text="Password Field Component" target="projrave_ui_elements_palette_bh_password_field" />
+					<tocitem text="Radio Button Component" target="projrave_ui_elements_palette_bh_radiobutton" />
+					<tocitem text="Radio Button Group Component" target="projrave_ui_elements_palette_bh_radiobutton_group" />
+					<tocitem text="Static Text Component" target="projrave_ui_elements_palette_bh_static_text" />
+					<tocitem text="Table Component" target="projrave_ui_elements_palette_bh_table" />
+					<tocitem text="Table Column Component" target="projrave_ui_elements_palette_bh_column" />
+					<tocitem text="Table Row Group Component" target="projrave_ui_elements_palette_bh_row_group" />
+					<tocitem text="Text Area Component" target="projrave_ui_elements_palette_bh_text_area" />
+					<tocitem text="Text Field Component" target="projrave_ui_elements_palette_bh_text_field" />
+					<tocitem text="Tree Component" target="projrave_ui_elements_palette_bh_tree" />
+					<tocitem text="Tree Node Component" target="projrave_ui_elements_palette_bh_tree_node" />
+				</tocitem>
+				<tocitem text="Basic Components (JSF 1.2)">
+					<tocitem text="Anchor Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_anchor" />
+					<tocitem text="Button Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_button" />
+					<tocitem text="Calendar Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_calendar" />
+					<tocitem text="Checkbox Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_checkbox" />
+					<tocitem text="Checkbox Group Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_checkbox_group" />
+					<tocitem text="File Upload Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_file_upload" />
+					<tocitem text="Hidden Field Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_hidden_field" />
+					<tocitem text="Hyperlink Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_hyperlink" />
+					<tocitem text="Image Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_image" />
+					<tocitem text="Image Hyperlink Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_image_hyperlink" />
+					<tocitem text="Label Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_label" />
+					<tocitem text="Listbox Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_listbox" />
+					<tocitem text="Message Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_message" />
+					<tocitem text="Message Group Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_message_group" />
+					<tocitem text="Password Field Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_password_field" />
+					<tocitem text="Radio Button Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_radiobutton" />
+					<tocitem text="Radio Button Group Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_radiobutton_group" />
+					<tocitem text="Static Text Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_static_text" />
+					<tocitem text="Table Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_table" />
+					<tocitem text="Table Column Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_column" />
+					<tocitem text="Table Row Group Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_row_group" />
+					<tocitem text="Text Area Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_text_area" />
+					<tocitem text="Text Field Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_text_field" />
+					<tocitem text="Tree Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_tree" />
+					<tocitem text="Tree Node Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_tree_node" />
+				</tocitem>
+				<tocitem text="Layout Components (JSF 1.1)">
+					<tocitem text="Form Component" target="projrave_ui_elements_palette_bh_form" />
+					<tocitem text="Grid Panel Component" target="projrave_ui_elements_palette_jsfstd_grid_panel" />
+					<tocitem text="Group Panel Component" target="projrave_ui_elements_palette_bh_group_panel" />
+					<tocitem text="Layout Panel Component" target="projrave_ui_elements_palette_bh_layout_panel" />
+					<tocitem text="Page Alert Component" target="projrave_ui_elements_palette_bh_page_alert" />
+					<tocitem text="Page Fragment Box Component" target="projrave_ui_elements_palette_jsfstd_page_fragment" />
+					<tocitem text="Page Separator Component" target="projrave_ui_elements_palette_bh_page_separator" />
+					<tocitem text="Property Sheet Component" target="projrave_ui_elements_palette_bh_property_sheet">
+						<tocitem text="Property Sheet Section Component" target="projrave_ui_elements_palette_bh_property_sheet_section" />
+						<tocitem text="Property Component" target="projrave_ui_elements_palette_bh_property" />
+					</tocitem>
+					<tocitem text="Tab Set Component" target="projrave_ui_elements_palette_bh_tab_set">
+						<tocitem text="Tab Component" target="projrave_ui_elements_palette_bh_tab">
+							<tocitem text="Layout Panel Component Properties" target="projrave_ui_elements_palette_bh_propsheets_bh_layoutPanel_props" />
+						</tocitem>
+					</tocitem>
+				</tocitem>
+				<tocitem text="Layout Components (JSF 1.2)">
+					<tocitem text="Form Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_form" />
+					<tocitem text="Grid Panel Component" target="projrave_ui_elements_palette_jsfstd_grid_panel" />
+					<tocitem text="Group Panel Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_group_panel" />
+					<tocitem text="Layout Panel Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_layout_panel" />
+					<tocitem text="Page Alert Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_page_alert" />
+					<tocitem text="Page Fragment Box Component" target="projrave_ui_elements_palette_jsfstd_page_fragment" />
+					<tocitem text="Page Separator Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_page_separator" />
+					<tocitem text="Property Sheet Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_property_sheet">
+						<tocitem text="Property Sheet Section Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_property_sheet_section" />
+						<tocitem text="Property Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_property" />
+					</tocitem>
+					<tocitem text="Tab Set Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_tab_set">
+						<tocitem text="Tab Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_tab">
+							<tocitem text="Layout Panel Component Properties" target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_layoutPanel_props" />
+						</tocitem>
+					</tocitem>
+				</tocitem>
+				<tocitem text="Composite Components (JSF 1.1)">
+					<tocitem text="Add Remove List Component" target="projrave_ui_elements_palette_bh_add_remove_list" />
+					<tocitem text="Alert Component" target="projrave_ui_elements_palette_bh_alert" />
+					<tocitem text="Breadcrumbs Component" target="projrave_ui_elements_palette_bh_breadcrumbs" />
+					<tocitem text="Inline Help Component" target="projrave_ui_elements_palette_bh_inline_help" />
+				</tocitem>
+				<tocitem text="Composite Components (JSF 1.2)">
+					<tocitem text="Add Remove List Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_add_remove_list" />
+					<tocitem text="Alert Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_alert" />
+					<tocitem text="Breadcrumbs Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_breadcrumbs" />
+					<tocitem text="Inline Help Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_inline_help" />
+				</tocitem>
+				<tocitem text="Standard JSF Components">
+					<tocitem text="JSF Standard Components Category" target="projrave_ui_elements_palette_jsfstd_jsf_std_comp_section" />
+					<tocitem text="Button Component" target="projrave_ui_elements_palette_jsfstd_button" />
+					<tocitem text="Checkbox Component" target="projrave_ui_elements_palette_jsfstd_checkbox" />
+					<tocitem text="Checkbox List Component" target="projrave_ui_elements_palette_jsfstd_checkbox_list" />
+					<tocitem text="Component Label Component" target="projrave_ui_elements_palette_jsfstd_component_label" />
+					<tocitem text="Data Table Component" target="projrave_ui_elements_palette_jsfstd_data_table" />
+					<tocitem text="Dropdown List Component" target="projrave_ui_elements_palette_jsfstd_dropdown_list" />
+					<tocitem text="Form Component" target="projrave_ui_elements_palette_jsfstd_form" />
+					<tocitem text="Formatted Output Component" target="projrave_ui_elements_palette_jsfstd_formatted_output" />
+					<tocitem text="Grid Panel Component" target="projrave_ui_elements_palette_jsfstd_grid_panel" />
+					<tocitem text="Group Panel Component" target="projrave_ui_elements_palette_jsfstd_group_panel" />
+					<tocitem text="Hidden Field Component" target="projrave_ui_elements_palette_jsfstd_hidden_field" />
+					<tocitem text="Hyperlink Component" target="projrave_ui_elements_palette_jsfstd_hyperlink" />
+					<tocitem text="Image Component" target="projrave_ui_elements_palette_jsfstd_image" />
+					<tocitem text="Inline Message Component" target="projrave_ui_elements_palette_jsfstd_inline_message" />
+					<tocitem text="Link Action Component" target="projrave_ui_elements_palette_jsfstd_link_action" />
+					<tocitem text="Listbox Component" target="projrave_ui_elements_palette_jsfstd_listbox" />
+					<tocitem text="Message List Component" target="projrave_ui_elements_palette_jsfstd_message_list" />
+					<tocitem text="Multi Line Text Area Component" target="projrave_ui_elements_palette_jsfstd_multiline_textarea" />
+					<tocitem text="Multi Select Listbox Component" target="projrave_ui_elements_palette_jsfstd_multi_listbox" />
+					<tocitem text="Output Text Component" target="projrave_ui_elements_palette_jsfstd_output_text" />
+					<tocitem text="Radio Button List Component" target="projrave_ui_elements_palette_jsfstd_radiobutton_list" />
+					<tocitem text="Secret Field Component" target="projrave_ui_elements_palette_jsfstd_secret_field" />
+					<tocitem text="Text Field Component" target="projrave_ui_elements_palette_jsfstd_text_field" />
+				</tocitem>
+				<tocitem text="Validators">
+					<tocitem text="Validators and Converters Categories" target="projrave_ui_elements_palette_jsf-val-conv_jsf_val_conv_section" />
+					<tocitem text="Double Range Validator" target="projrave_ui_elements_palette_jsf-val-conv_double_range_valdtr" />
+					<tocitem text="Length Validator" target="projrave_ui_elements_palette_jsf-val-conv_length_valdtr" />
+					<tocitem text="Long Range Validator" target="projrave_ui_elements_palette_jsf-val-conv_long_range_valdtr" />
+				</tocitem>
+				<tocitem text="Converters">
+					<tocitem text="Validators and Converters Categories" target="projrave_ui_elements_palette_jsf-val-conv_jsf_val_conv_section" />
+					<tocitem text="Big Decimal Converter" target="projrave_ui_elements_palette_jsf-val-conv_big_decimal_converter" />
+					<tocitem text="Big Integer Converter" target="projrave_ui_elements_palette_jsf-val-conv_big_integer_converter" />
+					<tocitem text="Boolean Converter" target="projrave_ui_elements_palette_jsf-val-conv_boolean_converter" />
+					<tocitem text="Byte Converter" target="projrave_ui_elements_palette_jsf-val-conv_byte_converter" />
+					<tocitem text="Calendar Converter" target="projrave_ui_elements_palette_jsf-val-conv_calendar_converter" />
+					<tocitem text="Character Converter" target="projrave_ui_elements_palette_jsf-val-conv_char_converter" />
+					<tocitem text="Date Time Converter" target="projrave_ui_elements_palette_jsf-val-conv_date_time_converter" />
+					<tocitem text="Double Converter" target="projrave_ui_elements_palette_jsf-val-conv_double_converter" />
+					<tocitem text="Enum Converter" target="projrave_ui_elements_palette_jsf-val-conv_enum_converter" />
+					<tocitem text="Float Converter" target="projrave_ui_elements_palette_jsf-val-conv_float_converter" />
+					<tocitem text="Integer Converter" target="projrave_ui_elements_palette_jsf-val-conv_integer_converter" />
+					<tocitem text="Long Converter" target="projrave_ui_elements_palette_jsf-val-conv_long_converter" />
+					<tocitem text="Number Converter" target="projrave_ui_elements_palette_jsf-val-conv_number_converter" />
+					<tocitem text="Short Converter" target="projrave_ui_elements_palette_jsf-val-conv_short_converter" />
+					<tocitem text="SQL Date Converter" target="projrave_ui_elements_palette_jsf-val-conv_sql_date_converter" />
+					<tocitem text="SQL Time Converter" target="projrave_ui_elements_palette_jsf-val-conv_sql_time_converter" />
+					<tocitem text="SQL Timestamp Converter" target="projrave_ui_elements_palette_jsf-val-conv_sql_timestamp_converter" />
+				</tocitem>
+				<tocitem text="Advanced Components">
+					<tocitem text="Encoding Component" target="projrave_ui_elements_palette_jsf-val-conv_set_encoding_component" />
+					<tocitem text="Faces Action Listener Component" target="projrave_ui_elements_palette_jsf-val-conv_f_actionlistener" />
+					<tocitem text="Faces Converter Component" target="projrave_ui_elements_palette_jsf-val-conv_f_converter" />
+					<tocitem text="Faces Validator Component" target="projrave_ui_elements_palette_jsf-val-conv_f_validator" />
+					<tocitem text="Faces Value Change Listener Component" target="projrave_ui_elements_palette_jsf-val-conv_f_valuechangelistener" />
+					<tocitem text="Faces Verbatim Component" target="projrave_ui_elements_palette_jsf-val-conv_f_verbatim" />
+					<tocitem text="Link Component" target="projrave_ui_elements_palette_bh_link" />
+					<tocitem text="Load Bundle Component" target="projrave_ui_elements_palette_jsf-val-conv_f_loadbundle" />
+					<tocitem text="Markup Component" target="projrave_ui_elements_palette_bh_markup" />
+					<tocitem text="Meta Component (JSF 1.1)" target="projrave_ui_elements_palette_bh_meta" />
+					<tocitem text="Meta Component (JSF 1.2)" target="projrave_ui_elements_palette_wdstk-jsf1.2_meta" />
+					<tocitem text="Parameter Component" target="projrave_ui_elements_palette_jsf-val-conv_f_param" />
+					<tocitem text="Script Component (JSF 1.1)" target="projrave_ui_elements_palette_bh_script" />
+					<tocitem text="Script Component (JSF 1.2)" target="projrave_ui_elements_palette_wdstk-jsf1.2_script" />
+				</tocitem>
+				<tocitem text="Data Providers">
+					<tocitem text="Cached Rowset Data Provider" target="projrave_ui_elements_palette_dataproviders_cachedrowset_dp" />
+					<tocitem text="List Data Provider" target="projrave_ui_elements_palette_dataproviders_list_dp" />
+					<tocitem text="Map Data Provider" target="projrave_ui_elements_palette_dataproviders_map_dp" />
+					<tocitem text="Object Array Data Provider" target="projrave_ui_elements_palette_dataproviders_object_array_dp" />
+					<tocitem text="Object Data Provider" target="projrave_ui_elements_palette_dataproviders_object_dp" />
+					<tocitem text="Object List Data Provider" target="projrave_ui_elements_palette_dataproviders_object_list_dp" />
+				</tocitem>
+			</tocitem>
+			<tocitem text="Property Editors">
+				<tocitem text="imageURL Property Editor" target="projrave_ui_elements_propeditors_imageurl_prop_ed" />
+				<tocitem text="Page Properties" target="projrave_ui_elements_propsheets_page_props" />
+				<tocitem text="Style Editor" target="projrave_ui_elements_propeditors_style_prop_ed_main" />
+				<tocitem text="styleClass Property Editor" target="projrave_ui_elements_propeditors_styleclass_prop_ed" />
+				<tocitem text="URL Property Editor" target="projrave_ui_elements_propeditors_url_prop_ed" />
+				<tocitem text="urlLang / lang Property Editor" target="projrave_ui_elements_propeditors_lang_domain_prop_ed" />
+			</tocitem>
+			<tocitem text="Runtime Window" expand="true">
+				<tocitem text="Run Query Document Window" target="projrave_ui_elements_server_nav_run_query" />
+				<tocitem text="Servers Node" target="projrave_ui_elements_server_nav_deployment_srvrnode" />
+				<tocitem text="Dialog Boxes">
+					<tocitem text="Add New Data Provider With Rowset Dialog Box" target="projrave_ui_elements_server_nav_add_new_data_provider" />
+					<tocitem text="Edit Database Server Types Dialog Box" target="projrave_ui_elements_dialogs_new_jdbc_driver_db" />
+					<tocitem text="Modify Data Source Dialog Box" target="projrave_ui_elements_dialogs_add_database_conn_db" />
+					<tocitem text="Run Query Options Dialog Box" target="projrave_ui_elements_server_nav_run_query_options_dialog" />
+				</tocitem>
+			</tocitem>
+			<tocitem text="Dialog Boxes: General" mergetype="javax.help.SortMerge" expand="false">
+				<tocitem text="Add Data Provider" target="projrave_ui_elements_server_nav_add_new_data_provider" />
+				<tocitem text="Add Query Criteria" target="projrave_ui_elements_dialogs_add_query_criteria" />
+				<tocitem text="Bind to Data: List Components" target="projrave_ui_elements_dialogs_bindtodata_list_db" />
+				<tocitem text="Bind to Data: Simple Components" target="projrave_ui_elements_dialogs_bindtodata_simple_db" />
+				<tocitem text="Bind to Data: Table Components" target="projrave_ui_elements_dialogs_bindtodata_table_db" />
+				<tocitem text="Add Component Library" target="projrave_ui_elements_dialogs_add_complib" />
+				<tocitem text="Component Library Manager" target="projrave_ui_elements_dialogs_component_library_manager" />
+				<tocitem text="Configure Virtual Forms" target="projrave_ui_elements_dialogs_config_virtual_forms_db" />
+				<tocitem text="Delete Component Library Dialog Box" target="projrave_ui_elements_dialogs_delete_component_lib_db" />
+				<tocitem text="Edit Database Types" target="projrave_ui_elements_dialogs_edit_database_types_db" />
+				<tocitem text="Find" target="projrave_ui_elements_dialogs_findinfiles" />
+				<tocitem text="Import Components" target="projrave_ui_elements_dialogs_import_components_db" />
+				<tocitem text="New Database Connection" target="projrave_ui_elements_dialogs_new_database_connection_db" />
+				<tocitem text="New JDBC Driver" target="projrave_ui_elements_dialogs_new_jdbc_driver_db" />
+				<tocitem text="Resolve Data Source(s)" target="projrave_ui_elements_dialogs_resolve_data_source_db" />
+				<tocitem text="Table Layout" target="projrave_ui_elements_dialogs_data_table_layout_db" />
+				<tocitem text="Theme Switch Informational Dialog Box" target="projrave_ui_elements_dialogs_theme_switch_info_db" />
+				<tocitem text="Virtual Forms" target="projrave_ui_elements_dialogs_virtual_forms_db" />
+				<tocitem text="Add Database Connection" target="projrave_ui_elements_dialogs_add_database_conn_db" />
+			</tocitem>
+			<tocitem text="Options Window" expand="false">
+				<tocitem text="Advanced Options">
+					<tocitem text="Data Source Drag and Drop" target="projrave_ui_elements_options_options_data_source_dnd" />
+					<tocitem text="Visual Designer" target="projrave_ui_elements_options_visual_editor" />
+				</tocitem>
+			</tocitem>
+		</tocitem>
+	</tocitem>
+</toc>

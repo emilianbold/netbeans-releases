@@ -1,0 +1,744 @@
+/*
+ * JPanel.java
+ *
+ * Created on May 5, 2004, 11:06 AM
+ */
+
+package org.netbeans.modules.visualweb.ejb.ui;
+
+import org.netbeans.modules.visualweb.ejb.datamodel.EjbContainerVendor;
+import org.netbeans.modules.visualweb.ejb.datamodel.EjbDataModel;
+import org.netbeans.modules.visualweb.ejb.datamodel.EjbGroup;
+import java.io.File;
+import java.util.*;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
+import org.openide.util.NbBundle;
+import org.openide.modules.InstalledFileLocator;
+
+/**
+ * This class defines the panel for the user to input the Ejb Group data.
+ *
+ * @author  cao
+ */
+public class EjbGroupPanel extends javax.swing.JPanel      
+{
+    // Pointing to the <INSTALL_DIR>/samples/ejb/client-jars dir by default
+    private static File DEFAULT_CURRENT_JAR_DIR_FILE = InstalledFileLocator.getDefault().locate("samples/ejb/client-jars", null, false ); // NOI18N
+    
+    private boolean isNewCreation = true;
+    
+    public EjbGroupPanel(EjbGroup group)
+    {
+        initComponents();
+        setName( NbBundle.getMessage(EjbGroupPanel.class, "ADD_EJB_GROUP" ) );
+        
+        containerTypeCombo.setModel( new javax.swing.DefaultComboBoxModel( EjbContainerVendor.getContainerTypeNames() ) );
+        ClientJarFileListModel listModel = new ClientJarFileListModel();
+        
+        if( group == null )
+        {
+            String initName = EjbDataModel.getInstance().getAUniqueName( "DeployedEjbApp" ); // I18N???
+            groupNameTextField.setText( initName );
+        }
+        else
+        {
+            isNewCreation = false;
+            
+            groupNameTextField.setText( group.getName() );
+            serverHostTextField.setText( group.getServerHost() );
+            iiopPortTextField.setText( Integer.toString( group.getIIOPPort() ) );
+            containerTypeCombo.setSelectedItem( group.getAppServerVendor() );
+            ddLocTextField.setText( group.getDDLocationFile() );
+            
+            // Populate the client jar list
+            for( Iterator iter = group.getClientJarFiles().iterator(); iter.hasNext(); )
+            {
+                listModel.addJarFile( (String)iter.next() );
+            }
+            
+            removeClientJarButton.setEnabled( true );
+        }
+        
+        clientJarsList.setModel( listModel );
+    }
+    
+    public EjbGroupPanel() 
+    {   
+        this( null );
+    }
+    
+    public String getGroupName()
+    {
+        return groupNameTextField.getText().trim();
+    }
+    
+    public ArrayList getClientJars()
+    {
+        //return clientJarTextField.getText().trim();
+        ArrayList fileNames = new ArrayList();
+        for( int i = 0; i < clientJarsList.getModel().getSize(); i ++ )
+        {
+            fileNames.add( clientJarsList.getModel().getElementAt( i ) );
+        }
+        
+        return fileNames;
+    }
+    
+    public String getDDLocationFile()
+    {
+        if( ddLocTextField.getText() != null && ddLocTextField.getText().trim().length() != 0 )
+            return ddLocTextField.getText().trim();
+        else
+            return null;
+    }
+    
+    public String getContainerType()
+    {
+        return (String)containerTypeCombo.getSelectedItem();
+    }
+    
+    public String getServerHost()
+    {
+        return serverHostTextField.getText().trim();
+    }
+    
+    public String getIIOPPort()
+    {
+        return iiopPortTextField.getText().trim();
+    }
+    
+    public boolean validateData( StringBuffer errorMsg )
+    {
+        // Make sure all the required fields are not empty and valid
+        
+        boolean valid = true;
+        
+        if( getGroupName() == null || getGroupName().length() == 0 )
+        {
+            if( valid )
+            {
+                groupNameTextField.requestFocus();
+                valid = false;
+            }
+            
+            errorMsg.append( NbBundle.getMessage(AddEjbGroupDialog.class, "EMPTY_GROUP_NAME") );
+            errorMsg.append( "\n" );
+        }
+        // Check uniqueness if modifying an existing group
+        else if( !isNewCreation && EjbDataModel.getInstance().getEjbGroup( getGroupName() ) != null )
+        {
+            if( valid )
+            {
+                groupNameTextField.requestFocus();
+                groupNameTextField.selectAll();
+                valid = false;
+            }
+            
+            errorMsg.append( NbBundle.getMessage(AddEjbGroupDialog.class, "NAME_NOT_UNIQUE", "\'" + getGroupName() + "\'") );
+            errorMsg.append( "\n" );
+        }
+        
+        if( getContainerType() == null || getContainerType().length() == 0 )
+        {
+            if( valid )
+            {
+                containerTypeCombo.requestFocus();
+                valid = false;
+            }
+            
+            errorMsg.append( NbBundle.getMessage(AddEjbGroupDialog.class, "EMPTY_APP_SERVER") );
+            errorMsg.append( "\n" );
+        }
+        
+        if( getServerHost() == null || getServerHost().length() == 0 )
+        {
+            if( valid )
+            {
+                serverHostTextField.requestFocus();
+                valid = false;
+            }
+            
+            errorMsg.append( NbBundle.getMessage(AddEjbGroupDialog.class, "EMPTY_SERVER_HOST") );
+            errorMsg.append( "\n" );
+        }
+        else if( getServerHost().indexOf( ' ' ) != -1  )
+        {
+            // Can not contain spaces
+            if( valid )
+            {
+                serverHostTextField.requestFocus();
+                serverHostTextField.selectAll();
+                valid = false;
+            }
+            
+            errorMsg.append( NbBundle.getMessage(AddEjbGroupDialog.class, "SPACES_IN_SERVER_HOST", "\'" + getServerHost() + "\'" ) );
+            errorMsg.append( "\n" );
+        }
+        
+        if( getIIOPPort() == null || getIIOPPort().length() == 0 )
+        {
+            if( valid )
+            {
+                iiopPortTextField.requestFocus();
+                valid = false;
+            }
+            
+            errorMsg.append( NbBundle.getMessage(AddEjbGroupDialog.class, "EMPTY_IIOP_PORT") );
+            errorMsg.append( "\n" );
+        }
+        else
+        {
+            // Make it is a number
+            try
+            {
+                int portNum = Integer.parseInt( getIIOPPort() );
+            }
+            catch( NumberFormatException ex )
+            {
+                if( valid )
+                {
+                    iiopPortTextField.requestFocus();
+                    iiopPortTextField.selectAll();
+                    valid = false;
+                }
+                
+                errorMsg.append( NbBundle.getMessage(AddEjbGroupDialog.class, "IIOP_PORT_NOT_NUMBER") );
+                errorMsg.append( "\n" );
+            }
+        }
+        
+        if( getClientJars() == null || getClientJars().size() == 0 )
+        {
+            if( valid )
+            {
+                clientJarsList.requestFocus();
+                valid = false;
+            }
+            
+            errorMsg.append( NbBundle.getMessage(AddEjbGroupDialog.class, "EMPTY_CLIENT_JAR") );
+            errorMsg.append( "\n" );
+        }
+        else
+        {
+            // Make sure they are existed
+            for( Iterator iter = getClientJars().iterator(); iter.hasNext(); )
+            {
+                String jar = (String)iter.next();
+                if( !(new File(jar)).exists() )
+                {
+                    if( valid ) 
+                    {
+                        clientJarsList.requestFocus();
+                        valid = false;
+                    }
+                    
+                    errorMsg.append( NbBundle.getMessage(AddEjbGroupDialog.class, "CLIENT_JAR_NOT_EXIST", jar) );
+                    errorMsg.append( "\n" );
+                }
+            }
+        }
+        
+        // Make sure the dd location file is existed if the user has specified one
+        if( getDDLocationFile() != null && getDDLocationFile().length() != 0 ) {
+            if( !(new File(getDDLocationFile())).exists() ) 
+            {
+                if( valid ) 
+                {
+                    ddLocTextField.requestFocus();
+                    ddLocTextField.selectAll();
+                    valid = false;
+                }
+            
+                errorMsg.append( NbBundle.getMessage(AddEjbGroupDialog.class, "DD_FILE_NOT_EXIST", getDDLocationFile()) );
+                errorMsg.append( "\n" );
+            }
+        }
+
+        return valid;
+    }
+    
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
+
+        groupNameLabel = new javax.swing.JLabel();
+        groupNameTextField = new javax.swing.JTextField();
+        containerTypeLabel = new javax.swing.JLabel();
+        containerTypeCombo = new javax.swing.JComboBox();
+        serverHostLabel = new javax.swing.JLabel();
+        serverHostTextField = new javax.swing.JTextField();
+        iiopPortLabel = new javax.swing.JLabel();
+        iiopPortTextField = new javax.swing.JTextField();
+        ddLocLabel1 = new javax.swing.JLabel();
+        ddLocLabel2 = new javax.swing.JLabel();
+        ddLocTextField = new javax.swing.JTextField();
+        ddLocButton = new javax.swing.JButton();
+        clientJarsLabel = new javax.swing.JLabel();
+        clientJarScrollPane = new javax.swing.JScrollPane();
+        clientJarsList = new javax.swing.JList();
+        cleintJarButtonPanel = new javax.swing.JPanel();
+        addClientJarButton = new javax.swing.JButton();
+        removeClientJarButton = new javax.swing.JButton();
+
+        setLayout(new java.awt.GridBagLayout());
+
+        setMinimumSize(new java.awt.Dimension(510, 292));
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EjbGroupPanel.class, "ADD_EJB_GROUP"));
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EjbGroupPanel.class, "ADD_EJB_GROUP"));
+        groupNameLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(EjbGroupPanel.class, "EJB_GROUP_NAME_MNEMONIC").charAt(0));
+        groupNameLabel.setLabelFor(groupNameTextField);
+        groupNameLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("EJB_GROUP_NAME_LABEL"));
+        groupNameLabel.setPreferredSize(new java.awt.Dimension(20, 15));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 23;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        add(groupNameLabel, gridBagConstraints);
+        groupNameLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("EJB_GROUP_NAME_DESC"));
+
+        groupNameTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                groupNameTextFieldActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 159;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 2, 0);
+        add(groupNameTextField, gridBagConstraints);
+        groupNameTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("EJB_GROUP_NAME_DESC"));
+
+        containerTypeLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(EjbGroupPanel.class, "APP_SERVER_LABEL1_MNEMONIC").charAt(0));
+        containerTypeLabel.setLabelFor(containerTypeCombo);
+        containerTypeLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("APP_SERVER_LABEL1"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 8;
+        gridBagConstraints.ipady = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        add(containerTypeLabel, gridBagConstraints);
+        containerTypeLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("APP_SERVER_DESC"));
+
+        containerTypeCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                containerTypeComboActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 159;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        add(containerTypeCombo, gridBagConstraints);
+        containerTypeCombo.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("APP_SERVER_DESC"));
+
+        serverHostLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(EjbGroupPanel.class, "SERVER_HOST_MNEMONIC").charAt(0));
+        serverHostLabel.setLabelFor(serverHostTextField);
+        serverHostLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("SERVER_HOST_LABEL"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 49;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        add(serverHostLabel, gridBagConstraints);
+        serverHostLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("SERVER_HOST_DESC"));
+
+        serverHostTextField.setText("localhost");
+        serverHostTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                serverHostTextFieldActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 159;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        add(serverHostTextField, gridBagConstraints);
+        serverHostTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("SERVER_HOST_DESC"));
+
+        iiopPortLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(EjbGroupPanel.class, "IIOP_PORT_MNEMONIC").charAt(0));
+        iiopPortLabel.setLabelFor(iiopPortTextField);
+        iiopPortLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("IIOP_PORT_LABEL"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 36;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        add(iiopPortLabel, gridBagConstraints);
+        iiopPortLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("IIOP_PORT_DESC"));
+
+        iiopPortTextField.setText("3700");
+        iiopPortTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                iiopPortTextFieldActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 159;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
+        add(iiopPortTextField, gridBagConstraints);
+        iiopPortTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("IIOP_PORT_DESC"));
+
+        ddLocLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(EjbGroupPanel.class, "DEPLOYMENT_DESCRIPTOR_LOCATION_MNEMONIC").charAt(0));
+        ddLocLabel1.setLabelFor(ddLocTextField);
+        ddLocLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("DEPLOYMENT_DESCRIPTOR_LOCATION_LABEL1"));
+        ddLocLabel1.setDoubleBuffered(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        add(ddLocLabel1, gridBagConstraints);
+        ddLocLabel1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("DEPLOYMENT_DESCRIPTOR_LOCATION_DESC"));
+
+        ddLocLabel2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("DEPLOYMENT_DESCRIPTOR_LOCATION_LABEL2"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 15;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        add(ddLocLabel2, gridBagConstraints);
+
+        ddLocTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ddLocTextFieldActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 16;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        add(ddLocTextField, gridBagConstraints);
+        ddLocTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("DEPLOYMENT_DESCRIPTOR_LOCATION_DESC"));
+
+        ddLocButton.setMnemonic(org.openide.util.NbBundle.getMessage(EjbGroupPanel.class, "BROWSE_DD_BUTTON_MNEMONIC").charAt(0));
+        ddLocButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("BROWSE_DD_BUTTON_LABEL"));
+        ddLocButton.setActionCommand("Select");
+        ddLocButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ddLocButtonActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 16;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 10);
+        add(ddLocButton, gridBagConstraints);
+        ddLocButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("BROWSE_DD_BUTTON_DESC"));
+
+        clientJarsLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(EjbGroupPanel.class, "CLIENT_JAR_FILE_MNEMONIC").charAt(0));
+        clientJarsLabel.setLabelFor(clientJarsList);
+        clientJarsLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("CLIENT_JAR_FILE_LABEL"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.ipadx = 53;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        add(clientJarsLabel, gridBagConstraints);
+        clientJarsLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("CLIENT_JAR_DESC"));
+
+        clientJarScrollPane.setMinimumSize(new java.awt.Dimension(260, 60));
+        clientJarScrollPane.setPreferredSize(new java.awt.Dimension(260, 60));
+        clientJarsList.setMaximumSize(new java.awt.Dimension(500, 500));
+        clientJarsList.setMinimumSize(new java.awt.Dimension(260, 132));
+        clientJarsList.setPreferredSize(new java.awt.Dimension(100, 50));
+        clientJarScrollPane.setViewportView(clientJarsList);
+        clientJarsList.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("CLIENT_JAR_DESC"));
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        add(clientJarScrollPane, gridBagConstraints);
+
+        cleintJarButtonPanel.setLayout(new java.awt.GridLayout(2, 1, 0, 5));
+
+        addClientJarButton.setMnemonic(org.openide.util.NbBundle.getMessage(EjbGroupPanel.class, "ADD_CLIENT_JAR_BUTTON_MNEMONIC").charAt(0));
+        addClientJarButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("ADD_CLIENT_JAR_BUTTON_LABEL"));
+        addClientJarButton.setActionCommand("Add");
+        addClientJarButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addClientJarButtonActionPerformed(evt);
+            }
+        });
+
+        cleintJarButtonPanel.add(addClientJarButton);
+        addClientJarButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("ADD_CLIENT_JAR_BUTTON_DESC"));
+
+        removeClientJarButton.setMnemonic(org.openide.util.NbBundle.getMessage(EjbGroupPanel.class, "REMOVE_CLIENT_JAR_BUTTON_MNEMONIC").charAt(0));
+        removeClientJarButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("REMOVE_CLIENT_JAR_BUTTON_LABEL"));
+        removeClientJarButton.setEnabled(false);
+        removeClientJarButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeClientJarButtonActionPerformed(evt);
+            }
+        });
+
+        cleintJarButtonPanel.add(removeClientJarButton);
+        removeClientJarButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("REMOVE_CLIENT_JAR_BUTTON_DESC"));
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 10);
+        add(cleintJarButtonPanel, gridBagConstraints);
+
+    }
+    // </editor-fold>//GEN-END:initComponents
+
+    private void removeClientJarButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeClientJarButtonActionPerformed
+        Object[] selectedFiles = clientJarsList.getSelectedValues();
+        for( int i = 0; i < selectedFiles.length; i ++ )
+        {
+            ((ClientJarFileListModel)clientJarsList.getModel()).removeElement( selectedFiles[i] );
+        }
+        
+        // Enable the remove button if there are jars in the list
+        if( clientJarsList.getModel().getSize() > 0 )
+            removeClientJarButton.setEnabled( true );
+        else
+            removeClientJarButton.setEnabled( false );
+        
+    }//GEN-LAST:event_removeClientJarButtonActionPerformed
+
+    private void addClientJarButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addClientJarButtonActionPerformed
+        // Pop up FileChooser to let the user select a .ear or .jar file where
+        // the EJB deployment descriptors are contained
+        
+        JFileChooser clientJarFileChooser = org.netbeans.modules.visualweb.extension.openide.awt.JFileChooser_RAVE.getJFileChooser();
+        clientJarFileChooser.setMultiSelectionEnabled( true );
+        clientJarFileChooser.setFileFilter( new JarFileFilter( true ) );
+        clientJarFileChooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
+        
+        // Set the current directory -- WHERE ???
+        File curDir =  DEFAULT_CURRENT_JAR_DIR_FILE;
+        
+        clientJarFileChooser.setCurrentDirectory( curDir );
+        
+        int returnVal = clientJarFileChooser.showOpenDialog( this );
+        
+        if( returnVal == JFileChooser.APPROVE_OPTION ) 
+        {
+            File[] files = clientJarFileChooser.getSelectedFiles();
+            
+            for( int i = 0; i < files.length; i ++ )
+            {
+                // Add the selected file to the client jars list
+                ClientJarFileListModel listModel = (ClientJarFileListModel)clientJarsList.getModel();
+                listModel.addJarFile( files[i].getPath() );
+                
+                // Default dir to the last selection
+                if( i == 0 )
+                    DEFAULT_CURRENT_JAR_DIR_FILE = files[i].getParentFile();
+            }
+        } 
+        
+        // Enable the remove button if there are jars in the list
+        if( clientJarsList.getModel().getSize() > 0 )
+            removeClientJarButton.setEnabled( true );
+        else
+            removeClientJarButton.setEnabled( false );
+    }//GEN-LAST:event_addClientJarButtonActionPerformed
+
+    private void ddLocButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddLocButtonActionPerformed
+        // Pop up FileChooser to let the user select a .ear or .jar file where
+        // the EJB deployment descriptors are contained
+        
+        JFileChooser ddFileChooser = com.sun.rave.extension.openide.awt.JFileChooser_RAVE.getJFileChooser();
+        ddFileChooser.setMultiSelectionEnabled( false );
+        ddFileChooser.setFileFilter( new JarFileFilter( false ) );
+        ddFileChooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
+        
+        // TODO what should the defualt current directory be?
+        
+        // Set the current directory
+        // If the user has a client file specified already, then we'll
+        // start from the that directory. Otherwise, use the default 
+        // directory
+        File curDir = null;
+        if( getDDLocationFile() != null && getDDLocationFile().length() != 0 )
+            curDir = new File( getDDLocationFile() );
+        
+        if( curDir == null )
+            curDir = DEFAULT_CURRENT_JAR_DIR_FILE;
+        
+        ddFileChooser.setCurrentDirectory( curDir );
+        
+        int returnVal = ddFileChooser.showOpenDialog( this );
+        
+        if( returnVal == JFileChooser.APPROVE_OPTION ) 
+        {
+            File file = ddFileChooser.getSelectedFile();
+            ddLocTextField.setText( file.getAbsolutePath() );
+            
+            // Default dir to the last selection
+            DEFAULT_CURRENT_JAR_DIR_FILE = file.getParentFile();
+        } 
+    }//GEN-LAST:event_ddLocButtonActionPerformed
+
+    private void ddLocTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddLocTextFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_ddLocTextFieldActionPerformed
+
+    private void iiopPortTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_iiopPortTextFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_iiopPortTextFieldActionPerformed
+
+    private void serverHostTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverHostTextFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_serverHostTextFieldActionPerformed
+
+    private void containerTypeComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_containerTypeComboActionPerformed
+        // Display different default port for different app server
+        JComboBox cb = (JComboBox)evt.getSource();
+        String serverType = (String)cb.getSelectedItem();
+        int defaultPort = EjbContainerVendor.getDefaultPort( serverType );
+        iiopPortTextField.setText( Integer.toString(defaultPort ) );
+        
+    }//GEN-LAST:event_containerTypeComboActionPerformed
+
+    private void groupNameTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_groupNameTextFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_groupNameTextFieldActionPerformed
+    
+    
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addClientJarButton;
+    private javax.swing.JPanel cleintJarButtonPanel;
+    private javax.swing.JScrollPane clientJarScrollPane;
+    private javax.swing.JLabel clientJarsLabel;
+    private javax.swing.JList clientJarsList;
+    private javax.swing.JComboBox containerTypeCombo;
+    private javax.swing.JLabel containerTypeLabel;
+    private javax.swing.JButton ddLocButton;
+    private javax.swing.JLabel ddLocLabel1;
+    private javax.swing.JLabel ddLocLabel2;
+    private javax.swing.JTextField ddLocTextField;
+    private javax.swing.JLabel groupNameLabel;
+    private javax.swing.JTextField groupNameTextField;
+    private javax.swing.JLabel iiopPortLabel;
+    private javax.swing.JTextField iiopPortTextField;
+    private javax.swing.JButton removeClientJarButton;
+    private javax.swing.JLabel serverHostLabel;
+    private javax.swing.JTextField serverHostTextField;
+    // End of variables declaration//GEN-END:variables
+    
+}
+
+/**
+ * Filter file selection so only .jar files are shown
+ */
+class JarFileFilter extends FileFilter {
+
+        public final static String JAR_EXT = "jar"; // NOI18N
+        public final static String EAR_EXT = "ear"; // NOI18N
+        
+        private boolean jarOnly = true;
+        
+        public JarFileFilter( boolean jarOnly )
+        {
+            this.jarOnly = jarOnly;
+        }
+
+        /** Allow directories and jar files
+         */
+        public boolean accept( File file ) 
+        {
+            if( file.isDirectory() ) 
+            {
+                return true;
+            }
+
+            String extension = getExtension( file );
+            if (extension != null) {
+                if( jarOnly && extension.equalsIgnoreCase( JAR_EXT ) ) 
+                {
+                    return true;
+                } 
+                else if( !jarOnly && (extension.equalsIgnoreCase( JAR_EXT ) || extension.equalsIgnoreCase( EAR_EXT ) ) )
+                {
+                    return true;
+                }
+                else
+                    return false;
+            }
+
+            return false;
+        }
+
+        public String getExtension( File file ) 
+        {
+            String ext = null;
+            String fileName = file.getName();
+            int index = fileName.lastIndexOf( '.' );
+
+            if( index > 0 &&  index < fileName.length() - 1 ) 
+            {
+                ext = fileName.substring(index+1).toLowerCase();
+            }
+            return ext;
+        }
+
+        /** The description of this filter */
+        public String getDescription() {
+            if( jarOnly )
+                return "JAR Files (.jar)";
+            else
+                return "EAR or JAR Files (.ear or .jar)";
+        }
+    }

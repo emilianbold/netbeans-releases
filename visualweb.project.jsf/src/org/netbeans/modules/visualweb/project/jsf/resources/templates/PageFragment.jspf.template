@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<div style="-rave-layout: grid; width: 400px; height: 200px" xmlns:f="http://java.sun.com/jsf/core" >
+  <f:subview id="__NAME__">
+  </f:subview>
+</div>

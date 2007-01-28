@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="CreatorJspPalette">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.webui.designtime.resources.Bundle"/>
+        
+        <folder name="JavaScript">            
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsfloader.codeclips.Bundle"/>
+            <attr name="isExpanded" boolvalue="true"/>
+            <attr name="isReadonly" boolvalue="true"/>
+            
+            <!-- Ordering -->
+            <attr name="SetCookie.xml/GetCookie.xml" boolvalue="true"/>  
+            <attr name="GetCookie.xml/CurrentDate.xml" boolvalue="true"/>  
+            <!-- End Ordering -->
+            
+            <file name="CurrentDate.xml" url="codeclips/CurrentDate.xml"/>
+            <file name="GetCookie.xml" url="codeclips/GetCookie.xml"/>
+            <file name="SetCookie.xml" url="codeclips/SetCookie.xml"/>
+        </folder>
+    </folder>
+    
+    <folder name="CreatorJavaPalette">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsfloader.codeclips.Bundle"/>
+        <attr name="ApplicationData/WebAppFunctions" boolvalue="true"/>
+        <attr name="WebAppFunctions/JavaBasics" boolvalue="true"/>        
+        
+        <folder name="ApplicationData">    
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsfloader.codeclips.Bundle"/>
+            <attr name="isExpanded" boolvalue="true"/>
+            <attr name="isReadonly" boolvalue="true"/>
+            
+            <!-- Ordering -->
+            <attr name="RetValFromSession.xml/StoreValInSession.xml" boolvalue="true"/>     
+            <attr name="StoreValInSession.xml/RetValFromApplication.xml" boolvalue="true"/> 
+            <attr name="RetValFromApplication.xml/StoreValInApplication.xml" boolvalue="true"/> 
+            <attr name="StoreValInApplication.xml/RetValFromRequest.xml" boolvalue="true"/> 
+            <attr name="RetValFromRequest.xml/StoreValInRequest.xml" boolvalue="true"/> 
+            <!-- End Ordering -->
+        
+            <file name="RetValFromSession.xml" url="codeclips/RetValFromSession.xml"/>
+            <file name="StoreValInSession.xml" url="codeclips/StoreValInSession.xml"/>
+            <file name="RetValFromApplication.xml" url="codeclips/RetValFromApplication.xml"/>
+            <file name="StoreValInApplication.xml" url="codeclips/StoreValInApplication.xml"/>
+            <file name="RetValFromRequest.xml" url="codeclips/RetValFromRequest.xml"/>
+            <file name="StoreValInRequest.xml" url="codeclips/StoreValInRequest.xml"/>
+        </folder>
+        <folder name="WebAppFunctions">   
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsfloader.codeclips.Bundle"/>
+            <attr name="isExpanded" boolvalue="true"/>
+            <attr name="isReadonly" boolvalue="true"/>
+            
+            <!-- Ordering -->
+            <attr name="SendEmail.xml/LogMessages.xml" boolvalue="true"/>  
+            <!-- End Ordering -->
+           
+            <file name="LogMessages.xml" url="codeclips/LogMessages.xml"/>
+            <file name="SendEmail.xml" url="codeclips/SendEmail.xml"/>
+        </folder>
+        
+        <folder name="JavaBasics">   
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsfloader.codeclips.Bundle"/>
+            <attr name="isExpanded" boolvalue="true"/>
+            <attr name="isReadonly" boolvalue="true"/>
+            
+            <!-- Ordering -->
+            <attr name="AccessJavaBean.xml/IfThenElse.xml" boolvalue="true"/>  
+            <attr name="IfThenElse.xml/SwitchStatement.xml" boolvalue="true"/> 
+            <attr name="SwitchStatement.xml/ForLoop.xml" boolvalue="true"/>  
+            <attr name="ForLoop.xml/WhileLoop.xml" boolvalue="true"/>  
+            <attr name="WhileLoop.xml/Iterator.xml" boolvalue="true"/>  
+            <attr name="Iterator.xml/TryCatchException.xml" boolvalue="true"/>  
+            <attr name="TryCatchException.xml/ConcatenateStrings.xml" boolvalue="true"/>  
+            <attr name="ConcatenateStrings.xml/CompareSubStrings.xml" boolvalue="true"/>  
+            <attr name="CompareSubStrings.xml/ConvertIntegerString.xml" boolvalue="true"/>  
+            <attr name="ConvertIntegerString.xml/ConvertStringInteger.xml" boolvalue="true"/>  
+            <!-- End Ordering -->
+            
+            <file name="AccessJavaBean.xml" url="codeclips/AccessJavaBean.xml"/>
+            <file name="CompareSubStrings.xml" url="codeclips/CompareSubStrings.xml"/>
+            <file name="ConcatenateStrings.xml" url="codeclips/ConcatenateStrings.xml"/>
+            <file name="ConvertIntegerString.xml" url="codeclips/ConvertIntegerString.xml"/>
+            <file name="ConvertStringInteger.xml" url="codeclips/ConvertStringInteger.xml"/>
+            <file name="ForLoop.xml" url="codeclips/ForLoop.xml"/>
+            <file name="IfThenElse.xml" url="codeclips/IfThenElse.xml"/>
+            <file name="Iterator.xml" url="codeclips/Iterator.xml"/>
+            <file name="SwitchStatement.xml" url="codeclips/SwitchStatement.xml"/>
+            <file name="TryCatchException.xml" url="codeclips/TryCatchException.xml"/>
+            <file name="WhileLoop.xml" url="codeclips/WhileLoop.xml"/>
+        </folder>
+    </folder>
+    <folder name="CreatorJavaPalette5">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsfloader.codeclips.Bundle"/>
+        <attr name="ApplicationData/WebAppFunctions" boolvalue="true"/>
+        <attr name="WebAppFunctions/JavaBasics" boolvalue="true"/>        
+        
+        <folder name="ApplicationData">    
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsfloader.codeclips.Bundle"/>
+            <attr name="isExpanded" boolvalue="true"/>
+            <attr name="isReadonly" boolvalue="true"/>
+            
+            <!-- Ordering -->
+            <attr name="RetValFromSession.xml/StoreValInSession.xml" boolvalue="true"/>     
+            <attr name="StoreValInSession.xml/RetValFromApplication.xml" boolvalue="true"/> 
+            <attr name="RetValFromApplication.xml/StoreValInApplication.xml" boolvalue="true"/> 
+            <attr name="StoreValInApplication.xml/RetValFromRequest.xml" boolvalue="true"/> 
+            <attr name="RetValFromRequest.xml/StoreValInRequest.xml" boolvalue="true"/> 
+            <!-- End Ordering -->
+        
+            <file name="RetValFromSession.xml" url="codeclips/RetValFromSession.xml"/>
+            <file name="StoreValInSession.xml" url="codeclips/StoreValInSession.xml"/>
+            <file name="RetValFromApplication.xml" url="codeclips/RetValFromApplication.xml"/>
+            <file name="StoreValInApplication.xml" url="codeclips/StoreValInApplication.xml"/>
+            <file name="RetValFromRequest.xml" url="codeclips/RetValFromRequest.xml"/>
+            <file name="StoreValInRequest.xml" url="codeclips/StoreValInRequest.xml"/>
+        </folder>
+        <folder name="WebAppFunctions">   
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsfloader.codeclips.Bundle"/>
+            <attr name="isExpanded" boolvalue="true"/>
+            <attr name="isReadonly" boolvalue="true"/>
+            
+            <!-- Ordering -->
+            <attr name="SendEmail.xml/LogMessages.xml" boolvalue="true"/>  
+            <!-- End Ordering -->
+           
+            <file name="LogMessages.xml" url="codeclips/LogMessages.xml"/>
+            <file name="SendEmail.xml" url="codeclips/SendEmail.xml"/>
+        </folder>
+        
+        <folder name="JavaBasics">   
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.project.jsfloader.codeclips.Bundle"/>
+            <attr name="isExpanded" boolvalue="true"/>
+            <attr name="isReadonly" boolvalue="true"/>
+            
+            <!-- Ordering -->
+            <attr name="AccessJavaBean.xml/IfThenElse.xml" boolvalue="true"/>  
+            <attr name="IfThenElse.xml/SwitchStatement.xml" boolvalue="true"/> 
+            <attr name="SwitchStatement.xml/ForLoop.xml" boolvalue="true"/>  
+            <attr name="ForLoop5.xml/WhileLoop.xml" boolvalue="true"/>  
+            <attr name="WhileLoop.xml/Iterator.xml" boolvalue="true"/>  
+            <attr name="Iterator5.xml/TryCatchException.xml" boolvalue="true"/>  
+            <attr name="TryCatchException.xml/ConcatenateStrings.xml" boolvalue="true"/>  
+            <attr name="ConcatenateStrings.xml/CompareSubStrings.xml" boolvalue="true"/>  
+            <attr name="CompareSubStrings.xml/ConvertIntegerString.xml" boolvalue="true"/>  
+            <attr name="ConvertIntegerString.xml/ConvertStringInteger.xml" boolvalue="true"/>  
+            <!-- End Ordering -->
+            
+            <file name="AccessJavaBean.xml" url="codeclips/AccessJavaBean.xml"/>
+            <file name="CompareSubStrings.xml" url="codeclips/CompareSubStrings.xml"/>
+            <file name="ConcatenateStrings.xml" url="codeclips/ConcatenateStrings.xml"/>
+            <file name="ConvertIntegerString.xml" url="codeclips/ConvertIntegerString.xml"/>
+            <file name="ConvertStringInteger.xml" url="codeclips/ConvertStringInteger.xml"/>
+            <file name="ForLoop5.xml" url="codeclips/ForLoop5.xml"/>
+            <file name="IfThenElse.xml" url="codeclips/IfThenElse.xml"/>
+            <file name="Iterator5.xml" url="codeclips/Iterator5.xml"/>
+            <file name="SwitchStatement.xml" url="codeclips/SwitchStatement.xml"/>
+            <file name="TryCatchException.xml" url="codeclips/TryCatchException.xml"/>
+            <file name="WhileLoop.xml" url="codeclips/WhileLoop.xml"/>
+        </folder>
+    </folder>
+
+    <!-- Adjusting the actions shown on jsp object from web/core/src/org/netbeans/modules/web/core/resources/layer.xml -->
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-jsp">
+              <folder name="visual">
+                <folder name="Actions">
+                  <!-- <RAVE> Add Set As Start Page action -->
+                  <file name="SetStartPageAction.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.visualweb.project.jsf.actions.SetStartPageAction" />
+                  </file>
+                  <attr name="SetStartPageAction.instance/rave-separator-1.instance" boolvalue="true"/>
+                  <file name="rave-separator-1.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                  </file>
+                  <attr name="rave-separator-1.instance/OpenAction.instance" boolvalue="true"/>
+                  <!-- </RAVE> -->
+
+                  <file name="OpenAction.instance">
+                    <!-- <RAVE> Replacing the original open action instance by open designer impl -->
+                    <!-- <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction" /> -->
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.visualweb.project.jsfloader.JsfJspOpenAction" />
+                    <!-- </RAVE> -->
+                  </file>
+                  <attr boolvalue="true" name="OpenAction.instance/EditAction.instance" />
+                  <file name="EditAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.EditAction" />
+                  </file>
+                  <attr boolvalue="true" name="EditAction.instance/jsp-project-separator-3.instance" />
+                  <file name="jsp-project-separator-3.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                  </file>
+                  <attr boolvalue="true" name="jsp-project-separator-3.instance/FileSystemAction.instance" />
+                  <file name="FileSystemAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction" />
+                  </file>
+                  <attr boolvalue="true" name="FileSystemAction.instance/jsp-project-separator-4.instance" />
+                  <file name="jsp-project-separator-4.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                  </file>
+                  <attr boolvalue="true" name="jsp-project-separator-4.instance/CutAction.instance" />
+                  <file name="CutAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.CutAction" />
+                  </file>
+                  <attr boolvalue="true" name="CutAction.instance/CopyAction.instance" />
+                  <file name="CopyAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction" />
+                  </file>
+                  <attr boolvalue="true" name="CopyAction.instance/PasteAction.instance" />
+                  <file name="PasteAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction" />
+                  </file>
+                  <attr boolvalue="true" name="PasteAction.instance/jsp-project-separator-5.instance" />
+                  <file name="jsp-project-separator-5.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                  </file>
+                  <attr boolvalue="true" name="jsp-project-separator-5.instance/NewAction.instance" />
+                  <file name="NewAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.NewAction" />
+                  </file>
+                  <attr boolvalue="true" name="NewAction.instance/DeleteAction.instance" />
+                  <file name="DeleteAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction" />
+                  </file>
+                  <attr boolvalue="true" name="DeleteAction.instance/RenameAction.instance" />
+                  <file name="RenameAction.instance">
+                    <!-- <RAVE> Replacing the original action instance by insync impl -->
+                    <!-- <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction" /> -->
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.visualweb.insync.faces.refactoring.JsfJspRenameAction" />
+                    <!-- </RAVE> -->
+                  </file>
+                  <attr boolvalue="true" name="RenameAction.instance/jsp-project-separator-6.instance" />
+                  <file name="jsp-project-separator-6.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                  </file>
+                  <attr boolvalue="true" name="jsp-project-separator-6.instance/SaveAsTemplateAction.instance" />
+                  <file name="SaveAsTemplateAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction" />
+                  </file>
+                  <attr boolvalue="true" name="SaveAsTemplateAction.instance/jsp-project-separator-7.instance" />
+                  <file name="jsp-project-separator-7.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                  </file>
+                  <attr boolvalue="true" name="jsp-project-separator-7.instance/ToolsAction.instance" />
+                  <file name="ToolsAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction" />
+                  </file>
+                  <attr boolvalue="true" name="ToolsAction.instance/PropertiesAction.instance" />
+                  <file name="PropertiesAction.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction" />
+                  </file>
+                </folder>
+              </folder>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

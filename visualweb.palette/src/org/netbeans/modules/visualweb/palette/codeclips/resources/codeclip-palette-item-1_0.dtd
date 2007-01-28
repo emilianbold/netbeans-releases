@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--- CodeClip Palette Item -->
+
+<!--
+<codeclip_palette_item version="1.0">
+-->
+<!ELEMENT codeclip_palette_item (body,icon16,icon32,description)>
+<!ATTLIST codeclip_palette_item
+    version CDATA #REQUIRED
+>
+
+
+<!--
+Item body if no custom implementation is provided, e.g.
+<body>
+    <![CDATA[
+        <table border="1">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    ]]>
+</body>
+-->
+<!ELEMENT body (#PCDATA)>
+
+<!--
+Resource path of the small icon 16x16 (no initial slash), e.g.
+<icon16 urlvalue="org/netbeans/modules/html/palette/items/resources/TABLE16.gif" />
+-->
+<!ELEMENT icon16 EMPTY>
+<!ATTLIST icon16 
+    urlvalue CDATA #REQUIRED
+>
+
+<!--
+Resource path of the big icon 32x32 (no initial slash), e.g.
+<icon32 urlvalue="org/netbeans/modules/html/palette/items/resources/TABLE32.gif" />
+-->
+<!ELEMENT icon32 EMPTY>
+<!ATTLIST icon32 
+    urlvalue CDATA #REQUIRED
+>
+
+<!--
+Bundle name with display name key and tooltip key, e.g.
+<description localizing-bundle="org.netbeans.modules.html.palette.items.resources.Bundle"
+           display-name-key="NAME_html-TABLE"
+           tooltip-key="HINT_html-TABLE" />
+-->
+<!ELEMENT description EMPTY>
+<!ATTLIST description 
+    localizing-bundle CDATA #IMPLIED
+    display-name-key CDATA #REQUIRED
+    tooltip-key CDATA #IMPLIED
+>

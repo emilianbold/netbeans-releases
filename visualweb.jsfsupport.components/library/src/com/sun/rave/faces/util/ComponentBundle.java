@@ -1,0 +1,124 @@
+/*
+ * {START_JAVA_COPYRIGHT_NOTICE
+ * Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+ * Use is subject to license terms.
+ * END_COPYRIGHT_NOTICE}
+ */
+package com.sun.rave.faces.util;
+
+import java.beans.Beans;
+import java.text.MessageFormat;
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.ResourceBundle;
+
+/**
+ * Wraps a java.util.ResourceBundle and utilizes a java.text.MessageFormat for message formatting.
+ * @see java.util.ResourceBundle
+ * @see java.text.MessageFormat
+*/
+public class ComponentBundle {
+	
+    private static MessageFormat mf = new MessageFormat(""); // NOI18N
+    private ResourceBundle rb;
+    private static final String DESIGN_TIME_IMPL_CLASS = "com.sun.rave.faces.util.DesignTimeComponentBundle"; 	//NOI18N
+
+    
+    protected ComponentBundle() {}
+
+    /**
+     * If a class loader is not passed in, I will only be able to fetch ResourceBundles that
+     * are reachable from MY class loader. This is due to a bug in ResourceBundle that
+     * goes up the stack only 2 levels in order to find the appropriate class loader.
+     * Since I provide a level of indirection, I will ALWAYS be the callee, and therefore
+     * at the 2nd level.
+     * See source for ResourceBundle.getBundle() ResourceBundle.getLoader().
+     * 
+     * @param baseName
+     */
+    public void init(String baseName, ClassLoader classLoader) {
+        rb = ResourceBundle.getBundle(baseName, mf.getLocale(), classLoader);
+    }
+    
+    public String getMessage(String key) {
+        
+        String string = rb.getString(key);
+        return string;
+    }
+    
+    public String getMessage(String key, Object arg1) {
+        return getMessage(key, new Object[]{arg1});
+    }
+    
+    public String getMessage(String key, Object arg1, Object arg2) {
+        return getMessage(key, new Object[]{arg1, arg2});
+    }
+    
+    public String getMessage(String key, Object arg1, Object arg2, Object arg3) {
+        return getMessage(key, new Object[]{arg1, arg2, arg3});
+    }    
+    
+    public String getMessage(String key, Object[] args) {
+        return getMessage(key, args, true);
+    }
+
+    public String getMessage(String key, Object[] args, boolean escapeSingleQuotes) {
+        String pattern = getMessage(key);
+        if (escapeSingleQuotes)
+            pattern = pattern.replaceAll("'", "''"); // NOI18N
+        String message;
+        synchronized (mf) {
+            mf.applyPattern(pattern);
+            message = mf.format(args);
+        }
+        return message;
+    }
+
+    private static Map componentBundleMap = new Hashtable();    //use Hashtable instead of HashMap since we are lazily populating the map
+    
+    public static ComponentBundle getBundle(Class c) {
+
+        return getBundle(c, null);
+    }
+
+    /**
+     * Return the component bundle found in class c's package.
+     * The name of the bundle file is Bundle.properties.  If suffix
+     * is not null and not empty, then the bundle file will be
+     * Bundle-&lt;suffix&gt;.properties.
+     * 
+     * @param c
+     * @param suffix
+     * @return
+     */
+    public static ComponentBundle getBundle(Class c, String suffix) {
+        
+        String className = c.getName();
+        int lastDotIndex = className.lastIndexOf('.');
+        String packageName = ""; // NOI18N
+        if (lastDotIndex > -1) {
+            packageName = className.substring(0, lastDotIndex + 1);
+        }
+        String baseName = packageName + "Bundle"; // NOI18N
+        if (suffix != null && suffix.length() > 0) {
+            baseName += suffix;
+        }
+        ComponentBundle cb = (ComponentBundle)componentBundleMap.get(baseName);
+        if (cb == null) {
+        	if (Beans.isDesignTime()) {
+        		try {
+        			cb = (ComponentBundle)Class.forName(DESIGN_TIME_IMPL_CLASS).newInstance();
+        		}
+        		catch (Exception e) {
+        			throw new RuntimeException("Could not create instance of " + DESIGN_TIME_IMPL_CLASS, e);
+        		}
+        	}
+        	else {
+        		cb = new ComponentBundle();
+        	}
+        	cb.init(baseName, c.getClassLoader());
+            componentBundleMap.put(baseName, cb);
+        }
+        return cb;
+    }
+}

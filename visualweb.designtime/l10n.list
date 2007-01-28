@@ -1,0 +1,5 @@
+designtime/src/**/Bundle.properties
+designtime/library/src/**/Bundle.properties
+designtime/idebridge/src/**/Bundle.properties
+designtime/rave/src/**/Bundle.properties
+designtime/rave/library/src/com/sun/rave/designtime/base/CategoryDescriptorsBundle.properties

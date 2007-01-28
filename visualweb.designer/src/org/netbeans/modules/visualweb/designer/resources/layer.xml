@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+
+    <folder name="Actions">
+        <folder name="Designer">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.designer.resources.Bundle"/>
+            <file name="org-netbeans-modules-visualweb-designer-action-AlignAction.instance"/>
+            <file name="org-netbeans-modules-visualweb-designer-action-BringToFrontAction.instance"/>
+            <file name="org-netbeans-modules-visualweb-designer-action-DecorationsAction.instance"/>
+            <file name="org-netbeans-modules-visualweb-designer-action-InlineEditAction.instance"/>
+            <file name="org-netbeans-modules-visualweb-designer-action-RefreshAction.instance"/>
+            <file name="org-netbeans-modules-visualweb-designer-action-SendToBackAction.instance"/>
+            <file name="org-netbeans-modules-visualweb-designer-action-SelectParentAction.instance"/>
+            <file name="org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.instance"/>
+            <file name="org-netbeans-modules-visualweb-designer-action-VirtualFormsSupportAction.instance"/>
+        </folder>
+    </folder>
+    
+    <folder name="Services">
+        <file name="org-netbeans-modules-visualweb-designer-DesignerSettings.settings" url="DesignerSettings.settings">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.designer.Bundle"/>
+	    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/visualweb/designer/designer.gif"/>
+	    <attr name="helpID" stringvalue="projrave_ui_elements_options_visual_editor"/> 
+	</file>
+
+        <!-- XXX Moved to designer/jsf.
+       <file name="com-sun-rave-designer-RefreshServiceProvider.instance">
+          <attr name="instanceOf" stringvalue="org.netbeans.modules.visualweb.project.jsf.services.RefreshService"/>
+          <attr name="instanceClass" stringvalue="com.sun.rave.designer.RefreshServiceProvider"/>
+       </file>
+       -->
+    </folder> <!-- Services -->
+
+    <folder name="UI">
+    <!-- settings categories UI presentation -->
+        <folder name="Services">
+            <file name="org-netbeans-modules-visualweb-designer-DesignerSettings.shadow">
+                <attr name="originalFile" stringvalue="Services/org-netbeans-modules-visualweb-designer-DesignerSettings.settings"/>
+            </file>
+        </folder> <!-- Services -->
+
+        <folder name="BasicServices">
+	    <attr name="Editing/DesignerSettings.shadow" boolvalue="true"/>
+
+            <file name="DesignerSettings.shadow">
+                <attr name="originalFile" stringvalue="Services/org-netbeans-modules-visualweb-designer-DesignerSettings.settings"/>
+            </file>
+        </folder> <!-- BasicServices -->
+    </folder> <!-- UI -->
+    
+    <!-- XXX Actions for DesignBeanNodes, TODO revise the policy of naming of folders. -->
+    <folder name="DesignBeanNodes">
+        <folder name="application">
+            <folder name="x-designtime">
+                <folder name="Actions">
+                    <attr name="org-netbeans-modules-visualweb-insync-action-ViewJspSourceAction.shadow/DesignerSeparator1.instance" boolvalue="true"/>
+                    <file name="DesignerSeparator1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="DesignerSeparator1.instance/org-netbeans-modules-visualweb-designer-action-InlineEditAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-visualweb-designer-action-InlineEditAction.shadow">
+                        <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-InlineEditAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-visualweb-designer-action-InlineEditAction.shadow/Separator1.instance" boolvalue="true"/>
+                    
+                    <attr name="org-netbeans-modules-visualweb-insync-action-VirtualFormsAction.shadow/DesignerSeparator2.instance" boolvalue="true"/>
+                    <file name="DesignerSeparator2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="DesignerSeparator2.instance/org-netbeans-modules-visualweb-designer-action-AlignAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-visualweb-designer-action-AlignAction.shadow">
+                        <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-AlignAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-visualweb-designer-action-AlignAction.shadow/org-netbeans-modules-visualweb-designer-action-BringToFrontAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-visualweb-designer-action-BringToFrontAction.shadow">
+                        <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-BringToFrontAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-visualweb-designer-action-BringToFrontAction.shadow/org-netbeans-modules-visualweb-designer-action-SendToBackAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-visualweb-designer-action-SendToBackAction.shadow">
+                        <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-SendToBackAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-visualweb-designer-action-SendToBackAction.shadow/Separator5.instance" boolvalue="true"/>
+                    
+                    <attr name="org-netbeans-modules-visualweb-insync-action-BrowserPreviewAction.shadow/DesignerSeparator3.instance" boolvalue="true"/>
+                    <file name="DesignerSeparator3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="DesignerSeparator3.instance/org-netbeans-modules-visualweb-designer-action-RefreshAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-visualweb-designer-action-RefreshAction.shadow">
+                        <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-RefreshAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-visualweb-designer-action-RefreshAction.shadow/org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.shadow">
+                        <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.shadow/Separator8.instance" boolvalue="true"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
+    <!-- XXX Actions for Designer popup menu, TODO revise the policy of naming of folders. -->
+    <folder name="Designer">
+        <folder name="application">
+            <folder name="x-designer">
+                <folder name="Popup">
+                    <attr name="org-netbeans-modules-visualweb-insync-action-ViewJspSourceAction.shadow/DesignerSeparator1.instance" boolvalue="true"/>
+                    <file name="DesignerSeparator1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="DesignerSeparator1.instance/org-netbeans-modules-visualweb-designer-action-InlineEditAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-visualweb-designer-action-InlineEditAction.shadow">
+                        <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-InlineEditAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-visualweb-designer-action-InlineEditAction.shadow/DesignerSeparator2.instance" boolvalue="true"/>
+                    <file name="DesignerSeparator2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="DesignerSeparator2.instance/org-netbeans-modules-visualweb-designer-action-SelectParentAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-visualweb-designer-action-SelectParentAction.shadow">
+                        <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-SelectParentAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-visualweb-designer-action-SelectParentAction.shadow/Separator1.instance" boolvalue="true"/>
+                    
+                    <attr name="org-netbeans-modules-visualweb-insync-action-VirtualFormsAction.shadow/DesignerSeparator3.instance" boolvalue="true"/>
+                    <file name="DesignerSeparator3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="DesignerSeparator3.instance/org-netbeans-modules-visualweb-designer-action-AlignAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-visualweb-designer-action-AlignAction.shadow">
+                        <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-AlignAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-visualweb-designer-action-AlignAction.shadow/org-netbeans-modules-visualweb-designer-action-BringToFrontAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-visualweb-designer-action-BringToFrontAction.shadow">
+                        <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-BringToFrontAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-visualweb-designer-action-BringToFrontAction.shadow/org-netbeans-modules-visualweb-designer-action-SendToBackAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-visualweb-designer-action-SendToBackAction.shadow">
+                        <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-SendToBackAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-visualweb-designer-action-SendToBackAction.shadow/Separator5.instance" boolvalue="true"/>
+                    
+                    <attr name="org-netbeans-modules-visualweb-insync-action-BrowserPreviewAction.shadow/DesignerSeparator4.instance" boolvalue="true"/>
+                    <file name="DesignerSeparator4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="DesignerSeparator4.instance/org-netbeans-modules-visualweb-designer-action-RefreshAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-visualweb-designer-action-RefreshAction.shadow">
+                        <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-RefreshAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-visualweb-designer-action-RefreshAction.shadow/org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.shadow">
+                        <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.shadow/Separator8.instance" boolvalue="true"/>
+                </folder>
+                
+                <!-- XXX Actions for designer comp toolbar, TODO revise the policy of naming of folders. -->
+                <folder name="Toolbars">
+                    <folder name="Default">
+                        <!-- This registers actions for the designer component toolbar. -->
+                        <attr name="org-netbeans-modules-visualweb-insync-action-BrowserPreviewAction.shadow/org-netbeans-modules-visualweb-designer-action-RefreshAction.shadow" boolvalue="true"/>
+                        <file name="org-netbeans-modules-visualweb-designer-action-RefreshAction.shadow">
+                            <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-RefreshAction.instance"/>
+                        </file>
+                        <attr name="org-netbeans-modules-visualweb-designer-action-RefreshAction.shadow/org-netbeans-modules-visualweb-designer-action-VirtualFormsSupportAction.shadow" boolvalue="true"/>
+                        <file name="org-netbeans-modules-visualweb-designer-action-VirtualFormsSupportAction.shadow">
+                            <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-VirtualFormsSupportAction.instance"/>
+                        </file>
+                        <attr name="org-netbeans-modules-visualweb-designer-action-VirtualFormsSupportAction.shadow/org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.shadow" boolvalue="true"/>
+                        <file name="org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.shadow">
+                            <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.instance"/>
+                        </file>
+                        <attr name="org-netbeans-modules-visualweb-designer-action-TargetResolutionAction.shadow/org-netbeans-modules-visualweb-designer-action-DecorationsAction.shadow" boolvalue="true"/>
+                        <file name="org-netbeans-modules-visualweb-designer-action-DecorationsAction.shadow">
+                            <attr name="originalFile" stringvalue="/Actions/Designer/org-netbeans-modules-visualweb-designer-action-DecorationsAction.instance"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
+</filesystem>

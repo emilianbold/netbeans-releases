@@ -1,0 +1,141 @@
+<?xml version="1.0"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+
+<!DOCTYPE faces-config PUBLIC
+  "-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.0//EN"
+  "http://java.sun.com/dtd/web-facesconfig_1_0.dtd">
+
+<faces-config>
+  <application>
+    <!-- Replaced by entry in appbase faces-config.xml file
+    <property-resolver>
+      com.sun.rave.web.ui.faces.DataProviderPropertyResolver
+    </property-resolver>
+    -->
+    <!-- Custom PropertyResolver for ResultSet and RowSet Objects -->  
+    <property-resolver>
+      com.sun.rave.faces.data.ResultSetPropertyResolver
+    </property-resolver>
+    <!-- Custom ViewHandler to implement isPostBack() -->
+    <!-- Replaced by entry in appbase faces-config.xml file
+    <view-handler>
+      com.sun.rave.faces.app.ViewHandlerImpl
+    </view-handler>
+    -->
+  </application>
+
+  <component>
+
+    <description>
+      Set the response character encoding.
+    </description>
+    <display-name>Encoding</display-name>
+    <component-type>com.sun.rave.faces.Encoding</component-type>
+    <component-class>
+      com.sun.rave.faces.component.EncodingComponent
+    </component-class>
+
+    <property>
+      <description>
+        The response character encoding to use such as "UTF-8",
+        "ISO-8859-7", "Shift_JIS".
+      </description>
+      <display-name>Response Character Encoding</display-name>
+      <property-name>value</property-name>
+      <property-class>java.lang.String</property-class>
+    </property>
+
+  </component>
+
+
+  <converter>
+    <description>
+      Custom by-type converter for java.sql.Date objects
+    </description>
+    <converter-for-class>java.sql.Date</converter-for-class>
+    <converter-class>com.sun.rave.faces.converter.SqlDateConverter</converter-class>
+  </converter>
+
+  <converter>
+    <description>
+      Custom by-type converter for java.sql.Time objects
+    </description>
+    <converter-for-class>java.sql.Time</converter-for-class>
+    <converter-class>com.sun.rave.faces.converter.SqlTimeConverter</converter-class>
+  </converter>
+
+  <converter>
+    <description>
+      Custom by-type converter for java.sql.Timestamp objects
+    </description>
+    <converter-for-class>java.sql.Timestamp</converter-for-class>
+    <converter-class>
+      com.sun.rave.faces.converter.SqlTimestampConverter
+    </converter-class>
+  </converter>
+
+  <!-- The BigDecimal and BigInteger converters are registered to ensure
+       application portability.  The JSF RI registers them (even though
+       the spec doesn't require this), and we want that behavior -->
+
+  <converter>
+    <converter-for-class>java.math.BigDecimal</converter-for-class>
+    <converter-class>
+      javax.faces.convert.BigDecimalConverter
+    </converter-class>
+  </converter>  
+
+  <converter>
+    <converter-for-class>java.math.BigInteger</converter-for-class>
+    <converter-class>
+      javax.faces.convert.BigIntegerConverter
+    </converter-class>
+  </converter>  
+
+  <converter>
+    <description>
+      Custom by-type converter for java.util.Calendar objects
+    </description>
+    <converter-for-class>java.util.Calendar</converter-for-class>
+    <converter-class>
+      com.sun.rave.faces.converter.CalendarConverter
+    </converter-class>
+  </converter>  
+
+
+  <render-kit>
+
+    <renderer>
+      <description>
+        Set the response character encoding.
+      </description>
+      <display-name>Set Encoding</display-name>
+      <component-family>com.sun.rave.faces.Encoding</component-family>
+      <renderer-type>com.sun.rave.faces.Encoding</renderer-type>
+      <renderer-class>
+        com.sun.rave.faces.renderer.EncodingRenderer
+      </renderer-class>
+    </renderer>
+
+  </render-kit>
+
+
+</faces-config>

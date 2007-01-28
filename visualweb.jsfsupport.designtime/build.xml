@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+
+<project name="org.netbeans.modules.visualweb.jsfsupport.designtime" default="netbeans" basedir=".">
+    
+    <description>Builds and tests the project org.netbeans.modules.visualweb.jsfsupport.designtime.</description>
+    <import file="nbproject/build-impl.xml"/>
+    <import file="${suite.dir}/templates/common.xml"/>
+    
+    <target name="jar" depends="init,compile,pre-jar,projectized-common.jar"/>
+    
+    <!-- Copy faces-config files to build area, so that they are packaged into the module JAR. 
+         This is necessary, because the design-time module contains JSF plugins, like a design-time
+         render kit, which must be picked up by the faces configurator in the JSF reference
+         implementation. -->
+    <target name="pre-jar">
+        <mkdir dir="${build.classes.dir}/META-INF"/>
+        <copy todir="${build.classes.dir}/META-INF">
+            <fileset dir="conf" includes="**/*.xml"/>
+        </copy>
+    </target>
+    
+</project>
