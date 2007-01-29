@@ -43,6 +43,7 @@ import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Properties
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Property;
 import org.netbeans.modules.j2ee.persistence.unit.*;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
+import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -79,7 +80,7 @@ public class ProviderUtil {
     public static Provider getProvider(Library library){
         
         for (int i = 0; i < PROVIDERS.length; i++) {
-            if (org.netbeans.modules.j2ee.common.Util.containsClass(library, PROVIDERS[i].getProviderClass())){
+            if (PersistenceLibrarySupport.containsClass(library, PROVIDERS[i].getProviderClass())){
                 return PROVIDERS[i];
             }
         }
@@ -575,7 +576,7 @@ public class ProviderUtil {
         List<Library> providerLibs = new ArrayList<Library>();
         Library[] libs = LibraryManager.getDefault().getLibraries();
         for (int i = 0; i < libs.length; i++) {
-            if (org.netbeans.modules.j2ee.common.Util.containsClass(libs[i], "javax.persistence.EntityManager") && (extractProvider(libs[i]) != null)) {
+            if (PersistenceLibrarySupport.containsClass(libs[i], "javax.persistence.EntityManager") && (extractProvider(libs[i]) != null)) {
                 providerLibs.add(libs[i]);
             }
         }
@@ -597,7 +598,7 @@ public class ProviderUtil {
         List<Provider> providerLibs = new ArrayList<Provider>();
         Library[] libs = LibraryManager.getDefault().getLibraries();
         for (int i = 0; i < libs.length; i++) {
-            if (org.netbeans.modules.j2ee.common.Util.containsClass(libs[i], "javax.persistence.EntityManager") && (extractProvider(libs[i]) != null)) {
+            if (PersistenceLibrarySupport.containsClass(libs[i], "javax.persistence.EntityManager") && (extractProvider(libs[i]) != null)) {
                 providerLibs.add(getProvider(libs[i]));
             }
         }
@@ -626,7 +627,7 @@ public class ProviderUtil {
     
     private static String extractProvider(Library library) {
         for (int i = 0; i < PROVIDERS.length; i++) {
-            if (org.netbeans.modules.j2ee.common.Util.containsClass(library, PROVIDERS[i].getProviderClass())){
+            if (PersistenceLibrarySupport.containsClass(library, PROVIDERS[i].getProviderClass())){
                 return PROVIDERS[i].getProviderClass();
             }
         }

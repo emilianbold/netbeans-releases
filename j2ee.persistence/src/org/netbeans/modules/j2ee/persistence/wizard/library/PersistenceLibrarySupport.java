@@ -25,6 +25,7 @@ import java.io.PrintWriter;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
@@ -50,16 +51,16 @@ public class PersistenceLibrarySupport  {
         VOLUME_TYPE_SRC,
         VOLUME_TYPE_JAVADOC,
     };
-
+    
     private static final String LIBRARIES_REPOSITORY = "org-netbeans-api-project-libraries/Libraries";  //NOI18N
     private static int MAX_DEPTH = 3;
-
+    
     private FileObject storage = null;
     private static PersistenceLibrarySupport instance;
-
+    
     private PersistenceLibrarySupport() {
     }
-
+    
     public static PersistenceLibrarySupport getDefault() {
         if (instance == null) {
             instance = new PersistenceLibrarySupport();
@@ -77,15 +78,15 @@ public class PersistenceLibrarySupport  {
         }
     }
     
-    private static final FileObject createStorage () {
-        FileSystem storageFS = Repository.getDefault().getDefaultFileSystem();        
+    private static final FileObject createStorage() {
+        FileSystem storageFS = Repository.getDefault().getDefaultFileSystem();
         try {
             return FileUtil.createFolder(storageFS.getRoot(), LIBRARIES_REPOSITORY);
         } catch (IOException e) {
             return null;
         }
     }
-
+    
     private synchronized void initStorage() {
         if (this.storage == null) {
             this.storage = createStorage();
@@ -157,16 +158,16 @@ public class PersistenceLibrarySupport  {
      * @param rootURL the javadoc root
      * @return true if the root is a valid Javadoc root
      */
-    public static boolean isValidLibraryJavadocRoot (final URL rootURL) {
+    public static boolean isValidLibraryJavadocRoot(final URL rootURL) {
         assert rootURL != null && rootURL.toExternalForm().endsWith("/");
         final FileObject root = URLMapper.findFileObject(rootURL);
         if (root == null) {
             return false;
         }
-        return findIndexFolder (root,1) != null;        
+        return findIndexFolder(root,1) != null;
     }
-
-    private static FileObject findIndexFolder (FileObject fo, int depth) {
+    
+    private static FileObject findIndexFolder(FileObject fo, int depth) {
         if (depth > MAX_DEPTH) {
             return null;
         }
@@ -184,5 +185,51 @@ public class PersistenceLibrarySupport  {
         }
         return null;
     }
-
+    
+    /**
+     *@return true if the given library contains a class with the given name.
+     */ 
+    public static boolean containsClass(Library library, String className) {
+        String classRelativePath = className.replace('.', '/') + ".class"; //NOI18N
+        return containsPath(library.getContent("classpath"), classRelativePath); //NOI18N
+    }
+    
+    /**
+     *@return true if the given library contains a service with the given name.
+     */ 
+    public static boolean containsService(Library library, String serviceName) {
+        String serviceRelativePath = "META-INF/services/" + serviceName; //NOI18N
+        return containsPath(library.getContent("classpath"), serviceRelativePath); //NOI18N
+    }
+    
+    /**
+     *@return true if the given library contains a class with the given name.
+     */ 
+    public static boolean containsClass(LibraryImplementation library, String className) {
+        String classRelativePath = className.replace('.', '/') + ".class"; //NOI18N
+        return containsPath(library.getContent("classpath"), classRelativePath); //NOI18N
+    }
+    
+    /**
+     *@return true if the given library contains a service with the given name.
+     */ 
+    public static boolean containsService(LibraryImplementation library, String serviceName) {
+        String serviceRelativePath = "META-INF/services/" + serviceName; //NOI18N
+        return containsPath(library.getContent("classpath"), serviceRelativePath); //NO18N
+    }
+    
+    private static boolean containsPath(List<URL> roots, String relativePath) {
+        for (URL each :roots){
+            FileObject root = URLMapper.findFileObject(each);
+            if (root != null && "jar".equals(each.getProtocol())) {  //NOI18N
+                FileObject archiveRoot = FileUtil.getArchiveRoot(FileUtil.getArchiveFile(root));
+                if (archiveRoot.getFileObject(relativePath) != null) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    
 }
