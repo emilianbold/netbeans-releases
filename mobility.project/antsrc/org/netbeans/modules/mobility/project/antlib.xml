@@ -20,4 +20,5 @@ Microsystems, Inc. All Rights Reserved.
 <antlib>
     <taskdef name="nb-enter-password" classname="org.netbeans.modules.mobility.project.ant.EnterPasswordTask"/>
     <taskdef name="nb-mobility-debug" classname="org.netbeans.modules.mobility.project.ant.KdpDebugTask"/>
+    <taskdef name="emudebug" classname="org.netbeans.modules.mobility.project.ant.EmulatorDebugTask"/>
 </antlib>
