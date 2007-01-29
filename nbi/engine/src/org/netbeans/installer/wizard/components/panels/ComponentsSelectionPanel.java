@@ -20,16 +20,24 @@
  */
 package org.netbeans.installer.wizard.components.panels;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.EventObject;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
+import javax.swing.DefaultCellEditor;
 import javax.swing.JComponent;
 import javax.swing.JTree;
 import javax.swing.UIManager;
@@ -56,6 +64,7 @@ import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
+import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiScrollPane;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 import org.netbeans.installer.utils.helper.swing.NbiTree;
@@ -70,12 +79,12 @@ import org.netbeans.installer.wizard.containers.SwingContainer;
 public class ComponentsSelectionPanel extends ErrorMessagePanel {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final Class CLS = ComponentsSelectionPanel.class;
-    
     public static final String DEFAULT_TITLE =
-            ResourceUtils.getString(CLS, "CSP.title"); // NOI18N
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.title"); // NOI18N
     public static final String DEFAULT_DESCRIPTION =
-            ResourceUtils.getString(CLS, "CSP.description"); // NOI18N
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.description"); // NOI18N
     
     public static final String MESSAGE_TEXT_PROPERTY =
             "message.text"; // NOI18N
@@ -93,19 +102,26 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             "default.download.size"; // NOI18N
     
     public static final String DEFAULT_MESSAGE_TEXT =
-            ResourceUtils.getString(CLS, "CSP.message.text"); // NOI18N
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.message.text"); // NOI18N
     public static final String DEFAULT_MESSAGE_CONTENT_TYPE =
-            ResourceUtils.getString(CLS, "CSP.message.content.type"); // NOI18N
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.message.content.type"); // NOI18N
     public static final String DEFAULT_DESCRIPTION_TEXT =
-            ResourceUtils.getString(CLS, "CSP.description.text"); // NOI18N
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.description.text"); // NOI18N
     public static final String DEFAULT_DESCRIPTION_CONTENT_TYPE =
-            ResourceUtils.getString(CLS, "CSP.description.content.type"); // NOI18N
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.description.content.type"); // NOI18N
     public static final String DEFAULT_SIZES_LABEL_TEXT =
-            ResourceUtils.getString(CLS, "CSP.sizes.label.text"); // NOI18N
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.sizes.label.text"); // NOI18N
     public static final String DEFAULT_INSTALLATION_SIZE =
-            ResourceUtils.getString(CLS, "CSP.default.installation.size"); // NOI18N
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.default.installation.size"); // NOI18N
     public static final String DEFAULT_DOWNLOAD_SIZE =
-            ResourceUtils.getString(CLS, "CSP.default.download.size"); // NOI18N
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.default.download.size"); // NOI18N
     
     public static final String ERROR_NO_CHANGES_PROPERTY =
             "error.no.changes"; // NOI18N
@@ -117,13 +133,17 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             "error.requirement.uninstall"; // NOI18N
     
     public static final String DEFAULT_ERROR_NO_CHANGES =
-            ResourceUtils.getString(CLS, "CSP.error.no.changes"); // NOI18N
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.error.no.changes"); // NOI18N
     public static final String DEFAULT_ERROR_REQUIREMENT_INSTALL =
-            ResourceUtils.getString(CLS, "CSP.error.requirement.install"); // NOI18N
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.error.requirement.install"); // NOI18N
     public static final String DEFAULT_ERROR_CONFLICT_INSTALL =
-            ResourceUtils.getString(CLS, "CSP.error.conflict.install"); // NOI18N
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.error.conflict.install"); // NOI18N
     public static final String DEFAULT_ERROR_REQUIREMENT_UNINSTALL =
-            ResourceUtils.getString(CLS, "CSP.error.requirement.uninstall"); // NOI18N
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.error.requirement.uninstall"); // NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
@@ -186,7 +206,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         private NbiTextPane   descriptionPane;
         private NbiScrollPane descriptionScrollPane;
         
-        private NbiLabel       sizesLabel;
+        private NbiLabel      sizesLabel;
         
         public ComponentsSelectionPanelSwingUi(
                 final ComponentsSelectionPanel component,
@@ -324,6 +344,8 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                     new EmptyBorder(5, 5, 5, 5));
             componentsTree.setEditable(
                     true);
+            componentsTree.setRowHeight(
+                    componentsTree.getRowHeight() + 4);
             componentsTree.getSelectionModel().addTreeSelectionListener(
                     new TreeSelectionListener() {
                 public void valueChanged(TreeSelectionEvent event) {
@@ -403,7 +425,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                     new Insets(6, 11, 0, 11),         // padding
                     0, 0));                           // padx, pady - ???
             
-            // run through all nodes and expand those that have the expand flag set 
+            // run through all nodes and expand those that have the expand flag set
             // to true
             for (RegistryNode node: Registry.getInstance().getNodes()) {
                 if (node.getExpand()) {
@@ -413,13 +435,13 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         }
         
         private void updateDescription() {
-            TreePath path = componentsTree.getSelectionPath();
+            final TreePath path = componentsTree.getSelectionPath();
             
             if (path != null) {
-                RegistryNode node = (RegistryNode) path.getLastPathComponent();
+                final RegistryNode node = (RegistryNode) path.getLastPathComponent();
                 descriptionPane.setText(node.getDescription());
             } else {
-                descriptionPane.setText("");
+                descriptionPane.clearText();
             }
             
             descriptionPane.setCaretPosition(0);
@@ -519,19 +541,74 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             }
         }
         
-        public static class ComponentsTreeCellRenderer implements TreeCellRenderer, TreeCellEditor {
+        public static class ComponentsTreeCellRenderer
+                implements TreeCellRenderer, TreeCellEditor {
             private List<CellEditorListener> listeners =
                     new LinkedList<CellEditorListener>();
             
-            private NbiCheckBox checkBox = new NbiCheckBox();
-            private NbiLabel    label    = new NbiLabel();
+            private NbiCheckBox checkBox;
+            private NbiLabel    label;
+            private NbiPanel    panel;
+            
+            private Color foreground;
+            private Color background;
+            
+            private Color selectionForeground;
+            private Color selectionBackground;
             
             public ComponentsTreeCellRenderer() {
+                foreground = UIManager.getColor("Tree.textForeground");
+                background = UIManager.getColor("Tree.textBackground");
+                
+                selectionForeground = UIManager.getColor("Tree.selectionForeground");
+                selectionBackground = UIManager.getColor("Tree.selectionBackground");
+                
+                panel = new NbiPanel();
+                panel.setLayout(new GridBagLayout());
+                panel.setOpaque(false);
+                
+                checkBox = new NbiCheckBox();
+                checkBox.setOpaque(false);
                 checkBox.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent event) {
-                        fireEditingStopped();
+                        stopCellEditing();
                     }
                 });
+                
+                label = new NbiLabel();
+                label.setOpaque(false);
+                label.addMouseListener(new MouseAdapter() {
+                    public void mouseClicked(MouseEvent e) {
+                        stopCellEditing();
+                    }
+                    public void mouseEntered(MouseEvent e) {
+                    }
+                    public void mouseExited(MouseEvent e) {
+                    }
+                    public void mousePressed(MouseEvent e) {
+                        stopCellEditing();
+                    }
+                    public void mouseReleased(MouseEvent e) {
+                        stopCellEditing();
+                    }
+                });
+                
+                panel.add(checkBox, new GridBagConstraints(
+                        0, 0,                             // x, y
+                        1, 1,                             // width, height
+                        0.0, 0.0,                         // weight-x, weight-y
+                        GridBagConstraints.LINE_START,    // anchor
+                        GridBagConstraints.HORIZONTAL,    // fill
+                        new Insets(0, 0, 0, 0),           // padding
+                        0, 0));                           // padx, pady - ???);
+                panel.add(label, new GridBagConstraints(
+                        1, 0,                             // x, y
+                        1, 1,                             // width, height
+                        1.0, 0.0,                         // weight-x, weight-y
+                        GridBagConstraints.LINE_START,    // anchor
+                        GridBagConstraints.HORIZONTAL,    // fill
+                        new Insets(0, 0, 0, 0),           // padding
+                        0, 0));                           // padx, pady - ???);
             }
             
             public Component getTreeCellRendererComponent(
@@ -542,7 +619,14 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                     final boolean leaf,
                     final int row,
                     final boolean focus) {
-                return getComponent(tree, value, selected, expanded, leaf, row, focus);
+                return getComponent(
+                        tree,
+                        value,
+                        selected,
+                        expanded,
+                        leaf,
+                        row,
+                        focus);
             }
             
             public Component getTreeCellEditorComponent(
@@ -552,7 +636,14 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                     final boolean expanded,
                     final boolean leaf,
                     final int row) {
-                return getComponent(tree, value, selected, expanded, leaf, row, false);
+                return getComponent(
+                        tree,
+                        value,
+                        selected,
+                        expanded,
+                        leaf,
+                        row,
+                        true);
             }
             
             public Object getCellEditorValue() {
@@ -564,7 +655,19 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             }
             
             public boolean isCellEditable(EventObject event) {
-                return true;
+                if (event instanceof MouseEvent) {
+                    final MouseEvent mouseEvent = (MouseEvent) event;
+                    
+                    if (mouseEvent.getID() == MouseEvent.MOUSE_PRESSED) {
+                        return true;
+                    }
+                }
+                
+                if (event instanceof KeyEvent) {
+                    return true;
+                }
+                
+                return false;
             }
             
             public boolean shouldSelectCell(EventObject event) {
@@ -593,8 +696,9 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             }
             
             private void fireEditingStopped() {
-                CellEditorListener[] clone = listeners.toArray(new CellEditorListener[0]);
-                ChangeEvent event = new ChangeEvent(this);
+                final CellEditorListener[] clone =
+                        listeners.toArray(new CellEditorListener[0]);
+                final ChangeEvent event = new ChangeEvent(this);
                 
                 for (CellEditorListener listener: clone) {
                     listener.editingStopped(event);
@@ -602,8 +706,9 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             }
             
             private void fireEditingCanceled() {
-                CellEditorListener[] clone = listeners.toArray(new CellEditorListener[0]);
-                ChangeEvent event = new ChangeEvent(this);
+                final CellEditorListener[] clone =
+                        listeners.toArray(new CellEditorListener[0]);
+                final ChangeEvent event = new ChangeEvent(this);
                 
                 for (CellEditorListener listener: clone) {
                     listener.editingCanceled(event);
@@ -619,28 +724,26 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                     final int row,
                     final boolean focus) {
                 if (selected) {
-                    checkBox.setOpaque(true);
-                    checkBox.setForeground(UIManager.getColor("Tree.selectionForeground"));
-                    checkBox.setBackground(UIManager.getColor("Tree.selectionBackground"));
+                    panel.setOpaque(true);
+                    panel.setBackground(selectionBackground);
                     
-                    label.setOpaque(true);
-                    label.setForeground(UIManager.getColor("Tree.selectionForeground"));
-                    label.setBackground(UIManager.getColor("Tree.selectionBackground"));
+                    checkBox.setForeground(selectionForeground);
+                    label.setForeground(selectionForeground);
                 } else {
-                    checkBox.setOpaque(false);
-                    checkBox.setForeground(UIManager.getColor("Tree.textForeground"));
-                    checkBox.setBackground(UIManager.getColor("Tree.textBackground"));
+                    panel.setOpaque(false);
                     
-                    label.setOpaque(false);
-                    label.setForeground(UIManager.getColor("Tree.textForeground"));
-                    label.setBackground(UIManager.getColor("Tree.textBackground"));
+                    checkBox.setForeground(foreground);
+                    label.setForeground(foreground);
                 }
                 
-                
                 if (value instanceof Product) {
-                    Product product = (Product) value;
+                    final Product product = (Product) value;
                     
-                    checkBox.setText(product.getDisplayName());
+                    label.setText(product.getDisplayName());
+                    label.setIcon(product.getIcon());
+                    label.setToolTipText(product.getDisplayName());
+                    
+                    checkBox.setVisible(true);
                     checkBox.setToolTipText(product.getDisplayName());
                     
                     if ((product.getStatus() == Status.INSTALLED) ||
@@ -649,18 +752,17 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                     } else {
                         checkBox.setSelected(false);
                     }
-                    
-                    return checkBox;
                 } else if (value instanceof Group) {
-                    Group group = (Group) value;
+                    final Group group = (Group) value;
                     
                     label.setText(group.getDisplayName());
+                    label.setIcon(group.getIcon());
                     label.setToolTipText(group.getDisplayName());
                     
-                    return label;
+                    checkBox.setVisible(false);
                 }
                 
-                return null;
+                return panel;
             }
         }
     }
