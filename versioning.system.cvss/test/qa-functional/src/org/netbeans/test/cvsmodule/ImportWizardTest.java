@@ -334,11 +334,11 @@ public class ImportWizardTest extends JellyTestCase {
         Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":ext:test@localhost:2401/cvs");
-        crso.rbUseInternalSSH().setSelected(true);
+        crso.rbUseInternalSSH().push();
         crso.setPassword("test");
-        crso.cbRememberPassword().setSelected(true);
-        crso.cbRememberPassword().setSelected(false);
-        crso.rbUseExternalShell().setSelected(true);
+        crso.cbRememberPassword().push();
+        crso.cbRememberPassword().push();
+        crso.rbUseExternalShell().push();
         crso.setSSHCommand("plink.exe -l user -i private_key.ppk");
         EditCVSRootOperator editOperator = crso.edit();
         assertEquals("Wrong access method in Edit CVSRoot dialog", "ext", editOperator.getAccessMethod());
