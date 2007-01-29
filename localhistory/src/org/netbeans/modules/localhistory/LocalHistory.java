@@ -29,7 +29,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Utilities;
 
 /** 
  * 
@@ -43,10 +42,8 @@ public class LocalHistory {
     private VCSInterceptor vcsInterceptor;
     private VCSAnnotator vcsAnnotator;
     private LocalHistoryStore store;
-    
 
     private static String userDir;    
-    private Pattern fileNameExclPattern = Pattern.compile(LocalHistorySettings.getExludedFileNames()); 
     
     public static synchronized LocalHistory getInstance() {
         if(instance == null) {
