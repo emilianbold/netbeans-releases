@@ -28,14 +28,16 @@ import com.sun.tools.ws.wscompile.WsimportOptions;
 import com.sun.xml.ws.util.JAXWSUtils;
 import java.io.File;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.xml.resolver.CatalogManager;
 import org.apache.xml.resolver.tools.CatalogResolver;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.SAXParseException;
 
@@ -53,7 +55,7 @@ public class WsdlModeler {
     private EntityResolver entityResolver;
     private Set<String> bindingFiles;
     private String packageName;
-    private List modelListeners;
+    private List<WsdlModelListener> modelListeners;
     RequestProcessor.Task task;
     int listenersSize;
     
@@ -63,7 +65,7 @@ public class WsdlModeler {
     /** Creates a new instance of WsdlModeler */
     WsdlModeler(URL wsdlUrl) {
         this.wsdlUrl=wsdlUrl;
-        modelListeners=new ArrayList();
+        modelListeners = new ArrayList<WsdlModelListener>();
         task = RequestProcessor.getDefault().create(new Runnable() {
             public void run() {
                 generateWsdlModel();
@@ -194,7 +196,7 @@ public class WsdlModeler {
     
     private void fireModelCreated(WsdlModel model, int listenersSize) {
         for (int i=0;i<listenersSize;i++) {
-            ((WsdlModelListener)modelListeners.get(i)).modelCreated(model);
+            modelListeners.get(i).modelCreated(model);
         }
     }
     

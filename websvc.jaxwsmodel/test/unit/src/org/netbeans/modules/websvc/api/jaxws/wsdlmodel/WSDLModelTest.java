@@ -23,6 +23,7 @@ import com.sun.tools.ws.processor.model.Model;
 import com.sun.tools.ws.processor.model.Service;
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.net.MalformedURLException;
 import java.net.URL;
 import junit.framework.*;
 import org.netbeans.junit.AssertionFailedErrorException;
@@ -36,7 +37,7 @@ import org.openide.util.RequestProcessor;
  */
 public class WSDLModelTest extends NbTestCase {
     
-    private /* String*/ List serviceNames, portNames, opNames, opTypes, paramNames, paramTypes;
+    private List<String> serviceNames, portNames, opNames, opTypes, paramNames, paramTypes;
     
     private Object expectedValue, realValue;
     private int numberOfEvents;
@@ -134,7 +135,7 @@ public class WSDLModelTest extends NbTestCase {
         System.out.println("Test 4 : Garbage Collection Test");
         try {Thread.sleep(100);} catch (InterruptedException ex) {}
         System.gc();System.gc();System.gc();
-        WeakHashMap modelers = WsdlModelerFactory.getDefault().modelers;
+        WeakHashMap<URL, WeakReference<WsdlModeler>> modelers = WsdlModelerFactory.getDefault().modelers;
         assertNotNull(modelers);
         System.out.println("TEST 4 - modelers.size = "+modelers.size());
         
@@ -142,7 +143,7 @@ public class WSDLModelTest extends NbTestCase {
         
         modelers.keySet().toArray(urls);
         for (int i=0;i<urls.length;i++) {
-            if (urls[i]!=null) System.out.println("value = "+((WeakReference)modelers.get(urls[i])).get());
+            if (urls[i]!=null) System.out.println("value = " + modelers.get(urls[i]).get());
             assertNull(urls[i]);
         }
     }
@@ -150,22 +151,22 @@ public class WSDLModelTest extends NbTestCase {
     private void compareWsdl(WsdlModel model, int testNumber) {
         if (expectedValue!=null || realValue!=null) return;
         initLists();
-        List services = model.getServices();
-        for (Iterator it = services.iterator();it.hasNext();) {
-            WsdlService s = (WsdlService)it.next();
+        List<WsdlService> services = model.getServices();
+        for (Iterator<WsdlService> it = services.iterator(); it.hasNext();) {
+            WsdlService s = it.next();
             serviceNames.add(s.getName());
-            List ports = s.getPorts();
-            for (Iterator it1 = ports.iterator();it1.hasNext();) {
-                WsdlPort port = (WsdlPort)it1.next();
+            List<WsdlPort> ports = s.getPorts();
+            for (Iterator<WsdlPort> it1 = ports.iterator(); it1.hasNext();) {
+                WsdlPort port = it1.next();
                 portNames.add(port.getName());
-                List operations = port.getOperations();
-                for (Iterator it2 = operations.iterator();it2.hasNext();) {
-                    WsdlOperation op = (WsdlOperation) it2.next();
+                List<WsdlOperation> operations = port.getOperations();
+                for (Iterator<WsdlOperation> it2 = operations.iterator(); it2.hasNext();) {
+                    WsdlOperation op = it2.next();
                     opNames.add(op.getName());
                     opTypes.add(op.getReturnTypeName());
-                    List parameters = op.getParameters();
-                    for (Iterator it3 = parameters.iterator();it3.hasNext();) {
-                        WsdlParameter param = (WsdlParameter)it3.next();
+                    List<WsdlParameter> parameters = op.getParameters();
+                    for (Iterator<WsdlParameter> it3 = parameters.iterator(); it3.hasNext();) {
+                        WsdlParameter param = it3.next();
                         paramNames.add(param.getName());
                         paramTypes.add(param.getTypeName());
                     }
@@ -176,7 +177,7 @@ public class WSDLModelTest extends NbTestCase {
         numberOfEvents++;
     }
     
-    private URL getUrl(String file) throws java.net.MalformedURLException {
+    private URL getUrl(String file) throws MalformedURLException {
         return new File(getDataDir(),file).toURL();
     }
     
@@ -209,12 +210,12 @@ public class WSDLModelTest extends NbTestCase {
     }
     
     private void initLists() {
-        serviceNames = new ArrayList();
-        portNames = new ArrayList();
-        opNames = new ArrayList();
-        opTypes = new ArrayList();
-        paramNames = new ArrayList();
-        paramTypes = new ArrayList();
+        serviceNames = new ArrayList<String>();
+        portNames = new ArrayList<String>();
+        opNames = new ArrayList<String>();
+        opTypes = new ArrayList<String>();
+        paramNames = new ArrayList<String>();
+        paramTypes = new ArrayList<String>();
     }
     
     private void initResults() {

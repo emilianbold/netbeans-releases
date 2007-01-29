@@ -231,7 +231,7 @@ public final class GeneratedFilesHelper {
             throw new IllegalArgumentException("Null stylesheet"); // NOI18N
         }
         try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Object>() {
                 public Object run() throws IOException {
 //                    if (h != null && h.isProjectXmlModified()) {
 //                        throw new IllegalStateException("Cannot generate build scripts from a modified project"); // NOI18N
@@ -455,8 +455,8 @@ public final class GeneratedFilesHelper {
     
     public int getBuildScriptState(final String path, final URL stylesheet, final FileObject jaxWsFo) throws IllegalStateException {
         try {
-            return ((Integer)ProjectManager.mutex().readAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
+            return ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Integer>() {
+                public Integer run() throws IOException {
 //                    if (h != null && h.isProjectXmlModified()) {
 //                        throw new IllegalStateException("Cannot generate build scripts from a modified project"); // NOI18N
 //                    }
@@ -506,7 +506,7 @@ public final class GeneratedFilesHelper {
                     }
                     return new Integer(flags);
                 }
-            })).intValue();
+            }).intValue();
         } catch (MutexException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, (IOException)e.getException());
             return FLAG_UNKNOWN | FLAG_MODIFIED | FLAG_OLD_PROJECT_XML | FLAG_OLD_STYLESHEET | FLAG_OLD_JAX_WS;
@@ -543,14 +543,14 @@ public final class GeneratedFilesHelper {
     
     // #50440 - cache CRC32's for various files to save time esp. during startup.
     
-    private static final Map/*<URL,String>*/ crcCache = new HashMap();
-    private static final Map/*<URL,Long>*/ crcCacheTimestampsXorSizes = new HashMap();
+    private static final Map<URL, String> crcCache = new HashMap<URL, String>();
+    private static final Map<URL, Long> crcCacheTimestampsXorSizes = new HashMap<URL, Long>();
 
     /** Try to find a CRC in the cache according to location of file and last mod time xor size. */
     private static synchronized String findCachedCrc32(URL u, long footprint) {
-        String crc = (String) crcCache.get(u);
+        String crc = crcCache.get(u);
         if (crc != null) {
-            Long l = (Long) crcCacheTimestampsXorSizes.get(u);
+            Long l = crcCacheTimestampsXorSizes.get(u);
             assert l != null;
             if (l.longValue() == footprint) {
                 // Cache hit.
@@ -681,8 +681,8 @@ public final class GeneratedFilesHelper {
      */
     public boolean refreshBuildScript(final String path, final URL stylesheet, final FileObject jaxWsFo, final boolean checkForProjectXmlModified) throws IOException, IllegalStateException {
         try {
-            return ((Boolean)ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
+            return ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
+                public Boolean run() throws IOException {
                     int flags = getBuildScriptState(path, stylesheet, jaxWsFo);
                     if (shouldGenerateBuildScript(flags, checkForProjectXmlModified)) {
                         generateBuildScriptFromStylesheet(path, stylesheet, jaxWsFo);
@@ -691,7 +691,7 @@ public final class GeneratedFilesHelper {
                         return Boolean.FALSE;
                     }
                 }
-            })).booleanValue();
+            }).booleanValue();
         } catch (MutexException e) {
             throw (IOException)e.getException();
         }

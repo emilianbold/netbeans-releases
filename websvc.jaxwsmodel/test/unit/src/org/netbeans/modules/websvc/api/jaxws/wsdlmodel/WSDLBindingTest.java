@@ -19,16 +19,12 @@
 
 package org.netbeans.modules.websvc.api.jaxws.wsdlmodel;
 
-import com.sun.tools.ws.processor.model.Model;
-import com.sun.tools.ws.processor.model.Service;
 import java.io.File;
-import java.lang.ref.WeakReference;
 import java.net.URL;
-import junit.framework.*;
-import org.netbeans.junit.AssertionFailedErrorException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import org.netbeans.junit.NbTestCase;
-import java.util.*;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -36,7 +32,7 @@ import org.openide.util.RequestProcessor;
  */
 public class WSDLBindingTest extends NbTestCase {
     
-    private /* String*/ List serviceNames, serviceJavaNames, portNames, portJavaNames, portGetters, opNames, opJavaNames, opTypes, paramNames, paramTypes;
+    private List<String> serviceNames, serviceJavaNames, portNames, portJavaNames, portGetters, opNames, opJavaNames, opTypes, paramNames, paramTypes;
     private static final String BINDING_1="custom-client.xml";
     private static final String BINDING_11="custom-client1.xml";
     private static final String BINDING_2="custom-schema.xml";
@@ -103,26 +99,26 @@ public class WSDLBindingTest extends NbTestCase {
     private void compareWsdl(WsdlModel model, int testNumber) {
         if (expectedValue!=null || realValue!=null) return;
         initLists();
-        List services = model.getServices();
-        for (Iterator it = services.iterator();it.hasNext();) {
-            WsdlService s = (WsdlService)it.next();
+        List<WsdlService> services = model.getServices();
+        for (Iterator<WsdlService> it = services.iterator(); it.hasNext();) {
+            WsdlService s = it.next();
             serviceNames.add(s.getName());
             serviceJavaNames.add(s.getJavaName());
-            List ports = s.getPorts();
-            for (Iterator it1 = ports.iterator();it1.hasNext();) {
-                WsdlPort port = (WsdlPort)it1.next();
+            List<WsdlPort> ports = s.getPorts();
+            for (Iterator<WsdlPort> it1 = ports.iterator(); it1.hasNext();) {
+                WsdlPort port = it1.next();
                 portNames.add(port.getName());
                 portJavaNames.add(port.getJavaName());
                 portGetters.add(port.getPortGetter());
-                List operations = port.getOperations();
-                for (Iterator it2 = operations.iterator();it2.hasNext();) {
-                    WsdlOperation op = (WsdlOperation) it2.next();
+                List<WsdlOperation> operations = port.getOperations();
+                for (Iterator<WsdlOperation> it2 = operations.iterator(); it2.hasNext();) {
+                    WsdlOperation op = it2.next();
                     opNames.add(op.getName());
                     opJavaNames.add(op.getJavaName());
                     opTypes.add(op.getReturnTypeName());
-                    List parameters = op.getParameters();
-                    for (Iterator it3 = parameters.iterator();it3.hasNext();) {
-                        WsdlParameter param = (WsdlParameter)it3.next();
+                    List<WsdlParameter> parameters = op.getParameters();
+                    for (Iterator<WsdlParameter> it3 = parameters.iterator(); it3.hasNext();) {
+                        WsdlParameter param = it3.next();
                         paramNames.add(param.getName());
                         paramTypes.add(param.getTypeName());
                     }
@@ -193,16 +189,16 @@ public class WSDLBindingTest extends NbTestCase {
     }
     
     private void initLists() {
-        serviceNames = new ArrayList();
-        serviceJavaNames = new ArrayList();
-        portNames = new ArrayList();
-        portJavaNames = new ArrayList();
-        portGetters = new ArrayList();
-        opNames = new ArrayList();
-        opJavaNames = new ArrayList();
-        opTypes = new ArrayList();
-        paramNames = new ArrayList();
-        paramTypes = new ArrayList();
+        serviceNames = new ArrayList<String>();
+        serviceJavaNames = new ArrayList<String>();
+        portNames = new ArrayList<String>();
+        portJavaNames = new ArrayList<String>();
+        portGetters = new ArrayList<String>();
+        opNames = new ArrayList<String>();
+        opJavaNames = new ArrayList<String>();
+        opTypes = new ArrayList<String>();
+        paramNames = new ArrayList<String>();
+        paramTypes = new ArrayList<String>();
     }
     
     private void initResults() {

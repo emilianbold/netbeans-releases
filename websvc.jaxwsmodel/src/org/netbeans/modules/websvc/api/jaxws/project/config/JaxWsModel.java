@@ -46,7 +46,7 @@ public final class JaxWsModel {
     private FileObject fo;
     private boolean nninitialized = false;
     private Object initLock = new Object();
-    private List serviceListeners;
+    private List<ServiceListener> serviceListeners;
     
     JaxWsModel(org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.JaxWs jaxws) {
         this(jaxws,null);
@@ -55,7 +55,7 @@ public final class JaxWsModel {
     JaxWsModel(org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.JaxWs jaxws, FileObject fo) {
         this.jaxws=jaxws;
         this.fo=fo;
-        serviceListeners = new ArrayList();
+        serviceListeners = new ArrayList<ServiceListener>();
     }
     
     public Service[] getServices() {
@@ -322,13 +322,13 @@ public final class JaxWsModel {
     }
     
     void fireServiceAdded(String name, String implementationClass) {
-        Iterator it = serviceListeners.iterator();
-        while (it.hasNext()) ((ServiceListener)it.next()).serviceAdded(name, implementationClass);
+        Iterator<ServiceListener> it = serviceListeners.iterator();
+        while (it.hasNext()) it.next().serviceAdded(name, implementationClass);
     }
     
     void fireServiceRemoved(String name) {
-        Iterator it = serviceListeners.iterator();
-        while (it.hasNext()) ((ServiceListener)it.next()).serviceRemoved(name);
+        Iterator<ServiceListener> it = serviceListeners.iterator();
+        while (it.hasNext()) it.next().serviceRemoved(name);
     }
     
     public static interface ServiceListener {

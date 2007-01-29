@@ -21,7 +21,7 @@ package org.netbeans.modules.websvc.api.jaxws.wsdlmodel;
 
 import java.lang.ref.WeakReference;
 import java.net.URL;
-import java.util.*;
+import java.util.WeakHashMap;
 
 /**
  *
@@ -30,11 +30,11 @@ import java.util.*;
 public class WsdlModelerFactory {
     
     private static WsdlModelerFactory factory;
-    WeakHashMap modelers;
+    WeakHashMap<URL, WeakReference<WsdlModeler>> modelers;
     
     /** Creates a new instance of WsdlModelerFactory */
     private WsdlModelerFactory() {
-        modelers = new WeakHashMap(5);
+        modelers = new WeakHashMap<URL, WeakReference<WsdlModeler>>(5);
     }
     
     /**
@@ -56,8 +56,7 @@ public class WsdlModelerFactory {
                 return modeler;
             }
             modeler = new WsdlModeler(wsdlUrl);
-            WeakReference weakRef = new WeakReference(modeler);
-            modelers.put(wsdlUrl,new WeakReference(modeler));
+            modelers.put(wsdlUrl, new WeakReference<WsdlModeler>(modeler));
         }
         return modeler;
     }
@@ -66,7 +65,7 @@ public class WsdlModelerFactory {
         if (url == null) {
             return null;
         }
-        WeakReference wr = (WeakReference) modelers.get(url);
+        WeakReference wr = modelers.get(url);
         if (wr == null) {
             return null;
         }
