@@ -108,8 +108,8 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	
 	private Position cellHiLited;
 	private Set<Position> cellsSelected = Collections.synchronizedSet(new HashSet<Position>());
-	private Set<Integer> rowsSelected = Collections.synchronizedSet(new HashSet<Integer>());
-	private Set<Integer> columnsSelected = Collections.synchronizedSet(new HashSet<Integer>());
+//	private Set<Integer> rowsSelected = Collections.synchronizedSet(new HashSet<Integer>());
+//	private Set<Integer> columnsSelected = Collections.synchronizedSet(new HashSet<Integer>());
 	
 	//private Point start = new Point(0, 0);
 	
@@ -241,7 +241,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 				this.paintCellContents(g, cell);
 				
 				//paint selected cells
-				if (this.currentSelectedColor != null && (this.cellsSelected.contains(cell) || this.rowsSelected.contains(cell.getRow()) || this.columnsSelected.contains(cell.getCol()))) {
+				if (this.currentSelectedColor != null && (this.cellsSelected.contains(cell))) {
 					this.paintCellSelection(g, cell, this.currentSelectedColor);
 				}
 				
@@ -393,25 +393,40 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		MainView.getInstance().requestPreview(this.tiledLayer.getTileAt(cell.getRow(), cell.getCol()));
 	}
 	
-	private boolean isMultiSelect(MouseEvent e) {
-		return e.isShiftDown();
+	
+	public static final int EDIT_MODE_PAINT = 0;
+	public static final int EDIT_MODE_SELECT = 1;
+	public static final int EDIT_MODE_ERASE = 2;
+	
+	private int editMode = EDIT_MODE_PAINT;
+	
+	public void setEditMode(int editMode) {
+		this.editMode = editMode;
 	}
 	
-	private boolean isErase(MouseEvent e) {
-		if (SwingUtilities.isRightMouseButton(e))
-			return true;
-		return false;
+	private boolean isPaintMode(MouseEvent e) {
+		return this.editMode == EDIT_MODE_PAINT;
+	}
+	
+	private boolean isSelectMode() {
+		return this.editMode == EDIT_MODE_SELECT;
+	}
+	
+	private boolean isEraseMode() {
+		return this.editMode == EDIT_MODE_ERASE;
 	}
 	
 	private void handleMousePressed(MouseEvent e) {
 		Position cell = this.getCellAtCoordinates(e.getX(), e.getY());
 		
-		if (isMultiSelect(e)) {
+		if (this.isSelectMode()) {
 			synchronized (this.cellsSelected) {
-				if (!this.cellsSelected.remove(cell))
+				if (!this.cellsSelected.remove(cell)) {
 					this.cellsSelected.add(cell);
+				}
 			}
-		} else {
+		} 
+		else {
 			Set oldSelected = this.cellsSelected;
 			this.cellsSelected = new HashSet<Position>();
 			this.cellsSelected.add(cell);
@@ -434,14 +449,16 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 			Position cell = TiledLayerEditorComponent.this.getCellAtPoint(p);
 			//if (DEBUG) System.out.println(cell);
 			
-			if (TiledLayerEditorComponent.this.isMultiSelect(e)) {
-				if (cell.equals(lastDraggedCell))
+			if (TiledLayerEditorComponent.this.isSelectMode()) {
+				if (cell.equals(lastDraggedCell)) {
 					return;
+				}
 				synchronized (TiledLayerEditorComponent.this.cellsSelected) {
 					TiledLayerEditorComponent.this.cellsSelected.add(cell);
 				}
-			} else {
-				int tileIndex = TiledLayerEditorComponent.this.isErase(e) ? Tile.EMPTY_TILE_INDEX : TiledLayerEditorComponent.this.paintTileIndex;
+			} 
+			else {
+				int tileIndex = TiledLayerEditorComponent.this.isEraseMode() ? Tile.EMPTY_TILE_INDEX : TiledLayerEditorComponent.this.paintTileIndex;
 				//if we are on the same tile and trying to paint the same index then we aren't really changing anything :)
 				if (cell.equals(lastDraggedCell) && (tileIndex == TiledLayerEditorComponent.this.tiledLayer.getTileAt(cell.getRow(), cell.getCol()).getIndex()))
 					return;
@@ -758,15 +775,19 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	}
 	
 	private void setRowSelection(int row, boolean selected) {
-		if (selected) {
-			this.rowsSelected.add(row);
-		}
-		else {
-			this.rowsSelected.remove(row);
-			for (Iterator<Position> it = cellsSelected.iterator(); it.hasNext();) {
-				Position position = it.next();
-				if (position.getRow() == row) {
-					it.remove();
+		synchronized (this.cellsSelected) {
+			if (selected) {
+				int cols = this.tiledLayer.getColumnCount();
+				for (int i = 0; i < cols; i++) {
+					this.cellsSelected.add(new Position(row, i));
+				}
+			}
+			else {
+				for (Iterator<Position> it = cellsSelected.iterator(); it.hasNext();) {
+					Position position = it.next();
+					if (position.getRow() == row) {
+						it.remove();
+					}
 				}
 			}
 		}
@@ -775,18 +796,23 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	}
 	
 	private void setColumnSelection(int col, boolean selected) {
-		if (selected) {
-			this.columnsSelected.add(col);
-		}
-		else {
-			this.columnsSelected.remove(col);
-			for (Iterator<Position> it = cellsSelected.iterator(); it.hasNext();) {
-				Position position = it.next();
-				if (position.getCol() == col) {
-					it.remove();
+		synchronized(this.cellsSelected) {
+			if (selected) {
+				int rows = this.tiledLayer.getRowCount();
+				for (int i = 0; i < rows; i++) {
+					this.cellsSelected.add(new Position(i, col));
 				}
 			}
+			else {
 
+				for (Iterator<Position> it = cellsSelected.iterator(); it.hasNext();) {
+					Position position = it.next();
+					if (position.getCol() == col) {
+						it.remove();
+					}
+				}
+
+			}
 		}
 		//TODO : repaint the column only
 		this.repaint();
@@ -840,11 +866,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 					for (int c = bounds[1]; c <= bounds[3]; c++) {
 						Position cell = new Position(r, c);
 						if (false) System.out.println("looking at: " + cell);
-						if (
-								TiledLayerEditorComponent.this.cellsSelected.contains(cell) 
-								|| TiledLayerEditorComponent.this.columnsSelected.contains(cell.getCol())
-								|| TiledLayerEditorComponent.this.rowsSelected.contains(cell.getRow())
-							) {
+						if (TiledLayerEditorComponent.this.cellsSelected.contains(cell)) {
 							if (false) System.out.println("selected cell repaint: " + cell);
 							TiledLayerEditorComponent.this.repaint(TiledLayerEditorComponent.this.getCellArea(cell));
 						}
@@ -977,14 +999,15 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	}
 	
 	private void shiftSelectedCellRows(int index, int count) {
-		List<Position> bucket = new ArrayList<Position>();
-
+				
 		synchronized (this.cellsSelected) {
+			List<Position> bucket = new ArrayList<Position>();
 			for (Iterator<Position> it = cellsSelected.iterator(); it.hasNext();) {
 				Position position = it.next();
 				int curRow = position.getRow();
 				if (curRow >= index) {
 					it.remove();
+					//System.out.println("Shifting row " + curRow + " to " + (curRow + count));
 					bucket.add(new Position(curRow + count, position.getCol()));
 				}
 			}
@@ -996,14 +1019,15 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	}
 	
 	private void shiftSelectedCellColumns(int index, int count) {
-		List<Position> bucket = new ArrayList<Position>();
 		
 		synchronized (this.cellsSelected) {
+			List<Position> bucket = new ArrayList<Position>();
 			for (Iterator<Position> it = cellsSelected.iterator(); it.hasNext();) {
 				Position position = it.next();
 				int curCol = position.getCol();
 				if (curCol >= index) {
 					it.remove();
+					//System.out.println("Shifting col " + curCol + " to " + (curCol + count));
 					bucket.add(new Position(position.getRow(), curCol + count));
 				}
 			}
@@ -1018,7 +1042,8 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		private static final int SIZE = 12;
 		private static final boolean DEBUG = false;
 		
-		private HashSet selectedRows = new HashSet();
+		private Set<Integer> pressed = new HashSet<Integer>();
+		
 		private int hilitedRowHeader = -1;
 		
 		public RulerVertical() {
@@ -1047,18 +1072,20 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 			
 			for (int y = (rect.y / unit) * unit; y <= rect.y + rect.height; y+= unit) {
 				int row = y/unit;
-				
+								
 				//only paint header cells for existing rows
 				if (row >= TiledLayerEditorComponent.this.tiledLayer.getRowCount())
 					break;
 				
 				boolean raised = true;
-				
 				g.setColor(new Color(240, 238, 230));
 				
-				if (selectedRows.contains(row)) {
+				if (this.pressed.contains(row)) {
+					g.setColor(new Color(200, 200, 200));
 					raised = false;
 				}
+				
+				
 				g.fill3DRect(0, y + GRID_WIDTH/2, SIZE, unit, raised);
 				
 				if (row == this.hilitedRowHeader) {
@@ -1084,18 +1111,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 					);
 			return area;
 		}
-		
-		private void toggleRowHeaderSelection(int row) {
-			if (this.selectedRows.remove(row)) {
-				TiledLayerEditorComponent.this.setRowSelection(row, false);
-			}
-			else {
-				this.selectedRows.add(row);
-				TiledLayerEditorComponent.this.setRowSelection(row, true);
-			}
-			this.repaint();
-		}
-		
+				
 		private void hiliteRowHeader(int row) {
 			if (this.hilitedRowHeader == row) {
 				return;
@@ -1111,16 +1127,26 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		 */
 		public void mouseClicked(MouseEvent e) {
 			int row = this.getRowAtPoint(e.getPoint());
-			this.toggleRowHeaderSelection(row);
+			TiledLayerEditorComponent.this.setRowSelection(row, !e.isControlDown());
+			this.repaint(this.getRowHeaderArea(row));
 		}
 		public void mousePressed(MouseEvent e) {
+			int row = this.getRowAtPoint(e.getPoint());
 			if (e.isPopupTrigger()) {
 				this.handlePopUp(e);
+			}
+			else {
+				this.pressed.add(row);
+				this.repaint(this.getRowHeaderArea(row));
 			}
 		}
 		public void mouseReleased(MouseEvent e) {
 			if (e.isPopupTrigger()) {
 				this.handlePopUp(e);
+			}
+			else {
+				this.pressed.clear();
+				this.repaint();
 			}
 		}
 		
@@ -1196,7 +1222,8 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		private static final int SIZE = 12;
 		private static final boolean DEBUG = false;
 		
-		private HashSet selectedCols = new HashSet();
+		private Set<Integer> pressed = new HashSet<Integer>();
+
 		private int hilitedColumnHeader = -1;
 		
 		public RulerHorizontal() {
@@ -1233,9 +1260,11 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 				//if (DEBUG) System.out.println("paint col: " + col);
 				g.setColor(new Color(240, 238, 230));
 				
-				if (selectedCols.contains(col)) {
+				if (this.pressed.contains(col)) {
+					g.setColor(new Color(200, 200, 200));
 					raised = false;
 				}
+
 				g.fill3DRect(x + GRID_WIDTH/2, 0, unit, SIZE, raised);
 				
 				if (col == this.hilitedColumnHeader) {
@@ -1260,18 +1289,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 					SIZE);
 			return area;
 		}
-		
-		private void toggleColumnHeaderSelection(int col) {
-			if (this.selectedCols.remove(col)) {
-				TiledLayerEditorComponent.this.setColumnSelection(col, false);
-			}
-			else {
-				this.selectedCols.add(col);
-				TiledLayerEditorComponent.this.setColumnSelection(col, true);
-			}
-			this.repaint();
-		}
-		
+				
 		private void hiliteColumnHeader(int col) {
 			if (this.hilitedColumnHeader == col) {
 				return;
@@ -1287,16 +1305,26 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		 */
 		public void mouseClicked(MouseEvent e) {
 			int col = this.getColumnAtPoint(e.getPoint());
-			this.toggleColumnHeaderSelection(col);
+			TiledLayerEditorComponent.this.setColumnSelection(col, !e.isControlDown());
 		}
 		public void mousePressed(MouseEvent e) {
+			int col = this.getColumnAtPoint(e.getPoint());
 			if (e.isPopupTrigger()) {
 				this.handlePopUp(e);
 			}
+			else {
+				this.pressed.add(col);
+				this.repaint(this.getColumnHeaderArea(col));
+			}
 		}
 		public void mouseReleased(MouseEvent e) {
+			int col = this.getColumnAtPoint(e.getPoint());
 			if (e.isPopupTrigger()) {
 				this.handlePopUp(e);
+			}
+			else {
+				this.pressed.clear();
+				this.repaint();
 			}
 		}
 		
