@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,13 +23,10 @@ import java.awt.BorderLayout;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.SortedMap;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
 import junit.framework.*;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
@@ -37,8 +34,6 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.errorstripe.caret.CaretMarkProviderCreator;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
-import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
-import org.netbeans.modules.editor.errorstripe.privatespi.MarkProviderCreator;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.plain.PlainKit;
@@ -65,14 +60,6 @@ public class AnnotationViewTest extends NbTestCase {
         CaretMarkProviderCreator.switchOff = true;
     }
 
-    public static Test suite() {
-        TestSuite suite = new TestSuite(AnnotationViewTest.class);
-        
-//        suite.addTest(TestSuite.createTest(AnnotationViewTest.class, "testGetMainMarkForBlock"));
-        
-        return suite;
-    }
-    
     public void testModelToView() throws Exception {
         performTest(new Action() {
             public void test(AnnotationView aView, BaseDocument document) throws Exception {

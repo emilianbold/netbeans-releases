@@ -19,7 +19,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="latex/core/test-unit" basedir="." default="all">
+<project name="editor/errorstripe" basedir="." default="all">
     <import file="../../../nbbuild/templates/xtest-unit.xml"/>
 
     <target name="default-compiler" depends="xtest-unit.default-compiler">
