@@ -57,6 +57,7 @@ class NodeCache implements PropertyChangeListener
     final private HashMap<String,Collection<Node>> clones=new HashMap<String,Collection<Node>>();
     final private J2MEProject project;
 
+    final static private Action[] emptyAction = new Action[] {};
     final private Action[] pActions=new Action[] {
                 AddProjectAction.getStaticInstance(),
                 AddJarAction.getStaticInstance(),
@@ -137,7 +138,7 @@ class NodeCache implements PropertyChangeListener
         if (gray)
         {
             resNode=NodeFactory.resourcesNode(resNodes.toArray(subNodes), lookup,
-                    "Resources","Resources - Inherited from "+project.getConfigurationHelper().getDefaultConfiguration().getDisplayName(),PLATFORM_ICON);
+                    "Resources","Resources - Inherited from "+project.getConfigurationHelper().getDefaultConfiguration().getDisplayName(),PLATFORM_ICON,emptyAction);
         }
         else
         {
