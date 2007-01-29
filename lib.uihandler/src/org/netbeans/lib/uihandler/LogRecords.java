@@ -182,6 +182,38 @@ public final class LogRecords {
             r.setParameters(params.toArray());
         }
         
+        String exception = content(s, "exception", false);
+        if (exception != null) {
+            FakeException currentEx = new FakeException(null);
+            int[] stackIndex = new int[1];
+            currentEx.message = content(exception, "message", true, stackIndex);
+            
+            if (currentEx.message.equals(r.getMessage())) {
+                // probably parsed message inside the exception block
+                r.setMessage(null);
+            }
+            
+            for (;;) {
+                String frame = content(exception, "frame", false, stackIndex);
+                if (frame == null) {
+                    break;
+                }
+                
+                String clazz = content(frame, "class", true);
+                String method = content(frame, "method", false);
+                String line = content(frame, "line", false);
+                LOG.finer("StackTrace " + clazz + "." + method + ":" + line);
+                StackTraceElement elem = new StackTraceElement(
+                    clazz, 
+                    method, 
+                    null,
+                    line == null ? -1 : Integer.parseInt(line)
+                );
+                currentEx.trace.add(elem);
+            }
+            r.setThrown(currentEx);
+        }
+        
         return r;
     }
 
@@ -307,6 +339,7 @@ public final class LogRecords {
         }
         private Map<Elem,String> values = new EnumMap<Elem,String>(Elem.class);
         private Elem current;
+        private FakeException currentEx;
         private List<String> params;
         private StringBuilder chars = new StringBuilder();
         
@@ -338,6 +371,9 @@ public final class LogRecords {
 
             try {
                 current = Elem.valueOf(qName.toUpperCase());
+                if (current == Elem.EXCEPTION) {
+                    currentEx = new FakeException(new EnumMap<Elem,String>(values));
+                }
             } catch (IllegalArgumentException ex) {
                 LOG.log(Level.FINE, "Uknown tag " + qName, ex);
                 current = null;
@@ -359,7 +395,27 @@ public final class LogRecords {
             current = null;
             chars.setLength(0);
             
-            
+            if (currentEx != null && currentEx.values != null) {
+                if ("frame".equals(qName)) { // NOI18N
+                    String line = Elem.LINE.parse(values);
+                    StackTraceElement elem = new StackTraceElement(
+                        Elem.CLASS.parse(values),
+                        Elem.METHOD.parse(values),
+                        null,
+                        line == null ? -1 : Integer.parseInt(line)
+                    );
+                    currentEx.trace.add(elem);
+                    values.remove(Elem.CLASS);
+                    values.remove(Elem.METHOD);
+                    values.remove(Elem.LINE);
+                }
+                if ("exception".equals(qName)) {
+                    currentEx.message = values.get(Elem.MESSAGE);
+                    values = currentEx.values;
+                    currentEx.values = null;
+                }
+                return;
+            }
             
             if ("record".equals(qName)) { // NOI18N
                 String millis = Elem.MILLIS.parse(values);
@@ -390,8 +446,13 @@ public final class LogRecords {
                         r.setParameters(params.toArray());
                     }
                 }
-                callback.publish(r);
+                if (currentEx != null) {
+                    r.setThrown(currentEx);
+                }
                 
+                callback.publish(r);
+
+                currentEx = null;
                 values.clear();
             }
             
@@ -437,5 +498,23 @@ public final class LogRecords {
         public Enumeration<String> getKeys() {
             return Collections.enumeration(Collections.singleton(key));
         }
-}
+    } // end of FakeBundle
+    
+    private static final class FakeException extends Exception {
+        final List<StackTraceElement> trace = new ArrayList<StackTraceElement>();
+        Map<Parser.Elem,String> values;
+        String message;
+        
+        public FakeException(Map<Parser.Elem,String> values) {
+            this.values = values;
+        }
+       
+        public StackTraceElement[] getStackTrace() {
+            return trace.toArray(new StackTraceElement[0]);
+        }
+
+        public String getMessage() {
+            return message;
+        }
+    } // end of FakeException
 }

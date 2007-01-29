@@ -75,7 +75,16 @@ public class UINodeTest extends TestCase {
         Node n = UINode.create(r);
         assertNotNull(n);
         assertNotNull(n.getName());
-   //     assertSerializedWell(n);
+        assertSerializedWell(n);
+    }
+    public void testHasNonNullNameWhenMessageIsGiven() throws Exception {
+        Exception my = new Exception("Ahoj");
+        LogRecord r = new LogRecord(Level.WARNING, my.getMessage());
+        r.setThrown(my);
+        Node n = UINode.create(r);
+        assertNotNull(n);
+        assertNotNull(n.getName());
+        assertSerializedWell(n);
     }
     
     private static void assertSerializedWell(Node n) throws Exception {

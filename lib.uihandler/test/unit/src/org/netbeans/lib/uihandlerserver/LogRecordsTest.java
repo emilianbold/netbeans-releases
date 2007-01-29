@@ -26,12 +26,15 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.lib.uihandler.LogRecords;
 
 /**
@@ -45,8 +48,14 @@ public class LogRecordsTest extends NbTestCase {
         super(testName);
     }
     
+    
+    public static Test suite() {
+        return new NbTestSuite(LogRecordsTest.class);
+//        return new LogRecordsTest("testReadException");
+    }
+    
     protected Level logLevel() {
-        return Level.FINEST;
+        return Level.INFO;
     }
 
     protected void setUp() throws Exception {
@@ -82,6 +91,74 @@ public class LogRecordsTest extends NbTestCase {
         }
         is.close();
     }
+    
+    public void testReadException() throws Exception {
+        String what = "NB1216449736.xml";
+        
+        InputStream is = getClass().getResourceAsStream(what);
+        int cnt = 0;
+        
+        class H extends Handler {
+            int cnt;
+            LogRecord first;
+            
+            public void publish(LogRecord record) {
+                if (cnt == 0) {
+                    first = record;
+                }
+                cnt++;
+            }
+
+            public void flush() {
+            }
+
+            public void close() throws SecurityException {
+            }
+        }
+        
+        LogRecord first = null;
+        for (;;) {
+            LOG.log(Level.INFO, "Reading {0}th record", cnt);
+            LogRecord r = LogRecords.read(is);
+            if (r == null) {
+                break;
+            }
+            if (first == null) {
+                first = r;
+            }
+            LOG.log(Level.INFO, "Read {0}th record", cnt);
+            cnt++;
+        }
+        is.close();
+        
+        H h = new H();
+        is = getClass().getResourceAsStream(what);
+        LogRecords.scan(is, h);
+        is.close();
+        
+        assertNotNull(first);
+        assertNotNull(h.first);
+        assertEquals("Same message", first.getMessage(), h.first.getMessage());
+        assertNotNull("exception from read", first.getThrown());
+        assertNotNull("exception from scan", h.first.getThrown());
+        assertEquals("Same exception message", first.getThrown().getMessage(), h.first.getThrown().getMessage());
+        
+        StackTraceElement[] arr1 = first.getThrown().getStackTrace();
+        StackTraceElement[] arr2 = h.first.getThrown().getStackTrace();
+        
+        assertEquals("Same length", arr1.length, arr2.length);
+
+        for (int i = 0; i < arr1.length; i++) {
+            if (!arr1[i].equals(arr2[i])) {
+                fail(i + " th stack differ: " + arr1[i] + " != " + arr2[i] + "\nline: " + arr1[i].getLineNumber() + " and " + arr2[i].getLineNumber());
+            }
+        }
+        
+        
+        assertEquals("The same amount of records", cnt, h.cnt);
+        
+    }
+    
     public void testCanReadEmpty() throws Exception {
         InputStream is = getClass().getResourceAsStream("Empty.xml");
         int cnt = 0;
