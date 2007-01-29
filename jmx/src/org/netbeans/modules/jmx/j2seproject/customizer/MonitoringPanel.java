@@ -247,13 +247,7 @@ public class MonitoringPanel extends javax.swing.JPanel implements ActionListene
                 "true")); // NOI18N
         
         String pluginsPathVal = projectProperties.getProperty(ManagementCompositePanelProvider.PLUGINS_PATH_KEY, "");
-        StringTokenizer tk = new StringTokenizer(pluginsPathVal,",");
-        DefaultListModel model = new DefaultListModel();
-        jList1.setModel(model);
-        while(tk.hasMoreTokens()) {
-            String path = tk.nextToken();
-            model.addElement(path);
-        }
+       
         boolean pluginsClassPathVal =
                 Boolean.valueOf(projectProperties.getProperty(ManagementCompositePanelProvider.PLUGINS_CLASSPATH_KEY,
                 "true")); // NOI18N
@@ -313,11 +307,11 @@ public class MonitoringPanel extends javax.swing.JPanel implements ActionListene
         pluginsChooser.setMultiSelectionEnabled(true);
         pluginsChooser.setFileFilter(new PluginsFileFilter());
         pluginsChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        pathController = new PathController(jList1, pathLabel,
-                (DefaultListModel)jList1.getModel(), jButtonAddJarC,
+        pathController = new PathController(jList1, pathLabel, pluginsPathVal, jButtonAddJarC,
                 pluginsChooser,
                 jButtonRemoveC,
-                jButtonMoveUpC,jButtonMoveDownC);
+                jButtonMoveUpC,jButtonMoveDownC, null);
+        
         pathController.setVisible(plugins);
         pathController.setEnabled(localAttach);
     }
@@ -336,15 +330,8 @@ public class MonitoringPanel extends javax.swing.JPanel implements ActionListene
             jmxProperties.put(ManagementCompositePanelProvider.RESOLVE_CLASSPATH_KEY, String.valueOf(classpath.isSelected()));
            jmxProperties.put(ManagementCompositePanelProvider.PLUGINS_CLASSPATH_KEY, String.valueOf(pluginsClasspath.isSelected()));
             
-            Enumeration pluginsPath = ((DefaultListModel)jList1.getModel()).elements();
-            StringBuffer buffer = new StringBuffer();
-            while(pluginsPath.hasMoreElements()) {
-                Object path = pluginsPath.nextElement();
-                buffer.append(path.toString());
-                if(pluginsPath.hasMoreElements())
-                    buffer.append(",");
-            }
-            jmxProperties.put(ManagementCompositePanelProvider.PLUGINS_PATH_KEY, buffer.toString());
+           
+            jmxProperties.put(ManagementCompositePanelProvider.PLUGINS_PATH_KEY, pathController.toString());
             J2SEProjectType.addProjectProperties(jmxProperties, project);
         }catch(MutexException mx) {
             System.out.println(mx.toString());

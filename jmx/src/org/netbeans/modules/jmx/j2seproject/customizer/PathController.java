@@ -12,11 +12,16 @@ package org.netbeans.modules.jmx.j2seproject.customizer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.Enumeration;
+import java.util.StringTokenizer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.ListModel;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -24,7 +29,7 @@ import javax.swing.event.ListSelectionListener;
  *
  * @author jfdenise
  */
-public class PathController implements ActionListener, ListSelectionListener {
+public class PathController implements ActionListener, ListSelectionListener, ListDataListener {
     private JList l;
     private JButton add;
     private JButton remove;
@@ -33,8 +38,16 @@ public class PathController implements ActionListener, ListSelectionListener {
     private JFileChooser chooser;
     private DefaultListModel model;
     private JLabel label;
+    private ListDataListener lstnr;
+    public PathController(JList l, JLabel label, JButton add, JFileChooser chooser, JButton remove, JButton up, JButton down, ListDataListener lstnr) {
+        this(l,label, createModel(""),add,chooser,remove,up,down, lstnr);
+    }
+    public PathController(JList l, JLabel label, String items, JButton add, JFileChooser chooser, JButton remove, JButton up, JButton down, ListDataListener lstnr) {
+        this(l,label,createModel(items),add,chooser,remove,up,down, lstnr);
+    }
+    
     /** Creates a new instance of PathController */
-    public PathController(JList l, JLabel label, DefaultListModel model, JButton add, JFileChooser chooser, JButton remove, JButton up, JButton down) {
+    public PathController(JList l, JLabel label, DefaultListModel model, JButton add, JFileChooser chooser, JButton remove, JButton up, JButton down, ListDataListener lstnr) {
         this.l = l;
         this.label = label;
         this.model = model;
@@ -43,6 +56,13 @@ public class PathController implements ActionListener, ListSelectionListener {
         this.up = up;
         this.down = down;
         this.chooser = chooser;
+        
+        this.lstnr = lstnr;
+        
+        l.setModel(model);
+        if(model != null) {
+            model.addListDataListener(this);
+        }
         add.setActionCommand("add");// NOI18N
         remove.setActionCommand("remove");// NOI18N
         up.setActionCommand("up");// NOI18N
@@ -66,7 +86,7 @@ public class PathController implements ActionListener, ListSelectionListener {
         up.setEnabled(up.isEnabled() && b);
         down.setEnabled(down.isEnabled() && b);
     }
-     public void setVisible(boolean b) {
+    public void setVisible(boolean b) {
         l.setVisible(b);
         label.setVisible(b);
         add.setVisible(b);
@@ -74,7 +94,7 @@ public class PathController implements ActionListener, ListSelectionListener {
         up.setVisible(b);
         down.setVisible(b);
     }
-     
+    
     public void actionPerformed(ActionEvent e) {
         if (e.getActionCommand().equals( "add")) {// NOI18N
             int returnVal = chooser.showOpenDialog(null);
@@ -128,6 +148,42 @@ public class PathController implements ActionListener, ListSelectionListener {
         }
     }
     
+    // return the list of selected items
+    public String toString() {
+        Enumeration pluginsPath = model.elements();
+        StringBuffer buffer = new StringBuffer();
+        while(pluginsPath.hasMoreElements()) {
+            Object path = pluginsPath.nextElement();
+            buffer.append(path.toString());
+            if(pluginsPath.hasMoreElements())
+                buffer.append(",");
+        }
+        return buffer.toString();
+    }
+    
+    public synchronized void updateModel(String items) {
+        if(items == null)
+            return;
+        ListModel m = l.getModel();
+        if(m != null) {
+            m.removeListDataListener(this);
+        }
+        
+        model = createModel(items);
+        model.addListDataListener(this);
+        l.setModel(model);
+    }
+    
+    public static DefaultListModel createModel(String items) {
+        StringTokenizer tk = new StringTokenizer(items,",");
+        DefaultListModel model = new DefaultListModel();
+        while(tk.hasMoreTokens()) {
+            String path = tk.nextToken();
+            model.addElement(path);
+        }
+        return model;
+    }
+    
     public void valueChanged(ListSelectionEvent e) {
         int[] indices = l.getSelectedIndices();
         if(indices.length != 1) {
@@ -150,6 +206,24 @@ public class PathController implements ActionListener, ListSelectionListener {
         
         if(single == model.getSize() -1)
             down.setEnabled(false);
+    }
+    
+    public void intervalAdded(ListDataEvent arg0) {
+        if(lstnr == null)
+            return;
+        lstnr.intervalAdded(arg0);
+    }
+    
+    public void intervalRemoved(ListDataEvent arg0) {
+        if(lstnr == null)
+            return;
+        lstnr.intervalRemoved(arg0);
+    }
+    
+    public void contentsChanged(ListDataEvent arg0) {
+        if(lstnr == null)
+            return;
+        lstnr.contentsChanged(arg0);
     }
     
 }
