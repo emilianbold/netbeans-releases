@@ -3444,11 +3444,13 @@ class JavaCodeGenerator extends CodeGenerator {
         
         private boolean isJavaEditorDisplayed() {
             boolean showing = false;
-            JEditorPane[] jeditPane = FormEditor.getFormDataObject(formModel).getFormEditorSupport().getOpenedPanes();
-            if (jeditPane != null) {
-                for (int i=0; i<jeditPane.length; i++) {
-                    if (showing = jeditPane[i].isShowing()) {
-                        break;
+            if (EventQueue.isDispatchThread()) { // issue 91715
+                JEditorPane[] jeditPane = FormEditor.getFormDataObject(formModel).getFormEditorSupport().getOpenedPanes();
+                if (jeditPane != null) {
+                    for (int i=0; i<jeditPane.length; i++) {
+                        if (showing = jeditPane[i].isShowing()) {
+                            break;
+                        }
                     }
                 }
             }
