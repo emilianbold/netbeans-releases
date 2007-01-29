@@ -49,10 +49,7 @@ import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.ErrorManager;
 
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.spi.project.libraries.LibraryImplementation;
 
 public class Util {
     
