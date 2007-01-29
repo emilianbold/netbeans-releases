@@ -402,14 +402,14 @@ public class Registry {
         }
         
         // hide products that do not support the current platform
-        for (Product product: queryProducts(TrueFilter.INSTANCE)) {
+        for (Product product: getProducts()) {
             if (!product.getPlatforms().contains(targetPlatform)) {
                 product.setVisible(false);
             }
         }
         
         // hide empty groups
-        for (Group group: queryGroups(TrueFilter.INSTANCE)) {
+        for (Group group: getGroups()) {
             if (group.isEmpty()) {
                 group.setVisible(false);
             }
@@ -831,6 +831,10 @@ public class Registry {
     }
     
     // groups queries ///////////////////////////////////////////////////////////////
+    public List<Group> getGroups() {
+        return queryGroups(TrueFilter.INSTANCE);
+    }
+    
     public Group getGroup(String uid) {
         List<Group> candidates = queryGroups(new GroupFilter(uid));
         
