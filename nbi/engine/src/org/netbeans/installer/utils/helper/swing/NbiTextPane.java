@@ -22,6 +22,7 @@ package org.netbeans.installer.utils.helper.swing;
 
 import javax.swing.JTextPane;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.Text;
 import org.netbeans.installer.utils.helper.Text.ContentType;
 
@@ -34,6 +35,7 @@ public class NbiTextPane extends JTextPane {
         super();
         
         setOpaque(false);
+        
         setEditable(false);
         setBorder(new EmptyBorder(0, 0, 0, 0));
         

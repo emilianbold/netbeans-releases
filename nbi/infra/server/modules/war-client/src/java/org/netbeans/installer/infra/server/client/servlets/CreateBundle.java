@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URLEncoder;
+import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.servlet.ServletException;
@@ -133,7 +134,9 @@ public class CreateBundle extends HttpServlet {
             final OutputStream output = response.getOutputStream();
             
             response.setContentType("application/octet-stream");
+            response.setHeader("Content-Length", Long.toString(bundle.length()));
             response.setHeader("Content-Disposition", "attachment; filename=" + bundle.getName());
+            response.setHeader("Last-Modified", StringUtils.httpFormat(new Date(bundle.lastModified())));
             
             StreamUtils.transferData(input, output);
             

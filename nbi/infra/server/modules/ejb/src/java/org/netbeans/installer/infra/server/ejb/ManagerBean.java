@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.ejb.Stateless;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.components.Product;
@@ -49,11 +50,14 @@ import org.w3c.dom.Document;
 @Stateless
 public class ManagerBean implements Manager {
     /////////////////////////////////////////////////////////////////////////////////
-    // Instance
-    private Map<String, File> registries = new HashMap<String, File>();
-    private Map<String, File> bundles    = new HashMap<String, File>();
+    // Static
+    private static ReentrantLock bundlesLock = new ReentrantLock();
     
-    // constructor //////////////////////////////////////////////////////////////////
+    private static Map<String, File> registries = new HashMap<String, File>();
+    private static Map<String, File> bundles    = new HashMap<String, File>();
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Instance
     public ManagerBean() {
         try {
             ROOT.mkdirs();
@@ -292,8 +296,8 @@ public class ManagerBean implements Manager {
             final Registry registry = new Registry(registryXml);
             
             final List<Product> existing = registry.getProducts(
-                    uid, 
-                    Version.getVersion(version), 
+                    uid,
+                    Version.getVersion(version),
                     StringUtils.parsePlatforms(platforms));
             
             if (existing != null) {
@@ -566,87 +570,97 @@ public class ManagerBean implements Manager {
     }
     
     public File createBundle(Platform platform, String[] names, String[] components) throws ManagerException {
-        String key = "";
-        for (String component: components) {
-            key += component + ";";
-        }
-        key += platform.toString();
-        
-        if (bundles.get(key) != null) {
-            return bundles.get(key);
-        }
-        
+        bundlesLock.lock();
         try {
-            File statefile = FileUtils.createTempFile(TEMP, false);
-            File bundle = new File(BUNDLES,
-                    "nbi_" + 
-                    StringUtils.asString(components, "_").replace(",", "_") + 
-                    "_" + 
-                    platform + 
-                    ".jar");
+            String key = "";
+            for (String component: components) {
+                key += component + ";";
+            }
+            key += platform.toString();
             
-            File javaHome  = new File(System.getProperty("java.home"));
+            if (bundles.get(key) != null) {
+                return bundles.get(key);
+            }
             
-            String     remote = "";
-            List<File> files  = new LinkedList<File>();
-            for (String name: names) {
-                if (registries.get(name) == null) {
-                    addRegistry(name);
+            try {
+                File statefile = FileUtils.createTempFile(TEMP, false);
+                File userDir = FileUtils.createTempFile(TEMP, false);
+                
+                File bundle = new File(BUNDLES,
+                        "nbi_" +
+                        StringUtils.asString(components, "_").replace(",", "_") +
+                        "_" +
+                        platform +
+                        ".jar");
+                
+                File javaHome  = new File(System.getProperty("java.home"));
+                
+                String     remote = "";
+                List<File> files  = new LinkedList<File>();
+                for (String name: names) {
+                    if (registries.get(name) == null) {
+                        addRegistry(name);
+                    }
+                    File xml = new File(registries.get(name), REGISTRY_XML);
+                    
+                    files.add(xml);
+                    remote += xml.toURI().toString() + "\n";
                 }
-                File xml = new File(registries.get(name), REGISTRY_XML);
+                remote = remote.trim();
                 
-                files.add(xml);
-                remote += xml.toURI().toString() + "\n";
-            }
-            remote = remote.trim();
-            
-            Registry registry = new Registry(platform, files);
-            for (String string: components) {
-                String[] parts = string.split(",");
+                Registry registry = new Registry(platform, files);
+                for (String string: components) {
+                    String[] parts = string.split(",");
+                    
+                    registry.getProduct(
+                            parts[0],
+                            Version.getVersion(parts[1])).setStatus(Status.INSTALLED);
+                }
+                registry.saveStateFile(statefile, new Progress());
                 
-                registry.getProduct(
-                        parts[0], 
-                        Version.getVersion(parts[1])).setStatus(Status.INSTALLED);
+                ExecutionResults results = SystemUtils.executeCommand(
+                        JavaUtils.getExecutable(javaHome).getAbsolutePath(),
+                        "-Dnbi.product.remote.registries=" + remote,
+                        "-jar",
+                        ENGINE.getAbsolutePath(),
+                        "--silent",
+                        "--state",
+                        statefile.getAbsolutePath(),
+                        "--create-bundle",
+                        bundle.getAbsolutePath(),
+                        "--ignore-lock",
+                        "--platform",
+                        platform.toString(),
+                        "--userdir",
+                        userDir.getAbsolutePath());
+                
+                FileUtils.deleteFile(statefile);
+                FileUtils.deleteFile(userDir, true);
+                
+                if (results.getErrorCode() != 0) {
+                    throw new ManagerException("Could not create bundle - error in running the engine");
+                }
+                
+                if (platform == Platform.WINDOWS) {
+                    bundle = new File(
+                            bundle.getAbsolutePath().replaceFirst("\\.jar$", ".exe"));
+                }
+                
+                bundles.put(key, bundle);
+                
+                return bundle;
+            } catch (InitializationException e) {
+                e.printStackTrace();
+                throw new ManagerException("Could not load registry", e);
+            } catch (FinalizationException e) {
+                e.printStackTrace();
+                throw new ManagerException("Could not load registry", e);
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new ManagerException("Could not load registry", e);
             }
-            registry.saveStateFile(statefile, new Progress());
-            
-            ExecutionResults results = SystemUtils.executeCommand(
-                    JavaUtils.getExecutable(javaHome).getAbsolutePath(),
-                    "-Dnbi.product.remote.registries=" + remote,
-                    "-jar",
-                    ENGINE.getAbsolutePath(),
-                    "--silent",
-                    "--state",
-                    statefile.getAbsolutePath(),
-                    "--create-bundle",
-                    bundle.getAbsolutePath(),
-                    "--ignore-lock",
-                    "--platform",
-                    platform.toString());
-            
-            statefile.delete();
-            
-            if (results.getErrorCode() != 0) {
-                throw new ManagerException("Could not create bundle - error in running the engine");
-            }
-            
-            if (platform == Platform.WINDOWS) { 
-                bundle = new File(
-                        bundle.getAbsolutePath().replaceFirst("\\.jar$", ".exe"));
-            }
-            
-            bundles.put(key, bundle);
-            
-            return bundle;
-        } catch (InitializationException e) {
-            e.printStackTrace();
-            throw new ManagerException("Could not load registry", e);
-        } catch (FinalizationException e) {
-            e.printStackTrace();
-            throw new ManagerException("Could not load registry", e);
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new ManagerException("Could not load registry", e);
+        } finally {
+            bundlesLock.unlock();
         }
     }
     
@@ -708,9 +722,17 @@ public class ManagerBean implements Manager {
     }
     
     private void deleteBundles() throws ManagerException {
-        for (String key: bundles.keySet()) {
-            bundles.get(key).delete();
-            bundles.remove(key);
+        bundlesLock.lock();
+        try {
+            for (String key: bundles.keySet()) {
+                FileUtils.deleteFile(bundles.get(key));
+            }
+            
+            bundles.clear();
+        } catch (IOException e) {
+            throw new ManagerException("Cannot clear bundles", e);
+        } finally {
+            bundlesLock.unlock();
         }
     }
 }

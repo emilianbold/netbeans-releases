@@ -38,6 +38,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.DefaultCellEditor;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JTree;
 import javax.swing.UIManager;
@@ -345,7 +346,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             componentsTree.setEditable(
                     true);
             componentsTree.setRowHeight(
-                    componentsTree.getRowHeight() + 4);
+                    new JCheckBox().getPreferredSize().height);
             componentsTree.getSelectionModel().addTreeSelectionListener(
                     new TreeSelectionListener() {
                 public void valueChanged(TreeSelectionEvent event) {

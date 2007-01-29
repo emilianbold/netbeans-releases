@@ -118,7 +118,7 @@ public class NbiFrame extends JFrame {
         }
     }
     
-    public static final int DEFAULT_FRAME_WIDTH  = 600;
+    public static final int DEFAULT_FRAME_WIDTH  = 650;
     public static final int DEFAULT_FRAME_HEIGHT = 500;
     public static final URL DEFAULT_FRAME_ICON   = NbiFrame.class.
             getClassLoader().
