@@ -77,7 +77,11 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new BodyStatementTest("testRenameInContinue"));
 //        suite.addTest(new BodyStatementTest("testRenameInBreak"));
 //        suite.addTest(new BodyStatementTest("testRenameLocVarTypePar"));
-          return suite;
+//        suite.addTest(new BodyStatementTest("testRenameInSwitch"));
+//        suite.addTest(new BodyStatementTest("testRenameInTypeNewArr"));
+//        suite.addTest(new BodyStatementTest("testRenameInTypeTest"));
+//        suite.addTest(new BodyStatementTest("testRenameInTypeTestII"));
+        return suite;
     }
     
     /**
@@ -1636,6 +1640,234 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
                 ptt = (ParameterizedTypeTree) nct.getIdentifier();
                 it = (IdentifierTree) ptt.getTypeArguments().get(0);
                 workingCopy.rewrite(it, make.setLabel(it, "DataRen"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * Test rename in switch
+     */
+    public void testRenameInSwitch() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method(int la) {\n" +
+            "        switch (la) {\n" +
+            "            case 0:\n" +
+            "                break;\n" +
+            "            case 1:\n" +
+            "                break;\n" +
+            "           default:\n" +
+            "                // do nothing\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method(int renamed) {\n" +
+            "        switch (renamed) {\n" +
+            "            case 0:\n" +
+            "                break;\n" +
+            "            case 1:\n" +
+            "                break;\n" +
+            "           default:\n" +
+            "                // do nothing\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree)clazz.getMembers().get(1);
+                // parameter rename
+                VariableTree vt = method.getParameters().get(0);
+                workingCopy.rewrite(vt, make.setLabel(vt, "renamed"));
+                // body rename
+                BlockTree block = method.getBody();
+                SwitchTree swicStrom = (SwitchTree) block.getStatements().get(0);
+                ParenthesizedTree pTree = (ParenthesizedTree) swicStrom.getExpression();
+                IdentifierTree ident = (IdentifierTree) pTree.getExpression();
+                workingCopy.rewrite(ident, make.setLabel(ident, "renamed"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * diffNewArray
+     * diffTypeArray
+     */
+    public void testRenameInTypeNewArr() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method() {\n" +
+            "        int dim1 = 10;\n" +
+            "        int dim2 = 15;\n" +
+            "        Test[][] obj = new Test[dim1][dim2];\n" +
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class RenamedTest {\n" +
+            "    public Object method() {\n" +
+            "        int dim1 = 10;\n" +
+            "        int dim2 = 15;\n" +
+            "        RenamedTest[][] obj = new RenamedTest[dim1][dim2];\n" +
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                workingCopy.rewrite(clazz, make.setLabel(clazz, "RenamedTest"));
+                MethodTree method = (MethodTree)clazz.getMembers().get(1);
+                BlockTree block = method.getBody();
+                // type rename
+                VariableTree vt = (VariableTree) block.getStatements().get(2);
+                ArrayTypeTree att = (ArrayTypeTree) vt.getType();
+                att = (ArrayTypeTree) att.getType(); // go inside, two dimensional array
+                workingCopy.rewrite(att.getType(), make.Identifier("RenamedTest"));
+                // new array rename
+                NewArrayTree nat = (NewArrayTree) vt.getInitializer();
+                workingCopy.rewrite(nat.getType(), make.Identifier("RenamedTest"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * diffTypeTest
+     */
+    public void testRenameInTypeTest() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method(Object o) {\n" +
+            "        if (o instanceof Test) {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method(Object obj) {\n" +
+            "        if (obj instanceof Test) {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree)clazz.getMembers().get(1);
+                // parameter rename
+                VariableTree vt = method.getParameters().get(0);
+                workingCopy.rewrite(vt, make.setLabel(vt, "obj"));
+                // body rename
+                BlockTree block = method.getBody();
+                IfTree iv = (IfTree) block.getStatements().get(0);
+                ParenthesizedTree pt = (ParenthesizedTree) iv.getCondition();
+                InstanceOfTree iot = (InstanceOfTree) pt.getExpression();
+                IdentifierTree ident = (IdentifierTree) iot.getExpression();
+                workingCopy.rewrite(ident, make.Identifier("obj"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * diffTypeTestII
+     */
+    public void testRenameInTypeTestII() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Object method(Object o) {\n" +
+            "        if (o instanceof Test) {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "public class RenamedTest {\n" +
+            "    public Object method(Object o) {\n" +
+            "        if (o instanceof RenamedTest) {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+                 
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                workingCopy.rewrite(clazz, make.setLabel(clazz, "RenamedTest"));
+                MethodTree method = (MethodTree)clazz.getMembers().get(1);
+                // body rename
+                BlockTree block = method.getBody();
+                IfTree iv = (IfTree) block.getStatements().get(0);
+                ParenthesizedTree pt = (ParenthesizedTree) iv.getCondition();
+                InstanceOfTree iot = (InstanceOfTree) pt.getExpression();
+                IdentifierTree ident = (IdentifierTree) iot.getType();
+                workingCopy.rewrite(ident, make.Identifier("RenamedTest"));
             }
             
             public void cancel() {

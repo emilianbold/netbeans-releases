@@ -96,6 +96,54 @@ public class TypeParameterTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    /**
+     */
+    public void testRenameWildCard() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "import java.util.*;\n\n" +
+            "public class MyList<Ex> {\n" +
+            "    public Object method(Collection<? extends Ex> c) {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "import java.util.*;\n\n" +
+            "public class MyList<E> {\n" +
+            "    public Object method(Collection<? extends E> c) {\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                // name
+                TypeParameterTree tpt = clazz.getTypeParameters().get(0);
+                workingCopy.rewrite(tpt, make.setLabel(tpt, "E"));
+                // method
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                VariableTree vt = method.getParameters().get(0);
+                ParameterizedTypeTree ptt = (ParameterizedTypeTree) vt.getType();
+                WildcardTree wct = (WildcardTree) ptt.getTypeArguments().get(0);
+                workingCopy.rewrite(wct.getBound(), make.Identifier("E"));
+            }
+
+            public void cancel() {
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }
