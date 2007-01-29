@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.logging.Level;
 import org.fakepkg.FakeHandler;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.RequestProcessor;
@@ -38,6 +39,11 @@ public class CLIHowHardIsToGuessKeyTest extends NbTestCase {
     
     public CLIHowHardIsToGuessKeyTest(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
 
     protected void setUp() throws Exception {
