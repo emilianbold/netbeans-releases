@@ -255,7 +255,7 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
         // need to compute from annotations
         
         String wsURI=null;
-        if ((isJsr109Supported(project) && Util.isJavaEE5orHigher(project))) {
+        if (isJsr109Supported(project) && Util.isJavaEE5orHigher(project)) {
             try {
                 wsURI = getServiceUri(moduleType);
             } catch (UnsupportedEncodingException ex) {
@@ -320,7 +320,6 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
     private String getServiceUri(final Object moduleType) throws UnsupportedEncodingException {
         final String[] serviceName=new String[1];
         final String[] name=new String[1];
-        final String[] resultedUrl = new String[1];
         final boolean[] isProvider = {false};
         JavaSource javaSource = getImplBeanJavaSource();
         if (javaSource!=null) {
@@ -335,8 +334,7 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
                                                                         srcUtils, 
                                                                         wsElement, 
                                                                         serviceName, 
-                                                                        name, 
-                                                                        resultedUrl );
+                                                                        name);
                         if (!foundWsAnnotation) {
                             TypeElement wsProviderElement = controller.getElements().getTypeElement("javax.jws.WebServiceProvider"); //NOI18N
                             List<? extends AnnotationMirror> annotations = srcUtils.getTypeElement().getAnnotationMirrors();
@@ -358,24 +356,26 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
             }
         }
         
-        if (resultedUrl[0]!=null) return resultedUrl[0];
-        
         String qualifiedImplClassName = service.getImplementationClass();
-        String implClassName = getNameFromPackageName(qualifiedImplClassName);
-        if (serviceName[0]==null) serviceName[0]=implClassName+"Service"; //NOI18N
+        String implClassName = getNameFromPackageName(qualifiedImplClassName);        
+        if (serviceName[0]==null) {
+            serviceName[0]=URLEncoder.encode(implClassName+"Service","UTF-8"); //NOI18N
+        }
         if (J2eeModule.WAR.equals(moduleType)) {
-            return URLEncoder.encode(serviceName[0],"UTF-8"); //NOI18N
-        } else if (J2eeModule.EJB.equals(moduleType)) {
-            if (name==null){
+            return serviceName[0];
+        } else if (J2eeModule.EJB.equals(moduleType)) {      
+            if (name[0]==null){
                 if(isProvider[0]){
                     //per JSR 109, use qualified impl class name for EJB
                     name[0]=qualifiedImplClassName;
                 } else{
                     name[0]=implClassName;
                 }
+                name[0] = URLEncoder.encode(name[0],"UTF-8"); //NOI18N
             }
-            return URLEncoder.encode(serviceName[0],"UTF-8")+"/"+URLEncoder.encode(name[0],"UTF-8"); //NOI18N
-        } else return URLEncoder.encode(serviceName[0],"UTF-8");
+            return serviceName[0]+"/"+ name[0];
+        } else 
+            return serviceName[0];
     }
     
     private boolean resolveServiceUrl(  Object moduleType, 
@@ -383,8 +383,7 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
                                         SourceUtils srcUtils, 
                                         TypeElement wsElement, 
                                         String[] serviceName, 
-                                        String[] name, 
-                                        String[] resultedUrl ) throws IOException {
+                                        String[] name) throws IOException {
         boolean foundWsAnnotation = false;
         List<? extends AnnotationMirror> annotations = srcUtils.getTypeElement().getAnnotationMirrors();
         for (AnnotationMirror anMirror : annotations) {
@@ -394,18 +393,12 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
                 for(ExecutableElement ex:expressions.keySet()) {
                     if (ex.getSimpleName().contentEquals("serviceName")) { 
                         serviceName[0] = (String)expressions.get(ex).getValue();
+                        if (serviceName[0]!=null) serviceName[0] = URLEncoder.encode(serviceName[0],"UTF-8"); //NOI18N
                     } else if (ex.getSimpleName().contentEquals("name")) {
                         name[0] = (String)expressions.get(ex).getValue();
+                        if (name[0]!=null) name[0] = URLEncoder.encode(name[0],"UTF-8");
                     }
-                    if (serviceName[0]!=null) {
-                        if (J2eeModule.WAR.equals(moduleType)) {
-                            resultedUrl[0] = URLEncoder.encode(serviceName[0],"UTF-8"); //NOI18N
-                            break;
-                        } else if (name[0]!=null) {
-                            resultedUrl[0] = URLEncoder.encode(serviceName[0],"UTF-8")+"/"+URLEncoder.encode(name[0],"UTF-8"); //NOI18N
-                            break;
-                        }
-                    }
+                    if (serviceName[0]!=null && name[0]!=null) break;
                 }
                 break;
             } // end if 
