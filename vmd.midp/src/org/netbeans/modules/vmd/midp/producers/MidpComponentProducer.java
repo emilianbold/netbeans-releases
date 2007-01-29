@@ -124,4 +124,5 @@ public abstract class MidpComponentProducer extends ComponentProducer {
             super(TextFieldCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Text Field", "Text Field", TextFieldCD.ICON_PATH, null)); // NOI18N
         }
     }
+   
 }

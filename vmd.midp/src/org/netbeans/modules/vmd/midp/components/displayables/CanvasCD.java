@@ -19,7 +19,6 @@
 package org.netbeans.modules.vmd.midp.components.displayables;
 
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
-import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
@@ -27,12 +26,11 @@ import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
-import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
-import org.netbeans.modules.vmd.midp.inspector.controllers.DisplayablePC;
-import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
+import org.netbeans.modules.vmd.midp.inspector.controllers.DisplayablePC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 
 /**
@@ -108,7 +106,6 @@ public final class CanvasCD extends ComponentDescriptor {
             createPropertiesPresenter(),
             // inspector
             InspectorPositionPresenter.create(new DisplayablePC()),
-            MidpInspectorSupport.createComponentCommandsCategory(CommandCD.TYPEID),
             // code
             createSetterPresenter()
         );
