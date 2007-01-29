@@ -44,6 +44,7 @@ import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Property;
 import org.netbeans.modules.j2ee.persistence.unit.*;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -468,7 +469,7 @@ public class ProviderUtil {
      * @param persistenceUnit the unit to be added
      * @param project the project to which the unit is to be added.
      * @throws InvalidPersistenceXmlException if the given project has an invalid persistence.xml file.
-     * 
+     *
      */
     public static void addPersistenceUnit(PersistenceUnit persistenceUnit, Project project) throws InvalidPersistenceXmlException{
         PUDataObject pud = getPUDataObject(project);
@@ -551,7 +552,7 @@ public class ProviderUtil {
      * @project the project
      * @return true if given project has a persistence.xml containing
      * at least one persitence unit, false otherwise.
-     * @throws InvalidPersistenceXmlException if the given <code>project</code> has an 
+     * @throws InvalidPersistenceXmlException if the given <code>project</code> has an
      *  invalid persistence.xml file.
      */
     public static boolean persistenceExists(Project project) throws InvalidPersistenceXmlException{
@@ -688,5 +689,14 @@ public class ProviderUtil {
             return true;
         }
         return org.netbeans.modules.j2ee.common.Util.isValidServerInstance(j2eeModuleProvider);
+    }
+    
+    /**
+     * @return true if the source level of the given project was 1.4 or lower.
+     */ 
+    public static boolean isSourceLevel14orLower(Project project) {
+        SourceLevelQueryImplementation sl = project.getLookup().lookup(SourceLevelQueryImplementation.class);
+        String srcLevel = sl.getSourceLevel(project.getProjectDirectory());
+        return srcLevel != null ? Double.parseDouble(srcLevel) <= 1.4 : false;
     }
 }

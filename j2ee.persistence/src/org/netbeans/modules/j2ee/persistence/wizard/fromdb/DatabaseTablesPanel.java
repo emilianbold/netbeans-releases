@@ -869,7 +869,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                 return false;
             }
             
-            if (!cmp && org.netbeans.modules.j2ee.common.Util.isSourceLevel14orLower(project)) {
+            if (!cmp && ProviderUtil.isSourceLevel14orLower(project)) {
                 setErrorMessage(NbBundle.getMessage(DatabaseTablesPanel.class, "ERR_NeedProperSourceLevel"));
                 return false;
             }

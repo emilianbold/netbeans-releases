@@ -75,7 +75,7 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
         if (wizardDescriptor == null) {
             return true;
         }
-        if (org.netbeans.modules.j2ee.common.Util.isSourceLevel14orLower(project)) {
+        if (ProviderUtil.isSourceLevel14orLower(project)) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage",
                     NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_NeedProperSourceLevel")); // NOI18N
             return false;
