@@ -1134,9 +1134,15 @@ public class CasualDiff {
             append(Diff.name(oldT.pos, oldT.kind.toString(), newT.kind.toString()));
     }
     
-    protected void diffAnnotation(JCAnnotation oldT, JCAnnotation newT) {
-        diffTree(oldT.annotationType, newT.annotationType);
+    protected int diffAnnotation(JCAnnotation oldT, JCAnnotation newT, int[] bounds) {
+        int localPointer = bounds[0];
+        int[] annotationBounds = getBounds(oldT.annotationType);
+        copyTo(localPointer,annotationBounds[0]);
+        localPointer = diffTree(oldT.annotationType, newT.annotationType, annotationBounds);
         diffParameterList(oldT.args, newT.args, -1);
+        copyTo(localPointer, bounds[1]);
+        
+        return bounds[1];
     }
     
     protected int diffModifiers(JCModifiers oldT, JCModifiers newT, JCTree parent, int lastPrinted) {
@@ -1144,18 +1150,22 @@ public class CasualDiff {
             // modifiers wasn't changed, return the position lastPrinted.
             return lastPrinted;
         }
-        int oldPos = oldT.pos != Position.NOPOS ? getOldPos(oldT) : getOldPos(parent);
-        copyTo(lastPrinted, lastPrinted = oldPos);
         int result = endPos(oldT.annotations);
+        int oldPos = oldT.pos != Position.NOPOS ? getOldPos(oldT) : getOldPos(parent);
         if (listsMatch(oldT.annotations, newT.annotations)) {
+            copyTo(lastPrinted, lastPrinted = oldPos);
             if (result > 0) {
                 copyTo(lastPrinted, lastPrinted = result);
+            } else {
             }
         } else {
-            printer.printAnnotations(newT.annotations);
-            if (result > 0) {
-                copyTo(lastPrinted, lastPrinted = result);
-            }
+            if (oldT.annotations.isEmpty()) copyTo(lastPrinted, oldPos);
+            int[] res = diffList(oldT.annotations, newT.annotations, oldPos, EstimatorFactory.members(), Measure.DEFAULT, printer);
+            lastPrinted = res[1];
+            //printer.printAnnotations(newT.annotations);
+//            if (result > 0) {
+//                copyTo(lastPrinted, lastPrinted = result);
+//            }
         }
         if (oldT.flags != newT.flags) {
             int endPos = endPos(oldT);
@@ -2138,7 +2148,7 @@ public class CasualDiff {
               diffTypeBoundKind((TypeBoundKind)oldT, (TypeBoundKind)newT);
               break;
           case JCTree.ANNOTATION:
-              diffAnnotation((JCAnnotation)oldT, (JCAnnotation)newT);
+              retVal = diffAnnotation((JCAnnotation)oldT, (JCAnnotation)newT, elementBounds);
               break;
           case JCTree.LETEXPR:
               diffLetExpr((LetExpr)oldT, (LetExpr)newT);
