@@ -38,12 +38,12 @@ public final class FreeRectangularAnchor extends Anchor {
     }
 
     public Result compute(Entry entry) {
-        assert entry.getAttachedConnectionWidget()instanceof ConnectionWidget;
+        ConnectionWidget fcw = entry.getAttachedConnectionWidget ();
+        assert fcw != null;
         Point relatedLocation = getRelatedSceneLocation();
-
         Widget widget = getRelatedWidget();
-        ConnectionWidget fcw=entry.getAttachedConnectionWidget();
         List<Point> fcwControlPoints = fcw.getControlPoints ();
+
         Point oppositeLocation;
         if (fcwControlPoints.size () < 2)
             oppositeLocation = getOppositeSceneLocation (entry);
