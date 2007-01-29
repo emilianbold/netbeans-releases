@@ -24,7 +24,7 @@
 
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
-            <file name="Utils.xml" url="Utils.xml"/>
+            <file name="nokiaS80-ant-utils.xml" url="Utils.xml"/>
         </folder>
     </folder>
 </filesystem>

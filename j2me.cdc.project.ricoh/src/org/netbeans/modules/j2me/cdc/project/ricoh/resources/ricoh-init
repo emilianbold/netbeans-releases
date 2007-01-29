@@ -1,9 +1,11 @@
 <xsl:comment>ricoh-init</xsl:comment>
 
-    <target name="ricoh-init" depends="cdc-init" if="cdc-platform.trigger">
+    <target name="ricoh-pre-init" if="cdc-platform.trigger">
         <condition property="ricoh-platform.trigger">
             <equals arg1="ricoh" arg2="${{platform.type}}" casesensitive="false"/>
         </condition>
+    </target>
+    <target name="ricoh-init" depends="ricoh-pre-init" if="ricoh-platform.trigger">
         <available property="jcifs" classname="jcifs.smb.SmbFile" classpath="${{libs.RicohAntTools.classpath}}"/>
         <condition property="no.vendor.name" value="true">
             <equals arg1="${{application.vendor}}" arg2="" trim="true"/>
@@ -20,7 +22,6 @@
         <property name="deploy.dir" value="${{dist.dir}}/deploy"/>
         <property name="signed.jar" value="${{target.dir}}/RICOH.jar"/>
         <property name="rideploy.zip" value="${{dist.dir}}/RICOH.zip"/>
-        <taskdef name="taskIf" classname="ricoh.ant.ConditionalTask" classpath="${{libs.RicohAntTools.classpath}}"/>
         <property name="ricoh.dalp.is-managed" value="true"/>
         <property name="ricoh.application.type" value="xlet"/>
         <property name="ricoh.dalp.information.is-icon-used" value="true"/>
@@ -31,4 +32,6 @@
         <property name="ricoh.dalp.install.destination" value="hdd"/>
         <property name="ricoh.dalp.install.work-dir" value="hdd"/>
         <property name="ricoh.dalp.information.abbreviation" value="RICOH"/>
+        <taskdef name="taskIf" classname="ricoh.ant.ConditionalTask" classpath="${{libs.ricoh-ant-utils.classpath}}"/>
+        <taskdef name="dalp" classname="org.netbeans.modules.j2me.cdc.project.ricoh.DalpBuilder" classpath="${{libs.ricoh-ant-utils.classpath}}"/>
     </target>

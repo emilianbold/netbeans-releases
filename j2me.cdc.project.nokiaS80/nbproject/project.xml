@@ -96,7 +96,7 @@
                 <package-root>antsrc</package-root>
                 <classpath>${ant.jar}:${module.classpath}:${tools.jar}</classpath>
                 <built-to>build/antclasses</built-to>
-                <built-to>${cluster}/ant/nblib/${code.name.base.dashes}.jar</built-to>
+                <built-to>${cluster}/modules/ext/${code.name.base.dashes}.jar</built-to>
             </extra-compilation-unit>
         </data>
     </configuration>

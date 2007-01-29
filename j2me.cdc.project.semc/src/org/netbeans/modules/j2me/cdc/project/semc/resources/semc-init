@@ -1,6 +1,6 @@
 <xsl:comment>semc-init</xsl:comment>
 
-    <target name="semc-init">
+    <target name="semc-init" if="cdc-platform.trigger">
         <condition property="semc-platform.trigger">
             <equals arg1="semc" arg2="${{platform.type}}" casesensitive="false"/>
         </condition>

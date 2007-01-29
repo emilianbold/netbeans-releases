@@ -1,5 +1,5 @@
     <xsl:comment>savaje-init</xsl:comment>
-    <target name="savaje-init">
+    <target name="savaje-init" if="cdc-platform.trigger">
         <condition property="savaje-platform.trigger">
             <equals arg1="savaje" arg2="${{platform.type}}" casesensitive="false"/>
         </condition>

@@ -18,12 +18,20 @@
             </or>
         </condition>
         <property name="j9.dist" value="${{build.dir}}\j9\${{semc.application.uid}}.j9"/>
-        <taskdef name="epocpathsetter" classname="org.netbeans.modules.j2me.cdc.project.EpocPathSetter"/>
+        <taskdef resource="org/netbeans/modules/j2me/cdc/project/defs.properties">
+            <classpath>
+                <pathelement path="${{libs.cdc-ant-utils.classpath}}"/>
+            </classpath>
+        </taskdef>
+        <taskdef resource="org/netbeans/modules/j2me/cdc/project/semc/defs.properties">
+            <classpath>
+                <pathelement path="${{libs.semc-ant-utils.classpath}}"/>
+            </classpath>
+        </taskdef>
         <epocpathsetter home="${{platform.home}}"/>
         <property name="semc.application.caps" value=""/>
         <mkdir dir="${{platform.home}}\epoc32\winscw\c\private\${{semc.application.uid}}"/>
         <mkdir dir="${{build.dir}}\j9"/>
-        <taskdef name="j9builder" classname="org.netbeans.modules.j2me.cdc.project.J9Builder"/>
     </target>
     <xsl:comment>semc-build-j9</xsl:comment>
     <target name="semc-build-j9" if="semc-platform.trigger">
@@ -39,7 +47,6 @@
         </j9builder>
     </target>
     <target name="semc-icon-assembly" if="semc-platform.trigger" unless="icon.invalid">
-        <taskdef name="iconassembly" classname="org.netbeans.modules.j2me.cdc.project.semc.IconAssemblyTask"/>
         <iconassembly home="${{platform.home}}" uid="${{semc.application.uid}}" count="${{application.icon.count}}"/>
     </target>
     <target name="semc-ppro-emulator"  if="semc-platform.trigger" description="Builds neccessary files for semc emulator">
@@ -64,7 +71,6 @@
             </fileset>
         </copy>
         <mkdir dir="${{platform.home}}\epoc32\winscw\c\logs\j9vm"/>
-        <taskdef name="epocinipath" classname="org.netbeans.modules.j2me.cdc.project.semc.EpocIniPath"/>
         <epocinipath file="${{platform.home}}\epoc32\data\epoc.ini"/>
         <exec executable="${{platform.home}}\epoc32\release\winscw\udeb\epoc.exe">
             <env key="SDKDRIVE" value="${{sdkdrive}}"/>

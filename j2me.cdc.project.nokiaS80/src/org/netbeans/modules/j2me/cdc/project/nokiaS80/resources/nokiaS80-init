@@ -1,6 +1,6 @@
 <xsl:comment>nokiaS80-init</xsl:comment>
 
-    <target name="nokiaS80-init">
+    <target name="nokiaS80-init" if="cdc-platform.trigger">
         <condition property="nokiaS80-platform.trigger">
             <equals arg1="nokiaS80" arg2="${{platform.type}}" casesensitive="false"/>
         </condition>

@@ -19,7 +19,7 @@
 -->
 <!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
 <library version="1.0">
-    <name>cdc-utils</name>
+    <name>cdc-ant-utils</name>
     <type>j2se</type>
     <localizing-bundle>org.netbeans.modules.j2me.cdc.project.Bundle</localizing-bundle>
     <volume>

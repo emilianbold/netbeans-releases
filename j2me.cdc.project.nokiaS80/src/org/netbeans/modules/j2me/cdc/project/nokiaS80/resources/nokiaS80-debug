@@ -6,14 +6,14 @@
                 <equals arg1="${{main.class}}" arg2=""/>
             </condition>
         </fail>
-        <taskdef name="j9builder" classname="org.netbeans.modules.j2me.cdc.project.J9Builder"/>
+        <taskdef name="j9builder" classname="org.netbeans.modules.j2me.cdc.project.J9Builder" classpath="${{libs.cdc-ant-utils.classpath}}"/>
         <j9builder jvmargs="${{run.jvmargs}} -Xrunjdwp:server=n,address=${{jpda.port}}" mainclass="${{main.class}}" args="${{application.args}}" platform="${{platform.type}}" home="${{platform.home}}" dist="${{j9.dist}}" id="NOKIA" xlet="${{main.class.xlet}}" applet="${{main.class.applet}}">
             <fileset dir="${{dist.dir}}">
                 <exclude name="javadoc/**"/>
             </fileset>
         </j9builder>
         <mkdir dir="${{platform.home}}\epoc32\wins\c\logs\j9vm"/>
-        <taskdef name="nokiaexec" classname="org.netbeans.modules.j2me.cdc.project.nokiaS80.NokiaEmulatorExecTask"/>
+        <taskdef name="nokiaexec" classname="org.netbeans.modules.j2me.cdc.project.nokiaS80.NokiaEmulatorExecTask" classpath="${{libs.nokiaS80-ant-utils.classpath}}"/>
         <parallel>
             <nokiaexec debug="true" debuggeraddressproperty="jpda.port" jvmargs="${{run.jvmargs}}" mainclass="${{main.class}}" args="${{application.args}}" home="${{platform.home}}" device="${{platform.device}}" xlet="${{main.class.xlet}}" applet="${{main.class.applet}}">
                 <fileset dir="${{dist.dir}}">
