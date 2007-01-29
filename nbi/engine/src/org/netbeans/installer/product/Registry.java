@@ -403,7 +403,7 @@ public class Registry {
         
         // hide products that do not support the current platform
         for (Product product: queryProducts(TrueFilter.INSTANCE)) {
-            if (!product.getSupportedPlatforms().contains(targetPlatform)) {
+            if (!product.getPlatforms().contains(targetPlatform)) {
                 product.setVisible(false);
             }
         }
@@ -691,7 +691,7 @@ public class Registry {
                     final List<Product> existing = getProducts(
                             product.getUid(),
                             product.getVersion(),
-                            product.getSupportedPlatforms());
+                            product.getPlatforms());
                     
                     if (existing.size() == 0) {
                         parentNode.addChild(product);
@@ -1100,7 +1100,7 @@ public class Registry {
                     
                     componentNode.setAttribute("uid", component.getUid());
                     componentNode.setAttribute("version", component.getVersion().toString());
-                    componentNode.setAttribute("platform", StringUtils.asString(component.getSupportedPlatforms(), " "));
+                    componentNode.setAttribute("platform", StringUtils.asString(component.getPlatforms(), " "));
                     
                     switch (component.getStatus()) {
                         case INSTALLED:

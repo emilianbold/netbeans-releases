@@ -177,7 +177,7 @@ public class ManagerBean implements Manager {
             final List<Product> existingComponents = registry.getProducts(
                     component.getUid(),
                     component.getVersion(),
-                    component.getSupportedPlatforms());
+                    component.getPlatforms());
             
             if (existingComponents != null) {
                 Queue<RegistryNode> nodes = new LinkedList<RegistryNode>();
@@ -194,7 +194,7 @@ public class ManagerBean implements Manager {
                         Product temp = (Product) node;
                         FileUtils.deleteFile(new File(
                                 componentsDir,
-                                temp.getUid() + "/" + temp.getVersion() + "/" + StringUtils.asString(temp.getSupportedPlatforms(), " ")));
+                                temp.getUid() + "/" + temp.getVersion() + "/" + StringUtils.asString(temp.getPlatforms(), " ")));
                     }
                     
                     if (node instanceof Group) {

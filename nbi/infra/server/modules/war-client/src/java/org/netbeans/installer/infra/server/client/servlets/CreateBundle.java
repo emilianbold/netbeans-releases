@@ -157,7 +157,7 @@ public class CreateBundle extends HttpServlet {
     private void buildRegistryNodes(PrintWriter out, List<RegistryNode> nodes, Platform platform) {
         for (RegistryNode node: nodes) {
             if (node instanceof Product) {
-                if (!((Product) node).getSupportedPlatforms().contains(platform)) {
+                if (!((Product) node).getPlatforms().contains(platform)) {
                     continue;
                 }
             }
@@ -188,8 +188,8 @@ public class CreateBundle extends HttpServlet {
             
             if (node instanceof Product) {
                 version   = ((Product) node).getVersion().toString();
-                platforms = StringUtils.asString(((Product) node).getSupportedPlatforms(), " ");
-                title     = StringUtils.asString(((Product) node).getSupportedPlatforms());
+                platforms = StringUtils.asString(((Product) node).getPlatforms(), " ");
+                title     = StringUtils.asString(((Product) node).getPlatforms());
                 type      = "component";
                 
                 id = uid + "_" + version + "_" + platforms.replace(" ", "_") + "_" + type;

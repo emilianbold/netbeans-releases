@@ -32,7 +32,7 @@ import org.netbeans.installer.product.RegistryNode;
 public class SubTreeFilter implements RegistryFilter {
     private List<RegistryNode> leaves;
     
-    public SubTreeFilter(List<RegistryNode> nodes) {
+    public SubTreeFilter(List<? extends RegistryNode> nodes) {
         this.leaves = new LinkedList<RegistryNode>();
         this.leaves.addAll(nodes);
     }

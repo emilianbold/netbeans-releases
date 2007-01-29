@@ -31,26 +31,25 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import org.netbeans.installer.Installer;
+import org.netbeans.installer.product.RegistryNode;
+import org.netbeans.installer.product.components.Group;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
-import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.product.filters.RegistryFilter;
+import org.netbeans.installer.product.filters.SubTreeFilter;
+import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.exceptions.FinalizationException;
-import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StreamUtils;
-import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.ExtendedUri;
 import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.components.WizardAction;
-import org.netbeans.installer.wizard.components.WizardAction.WizardActionUi;
-import org.netbeans.installer.wizard.components.WizardPanel;
 import org.w3c.dom.Document;
 
 /**
@@ -78,12 +77,19 @@ public class CreateBundleAction extends WizardAction {
     
     public void execute() {
         final Registry registry = Registry.getInstance();
-        final List<Product> components = registry.getProductsToInstall();
-        final int percentageChunk = Progress.COMPLETE / (components.size() + 1);
-        final int percentageLeak = Progress.COMPLETE % (components.size() + 1);
+        final RegistryFilter filter = 
+                new SubTreeFilter(registry.getProductsToInstall());
+        final List<Product> products = registry.queryProducts(filter);
+        final List<Group> groups = registry.queryGroups(filter);
         
-        final String targetPath = System.getProperty(Installer.CREATE_BUNDLE_PATH_PROPERTY);
-        final File   targetFile = new File(targetPath);
+        final int percentageChunk = 
+                Progress.COMPLETE / (products.size() + groups.size());
+        final int percentageLeak = 
+                Progress.COMPLETE % (products.size() + groups.size());
+        
+        final String targetPath = 
+                System.getProperty(Installer.CREATE_BUNDLE_PATH_PROPERTY);
+        final File targetFile = new File(targetPath);
         
         progress = new Progress();
         
@@ -94,12 +100,11 @@ public class CreateBundleAction extends WizardAction {
         try {
             progress.setTitle("Creating a redistributable bundle at " + targetFile);
             progress.setDetail("Adding installer engine...");
-            progress.setPercentage(percentageLeak);
             
             engine = new JarFile(Installer.getInstance().getCachedEngine());
             output = new JarOutputStream(new FileOutputStream(targetFile));
             
-            // first transfer the engine, skipping existing bundled components
+            // transfer the engine, skipping existing bundled components
             final Enumeration entries = engine.entries();
             while (entries.hasMoreElements()) {
                 final JarEntry entry = (JarEntry) entries.nextElement();
@@ -124,83 +129,183 @@ public class CreateBundleAction extends WizardAction {
                 output.putNextEntry(entry);
                 StreamUtils.transferData(engine.getInputStream(entry), output);
             }
-            progress.addPercentage(percentageChunk);
             
-            // then transfer configuration logic, installation data and icon for
-            // selected components
-            output.putNextEntry(new JarEntry(Installer.DATA_DIRECTORY + "/"));
+            // transfer the engine files list
+            output.putNextEntry(new JarEntry(
+                    Installer.DATA_DIRECTORY + "/"));
+            output.putNextEntry(new JarEntry(
+                    Installer.ENGINE_JAR_CONTENT_LIST));
+            StreamUtils.transferData(
+                    ResourceUtils.getResource(Installer.ENGINE_JAR_CONTENT_LIST), 
+                    output);
             
-            // put engine files list
-            output.putNextEntry(new JarEntry(Installer.ENGINE_JAR_CONTENT_LIST));
-            StreamUtils.transferData(ResourceUtils.getResource(Installer.ENGINE_JAR_CONTENT_LIST),output);
+            progress.addPercentage(percentageLeak);
             
-            for (Product component: components) {
-                if (canceled) return; // check for cancel status
+            for (Product product: products) {
+                // check for cancel status
+                if (canceled) return; 
                 
-                progress.setDetail("Adding component \"" + component.getDisplayName() + "\"...");
+                progress.setDetail(
+                        "Adding " + product.getDisplayName() + "...");
                 
-                final List<Platform> platforms = component.getSupportedPlatforms();
+                final List<Platform> platforms = product.getPlatforms();
+                final String entryPrefix = 
+                        Installer.DATA_DIRECTORY + "/" + 
+                        product.getUid() + "/" + 
+                        product.getVersion() + "/" + 
+                        StringUtils.asString(product.getPlatforms(), " ");
                 final String uriPrefix =
                         FileProxy.RESOURCE_SCHEME_PREFIX +
                         Installer.DATA_DIRECTORY + "/" +
-                        component.getUid() + "/" +
-                        component.getVersion() + "/" +
+                        product.getUid() + "/" +
+                        product.getVersion() + "/" +
                         StringUtils.asString(platforms, "%20");
                 
-                output.putNextEntry(new JarEntry(Installer.DATA_DIRECTORY + "/" + component.getUid() + "/"));
-                output.putNextEntry(new JarEntry(Installer.DATA_DIRECTORY + "/" + component.getUid() + "/" + component.getVersion() + "/" + StringUtils.asString(component.getSupportedPlatforms(), " ") + "/"));
-                output.putNextEntry(new JarEntry(Installer.DATA_DIRECTORY + "/" + component.getUid() + "/" + component.getVersion() + "/" + StringUtils.asString(component.getSupportedPlatforms(), " ") + "/configuration-logic/"));
-                output.putNextEntry(new JarEntry(Installer.DATA_DIRECTORY + "/" + component.getUid() + "/" + component.getVersion() + "/" + StringUtils.asString(component.getSupportedPlatforms(), " ") + "/installation-data/"));
+                // create the required directories structure
+                output.putNextEntry(new JarEntry(
+                        Installer.DATA_DIRECTORY + "/" + 
+                        product.getUid() + "/"));
+                output.putNextEntry(new JarEntry(
+                        Installer.DATA_DIRECTORY + "/" + 
+                        product.getUid() + "/" + 
+                        product.getVersion() + "/" + 
+                        StringUtils.asString(product.getPlatforms(), " ") + "/"));
+                output.putNextEntry(new JarEntry(
+                        Installer.DATA_DIRECTORY + "/" + 
+                        product.getUid() + "/" + 
+                        product.getVersion() + "/" + 
+                        StringUtils.asString(product.getPlatforms(), " ") + "/" + 
+                        "logic" + "/"));
+                output.putNextEntry(new JarEntry(
+                        Installer.DATA_DIRECTORY + "/" + 
+                        product.getUid() + "/" + 
+                        product.getVersion() + "/" + 
+                        StringUtils.asString(product.getPlatforms(), " ") + "/" + 
+                        "data" + "/"));
                 
-                final File icon = FileProxy.getInstance().getFile(component.getIconUri().getRemote());
+                // transfer the icon
+                output.putNextEntry(new JarEntry(entryPrefix + "/icon.png"));
+                StreamUtils.transferFile(
+                        new File(product.getIconUri().getLocal()), 
+                        output);
                 
-                output.putNextEntry(new JarEntry(Installer.DATA_DIRECTORY + "/" + component.getUid() + "/" + component.getVersion() + "/" + StringUtils.asString(component.getSupportedPlatforms(), " ") + "/icon.png"));
-                StreamUtils.transferFile(icon, output);
+                // correct the local uri for the icon, so it gets saved correctly in
+                // the registry file
+                product.getIconUri().setLocal(new URI(uriPrefix + "/icon.png"));
                 
-                component.getIconUri().setLocal(new URI(uriPrefix + "/icon.png"));
-                
-                
-                final List<ExtendedUri> logicUris = component.getLogicUris();
+                // transfer the configuration logic files
+                final List<ExtendedUri> logicUris = product.getLogicUris();
                 for (int i = 0; i < logicUris.size(); i++) {
-                    if (canceled) return; // check for cancel status
+                    // check for cancel status
+                    if (canceled) return; 
                     
-                    File logic = FileProxy.getInstance().getFile(logicUris.get(i).getLocal());
+                    // transfer the file
+                    output.putNextEntry(new JarEntry(
+                            entryPrefix + "/logic/logic," + (i + 1) + ".jar"));
+                    StreamUtils.transferFile(
+                            new File(logicUris.get(i).getLocal()), 
+                            output);
                     
-                    output.putNextEntry(new JarEntry(Installer.DATA_DIRECTORY + "/" + component.getUid() + "/" + component.getVersion() + "/" + StringUtils.asString(component.getSupportedPlatforms(), " ") + "/configuration-logic/logic-" + (i + 1) + ".jar"));
-                    StreamUtils.transferFile(logic, output);
+                    // delete the downloaded file
+                    FileUtils.deleteFile(new File(logicUris.get(i).getLocal()));
                     
-                    logicUris.get(i).setLocal(new URI(uriPrefix + "/configuration-logic/logic-" + (i + 1) + ".jar"));
+                    // correct the local uri, so it gets saved correctly
+                    logicUris.get(i).setLocal(
+                            new URI(uriPrefix + "/logic/logic," + (i + 1) + ".jar"));
                 }
                 
-                final List<ExtendedUri> dataUris = component.getDataUris();
+                // transfer the installation data files
+                final List<ExtendedUri> dataUris = product.getDataUris();
                 for (int i = 0; i < dataUris.size(); i++) {
-                    if (canceled) return; // check for cancel status
+                    // check for cancel status
+                    if (canceled) return; 
                     
-                    File data = FileProxy.getInstance().getFile(dataUris.get(i).getLocal());
+                    // transfer the file
+                    output.putNextEntry(new JarEntry(
+                            entryPrefix + "/data/data," + (i + 1) + ".jar"));
+                    StreamUtils.transferFile(
+                            new File(dataUris.get(i).getLocal()), 
+                            output);
                     
-                    output.putNextEntry(new JarEntry(Installer.DATA_DIRECTORY + "/" + component.getUid() + "/" + component.getVersion() + "/" + StringUtils.asString(component.getSupportedPlatforms(), " ") + "/installation-data/data-" + (i + 1) + ".jar"));
-                    StreamUtils.transferFile(data, output);
+                    // delete the downloaded file
+                    FileUtils.deleteFile(new File(dataUris.get(i).getLocal()));
                     
-                    dataUris.get(i).setLocal(new URI(uriPrefix + "/installation-data/data-" + (i + 1) + ".jar"));
+                    // correct the local uri, so it gets saved correctly
+                    dataUris.get(i).setLocal(new URI(
+                            uriPrefix + "/data/data," + (i + 1) + ".jar"));
                 }
                 
-                component.setStatus(Status.NOT_INSTALLED);
+                // correct the product's status, so it gets saved correctly in the
+                // registry file
+                product.setStatus(Status.NOT_INSTALLED);
                 
+                // increment the progress percentage
                 progress.addPercentage(percentageChunk);
             }
             
-            if (canceled) return; // check for cancel status
+            for (Group group: groups) {
+                // check for cancel status
+                if (canceled) return; 
+                
+                // we should skip the registry root, as it is a somewhat artificial 
+                // node and does not have any meaning
+                if (group.equals(registry.getRegistryRoot())) {
+                    continue;
+                }
+                
+                progress.setDetail(
+                        "Adding " + group.getDisplayName() + "...");
+                
+                final String entryPrefix = 
+                        Installer.DATA_DIRECTORY + "/" + 
+                        group.getUid();
+                final String uriPrefix =
+                        FileProxy.RESOURCE_SCHEME_PREFIX +
+                        Installer.DATA_DIRECTORY + "/" +
+                        group.getUid();
+                
+                // create the required directories structure
+                output.putNextEntry(new JarEntry(
+                        Installer.DATA_DIRECTORY + "/" + 
+                        group.getUid() + "/"));
+                
+                // transfer the icon
+                output.putNextEntry(new JarEntry(entryPrefix + "/icon.png"));
+                StreamUtils.transferFile(
+                        new File(group.getIconUri().getLocal()), 
+                        output);
+                
+                // correct the local uri for the icon, so it gets saved correctly in
+                // the registry file
+                group.getIconUri().setLocal(new URI(uriPrefix + "/icon.png"));
+                
+                // increment the progress percentage
+                progress.addPercentage(percentageChunk);
+            }
             
-            // then serialize the registry
-            final Document document = Registry.getInstance().getRegistryDocument(
-                    new UriCorrectingFilter(components));
+            // check for cancel status
+            if (canceled) return; 
             
+            // serialize the registry: get the document and save it to the jar file
             output.putNextEntry(new JarEntry(
                     Installer.DATA_DIRECTORY + "/bundled-registry.xml"));
-            Registry.getInstance().saveRegistryDocument(document, output);
+            registry.saveRegistryDocument(
+                    registry.getRegistryDocument(filter), 
+                    output);
+            
+            // finally perform some minor cleanup to avoid errors later in the main 
+            // registry finalization - we set the local uri to be null, to avoid
+            // cleanup attempts (they would fail, as the local uris now look like
+            // resource:<...>
+            for (Product product: products) {
+                for (ExtendedUri uri: product.getLogicUris()) {
+                    uri.setLocal(null);
+                }
+                for (ExtendedUri uri: product.getDataUris()) {
+                    uri.setLocal(null);
+                }
+            }
         } catch (IOException e) {
-            ErrorManager.notifyError("Failed to create the bundle", e);
-        } catch (DownloadException e) {
             ErrorManager.notifyError("Failed to create the bundle", e);
         } catch (XMLException e) {
             ErrorManager.notifyError("Failed to create the bundle", e);
@@ -213,14 +318,14 @@ public class CreateBundleAction extends WizardAction {
                 try {
                     engine.close();
                 } catch (IOException e) {
-                    ErrorManager.notify(ErrorLevel.DEBUG, "Failed to close the stream", e);
+                    ErrorManager.notifyDebug("Failed to close the stream", e);
                 }
             }
             if (output != null) {
                 try {
                     output.close();
                 } catch (IOException e) {
-                    ErrorManager.notify(ErrorLevel.DEBUG, "Failed to close the stream", e);
+                    ErrorManager.notifyDebug("Failed to close the stream", e);
                 }
             }
         }
@@ -231,40 +336,6 @@ public class CreateBundleAction extends WizardAction {
         
         if (progress != null) {
             progress.setCanceled(true);
-        }
-    }
-    
-    public static class UriCorrectingFilter implements RegistryFilter {
-        private List<Product> components;
-        
-        public UriCorrectingFilter(List<Product> components) {
-            this.components = components;
-        }
-        
-        public boolean accept(final RegistryNode node) {
-            if (components.contains(node)) {
-                return true;
-            }
-            
-            for (Product component: components) {
-                if (node.isAncestor(component)) {
-                    node.getIconUri().setLocal(null);
-                    
-                    if (node instanceof Product) {
-                        for (ExtendedUri uri: ((Product) node).getLogicUris()) {
-                            uri.setLocal(null);
-                        }
-                        
-                        for (ExtendedUri uri: ((Product) node).getDataUris()) {
-                            uri.setLocal(null);
-                        }
-                    }
-                    
-                    return true;
-                }
-            }
-            
-            return false;
         }
     }
 }

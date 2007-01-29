@@ -183,7 +183,7 @@ public class ManageRegistries extends HttpServlet {
         for (RegistryNode node: nodes) {
             try {
                 if (node instanceof Product) {
-                    if (!((Product) node).getSupportedPlatforms().contains(platform)) {
+                    if (!((Product) node).getPlatforms().contains(platform)) {
                         continue;
                     }
                 }
@@ -214,8 +214,8 @@ public class ManageRegistries extends HttpServlet {
                 
                 if (node instanceof Product) {
                     version   = ((Product) node).getVersion().toString();
-                    platforms = StringUtils.asString(((Product) node).getSupportedPlatforms(), " ");
-                    title     = StringUtils.asString(((Product) node).getSupportedPlatforms());
+                    platforms = StringUtils.asString(((Product) node).getPlatforms(), " ");
+                    title     = StringUtils.asString(((Product) node).getPlatforms());
                     type      = "component";
                     
                     id = registry + "_" + uid + "_" + version + "_" + platforms.replace(" ", "_") + "_" + type;

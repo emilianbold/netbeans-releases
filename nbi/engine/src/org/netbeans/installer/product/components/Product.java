@@ -912,7 +912,7 @@ public final class Product extends RegistryNode {
         return version;
     }
     
-    public List<Platform> getSupportedPlatforms() {
+    public List<Platform> getPlatforms() {
         return supportedPlatforms;
     }
     

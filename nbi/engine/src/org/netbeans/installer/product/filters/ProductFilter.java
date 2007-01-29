@@ -121,7 +121,7 @@ public class ProductFilter implements RegistryFilter {
             
             if (platforms.size() > 0) {
                 if (!SystemUtils.intersects(
-                        product.getSupportedPlatforms(),
+                        product.getPlatforms(),
                         platforms)) {
                     return false;
                 }
