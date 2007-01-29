@@ -24,7 +24,7 @@
     <localizing-bundle>org.netbeans.modules.j2me.cdc.project.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/org-netbeans-modules-j2me-cdc-project.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/org-netbeans-modules-j2me-cdc-project.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>        
