@@ -1,5 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    
+    <folder name="vmd-midp">
+        <folder name="components">
+            <file name="org-netbeans-modules-vmd-midpnb-components-displayables-AbstractScreenCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-displayables-WaitScreenCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-displayables-SplashScreenCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-svg-SVGSplashScreenCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-svg-SVGSplashScreenCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-items-TableItemCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-resources-SimpleCancellableTaskCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-resources-SimpleTableModelCD.instance"/>
+        </folder>
+        
+        <folder name="producers">
+            <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$WaitScreen.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SplashScreen.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$TableItem.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SimpleCancellableTask.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-producers-CustomComponentProducer$SimpleTableModel.instance"/>
+        </folder>
+    </folder>
 </filesystem>
 

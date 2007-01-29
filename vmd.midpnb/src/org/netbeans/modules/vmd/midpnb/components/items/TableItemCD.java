@@ -17,7 +17,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.vmd.midpnb.components.displayables;
+package org.netbeans.modules.vmd.midpnb.components.items;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,28 +31,25 @@ import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
-import org.netbeans.modules.vmd.midp.components.displayables.CanvasCD;
-import org.netbeans.modules.vmd.midp.components.displayables.ScreenCD;
+import org.netbeans.modules.vmd.midp.components.items.ItemCD;
+import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractScreenCD;
 
 /**
  *
  * @author Anton Chechel
  */
-public class SplashScreenCD extends ComponentDescriptor {
+public class TableItemCD extends ComponentDescriptor {
     
-    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.modules.vmd.midpnb.components.displayables.SplashScreen"); // NOI18N
+    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.modules.vmd.midpnb.components.items.TableItemCD"); // NOI18N
 
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/splash_screen16.png"; // NOI18N
-    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/splash_screen64.png"; // NOI18N
-
-    private static Map<String, PropertyValue> alertTypes;
+    public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/table_16.png"; // NOI18N
 
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
     }
 
     public TypeDescriptor getTypeDescriptor() {
-        return new TypeDescriptor(CanvasCD.TYPEID, TYPEID, true, true);
+        return new TypeDescriptor(ItemCD.TYPEID, TYPEID, true, true);
     }
 
     public VersionDescriptor getVersionDescriptor() {

@@ -19,33 +19,24 @@
 
 package org.netbeans.modules.vmd.midpnb.components.displayables;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
-import org.netbeans.modules.vmd.api.model.Presenter;
-import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.TypeDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
+
+import java.util.*;
 import org.netbeans.modules.vmd.midp.components.displayables.CanvasCD;
-import org.netbeans.modules.vmd.midp.components.displayables.ScreenCD;
+import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 
 /**
- *
- * @author Anton Chechel
+ * @author Karol Harezlak
  */
-public class SplashScreenCD extends ComponentDescriptor {
-    
-    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.modules.vmd.midpnb.components.displayables.SplashScreen"); // NOI18N
 
-    public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/splash_screen16.png"; // NOI18N
-    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/splash_screen64.png"; // NOI18N
+public final class WaitScreenCD extends ComponentDescriptor {
 
-    private static Map<String, PropertyValue> alertTypes;
+    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.modules.vmd.midpnb.components.displayables.WaitScreen"); // NOI18N
+
+    public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/wait_screen16.png"; // NOI18N
+    public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/wait_screen64.png"; // NOI18N
 
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
@@ -68,5 +59,9 @@ public class SplashScreenCD extends ComponentDescriptor {
         return Arrays.asList(
         );
     }
+
+    
+
+  
 
 }
