@@ -63,6 +63,12 @@ import org.netbeans.modules.editor.mimelookup.MimePathLookup;
  * <p>In the above example the mime path of the 'text/x-java' mime type embedded
  * in the 'text/x-jsp' mime type can be represented as 'text/x-jsp/text/x-java'.
  *
+ * <p class="nonnormative">For some languages it is not uncommon to allow embedding of itself. For example
+ * in Ruby it is allowed to use Ruby code within strings and Ruby will
+ * evaluate this code when evaluating the value of the strings. Depending on the
+ * implementation of a lexer there can be tokens with <code>MimePath</code> that
+ * contains several consecutive same mime types.
+ * 
  * <p><b>Identity:</b> By definition two <code>MimePath</code> instances are equal
  * if they represent the same string mime path. The implementation guarantees
  * that by caching and reusing instances of the <code>MimePath</code> that it
@@ -292,11 +298,6 @@ public final class MimePath {
                 if (mimeType.indexOf('/', slashIndex + 1) != -1) { // more than one slash
                     throw new IllegalArgumentException("mimeType=\"" + mimeType // NOI18N
                             + "\" contains more than one '/' character"); //NOI18N
-                }
-                if (size() > 0 && getMimeType(size() - 1).equals(mimeType)) {
-                    throw new IllegalArgumentException("Won't create MimePath with " + // NOI18N
-                        "the same consecutive mime types. mimePath=\"" + getPath() + // NOI18N
-                        "\", trying to append mimeType=\"" + mimeType + "\""); //NOI18N
                 }
                 
                 // Construct the mimePath

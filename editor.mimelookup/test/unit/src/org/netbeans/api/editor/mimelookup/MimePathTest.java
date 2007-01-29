@@ -55,14 +55,4 @@ public class MimePathTest extends NbTestCase {
         MimePath mpPrefix = mp.getPrefix(2);
         assertTrue("text/x-java/text/x-ant+xml".equals(mpPrefix.getPath()));
     }
-
-    public void testConsecutiveMimeTypes() {
-        String path = "text/html/text/html"; //NOI18N
-        try {
-            MimePath mp = MimePath.parse(path);
-            fail("IllegalArgumentException should have been fired.");
-        } catch (IllegalArgumentException ise) {
-            // pass
-        }
-    }
 }
