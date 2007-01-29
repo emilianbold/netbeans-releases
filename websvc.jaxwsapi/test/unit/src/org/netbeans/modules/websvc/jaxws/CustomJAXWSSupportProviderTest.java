@@ -70,7 +70,7 @@ public class CustomJAXWSSupportProviderTest extends NbTestCase {
     }
     
     public void testProviders() throws Exception {
-        Lookup.Result res = Lookup.getDefault().lookup(new Lookup.Template(JAXWSSupportProvider.class));
+        Lookup.Result<JAXWSSupportProvider> res = Lookup.getDefault().lookup(new Lookup.Template<JAXWSSupportProvider>(JAXWSSupportProvider.class));
         assertEquals("there should be 2 instances - one from websvc/jaxwsapi and one from tests", 2, res.allInstances ().size ());
     }
     

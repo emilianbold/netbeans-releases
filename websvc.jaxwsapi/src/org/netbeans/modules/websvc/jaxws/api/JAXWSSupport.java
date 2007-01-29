@@ -42,8 +42,8 @@ import org.openide.util.Lookup;
 public final class JAXWSSupport {
     
     private JAXWSSupportImpl impl;
-    private static final Lookup.Result implementations =
-    Lookup.getDefault().lookup(new Lookup.Template(JAXWSSupportProvider.class));
+    private static final Lookup.Result<JAXWSSupportProvider> implementations =
+    Lookup.getDefault().lookup(new Lookup.Template<JAXWSSupportProvider>(JAXWSSupportProvider.class));
     
     static  {
         JAXWSSupportAccessor.DEFAULT = new JAXWSSupportAccessor() {

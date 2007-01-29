@@ -38,8 +38,8 @@ import org.netbeans.api.project.Project;
 public final class JAXWSView {
     
     private JAXWSViewImpl impl;
-    private static final Lookup.Result implementations =
-        Lookup.getDefault().lookup(new Lookup.Template(JAXWSViewProvider.class));
+    private static final Lookup.Result<JAXWSViewProvider> implementations =
+        Lookup.getDefault().lookup(new Lookup.Template<JAXWSViewProvider>(JAXWSViewProvider.class));
     
     static  {
         JAXWSViewAccessor.DEFAULT = new JAXWSViewAccessor() {

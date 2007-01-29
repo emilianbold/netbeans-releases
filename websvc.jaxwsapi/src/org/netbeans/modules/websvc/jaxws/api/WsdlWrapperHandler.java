@@ -21,7 +21,6 @@ package org.netbeans.modules.websvc.jaxws.api;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -37,17 +36,17 @@ public class WsdlWrapperHandler extends DefaultHandler{
     
     private boolean isService, isPortType, isBinding;
     private String tns;
-    private Map prefixes;
-    private Map bindings;
-    private Map ports;
+    private Map<String, String> prefixes;
+    private Map<String, BindingInfo> bindings;
+    private Map<String, String> ports;
     private BindingInfo bindingInfo;
     private boolean insideBinding, insideService;
     
     /** Creates a new instance of WsdlWrapperHandler */
     public WsdlWrapperHandler() {
-        prefixes=new HashMap();
-        bindings=new HashMap();
-        ports=new HashMap();
+        prefixes = new HashMap<String, String>();
+        bindings = new HashMap<String, BindingInfo>();
+        ports = new HashMap<String, String>();
     }    
 
     public void startPrefixMapping(String prefix, String uri) throws SAXException {
@@ -90,10 +89,10 @@ public class WsdlWrapperHandler extends DefaultHandler{
     }
     
     public String getBindingTypeForPort(String name) {
-        String fullBindingName = (String)ports.get(name);
+        String fullBindingName = ports.get(name);
         if (fullBindingName!=null) {
             String bindingName = getLocalPart(fullBindingName);
-            BindingInfo info = (BindingInfo)bindings.get(bindingName);
+            BindingInfo info = bindings.get(bindingName);
             if (info!=null) return info.getBindingType();
         }
         return null;
@@ -104,7 +103,7 @@ public class WsdlWrapperHandler extends DefaultHandler{
     }
     
     public String getTargetNsPrefix() {
-        return prefixes==null?null:(String)prefixes.get(tns);
+        return (prefixes == null) ? null : prefixes.get(tns);
     }
 
     public void endDocument() throws SAXException {

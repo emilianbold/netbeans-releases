@@ -150,11 +150,11 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
             
             // HACK to enable filesystems to fire events when new folder will be created
             // need to ask for children recursively
-            List subfolders = null;
+            List<FileObject> subfolders = null;
             FileObject serviceArtifactsFolder = project.getProjectDirectory().getFileObject("build/generated/wsimport/service"); //NOI18N
             if (serviceArtifactsFolder!=null) {
                 Enumeration en = serviceArtifactsFolder.getChildren(true);
-                subfolders = new ArrayList();
+                subfolders = new ArrayList<FileObject>();
                 while (en.hasMoreElements()) {
                     FileObject ch = (FileObject) en.nextElement();
                     if (ch.isFolder()) subfolders.add(ch);
@@ -272,19 +272,19 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
     /**
      * Returns the list of web services in the project
      */
-    public List/*Service*/ getServices() {
+    public List<Service> getServices() {
         JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
         if (jaxWsModel!=null) {
             Service[] services = jaxWsModel.getServices();
             if (services!=null) {
-                List list = new ArrayList();
+                List<Service> list = new ArrayList<Service>();
                 for (int i=0;i<services.length;i++) {
                     list.add(services[i]);
                 }
                 return list;
             }
         }
-        return new ArrayList();
+        return new ArrayList<Service>();
     }
 
     private void writeJaxWsModel(final JaxWsModel jaxWsModel) {
