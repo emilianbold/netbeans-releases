@@ -435,6 +435,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.j2ee.persistence.action.spi</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.provider</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.datasource</package>
+                <package>org.netbeans.modules.j2ee.persistence.spi.server</package>
             </friend-packages>
         </data>
     </configuration>
