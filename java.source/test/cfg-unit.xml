@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/netbeans/modules/java/source/parsing/PerfJavacIntefaceGCTest.class" />
                 <exclude name="org/netbeans/modules/java/source/parsing/PerfResolveTest.class" />
                 <exclude name="org/netbeans/modules/java/source/parsing/PerfBatchCompilationTest.class" />
-                <exclude name="org/netbeans/api/java/source/gen/AnnotationOnLocVarTest.class/testAddLocVarWithAnn" />
+                <exclude name="org/netbeans/api/java/source/gen/AnnotationOnLocVarTest.class" />
                 <exclude name="org/netbeans/api/java/source/gen/FieldTest2.class" />
                 <exclude name="org/netbeans/api/java/source/gen/FieldTest3.class" />
                 <exclude name="org/netbeans/api/java/source/gen/FieldTest4.class" />

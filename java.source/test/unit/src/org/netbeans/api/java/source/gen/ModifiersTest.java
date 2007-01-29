@@ -18,8 +18,10 @@
  */
 package org.netbeans.api.java.source.gen;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.VariableTree;
@@ -62,6 +64,7 @@ public class ModifiersTest extends GeneratorTest {
 //        suite.addTest(new ModifiersTest("testMethodMods5"));
 //        suite.addTest(new ModifiersTest("testMethodMods6"));
 //        suite.addTest(new ModifiersTest("testMethodMods7"));
+//        suite.addTest(new ModifiersTest("testAnnRename"));
         return suite;
     }
     
@@ -449,6 +452,62 @@ public class ModifiersTest extends GeneratorTest {
                 MethodTree method = (MethodTree) clazz.getMembers().get(0);
                 ModifiersTree mods = method.getModifiers();
                 workingCopy.rewrite(mods, make.Modifiers(Collections.<Modifier>singleton(Modifier.PROTECTED)));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * Original:
+     * 
+     * @Anotace()
+     * public Test() {
+     * }
+     * 
+     * Result:
+     * 
+     * @Annotaition()
+     * protected Test() {
+     * }
+     */
+    public void testAnnRename() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package hierbas.del.litoral;\n\n" +
+                "import java.io.*;\n\n" +
+                "@Annotace()\n" +
+                "public class Test {\n" +
+                "    public Test() {\n" +
+                "    }\n" +
+                "}\n"
+                );
+        String golden =
+                "package hierbas.del.litoral;\n\n" +
+                "import java.io.*;\n\n" +
+                "@Annotation()\n" +
+                "public class Test {\n" +
+                "    public Test() {\n" +
+                "    }\n" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        CancellableTask task = new CancellableTask<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                
+                // finally, find the correct body and rewrite it.
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                ModifiersTree mods = clazz.getModifiers();
+                AnnotationTree ann = mods.getAnnotations().get(0);
+                IdentifierTree ident = (IdentifierTree) ann.getAnnotationType();
+                workingCopy.rewrite(ident, make.Identifier("Annotation"));
             }
             
             public void cancel() {
