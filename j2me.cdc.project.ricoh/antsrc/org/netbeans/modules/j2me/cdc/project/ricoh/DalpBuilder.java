@@ -27,13 +27,9 @@ package org.netbeans.modules.j2me.cdc.project.ricoh;
 //     <pathelement location="${ant.home}/lib/ant.jar"/>
 // </classpath>
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -42,13 +38,7 @@ import java.util.StringTokenizer;
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.types.*;
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.util.DOMElementWriter;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Text;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
  * @author suchys
