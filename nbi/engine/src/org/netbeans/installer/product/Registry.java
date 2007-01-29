@@ -30,6 +30,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Queue;
+import javax.swing.SwingUtilities;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -68,6 +69,7 @@ import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
+import org.netbeans.installer.wizard.utils.ProxySettingsDialog;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -645,13 +647,13 @@ public class Registry {
             
             return builder.parse(registryFile);
         } catch (DownloadException e) {
-            throw new XMLException("Could not finalize registry", e);
+            throw new XMLException("Could not load registry document", e);
         } catch (ParserConfigurationException e) {
-            throw new XMLException("Could not finalize registry", e);
+            throw new XMLException("Could not load registry document", e);
         } catch (SAXException e) {
-            throw new XMLException("Could not finalize registry", e);
+            throw new XMLException("Could not load registry document", e);
         } catch (IOException e) {
-            throw new XMLException("Could not finalize registry", e);
+            throw new XMLException("Could not load registry document", e);
         }
     }
     

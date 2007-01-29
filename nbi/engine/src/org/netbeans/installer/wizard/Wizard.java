@@ -75,17 +75,12 @@ public class Wizard {
             FileProxy.RESOURCE_SCHEME_PREFIX +
             "org/netbeans/installer/wizard/wizard-components.xsd";
     
-    public static final String SILENT_MODE_ACTIVE_PROPERTY =
-            "nbi.wizard.silent.mode.active";
-    
     /////////////////////////////////////////////////////////////////////////////////
     // Static
     private static Wizard instance;
     
     private static String componentsInstanceURI = DEFAULT_COMPONENTS_INSTANCE_URI;
     private static String componentsSchemaURI = DEFAULT_COMPONENTS_SCHEMA_URI;
-    
-    private static UiMode executionMode = UiMode.SWING;
     
     public static synchronized Wizard getInstance() {
         if (instance == null) {
@@ -99,11 +94,6 @@ public class Wizard {
             if (System.getProperty(COMPONENTS_SCHEMA_URI_PROPERTY) != null) {
                 componentsInstanceURI =
                         System.getProperty(COMPONENTS_SCHEMA_URI_PROPERTY);
-            }
-            
-            // check whether silent mode is active
-            if (System.getProperty(SILENT_MODE_ACTIVE_PROPERTY) != null) {
-                executionMode = UiMode.SILENT;
             }
             
             // create the root wizard and load its components
@@ -162,10 +152,6 @@ public class Wizard {
             throw new InitializationException(
                     "Could not load components", e);
         }
-    }
-    
-    public static UiMode getExecutionMode() {
-        return executionMode;
     }
     
     // private //////////////////////////////////////////////////////////////////////
@@ -255,7 +241,7 @@ public class Wizard {
     
     // wizard lifecycle control methods /////////////////////////////////////////////
     public void open() {
-        switch (executionMode) {
+        switch (UiMode.getCurrentUiMode()) {
             case SWING:
                 container = new SwingFrameContainer();
 
@@ -295,7 +281,7 @@ public class Wizard {
     }
     
     public void close() {
-        switch (executionMode) {
+        switch (UiMode.getCurrentUiMode()) {
             case SWING:
                 container.setVisible(false);
                 break;
@@ -322,7 +308,7 @@ public class Wizard {
             component.setWizard(this);
             component.initialize();
             
-            switch (executionMode) {
+            switch (UiMode.getCurrentUiMode()) {
                 case SWING:
                     if (component.getWizardUi() != null) {
                         container.updateWizardUi(component.getWizardUi());
@@ -355,7 +341,7 @@ public class Wizard {
             index = components.indexOf(component);
             
             component.setWizard(this);
-            switch (executionMode) {
+            switch (UiMode.getCurrentUiMode()) {
                 case SWING:
                     if (component.getWizardUi() != null) {
                         container.updateWizardUi(component.getWizardUi());

@@ -37,7 +37,7 @@ public abstract class WizardPanel extends WizardComponent {
     }
     
     public final void executeForward() {
-        if (getWizard().getExecutionMode() == UiMode.SILENT) {
+        if (UiMode.getCurrentUiMode() == UiMode.SILENT) {
             getWizard().next();
         }
     }

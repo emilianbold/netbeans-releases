@@ -50,6 +50,7 @@ import static org.netbeans.installer.utils.helper.ErrorLevel.MESSAGE;
 import static org.netbeans.installer.utils.helper.ErrorLevel.WARNING;
 import static org.netbeans.installer.utils.helper.ErrorLevel.ERROR;
 import static org.netbeans.installer.utils.helper.ErrorLevel.CRITICAL;
+import org.netbeans.installer.utils.helper.UiMode;
 import org.netbeans.installer.wizard.Wizard;
 import org.w3c.dom.Document;
 
@@ -407,7 +408,7 @@ public class Installer {
                 LogManager.log(MESSAGE, "parsing command line parameter \"--silent\"");
                 LogManager.indent();
                 
-                System.setProperty(Wizard.SILENT_MODE_ACTIVE_PROPERTY, "true");
+                UiMode.setCurrentUiMode(UiMode.SILENT);
                 
                 LogManager.unindent();
                 continue;
@@ -490,9 +491,9 @@ public class Installer {
         }
         
         // validate arguments ///////////////////////////////////////////////////////
-        if (System.getProperty(Wizard.SILENT_MODE_ACTIVE_PROPERTY) != null) {
+        if (UiMode.getCurrentUiMode() != UiMode.DEFAULT_MODE) {
             if (System.getProperty(Registry.SOURCE_STATE_FILE_PATH_PROPERTY) == null) {
-                System.getProperties().remove(Wizard.SILENT_MODE_ACTIVE_PROPERTY);
+                UiMode.setCurrentUiMode(UiMode.DEFAULT_MODE);
                 ErrorManager.notify(WARNING, "\"--state\" option is required when using \"--silent\". \"--silent\" will be ignored.");
             }
         }

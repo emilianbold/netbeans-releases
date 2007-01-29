@@ -106,15 +106,16 @@ public class NbiDialog extends JDialog {
             
             if (backgroundImage != null) {
                 graphics2d.drawImage(backgroundImage, 0, 0, this);
+                
+                Composite oldComposite = graphics2d.getComposite();
+                
+                graphics2d.setComposite(
+                        AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.85f));
+                graphics2d.setColor(Color.WHITE);
+                graphics2d.fillRect(0, 0, this.getWidth(), this.getHeight());
+                
+                graphics2d.setComposite(oldComposite);
             }
-            
-            Composite oldComposite = graphics2d.getComposite();
-            
-            graphics2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.85f));
-            graphics2d.setColor(Color.WHITE);
-            graphics2d.fillRect(0, 0, this.getWidth(), this.getHeight());
-            
-            graphics2d.setComposite(oldComposite);
         }
     }
     
