@@ -186,6 +186,13 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
         storeFile(file);
     }
 
+    public void beforeChange(File file) {    
+        if(!accept(file)) {
+            return;
+        }        
+        storeFile(file);
+    }
+    
     private void storeFile(File file) {        
         getStore().fileChange(file, file.lastModified());
     }
