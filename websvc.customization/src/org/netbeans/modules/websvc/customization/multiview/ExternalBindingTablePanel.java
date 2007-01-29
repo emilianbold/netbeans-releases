@@ -144,6 +144,7 @@ public class ExternalBindingTablePanel extends DefaultTablePanel{
         if(bindingsInModel == null){ //this can't happen
             return Collections.emptySet();
         }
+        @SuppressWarnings("unchecked")
         List<String> bindingsInTable = model.getChildren();
         for(int i = 0; i < bindingsInModel.length; i++){
             String bindingInModel = bindingsInModel[i].getFileName();

@@ -19,17 +19,15 @@
 
 package org.netbeans.modules.websvc.customization.multiview;
 
-import java.lang.ref.WeakReference;
-import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
-import org.openide.windows.*;
-import java.awt.*;
+import java.awt.BorderLayout;
 import java.util.Collection;
 import java.util.Set;
-import javax.swing.*;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
+import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.nodes.Node;
+import org.openide.windows.TopComponent;
 
 /**
  * @author  Rico Cruz
@@ -37,8 +35,6 @@ import org.openide.nodes.Node;
 public class WSCustomizationTopComponent extends TopComponent {
 
     static final long serialVersionUID=6021472310161712674L;
-    private static WeakReference/*<WelcomeComponent>*/ component = new WeakReference(null); 
-    private JComponent panel;
     private boolean initialized = false;
     private WSPanelFactory panelFactory = null;
     private Set<WSDLModel> models;
@@ -49,7 +45,6 @@ public class WSCustomizationTopComponent extends TopComponent {
     public WSCustomizationTopComponent(Node node, Set<WSDLModel> models, 
             Definitions primaryDefinitions, JaxWsModel jmodel){
         setLayout(new BorderLayout());        
-        panel = null;
         initialized = false;
         this.node = node;
         this.models = models;
