@@ -13,12 +13,11 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools;
 
-import javax.swing.JDialog;
 import org.netbeans.jellytools.actions.NewProjectAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyException;
@@ -117,7 +116,7 @@ public class NewProjectWizardOperator extends WizardOperator {
      */
     public JLabelOperator lblCategories() {
         if (_lblCategories==null) {
-            _lblCategories = new JLabelOperator(this, Bundle.getString("org.netbeans.modules.project.ui.Bundle", "CTL_Categories"));
+            _lblCategories = new JLabelOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "CTL_Categories"));
         }
         return _lblCategories;
     }
@@ -127,7 +126,7 @@ public class NewProjectWizardOperator extends WizardOperator {
      */
     public JLabelOperator lblProjects() {
         if (_lblProjects==null) {
-            _lblProjects = new JLabelOperator(this, Bundle.getString("org.netbeans.modules.project.ui.Bundle", "CTL_Projects"));
+            _lblProjects = new JLabelOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "CTL_Projects"));
         }
         return _lblProjects;
     }
