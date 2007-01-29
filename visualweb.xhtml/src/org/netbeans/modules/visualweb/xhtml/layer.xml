@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="CreatorDesignerPalette">
+        <!--<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.webui.designtime.resources.Bundle"/>-->
+        <!-- Sorting -->        
+        <attr name="Layout/Advanced" boolvalue="true"/>    
+        
+        <folder name="Layout">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.webui.designtime.resources.Bundle"/>
+            
+            <attr name="Tab.comp_palette_item/Jsp_Directive_Include.comp_palette_item" boolvalue="true"/>  
+            <attr name="Jsp_Directive_Include.comp_palette_item/PageAlert.comp_palette_item" boolvalue="true"/>  
+            
+            <file name="Jsp_Directive_Include.comp_palette_item" url="resources/Jsp_Directive_Include.comp_palette_item"/>   
+        </folder>        
+        <folder name="Advanced">
+            
+            <!-- Begin Sort -->
+            <attr name="Markup.comp_palette_item/Script.comp_palette_item" boolvalue="true"/> 
+            <attr name="Script.comp_palette_item/EncodingComponent.comp_palette_item" boolvalue="true"/>
+            <attr name="EncodingComponent.comp_palette_item/F_LoadBundle.comp_palette_item" boolvalue="true"/> 
+            <attr name="F_LoadBundle.comp_palette_item/F_Converter.comp_palette_item" boolvalue="true"/> 
+            <attr name="F_Converter.comp_palette_item/F_Validator.comp_palette_item" boolvalue="true"/>             
+            <attr name="F_Validator.comp_palette_item/F_ActionListener.comp_palette_item" boolvalue="true"/>          
+            <attr name="F_ActionListener.comp_palette_item/F_ValueChangeListener.comp_palette_item" boolvalue="true"/> 
+            <attr name="F_ValueChangeListener.comp_palette_item/F_Verbatim.comp_palette_item" boolvalue="true"/> 
+            <attr name="F_Verbatim.comp_palette_item/UIParameter.comp_palette_item" boolvalue="true"/> 
+            <attr name="UIParameter.comp_palette_item/Link.comp_palette_item" boolvalue="true"/>  
+            <attr name="Link.comp_palette_item/Meta.comp_palette_item" boolvalue="true"/>   
+            <!-- End Sort -->
+            
+            <file name="F_LoadBundle.comp_palette_item" url="resources/F_LoadBundle.comp_palette_item"/> 
+            <file name="F_Converter.comp_palette_item" url="resources/F_Converter.comp_palette_item"/>        
+            <file name="F_Validator.comp_palette_item" url="resources/F_Validator.comp_palette_item"/> 
+            <file name="F_ActionListener.comp_palette_item" url="resources/F_ActionListener.comp_palette_item"/>   
+            <file name="F_ValueChangeListener.comp_palette_item" url="resources/F_ValueChangeListener.comp_palette_item"/>    
+            <file name="F_Verbatim.comp_palette_item" url="resources/F_Verbatim.comp_palette_item"/> 
+        </folder>
+    </folder>
+    
+    <folder name="CreatorDesignerPalette5">
+        <!--<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.webui.designtime.resources.Bundle"/>-->
+        <!-- Sorting -->        
+
+        <folder name="Advanced">
+            
+            <!-- Begin Sort -->
+            <attr name="Markup.comp_palette_item/Script.comp_palette_item" boolvalue="true"/> 
+            <attr name="Script.comp_palette_item/EncodingComponent.comp_palette_item" boolvalue="true"/>
+            <attr name="EncodingComponent.comp_palette_item/F_LoadBundle.comp_palette_item" boolvalue="true"/> 
+            <attr name="F_LoadBundle.comp_palette_item/F_Converter.comp_palette_item" boolvalue="true"/> 
+            <attr name="F_Converter.comp_palette_item/F_Validator.comp_palette_item" boolvalue="true"/>             
+            <attr name="F_Validator.comp_palette_item/F_ActionListener.comp_palette_item" boolvalue="true"/>          
+            <attr name="F_ActionListener.comp_palette_item/F_ValueChangeListener.comp_palette_item" boolvalue="true"/> 
+            <attr name="F_ValueChangeListener.comp_palette_item/F_Verbatim.comp_palette_item" boolvalue="true"/> 
+            <attr name="F_Verbatim.comp_palette_item/UIParameter.comp_palette_item" boolvalue="true"/> 
+            <attr name="UIParameter.comp_palette_item/Link.comp_palette_item" boolvalue="true"/>  
+            <attr name="Link.comp_palette_item/Meta.comp_palette_item" boolvalue="true"/>   
+            <!-- End Sort -->
+            
+            <file name="F_LoadBundle.comp_palette_item" url="resources/F_LoadBundle.comp_palette_item"/> 
+            <file name="F_Converter.comp_palette_item" url="resources/F_Converter.comp_palette_item"/>        
+            <file name="F_Validator.comp_palette_item" url="resources/F_Validator.comp_palette_item"/> 
+            <file name="F_ActionListener.comp_palette_item" url="resources/F_ActionListener.comp_palette_item"/>   
+            <file name="F_ValueChangeListener.comp_palette_item" url="resources/F_ValueChangeListener.comp_palette_item"/>    
+            <file name="F_Verbatim.comp_palette_item" url="resources/F_Verbatim.comp_palette_item"/> 
+        </folder>
+        
+        
+        <folder name="Layout">
+           <!-- <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.webui.designtime.resources.Bundle"/> -->
+            
+            <attr name="WoodstockTab.comp_palette_item/Jsp_Directive_Include.comp_palette_item" boolvalue="true"/>  
+            <attr name="Jsp_Directive_Include.comp_palette_item/WoodstockPageAlert.comp_palette_item" boolvalue="true"/>  
+            
+            <file name="Jsp_Directive_Include.comp_palette_item" url="resources/Jsp_Directive_Include.comp_palette_item"/>   
+        </folder> 
+    </folder>
+    
+</filesystem>

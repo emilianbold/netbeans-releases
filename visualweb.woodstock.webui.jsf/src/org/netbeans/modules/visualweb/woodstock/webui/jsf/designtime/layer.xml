@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="CreatorDesignerPalette5">
+        <!--<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.woodstock.webui.jsf.designtime.resources.Bundle"/>-->
+        
+        <!-- Sorting -->   
+        <attr name="Basic/Layout" boolvalue="true"/>
+        <attr name="Layout/Composite" boolvalue="true"/>
+        <attr name="Composite/Validators" boolvalue="true"/>
+        
+        <folder name="Basic">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.woodstock.webui.jsf.designtime.resources.Bundle"/>
+            <attr name="isExpanded" boolvalue="true"/>
+            
+            <attr name="isReadonly" boolvalue="true"/>
+            <!-- Begin Sorting -->                         
+            <attr name="WoodstockLabel.comp_palette_item/WoodstockStaticText.comp_palette_item" boolvalue="true"/>            
+            <attr name="WoodstockStaticText.comp_palette_item/WoodstockTextField.comp_palette_item" boolvalue="true"/>            
+            <attr name="WoodstockTextField.comp_palette_item/WoodstockTextArea.comp_palette_item" boolvalue="true"/>                                          
+            <attr name="WoodstockTextArea.comp_palette_item/WoodstockButton.comp_palette_item" boolvalue="true"/>                                                      
+            <attr name="WoodstockButton.comp_palette_item/WoodstockHyperLink.comp_palette_item" boolvalue="true"/>                                                    
+            <attr name="WoodstockHyperLink.comp_palette_item/WoodstockImageHyperlink.comp_palette_item" boolvalue="true"/>                                                        
+            <attr name="WoodstockImageHyperlink.comp_palette_item/WoodstockDropDown.comp_palette_item" boolvalue="true"/>                                                  
+            <attr name="WoodstockDropDown.comp_palette_item/WoodstockListbox.comp_palette_item" boolvalue="true"/>                                                            
+            <attr name="WoodstockListbox.comp_palette_item/WoodstockCheckbox.comp_palette_item" boolvalue="true"/>                                                                       
+            <attr name="WoodstockCheckbox.comp_palette_item/WoodstockCheckboxGroup.comp_palette_item" boolvalue="true"/>                                                                             
+            <attr name="WoodstockCheckboxGroup.comp_palette_item/WoodstockRadioButton.comp_palette_item" boolvalue="true"/>                                                                   
+            <attr name="WoodstockRadioButton.comp_palette_item/WoodstockRadioButtonGroup.comp_palette_item" boolvalue="true"/>                                                              
+            <attr name="WoodstockRadioButtonGroup.comp_palette_item/WoodstockImageComponent.comp_palette_item" boolvalue="true"/>                                                          
+            <attr name="WoodstockImageComponent.comp_palette_item/WoodstockTable.comp_palette_item" boolvalue="true"/>                                                                    
+            <attr name="WoodstockTable.comp_palette_item/WoodstockTableColumn.comp_palette_item" boolvalue="true"/>                                                                              
+            <attr name="WoodstockTableColumn.comp_palette_item/WoodstockTableRowGroup.comp_palette_item" boolvalue="true"/>                                                                    
+            <attr name="WoodstockTableRowGroup.comp_palette_item/WoodstockPasswordField.comp_palette_item" boolvalue="true"/>                                                                
+            <attr name="WoodstockPasswordField.comp_palette_item/WoodstockHiddenField.comp_palette_item" boolvalue="true"/>                                                                 
+            <attr name="WoodstockHiddenField.comp_palette_item/WoodstockCalendar.comp_palette_item" boolvalue="true"/>                                                               
+            <attr name="WoodstockCalendar.comp_palette_item/WoodstockUpload.comp_palette_item" boolvalue="true"/>                                                                          
+            <attr name="WoodstockUpload.comp_palette_item/WoodstockTree.comp_palette_item" boolvalue="true"/>                                                                
+            <attr name="WoodstockTree.comp_palette_item/WoodstockTreeNode.comp_palette_item" boolvalue="true"/>                                                         
+            <attr name="WoodstockTreeNode.comp_palette_item/WoodstockAnchor.comp_palette_item" boolvalue="true"/>                                                   
+            <attr name="WoodstockAnchor.comp_palette_item/WoodstockMessage.comp_palette_item" boolvalue="true"/>                                                 
+            <attr name="WoodstockMessage.comp_palette_item/WoodstockMessageGroup.comp_palette_item" boolvalue="true"/>
+            <!-- End Sorting -->
+            
+            <file name="WoodstockAnchor.comp_palette_item" url="resources/WoodstockAnchor.comp_palette_item"/>
+            <file name="WoodstockButton.comp_palette_item" url="resources/WoodstockButton.comp_palette_item"/>                                                
+            <file name="WoodstockCalendar.comp_palette_item" url="resources/WoodstockCalendar.comp_palette_item"/>          
+            <file name="WoodstockCheckbox.comp_palette_item" url="resources/WoodstockCheckbox.comp_palette_item"/>
+            <file name="WoodstockCheckboxGroup.comp_palette_item" url="resources/WoodstockCheckboxGroup.comp_palette_item"/>
+            <file name="WoodstockDropDown.comp_palette_item" url="resources/WoodstockDropDown.comp_palette_item"/>
+            <file name="WoodstockHiddenField.comp_palette_item" url="resources/WoodstockHiddenField.comp_palette_item"/>
+            <file name="WoodstockHyperLink.comp_palette_item" url="resources/WoodstockHyperlink.comp_palette_item"/>            
+            <file name="WoodstockImageComponent.comp_palette_item" url="resources/WoodstockImageComponent.comp_palette_item"/>
+            <file name="WoodstockImageHyperlink.comp_palette_item" url="resources/WoodstockImageHyperlink.comp_palette_item"/>            
+            <file name="WoodstockLabel.comp_palette_item" url="resources/WoodstockLabel.comp_palette_item"/>    
+            
+            <file name="WoodstockListbox.comp_palette_item" url="resources/WoodstockListbox.comp_palette_item"/>            
+            <file name="WoodstockMessage.comp_palette_item" url="resources/WoodstockMessage.comp_palette_item"/>
+            <file name="WoodstockMessageGroup.comp_palette_item" url="resources/WoodstockMessageGroup.comp_palette_item"/>
+            <file name="WoodstockPasswordField.comp_palette_item" url="resources/WoodstockPasswordField.comp_palette_item"/>
+            <file name="WoodstockRadioButton.comp_palette_item" url="resources/WoodstockRadioButton.comp_palette_item"/>
+            <file name="WoodstockRadioButtonGroup.comp_palette_item" url="resources/WoodstockRadioButtonGroup.comp_palette_item"/>
+            <file name="WoodstockStaticText.comp_palette_item" url="resources/WoodstockStaticText.comp_palette_item"/>
+            
+            <!-- Table Column and Table Row Group are sub-components of Table-->
+            <file name="WoodstockTable.comp_palette_item" url="resources/WoodstockTable.comp_palette_item"/>
+            <file name="WoodstockTableColumn.comp_palette_item" url="resources/WoodstockTableColumn.comp_palette_item"/>            
+            <file name="WoodstockTableRowGroup.comp_palette_item" url="resources/WoodstockTableRowGroup.comp_palette_item"/>
+            
+            <file name="WoodstockTextArea.comp_palette_item" url="resources/WoodstockTextArea.comp_palette_item"/>
+            <file name="WoodstockTextField.comp_palette_item" url="resources/WoodstockTextField.comp_palette_item"/>     
+            
+            <!-- TreeNode is a sub-component of Tree -->            
+            <file name="WoodstockTree.comp_palette_item" url="resources/WoodstockTree.comp_palette_item"/>
+            <file name="WoodstockTreeNode.comp_palette_item" url="resources/WoodstockTreeNode.comp_palette_item"/>
+            
+            <file name="WoodstockUpload.comp_palette_item" url="resources/WoodstockUpload.comp_palette_item"/>
+        </folder> 
+        <folder name="Layout">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.woodstock.webui.jsf.designtime.resources.Bundle"/>
+            <attr name="isExpanded" boolvalue="true"/>
+            
+            <attr name="isReadonly" boolvalue="true"/>
+            <!-- Begin Sorting -->             
+            <attr name="WoodstockHtmlPanelGrid.comp_palette_item/WoodstockPanelGroup.comp_palette_item" boolvalue="true"/>              
+            <attr name="WoodstockPanelGroup.comp_palette_item/WoodstockPanelLayout.comp_palette_item" boolvalue="true"/>  
+            <attr name="WoodstockPanelLayout.comp_palette_item/WoodstockPageSeparator.comp_palette_item" boolvalue="true"/> 
+            <attr name="WoodstockPageSeparator.comp_palette_item/WoodstockTabSet.comp_palette_item" boolvalue="true"/>  
+            <attr name="WoodstockTabSet.comp_palette_item/WoodstockTab.comp_palette_item" boolvalue="true"/>              
+            <attr name="WoodstockTab.comp_palette_item/Jsp_Directive_Include.comp_palette_item" boolvalue="true"/>              
+            <attr name="Jsp_Directive_Include.comp_palette_item/WoodstockPageAlert.comp_palette_item" boolvalue="true"/> 
+            <attr name="WoodstockPageAlert.comp_palette_item/WoodstockPropertySheet.comp_palette_item" boolvalue="true"/>  
+            <attr name="WoodstockPropertySheet.comp_palette_item/WoodstockPropertySheetSection.comp_palette_item" boolvalue="true"/>  
+            <attr name="WoodstockPropertySheetSection.comp_palette_item/WoodstockProperty.comp_palette_item" boolvalue="true"/>  
+            <attr name="WoodstockProperty.comp_palette_item/WoodstockForm.comp_palette_item" boolvalue="true"/>           
+            <!-- End Sorting -->
+                     
+            <!-- WHERE_IS: WoodstockHtmlPanelGrid" -->
+            <file name="WoodstockPanelGroup.comp_palette_item" url="resources/WoodstockPanelGroup.comp_palette_item"/>   
+            <file name="WoodstockPanelLayout.comp_palette_item" url="resources/WoodstockPanelLayout.comp_palette_item"/>
+            <file name="WoodstockPageSeparator.comp_palette_item" url="resources/WoodstockPageSeparator.comp_palette_item"/> 
+            
+            <!--Originally Tab was a sub-component of TabSet-->
+            <file name="WoodstockTabSet.comp_palette_item" url="resources/WoodstockTabSet.comp_palette_item"/> 
+            <file name="WoodstockTab.comp_palette_item" url="resources/WoodstockTab.comp_palette_item"/>
+            
+            <!--WHERE_IS: JSP Directive -->
+            <file name="WoodstockPageAlert.comp_palette_item" url="resources/WoodstockPageAlert.comp_palette_item"/> 
+            
+            <!-- Original Property Sheet Section and Property were sub-items of property sheet -->
+            <file name="WoodstockPropertySheet.comp_palette_item" url="resources/WoodstockPropertySheet.comp_palette_item"/>            
+            <file name="WoodstockPropertySheetSection.comp_palette_item" url="resources/WoodstockPropertySheetSection.comp_palette_item"/>   
+            <file name="WoodstockProperty.comp_palette_item" url="resources/WoodstockProperty.comp_palette_item"/>       
+            
+            <file name="WoodstockForm.comp_palette_item" url="resources/WoodstockForm.comp_palette_item"/>            
+        </folder>                
+        <folder name="Composite">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.woodstock.webui.jsf.designtime.resources.Bundle"/>
+            <attr name="isExpanded" boolvalue="true"/>
+            <attr name="isReadonly" boolvalue="true"/>
+            
+            <!-- Begin Sort -->
+            <attr name="WoodstockAlert.comp_palette_item/WoodstockAddRemove.comp_palette_item" boolvalue="true"/>  
+            <attr name="WoodstockAddRemove.comp_palette_item/WoodstockBreadcrumbs.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockBreadcrumbs.comp_palette_item/WoodstockHelpInline.comp_palette_item" boolvalue="true"/>
+            
+            <!-- Woodstock components not included in Shortfin. Add them here so that people can test the designtime code -->
+            <attr name="WoodstockHelpInline.comp_palette_item/WoodstockContentPageTitle.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockContentPageTitle.comp_palette_item/WoodstockMasthead.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockMasthead.comp_palette_item/WoodstockVersionPage.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockVersionPage.comp_palette_item/WoodstockProgressIndicator.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockProgressIndicator.comp_palette_item/WoodstockCommonTasksSection.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockCommonTasksSection.comp_palette_item/WoodstockCommonTasksGroup.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockCommonTasksGroup.comp_palette_item/WoodstockCommonTask.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockCommonTask.comp_palette_item/WoodstockAlarmStatus.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockAlarmStatus.comp_palette_item/WoodstockEditableList.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockEditableList.comp_palette_item/WoodstockFileChooser.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockFileChooser.comp_palette_item/WoodstockHelpWindow.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockHelpWindow.comp_palette_item/WoodstockJobStatus.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockJobStatus.comp_palette_item/WoodstockLegend.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockLegend.comp_palette_item/WoodstockNotificationPhrase.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockNotificationPhrase.comp_palette_item/WoodstockOrderableList.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockOrderableList.comp_palette_item/WoodstockScheduler.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockScheduler.comp_palette_item/WoodstockWizard.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockWizard.comp_palette_item/WoodstockWizardBranch.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockWizardBranchSteps.comp_palette_item/WoodstockWizardBranchSteps.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockWizardBranchSteps.comp_palette_item/WoodstockWizardStep.comp_palette_item" boolvalue="true"/>
+            <attr name="WoodstockWizardStep.comp_palette_item/WoodstockWizardSubstepBranch" boolvalue="true"/>
+            <!-- End of Woodstock components not included in Shortfin -->
+            
+            <!-- End Sort -->
+  
+            <file name="WoodstockAlert.comp_palette_item" url="resources/WoodstockAlert.comp_palette_item"/>
+            <file name="WoodstockAddRemove.comp_palette_item" url="resources/WoodstockAddRemove.comp_palette_item"/>
+            <file name="WoodstockBreadcrumbs.comp_palette_item" url="resources/WoodstockBreadcrumbs.comp_palette_item"/>     
+            <file name="WoodstockHelpInline.comp_palette_item" url="resources/WoodstockHelpInline.comp_palette_item"/>  
+            
+            <!-- Woodstock components not included in Shortfin. Add them here so that people can test the designtime code -->
+            <file name="WoodstockContentPageTitle.comp_palette_item" url="resources/WoodstockContentPageTitle.comp_palette_item"/>
+            <file name="WoodstockMasthead.comp_palette_item" url="resources/WoodstockMasthead.comp_palette_item"/>
+            <file name="WoodstockVersionPage.comp_palette_item" url="resources/WoodstockVersionPage.comp_palette_item"/>
+            <file name="WoodstockProgressIndicator.comp_palette_item" url="resources/WoodstockProgressIndicator.comp_palette_item"/>
+            <file name="WoodstockCommonTasksSection.comp_palette_item" url="resources/WoodstockCommonTasksSection.comp_palette_item"/>
+            <file name="WoodstockCommonTasksGroup.comp_palette_item" url="resources/WoodstockCommonTasksGroup.comp_palette_item"/>
+            <file name="WoodstockCommonTask.comp_palette_item" url="resources/WoodstockCommonTask.comp_palette_item"/>
+            <file name="WoodstockAlarmStatus.comp_palette_item" url="resources/WoodstockAlarmStatus.comp_palette_item"/>
+            <file name="WoodstockEditableList.comp_palette_item" url="resources/WoodstockEditableList.comp_palette_item"/>
+            <file name="WoodstockFileChooser.comp_palette_item" url="resources/WoodstockFileChooser.comp_palette_item"/>
+            <file name="WoodstockHelpWindow.comp_palette_item" url="resources/WoodstockHelpWindow.comp_palette_item"/>
+            <file name="WoodstockJobStatus.comp_palette_item" url="resources/WoodstockJobStatus.comp_palette_item"/>
+            <file name="WoodstockLegend.comp_palette_item" url="resources/WoodstockLegend.comp_palette_item"/>
+            <file name="WoodstockNotificationPhrase.comp_palette_item" url="resources/WoodstockNotificationPhrase.comp_palette_item"/>
+            <file name="WoodstockOrderableList.comp_palette_item" url="resources/WoodstockOrderableList.comp_palette_item"/>
+            <file name="WoodstockScheduler.comp_palette_item" url="resources/WoodstockScheduler.comp_palette_item"/>
+            <file name="WoodstockWizard.comp_palette_item" url="resources/WoodstockWizard.comp_palette_item"/>
+            <file name="WoodstockWizardBranch.comp_palette_item" url="resources/WoodstockWizardBranch.comp_palette_item"/>
+            <file name="WoodstockWizardBranchSteps.comp_palette_item" url="resources/WoodstockWizardBranchSteps.comp_palette_item"/>
+            <file name="WoodstockWizardStep.comp_palette_item" url="resources/WoodstockWizardStep.comp_palette_item"/>
+            <file name="WoodstockWizardSubstepBranch.comp_palette_item" url="resources/WoodstockWizardSubstepBranch.comp_palette_item"/>
+            <!-- End fo Woodstock components not included in Shortfin -->
+        </folder>
+        <folder name="Advanced">
+            <!--<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.woodstock.webui.jsf.designtime.resources.Bundle"/>-->
+            
+            <attr name="isReadonly" boolvalue="true"/>
+            <!-- Begin Sort -->
+            <attr name="WoodstockMarkup.comp_palette_item/WoodstockScript.comp_palette_item" boolvalue="true"/>  
+            <attr name="WoodstockScript.comp_palette_item/WoodstockEncodingComponent.comp_palette_item" boolvalue="true"/>  
+            <attr name="WoodstockUIParameter.comp_palette_item/WoodstockLink.comp_palette_item" boolvalue="true"/>  
+            <attr name="WoodstockLink.comp_palette_item/WoodstockMeta.comp_palette_item" boolvalue="true"/>  
+            <!-- End Sort -->
+            
+            <file name="WoodstockMarkup.comp_palette_item" url="resources/WoodstockMarkup.comp_palette_item"/>  
+            <file name="WoodstockScript.comp_palette_item" url="resources/WoodstockScript.comp_palette_item"/>  
+            <file name="WoodstockLink.comp_palette_item" url="resources/WoodstockLink.comp_palette_item"/>  
+            <file name="WoodstockMeta.comp_palette_item" url="resources/WoodstockMeta.comp_palette_item"/> 
+            
+        </folder>
+        <folder name="AdvancedDataProviders">
+            
+            <attr name="isReadonly" boolvalue="true"/>
+            <!-- All of the following were subcomponents -->
+            <file name="WoodstockValueBindingSortCriteria.comp_palette_item" url="resources/WoodstockValueBindingSortCriteria.comp_palette_item"/>  
+            <file name="WoodstockValueExpressionSortCriteria.comp_palette_item" url="resources/WoodstockValueExpressionSortCriteria.comp_palette_item"/>           
+            <file name="WoodstockValueBindingFilterCriteria.comp_palette_item" url="resources/WoodstockValueBindingFilterCriteria.comp_palette_item"/>
+            <file name="WoodstockValueExpressionFilterCriteria.comp_palette_item" url="resources/WoodstockValueExpressionFilterCriteria.comp_palette_item"/>           
+        </folder>
+    </folder>
+    
+</filesystem>

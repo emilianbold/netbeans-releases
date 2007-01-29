@@ -1,0 +1,186 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE faces-config PUBLIC
+  "-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.1//EN"
+  "http://java.sun.com/dtd/web-facesconfig_1_1.dtd">
+
+<faces-config>
+
+  <!--
+    Design-time configuration, describing any additions to the base run-time configuration.
+    Note that the order in which the faces-config files are processed is not deterministic, but,
+    the last component or renderer definition wins.
+    
+    This file defines design-time renderer types for those components that need additional
+    design-time rendering behavior, of a manner not easily handled using the design-time
+    API. The renderers will generally delegate all encoding and decoding to the base renderer
+    type, as defined in the Web UI faces-config.
+  -->
+      
+  <render-kit>
+    
+    <renderer>
+      <component-family>com.sun.rave.web.ui.AddRemove</component-family>
+      <renderer-type>com.sun.rave.web.ui.AddRemoveDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.AddRemoveDesignTimeRenderer</renderer-class>
+    </renderer>
+    
+    <renderer>
+      <component-family>com.sun.rave.web.ui.Alert</component-family>
+      <renderer-type>com.sun.rave.web.ui.AlertDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.AlertDesignTimeRenderer</renderer-class>
+    </renderer>
+    
+    <renderer>
+      <component-family>com.sun.rave.web.ui.Anchor</component-family>
+      <renderer-type>com.sun.rave.web.ui.AnchorDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.AnchorDesignTimeRenderer</renderer-class>
+    </renderer>
+    
+    <renderer>
+      <component-family>com.sun.rave.web.ui.Breadcrumbs</component-family>
+      <renderer-type>com.sun.rave.web.ui.BreadcrumbsDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.BreadcrumbsDesignTimeRenderer</renderer-class>
+    </renderer>
+    
+    <renderer>
+      <component-family>com.sun.rave.web.ui.Button</component-family>
+      <renderer-type>com.sun.rave.web.ui.ButtonDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.ButtonDesignTimeRenderer</renderer-class>
+    </renderer>
+    
+    <renderer>
+      <component-family>com.sun.rave.web.ui.CheckboxGroup</component-family>
+      <renderer-type>com.sun.rave.web.ui.CheckboxGroupDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.CheckboxGroupDesignTimeRenderer</renderer-class>
+    </renderer>
+    
+    <renderer>
+      <component-family>com.sun.rave.web.ui.DropDown</component-family>
+      <renderer-type>com.sun.rave.web.ui.DropDownDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.DropDownDesignTimeRenderer</renderer-class>
+    </renderer>
+
+    <renderer>
+      <component-family>com.sun.rave.web.ui.HelpInline</component-family>
+      <renderer-type>com.sun.rave.web.ui.HelpInlineDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.HelpInlineDesignTimeRenderer</renderer-class>
+    </renderer>
+    
+    <renderer>
+      <component-family>com.sun.rave.web.ui.Hyperlink</component-family>
+      <renderer-type>com.sun.rave.web.ui.HyperlinkDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.HyperlinkDesignTimeRenderer</renderer-class>
+    </renderer>
+        
+    <renderer>
+      <component-family>com.sun.rave.web.ui.Image</component-family>
+      <renderer-type>com.sun.rave.web.ui.ImageDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.ImageDesignTimeRenderer</renderer-class>
+    </renderer>
+        
+    <renderer>
+      <component-family>com.sun.rave.web.ui.ImageHyperlink</component-family>
+      <renderer-type>com.sun.rave.web.ui.ImageHyperlinkDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.ImageHyperlinkDesignTimeRenderer</renderer-class>
+    </renderer>
+    
+    <renderer>
+      <component-family>com.sun.rave.web.ui.Label</component-family>
+      <renderer-type>com.sun.rave.web.ui.LabelDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.LabelDesignTimeRenderer</renderer-class>
+    </renderer>
+    
+    <renderer>
+      <component-family>com.sun.rave.web.ui.Listbox</component-family>
+      <renderer-type>com.sun.rave.web.ui.ListboxDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.ListboxDesignTimeRenderer</renderer-class>
+    </renderer>
+    
+    <renderer>
+      <component-family>com.sun.rave.web.ui.PageAlert</component-family>
+      <renderer-type>com.sun.rave.web.ui.PageAlertDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.PageAlertDesignTimeRenderer</renderer-class>
+    </renderer>
+
+    <renderer>
+      <component-family>com.sun.rave.web.ui.PanelGroup</component-family>
+      <renderer-type>com.sun.rave.web.ui.PanelGroupDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.PanelGroupDesignTimeRenderer</renderer-class>
+    </renderer>
+
+    <renderer>
+      <component-family>com.sun.rave.web.ui.PanelLayout</component-family>
+      <renderer-type>com.sun.rave.web.ui.PanelLayoutDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.PanelLayoutDesignTimeRenderer</renderer-class>
+    </renderer>
+
+    <renderer>
+      <component-family>com.sun.rave.web.ui.PanelGroup</component-family>
+      <renderer-type>com.sun.rave.web.ui.PanelGroupDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.PanelGroupDesignTimeRenderer</renderer-class>
+    </renderer>
+
+    <renderer>
+      <component-family>com.sun.rave.web.ui.PanelLayout</component-family>
+      <renderer-type>com.sun.rave.web.ui.PanelLayoutDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.PanelLayoutDesignTimeRenderer</renderer-class>
+    </renderer>
+    
+    <renderer>
+      <component-family>com.sun.rave.web.ui.PasswordField</component-family>
+      <renderer-type>com.sun.rave.web.ui.PasswordFieldDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.PasswordFieldDesignTimeRenderer</renderer-class>
+    </renderer>
+    
+    <renderer>
+      <component-family>com.sun.rave.web.ui.RadioButtonGroup</component-family>
+      <renderer-type>com.sun.rave.web.ui.RadioButtonGroupDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.RadioButtonGroupDesignTimeRenderer</renderer-class>
+    </renderer>
+    
+    <renderer>
+      <component-family>com.sun.rave.web.ui.StaticText</component-family>
+      <renderer-type>com.sun.rave.web.ui.StaticTextDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.StaticTextDesignTimeRenderer</renderer-class>
+    </renderer>
+    
+    <renderer>
+      <component-family>com.sun.rave.web.ui.Tab</component-family>
+      <renderer-type>com.sun.rave.web.ui.TabDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.TabDesignTimeRenderer</renderer-class>
+    </renderer>
+    
+    <renderer>
+      <component-family>com.sun.rave.web.ui.TabSet</component-family>
+      <renderer-type>com.sun.rave.web.ui.TabSetDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.TabSetDesignTimeRenderer</renderer-class>
+    </renderer>
+    
+    <renderer>
+      <component-family>com.sun.rave.web.ui.TextArea</component-family>
+      <renderer-type>com.sun.rave.web.ui.TextAreaDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.TextAreaDesignTimeRenderer</renderer-class>
+    </renderer>
+    
+    <renderer>
+      <component-family>com.sun.rave.web.ui.TextField</component-family>
+      <renderer-type>com.sun.rave.web.ui.TextFieldDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.TextFieldDesignTimeRenderer</renderer-class>
+    </renderer>
+    
+    <renderer>
+      <component-family>com.sun.rave.web.ui.TreeNode</component-family>
+      <renderer-type>com.sun.rave.web.ui.TreeNodeDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.TreeNodeDesignTimeRenderer</renderer-class>
+    </renderer>
+    
+    <renderer>
+      <component-family>com.sun.rave.web.ui.Upload</component-family>
+      <renderer-type>com.sun.rave.web.ui.UploadDesignTime</renderer-type>
+      <renderer-class>org.netbeans.modules.visualweb.web.ui.dt.renderer.UploadDesignTimeRenderer</renderer-class>
+    </renderer>
+
+  </render-kit>
+
+</faces-config>

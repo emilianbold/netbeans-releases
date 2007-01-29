@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="CreatorDesignerPalette">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.webui.designtime.resources.Bundle"/>
+        
+        <!-- Sorting -->
+        <attr name="Basic/Layout" boolvalue="true"/>       
+        <attr name="Layout/Composite" boolvalue="true"/>
+        
+        <folder name="Basic">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.webui.designtime.resources.Bundle"/>
+            <attr name="isExpanded" boolvalue="true"/>
+            <attr name="isReadonly" boolvalue="true"/>
+            <!-- Begin Sorting -->                         
+            <attr name="Label.comp_palette_item/StaticText.comp_palette_item" boolvalue="true"/>            
+            <attr name="StaticText.comp_palette_item/TextField.comp_palette_item" boolvalue="true"/>            
+            <attr name="TextField.comp_palette_item/TextArea.comp_palette_item" boolvalue="true"/>                                          
+            <attr name="TextArea.comp_palette_item/Button.comp_palette_item" boolvalue="true"/>                                                      
+            <attr name="Button.comp_palette_item/HyperLink.comp_palette_item" boolvalue="true"/>                                                    
+            <attr name="HyperLink.comp_palette_item/ImageHyperlink.comp_palette_item" boolvalue="true"/>                                                        
+            <attr name="ImageHyperlink.comp_palette_item/DropDown.comp_palette_item" boolvalue="true"/>                                                  
+            <attr name="DropDown.comp_palette_item/Listbox.comp_palette_item" boolvalue="true"/>                                                            
+            <attr name="Listbox.comp_palette_item/Checkbox.comp_palette_item" boolvalue="true"/>                                                                       
+            <attr name="Checkbox.comp_palette_item/CheckboxGroup.comp_palette_item" boolvalue="true"/>                                                                             
+            <attr name="CheckboxGroup.comp_palette_item/RadioButton.comp_palette_item" boolvalue="true"/>                                                                   
+            <attr name="RadioButton.comp_palette_item/RadioButtonGroup.comp_palette_item" boolvalue="true"/>                                                              
+            <attr name="RadioButtonGroup.comp_palette_item/ImageComponent.comp_palette_item" boolvalue="true"/>                                                          
+            <attr name="ImageComponent.comp_palette_item/Table.comp_palette_item" boolvalue="true"/>                                                                    
+            <attr name="Table.comp_palette_item/TableColumn.comp_palette_item" boolvalue="true"/>                                                                              
+            <attr name="TableColumn.comp_palette_item/TableRowGroup.comp_palette_item" boolvalue="true"/>                                                                    
+            <attr name="TableRowGroup.comp_palette_item/PasswordField.comp_palette_item" boolvalue="true"/>                                                                
+            <attr name="PasswordField.comp_palette_item/HiddenField.comp_palette_item" boolvalue="true"/>                                                                 
+            <attr name="HiddenField.comp_palette_item/Calendar.comp_palette_item" boolvalue="true"/>                                                               
+            <attr name="Calendar.comp_palette_item/Upload.comp_palette_item" boolvalue="true"/>                                                                          
+            <attr name="Upload.comp_palette_item/Tree.comp_palette_item" boolvalue="true"/>                                                                
+            <attr name="Tree.comp_palette_item/TreeNode.comp_palette_item" boolvalue="true"/>                                                         
+            <attr name="TreeNode.comp_palette_item/Anchor.comp_palette_item" boolvalue="true"/>                                                   
+            <attr name="Anchor.comp_palette_item/Message.comp_palette_item" boolvalue="true"/>                                                 
+            <attr name="Message.comp_palette_item/MessageGroup.comp_palette_item" boolvalue="true"/>
+            <!-- End Sorting -->
+            
+            <file name="Anchor.comp_palette_item" url="resources/Anchor.comp_palette_item"/>                      
+            <file name="Button.comp_palette_item" url="resources/Button.comp_palette_item"/>                                                  
+            <file name="Calendar.comp_palette_item" url="resources/Calendar.comp_palette_item"/>          
+            <file name="Checkbox.comp_palette_item" url="resources/Checkbox.comp_palette_item"/>
+            <file name="CheckboxGroup.comp_palette_item" url="resources/CheckboxGroup.comp_palette_item"/>
+            <file name="DropDown.comp_palette_item" url="resources/DropDown.comp_palette_item"/>
+            <file name="HiddenField.comp_palette_item" url="resources/HiddenField.comp_palette_item"/>
+            <file name="HyperLink.comp_palette_item" url="resources/Hyperlink.comp_palette_item"/>            
+            <file name="ImageComponent.comp_palette_item" url="resources/ImageComponent.comp_palette_item"/>
+            <file name="ImageHyperlink.comp_palette_item" url="resources/ImageHyperlink.comp_palette_item"/>            
+            <file name="Label.comp_palette_item" url="resources/Label.comp_palette_item"/>    
+            
+            <file name="Listbox.comp_palette_item" url="resources/Listbox.comp_palette_item"/>            
+            <file name="Message.comp_palette_item" url="resources/Message.comp_palette_item"/>
+            <file name="MessageGroup.comp_palette_item" url="resources/MessageGroup.comp_palette_item"/>
+            <file name="PasswordField.comp_palette_item" url="resources/PasswordField.comp_palette_item"/>
+            <file name="RadioButton.comp_palette_item" url="resources/RadioButton.comp_palette_item"/>
+            <file name="RadioButtonGroup.comp_palette_item" url="resources/RadioButtonGroup.comp_palette_item"/>
+            <file name="StaticText.comp_palette_item" url="resources/StaticText.comp_palette_item"/>
+            
+            <!-- Table Column and Table Row Group are sub-components of Table-->
+            <file name="Table.comp_palette_item" url="resources/Table.comp_palette_item"/>
+            <file name="TableColumn.comp_palette_item" url="resources/TableColumn.comp_palette_item"/>            
+            <file name="TableRowGroup.comp_palette_item" url="resources/TableRowGroup.comp_palette_item"/>
+            
+            <file name="TextArea.comp_palette_item" url="resources/TextArea.comp_palette_item"/>
+            <file name="TextField.comp_palette_item" url="resources/TextField.comp_palette_item"/>     
+            
+            <!-- TreeNode is a sub-component of Tree -->            
+            <file name="Tree.comp_palette_item" url="resources/Tree.comp_palette_item"/>
+            <file name="TreeNode.comp_palette_item" url="resources/TreeNode.comp_palette_item"/>
+            
+            <file name="Upload.comp_palette_item" url="resources/Upload.comp_palette_item"/>
+        </folder> 
+        <folder name="Layout">
+            <attr name="isExpanded" boolvalue="true"/>
+            <attr name="isReadonly" boolvalue="true"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.webui.designtime.resources.Bundle"/>
+            
+            <!-- Begin Sorting -->             
+            <attr name="HtmlPanelGrid.comp_palette_item/PanelGroup.comp_palette_item" boolvalue="true"/>              
+            <attr name="PanelGroup.comp_palette_item/PanelLayout.comp_palette_item" boolvalue="true"/>  
+            <attr name="PanelLayout.comp_palette_item/PageSeparator.comp_palette_item" boolvalue="true"/> 
+            <attr name="PageSeparator.comp_palette_item/TabSet.comp_palette_item" boolvalue="true"/>  
+            <attr name="TabSet.comp_palette_item/Tab.comp_palette_item" boolvalue="true"/>              
+            <attr name="Tab.comp_palette_item/Jsp_Directive_Include.comp_palette_item" boolvalue="true"/>              
+            <attr name="Jsp_Directive_Include.comp_palette_item/PageAlert.comp_palette_item" boolvalue="true"/> 
+            <attr name="PageAlert.comp_palette_item/PropertySheet.comp_palette_item" boolvalue="true"/>  
+            <attr name="PropertySheet.comp_palette_item/PropertySheetSection.comp_palette_item" boolvalue="true"/>  
+            <attr name="PropertySheetSection.comp_palette_item/Property.comp_palette_item" boolvalue="true"/>  
+            <attr name="Property.comp_palette_item/Form.comp_palette_item" boolvalue="true"/>           
+            <!-- End Sorting -->
+            
+            <file name="PanelGroup.comp_palette_item" url="resources/PanelGroup.comp_palette_item"/>   
+            <file name="PanelLayout.comp_palette_item" url="resources/PanelLayout.comp_palette_item"/>
+            <file name="PageSeparator.comp_palette_item" url="resources/PageSeparator.comp_palette_item"/> 
+            
+            <!--Originally Tab was a sub-component of TabSet-->
+            <file name="TabSet.comp_palette_item" url="resources/TabSet.comp_palette_item"/> 
+            <file name="Tab.comp_palette_item" url="resources/Tab.comp_palette_item"/>
+            
+            <file name="PageAlert.comp_palette_item" url="resources/PageAlert.comp_palette_item"/> 
+            
+            <!-- Original Property Sheet Section and Property were sub-items of property sheet -->
+            <file name="PropertySheet.comp_palette_item" url="resources/PropertySheet.comp_palette_item"/>            
+            <file name="PropertySheetSection.comp_palette_item" url="resources/PropertySheetSection.comp_palette_item"/>   
+            <file name="Property.comp_palette_item" url="resources/Property.comp_palette_item"/>       
+            
+            <file name="Form.comp_palette_item" url="resources/Form.comp_palette_item"/>            
+        </folder>                
+        <folder name="Composite">
+            <attr name="isExpanded" boolvalue="true"/>
+            <attr name="isReadonly" boolvalue="true"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.webui.designtime.resources.Bundle"/>
+            
+            <!-- Begin Sort -->
+            <attr name="Alert.comp_palette_item/AddRemove.comp_palette_item" boolvalue="true"/>   
+            <!-- End Sort -->
+  
+            <file name="Alert.comp_palette_item" url="resources/Alert.comp_palette_item"/>
+            <file name="AddRemove.comp_palette_item" url="resources/AddRemove.comp_palette_item"/>
+            <file name="Breadcrumbs.comp_palette_item" url="resources/Breadcrumbs.comp_palette_item"/>     
+            <file name="HelpInline.comp_palette_item" url="resources/HelpInline.comp_palette_item"/>  
+        </folder>
+        <folder name="Advanced">
+            <attr name="isExpanded" boolvalue="false"/>
+            <attr name="isReadonly" boolvalue="true"/>
+            <!--<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.webui.designtime.resources.Bundle"/>-->
+              
+            <!-- Begin Sort -->
+            <attr name="Markup.comp_palette_item/Script.comp_palette_item" boolvalue="true"/> 
+            <attr name="Script.comp_palette_item/EncodingComponent.comp_palette_item" boolvalue="true"/>
+            <attr name="EncodingComponent.comp_palette_item/F_LoadBundle.comp_palette_item" boolvalue="true"/> 
+            <attr name="F_LoadBundle.comp_palette_item/F_Converter.comp_palette_item" boolvalue="true"/> 
+            <attr name="F_Converter.comp_palette_item/F_Validator.comp_palette_item" boolvalue="true"/>             
+            <attr name="F_Validator.comp_palette_item/F_ActionListener.comp_palette_item" boolvalue="true"/>          
+            <attr name="F_ActionListener.comp_palette_item/F_ValueChangeListener.comp_palette_item" boolvalue="true"/> 
+            <attr name="F_ValueChangeListener.comp_palette_item/F_Verbatim.comp_palette_item" boolvalue="true"/> 
+            <attr name="F_Verbatim.comp_palette_item/UIParameter.comp_palette_item" boolvalue="true"/> 
+            <attr name="UIParameter.comp_palette_item/Link.comp_palette_item" boolvalue="true"/>  
+            <attr name="Link.comp_palette_item/Meta.comp_palette_item" boolvalue="true"/>   
+            <!-- End Sort -->
+            
+            <file name="Markup.comp_palette_item" url="resources/Markup.comp_palette_item"/>  
+            <file name="Script.comp_palette_item" url="resources/Script.comp_palette_item"/>  
+            <file name="Link.comp_palette_item" url="resources/Link.comp_palette_item"/>  
+            <file name="Meta.comp_palette_item" url="resources/Meta.comp_palette_item"/> 
+            
+        </folder>
+        <folder name="AdvancedDataProviders">
+            <attr name="isReadonly" boolvalue="true"/>
+            <attr name="FieldIdSortCriteria.comp_palette_item/ValueBindingSortCriteria.comp_palette_item" boolvalue="true"/> 
+            <attr name="ValueBindingSortCriteria.comp_palette_item/ValueExpressionSortCriteria.comp_palette_item" boolvalue="true"/>   
+            <attr name="ValueExpressionSortCriteria.comp_palette_item/BasicTableDataFilter.comp_palette_item" boolvalue="true"/>
+            
+            <!--
+            <attr name="RegexFilterCriteria.comp_palette_item/NestedFilterCriteria.comp_palette_item" boolvalue="true"/>
+            <attr name="NestedFilterCriteria.comp_palette_item/BasicTransactionalDataProvider.comp_palette_item" boolvalue="true"/>   
+            -->
+       
+            <attr name="NestedFilterCriteria.comp_palette_item/ValueBindingFilterCriteria.comp_palette_item" boolvalue="true"/>
+            <attr name="ValueBindingFilterCriteria.comp_palette_item/ValueExpressionFilterCriteria.comp_palette_item" boolvalue="true"/>
+            <attr name="ValueExpressionFilterCriteria.comp_palette_item/BasicTransactionalDataProvider.comp_palette_item" boolvalue="true"/>       
+            
+            
+            <!-- All of the following were subcomponents -->
+            <file name="ValueBindingSortCriteria.comp_palette_item" url="resources/ValueBindingSortCriteria.comp_palette_item"/>  
+            <file name="ValueExpressionSortCriteria.comp_palette_item" url="resources/ValueExpressionSortCriteria.comp_palette_item"/>           
+            <file name="ValueBindingFilterCriteria.comp_palette_item" url="resources/ValueBindingFilterCriteria.comp_palette_item"/>
+            <file name="ValueExpressionFilterCriteria.comp_palette_item" url="resources/ValueExpressionFilterCriteria.comp_palette_item"/>           
+        </folder>
+    </folder>
+    
+</filesystem>

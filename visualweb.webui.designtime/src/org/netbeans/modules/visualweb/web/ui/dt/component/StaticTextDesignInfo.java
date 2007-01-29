@@ -1,0 +1,59 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+package org.netbeans.modules.visualweb.web.ui.dt.component;
+
+import com.sun.rave.designtime.DesignBean;
+import com.sun.rave.designtime.Result;
+import com.sun.rave.web.ui.component.StaticText;
+import org.netbeans.modules.visualweb.web.ui.dt.AbstractDesignInfo;
+import javax.faces.component.UIParameter;
+
+/**
+ * <p>Design time behavior for a <code>StaticText</code> component.  The
+ * following behavior is provided:</p>
+ * <ul>
+ * <li>Default the <code>text</code> property to the instance
+ *     name when we are created.</li>
+ * <li>The <code>text</code> property can be edited directly in the
+ *     design-time rendering of the component.
+ * <li>Only <code>UIParameter</code> components may be dropped onto
+ *     this component.</li>
+ * </ul>
+ *
+ * @author gjmurphy
+ */
+public class StaticTextDesignInfo extends AbstractDesignInfo {
+
+    /**
+     * <p>Construct a new <code>StaticTextDesignInfo</code> instance.</p>
+     */
+    public StaticTextDesignInfo() {
+        super(StaticText.class);
+    }
+
+    public Result beanCreatedSetup(DesignBean bean) {
+        super.beanCreatedSetup(bean);
+        return Result.SUCCESS;
+    }
+
+    public boolean acceptChild(DesignBean parentBean, DesignBean childBean, Class childClass) {
+        return UIParameter.class.isAssignableFrom(childClass) ? true : false;
+    }
+
+}
