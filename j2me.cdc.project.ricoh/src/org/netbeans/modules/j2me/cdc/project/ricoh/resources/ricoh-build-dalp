@@ -1,0 +1,75 @@
+    <xsl:comment>ricoh-init-dalp</xsl:comment>
+
+    <target name="ricoh-init-dalp" if="ricoh-platform.trigger">
+        <property name="ricoh.application.telephone" value=""/>
+        <property name="ricoh.application.fax" value=""/>
+        <property name="ricoh.application.email" value=""/>
+        <condition property="no.unmanaged.dalp">
+            <and>
+                <equals arg1="${{ricoh.dalp.is-managed}}" arg2="false" trim="true"/>
+                <not>
+                    <available file="./RICOH.dalp"/>
+                </not>
+            </and>
+        </condition>
+        <fail if="no.unmanaged.dalp" message="Dalp file RICOH.dalp is required in project directory when DALP management is set to off."/>
+        <condition property="no.vendor.name" value="true">
+            <equals arg1="${{application.vendor}}" arg2="" trim="true"/>
+        </condition>
+        <condition property="ricoh.icon.invalid" value="true">
+            <or>
+                <contains string="${{ricoh.application.icon}}" substring="$${{"/>
+                <equals arg1="${{ricoh.application.icon}}" arg2="" trim="true"/>
+            </or>
+        </condition>
+        <property name="dalp.dist" value="${{build.dir}}/dalp/RICOH.dalp"/>
+        <mkdir dir="${{dist.dir}}/lib"/>
+    </target>
+    <xsl:comment>ricoh-add-app-icon</xsl:comment>
+    <target name="ricoh-add-app-icon" depends="ricoh-init-dalp" if="ricoh-platform.trigger" unless="ricoh.icon.invalid">
+        <pathconvert property="icon.name" pathsep=" ">
+            <path path="${{ricoh.application.icon}}"/>
+            <chainedmapper>
+                <flattenmapper/>
+                <globmapper from="*" to="*"/>
+            </chainedmapper>
+        </pathconvert>
+        <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}" update="true">
+            <fileset file="${{ricoh.application.icon}}"/>
+        </jar>
+    </target>
+    <xsl:comment>ricoh-build-dalp-with-icon</xsl:comment>
+    <target name="ricoh-build-dalp-with-icon" depends="ricoh-add-app-icon" if="ricoh-platform.trigger" unless="ricoh.icon.invalid">
+        <mkdir dir="${{build.dir}}/dalp/"/>
+        <taskIf if="ricoh.dalp.is-managed" value="true">
+            <dalp file="${{dalp.dist}}" iconname="${{icon.name}}">
+                <fileset dir="${{dist.dir}}/lib"/>
+            </dalp>
+            <echo message="Managed dalp file ${{dalp.dist}} created w/ icon"/>
+        </taskIf>
+        <taskIf if="ricoh.dalp.is-managed" value="false">
+            <copy tofile="${{dalp.dist}}">
+                <fileset file="./RICOH.dalp"/>
+            </copy>
+            <echo message="Non-managed dalp file ${{dalp.dist}} w/ icon imported"/>
+        </taskIf>
+    </target>
+    <xsl:comment>ricoh-build-dalp-without-icon</xsl:comment>
+    <target name="ricoh-build-dalp-without-icon" if="ricoh.icon.invalid">
+        <mkdir dir="${{build.dir}}/dalp/"/>
+        <taskdef name="dalp" classname="org.netbeans.modules.j2me.cdc.project.ricoh.DalpBuilder"/>
+        <taskIf if="ricoh.dalp.is-managed" value="true">
+            <dalp file="${{dalp.dist}}">
+                <fileset dir="${{dist.dir}}/lib"/>
+            </dalp>
+            <echo message="Managed dalp file ${{dalp.dist}} created w/o icon"/>
+        </taskIf>
+        <taskIf if="ricoh.dalp.is-managed" value="false">
+            <copy tofile="${{dalp.dist}}">
+                <fileset file="./RICOH.dalp"/>
+            </copy>
+            <echo message="Non-managed dalp file ${{dalp.dist}} w/o icon imported"/>
+        </taskIf>
+    </target>
+    <target name="ricoh-build-dalp" depends="ricoh-build-dalp-with-icon,ricoh-build-dalp-without-icon" if="ricoh-platform.trigger"/>
+    

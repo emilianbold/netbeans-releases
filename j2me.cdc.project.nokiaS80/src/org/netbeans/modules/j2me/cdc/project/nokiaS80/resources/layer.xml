@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Buildsystem">
+        <folder name="org.netbeans.modules.kjava.j2meproject">
+            <folder name="nbproject">
+                <folder name="build-impl.xml">
+                    <folder name="init-subtargets">
+                        <attr name="savaje-init/nokiaS80-init" boolvalue="true"/>
+                        <file name="nokiaS80-init" url="nokiaS80-init"/>
+                    </folder>
+                    <folder name="run-subtargets">
+                        <attr name="savaje-run/nokiaS80-run" boolvalue="true"/>
+                        <file name="nokiaS80-run" url="nokiaS80-run"/>
+                    </folder>
+                    <folder name="debug-subtargets">
+                        <attr name="savaje-debug/nokiaS80-debug" boolvalue="true"/>
+                        <file name="nokiaS80-debug" url="nokiaS80-debug"/>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>    
+</filesystem>

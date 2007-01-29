@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+<?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    
+    <folder name="Buildsystem">
+        <folder name="org.netbeans.modules.kjava.j2meproject">
+            <folder name="nbproject">
+                <folder name="build-impl.xml">
+                    <folder name="init-subtargets">
+                        <attr name="cldc-init/cdc-init" boolvalue="true"/>
+                        <file name="cdc-init" url="cdc-init"/>
+                    </folder>
+                    <folder name="clean-subtargets">
+                        <attr name="clean-javadoc/clean-target" boolvalue="true"/>
+                        <file name="clean-target" url="clean-target"/>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+<!--
+    <folder name="Templates">
+        <folder name="Project">
+            <attr name="Mobile/CDC" boolvalue="true"/>
+            <attr name="CDC/Samples" boolvalue="true"/>
+
+            <folder name="CDC">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.Bundle"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/desktop.html"/>
+
+                <file name="emptyCDC.xml">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.NewCDCProjectWizardIterator"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/cdcProject.png"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/emptyProject.html"/>
+                </file>
+        
+                <attr name="emptyCDC.xml/emptyCDClibrary.xml" boolvalue="true"/>
+
+                <file name="emptyCDClibrary.xml">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.NewCDCProjectWizardIterator.library"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/cdcProject.png"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/emptyLibrary.html"/>
+                </file>                
+                <attr name="emptyCDClibrary.xml/existingCDC.xml" boolvalue="true"/>
+
+                <file name="existingCDC.xml">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.NewCDCProjectWizardIterator.existing"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/cdcProject.png"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/existingProject.html"/>
+                </file>
+
+                <file name="j2sefreeform.shadow">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="originalFile" stringvalue="Templates/Project/Standard/j2sefreeform.xml"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.wizards.Bundle"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/freeform-project-cdc.html"/>
+                </file>
+                <attr name="existingCDC.xml/j2sefreeform.xml" boolvalue="true"/>
+                <file name="j2sefreeform.xml" url="Templates/Project/Standard/j2sefreeform.xml"/>
+            </folder>
+        </folder>
+    
+        <attr boolvalue="true" name="Classes/CDC"/>
+        <attr name="Folder/CDC" boolvalue="true"/>    
+        <folder name="CDC">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.Bundle"/>
+
+            <file name="Xlet.java" url="templates/Xlet_java">
+                <attr name="template" boolvalue="true" />
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/Xlet.html" />
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" /> 
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/class.gif"/>
+                <attr name="CDC" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="CDC"/>
+            </file>
+
+            <file name="AWTXlet.java" url="templates/AWTXlet_java">
+                <attr name="template" boolvalue="true" />
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/AWTXlet.html" />
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />         
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JPanelColor16.gif"/>
+                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JPanelColor32.gif"/>
+                <attr name="CDC" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="CDC/AWT"/>
+            </file>
+            <file name="AWTXlet.form" url="templates/AWTXlet_form">
+                <attr name="template" boolvalue="true" />
+                <attr name="CDC" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="CDC/AWT"/>
+            </file>
+
+            <file name="AGUIXlet.java" url="templates/AGUIXlet_java">
+                <attr name="template" boolvalue="true" />
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/AGUIXlet.html" />
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />         
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JPanelColor16.gif"/>
+                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JPanelColor32.gif"/>
+                <attr name="CDC" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="CDC/AGUI"/>
+            </file>
+            <file name="AGUIXlet.form" url="templates/AGUIXlet_form">
+                <attr name="template" boolvalue="true" />
+                <attr name="CDC" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="CDC/AGUI"/>
+            </file>
+
+            <file name="RicohXlet.java" url="templates/RicohXlet_java">
+                <attr name="template" boolvalue="true" />
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/Xlet.html" />
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" /> 
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/class.gif"/>
+                <attr name="CDC" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="CDC/Ricoh"/>
+                <attr name="isXlet" stringvalue="true"/>
+            </file>            
+        </folder>
+    </folder>
+
+    <folder name="Services">
+        <file name="org-netbeans-modules-j2me-cdc-project-ui-FoldersList.settings" url="foldersList.settings"/>
+        <folder name="MIMEResolver">
+            <file name="org-netbeans-modules-j2me-cdc-project-ui-mbm-resolver.xml" url="mime-resolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.mbm.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/mbm/imageObject.png"/>
+            </file>
+        </folder>
+    </folder>
+-->
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+            <file name="Utils.xml" url="Utils.xml"/>
+        </folder>
+    </folder>
+<!--    
+     <folder name="Loaders">
+        <folder name="image">
+            <folder name="mbm">
+                <folder name="Actions">
+                    <file name="OpenAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
+                    </file>
+                    <attr boolvalue="true" name="OpenAction.instance/FileSystemAction.instance"/>
+                    <file name="FileSystemAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
+                    </file>
+                    <attr boolvalue="true" name="FileSystemAction.instance/Separator0.instance"/>
+                    <file name="Separator0.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr boolvalue="true" name="Separator0.instance/CutAction.instance"/>
+                    <file name="CutAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.CutAction"/>
+                    </file>
+                    <attr boolvalue="true" name="CutAction.instance/CopyAction.instance"/>
+                    <file name="CopyAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
+                    </file>
+                    <attr boolvalue="true" name="CopyAction.instance/PasteAction.instance"/>
+                    <file name="PasteAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction"/>
+                    </file>
+                    <attr boolvalue="true" name="PasteAction.instance/Separator1.instance"/>
+                    <file name="Separator1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr boolvalue="true" name="Separator1.instance/DeleteAction.instance"/>
+                    <file name="DeleteAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction"/>
+                    </file>
+                    <attr boolvalue="true" name="DeleteAction.instance/RenameAction.instance"/>
+                    <file name="RenameAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction"/>
+                    </file>
+                    <attr boolvalue="true" name="RenameAction.instance/Separator2.instance"/>
+                    <file name="Separator2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr boolvalue="true" name="Separator2.instance/SaveAsTemplateAction.instance"/>
+                    <file name="SaveAsTemplateAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction"/>
+                    </file>
+                    <attr boolvalue="true" name="SaveAsTemplateAction.instance/Separator3.instance"/>
+                    <file name="Separator3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr boolvalue="true" name="Separator3.instance/ToolsAction.instance"/>
+                    <file name="ToolsAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
+                    </file>
+                    <attr boolvalue="true" name="ToolsAction.instance/PropertiesAction.instance"/>
+                    <file name="PropertiesAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+ -->
+
+</filesystem>

@@ -1,0 +1,27 @@
+    <xsl:comment>savaje-init</xsl:comment>
+    <target name="savaje-init">
+        <condition property="savaje-platform.trigger">
+            <equals arg1="savaje" arg2="${{platform.type}}" casesensitive="false"/>
+        </condition>
+        <property name="savaje.application.uid" value="TBD"/>
+        <condition property="savaje.bundle.base.invalid" value="true">
+            <or>
+                <equals arg1="${{savaje.bundle.base}}" arg2="" trim="true"/>
+                <contains string="${{savaje.bundle.base}}" substring="$${{savaje.bundle.base"/>
+            </or>
+        </condition>
+        <condition property="savaje.unsupported.main" value="true">
+            <or>
+                <equals arg1="${{main.class.applet}}" arg2="true"/>
+            </or>
+        </condition>
+        <condition property="savaje.icon.invalid" value="true">
+            <or>
+                <isset property="no.application.uid"/>
+                <contains string="${{savaje.application.icon}}" substring="$${{"/>
+                <equals arg1="${{savaje.application.icon}}" arg2="" trim="true"/>
+            </or>
+        </condition>
+        <property name="jnlp.dist" value="${{build.dir}}/jnlp/bundle.jnlp"/>
+    </target>
+    

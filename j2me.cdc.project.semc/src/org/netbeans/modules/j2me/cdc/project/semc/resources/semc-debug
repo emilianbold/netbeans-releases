@@ -1,0 +1,23 @@
+    <xsl:comment>semc-debug</xsl:comment>
+    <xsl:comment>semc-build-j9-debug</xsl:comment>
+    <target name="semc-build-j9-debug" if="semc-platform.trigger">
+        <fail message="Main class is not set!">
+            <condition>
+                <equals arg1="${{main.class}}" arg2=""/>
+            </condition>
+        </fail>
+        <j9builder jvmargs="${{run.jvmargs}} -Xrunjdwp:server=n,address=${{jpda.port}}" mainclass="${{main.class}}" args="${{application.args}}" platform="${{platform.type}}" home="${{platform.home}}" dist="${{j9.dist}}" id="${{semc.application.uid}}" xlet="${{main.class.xlet}}" applet="${{main.class.applet}}">
+            <fileset dir="${{dist.dir}}">
+                <exclude name="javadoc/**"/>
+            </fileset>
+        </j9builder>
+    </target>
+    <target name="semc-debug-start" if="semc-platform.trigger">
+        <nbjpdastart transport="dt_socket" addressproperty="jpda.port" name="${{debug.class}}">
+            <bootclasspath>
+                <path path="${{platform.bootclasspath}}"/>
+            </bootclasspath>
+        </nbjpdastart>
+    </target>
+    <target name="semc-debug" depends="semc-debug-start,semc-prepare-j9,semc-build-j9-debug,semc-icon-assembly,semc-ppro-emulator,semc-run-prepare-icon,semc-do-run" if="semc-platform.trigger"/>
+    

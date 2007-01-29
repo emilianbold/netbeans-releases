@@ -1,0 +1,3 @@
+    <target name="clean-ricoh" if="ricoh-platform.trigger">
+        <delete dir="${{platform.home}}/mnt/sd3/sdk/dsdk/dist/${{ricoh.application.uid}}"/>
+    </target>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Buildsystem">
+        <folder name="org.netbeans.modules.kjava.j2meproject">
+            <folder name="nbproject">
+                <folder name="build-impl.xml">
+                    <folder name="init-subtargets">
+                        <attr name="cdc-init/ricoh-init" boolvalue="true"/>
+                        <file name="ricoh-init" url="ricoh-init"/>
+                    </folder>
+                    <folder name="jar-subtargets">
+                        <attr name="update-jad/ricoh-build-dalp" boolvalue="true"/>
+                        <file name="ricoh-build-dalp" url="ricoh-build-dalp"/>
+                    </folder>
+                    <folder name="run-subtargets">
+                        <attr name="cldc-run/ricoh-run" boolvalue="true"/>
+                        <file name="ricoh-run" url="ricoh-run"/>
+                    </folder>
+                    <folder name="debug-subtargets">
+                        <attr name="cldc-debug/ricoh-debug" boolvalue="true"/>
+                        <file name="ricoh-debug" url="ricoh-debug"/>
+                    </folder>
+                    <folder name="clean-subtargets">
+                        <attr name="clean-target/clean-ricoh" boolvalue="true"/>
+                        <file name="clean-ricoh" url="clean-ricoh"/>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>    
+</filesystem>

@@ -1,0 +1,35 @@
+    <xsl:comment>savaje-build-jnlp</xsl:comment>
+    <target name="savaje-prepare-icon" if="savaje-platform.trigger" unless="icon.invalid">
+        <pathconvert property="savaje.application.icon.name" pathsep=" ">
+            <path path="${{savaje.application.icon}}"/>
+            <chainedmapper>
+                <flattenmapper/>
+                <globmapper from="*" to="*"/>
+            </chainedmapper>
+        </pathconvert>
+        <mkdir dir="${{target.dir}}/lib"/>
+        <copy tofile="${{target.dir}}/lib/${{savaje.application.icon.name}}" file="${{savaje.application.icon}}" overwrite="true" failonerror="false"/>
+    </target>
+    <target name="savaje-build-jnlp" depends="savaje-prepare-icon" if="savaje-platform.trigger">
+        <mkdir dir="${{build.dir}}/jnlp/"/>
+        <taskdef name="jnlp" classname="org.netbeans.modules.j2me.cdc.project.savaje.SavajeJnlpBuilder"/>
+        <jnlp dir="${{build.dir}}/jnlp/" file="bundle.jnlp" codebase="WTK_AGUI" distjar="lib/${{dist.jar.name}}" applicationicon="lib/${{savaje.application.icon.name}}" smallicon="${{savaje.application.icon.small}}" focusedicon="${{savaje.application.icon.focused}}" applicationtitle="${{application.name}}" applicationvendor="${{application.vendor}}" applicationDescription="${{application.description}}" applicationArgs="${{application.args}}" mainClass="${{main.class}}" debug="${{savaje.bundle.debug}}" debugport="${{savaje.bundle.debug.port}}">
+            <fileset dir="${{dist.dir}}/lib"/>
+        </jnlp>
+        <taskdef name="policy" classname="org.netbeans.modules.j2me.cdc.project.savaje.SavajePolicyBuilder"/>
+        <policy file="${{build.dir}}/jnlp/bundle.policy" codebase="WTK_AGUI"/>
+        <mkdir dir="${{target.dir}}/lib"/>
+        <copy todir="${{target.dir}}/lib" overwrite="true" failonerror="false">
+            <fileset dir="${{dist.dir}}/lib">
+                <exclude name="javadoc/**"/>
+            </fileset>
+        </copy>
+        <copy tofile="${{target.dir}}\lib\classes.jar" file="${{dist.dir}}/${{dist.jar}}" overwrite="true"/>
+        <copy todir="${{target.dir}}" file="${{build.dir}}/jnlp/bundle.jnlp" overwrite="true"/>
+        <copy tofile="${{target.dir}}/bundle.policy" file="${{build.dir}}/jnlp/bundle.policy" overwrite="true"/>
+        <copy todir="${{target.dir}}/lib" overwrite="true" failonerror="false">
+            <fileset dir="${{resources.dir}}"/>
+        </copy>
+        <taskdef name="sunEmulatorExec" classname="org.netbeans.modules.j2me.cdc.project.savaje.SunToolkitEmulatorExecTask"/>
+    </target>
+

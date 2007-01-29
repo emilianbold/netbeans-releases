@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Buildsystem">
+        <folder name="org.netbeans.modules.kjava.j2meproject">
+            <folder name="nbproject">
+                <folder name="build-impl.xml">
+                    <folder name="init-subtargets">
+                        <attr name="semc-init/savaje-init" boolvalue="true"/>
+                        <file name="savaje-init" url="savaje-init"/>
+                    </folder>
+                    <folder name="jar-subtargets">
+                        <attr name="ricoh-build-dalp/savaje-build-jnlp" boolvalue="true"/>
+                        <file name="savaje-build-jnlp" url="savaje-build-jnlp"/>
+                    </folder>
+                    <folder name="run-subtargets">
+                        <attr name="semc-run/savaje-run" boolvalue="true"/>
+                        <file name="savaje-run" url="savaje-run"/>
+                    </folder>
+                    <folder name="debug-subtargets">
+                        <attr name="semc-debug/savaje-debug" boolvalue="true"/>
+                        <file name="savaje-debug" url="savaje-debug"/>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>    
+</filesystem>

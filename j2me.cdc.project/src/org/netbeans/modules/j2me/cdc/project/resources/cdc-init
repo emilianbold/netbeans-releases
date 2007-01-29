@@ -1,0 +1,32 @@
+<xsl:comment>cdc-init</xsl:comment>
+
+    <target name="cdc-init">
+        <condition property="cdc-platform.trigger">
+            <equals arg1="CDC" arg2="${{platform.trigger}}" casesensitive="false"/>
+        </condition>
+        <available file="${{manifest.file}}" property="manifest.available"/>
+        <condition property="manifest.available+main.class+fat.jar">
+            <and>
+                <isset property="manifest.available"/>
+                <isset property="main.class"/>
+                <istrue value="${{platform.fat.jar}}"/>
+                <not>
+                    <equals arg1="${{main.class}}" arg2="" trim="true"/>
+                </not>
+            </and>
+        </condition>
+        <condition property="manifest.available+main.class">
+            <and>
+                <isset property="manifest.available"/>
+                <isset property="main.class"/>
+                <isfalse value="${{platform.fat.jar}}"/>
+                <not>
+                    <equals arg1="${{main.class}}" arg2="" trim="true"/>
+                </not>
+            </and>
+        </condition>
+        <condition property="application.version.invalid" value="true">
+            <equals arg1="${{application.version}}" arg2="" trim="true"/>
+        </condition>
+        <fail if="application.version.invalid" message="Property application.version must not be empty and must contain version in format %d.%d.%d!"/>
+    </target>

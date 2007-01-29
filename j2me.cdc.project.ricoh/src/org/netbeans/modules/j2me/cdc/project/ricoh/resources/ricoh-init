@@ -1,0 +1,34 @@
+<xsl:comment>ricoh-init</xsl:comment>
+
+    <target name="ricoh-init" depends="cdc-init" if="cdc-platform.trigger">
+        <condition property="ricoh-platform.trigger">
+            <equals arg1="ricoh" arg2="${{platform.type}}" casesensitive="false"/>
+        </condition>
+        <available property="jcifs" classname="jcifs.smb.SmbFile" classpath="${{libs.RicohAntTools.classpath}}"/>
+        <condition property="no.vendor.name" value="true">
+            <equals arg1="${{application.vendor}}" arg2="" trim="true"/>
+        </condition>
+        <condition property="xlet-project" value="true">
+            <equals arg1="${{ricoh.application.type}}" arg2="xlet" trim="true"/>
+        </condition>
+        <condition property="servlet-project" value="true">
+            <equals arg1="${{ricoh.application.type}}" arg2="server" trim="true"/>
+        </condition>
+        <property name="xml.dir" value="${{build.dir}}/dalp"/>
+        <property name="xlet.dalp" value="RICOH.dalp"/>
+        <property name="xlet.dalp.name-only" value="RICOH.dalp"/>
+        <property name="deploy.dir" value="${{dist.dir}}/deploy"/>
+        <property name="signed.jar" value="${{target.dir}}/RICOH.jar"/>
+        <property name="rideploy.zip" value="${{dist.dir}}/RICOH.zip"/>
+        <taskdef name="taskIf" classname="ricoh.ant.ConditionalTask" classpath="${{libs.RicohAntTools.classpath}}"/>
+        <property name="ricoh.dalp.is-managed" value="true"/>
+        <property name="ricoh.application.type" value="xlet"/>
+        <property name="ricoh.dalp.information.is-icon-used" value="true"/>
+        <property name="ricoh.platform.target.version" value="2.0"/>
+        <property name="ricoh.dalp.version" value=""/>
+        <property name="ricoh.dalp.application-desc.visible" value="true"/>
+        <property name="ricoh.dalp.install.mode" value="auto"/>
+        <property name="ricoh.dalp.install.destination" value="hdd"/>
+        <property name="ricoh.dalp.install.work-dir" value="hdd"/>
+        <property name="ricoh.dalp.information.abbreviation" value="RICOH"/>
+    </target>
