@@ -21,6 +21,7 @@ package org.netbeans.modules.jmx.actions.dialog;
 
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
@@ -188,7 +189,16 @@ public class AddAttributesPanel extends javax.swing.JPanel
     public boolean configure() {
         
         // create and display the dialog:
-        String title = bundle.getString("LBL_AddAttributesAction.Title"); // NOI18N
+        MessageFormat formAttribute = 
+                new MessageFormat(bundle.getString("LBL_AddAttributesAction.Title")); // NOI18N
+        String itfName = ""; // NOI18N
+        try {
+            itfName = JavaModelHelper.getManagementInterfaceSimpleName(currentClass);
+        }catch(IOException ioe) {
+            // 
+        }
+        Object[] args = {itfName};
+        String title = formAttribute.format(args);
         
         btnOK = new JButton(bundle.getString("LBL_OK")); // NOI18N
         btnOK.setEnabled(isAcceptable());

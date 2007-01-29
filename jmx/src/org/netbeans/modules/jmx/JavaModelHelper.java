@@ -490,7 +490,6 @@ public class JavaModelHelper {
                 TypeElement itftype,
                 List<MBeanAttribute> attributes,
                 List<MBeanOperation> operations) throws NotCompliantMBeanException {
-            System.out.println("DEEP INTROSPECTION");
             if(itftype == null) return;
             
             //Top level loop to iterate on all interfaces
@@ -506,8 +505,6 @@ public class JavaModelHelper {
             for (ExecutableElement method : methods) {
                 String name = method.getSimpleName().toString();
                 
-                System.out.println("Checking for Method : " + name);
-                
                 List<? extends VariableElement> args = method.getParameters();
                 TypeMirror ret = method.getReturnType();
                 boolean isVoid = ret.getKind().equals(TypeKind.VOID);
@@ -518,12 +515,10 @@ public class JavaModelHelper {
                 if (name.startsWith("get") && !name.equals("get") // NOI18N
                         && argCount == 0 && !isVoid) { // NOI18N
                     // if the method is "T getX()" it is a getter
-                    System.out.println("THIS IS AN ATTRIBUTE GETTER");
                     attr = new MBeanAttribute(name.substring(3),
                             attributeDescription,
                             method,
                             null, clazz.getTypeParameters(), info);
-                    System.out.println("Attribute CREATED");
                 } else if (name.startsWith("set") && !name.equals("set") // NOI18N
                         && argCount == 1 && isVoid) { // NOI18N
                     // if the method is "void setX(T x)" it is a setter
@@ -545,9 +540,7 @@ public class JavaModelHelper {
                 }
                 
                 if (attr != null) {
-                    System.out.println("TESTING CONSISTENCY");
                     if (testConsistency(attributes, attr)) {
-                        System.out.println("OK CONSISTENCY");
                         attributes.add(attr);
                     }
                 } else {
@@ -812,8 +805,6 @@ public class JavaModelHelper {
            // }
             ExpressionTree retType = getType(w, attribute.getTypeName());
             TypeElement retTypeElement = w.getElements().getTypeElement(attribute.getTypeName());
-            System.out.println("ATTRIBUTE RETURN TYPE " + retType);
-            System.out.println("ATTRIBUTE ISCLASS " + isClass);
             
             MethodTree newMethod = null;
             String operationName = prefix + attribute.getName();
@@ -1792,7 +1783,6 @@ public class JavaModelHelper {
         @Override
         public Void visitClass(ClassTree clazz, Void v) {
             TreeMaker maker = w.getTreeMaker();
-            System.out.println("UPDATING DYNAMIC MBEAN");
             updateDescription(mbean.getDescription(), clazz);
             
             List attrList = mbean.getAttributes();
@@ -1843,11 +1833,9 @@ public class JavaModelHelper {
             }
             content.append("throw new AttributeNotFoundException(\"Unknown Attribute \" + attributeName);"); // NOI18N
             content.append("}");
-            System.out.println("CONTENT " + content.toString());
             // MethodTree mt = w.getTrees().getTree(method);
             // BlockTree copyBody = maker.createMethodBody(mt, content.toString());
             // w.rewrite(mt.getBody(), copyBody);
-            System.out.println("METHOD REWRITTEN");
             
             MethodTree newMethod = maker.Method(
                     maker.Modifiers(Collections.singleton(Modifier.PUBLIC)), // modifiers and annotations
@@ -2631,7 +2619,6 @@ public class JavaModelHelper {
     
     public static JavaSource getSource(FileObject fo) {
         JavaSource js = JavaSource.forFileObject(fo);
-        System.out.println("JAVASOURCE JS " + js);
         return js;
     }
     public static String[] getInterfaceNames(JavaSource clazz) throws IOException {
@@ -2711,20 +2698,17 @@ public class JavaModelHelper {
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] grps = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         final FileObject[] fo = new FileObject[1];
-        System.out.println("SOURCE GROUPS : " + grps.length);
+
         for(int i = 0; i < grps.length; i++) {
             FileObject root = grps[i].getRootFolder();
             final ClasspathInfo cpi = ClasspathInfo.create(root);
             JavaSource javaSrc = JavaSource.create(cpi);
-            System.out.println("ROOT SOURCE GROUPS : " + javaSrc);
             javaSrc.runUserActionTask(new CancellableTask<CompilationController>() {
                 public void run(CompilationController c) throws IOException {
                     Elements e = c.getElements();
                     TypeElement te = e.getTypeElement(fullClassName);
-                    System.out.println("FOUND ELEMENT : " + te + " for " + fullClassName);
                     if(te != null) {
                         //The element is under this root
-                        System.out.println("FOUND FILE :" + SourceUtils.getFile(te, cpi));
                         fo[0] = SourceUtils.getFile(te, cpi);
                     }
                 }
@@ -2805,6 +2789,11 @@ public class JavaModelHelper {
     
     public static MBeanDO getMBeanLikeModel(JavaSource baseClass) throws IOException {
         return getMBeanModel(baseClass, false);
+    }
+    
+    public static String getManagementInterfaceSimpleName(JavaSource baseClass) throws IOException {
+        TypeElement itf = getManagementInterface(baseClass);
+        return itf.getSimpleName().toString();
     }
     
     private static TypeElement getManagementInterface(JavaSource baseClass) throws IOException {
@@ -3279,7 +3268,6 @@ public class JavaModelHelper {
                             if(t instanceof MethodTree) {
                                 MethodTree mt = (MethodTree) t;
                                 String methodName = mt.getName().toString();
-                                System.out.println("POSSIBLE REMOVE : " + methodName);
                                 if(name.equals(methodName)){
                                     TreeMaker treeMaker = w.getTreeMaker();
                                     //Create a new class tree without main method
@@ -3333,7 +3321,6 @@ public class JavaModelHelper {
         
         String tName = type.toString();
         
-        System.out.println("TYPE : " + tName);
         TypeMirror comp = JavaModelHelper.getComponentType(type);
         TypeElement retType = (TypeElement)info.getTypes().asElement(comp);
         if(methodParameterTypes.contains(retType) ||

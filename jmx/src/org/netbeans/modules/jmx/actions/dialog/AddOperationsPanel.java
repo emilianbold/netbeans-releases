@@ -25,9 +25,8 @@ import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
 import java.io.IOException;
-
+import java.text.MessageFormat;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.jmx.FireEvent;
 import org.netbeans.modules.jmx.JavaModelHelper;
@@ -198,7 +197,16 @@ public class AddOperationsPanel extends javax.swing.JPanel
     public boolean configure() {
         
         // create and display the dialog:
-        String title = bundle.getString("LBL_AddOperationsAction.Title"); // NOI18N
+        MessageFormat formAttribute = 
+                new MessageFormat(bundle.getString("LBL_AddOperationsAction.Title")); // NOI18N
+        String itfName = ""; // NOI18N
+        try {
+            itfName = JavaModelHelper.getManagementInterfaceSimpleName(currentClass);
+        }catch(IOException ioe) {
+            // 
+        }
+        Object[] args = {itfName};
+        String title = formAttribute.format(args);
         
         btnOK = new JButton(bundle.getString("LBL_OK")); // NOI18N
         btnOK.setEnabled(isAcceptable());
