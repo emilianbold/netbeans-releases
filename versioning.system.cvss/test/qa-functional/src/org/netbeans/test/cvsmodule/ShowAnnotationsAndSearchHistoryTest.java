@@ -86,8 +86,8 @@ public class ShowAnnotationsAndSearchHistoryTest extends JellyTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new ShowAnnotationsAndSearchHistoryTest("testCheckOutProject"));
-        suite.addTest(new ShowAnnotationsAndSearchHistoryTest("testSearchHistory"));
-        //suite.addTest(new ShowAnnotationsAndSearchHistoryTest("testShowAnnotations"));
+        //suite.addTest(new ShowAnnotationsAndSearchHistoryTest("testSearchHistory"));
+        suite.addTest(new ShowAnnotationsAndSearchHistoryTest("testShowAnnotations"));
         suite.addTest(new ShowAnnotationsAndSearchHistoryTest("removeAllData"));
         return suite;
     }
