@@ -30,6 +30,8 @@
                 <attr name="CDC" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="CDC/MHP"/>
                 <attr name="isXlet" stringvalue="true"/>
-            </file>  
+            </file>
+        </folder>
+    </folder>
 </filesystem>
 
