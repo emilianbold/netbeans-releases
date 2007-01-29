@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+            <code-name-base>org.netbeans.modules.visualweb.libs.rowset</code-name-base>
+            <suite-component/>
+            <module-dependencies/>
+            <friend-packages>
+                <friend>com.sun.rave.propertyeditors</friend>
+                <friend>org.netbeans.modules.visualweb.dataprovider</friend>
+                <friend>org.netbeans.modules.visualweb.jsfsupport.components</friend>
+                <friend>org.netbeans.modules.visualweb.jsfsupport</friend>
+                <friend>org.netbeans.modules.visualweb.sql</friend>
+                <friend>org.netbeans.modules.visualweb.webui.designtime</friend>
+                <friend>org.netbeans.modules.visualweb.woodstock.webui.jsf</friend>
+                <package>javax.sql.rowset</package>
+                <package>javax.sql.rowset.serial</package>
+                <package>com.sun.rowset.providers</package>
+                <package>javax.sql.rowset.spi</package>
+                <package>com.sun.rowset.internal</package>
+                <package>com.sun.rowset</package>
+            </friend-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/rowset.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/rowset.jar</binary-origin>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>
