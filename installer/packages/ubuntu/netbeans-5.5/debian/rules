@@ -79,6 +79,8 @@ install: build update-copyright
 	rm $(BUILD)/platform6/THIRDPARTYLICENSEREADME.txt
 	rm $(BUILD)/enterprise3/apache-tomcat-5.5.17/LICENSE
 	rm $(BUILD)/enterprise3/modules/ext/toplink/3RD-PARTY-LICENSE.txt
+	# remove Python script from embedded ant
+	rm $(BUILD)/ide7/ant/bin/runant.py
 
 	cp -r $(BUILD)/platform6 $(CURDIR)/debian/netbeans5.5-platform$(NBROOT)/
 	mkdir -p $(CURDIR)/debian/netbeans5.5-platform/usr/share/doc/netbeans5.5-platform/

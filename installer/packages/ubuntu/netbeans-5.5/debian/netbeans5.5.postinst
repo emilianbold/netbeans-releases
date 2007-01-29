@@ -33,8 +33,8 @@ case "$1" in
         #First delete real man page file otherwise update-alternatives fails.
         #Leave real man page in package so that package passes routine package correctness check.
         rm -f /usr/share/man/man1/netbeans.1.gz
-        update-alternatives --verbose --auto netbeans
-        update-alternatives --verbose \
+        update-alternatives --auto netbeans
+        update-alternatives \
             --install \
             /usr/bin/netbeans \
             netbeans \
