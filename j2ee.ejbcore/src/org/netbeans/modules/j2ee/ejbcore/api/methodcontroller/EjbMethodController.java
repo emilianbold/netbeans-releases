@@ -119,7 +119,7 @@ public abstract class EjbMethodController {
         assert false: "ejbql not supported for this bean type";
     }
     
-    public String createDefaultQL(MethodType methodType) {
+    public String createDefaultQL(MethodModel methodModel) {
         return null;
     }
     

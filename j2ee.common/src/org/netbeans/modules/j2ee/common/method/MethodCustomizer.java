@@ -57,6 +57,10 @@ public final class MethodCustomizer {
         return DialogDisplayer.getDefault().notify(notifyDescriptor) == NotifyDescriptor.OK_OPTION;
     }
     
+    public MethodModel getMethodModel() {
+        return null;
+    }
+    
     public boolean finderReturnIsSingle() {
         return false;
     }

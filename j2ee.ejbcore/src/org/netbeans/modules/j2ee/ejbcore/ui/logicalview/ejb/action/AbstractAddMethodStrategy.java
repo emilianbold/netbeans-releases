@@ -46,7 +46,7 @@ public abstract class AbstractAddMethodStrategy {
         this.name = name;
     }
     
-    protected abstract MethodType getPrototypeMethod(FileObject fileObject, String className) throws IOException;
+    protected abstract MethodModel getPrototypeMethod();
     
     /** Describes method type handled by this action. */
     public abstract MethodType.Kind getPrototypeMethodKind();
@@ -55,7 +55,7 @@ public abstract class AbstractAddMethodStrategy {
         return name;
     }
     
-    protected abstract MethodCustomizer createDialog(FileObject fileObject, final MethodType pType) throws IOException;
+    protected abstract MethodCustomizer createDialog(FileObject fileObject, MethodModel methodModel) throws IOException;
     
     protected String localReturnType(EjbMethodController ejbMethodController, String fqn, boolean isOneReturn) {
         return fqn;
@@ -69,56 +69,60 @@ public abstract class AbstractAddMethodStrategy {
         if (className == null) {
             return;
         }
-        MethodType pType = getPrototypeMethod(fileObject, className);
-        MethodCustomizer methodCustomizer = createDialog(fileObject, pType);
+        MethodModel methodModel = getPrototypeMethod();
+        MethodCustomizer methodCustomizer = createDialog(fileObject, methodModel);
         if (methodCustomizer.customizeMethod()) {
             try {
-                okButtonPressed(methodCustomizer, pType, fileObject, className);
+                MethodModel method = methodCustomizer.getMethodModel();
+                boolean isOneReturn = methodCustomizer.finderReturnIsSingle();
+                boolean publishToLocal = methodCustomizer.publishToLocal();
+                boolean publishToRemote = methodCustomizer.publishToRemote();
+                String ejbql = methodCustomizer.getEjbQL();
+                okButtonPressed(method, isOneReturn, publishToLocal, publishToRemote, ejbql, fileObject, className);
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);
             }
         }
     }
     
-    private void okButtonPressed(final MethodCustomizer methodCustomizer, final MethodType methodType, 
-            final FileObject ejbClassFO, String classHandle) throws IOException {
+    protected void okButtonPressed(MethodModel method, boolean isOneReturn, boolean publishToLocal, boolean publishToRemote, 
+            String ejbql, FileObject ejbClassFO, String className) throws IOException {
         ProgressHandle handle = ProgressHandleFactory.createHandle("Adding method");
         try {
             handle.start(100);
-            boolean isComponent = methodType.getKind() == MethodType.Kind.BUSINESS;
-            boolean isOneReturn = methodCustomizer.finderReturnIsSingle();
+            boolean isComponent = getPrototypeMethodKind() == MethodType.Kind.BUSINESS;
+            
             handle.progress(10);
-            EjbMethodController ejbMethodController = EjbMethodController.createFromClass(ejbClassFO, classHandle);
-            MethodModel method = methodType.getMethodElement();
-            if (methodCustomizer.publishToLocal()) {
-                String localReturn = localReturnType(ejbMethodController, method.getReturnType(), isOneReturn);
-                method = MethodModel.create(
-                    method.getName(), 
+            EjbMethodController ejbMethodController = EjbMethodController.createFromClass(ejbClassFO, className);
+            MethodModel newMethod = method;
+            if (publishToLocal) {
+                String localReturn = localReturnType(ejbMethodController, newMethod.getReturnType(), isOneReturn);
+                newMethod = MethodModel.create(
+                    newMethod.getName(), 
                     localReturn,
-                    method.getBody(),
-                    method.getParameters(),
-                    method.getExceptions(),
-                    method.getModifiers()
+                    newMethod.getBody(),
+                    newMethod.getParameters(),
+                    newMethod.getExceptions(),
+                    newMethod.getModifiers()
                     );
-                method = ejbMethodController.createAndAdd(method, true, isComponent);
+                newMethod = ejbMethodController.createAndAdd(newMethod, true, isComponent);
             }
             handle.progress(60);
-            if (methodCustomizer.publishToRemote()) {
-                String remoteReturn = remoteReturnType(ejbMethodController, method.getReturnType(), isOneReturn);
-                method = MethodModel.create(
-                    method.getName(), 
+            if (publishToRemote) {
+                String remoteReturn = remoteReturnType(ejbMethodController, newMethod.getReturnType(), isOneReturn);
+                newMethod = MethodModel.create(
+                    newMethod.getName(), 
                     remoteReturn,
-                    method.getBody(),
-                    method.getParameters(),
-                    method.getExceptions(),
-                    method.getModifiers()
+                    newMethod.getBody(),
+                    newMethod.getParameters(),
+                    newMethod.getExceptions(),
+                    newMethod.getModifiers()
                     );
-                method = ejbMethodController.createAndAdd(method, false, isComponent);
+                newMethod = ejbMethodController.createAndAdd(newMethod, false, isComponent);
             }
             handle.progress(80);
-            String ejbql = methodCustomizer.getEjbQL();
             if (ejbql != null && ejbql.length() > 0) {
-                ejbMethodController.addEjbQl(method, ejbql, getDDFile(ejbClassFO));
+                ejbMethodController.addEjbQl(newMethod, ejbql, getDDFile(ejbClassFO));
             }
             handle.progress(99);
         } finally {

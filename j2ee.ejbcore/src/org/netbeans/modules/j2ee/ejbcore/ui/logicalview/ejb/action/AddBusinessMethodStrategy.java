@@ -44,8 +44,8 @@ public class AddBusinessMethodStrategy extends AbstractAddMethodStrategy {
         super (NbBundle.getMessage(AddBusinessMethodStrategy.class, "LBL_AddBusinessMethodAction"));
     }
     
-    protected MethodType getPrototypeMethod(FileObject fileObject, String classHandle) throws IOException {
-        MethodModel methodModel = MethodModel.create(
+    protected MethodModel getPrototypeMethod() {
+        return MethodModel.create(
                 "businessMethod",
                 "void",
                 "",
@@ -53,16 +53,15 @@ public class AddBusinessMethodStrategy extends AbstractAddMethodStrategy {
                 Collections.<String>emptyList(),
                 Collections.<Modifier>emptySet()
                 );
-        return new MethodType.BusinessMethodType(methodModel);
     }
 
-    protected MethodCustomizer createDialog(FileObject fileObject, MethodType pType) throws IOException {
+    protected MethodCustomizer createDialog(FileObject fileObject, MethodModel methodModel) throws IOException {
         String className = _RetoucheUtil.getMainClassName(fileObject);
         EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
         MethodsNode methodsNode = getMethodsNode();
         return MethodCustomizerFactory.businessMethod(
                 getTitle(),
-                pType.getMethodElement(), 
+                methodModel, 
                 ejbMethodController.hasRemote(), 
                 ejbMethodController.hasLocal(),
                 methodsNode == null ? ejbMethodController.hasLocal() : methodsNode.isLocal(),

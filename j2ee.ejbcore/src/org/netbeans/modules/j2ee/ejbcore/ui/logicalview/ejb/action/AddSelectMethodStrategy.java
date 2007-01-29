@@ -49,11 +49,11 @@ public class AddSelectMethodStrategy extends AbstractAddMethodStrategy {
     }
     
     @Override
-    public MethodType getPrototypeMethod(FileObject fileObject, String classHandle) throws IOException {
+    public MethodModel getPrototypeMethod() {
         Set<Modifier> modifiers = new HashSet<Modifier>();
         modifiers.add(Modifier.PUBLIC);
         modifiers.add(Modifier.ABSTRACT);
-        MethodModel method = MethodModel.create(
+        return MethodModel.create(
                 "ejbSelectBy",
                 "int",
                 "",
@@ -61,19 +61,18 @@ public class AddSelectMethodStrategy extends AbstractAddMethodStrategy {
                 Collections.singletonList("javax.ejb.FinderException"),
                 modifiers
                 );
-        return new MethodType.SelectMethodType(method);
     }
     
-    protected MethodCustomizer createDialog(FileObject fileObject, final MethodType pType) throws IOException {
+    protected MethodCustomizer createDialog(FileObject fileObject, final MethodModel methodModel) throws IOException {
         String className = _RetoucheUtil.getMainClassName(fileObject);
         EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
         String ejbql = null;
-        if (!ejbMethodController.hasJavaImplementation(pType)) {
-            ejbql = ejbMethodController.createDefaultQL(pType);
+        if (!ejbMethodController.hasJavaImplementation(methodModel)) {
+            ejbql = ejbMethodController.createDefaultQL(methodModel);
         }
         return MethodCustomizerFactory.selectMethod(
                 getTitle(),
-                pType.getMethodElement(),
+                methodModel,
                 ejbql,
                 Collections.<MethodModel>emptySet() //TODO: RETOUCHE collect all methods
                 );

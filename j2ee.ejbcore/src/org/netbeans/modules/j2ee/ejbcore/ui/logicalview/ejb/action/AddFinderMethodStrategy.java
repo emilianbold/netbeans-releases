@@ -46,13 +46,12 @@ public class AddFinderMethodStrategy extends AbstractAddMethodStrategy {
         super (NbBundle.getMessage(AddFinderMethodStrategy.class, "LBL_AddFinderMethodAction"));
     }
     
-    protected MethodType getPrototypeMethod(FileObject fileObject, String classHandle) throws IOException {
-        return getFinderPrototypeMethod(fileObject, classHandle);
+    protected MethodModel getPrototypeMethod() {
+        return getFinderPrototypeMethod();
     }
 
-    public static MethodType getFinderPrototypeMethod(FileObject fileObject, String classHandle) throws IOException {
-        final MethodType[] result = new MethodType[1];
-        MethodModel method = MethodModel.create(
+    public static MethodModel getFinderPrototypeMethod() {
+        return MethodModel.create(
                 "findBy",
                 "void",
                 "",
@@ -60,24 +59,23 @@ public class AddFinderMethodStrategy extends AbstractAddMethodStrategy {
                 Collections.singletonList("javax.ejb.FinderException"),
                 Collections.<Modifier>emptySet()
                 );
-        return new MethodType.FinderMethodType(method);
     }
 
-    protected MethodCustomizer createDialog(FileObject fileObject, final MethodType pType) throws IOException {
-        return createFinderDialog(fileObject, pType);
+    protected MethodCustomizer createDialog(FileObject fileObject, final MethodModel methodModel) throws IOException {
+        return createFinderDialog(fileObject, methodModel);
     }
 
-    protected MethodCustomizer createFinderDialog(FileObject fileObject, final MethodType pType) throws IOException{
+    protected MethodCustomizer createFinderDialog(FileObject fileObject, final MethodModel methodModel) throws IOException{
         String className = _RetoucheUtil.getMainClassName(fileObject);
         EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
         String ejbql = null;
-        if (!ejbMethodController.hasJavaImplementation(pType)) {
-            ejbql = ejbMethodController.createDefaultQL(pType);
+        if (!ejbMethodController.hasJavaImplementation(methodModel)) {
+            ejbql = ejbMethodController.createDefaultQL(methodModel);
         }
         MethodsNode methodsNode = getMethodsNode();
         return MethodCustomizerFactory.finderMethod(
                 getTitle(),
-                pType.getMethodElement(), 
+                methodModel, 
                 ejbMethodController.hasRemote(), 
                 ejbMethodController.hasLocal(), 
                 methodsNode == null ? ejbMethodController.hasLocal() : methodsNode.isLocal(),

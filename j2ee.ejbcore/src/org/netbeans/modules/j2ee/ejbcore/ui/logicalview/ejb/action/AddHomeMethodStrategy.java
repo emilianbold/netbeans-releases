@@ -44,8 +44,8 @@ public class AddHomeMethodStrategy extends AbstractAddMethodStrategy {
         super(NbBundle.getMessage(AddHomeMethodStrategy.class, "LBL_AddHomeMethodAction"));
     }
     
-    protected MethodType getPrototypeMethod(FileObject fileObject, String classHandle) throws IOException {
-        MethodModel method = MethodModel.create(
+    protected MethodModel getPrototypeMethod() {
+        return MethodModel.create(
                 "homeMethod",
                 "void",
                 "",
@@ -53,16 +53,15 @@ public class AddHomeMethodStrategy extends AbstractAddMethodStrategy {
                 Collections.<String>emptyList(),
                 Collections.<Modifier>emptySet()
                 );
-        return new MethodType.HomeMethodType(method);
     }
 
-    protected MethodCustomizer createDialog(FileObject fileObject, final MethodType pType) throws IOException{
+    protected MethodCustomizer createDialog(FileObject fileObject, final MethodModel methodModel) throws IOException{
         String className = _RetoucheUtil.getMainClassName(fileObject);
         EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
         MethodsNode methodsNode = getMethodsNode();
         return MethodCustomizerFactory.homeMethod(
                 getTitle(),
-                pType.getMethodElement(), 
+                methodModel, 
                 ejbMethodController.hasRemote(), 
                 ejbMethodController.hasLocal(),
                 methodsNode == null ? ejbMethodController.hasLocal() : methodsNode.isLocal(),

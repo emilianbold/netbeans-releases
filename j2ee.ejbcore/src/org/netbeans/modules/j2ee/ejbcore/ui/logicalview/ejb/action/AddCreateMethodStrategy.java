@@ -47,8 +47,8 @@ public class AddCreateMethodStrategy extends AbstractAddMethodStrategy {
         super(NbBundle.getMessage(AddCreateMethodStrategy.class, "LBL_AddCreateMethodAction"));
     }
     
-    protected MethodType getPrototypeMethod(FileObject fileObject, String classHandle) throws IOException {
-        MethodModel method = MethodModel.create(
+    protected MethodModel getPrototypeMethod() {
+        return MethodModel.create(
                 "create",
                 "void",
                 "",
@@ -56,16 +56,15 @@ public class AddCreateMethodStrategy extends AbstractAddMethodStrategy {
                 Collections.singletonList("javax.ejb.CreateException"),
                 Collections.<Modifier>emptySet()
                 );
-        return new MethodType.CreateMethodType(method);
     }
 
-    protected MethodCustomizer createDialog(FileObject fileObject, final MethodType pType) throws IOException{
+    protected MethodCustomizer createDialog(FileObject fileObject, final MethodModel methodModel) throws IOException{
         String className = _RetoucheUtil.getMainClassName(fileObject);
         EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
         MethodsNode methodsNode = getMethodsNode();
         return MethodCustomizerFactory.createMethod(
                 getTitle(),
-                pType.getMethodElement(), 
+                methodModel, 
                 ejbMethodController.hasRemote(), 
                 ejbMethodController.hasLocal(),
                 methodsNode == null ? ejbMethodController.hasLocal() : methodsNode.isLocal(),
