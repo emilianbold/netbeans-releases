@@ -45,8 +45,6 @@ import org.netbeans.installer.wizard.containers.SwingContainer;
 public class PreInstallSummaryPanel extends WizardPanel {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final Class CLS = PreInstallSummaryPanel.class;
-    
     public static final String MESSAGE_TEXT_PROPERTY = 
             "message.text";
     public static final String MESSAGE_CONTENT_TYPE_PROPERTY = 
@@ -71,41 +69,41 @@ public class PreInstallSummaryPanel extends WizardPanel {
             "required.disk.space.label.text";
     
     public static final String DEFAULT_MESSAGE_TEXT = 
-            ResourceUtils.getString(CLS, 
+            ResourceUtils.getString(PreInstallSummaryPanel.class, 
             "PrISP.message.text");
     public static final String DEFAULT_MESSAGE_CONTENT_TYPE = 
-            ResourceUtils.getString(CLS, 
+            ResourceUtils.getString(PreInstallSummaryPanel.class, 
             "PrISP.message.content.type");
     public static final String DEFAULT_COMPONENTS_TO_INSTALL_LABEL_TEXT = 
-            ResourceUtils.getString(CLS, 
+            ResourceUtils.getString(PreInstallSummaryPanel.class, 
             "PrISP.components.to.install.label.text");
     public static final String DEFAULT_COMPONENTS_TO_INSTALL_TEXT = 
-            ResourceUtils.getString(CLS, 
+            ResourceUtils.getString(PreInstallSummaryPanel.class, 
             "PrISP.components.to.install.text");
     public static final String DEFAULT_COMPONENTS_TO_INSTALL_CONTENT_TYPE = 
-            ResourceUtils.getString(CLS, 
+            ResourceUtils.getString(PreInstallSummaryPanel.class, 
             "PrISP.components.to.install.content.type");
     public static final String DEFAULT_COMPONENTS_TO_UNINSTALL_LABEL_TEXT = 
-            ResourceUtils.getString(CLS, 
+            ResourceUtils.getString(PreInstallSummaryPanel.class, 
             "PrISP.components.to.uninstall.label.text");
     public static final String DEFAULT_COMPONENTS_TO_UNINSTALL_TEXT = 
-            ResourceUtils.getString(CLS, 
+            ResourceUtils.getString(PreInstallSummaryPanel.class, 
             "PrISP.components.to.uninstall.text");
     public static final String DEFAULT_COMPONENTS_TO_UNINSTALL_CONTENT_TYPE = 
-            ResourceUtils.getString(CLS, 
+            ResourceUtils.getString(PreInstallSummaryPanel.class, 
             "PrISP.components.to.uninstall.content.type");
     public static final String DEFAULT_COMPONENTS_LIST_SEPARATOR = 
-            ResourceUtils.getString(CLS, 
+            ResourceUtils.getString(PreInstallSummaryPanel.class, 
             "PrISP.components.list.separator");
     public static final String DEFAULT_DOWNLOAD_SIZE_LABEL_TEXT = 
-            ResourceUtils.getString(CLS, 
+            ResourceUtils.getString(PreInstallSummaryPanel.class, 
             "PrISP.download.size.label.text");
     public static final String DEFAULT_REQUIRED_DISK_SPACE_LABEL_TEXT = 
-            ResourceUtils.getString(CLS, 
+            ResourceUtils.getString(PreInstallSummaryPanel.class, 
             "PrISP.required.disk.space.label.text");
     
     public static final String DEFAULT_DIALOG_TITLE = 
-            ResourceUtils.getString(CLS, 
+            ResourceUtils.getString(PreInstallSummaryPanel.class, 
             "PrISP.dialog.title");
     
     /////////////////////////////////////////////////////////////////////////////////

@@ -23,6 +23,7 @@ package org.netbeans.installer.wizard.components.actions;
 import java.util.List;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
+import org.netbeans.installer.product.RegistryType;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.LogManager;
@@ -33,8 +34,6 @@ import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.components.WizardAction;
-import org.netbeans.installer.wizard.components.WizardAction.WizardActionUi;
-
 
 public class DownloadInstallationDataAction extends WizardAction {
     /////////////////////////////////////////////////////////////////////////////////
@@ -63,8 +62,8 @@ public class DownloadInstallationDataAction extends WizardAction {
         final int percentageLeak = Progress.COMPLETE % products.size();
         
         overallProgress = new CompositeProgress();
-        overallProgress.setTitle("Downloading installation data for selected products");
         overallProgress.setPercentage(percentageLeak);
+        overallProgress.synchronizeDetails(true);
         
         getWizardUi().setProgress(overallProgress);
         for (Product product: products) {
@@ -73,6 +72,12 @@ public class DownloadInstallationDataAction extends WizardAction {
             
             overallProgress.addChild(currentProgress, percentageChunk);
             try {
+                if (product.getRegistryType() == RegistryType.REMOTE) {
+                    overallProgress.setTitle("Downloading installation data for " + product.getDisplayName());
+                } else {
+                    overallProgress.setTitle("Exctracting installation data for " + product.getDisplayName());
+                }
+                
                 product.downloadData(currentProgress);
                 
                 // check for cancel status

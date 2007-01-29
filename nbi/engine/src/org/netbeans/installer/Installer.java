@@ -148,7 +148,7 @@ public class Installer {
      * <code>Installer is a singleton.
      */
     private Installer(String[] arguments) {
-        LogManager.log(MESSAGE, "initializing the installer engine");
+        LogManager.log("initializing the installer engine");
         LogManager.indent();
         
         // attach a handler for uncaught exceptions in the main thread
@@ -179,7 +179,7 @@ public class Installer {
         createInstallerLockFile();
         
         LogManager.unindent();
-        LogManager.log(MESSAGE, "... finished initializing the installer engine");
+        LogManager.log("... finished initializing the installer engine");
     }
     
     // Life cycle control methods ///////////////////////////////////////////////////
@@ -251,22 +251,22 @@ public class Installer {
     
     // Private stuff ////////////////////////////////////////////////////////////////
     private void dumpSystemInfo() {
-        LogManager.log(MESSAGE, "dumping target system information");
+        LogManager.log("dumping target system information");
         LogManager.indent();
         
-        LogManager.log(MESSAGE, "system properties:");
+        LogManager.log("system properties:");
         LogManager.indent();
         
         Properties properties = System.getProperties();
         for (Object key: properties.keySet()) {
-            LogManager.log(MESSAGE, key.toString() + " => " + properties.get(key).toString());
+            LogManager.log(key.toString() + " => " + properties.get(key).toString());
         }
         
         LogManager.unindent();
-        LogManager.log(MESSAGE, "... end of system properties");
+        LogManager.log("... end of system properties");
         
         LogManager.unindent();
-        LogManager.log(MESSAGE, "... end of target system information");
+        LogManager.log("... end of target system information");
     }
     
     /**
@@ -276,12 +276,12 @@ public class Installer {
      * @param arguments The command line arguments
      */
     private void parseArguments(String[] arguments) {
-        LogManager.log(MESSAGE, "parsing command-line arguments");
+        LogManager.log("parsing command-line arguments");
         LogManager.indent();
         
         for (int i = 0; i < arguments.length; i++) {
             if (arguments[i].equalsIgnoreCase("--look-and-feel")) {
-                LogManager.log(MESSAGE, "parsing command line parameter \"--look-and-feel\"");
+                LogManager.log("parsing command line parameter \"--look-and-feel\"");
                 LogManager.indent();
                 
                 if (i < arguments.length - 1) {
@@ -290,7 +290,7 @@ public class Installer {
                     
                     i = i + 1;
                     
-                    LogManager.log(MESSAGE, "... class name: " + value);
+                    LogManager.log("... class name: " + value);
                 } else {
                     ErrorManager.notify(WARNING, "Required parameter missing for command line argument \"--look-and-feel\". Should be \"--look-and-feel <look-and-feel-class-name>\".");
                 }
@@ -300,7 +300,7 @@ public class Installer {
             }
             
             if (arguments[i].equalsIgnoreCase(TARGET_ARG)) {
-                LogManager.log(MESSAGE, "parsing command line parameter \"" + TARGET_ARG + "\"");
+                LogManager.log("parsing command line parameter \"" + TARGET_ARG + "\"");
                 LogManager.indent();
                 
                 if (i < arguments.length - 2) {
@@ -311,8 +311,8 @@ public class Installer {
                     
                     i = i + 2;
                     
-                    LogManager.log(MESSAGE, "... uid:     " + uid);
-                    LogManager.log(MESSAGE, "... version: " + version);
+                    LogManager.log("... uid:     " + uid);
+                    LogManager.log("... version: " + version);
                 }
                 
                 LogManager.unindent();
@@ -320,7 +320,7 @@ public class Installer {
             }
             
             if (arguments[i].equalsIgnoreCase("--locale")) {
-                LogManager.log(MESSAGE, "parsing command line parameter \"--locale\"");
+                LogManager.log("parsing command line parameter \"--locale\"");
                 LogManager.indent();
                 
                 if (i < arguments.length - 1) {
@@ -344,9 +344,9 @@ public class Installer {
                     
                     if (targetLocale != null) {
                         Locale.setDefault(targetLocale);
-                        LogManager.log(MESSAGE, "... locale set to: " + targetLocale);
+                        LogManager.log("... locale set to: " + targetLocale);
                     } else {
-                        LogManager.log(MESSAGE, "... locale is not set, using system default: " + Locale.getDefault());
+                        LogManager.log("... locale is not set, using system default: " + Locale.getDefault());
                     }
                     
                     i = i + 1;
@@ -359,7 +359,7 @@ public class Installer {
             }
             
             if (arguments[i].equalsIgnoreCase("--state")) {
-                LogManager.log(MESSAGE, "parsing command line parameter \"--state\"");
+                LogManager.log("parsing command line parameter \"--state\"");
                 LogManager.indent();
                 
                 if (i < arguments.length - 1) {
@@ -382,7 +382,7 @@ public class Installer {
             }
             
             if (arguments[i].equalsIgnoreCase("--record")) {
-                LogManager.log(MESSAGE, "parsing command line parameter \"--record\"");
+                LogManager.log("parsing command line parameter \"--record\"");
                 LogManager.indent();
                 
                 if (i < arguments.length - 1) {
@@ -405,7 +405,7 @@ public class Installer {
             }
             
             if (arguments[i].equalsIgnoreCase("--silent")) {
-                LogManager.log(MESSAGE, "parsing command line parameter \"--silent\"");
+                LogManager.log("parsing command line parameter \"--silent\"");
                 LogManager.indent();
                 
                 UiMode.setCurrentUiMode(UiMode.SILENT);
@@ -415,7 +415,7 @@ public class Installer {
             }
             
             if (arguments[i].equalsIgnoreCase("--create-bundle")) {
-                LogManager.log(MESSAGE, "parsing command line parameter \"--create-bundle\"");
+                LogManager.log("parsing command line parameter \"--create-bundle\"");
                 LogManager.indent();
                 
                 if (i < arguments.length - 1) {
@@ -439,7 +439,7 @@ public class Installer {
             }
             
             if (arguments[i].equalsIgnoreCase("--ignore-lock")) {
-                LogManager.log(MESSAGE, "parsing command line parameter \"--ignore-lock\"");
+                LogManager.log("parsing command line parameter \"--ignore-lock\"");
                 LogManager.indent();
                 
                 System.setProperty(IGNORE_LOCK_FILE_PROPERTY, "true");
@@ -449,7 +449,7 @@ public class Installer {
             }
             
             if (arguments[i].equalsIgnoreCase("--userdir")) {
-                LogManager.log(MESSAGE, "parsing command line parameter \"--userdir\"");
+                LogManager.log("parsing command line parameter \"--userdir\"");
                 LogManager.indent();
                 
                 if (i < arguments.length - 1) {
@@ -468,7 +468,7 @@ public class Installer {
             }
             
             if (arguments[i].equalsIgnoreCase("--platform")) {
-                LogManager.log(MESSAGE, "parsing command line parameter \"--platform\"");
+                LogManager.log("parsing command line parameter \"--platform\"");
                 LogManager.indent();
                 
                 if (i < arguments.length - 1) {
@@ -484,10 +484,30 @@ public class Installer {
                 LogManager.unindent();
                 continue;
             }
+            
+            if (arguments[i].equalsIgnoreCase("--force-install")) {
+                LogManager.log("parsing command line parameter \"--force-install\"");
+                LogManager.indent();
+                
+                System.setProperty(Registry.FORCE_CHANGE_STATUS_INSTALL_PROPERTY, "true");
+                
+                LogManager.unindent();
+                continue;
+            }
+            
+            if (arguments[i].equalsIgnoreCase("--force-uninstall")) {
+                LogManager.log("parsing command line parameter \"--force-uninstall\"");
+                LogManager.indent();
+                
+                System.setProperty(Registry.FORCE_CHANGE_STATUS_UNINSTALL_PROPERTY, "true");
+                
+                LogManager.unindent();
+                continue;
+            }
         }
         
         if (arguments.length == 0) {
-            LogManager.log(MESSAGE, "... no command line arguments were specified");
+            LogManager.log("... no command line arguments were specified");
         }
         
         // validate arguments ///////////////////////////////////////////////////////
@@ -499,11 +519,11 @@ public class Installer {
         }
         
         LogManager.unindent();
-        LogManager.log(MESSAGE, "... finished parsing command line arguments");
+        LogManager.log("... finished parsing command line arguments");
     }
     
     private void setLocalDirectory() {
-        LogManager.log(MESSAGE, "initializing the local directory");
+        LogManager.log("initializing the local directory");
         LogManager.indent();
         
         if (System.getProperty(LOCAL_DIRECTORY_PATH_PROPERTY) != null) {
@@ -512,8 +532,8 @@ public class Installer {
         } else {
             localDirectory = new File(DEFAULT_LOCAL_DIRECTORY_PATH).getAbsoluteFile();
             
-            LogManager.log(MESSAGE, "... custom local directory was not specified, using the default");
-            LogManager.log(MESSAGE, "... local directory: " + localDirectory);
+            LogManager.log("... custom local directory was not specified, using the default");
+            LogManager.log("... local directory: " + localDirectory);
         }
         
         if (!localDirectory.exists()) {
@@ -529,7 +549,7 @@ public class Installer {
         }
         
         LogManager.unindent();
-        LogManager.log(MESSAGE, "... finished initializing local directory");
+        LogManager.log("... finished initializing local directory");
     }
     
     private void setLookAndFeel() {
@@ -560,7 +580,7 @@ public class Installer {
     }
     
     private void cacheEngineJar() throws IOException, DownloadException {
-        LogManager.log(MESSAGE, "... starting copying engine content to the new jar file");
+        LogManager.log("... starting copying engine content to the new jar file");
         String [] entries = StreamUtils.readStream(
                 ResourceUtils.getResource(ENGINE_JAR_CONTENT_LIST)).
                 toString().split(StringUtils.NEW_LINE_PATTERN);
@@ -574,7 +594,7 @@ public class Installer {
                     DEFAULT_INSTALLER_MANIFEST.getBytes()));
             dest.getParentFile().mkdirs();
             jos = new JarOutputStream(new FileOutputStream(dest),mf);
-            LogManager.log(MESSAGE, "... total entries : " + entries.length);
+            LogManager.log("... total entries : " + entries.length);
             for(int i=0;i<entries.length;i++) {
                 String name = entries[i];
                 if(name.length() > 0 && !name.startsWith(DATA_DIRECTORY)) {
@@ -584,7 +604,7 @@ public class Installer {
                     }
                 }
             }
-            LogManager.log(MESSAGE, "... adding content list and some other stuff");
+            LogManager.log("... adding content list and some other stuff");
             jos.putNextEntry(new JarEntry(DATA_DIRECTORY + StringUtils.FORWARD_SLASH));            
             
             jos.putNextEntry(new JarEntry(DATA_DIRECTORY + StringUtils.FORWARD_SLASH + 
@@ -611,7 +631,7 @@ public class Installer {
         }
         
         cachedEngine = (!dest.exists()) ? null : dest;
-        LogManager.log(MESSAGE, "NBI Engine jar file = [" +
+        LogManager.log("NBI Engine jar file = [" +
                 cachedEngine + "], exist = " +
                 ((cachedEngine==null) ? false : cachedEngine.exists()));
     }
@@ -622,7 +642,7 @@ public class Installer {
     }
     
     private void cacheEngineLocally() {
-        LogManager.log(MESSAGE, "cache engine data locally to run uninstall in the future");
+        LogManager.log("cache engine data locally to run uninstall in the future");
         LogManager.indent();
         String filePrefix = "file:";
         String httpPrefix = "http://";
@@ -688,7 +708,7 @@ public class Installer {
             LogManager.log(CRITICAL, ex);
         }
         LogManager.unindent();
-        LogManager.log(MESSAGE, "... finished caching engine data");
+        LogManager.log("... finished caching engine data");
     }
     
     private void createInstallerLockFile()  {

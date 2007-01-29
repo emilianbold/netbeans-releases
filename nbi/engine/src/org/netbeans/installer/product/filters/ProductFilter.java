@@ -55,6 +55,19 @@ public class ProductFilter implements RegistryFilter {
         this.status = status;
     }
     
+    public ProductFilter(final Platform platform) {
+        this();
+        
+        this.platforms.add(platform);
+    }
+    
+    public ProductFilter(final Status status, final Platform platform) {
+        this();
+        
+        this.status = status;
+        this.platforms.add(platform);
+    }
+    
     public ProductFilter(final DetailedStatus detailedStatus) {
         this();
         

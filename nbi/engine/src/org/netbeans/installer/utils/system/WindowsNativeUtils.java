@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Properties;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
@@ -44,6 +45,7 @@ import org.netbeans.installer.utils.system.windows.SystemApplication;
 import org.netbeans.installer.utils.system.windows.FileExtension;
 import static org.netbeans.installer.utils.system.windows.WindowsRegistry.*;
 import org.netbeans.installer.utils.system.windows.WindowsRegistry;
+import org.netbeans.installer.wizard.components.panels.ComponentsSelectionPanel;
 
 /**
  *
@@ -310,39 +312,52 @@ public class WindowsNativeUtils extends NativeUtils {
         }
     }
     
-    public void addComponentToSystemInstallManager(Product component) throws NativeException {
-        LogManager.logIndent("adding component to windows registry uninstall section");
-        
-        String uid         = getUidKey(component);
-        String installPath = component.getInstallationLocation().getPath();
-        String icon        = null; // use standard icon till we find a way to pass it
-        String displayName = component.getDisplayName();
-        
-        File executable = JavaUtils.getExecutableW(SystemUtils.getCurrentJavaHome());
-        File cachedEngine = Installer.getInstance().getCachedEngine();
-        
-        String uninstallString = null;
-        
-        if (cachedEngine != null) {
-            String sp = " ";
-            String br = "\"";
-            uninstallString = br + executable.getPath() + br + sp + "-jar" + sp + br + cachedEngine.getPath() + br + sp + Installer.TARGET_ARG + sp + br + component.getUid() + br + sp + br + component.getVersion().toString() + br;
+    public void addComponentToSystemInstallManager(Product product) throws NativeException {
+        try {
+            LogManager.logIndent("adding component to windows registry uninstall section");
             
-            LogManager.logIndent("Adding entry to add/remove programs list with the following data:");
-            LogManager.log("uid             = " + uid);
-            LogManager.log("installPath     = " + installPath);
-            LogManager.log("icon            = " + icon);
-            LogManager.log("displayName     = " + displayName);
-            LogManager.log("uninstallString = " + uninstallString);
-            LogManager.logUnindent("");
+            String uid         = getUidKey(product);
+            String installPath = product.getInstallationLocation().getAbsolutePath();
+            String icon        = new File(product.getInstallationLocation(), product.getLogic().getIcon()).getAbsolutePath();
+            String displayName = product.getDisplayName();
             
-            addRemoveProgramsInstall(uid, displayName, icon, installPath, uninstallString, new HashMap<String, Object>());
-        } else {
-            LogManager.log(ErrorLevel.WARNING, "Can't find cached engine.");
-            LogManager.log(ErrorLevel.WARNING, "The entry would not be added to the add/remove programs list");
+            File executable   = JavaUtils.getExecutableW(
+                    SystemUtils.getCurrentJavaHome());
+            File cachedEngine = Installer.getInstance().getCachedEngine();
+            
+            String uninstallString = null;
+            
+            if (cachedEngine != null) {
+                String sp = " ";
+                String br = "\"";
+                uninstallString =
+                        br + executable.getPath() + br + sp +
+                        br + "-D" + ComponentsSelectionPanel.REVERSE_CHECKBOX_LOGIC_PROPERTY + br + sp +
+                        "-jar" + sp +
+                        br + cachedEngine.getPath() + br + sp +
+                        Installer.TARGET_ARG + sp +
+                        br + product.getUid() + br + sp +
+                        br + product.getVersion().toString() + br + sp +
+                        "--force-uninstall";
+                
+                LogManager.logIndent("Adding entry to add/remove programs list with the following data:");
+                LogManager.log("uid             = " + uid);
+                LogManager.log("installPath     = " + installPath);
+                LogManager.log("icon            = " + icon);
+                LogManager.log("displayName     = " + displayName);
+                LogManager.log("uninstallString = " + uninstallString);
+                LogManager.logUnindent("");
+                
+                addRemoveProgramsInstall(uid, displayName, icon, installPath, uninstallString, new HashMap<String, Object>());
+            } else {
+                LogManager.log(ErrorLevel.WARNING, "Can't find cached engine.");
+                LogManager.log(ErrorLevel.WARNING, "The entry would not be added to the add/remove programs list");
+            }
+            
+            LogManager.logUnindent("... finished adding of the component to windows registry uninstall section");
+        } catch (InitializationException e) {
+            throw new NativeException("Could not access the products configuration logic", e);
         }
-        
-        LogManager.logUnindent("... finished adding of the component to windows registry uninstall section");
     }
     
     public void removeComponentFromSystemInstallManager(Product component) throws NativeException {
@@ -709,12 +724,12 @@ public class WindowsNativeUtils extends NativeUtils {
         try {
             int accessLevel = 0;
             if(isReadNotModify) {
-                accessLevel = FILE_READ_DATA | FILE_LIST_DIRECTORY;                 
+                accessLevel = FILE_READ_DATA | FILE_LIST_DIRECTORY;
             } else {
                 accessLevel  = FILE_ADD_FILE |
                         FILE_ADD_SUBDIRECTORY |
                         FILE_APPEND_DATA |
-                        FILE_WRITE_DATA;            
+                        FILE_WRITE_DATA;
             }
             result = checkAccessTokenAccessLevel0(file.getPath(), accessLevel);
         } catch (UnsatisfiedLinkError e) {

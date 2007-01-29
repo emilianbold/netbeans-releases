@@ -54,6 +54,7 @@ import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+import org.netbeans.installer.product.RegistryType;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
@@ -79,84 +80,15 @@ import org.netbeans.installer.wizard.containers.SwingContainer;
  */
 public class ComponentsSelectionPanel extends ErrorMessagePanel {
     /////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    public static final String DEFAULT_TITLE =
-            ResourceUtils.getString(ComponentsSelectionPanel.class,
-            "CSP.title"); // NOI18N
-    public static final String DEFAULT_DESCRIPTION =
-            ResourceUtils.getString(ComponentsSelectionPanel.class,
-            "CSP.description"); // NOI18N
-    
-    public static final String MESSAGE_TEXT_PROPERTY =
-            "message.text"; // NOI18N
-    public static final String MESSAGE_CONTENT_TYPE_PROPERTY =
-            "message.content.type"; // NOI18N
-    public static final String DESCRIPTION_TEXT_PROPERTY =
-            "description.text"; // NOI18N
-    public static final String DESCRIPTION_CONTENT_TYPE_PROPERTY =
-            "description.content.type"; // NOI18N
-    public static final String SIZES_LABEL_TEXT_PROPERTY =
-            "sizes.label.text"; // NOI18N
-    public static final String DEFAULT_INSTALLATION_SIZE_PROPERTY =
-            "default.installation.size"; // NOI18N
-    public static final String DEFAULT_DOWNLOAD_SIZE_PROPERTY =
-            "default.download.size"; // NOI18N
-    
-    public static final String DEFAULT_MESSAGE_TEXT =
-            ResourceUtils.getString(ComponentsSelectionPanel.class,
-            "CSP.message.text"); // NOI18N
-    public static final String DEFAULT_MESSAGE_CONTENT_TYPE =
-            ResourceUtils.getString(ComponentsSelectionPanel.class,
-            "CSP.message.content.type"); // NOI18N
-    public static final String DEFAULT_DESCRIPTION_TEXT =
-            ResourceUtils.getString(ComponentsSelectionPanel.class,
-            "CSP.description.text"); // NOI18N
-    public static final String DEFAULT_DESCRIPTION_CONTENT_TYPE =
-            ResourceUtils.getString(ComponentsSelectionPanel.class,
-            "CSP.description.content.type"); // NOI18N
-    public static final String DEFAULT_SIZES_LABEL_TEXT =
-            ResourceUtils.getString(ComponentsSelectionPanel.class,
-            "CSP.sizes.label.text"); // NOI18N
-    public static final String DEFAULT_INSTALLATION_SIZE =
-            ResourceUtils.getString(ComponentsSelectionPanel.class,
-            "CSP.default.installation.size"); // NOI18N
-    public static final String DEFAULT_DOWNLOAD_SIZE =
-            ResourceUtils.getString(ComponentsSelectionPanel.class,
-            "CSP.default.download.size"); // NOI18N
-    
-    public static final String ERROR_NO_CHANGES_PROPERTY =
-            "error.no.changes"; // NOI18N
-    public static final String ERROR_REQUIREMENT_INSTALL_PROPERTY =
-            "error.requirement.install"; // NOI18N
-    public static final String ERROR_CONFLICT_INSTALL_PROPERTY =
-            "error.conflict.install"; // NOI18N
-    public static final String ERROR_REQUIREMENT_UNINSTALL_PROPERTY =
-            "error.requirement.uninstall"; // NOI18N
-    
-    public static final String DEFAULT_ERROR_NO_CHANGES =
-            ResourceUtils.getString(ComponentsSelectionPanel.class,
-            "CSP.error.no.changes"); // NOI18N
-    public static final String DEFAULT_ERROR_REQUIREMENT_INSTALL =
-            ResourceUtils.getString(ComponentsSelectionPanel.class,
-            "CSP.error.requirement.install"); // NOI18N
-    public static final String DEFAULT_ERROR_CONFLICT_INSTALL =
-            ResourceUtils.getString(ComponentsSelectionPanel.class,
-            "CSP.error.conflict.install"); // NOI18N
-    public static final String DEFAULT_ERROR_REQUIREMENT_UNINSTALL =
-            ResourceUtils.getString(ComponentsSelectionPanel.class,
-            "CSP.error.requirement.uninstall"); // NOI18N
-    
-    /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public ComponentsSelectionPanel() {
         setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
         setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
         
-        setProperty(MESSAGE_TEXT_PROPERTY, DEFAULT_MESSAGE_TEXT);
-        setProperty(MESSAGE_CONTENT_TYPE_PROPERTY, DEFAULT_MESSAGE_CONTENT_TYPE);
         setProperty(DESCRIPTION_TEXT_PROPERTY, DEFAULT_DESCRIPTION_TEXT);
         setProperty(DESCRIPTION_CONTENT_TYPE_PROPERTY, DEFAULT_DESCRIPTION_CONTENT_TYPE);
         setProperty(SIZES_LABEL_TEXT_PROPERTY, DEFAULT_SIZES_LABEL_TEXT);
+        setProperty(SIZES_LABEL_TEXT_NO_DOWNLOAD_PROPERTY, DEFAULT_SIZES_LABEL_TEXT_NO_DOWNLOAD);
         
         setProperty(DEFAULT_INSTALLATION_SIZE_PROPERTY, DEFAULT_INSTALLATION_SIZE);
         setProperty(DEFAULT_DOWNLOAD_SIZE_PROPERTY, DEFAULT_DOWNLOAD_SIZE);
@@ -167,12 +99,29 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         setProperty(ERROR_REQUIREMENT_UNINSTALL_PROPERTY, DEFAULT_ERROR_REQUIREMENT_UNINSTALL);
     }
     
+    public void initialize() {
+        super.initialize();
+        
+        if (isThereAnythingToInstall()) {
+            setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
+        } else {
+            setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION_UNINSTALL);
+        }
+    }
+    
     public WizardUi getWizardUi() {
         if (wizardUi == null) {
             wizardUi = new ComponentsSelectionPanelUi(this);
         }
         
         return wizardUi;
+    }
+    
+    private boolean isThereAnythingToInstall() {
+        final Registry registry = Registry.getInstance();
+        
+        return registry.getProducts(Status.NOT_INSTALLED).size() + 
+                registry.getProducts(Status.TO_BE_INSTALLED).size() > 0;
     }
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -200,7 +149,6 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         // Instance
         private ComponentsSelectionPanel component;
         
-        private NbiTextPane   messagePane;
         private NbiTree       componentsTree;
         private NbiScrollPane treeScrollPane;
         
@@ -220,13 +168,12 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         }
         
         protected void initialize() {
-            messagePane.setContentType(
-                    component.getProperty(MESSAGE_CONTENT_TYPE_PROPERTY));
-            messagePane.setText(
-                    component.getProperty(MESSAGE_TEXT_PROPERTY));
-            
             descriptionPane.setContentType(
                     component.getProperty(DESCRIPTION_CONTENT_TYPE_PROPERTY));
+            
+            if (!component.isThereAnythingToInstall()) {
+                sizesLabel.setVisible(false);
+            }
             
             updateDescription();
             updateSizes();
@@ -326,9 +273,6 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         }
         
         private void initComponents() {
-            // messagePane
-            messagePane = new NbiTextPane();
-            
             // componentsTree
             componentsTree = new NbiTree();
             componentsTree.setModel(
@@ -393,32 +337,24 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             sizesLabel = new NbiLabel();
             
             // add the components
-            add(messagePane, new GridBagConstraints(
-                    0, 0,                             // x, y
-                    2, 1,                             // width, height
-                    1.0, 0.0,                         // weight-x, weight-y
-                    GridBagConstraints.PAGE_START,    // anchor
-                    GridBagConstraints.BOTH,          // fill
-                    new Insets(11, 11, 0, 11),        // padding
-                    0, 0));                           // padx, pady - ???
             add(treeScrollPane, new GridBagConstraints(
-                    0, 1,                             // x, y
+                    0, 0,                             // x, y
                     1, 1,                             // width, height
-                    0.6, 1.0,                         // weight-x, weight-y
+                    0.7, 1.0,                         // weight-x, weight-y
                     GridBagConstraints.PAGE_START,    // anchor
                     GridBagConstraints.BOTH,          // fill
-                    new Insets(6, 11, 0, 0),          // padding
+                    new Insets(11, 11, 0, 0),         // padding
                     0, 0));                           // padx, pady - ???
             add(descriptionScrollPane, new GridBagConstraints(
-                    1, 1,                             // x, y
+                    1, 0,                             // x, y
                     1, 1,                             // width, height
-                    0.4, 1.0,                         // weight-x, weight-y
+                    0.3, 1.0,                         // weight-x, weight-y
                     GridBagConstraints.PAGE_START,    // anchor
                     GridBagConstraints.BOTH,          // fill
-                    new Insets(6, 6, 0, 11),          // padding
+                    new Insets(11, 6, 0, 11),         // padding
                     0, 0));                           // padx, pady - ???
             add(sizesLabel, new GridBagConstraints(
-                    0, 2,                             // x, y
+                    0, 1,                             // x, y
                     2, 1,                             // width, height
                     1.0, 0.0,                         // weight-x, weight-y
                     GridBagConstraints.LINE_START,    // anchor
@@ -457,14 +393,21 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 downloadSize += product.getDownloadSize();
             }
             
+            String template;
+            if (Registry.getInstance().getNodes(RegistryType.REMOTE).size() == 0) {
+                template = component.getProperty(SIZES_LABEL_TEXT_NO_DOWNLOAD_PROPERTY);
+            } else {
+                template = component.getProperty(SIZES_LABEL_TEXT_PROPERTY);
+            }
+            
             if (installationSize == 0) {
                 sizesLabel.setText(StringUtils.format(
-                        component.getProperty(SIZES_LABEL_TEXT_PROPERTY),
+                        template,
                         component.getProperty(DEFAULT_INSTALLATION_SIZE_PROPERTY),
                         component.getProperty(DEFAULT_DOWNLOAD_SIZE_PROPERTY)));
             } else {
                 sizesLabel.setText(StringUtils.format(
-                        component.getProperty(SIZES_LABEL_TEXT_PROPERTY),
+                        template,
                         StringUtils.formatSize(installationSize),
                         StringUtils.formatSize(downloadSize)));
             }
@@ -740,18 +683,30 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                 if (value instanceof Product) {
                     final Product product = (Product) value;
                     
-                    label.setText(product.getDisplayName());
+                    String title = "<html>" + product.getDisplayName();
+                    
+                    if ((product.getStatus() == Status.TO_BE_INSTALLED) ||
+                            (product.getStatus() == Status.TO_BE_UNINSTALLED)) {
+                        title += " <span color=\"gray\">[" + product.getStatus().getDisplayName() + "]</span>";
+                    }
+                    
+                    title += "</html>";
+                    
+                    label.setText(title);
                     label.setIcon(product.getIcon());
-                    label.setToolTipText(product.getDisplayName());
+                    label.setToolTipText(title);
                     
                     checkBox.setVisible(true);
-                    checkBox.setToolTipText(product.getDisplayName());
+                    checkBox.setToolTipText(title);
+                    
+                    boolean trueValue = 
+                            System.getProperty(REVERSE_CHECKBOX_LOGIC_PROPERTY) == null ? true : false;
                     
                     if ((product.getStatus() == Status.INSTALLED) ||
                             (product.getStatus() == Status.TO_BE_INSTALLED)) {
-                        checkBox.setSelected(true);
+                        checkBox.setSelected(trueValue);
                     } else {
-                        checkBox.setSelected(false);
+                        checkBox.setSelected(!trueValue);
                     }
                 } else if (value instanceof Group) {
                     final Group group = (Group) value;
@@ -767,4 +722,73 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             }
         }
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String DEFAULT_TITLE =
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.title"); // NOI18N
+    public static final String DEFAULT_DESCRIPTION =
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.description"); // NOI18N
+    public static final String DEFAULT_DESCRIPTION_UNINSTALL =
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.description.uninstall"); // NOI18N
+    
+    public static final String DESCRIPTION_TEXT_PROPERTY =
+            "description.text"; // NOI18N
+    public static final String DESCRIPTION_CONTENT_TYPE_PROPERTY =
+            "description.content.type"; // NOI18N
+    public static final String SIZES_LABEL_TEXT_PROPERTY =
+            "sizes.label.text"; // NOI18N
+    public static final String SIZES_LABEL_TEXT_NO_DOWNLOAD_PROPERTY =
+            "sizes.label.text.no.download"; // NOI18N
+    public static final String DEFAULT_INSTALLATION_SIZE_PROPERTY =
+            "default.installation.size"; // NOI18N
+    public static final String DEFAULT_DOWNLOAD_SIZE_PROPERTY =
+            "default.download.size"; // NOI18N
+    
+    public static final String DEFAULT_DESCRIPTION_TEXT =
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.description.text"); // NOI18N
+    public static final String DEFAULT_DESCRIPTION_CONTENT_TYPE =
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.description.content.type"); // NOI18N
+    public static final String DEFAULT_SIZES_LABEL_TEXT =
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.sizes.label.text"); // NOI18N
+    public static final String DEFAULT_SIZES_LABEL_TEXT_NO_DOWNLOAD =
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.sizes.label.text.no.download"); // NOI18N
+    public static final String DEFAULT_INSTALLATION_SIZE =
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.default.installation.size"); // NOI18N
+    public static final String DEFAULT_DOWNLOAD_SIZE =
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.default.download.size"); // NOI18N
+    
+    public static final String ERROR_NO_CHANGES_PROPERTY =
+            "error.no.changes"; // NOI18N
+    public static final String ERROR_REQUIREMENT_INSTALL_PROPERTY =
+            "error.requirement.install"; // NOI18N
+    public static final String ERROR_CONFLICT_INSTALL_PROPERTY =
+            "error.conflict.install"; // NOI18N
+    public static final String ERROR_REQUIREMENT_UNINSTALL_PROPERTY =
+            "error.requirement.uninstall"; // NOI18N
+    
+    public static final String DEFAULT_ERROR_NO_CHANGES =
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.error.no.changes"); // NOI18N
+    public static final String DEFAULT_ERROR_REQUIREMENT_INSTALL =
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.error.requirement.install"); // NOI18N
+    public static final String DEFAULT_ERROR_CONFLICT_INSTALL =
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.error.conflict.install"); // NOI18N
+    public static final String DEFAULT_ERROR_REQUIREMENT_UNINSTALL =
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.error.requirement.uninstall"); // NOI18N
+    
+    public static final String REVERSE_CHECKBOX_LOGIC_PROPERTY = 
+            "nbi.wizard.reverse.checkbox.logic";
 }

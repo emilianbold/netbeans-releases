@@ -136,7 +136,10 @@ public class Registry {
         
         setRegistryProperties();
         
-        loadProductRegistry(file.toURI().toString(), new Progress());
+        loadProductRegistry(
+                file.toURI().toString(), 
+                new Progress(), 
+                RegistryType.REMOTE);
     }
     
     public Registry(final List<File> files) throws InitializationException {
@@ -145,7 +148,10 @@ public class Registry {
         setRegistryProperties();
         
         for (File file: files) {
-            loadProductRegistry(file.toURI().toString(), new Progress());
+            loadProductRegistry(
+                    file.toURI().toString(), 
+                    new Progress(), 
+                    RegistryType.REMOTE);
         }
     }
     
@@ -157,7 +163,10 @@ public class Registry {
         this.targetPlatform = platform;
         
         for (File file: files) {
-            loadProductRegistry(file.toURI().toString(), new Progress());
+            loadProductRegistry(
+                    file.toURI().toString(), 
+                    new Progress(), 
+                    RegistryType.REMOTE);
         }
     }
     
@@ -179,24 +188,18 @@ public class Registry {
         childProgress = new Progress();
         compositeProgress.addChild(childProgress, percentageChunk + percentageLeak);
         compositeProgress.setTitle("Loading local registry [" + localRegistryFile + "]");
-        loadProductRegistry(localRegistryFile.toURI().toString(), childProgress);
+        loadProductRegistry(localRegistryFile.toURI().toString(), childProgress, RegistryType.LOCAL);
         
         childProgress = new Progress();
         compositeProgress.addChild(childProgress, percentageChunk);
         compositeProgress.setTitle("Loading bundled registry [" + bundledRegistryUri + "]");
-        loadProductRegistry(bundledRegistryUri, childProgress);
-        
-        // sleep a little to let the user perceive that something is happening
-        SystemUtils.sleep(200);
+        loadProductRegistry(bundledRegistryUri, childProgress, RegistryType.BUNDLED);
         
         for (String remoteRegistryURI: remoteRegistryUris) {
             childProgress = new Progress();
             compositeProgress.addChild(childProgress, percentageChunk);
             compositeProgress.setTitle("Loading remote registry [" + remoteRegistryURI + "]");
-            loadProductRegistry(remoteRegistryURI, childProgress);
-            
-            // sleep a little to let the user perceive that something is happening
-            SystemUtils.sleep(200);
+            loadProductRegistry(remoteRegistryURI, childProgress, RegistryType.REMOTE);
         }
         
         validateInstallations();
@@ -209,6 +212,7 @@ public class Registry {
         }
         
         applyRegistryFilters();
+        changeStatuses();
         
         LogManager.logExit("... product registry initialization complete");
     }
@@ -373,6 +377,14 @@ public class Registry {
         LogManager.log("    ... " + targetPlatform);
     }
     
+    private void validateDependencies() throws InitializationException {
+        for (Product product: getProducts()) {
+            validateRequirements(product);
+            validateConflicts(product);
+            validateInstallAfters(product);
+        }
+    }
+    
     private void applyRegistryFilters() {
         // if a target component was specified, hide everything except:
         //   * the target itself
@@ -418,15 +430,21 @@ public class Registry {
         }
     }
     
-    // validation ///////////////////////////////////////////////////////////////////
-    public void validateDependencies() throws InitializationException {
-        for (Product product: getProducts()) {
-            validateRequirements(product);
-            validateConflicts(product);
-            validateInstallAfters(product);
+    private void changeStatuses() {
+        if (System.getProperty(FORCE_CHANGE_STATUS_INSTALL_PROPERTY) != null) {
+            for (Product product: getProducts(Status.NOT_INSTALLED)) {
+                product.setStatus(Status.TO_BE_INSTALLED);
+            }
+        }
+        
+        if (System.getProperty(FORCE_CHANGE_STATUS_UNINSTALL_PROPERTY) != null) {
+            for (Product product: getProducts(Status.INSTALLED)) {
+                product.setStatus(Status.TO_BE_UNINSTALLED);
+            }
         }
     }
     
+    // validation ///////////////////////////////////////////////////////////////////
     private void validateRequirements(Product product) throws InitializationException {
         validateRequirements(product, new LinkedList<Product>());
     }
@@ -577,17 +595,20 @@ public class Registry {
     }
     
     // registry <-> dom <-> xml operations //////////////////////////////////////////
-    public void loadProductRegistry(String uri, Progress progress) throws InitializationException {
+    public void loadProductRegistry(final String uri, final Progress progress, final RegistryType registryType) throws InitializationException {
         try {
-            Document document = loadRegistryDocument(uri);
+            loadRegistryComponents(
+                    registryRoot, 
+                    loadRegistryDocument(uri).getDocumentElement(),
+                    registryType);
             
-            loadRegistryComponents(registryRoot, document.getDocumentElement());
+            progress.setPercentage(Progress.COMPLETE);
         } catch (XMLException e) {
             throw new InitializationException("Cannot load registry", e);
         }
     }
     
-    public void saveProductRegistry(File file, RegistryFilter filter) throws FinalizationException {
+    public void saveProductRegistry(final File file, final RegistryFilter filter) throws FinalizationException {
         try {
             saveRegistryDocument(getRegistryDocument(filter), file);
         } catch (XMLException e) {
@@ -630,7 +651,7 @@ public class Registry {
         return document;
     }
     
-    public Document loadRegistryDocument(String uri) throws XMLException {
+    public Document loadRegistryDocument(final String uri) throws XMLException {
         try {
             File schemaFile   = FileProxy.getInstance().getFile(registrySchemaUri);
             File registryFile = FileProxy.getInstance().getFile(uri, true);
@@ -657,7 +678,7 @@ public class Registry {
         }
     }
     
-    public void saveRegistryDocument(Document document, File file) throws XMLException {
+    public void saveRegistryDocument(final Document document, final File file) throws XMLException {
         FileOutputStream output = null;
         
         try {
@@ -675,7 +696,7 @@ public class Registry {
         }
     }
     
-    public void saveRegistryDocument(Document document, OutputStream out) throws XMLException {
+    public void saveRegistryDocument(final Document document, final OutputStream out) throws XMLException {
         try {
             XMLUtils.saveXMLDocument(document, out);
         } catch (XMLException e) {
@@ -683,8 +704,8 @@ public class Registry {
         }
     }
     
-    private void loadRegistryComponents(RegistryNode parentNode, Element parentElement) throws InitializationException {
-        Element element = XMLUtils.getChild(parentElement, "components");
+    private void loadRegistryComponents(final RegistryNode parentNode, final Element parentElement, final RegistryType registryType) throws InitializationException {
+        final Element element = XMLUtils.getChild(parentElement, "components");
         
         if (element != null) {
             for (Element child: XMLUtils.getChildren(element)) {
@@ -695,11 +716,13 @@ public class Registry {
                             product.getVersion(),
                             product.getPlatforms());
                     
+                    product.setRegistryType(registryType);
+                    
                     if (existing.size() == 0) {
                         parentNode.addChild(product);
-                        loadRegistryComponents(product, child);
+                        loadRegistryComponents(product, child, registryType);
                     } else {
-                        loadRegistryComponents(existing.get(0), child);
+                        loadRegistryComponents(existing.get(0), child, registryType);
                     }
                 }
                 
@@ -707,11 +730,13 @@ public class Registry {
                     final Group group = new Group().loadFromDom(child);
                     final Group existing = getGroup(group.getUid());
                     
+                    group.setRegistryType(registryType);
+                    
                     if (existing == null) {
                         parentNode.addChild(group);
-                        loadRegistryComponents(group, child);
+                        loadRegistryComponents(group, child, registryType);
                     } else {
-                        loadRegistryComponents(existing, child);
+                        loadRegistryComponents(existing, child, registryType);
                     }
                 }
             }
@@ -767,6 +792,18 @@ public class Registry {
         return query(TrueFilter.INSTANCE);
     }
     
+    public List<RegistryNode> getNodes(RegistryType registryType) {
+        final List<RegistryNode> filtered = new LinkedList<RegistryNode>();
+        
+        for (RegistryNode node: getNodes()) {
+            if (node.getRegistryType() == registryType) {
+                filtered.add(node);
+            }
+        }
+        
+        return filtered;
+    }
+    
     // products queries /////////////////////////////////////////////////////////////
     public List<Product> getProducts() {
         return queryProducts(TrueFilter.INSTANCE);
@@ -786,6 +823,10 @@ public class Registry {
     
     public List<Product> getProducts(String uid, Version version, List<Platform> platforms) {
         return queryProducts(new ProductFilter(uid, version, platforms));
+    }
+    
+    public List<Product> getProducts(Platform platform) {
+        return queryProducts(new ProductFilter(platform));
     }
     
     public List<Product> getProducts(Dependency dependency) {
@@ -819,7 +860,7 @@ public class Registry {
     }
     
     public List<Product> getProducts(Status status) {
-        return queryProducts(new ProductFilter(status));
+        return queryProducts(new ProductFilter(status, targetPlatform));
     }
     
     public List<Product> getProducts(DetailedStatus detailedStatus) {
@@ -1261,4 +1302,10 @@ public class Registry {
     
     public static final String TARGET_PLATFORM_PROPERTY =
             "nbi.target.platform";
+    
+    public static final String FORCE_CHANGE_STATUS_INSTALL_PROPERTY = 
+            "nbi.force.change.status.install";
+    
+    public static final String FORCE_CHANGE_STATUS_UNINSTALL_PROPERTY = 
+            "nbi.force.change.status.uninstall";
 }

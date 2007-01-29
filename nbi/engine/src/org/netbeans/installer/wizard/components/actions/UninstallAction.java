@@ -60,15 +60,15 @@ public class UninstallAction extends WizardAction {
         final int percentageLeak = Progress.COMPLETE % products.size();
         
         overallProgress = new CompositeProgress();
-        overallProgress.setTitle("Uninstalling selected components");
         overallProgress.setPercentage(percentageLeak);
+        overallProgress.synchronizeDetails(true);
         
         getWizardUi().setProgress(overallProgress);
         for (Product product: products) {
             currentProgress = new Progress();
-            currentProgress.setTitle("Uninstalling " + product.getDisplayName());
             
             overallProgress.addChild(currentProgress, percentageChunk);
+            overallProgress.setTitle("Uninstalling " + product.getDisplayName());
             try {
                 product.uninstall(currentProgress);
                 

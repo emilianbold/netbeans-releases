@@ -20,10 +20,10 @@
  */
 package org.netbeans.installer.wizard.components.actions;
 
-import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
+import org.netbeans.installer.product.RegistryType;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.helper.ErrorLevel;
@@ -34,8 +34,6 @@ import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.components.WizardAction;
-import org.netbeans.installer.wizard.components.WizardAction.WizardActionUi;
-
 
 public class DownloadConfigurationLogicAction extends WizardAction {
     /////////////////////////////////////////////////////////////////////////////////
@@ -68,8 +66,8 @@ public class DownloadConfigurationLogicAction extends WizardAction {
         final int percentageLeak  = Progress.COMPLETE % products.size();
         
         overallProgress = new CompositeProgress();
-        overallProgress.setTitle("Downloading configuration logic for selected products");
         overallProgress.setPercentage(percentageLeak);
+        overallProgress.synchronizeDetails(true);
         
         getWizardUi().setProgress(overallProgress);
         for (Product product: products) {
@@ -78,6 +76,12 @@ public class DownloadConfigurationLogicAction extends WizardAction {
             
             overallProgress.addChild(currentProgress, percentageChunk);            
             try {
+                if (product.getRegistryType() == RegistryType.REMOTE) {
+                    overallProgress.setTitle("Downloading configuration logic for " + product.getDisplayName());
+                } else {
+                    overallProgress.setTitle("Exctracting configuration logic for " + product.getDisplayName());
+                }
+                
                 product.downloadLogic(currentProgress);
                 
                 // ensure that the current progress has reached the complete state

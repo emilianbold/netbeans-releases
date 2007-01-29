@@ -54,6 +54,8 @@ import org.w3c.dom.Node;
 public abstract class RegistryNode implements PropertyContainer {
     protected RegistryNode        parent;
     
+    protected RegistryType        registryType;
+    
     protected String              uid;
     
     protected ExtendedUri         iconUri;
@@ -156,6 +158,14 @@ public abstract class RegistryNode implements PropertyContainer {
     
     public Date getBuildDate() {
         return built;
+    }
+    
+    public RegistryType getRegistryType() {
+        return registryType;
+    }
+    
+    public void setRegistryType(final RegistryType registryType) {
+        this.registryType = registryType;
     }
     
     // tree /////////////////////////////////////////////////////////////////////////

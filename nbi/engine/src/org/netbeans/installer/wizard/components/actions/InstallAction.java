@@ -40,11 +40,11 @@ import org.netbeans.installer.wizard.components.WizardAction;
 public class InstallAction extends WizardAction {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String DEFAULT_TITLE = 
-            ResourceUtils.getString(InstallAction.class, 
+    public static final String DEFAULT_TITLE =
+            ResourceUtils.getString(InstallAction.class,
             "IA.title"); // NOI18N
-    public static final String DEFAULT_DESCRIPTION = 
-            ResourceUtils.getString(InstallAction.class, 
+    public static final String DEFAULT_DESCRIPTION =
+            ResourceUtils.getString(InstallAction.class,
             "IA.description"); // NOI18N
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -74,15 +74,15 @@ public class InstallAction extends WizardAction {
         final Map<Product, Progress> progresses = new HashMap<Product, Progress>();
         
         overallProgress = new CompositeProgress();
-        overallProgress.setTitle("Installing selected products");
         overallProgress.setPercentage(percentageLeak);
+        overallProgress.synchronizeDetails(true);
         
         getWizardUi().setProgress(overallProgress);
-        for (Product product:products) {
+        for (Product product: products) {
             currentProgress = new Progress();
-            currentProgress.setTitle("Installing " + product.getDisplayName());
             
             overallProgress.addChild(currentProgress, percentageChunk);
+            overallProgress.setTitle("Installing " + product.getDisplayName());
             try {
                 product.install(currentProgress);
                 
@@ -119,7 +119,7 @@ public class InstallAction extends WizardAction {
                 product.setStatus(Status.NOT_INSTALLED);
                 product.setInstallationError(e);
                 
-                // since the current product failed to install, we should cancel the 
+                // since the current product failed to install, we should cancel the
                 // installation of the products that may require this one
                 for(Product dependent: registry.getProducts()) {
                     if ((dependent.getStatus()  == Status.TO_BE_INSTALLED) &&
