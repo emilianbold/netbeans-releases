@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.api.visual
+OpenIDE-Module: org.netbeans.api.visual/2
 OpenIDE-Module-Layer: org/netbeans/modules/visual/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/visual/Bundle.properties
 OpenIDE-Module-Specification-Version: 2.0
