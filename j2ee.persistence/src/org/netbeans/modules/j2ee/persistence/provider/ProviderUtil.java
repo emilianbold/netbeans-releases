@@ -41,6 +41,7 @@ import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Properties;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Property;
+import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider;
 import org.netbeans.modules.j2ee.persistence.unit.*;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
@@ -52,6 +53,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Parameters;
 
 /**
  * Not final, more or less just space for all provider specific properties handling.
@@ -680,20 +682,18 @@ public class ProviderUtil {
      * @throws NullPointerException if the given <code>project</code> was null.
      */
     public static boolean isValidServerInstanceOrNone(Project project){
-        if (project == null){
-            throw new NullPointerException("Passed null project paramater to ProviderUtil#isValidServerInstanceOrNone");
-        }
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-        if (j2eeModuleProvider == null) {
+        Parameters.notNull("project", project);
+        ServerStatusProvider serverStatusProvider = project.getLookup().lookup(ServerStatusProvider.class);
+        if (serverStatusProvider == null) {
             // not a J2EE project
             return true;
         }
-        return org.netbeans.modules.j2ee.common.Util.isValidServerInstance(j2eeModuleProvider);
+        return serverStatusProvider.validServerInstancePresent();
     }
     
     /**
      * @return true if the source level of the given project was 1.4 or lower.
-     */ 
+     */
     public static boolean isSourceLevel14orLower(Project project) {
         SourceLevelQueryImplementation sl = project.getLookup().lookup(SourceLevelQueryImplementation.class);
         String srcLevel = sl.getSourceLevel(project.getProjectDirectory());
