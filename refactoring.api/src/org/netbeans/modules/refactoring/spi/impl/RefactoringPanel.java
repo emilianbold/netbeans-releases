@@ -598,6 +598,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             c = ((RefactoringCustomUI) ui).getCustomComponent(getImplCollection(elements));
             this.left.remove(c);
         }
+        final ProgressHandle progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RefactoringPanel.class, isQuery ? "LBL_PreparingUsagesTree":"LBL_PreparingRefactoringTree"));
         if (currentView == GRAPHICAL) {
             assert ui instanceof RefactoringCustomUI;
             assert c != null;
@@ -607,9 +608,6 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             tree=null;
             this.repaint();
         } else {
-            
-            final ProgressHandle progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RefactoringPanel.class, isQuery ? "LBL_PreparingUsagesTree":"LBL_PreparingRefactoringTree"));
-            
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     HashSet editorSupports = new HashSet();
