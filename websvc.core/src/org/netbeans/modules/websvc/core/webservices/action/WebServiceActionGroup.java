@@ -18,11 +18,16 @@
  */
 package org.netbeans.modules.websvc.core.webservices.action;
 
-import javax.swing.*;
+import javax.swing.Action;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import org.netbeans.modules.websvc.core.WebServiceActionProvider;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.*;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
@@ -89,7 +94,7 @@ public class WebServiceActionGroup extends NodeAction implements Presenter.Popup
     }
 
     public Action createContextAwareInstance(Lookup actionContext) {
-        boolean enable = enable((Node[])actionContext.lookup(new Lookup.Template (Node.class)).allInstances().toArray(new Node[0]));
+        boolean enable = enable(actionContext.lookup(new Lookup.Template<Node>(Node.class)).allInstances().<Node>toArray(new Node[0]));
         return enable ? this : null;
     }
     

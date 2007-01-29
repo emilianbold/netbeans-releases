@@ -91,7 +91,7 @@ public class HandlerButtonListener implements ActionListener{
                 String servicehandlerFileName = service.getName() + "_handler"; //NOI18N
                 FileObject parent = implBeanClass.getParent();
                 final String handlerFileName = FileUtil.findFreeFileName(parent, servicehandlerFileName, "xml");
-                CancellableTask modificationTask = new CancellableTask<WorkingCopy>() {
+                CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
                     public void run(WorkingCopy workingCopy) throws IOException {
                         workingCopy.toPhase(Phase.RESOLVED);
                         GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
@@ -164,7 +164,7 @@ public class HandlerButtonListener implements ActionListener{
             OutputStream out = null;
             if(chain.getHandlers().length == 0) {
                 
-                CancellableTask modificationTask = new CancellableTask<WorkingCopy>() {
+                CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
                     public void run(WorkingCopy workingCopy) throws IOException {
                         workingCopy.toPhase(Phase.RESOLVED);
                         GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);

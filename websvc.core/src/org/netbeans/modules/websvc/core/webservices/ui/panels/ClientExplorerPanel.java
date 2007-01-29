@@ -61,14 +61,14 @@ public class ClientExplorerPanel extends JPanel implements ExplorerManager.Provi
     private Project[] projects;
     private Children rootChildren;
     private Node explorerClientRoot;
-    private List projectNodeList;
+    private List<Node> projectNodeList;
     
     public ClientExplorerPanel(FileObject srcFileObject) {
         this.srcFileObject=srcFileObject;
         projects = OpenProjects.getDefault().getOpenProjects();
         rootChildren = new Children.Array();
         explorerClientRoot = new AbstractNode(rootChildren);
-        projectNodeList = new ArrayList();
+        projectNodeList = new ArrayList<Node>();
             /*
             clientSupport = WebServicesClientSupport.getWebServicesClientSupport(fo);
             project = FileOwnerQuery.getOwner(fo);
@@ -171,7 +171,7 @@ public class ClientExplorerPanel extends JPanel implements ExplorerManager.Provi
 
         }
         Node[] projectNodes = new Node[projectNodeList.size()];
-        projectNodeList.toArray(projectNodes);
+        projectNodeList.<Node>toArray(projectNodes);
         rootChildren.add(projectNodes);
         manager.setRootContext(explorerClientRoot);
         treeView.expandAll();

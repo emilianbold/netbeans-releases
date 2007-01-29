@@ -92,7 +92,7 @@ public class WebServiceClientActionGroup extends NodeAction implements Presenter
 	}
 
     public Action createContextAwareInstance(Lookup actionContext) {
-        boolean enable = enable((Node[])actionContext.lookup(new Lookup.Template (Node.class)).allInstances().toArray(new Node[0]));
+        boolean enable = enable(actionContext.lookup(new Lookup.Template<Node>(Node.class)).allInstances().<Node>toArray(new Node[0]));
         return enable ? this : null;
     }
     

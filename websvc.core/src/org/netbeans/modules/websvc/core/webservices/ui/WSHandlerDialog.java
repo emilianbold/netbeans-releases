@@ -143,7 +143,7 @@ public class WSHandlerDialog {
                             break;
                         }
                         
-                        CancellableTask task = new CancellableTask<CompilationController>() {
+                        CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
                             public void run(CompilationController controller) throws IOException {
                                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
                                 if (isHandler(controller)) isHandler[0]=true;

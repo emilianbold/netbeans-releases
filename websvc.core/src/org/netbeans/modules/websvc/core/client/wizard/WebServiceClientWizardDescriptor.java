@@ -53,7 +53,7 @@ public class WebServiceClientWizardDescriptor implements WizardDescriptor.Finish
         return true;
     }
 
-    private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
         public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
@@ -67,13 +67,13 @@ public class WebServiceClientWizardDescriptor implements WizardDescriptor.Finish
     }
 
     protected final void fireChangeEvent() {
-        Iterator it;
+        Iterator<ChangeListener> it;
         synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
+            it = new HashSet<ChangeListener>(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+            it.next().stateChanged(ev);
         }
     }
 

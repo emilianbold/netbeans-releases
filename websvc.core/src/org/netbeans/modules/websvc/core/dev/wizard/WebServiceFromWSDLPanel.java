@@ -70,7 +70,7 @@ import org.xml.sax.SAXException;
  */
 public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpCtx.Provider, DocumentListener {
     
-    private final List/*<ChangeListener>*/ listeners = new ArrayList();
+    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private static String previousDirectory = "";
     private final FileFilter WSDL_FILE_FILTER = new WsdlFileFilter();
     private boolean isWaitingForScan = false;
@@ -486,9 +486,9 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
     
     private void fireChange() {
         ChangeEvent e = new ChangeEvent(this);
-        Iterator it = listeners.iterator();
+        Iterator<ChangeListener> it = listeners.iterator();
         while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(e);
+            it.next().stateChanged(e);
         }
     }
     

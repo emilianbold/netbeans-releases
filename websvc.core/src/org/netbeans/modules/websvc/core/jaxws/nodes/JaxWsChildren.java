@@ -230,7 +230,7 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
                     if (implClass != null) {
                         JavaSource javaSource = JavaSource.forFileObject(implClass);
                         if (javaSource!=null) {
-                            CancellableTask task = new CancellableTask<CompilationController>() {
+                            CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
                                 public void run(CompilationController controller) throws IOException {
                                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
                                     SourceUtils srcUtils = SourceUtils.newInstance(controller);
@@ -341,7 +341,7 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
         }
          */
         FileObject bindingsFolder = support.getBindingsFolderForService(getNode().getName(),true);
-        List list = new ArrayList();
+        List<URL> list = new ArrayList<URL>();
         for (int i=0;i<bindingFiles.length;i++) {
             FileObject fo = bindingsFolder.getFileObject(bindingFiles[i]);
             try {
@@ -351,7 +351,7 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
             }
         }
         URL[] bindings = new URL[list.size()];
-        list.toArray(bindings);
+        list.<URL>toArray(bindings);
         wsdlModeler.setJAXBBindings(bindings);
     }
     

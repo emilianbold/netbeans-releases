@@ -440,7 +440,7 @@ public class JaxWsCodeGenerator {
             final String[] argumentDeclPart = {argumentDeclarationPart};
             final String[] serviceFName = {serviceFieldName};
             final boolean[] generateWsRefInjection = {false};
-            CancellableTask task = new CancellableTask<CompilationController>() {
+            CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
                     CompilationUnitTree cut = controller.getCompilationUnit();
@@ -460,7 +460,7 @@ public class JaxWsCodeGenerator {
                         }
                         // compute the service field name
                         if (generateWsRefInjection[0]) {
-                            Set serviceFieldNames = new HashSet();
+                            Set<String> serviceFieldNames = new HashSet<String>();
                             boolean injectionExists=false;
                             int memberOrder=0;
                             for (Tree member : javaClass.getMembers()) {
@@ -534,7 +534,7 @@ public class JaxWsCodeGenerator {
                             wsdlUrl = findWsdlLocation(client,dObj.getPrimaryFile());
                     }
                     final String localWsdlUrl = wsdlUrl;
-                    CancellableTask modificationTask = new CancellableTask<WorkingCopy>() {
+                    CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
                         public void run(WorkingCopy workingCopy) throws IOException {
                             workingCopy.toPhase(Phase.RESOLVED);
 
@@ -789,7 +789,7 @@ public class JaxWsCodeGenerator {
         final String[] argumentDeclPart = {argumentDeclarationPart};
         final String[] serviceFName = {serviceFieldName};
         final boolean[] generateWsRefInjection = {false};
-        CancellableTask task = new CancellableTask<CompilationController>() {
+        CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
                 CompilationUnitTree cut = controller.getCompilationUnit();
@@ -808,7 +808,7 @@ public class JaxWsCodeGenerator {
                     }
                     // compute the service field name
                     if (generateWsRefInjection[0]) {
-                        Set serviceFieldNames = new HashSet();
+                        Set<String> serviceFieldNames = new HashSet<String>();
                         boolean injectionExists=false;
                         int memberOrder=0;
                         for (Tree member : javaClass.getMembers()) {
@@ -882,7 +882,7 @@ public class JaxWsCodeGenerator {
                     wsdlUrl = findWsdlLocation(client, targetFo);
                 }
                 final String localWsdlUrl = wsdlUrl; 
-                CancellableTask modificationTask = new CancellableTask<WorkingCopy>() {
+                CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
                     public void run(WorkingCopy workingCopy) throws IOException {
                         workingCopy.toPhase(Phase.RESOLVED);
 

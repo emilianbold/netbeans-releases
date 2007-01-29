@@ -201,7 +201,7 @@ public class JaxWsUtils {
         
         final String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);
         JavaSource targetSource = JavaSource.forFileObject(implClassFo);
-        CancellableTask task = new CancellableTask<WorkingCopy>() {
+        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);

@@ -117,7 +117,7 @@ public class SelectHandlerPanel extends JPanel implements ExplorerManager.Provid
         
         protected Node[] createNodes(Object key) {
             Node n = null;
-            List sourceNodes = new LinkedList();
+            List<Node> sourceNodes = new LinkedList<Node>();
             if (key == KEY_SOURCES) {
                 Sources sources = ProjectUtils.getSources(project);
                 SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -125,7 +125,7 @@ public class SelectHandlerPanel extends JPanel implements ExplorerManager.Provid
                     sourceNodes.add(PackageView.createPackageView(groups[i]));
                 }
             }
-            return (Node[])sourceNodes.toArray(new Node[sourceNodes.size()]);
+            return sourceNodes.<Node>toArray(new Node[sourceNodes.size()]);
         }
         
         @Override

@@ -431,7 +431,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
         }
         
         FileObject bindingsFolder = getJAXWSClientSupport().getBindingsFolderForClient(getName(),true);
-        List list = new ArrayList();
+        List<URL> list = new ArrayList<URL>();
         for (int i=0;i<bindingFiles.length;i++) {
             FileObject fo = bindingsFolder.getFileObject(bindingFiles[i]);
             try {
@@ -441,7 +441,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
             }
         }
         URL[] bindings = new URL[list.size()];
-        list.toArray(bindings);
+        list.<URL>toArray(bindings);
         wsdlModeler.setJAXBBindings(bindings);
     }
     

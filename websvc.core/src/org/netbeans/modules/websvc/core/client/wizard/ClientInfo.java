@@ -698,7 +698,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
             Object selectedStub = d.getProperty(ClientWizardProperties.CLIENT_STUB_TYPE);
             DefaultComboBoxModel stubModel = new DefaultComboBoxModel();
             if(clientSupport != null) {
-                List clientStubs = clientSupport.getStubDescriptors();
+                List<ClientStubDescriptor> clientStubs = clientSupport.getStubDescriptors();
                 for(Iterator iter = clientStubs.iterator(); iter.hasNext(); ) {
                     stubModel.addElement(iter.next());
                 }

@@ -176,35 +176,35 @@ public class JaxWsClientCreator implements ClientCreator {
     static SourceGroup[] getJavaSourceGroups(Project project) {
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
                 JavaProjectConstants.SOURCES_TYPE_JAVA);
-        Set testGroups = getTestSourceGroups(project, sourceGroups);
-        List result = new ArrayList();
+        Set<SourceGroup> testGroups = getTestSourceGroups(project, sourceGroups);
+        List<SourceGroup> result = new ArrayList<SourceGroup>();
         for (int i = 0; i < sourceGroups.length; i++) {
             if (!testGroups.contains(sourceGroups[i])) {
                 result.add(sourceGroups[i]);
             }
         }
-        return (SourceGroup[]) result.toArray(new SourceGroup[result.size()]);
+        return result.<SourceGroup>toArray(new SourceGroup[result.size()]);
     }
     
-    private static Set/*<SourceGroup>*/ getTestSourceGroups(Project project, SourceGroup[] sourceGroups) {
-        Map foldersToSourceGroupsMap = createFoldersToSourceGroupsMap(sourceGroups);
-        Set testGroups = new HashSet();
+    private static Set<SourceGroup> getTestSourceGroups(Project project, SourceGroup[] sourceGroups) {
+        Map<FileObject, SourceGroup> foldersToSourceGroupsMap = createFoldersToSourceGroupsMap(sourceGroups);
+        Set<SourceGroup> testGroups = new HashSet<SourceGroup>();
         for (int i = 0; i < sourceGroups.length; i++) {
             testGroups.addAll(getTestTargets(sourceGroups[i], foldersToSourceGroupsMap));
         }
         return testGroups;
     }
     
-    private static List/*<SourceGroup>*/ getTestTargets(SourceGroup sourceGroup, Map foldersToSourceGroupsMap) {
+    private static List<SourceGroup> getTestTargets(SourceGroup sourceGroup, Map<FileObject, SourceGroup> foldersToSourceGroupsMap) {
         final URL[] rootURLs = UnitTestForSourceQuery.findUnitTests(sourceGroup.getRootFolder());
         if (rootURLs.length == 0) {
-            return new ArrayList();
+            return new ArrayList<SourceGroup>();
         }
-        List result = new ArrayList();
-        List sourceRoots = getFileObjects(rootURLs);
+        List<SourceGroup> result = new ArrayList<SourceGroup>();
+        List<FileObject> sourceRoots = getFileObjects(rootURLs);
         for (int i = 0; i < sourceRoots.size(); i++) {
-            FileObject sourceRoot = (FileObject) sourceRoots.get(i);
-            SourceGroup srcGroup = (SourceGroup) foldersToSourceGroupsMap.get(sourceRoot);
+            FileObject sourceRoot = sourceRoots.get(i);
+            SourceGroup srcGroup = foldersToSourceGroupsMap.get(sourceRoot);
             if (srcGroup != null) {
                 result.add(srcGroup);
             }
@@ -212,12 +212,12 @@ public class JaxWsClientCreator implements ClientCreator {
         return result;
     }
     
-    private static Map createFoldersToSourceGroupsMap(final SourceGroup[] sourceGroups) {
-        Map result;
+    private static Map<FileObject, SourceGroup> createFoldersToSourceGroupsMap(final SourceGroup[] sourceGroups) {
+        Map<FileObject, SourceGroup> result;
         if (sourceGroups.length == 0) {
-            result = Collections.EMPTY_MAP;
+            result = Collections.<FileObject, SourceGroup>emptyMap();
         } else {
-            result = new HashMap(2 * sourceGroups.length, .5f);
+            result = new HashMap<FileObject, SourceGroup>(2 * sourceGroups.length, .5f);
             for (int i = 0; i < sourceGroups.length; i++) {
                 SourceGroup sourceGroup = sourceGroups[i];
                 result.put(sourceGroup.getRootFolder(), sourceGroup);
@@ -226,8 +226,8 @@ public class JaxWsClientCreator implements ClientCreator {
         return result;
     }
     
-    private static List/*<FileObject>*/ getFileObjects(URL[] urls) {
-        List result = new ArrayList();
+    private static List<FileObject> getFileObjects(URL[] urls) {
+        List<FileObject> result = new ArrayList<FileObject>();
         for (int i = 0; i < urls.length; i++) {
             FileObject sourceRoot = URLMapper.findFileObject(urls[i]);
             if (sourceRoot != null) {

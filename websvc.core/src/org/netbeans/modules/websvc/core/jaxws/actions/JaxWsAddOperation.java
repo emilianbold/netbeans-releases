@@ -56,7 +56,7 @@ public class JaxWsAddOperation implements AddOperationCookie {
      */
     public void addOperation(final MethodModel methodModel) {
         JavaSource targetSource = JavaSource.forFileObject(implClassFo);
-        CancellableTask modificationTask = new CancellableTask<WorkingCopy>() {
+        CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 MethodTree method = MethodModelSupport.createMethodTree(workingCopy, methodModel);

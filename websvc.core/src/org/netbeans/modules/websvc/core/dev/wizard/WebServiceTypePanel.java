@@ -57,7 +57,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
     private Project project;
     private Node[] sessionBeanNodes;
     
-    private final List/*<ChangeListener>*/ listeners = new ArrayList();
+    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     
     private boolean isWaitingForScan = false;
     private boolean jsr109Supported;
@@ -212,7 +212,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
     
     private void jButtonDelegateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDelegateActionPerformed
         Project[] allProjects = getCallableEjbProjects(project);
-        List ejbProjectNodes = new LinkedList();
+        List<Node> ejbProjectNodes = new LinkedList<Node>();
         
         for (int i = 0; i < allProjects.length; i++) {
             LogicalViewProvider lvp = (LogicalViewProvider) allProjects[i].getLookup().lookup(LogicalViewProvider.class);
@@ -225,7 +225,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         }
         
         Children.Array children = new Children.Array();
-        children.add((Node[]) ejbProjectNodes.toArray(new Node[ejbProjectNodes.size()]));
+        children.add(ejbProjectNodes.<Node>toArray(new Node[ejbProjectNodes.size()]));
         Node root = new AbstractNode(children);
         EjbChooser chooser = new EjbChooser(root);
         final DialogDescriptor dd = new DialogDescriptor(chooser, org.openide.util.NbBundle.getMessage(WebServiceTypePanel.class, "LBL_BrowseBean_Title"));
@@ -404,7 +404,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         // call ejb should not make this check, all should be handled in EnterpriseReferenceContainer
         boolean isCallerFreeform = enterpriseProject.getClass().getName().equals("org.netbeans.modules.ant.freeform.FreeformProject");
         
-        List /*<Project>*/ filteredResults = new ArrayList(allProjects.length);
+        List<Project> filteredResults = new ArrayList<Project>(allProjects.length);
         for (int i = 0; i < allProjects.length; i++) {
             boolean isEJBModule = false;
             J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) allProjects[i].getLookup().lookup(J2eeModuleProvider.class);
@@ -416,7 +416,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
                 filteredResults.add(allProjects[i]);
             }
         }
-        return (Project []) filteredResults.toArray(new Project[filteredResults.size()]);
+        return filteredResults.<Project>toArray(new Project[filteredResults.size()]);
     }
     
     public void addChangeListener(ChangeListener l) {
@@ -429,9 +429,9 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
     
     private void fireChange() {
         ChangeEvent e = new ChangeEvent(this);
-        Iterator it = listeners.iterator();
+        Iterator<ChangeListener> it = listeners.iterator();
         while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(e);
+            it.next().stateChanged(e);
         }
     }
     

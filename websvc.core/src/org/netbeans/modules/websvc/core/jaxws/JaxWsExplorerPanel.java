@@ -120,7 +120,7 @@ public class JaxWsExplorerPanel extends JPanel implements ExplorerManager.Provid
                 Project[] projects = OpenProjects.getDefault().getOpenProjects();
                 Children rootChildren = new Children.Array();
                 AbstractNode explorerClientRoot = new AbstractNode(rootChildren);
-                List projectNodeList = new ArrayList();        
+                List<Node> projectNodeList = new ArrayList<Node>();        
                 for (int i=0;i<projects.length;i++) {
                     LogicalViewProvider logicalProvider = (LogicalViewProvider)projects[i].getLookup().lookup(LogicalViewProvider.class);
                     if (logicalProvider!=null) {
@@ -161,7 +161,7 @@ public class JaxWsExplorerPanel extends JPanel implements ExplorerManager.Provid
                     }
                 }
                 Node[] projectNodes = new Node[projectNodeList.size()];
-                projectNodeList.toArray(projectNodes);
+                projectNodeList.<Node>toArray(projectNodes);
                 rootChildren.add(projectNodes);
 		manager.setRootContext(explorerClientRoot);
 		

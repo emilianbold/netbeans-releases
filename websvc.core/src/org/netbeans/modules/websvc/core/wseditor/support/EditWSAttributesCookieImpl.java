@@ -67,7 +67,7 @@ public class EditWSAttributesCookieImpl implements EditWSAttributesCookie{
     }
     
     public void openWSAttributesEditor(){
-        tc = (EditWSAttributesTopComponent)cachedTopComponents.get(node);
+        tc = cachedTopComponents.get(node);
         if(tc == null){
             //populate the editor registry if needed
             populateWSEditorProviderRegistry();
@@ -142,7 +142,8 @@ public class EditWSAttributesCookieImpl implements EditWSAttributesCookie{
     
     private Set<WSEditorProvider> providers;
     private Set<WSEditor> editors;
-    private static Map cachedTopComponents = new WeakHashMap();
+    private static Map<EditWSAttributesCookie, EditWSAttributesTopComponent> cachedTopComponents
+            = new WeakHashMap<EditWSAttributesCookie, EditWSAttributesTopComponent>();
     private EditWSAttributesTopComponent tc;
     private Node node;
     private JaxWsModel jaxWsModel;

@@ -55,7 +55,7 @@ public class JaxWsClassesCookieImpl implements JaxWsClassesCookie {
     
     public void addOperation(final MethodTree method) {
         JavaSource targetSource = JavaSource.forFileObject(implClassFO);
-        CancellableTask modificationTask = new CancellableTask<WorkingCopy>() {
+        CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);            
                 TreeMaker make = workingCopy.getTreeMaker();

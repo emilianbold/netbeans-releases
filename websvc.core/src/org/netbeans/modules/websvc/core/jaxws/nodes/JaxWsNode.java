@@ -323,7 +323,7 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
         final boolean[] isProvider = {false};
         JavaSource javaSource = getImplBeanJavaSource();
         if (javaSource!=null) {
-            CancellableTask task = new CancellableTask<CompilationController>() {
+            CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
                     SourceUtils srcUtils = SourceUtils.newInstance(controller);
@@ -558,7 +558,7 @@ public class JaxWsNode extends AbstractNode implements OpenCookie, JaxWsWsdlCook
         final String[] handlerFileName = new String[1];
         final boolean[] isNew = new boolean[]{true};
         JavaSource implBeanJavaSrc = JavaSource.forFileObject(implBeanFo);
-        CancellableTask task = new CancellableTask<CompilationController>() {
+        CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
                 SourceUtils srcUtils = SourceUtils.newInstance(controller);

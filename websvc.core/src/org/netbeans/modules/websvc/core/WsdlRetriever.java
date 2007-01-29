@@ -92,7 +92,7 @@ public class WsdlRetriever implements Runnable {
     // Wsdl collection information
     private String wsdlUrlName;
     private byte [] wsdlContent;
-    private List /*SchemaInfo*/ schemas; // List of imported schema/wsdl files
+    private List<SchemaInfo> schemas; // List of imported schema/wsdl files
     
     private String wsdlFileName;
     // Parent
@@ -113,7 +113,7 @@ public class WsdlRetriever implements Runnable {
         return wsdlContent;
     }
     
-    public List /*byte[]*/ getSchemas() {
+    public List<SchemaInfo> getSchemas() {
         return schemas;
     }
     
@@ -173,7 +173,7 @@ public class WsdlRetriever implements Runnable {
                 if (wsdlInfo != null) {
                     List /*String*/ schemaNames = wsdlInfo.getSchemaNames();
                     if (!schemaNames.isEmpty()) {
-                        schemas = new ArrayList();
+                        schemas = new ArrayList<SchemaInfo>();
                         Iterator it = schemaNames.iterator();
                         while (!shutdown && it.hasNext()) {
                             String schemaName = (String)it.next();
@@ -242,7 +242,7 @@ public class WsdlRetriever implements Runnable {
      *
      */
     private byte [] downloadWsdlFileEncoded(InputStream in) throws IOException {
-        java.util.ArrayList chunks = new java.util.ArrayList();
+        ArrayList<Chunk> chunks = new ArrayList<Chunk>();
         final int BUF = 65536;
         boolean eof = false;
         byte [] data = new byte [0];
@@ -275,10 +275,9 @@ public class WsdlRetriever implements Runnable {
         if(!shutdown) {
             // calculate length for single byte array that contains the entire WSDL
             int bufLen = 0;
-            java.util.Iterator iter = chunks.iterator();
+            Iterator<Chunk> iter = chunks.iterator();
             while(iter.hasNext()) {
-                Chunk c = (Chunk) iter.next();
-                bufLen += c.getLength();
+                bufLen += iter.next().getLength();
             }
             
             // Now fill the single byte array with all the chunks we downloaded.
@@ -286,7 +285,7 @@ public class WsdlRetriever implements Runnable {
             int index = 0;
             iter = chunks.iterator();
             while(iter.hasNext()) {
-                Chunk c = (Chunk) iter.next();
+                Chunk c = iter.next();
                 System.arraycopy(c.getData(), 0, data, index, c.getLength());
                 index += c.getLength();
             }
@@ -402,14 +401,14 @@ public class WsdlRetriever implements Runnable {
         private static final String W3C_WSDL_SCHEMA = "http://schemas.xmlsoap.org/wsdl"; // NOI18N
         private static final String W3C_WSDL_SCHEMA_SLASH = "http://schemas.xmlsoap.org/wsdl/"; // NOI18N
         
-        private List serviceNameList;
-        private List schemaNames;
+        private List<String> serviceNameList;
+        private List<String> schemaNames;
         
         private boolean insideSchema;
         
         ServiceNameParser() {
-            serviceNameList = new ArrayList();
-            schemaNames = new ArrayList();
+            serviceNameList = new ArrayList<String>();
+            schemaNames = new ArrayList<String>();
         }
         
         public void startElement(String uri, String localname, String qname, Attributes attributes) throws SAXException {
@@ -443,11 +442,11 @@ public class WsdlRetriever implements Runnable {
             }
         }
         
-        public List/*String*/ getServiceNameList() {
+        public List<String> getServiceNameList() {
             return serviceNameList;
         }
         
-        public List/*Striing*/ getSchemaNames() {
+        public List<String> getSchemaNames() {
             return schemaNames;
         }
     }
@@ -473,18 +472,18 @@ public class WsdlRetriever implements Runnable {
     }
     
     private static class WsdlInfo {
-        private List/*String*/ serviceNameList;
-        private List/*String*/ schemaNames;
+        private List<String> serviceNameList;
+        private List<String> schemaNames;
         
-        WsdlInfo(List serviceNameList,  List schemaNames) {
+        WsdlInfo(List<String> serviceNameList,  List<String> schemaNames) {
             this.serviceNameList=serviceNameList;
             this.schemaNames=schemaNames;
         }
         
-        List /*String*/ getSchemaNames() {
+        List<String> getSchemaNames() {
             return schemaNames;
         }
-        List/*String*/ getServiceNameList() {
+        List<String> getServiceNameList() {
             return serviceNameList;
         }
     }
