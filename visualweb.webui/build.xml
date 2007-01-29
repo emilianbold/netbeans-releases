@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="org.netbeans.modules.visualweb.webui" default="netbeans" basedir=".">
+
+    <description>Builds and tests the project org.netbeans.modules.visualweb.webui.</description>
+    <import file="nbproject/build-impl.xml"/>
+    <import file="${suite.dir}/templates/common.xml"/>
+
+</project>
