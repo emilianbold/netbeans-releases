@@ -39,7 +39,6 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.types.*;

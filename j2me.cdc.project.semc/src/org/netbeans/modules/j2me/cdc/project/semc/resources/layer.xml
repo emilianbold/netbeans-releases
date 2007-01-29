@@ -25,4 +25,10 @@
             </folder>
         </folder>
     </folder>    
+
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+            <file name="Utils.xml" url="Utils.xml"/>
+        </folder>
+    </folder>
 </filesystem>
