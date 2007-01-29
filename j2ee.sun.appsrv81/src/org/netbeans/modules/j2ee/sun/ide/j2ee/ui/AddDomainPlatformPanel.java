@@ -48,17 +48,30 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
     private AddInstanceVisualPlatformPanel component;
     private WizardDescriptor wiz;
     
-    // Get the visual component for the panel. In this template, the component
-    // is kept separate. This can be more efficient: if the wizard is created
-    // but never displayed, or not all panels are displayed, it is better to
-    // create only those which really need to be visible.
+   /*  Get the visual component for the panel. In this template, the component
+     is kept separate. This can be more efficient: if the wizard is created
+     but never displayed, or not all panels are displayed, it is better to
+     create only those which really need to be visible.
+    */
     public Component getComponent() {
         if (component == null) {
             File f = ServerLocationManager.getLatestPlatformLocation();
-            File defaultLoc = new File(System.getProperty("user.home"));//NOI18N
-            if (f!=null && f.exists()) {
+            File defaultLoc = null;
+            if (null == f || !f.exists()) {
+                String prop = System.getProperty(ServerLocationManager.INSTALL_ROOT_PROP_NAME);
+                if (null != prop && prop.length() > 0) {
+                    // there is a possible root directory for the AS
+                    File installRoot = new File(prop);
+                    if (ServerLocationManager.isGoodAppServerLocation(installRoot)) {
+                        defaultLoc = installRoot;
+                    }
+                }
+                if (null == defaultLoc) {
+                    defaultLoc = new File(System.getProperty("user.home"));//NOI18N
+                }
+            } else {
                 defaultLoc = f;
-            } 
+            }
             component = new AddInstanceVisualPlatformPanel(defaultLoc);
             component.addChangeListener(this);
         }

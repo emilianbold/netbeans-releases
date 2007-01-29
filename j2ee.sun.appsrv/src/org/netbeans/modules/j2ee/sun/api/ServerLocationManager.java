@@ -137,25 +137,10 @@ public class ServerLocationManager  {
             if (isGlassFish(possibleOne)){
                 ret =possibleOne;
             }
-//            System.out.println("Location is getLatestPlatformLocation "+ret);
         }
-        if (null == ret) {
-            String prop = System.getProperty(INSTALL_ROOT_PROP_NAME);
-            if (null != prop) {
-                // there is a possible root directory for the AS
-                ClassLoader cl = getNetBeansAndServerClassLoader(new File(prop));
-                if (null != cl) {
-                    // the root directory is valid...
-                    ret = getLatestPlatformLocation();
-                }
-            }
-        }
-	return ret;
-	
+        return ret;
+        
     }
-    
-    
-    
     
     /*
      *used to get the netbeans classload of this class.
@@ -278,8 +263,8 @@ public class ServerLocationManager  {
 	File localeDir = new File(parentDir, "locale"); //NOI18N
 	if(localeDir.exists()){
 	    File[] localeFiles = localeDir.listFiles();
-	    File localeFile = null;
-	    String localeFileName = null;
+	    File localeFile; // = null;
+	    String localeFileName;// = null;
 	    String fileName = file.getName();
 	    fileName = getFileNameWithoutExt(fileName);
 	    //System.out.println("fineName: " + fileName);
