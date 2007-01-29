@@ -90,19 +90,23 @@ public class SimpleLexerIncTest extends TestCase {
         
         // Check TokenSequence.move()
         int relOffset = ts.move(50); // past the end of all tokens
-        assertEquals(relOffset, 50 - offset);
+        assertEquals(relOffset, 50 - (offset + 3));
+        assertTrue(ts.movePrevious());
         LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "def", offset);
 
         relOffset = ts.move(6); // right at begining of "-"
         assertEquals(relOffset, 0);
+        assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.MINUS, "-", 6);
 
         relOffset = ts.move(-5); // to first token "abc"
         assertEquals(relOffset, -5);
+        assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 0);
 
         relOffset = ts.move(5); // to first token "abc"
         assertEquals(relOffset, 1);
+        assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "uv", 4);
 
 

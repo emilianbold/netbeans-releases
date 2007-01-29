@@ -29,16 +29,55 @@ import org.netbeans.lib.lexer.inc.SnapshotTokenList;
 import org.netbeans.lib.lexer.token.AbstractToken;
 
 /**
- * Token sequence allows to move between tokens
- * of a token hierarchy in forward/backward direction
- * and by index/offset positioning.
+ * Token sequence allows to iterate between tokens
+ * of a token hierarchy.
  * <br/>
- * It may be obtained by {@link TokenHierarchy#tokenSequence()}.
- * <br/>
- * A typical use is a forward iteration through the tokens:
+ * Token sequence for top-level language of a token hierarchy
+ * may be obtained by {@link TokenHierarchy#tokenSequence()}.
+ * 
+ * <p>
+ * Use of token sequence is a two-step operation:
+ * <ol>
+ *   <li>
+ *     Position token sequence before token that should first be retrieved
+ *     (or behind desired token when iterating backwards).
+ *     <br/>
+ *     One of the following ways may be used:
+ *     <ul>
+ *       <li> {@link #move(int)} positions TS before token that either starts
+ *           at the given offset or "contains" it.
+ *       </li>
+ *       <li> {@link #moveIndex(int)} positions TS before n-th token in the underlying
+ *           token list.
+ *       </li>
+ *       <li> {@link #moveStart()} positions TS before the first token. </li>
+ *       <li> {@link #moveEnd()} positions TS behind the last token. </li>
+ *       <li> Do nothing - TS is positioned before the first token automatically by default. </li>
+ *     </ul>
+ *     Token sequence will always be positioned between tokens
+ *     when using one of the operations above
+ *     ({@link #token()} will return <code>null</code> to signal between-tokens location).
+ *     <br/>
+ *   </li>
+ * 
+ *   <li>
+ *     Start iterating through the tokens in forward/backward direction
+ *     by using {@link #moveNext()} or {@link #movePrevious()}.
+ *     <br/>
+ *     If <code>moveNext()</code> or <code>movePrevious()</code> returned
+ *     <code>true</code> then TS is positioned
+ *     over a concrete token retrievable by {@link #token()}.
+ *     <br/>
+ *     Its offset can be retrieved by {@link #offset()}.
+ *   </li>
+ * </ol>
+ * </p>
+ * 
+ * <p>
+ * An example of forward iteration through the tokens:
  * <pre>
  *   TokenSequence ts = tokenHierarchy.tokenSequence();
- *   // Possible positioning by ts.move()
+ *   // Possible positioning by ts.move(offset) or ts.moveIndex(index)
  *   while (ts.moveNext()) {
  *       Token t = ts.token();
  *       if (t.id() == ...) { ... }
@@ -46,10 +85,7 @@ import org.netbeans.lib.lexer.token.AbstractToken;
  *       if (ts.offset() == ...) { ... }
  *   }
  * </pre>
- * <br/>
- * Token sequence provides correct offset information
- * for the token to which the sequence is positioned
- * (some tokens may be flyweight and do not hold the offset by themselves).
+ * </p>
  *
  * <p>
  * This class should be used by a single thread only.
@@ -65,7 +101,7 @@ public final class TokenSequence<T extends TokenId> {
     
     private AbstractToken<T> token; // 16 bytes
     
-    private int tokenIndex = -1; // 20 bytes
+    private int tokenIndex; // 20 bytes
     
     /**
      * Offset in the input at which the current token is located
@@ -113,19 +149,30 @@ public final class TokenSequence<T extends TokenId> {
     }
 
     /**
-     * Get instance of current token to which this token sequence points to.
+     * Get token to which this token sequence points to or null
+     * if TS is positioned between tokens
+     * ({@link #moveNext()} or {@link #movePrevious()} were not called yet).
      * <br/>
-     * It is necessary to call {@link #moveNext()} before first calling this method.
+     * A typical iteration usage:
+     * <pre>
+     *   TokenSequence ts = tokenHierarchy.tokenSequence();
+     *   // Possible positioning by ts.move(offset) or ts.moveIndex(index)
+     *   while (ts.moveNext()) {
+     *       Token t = ts.token();
+     *       if (t.id() == ...) { ... }
+     *       if (TokenUtilities.equals(t.text(), "mytext")) { ... }
+     *       if (ts.offset() == ...) { ... }
+     *   }
+     * </pre>
      *
-     * <p>
      * The returned token instance may be flyweight
-     * (returns true from {@link Token#isFlyweight()})
+     * ({@link Token#isFlyweight()} returns true)
      * which means that its {@link Token#offset(TokenHierarchy)} will return -1.
      * <br/>
      * To find a correct offset use {@link #offset()}.
      * <br/>
-     * Or if its necessary to have a non-flyweigt the {@link #offsetToken()}
-     * may be used.
+     * Or if its necessary to revert to a regular non-flyweigt token
+     * the {@link #offsetToken()} may be used.
      * </p>
      *
      * <p>
@@ -133,13 +180,13 @@ public final class TokenSequence<T extends TokenId> {
      * The token instance should not be held across the input source modifications.
      * </p>
      *
-     * @return non-null token instance.
+     * @return token instance to which this token sequence is currently positioned
+     *  or null if this token sequence is not positioned to any token which may
+     *  happen after TS creation or after use of {@link #move(int)} or {@link moveIndex(int)}.
+     * 
      * @see #offsetToken()
-     * @throws IllegalStateException if this token sequence was not positioned
-     *  to any token yet.
      */
     public Token<T> token() {
-        checkToken();
         return token;
     }
     
@@ -149,6 +196,8 @@ public final class TokenSequence<T extends TokenId> {
      * <br/>
      * If the current token is flyweight then this method replaces it
      * with the corresponding non-flyweight token which it then returns.
+     * <br/>
+     * Subsequent calls to {@link #token()} will also return this non-flyweight token.
      *
      * <p>
      * This method may be handy if the token instance is referenced in a standalone way
@@ -156,11 +205,10 @@ public final class TokenSequence<T extends TokenId> {
      * to get the appropriate offset from the token itself
      * later when a token sequence will not be available.
      * </p>
-     * @throws IllegalStateException if this token sequence was not positioned
-     *  to any token yet.
+     * @throws IllegalStateException if {@link #token()} returns null.
      */
     public Token<T> offsetToken() {
-        checkToken();
+        checkTokenNotNull();
         if (token.isFlyweight()) {
             token = tokenList.replaceFlyToken(tokenIndex, token, offset());
         }
@@ -179,11 +227,10 @@ public final class TokenSequence<T extends TokenId> {
      * best performance with a constant time complexity.
      *
      * @return &gt;=0 absolute offset of the current token in the underlying input.
-     * @throws IllegalStateException if this token sequence was not positioned
-     *  to any token yet.
+     * @throws IllegalStateException if {@link #token()} returns null.
      */
     public int offset() {
-        checkToken();
+        checkTokenNotNull();
         if (tokenOffset == -1) {
             tokenOffset = tokenList.tokenOffset(tokenIndex);
         }
@@ -191,10 +238,29 @@ public final class TokenSequence<T extends TokenId> {
     }
     
     /**
-     * Get the index of the current token in the complete list of tokens.
-     *
-     * @return &gt;=0 index of the current token or <code>-1</code>
-     *  if this token sequence is initially located in front of the first token.
+     * Get an index of token to which (or before which) this TS is currently positioned.
+     * <br/>
+     * <p>
+     * Initially or after {@link #move(int)} or {@link #moveIndex(int)}
+     * token sequence is positioned between tokens:
+     * <pre>
+     *          Token[0]   Token[1]   ...   Token[n]
+     *        ^          ^                ^
+     * Index: 0          1                n
+     * </pre>
+     * </p>
+     * 
+     * <p>
+     * After use of {@link #moveNext()} or {@link #movePrevious()}
+     * the token sequence is positioned over one of the actual tokens:
+     * <pre>
+     *          Token[0]   Token[1]   ...   Token[n]
+     *             ^          ^                ^
+     * Index:      0          1                n
+     * </pre>
+     * </p>
+     * 
+     * @return &gt;=0 index of token to which (or before which) this TS is currently positioned.
      */
     public int index() {
         return tokenIndex;
@@ -212,11 +278,10 @@ public final class TokenSequence<T extends TokenId> {
      * or <code>LanguageProvider</code>).
      *
      * @return embedded sequence or null if no embedding exists for this token.
-     * @throws IllegalStateException if this token sequence was not positioned
-     *  to any token yet.
+     * @throws IllegalStateException if {@link #token()} returns null.
      */
     public TokenSequence<? extends TokenId> embedded() {
-        checkToken();
+        checkTokenNotNull();
         return embeddedImpl(null);
     }
     
@@ -247,15 +312,18 @@ public final class TokenSequence<T extends TokenId> {
      * Get embedded token sequence if the token
      * to which this token sequence is currently positioned
      * has a language embedding.
+     * 
+     * @throws IllegalStateException if {@link #token()} returns null.
      */
     public <ET extends TokenId> TokenSequence<ET> embedded(Language<ET> embeddedLanguage) {
-        checkToken();
+        checkTokenNotNull();
         return embeddedImpl(embeddedLanguage);
     }
 
     /**
      * Create language embedding without joining of the embedded sections.
      *
+     * @throws IllegalStateException if {@link #token()} returns null.
      * @see #createEmbedding(Language, int, int, boolean)
      */
     public boolean createEmbedding(Language<? extends TokenId> embeddedLanguage,
@@ -291,59 +359,72 @@ public final class TokenSequence<T extends TokenId> {
      *  Only the embedded sections with the same language path can be joined.
      * @return true if the embedding was created successfully or false if an embedding
      *  with the given language already exists for this token.
+     * @throws IllegalStateException if {@link #token()} returns null.
      */
     public boolean createEmbedding(Language<? extends TokenId> embeddedLanguage,
     int startSkipLength, int endSkipLength, boolean joinSections) {
-        checkToken();
+        checkTokenNotNull();
         return EmbeddingContainer.createEmbedding(tokenList, tokenIndex,
                 embeddedLanguage, startSkipLength, endSkipLength, joinSections);
     }
 
     /**
      * Move to the next token in this token sequence.
-     * <br/>
+     * 
+     * <p>
      * The next token may not necessarily start at the offset where
-     * the current token ends (there may be gaps between tokens
-     * caused by use of a token id filter).
+     * the previous token ends (there may be gaps between tokens
+     * caused by token filtering). {@link #offset()} should be used
+     * for offset retrieval.
+     * </p>
      *
      * @return true if the sequence was successfully moved to the next token
-     *  or false if stays on the original token because there are no more tokens
+     *  or false if it was not moved before there are no more tokens
      *  in the forward direction.
      * @throws ConcurrentModificationException if this token sequence
      *  is no longer valid because of an underlying mutable input source modification.
      */
     public boolean moveNext() {
         checkModCount();
-        tokenIndex++;
+        if (token != null) // Token already fetched
+            tokenIndex++;
         Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(tokenIndex);
         if (tokenOrEmbeddingContainer != null) {
             AbstractToken origToken = token;
-            assignToken(tokenOrEmbeddingContainer);
+            token = LexerUtilsConstants.token(tokenOrEmbeddingContainer);
+            // If origToken == null then the right offset might already be pre-computed from move()
             if (tokenOffset != -1) {
-                // If the token list is continuous or the fetched token
-                // is flyweight (there cannot be a gap before flyweight token)
-                // the original offset can be just increased
-                // by the original token's length.
-                if (tokenList.isContinuous() || token.isFlyweight()) {
-                    tokenOffset += origToken.length(); // advance by previous token's length
-                } else // Offset must be recomputed
-                    tokenOffset = -1; // mark the offset to be recomputed
+                if (origToken != null) {
+                    // If the token list is continuous or the fetched token
+                    // is flyweight (there cannot be a gap before flyweight token)
+                    // the original offset can be just increased
+                    // by the original token's length.
+                    if (tokenList.isContinuous() || token.isFlyweight()) {
+                        tokenOffset += origToken.length(); // advance by previous token's length
+                    } else // Offset must be recomputed
+                        tokenOffset = -1; // mark the offset to be recomputed
+                } else // Not valid token previously
+                    tokenOffset = -1;
             }
             return true;
         }
-        tokenIndex--;
+        if (token != null) // Unsuccessful move from existing token
+            tokenIndex--;
         return false;
     }
 
     /**
-     * Move to the previous token in this token sequence.
-     * <br/>
-     * The next token may not necessarily end at the offset where
-     * the present token starts (there may be gaps between tokens
-     * caused by use of a token id filter).
+     * Move to a previous token in this token sequence.
+     *
+     * <p>
+     * The previous token may not necessarily end at the offset where
+     * the previous token started (there may be gaps between tokens
+     * caused by token filtering). {@link #offset()} should be used
+     * for offset retrieval.
+     * </p>
      *
      * @return true if the sequence was successfully moved to the previous token
-     *  or false if stayed on the original token because there are no more tokens
+     *  or false if it was not moved because there are no more tokens
      *  in the backward direction.
      * @throws ConcurrentModificationException if this token sequence
      *  is no longer valid because of an underlying mutable input source modification.
@@ -353,7 +434,7 @@ public final class TokenSequence<T extends TokenId> {
         if (tokenIndex > 0) {
             AbstractToken origToken = token;
             tokenIndex--;
-            assignToken();
+            token = LexerUtilsConstants.token(tokenList.tokenOrEmbeddingContainer(tokenIndex));
             if (tokenOffset != -1) {
                 // If the token list is continuous or the original token
                 // is flyweight (there cannot be a gap before flyweight token)
@@ -364,8 +445,6 @@ public final class TokenSequence<T extends TokenId> {
                 } else { // mark the offset to be computed upon call to offset()
                     tokenOffset = -1;
                 }
-            } else {
-                tokenOffset = -1; // mark the offset to be computed upon call to offset()
             }
             return true;
 
@@ -374,92 +453,102 @@ public final class TokenSequence<T extends TokenId> {
     }
 
     /**
-     * Move the token sequence to point to the token with the given index.
+     * Position token sequence between <code>index-1</code>
+     * and <code>index</code> tokens.
+     * <br/>
+     * TS will be positioned in the following way:
+     * <pre>
+     *          Token[0]   ...   Token[index-1]   Token[index] ...
+     *        ^                ^                ^
+     * Index: 0             index-1           index
+     * </pre>
+     * 
+     * <p>
+     * Subsequent {@link #moveNext()} or {@link #movePrevious()} is needed to fetch
+     * a concrete token in the desired direction.
+     * <br/>
+     * Subsequent {@link #moveNext()} will position TS over <code>Token[index]</code>
+     * (or {@link #movePrevious()} will position TS over <code>Token[index-1]</code>)
+     * so that <code>{@link #token()} != null</code>.
      *
      * @param index index of the token to which this sequence
      *   should be positioned.
-     * @return <code>true</code> if the sequence was moved to the token
-     *   with the given index. Returns <code>false</code>
-     *   if <code>index < 0</code> or <code>index < tokenCount</code>.
-     *   In such case the current token sequence's position stays unchanged.
+     *   <br/>
+     *   If <code>index >= {@link #tokenCount()}</code>
+     *   then the TS will be positioned to {@link #tokenCount()}.
+     *   <br/>
+     *   If <code>index < 0</code> then the TS will be positioned to index 0.
+     * 
+     * @return difference between requested index and the index to which TS
+     *   is really set.
      * @throws ConcurrentModificationException if this token sequence
      *  is no longer valid because of an underlying mutable input source modification.
      */
-    public boolean moveIndex(int index) {
+    public int moveIndex(int index) {
         checkModCount();
-        if (index < 0) {
-            return false;
-        }
-        Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(index);
-        if (tokenOrEmbeddingContainer != null) { // enough tokens
-            this.tokenIndex = index;
-            assignToken(tokenOrEmbeddingContainer);
-            tokenOffset = -1;
-            return true;
-
-        } else // Token at the requested index does not exist - leave orig. index
-            return false;
+        if (index >= 0) {
+            Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(index);
+            if (tokenOrEmbeddingContainer != null) { // enough tokens
+                resetTokenIndex(index);
+            } else // Token at the requested index does not exist - leave orig. index
+                resetTokenIndex(tokenCount());
+        } else // index < 0
+            resetTokenIndex(0);
+        return index - tokenIndex;
     }
     
     /**
-     * Move the token sequence to be positioned to the token
-     * that "contains" the requested offset (the offset is at the begining
-     * or inside of the token).
-     * <br>
-     * If the offset is too big the token sequence will be positioned
-     * to the last token and the return value will
-     * be the distance between the requested offset
-     * and the start offset of the token to which the token sequence
-     * will be positioned..
-     * <br>
-     * If there are no tokens in the sequence then {@link Integer#MAX_VALUE}
-     * will be returned.
-     *
-     * <p>
-     * The underlying token list may contain gaps that are not covered
-     * by any tokens and if the offset is contained in such gap then
-     * the token sequence will be positioned to the token that precedes the gap.
-     * </p>
-     *
-     * Example:
+     * Move the token sequence to be positioned before the first token.
+     * <br/>
+     * This is equivalent to <code>moveIndex(0)</code>.
+     */
+    public void moveStart() {
+        moveIndex(0);
+    }
+    
+    /**
+     * Move the token sequence to be positioned behind the last token.
+     * <br/>
+     * This is equivalent to <code>moveIndex(tokenCount())</code>.
+     */
+    public void moveEnd() {
+        moveIndex(tokenCount());
+    }
+    
+    /**
+     * Move token sequence to be positioned between <code>index-1</code>
+     * and <code>index</code> tokens where Token[index] either starts at offset
+     * or "contains" the offset.
+     * <br/>
      * <pre>
-     *   int diff = tokenSequence.move(targetOffset);
-     *   // diff equals to (targetOffset - tokenSequence.token().offset())
-     *   if (diff >= 0 && diff < tokenSequence.token().length()) {
-     *       // Within token bounds - tokenSequence.token() starts at or "contains" targetOffset
-     *
-     *   } else if (diff == Integer.MAX_VALUE) {
-     *       // No tokens in the token sequence at all.
-     *       // Token sequence is not positioned to any token.
-     *
-     *   } else {
-     *       // 1. diff >= tokenSequence.token().length()
-     *       //   a) targetOffset is above the end of the last token in the sequence.
-     *       //     Token sequence is positioned to the last token in the sequence.
-     *       //   b) there are text areas not covered by any tokens
-     *       //     due to skipped tokens (skipTokenIds was used
-     *       //     in TokenHierarchy.create()) and the targetOffset points to such gap.
-     *       //     Token sequence is positioned to the preceding token.
-     *       // 
-     *       // 2. diff < 0
-     *       //   a) targetOffset < 0
-     *       //   b) targetOffset >= 0 but there is a text area
-     *       //     at the begining that is not covered by any tokens
-     *       //     (skipTokenIds was used in TokenHierarchy.create())
-     *       //     Token sequence is positioned to the first token in the sequence.
-     *   }
+     *        +----------+-----+----------------+--------------+------
+     *        | Token[0] | ... | Token[index-1] | Token[index] | ...
+     *        | "public" | ... | "static"       | "int"        | ...
+     *        +----------+-----+----------------+--------------+------
+     *        ^                ^                ^
+     * Index: 0             index-1           index
+     * Offset:                                  ---^ (if offset points to 'i','n' or 't')
      * </pre>
      * 
+     * <p>
+     * Subsequent {@link #moveNext()} or {@link #movePrevious()} is needed to fetch
+     * a concrete token.
+     * <br/>
+     * If the offset is too big then the token sequence will be positioned
+     * behind the last token.
+     * </p>
+     * 
+     * <p>
+     * If token filtering is used there may be gaps that are not covered
+     * by any tokens and if the offset is contained in such gap then
+     * the token sequence will be positioned before the token that follows the gap.
+     * </p>
      *
-     * @param offset absolute offset in the input to which
-     *  the token sequence should be moved.
      *
+     * @param offset absolute offset to which the token sequence should be moved.
      * @return difference between the reqeuested offset
-     *  and the absolute starting offset of the token
-     *  to which the the token sequence gets moved.
-     *  <br>
-     *  Returns {@link Integer#MAX_VALUE} if there are no tokens in the sequence.
-     *  In such case there is no active token.
+     *  and the start offset of the token
+     *  before which the the token sequence gets positioned.
      * 
      * @throws ConcurrentModificationException if this token sequence
      *  is no longer valid because of an underlying mutable input source modification.
@@ -474,7 +563,8 @@ public final class TokenSequence<T extends TokenId> {
             if (tokenList.tokenOrEmbeddingContainer(0) == null) { // really no tokens at all
                 // In this case the token sequence could not be positioned yet
                 // so no need to reset "index" or other vars
-                return Integer.MAX_VALUE;
+                resetTokenIndex(0);
+                return offset;
             }
             // Re-get the present token count (could be created a chunk of tokens at once)
             tokenCount = tokenList.tokenCountCurrent();
@@ -499,14 +589,14 @@ public final class TokenSequence<T extends TokenId> {
                     tokenLength = t.length();
                     tokenCount++;
 
-                } else { // no more tokens => break
-                    break;
+                } else { // no more tokens => position behind last token
+                    resetTokenIndex(tokenCount);
+                    tokenOffset = prevTokenOffset + tokenLength; // May assign the token's offset in advance
+                    return offset - tokenOffset;
                 }
             }
-            tokenIndex = tokenCount - 1;
-            // Absolute token's start offset 
-            tokenOffset = prevTokenOffset;
-            assignToken();
+            resetTokenIndex(tokenCount - 1);
+            tokenOffset = prevTokenOffset; // May assign the token's offset in advance
             return offset - prevTokenOffset;
         }
         
@@ -525,47 +615,41 @@ public final class TokenSequence<T extends TokenId> {
                 high = mid - 1;
             } else {
                 // Token starting exactly at offset found
-                tokenIndex = mid;
+                resetTokenIndex(mid);
                 tokenOffset = midStartOffset;
-                assignToken();
                 return 0; // right at the token begining
             }
         }
         
         // Not found exactly and high + 1 == low => high < low
-        // Check whether the token at "high" contains the offset
+        // BTW there may be gaps between tokens; if offset is in gap then position to higher token
         if (high >= 0) { // could be -1
             AbstractToken t = LexerUtilsConstants.token(tokenList, high);
             prevTokenOffset = tokenList.tokenOffset(high);
+            // If gaps allowed check whether the token at "high" contains the offset
+            if (!tokenList.isContinuous() && offset > prevTokenOffset + t.length()) {
+                // Offset in the gap above the "high" token
+                high++;
+                prevTokenOffset += t.length();
+            }
         } else { // at least one token exists => use token at index 0
             high = 0;
             prevTokenOffset = tokenList.tokenOffset(0); // result may differ from 0
         }
-
-        tokenIndex = high;
+        resetTokenIndex(high);
         tokenOffset = prevTokenOffset;
-        assignToken();
         return offset - prevTokenOffset;
-    }
-
-    /**
-     * Move to the first token in this token sequence.
-     *
-     * @return true if the sequence was positioned on the first token
-     *  or false if there are no tokens in the sequence.
-     */
-    public boolean moveFirst() {
-        return moveIndex(0);
     }
     
     /**
-     * Move to the last token in this token sequence.
-     *
-     * @return true if the sequence was positioned on the last token
-     *  or false if there are no tokens in the sequence.
+     * Check whether this TS contains zero tokens.
+     * <br/>
+     * This check is strongly preferred over <code>tokenCount() == 0</code>.
+     * 
+     * @see #tokenCount()
      */
-    public boolean moveLast() {
-        return moveIndex(tokenCount() - 1); // Can be -1 but handled in move(index)
+    public boolean isEmpty() {
+        return (tokenIndex == 0 && tokenList.tokenOrEmbeddingContainer(0) == null);
     }
 
     /**
@@ -628,15 +712,14 @@ public final class TokenSequence<T extends TokenId> {
         return parentTokenIndexes;
     }
 
-    private void assignToken(Object tokenOrEmbeddingContainer) {
-        token = LexerUtilsConstants.token(tokenOrEmbeddingContainer);
-    }
-    
-    private void assignToken() {
-        assignToken(tokenList.tokenOrEmbeddingContainer(tokenIndex));
+    private void resetTokenIndex(int index) {
+        // Position to the given index e.g. by move() and moveIndex()
+        tokenIndex = index;
+        token = null;
+        tokenOffset = -1;
     }
 
-    private void checkToken() {
+    private void checkTokenNotNull() {
         if (token == null) {
             throw new IllegalStateException(
                 "No token fetched by moveNext() from token sequence yet: index=" + tokenIndex

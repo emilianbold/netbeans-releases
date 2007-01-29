@@ -108,8 +108,8 @@ final class LexerLayer extends DrawLayer.AbstractLayer {
         if (active) {
             pastSequences = new Stack<TokenSequence>();
             tokenSequence = hi.tokenSequence();
-            int relOffset = tokenSequence.move(startOffset);
-            if (relOffset != Integer.MAX_VALUE) {
+            tokenSequence.move(startOffset);
+            if (tokenSequence.moveNext()) {
                 updateTokenEndOffsetAndColoring(startOffset);
             } else { // no tokens
                 active = false;
@@ -178,7 +178,8 @@ final class LexerLayer extends DrawLayer.AbstractLayer {
                         break;
                     }
                 } else {
-                    if (embed.move(offset) != Integer.MAX_VALUE) {
+                    embed.move(offset);
+                    if (embed.moveNext()) {
                         pastSequences.push(tokenSequence);
                         tokenSequence = embed;
                     } else {

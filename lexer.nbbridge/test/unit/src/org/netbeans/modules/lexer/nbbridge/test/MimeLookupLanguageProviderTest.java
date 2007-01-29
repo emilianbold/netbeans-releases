@@ -75,7 +75,8 @@ public class MimeLookupLanguageProviderTest extends NbTestCase{
         assertEquals("Wrong language", "text/x-simple-plain", lang.mimeType());
         
         for(int i = 0; i < seq.tokenCount(); i++) {
-            seq.move(i);
+            seq.moveIndex(i);
+            assertTrue(seq.moveNext());
             Token token = seq.token();
             
             if (token.id() == SimplePlainTokenId.WORD) {
@@ -86,11 +87,13 @@ public class MimeLookupLanguageProviderTest extends NbTestCase{
                 assertNotNull("Can't find language of the embedded sequence", embeddedLang);
                 assertEquals("Wrong language of the embedded sequence", "text/x-simple-char", embeddedLang.mimeType());
                 
-                assertTrue("Embedded sequence has no tokens (moveFirst)", embeddedSeq.moveFirst());
-                assertEquals("Wrong startSkipLenght", 1, embeddedSeq.offset() - seq.offset());
+                embeddedSeq.moveStart();
+                assertTrue("Embedded sequence has no tokens (moveFirst)", embeddedSeq.moveNext());
+                assertEquals("Wrong startSkipLength", 1, embeddedSeq.offset() - seq.offset());
                 
-                assertTrue("Embedded sequence has no tokens (moveLast)", embeddedSeq.moveLast());
-                assertEquals("Wrong endSkipLenght", 2, 
+                embeddedSeq.moveEnd();
+                assertTrue("Embedded sequence has no tokens (moveLast)", embeddedSeq.movePrevious());
+                assertEquals("Wrong endSkipLength", 2, 
                     (seq.offset() + seq.token().length()) - (embeddedSeq.offset() + embeddedSeq.token().length()));
             }
         }

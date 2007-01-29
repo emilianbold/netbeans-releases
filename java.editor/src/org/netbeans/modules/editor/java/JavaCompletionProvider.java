@@ -1116,9 +1116,8 @@ public class JavaCompletionProvider implements CompletionProvider {
             int openLtNum = 0;
             JavaTokenId lastNonWhitespaceTokenId = null;
             TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
-            if (ts.move(expEndPos) > 0)
-                ts.moveNext();
-            do {
+            ts.move(expEndPos);
+            while (ts.moveNext()) {
                 if (ts.offset() >= offset) {
                     break;
                 }
@@ -1151,7 +1150,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     default:
                         lastNonWhitespaceTokenId = ts.token().id();
                 }
-            } while (ts.moveNext());
+            }
             if (!afterDot) {
                 if (expEndPos <= offset)
                     insideExpression(env, new TreePath(path, fa.getExpression()));
@@ -3426,8 +3425,10 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private TokenSequence<JavaTokenId> findLastNonWhitespaceToken(Env env, int startPos, int endPos) {
             TokenSequence<JavaTokenId> ts = env.getController().getTokenHierarchy().tokenSequence(JavaTokenId.language());
-            if (ts.move(endPos) == 0)
-                ts.movePrevious();
+            if (ts.move(endPos) == 0) // When right at the token end
+                ts.movePrevious(); // move to previous token
+            else
+                ts.moveNext(); // otherwise move to the token that "contains" the offset
             do {
                 int offset = ts.offset();
                 if (offset < startPos)
@@ -3564,8 +3565,10 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (upToOffset) {
                 TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
                 if (ts.moveNext()) { //check for empty file
-                    if (ts.move(offset) == 0)
-                        ts.movePrevious();
+                    if (ts.move(offset) == 0) // When right at the token end
+                        ts.movePrevious(); // Move to previous token
+                    else
+                        ts.moveNext(); // otherwise move to the token that "contains" the offset
                     if (ts.offset() < offset && (ts.token().id() == JavaTokenId.IDENTIFIER || "keyword".equals(ts.token().id().primaryCategory()))) { //TODO: Use isKeyword(...) when available
                         prefix = ts.token().toString().substring(0, offset - ts.offset());
                         offset = ts.offset();

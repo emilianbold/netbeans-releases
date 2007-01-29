@@ -99,7 +99,8 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             
             TokenHierarchy tokenHierarchy = TokenHierarchy.get(bdoc);
             TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
-            if(tokenSequence.move(offset) == Integer.MAX_VALUE) {
+            tokenSequence.move(offset);
+            if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
                 return false; //no token found
             }
             Token token = tokenSequence.token();
@@ -148,10 +149,12 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             
             // is it a bean in EL?
             tokenSequence.move(offset); //reset tokenSequence
+            tokenSequence.moveNext();
             TokenSequence elTokenSequence = tokenSequence.embedded(ELTokenId.language());
             if (elTokenSequence != null){
                 ELExpression exp = new ELExpression((JspSyntaxSupport)bdoc.getSyntaxSupport());
                 elTokenSequence.move(offset);
+                elTokenSequence.moveNext();
                 
                 if (elTokenSequence.token().id() == ELTokenId.DOT){
                     return false;
@@ -203,7 +206,8 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
         
         TokenHierarchy tokenHierarchy = TokenHierarchy.get(bdoc);
         TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
-        if(tokenSequence.move(offset) == Integer.MAX_VALUE) {
+        tokenSequence.move(offset);
+        if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
             return null; //no token found
         }
         Token token = tokenSequence.token();
@@ -218,6 +222,7 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             if (elTokenSequence != null){
                 ELExpression exp = new ELExpression((JspSyntaxSupport)bdoc.getSyntaxSupport());
                 elTokenSequence.move(offset);
+                elTokenSequence.moveNext();
                 int elEnd = elTokenSequence.offset() + elTokenSequence.token().length();
                 int res = exp.parse(elEnd);
                 
@@ -261,7 +266,8 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             
             TokenHierarchy tokenHierarchy = TokenHierarchy.get(bdoc);
             TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
-            if(tokenSequence.move(offset) == Integer.MAX_VALUE) {
+            tokenSequence.move(offset);
+            if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
                 return; //no token found
             }
             Token token = tokenSequence.token();
@@ -272,6 +278,7 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
                 ELExpression exp = new ELExpression((JspSyntaxSupport)bdoc.getSyntaxSupport());
                 
                 elTokenSequence.move(offset);
+                elTokenSequence.moveNext();
                 int elEnd = elTokenSequence.offset() + elTokenSequence.token().length();
                 int res = exp.parse(elEnd);
                 if (res == ELExpression.EL_START ){
@@ -306,6 +313,7 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
             }
             
             tokenSequence.move(offset);//reset tokenSequence
+            tokenSequence.moveNext();
             FileObject fObj = getTagFile(tokenSequence, jspSup);
             if ( fObj != null)
                 openInEditor(fObj);
@@ -430,7 +438,8 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
         TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
         
         while (index > 0){
-            if(tokenSequence.move(index) == Integer.MAX_VALUE) {
+            tokenSequence.move(index);
+            if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
                 return; //no token found
             }
             Token token = tokenSequence.token();

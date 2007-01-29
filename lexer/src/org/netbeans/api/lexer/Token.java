@@ -149,6 +149,9 @@ public abstract class Token<T extends TokenId> {
      * Get the offset at which this token is present in the input
      * or <code>-1</code> if this token is flyweight (and therefore does not store offset).
      * <br/>
+     * <b>Note:</b> Use of {@link TokenSequence#offset()} is usually preferred over
+     * this method.
+     * <br/>
      * For flyweight tokens the real offset of the token may only be determined
      * by doing {@link TokenSequence#offset()} when positioned on the particular
      * flyweight token.

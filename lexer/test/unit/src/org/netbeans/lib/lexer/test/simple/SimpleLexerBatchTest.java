@@ -81,7 +81,8 @@ public class SimpleLexerBatchTest extends TestCase {
         assertFalse(ts.moveNext());
 
         // Go back to block comment
-        assertTrue(ts.moveIndex(commentIndex));
+        assertEquals(0, ts.moveIndex(commentIndex));
+        assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.BLOCK_COMMENT, commentText, commentTextStartOffset);
 
         // Test embedded token sequence

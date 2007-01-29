@@ -70,6 +70,7 @@ public final class LexerTestUtilities {
     public static void assertTokenEquals(String message, TokenSequence<? extends TokenId> ts, TokenId id, String text, int offset) {
         message = messagePrefix(message);
         Token<? extends TokenId> t = ts.token();
+        TestCase.assertNotNull("Token is null", t);
         TokenId tId = t.id();
         TestCase.assertEquals(message + "Invalid token.id()", id, tId);
         CharSequence tText = t.text();
@@ -312,17 +313,21 @@ public final class LexerTestUtilities {
         }
         TokenHierarchy<?> thBatch = TokenHierarchy.create(docText, language);
         boolean success = false;
+        TokenSequence<?> batchTS = thBatch.tokenSequence();
         try {
             // Compare lookaheads and states as well
-            assertTokenSequencesEqual(thBatch.tokenSequence(), thBatch,
+            assertTokenSequencesEqual(batchTS, thBatch,
                     thInc.tokenSequence(), thInc, true);
             success = true;
         } finally {
             if (!success) {
+                // Go forward two tokens to have an extra tokens context
+                batchTS.moveNext();
+                batchTS.moveNext();
                 System.err.println("BATCH token sequence dump:\n" + thBatch.tokenSequence());
                 TokenHierarchy<?> lastHi = (TokenHierarchy<?>)doc.getProperty(LAST_TOKEN_HIERARCHY);
                 if (lastHi != null) {
-                    System.err.println("PREVIOUS token sequence dump:\n" + lastHi.tokenSequence());
+                    System.err.println("PREVIOUS batch token sequence dump:\n" + lastHi.tokenSequence());
                 }
             }
         }

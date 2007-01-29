@@ -316,6 +316,7 @@ public class CasualDiff {
         // skip the section when printing anonymous class
         if (anonClass == false) {
         tokenSequence.move(oldT.pos);
+        tokenSequence.moveNext(); // First skip as move() does not position to token directly
         tokenSequence.moveNext();
         insertHint = TokenUtilities.moveNext(tokenSequence, tokenSequence.offset());
         localPointer = diffModifiers(oldT.mods, newT.mods, oldT, localPointer);
@@ -508,7 +509,6 @@ public class CasualDiff {
             // there was not any parameter in original tree.
             int startOffset = oldT.restype != null ? oldT.restype.getStartPosition() : oldT.getStartPosition();
             
-            tokenSequence.move(startOffset);
             TokenUtilities.moveFwdToToken(tokenSequence, startOffset, JavaTokenId.RPAREN);
             posHint = tokenSequence.offset();
         } else {
@@ -533,6 +533,7 @@ public class CasualDiff {
             // now check, that there is a whitespace. It is not mandatory, we
             // have to ensure. If whitespace is not present, take body beginning
             tokenSequence.move(posHint);
+            tokenSequence.moveNext();
             if (tokenSequence.token().id() != JavaTokenId.WHITESPACE) {
                 ++posHint;
             }
@@ -1488,8 +1489,9 @@ public class CasualDiff {
             ResultItem<JCTree> item = result[j];
             switch (item.operation) {
                 case MODIFY: {
-                // perhaps I shouldn't support this!
-                    if (tokenSequence.moveIndex(matrix[i][4])) {
+                    // perhaps I shouldn't support this!
+                    tokenSequence.moveIndex(matrix[i][4]);
+                    if (tokenSequence.moveNext()) {
                         testPos = tokenSequence.offset();
                         if (JavaTokenId.COMMA == tokenSequence.token().id())
                             testPos += JavaTokenId.COMMA.fixedText().length();
@@ -1535,7 +1537,8 @@ public class CasualDiff {
                     assert startOffset != -1 && endOffset != -1 : "Invalid offset!";
                     //printer.print(origText.substring(lastOldPos, startOffset));
                     //append(Diff.delete(startOffset, endOffset));
-                    if (tokenSequence.moveIndex(matrix[i][4])) {
+                    tokenSequence.moveIndex(matrix[i][4]);
+                    if (tokenSequence.moveNext()) {
                         testPos = tokenSequence.offset();
                         if (JavaTokenId.COMMA == tokenSequence.token().id())
                             testPos += JavaTokenId.COMMA.fixedText().length();
@@ -1549,7 +1552,8 @@ public class CasualDiff {
                     break;
                 }
                 case NOCHANGE: {
-                    if (tokenSequence.moveIndex(matrix[i][4])) {
+                    tokenSequence.moveIndex(matrix[i][4]);
+                    if (tokenSequence.moveNext()) {
                         testPos = tokenSequence.offset();
                         if (JavaTokenId.COMMA == tokenSequence.token().id())
                             testPos += JavaTokenId.COMMA.fixedText().length();
@@ -1568,6 +1572,7 @@ public class CasualDiff {
             return -1;
         }
         tokenSequence.moveIndex(tokenIndex);
+        tokenSequence.moveNext();
         return tokenSequence.offset();
     }
     

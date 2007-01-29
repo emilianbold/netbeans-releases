@@ -70,7 +70,8 @@ public class JavaJSPCompletionProvider implements CompletionProvider {
         TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
         TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
         
-        if(tokenSequence.move(offset) != Integer.MAX_VALUE) {
+        tokenSequence.move(offset);
+        if (tokenSequence.moveNext() || tokenSequence.movePrevious()) {
             Object tokenID = tokenSequence.token().id();
             if (tokenID == JspTokenId.SCRIPTLET){
                 return true;

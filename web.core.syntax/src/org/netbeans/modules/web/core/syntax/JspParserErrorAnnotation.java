@@ -108,7 +108,8 @@ public class JspParserErrorAnnotation extends ErrorAnnotation.LineSetAnnotation 
         }
         TokenHierarchy tokenHierarchy = TokenHierarchy.get(document);
         TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
-        if(tokenSequence.move(offset - 1) == Integer.MAX_VALUE) {
+        tokenSequence.move(offset - 1);
+        if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
             //no token
             textOnLine(docline);
             return ;

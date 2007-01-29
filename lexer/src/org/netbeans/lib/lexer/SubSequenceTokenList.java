@@ -92,7 +92,7 @@ public final class SubSequenceTokenList<T extends TokenId> implements TokenList<
         if (limitStartOffset > 0) {
             int diff = move(limitStartOffset);
             if (diff != Integer.MAX_VALUE) { // some tokens exist
-                if (diff >= lastToken.length()) {
+                if (diff >= lastToken.length()) { // lastToken initialized in move()
                     lastTokenIndex++;
                     Object tokenOrEmbeddingContainer = tokenList.tokenOrEmbeddingContainer(lastTokenIndex);
                     if (tokenOrEmbeddingContainer != null &&

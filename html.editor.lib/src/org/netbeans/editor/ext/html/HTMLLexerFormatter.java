@@ -51,6 +51,7 @@ public class HTMLLexerFormatter extends TagBasedLexerFormatter {
 	if (position >= 0) {
             TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
             tokenSequence.move(position);
+            tokenSequence.moveNext();
 	    Token token = tokenSequence.token();
                     
 	    if (token.id() == HTMLTokenId.TAG_CLOSE_SYMBOL &&
@@ -72,6 +73,7 @@ public class HTMLLexerFormatter extends TagBasedLexerFormatter {
     @Override protected int getTagEndOffset(TokenHierarchy tokenHierarchy, int tagStartOffset){
         TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
         tokenSequence.move(tagStartOffset);
+        tokenSequence.moveNext();
         boolean thereAreMoreTokens = true;
         
         while (thereAreMoreTokens && tokenSequence.token().id() != HTMLTokenId.TAG_CLOSE_SYMBOL){

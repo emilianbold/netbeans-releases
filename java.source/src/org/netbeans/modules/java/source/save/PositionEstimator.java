@@ -139,6 +139,7 @@ abstract class PositionEstimator {
                 int treeEnd = (int) positions.getEndPosition(compilationUnit, item);
                 
                 seq.move(treeStart);
+                seq.moveNext();
                 int startIndex = seq.index();
                 
                 // go back to opening/closing curly, semicolon or other
@@ -147,9 +148,11 @@ abstract class PositionEstimator {
                 seq.moveNext();
                 int start = seq.index();
                 seq.move(treeEnd);
+                // seq.index() set (no seq.moveNext() necessary)
                 matrix[i++] = new int[] { start, startIndex, seq.index() };
                 if (i == size) {
                     seq.move(treeEnd);
+                    // seq.index() set (no seq.moveNext() necessary)
                     matrix[i][0] = seq.index();
                 }
             }
@@ -163,6 +166,7 @@ abstract class PositionEstimator {
             // to decide.
             if (tokenIndex == -1) return -1;
             seq.moveIndex(tokenIndex);
+            seq.moveNext();
             return index == 0 ? goAfterLastNewLine(seq) : goAfterFirstNewLine(seq);
         }
 
@@ -209,9 +213,15 @@ abstract class PositionEstimator {
         @Override()
         public int[] getPositions(int index) {
             int tokenIndex = matrix[index][0];
-            seq.moveIndex(tokenIndex);
+            if (tokenIndex != -1) {
+                seq.moveIndex(tokenIndex);
+                seq.moveNext();
+            }
             int begin = goAfterLastNewLine(seq);
-            seq.moveIndex(matrix[index][2]);
+            if (matrix[index][2] != -1) {
+                seq.moveIndex(matrix[index][2]);
+                seq.moveNext();
+            }
             int end = goAfterFirstNewLine(seq);
             return new int [] { begin, end };
         }
@@ -262,6 +272,7 @@ abstract class PositionEstimator {
                 if (treeEnd < 0) continue;
                 
                 seq.move(treeStart);
+                seq.moveNext();
                 int startIndex = seq.index();
                 // go back to opening/closing curly, semicolon or other
                 // token java-compiler important token.
@@ -285,6 +296,7 @@ abstract class PositionEstimator {
             // to decide.
             if (tokenIndex == -1) return -1;
             seq.moveIndex(tokenIndex);
+            seq.moveNext();
             return goAfterFirstNewLine(seq);
         }
         
@@ -296,7 +308,10 @@ abstract class PositionEstimator {
         
         public int[] getPositions(int index) {
             int begin = getInsertPos(index);
-            seq.moveIndex(matrix[index][4]);
+            if (matrix[index][4] != -1) {
+                seq.moveIndex(matrix[index][4]);
+                seq.moveNext();
+            }
             int end = goAfterFirstNewLine(seq);
             return new int [] { begin, end };
         }
@@ -360,6 +375,7 @@ abstract class PositionEstimator {
             // to decide.
             if (tokenIndex == -1) return -1;
             seq.moveIndex(tokenIndex);
+            seq.moveNext();
             int off = goAfterFirstNewLine(seq);
             return off;
         }
@@ -372,7 +388,10 @@ abstract class PositionEstimator {
         
         public int[] getPositions(int index) {
             int begin = getInsertPos(index);
-            seq.moveIndex(matrix[index][4]);
+            if (matrix[index][4] != -1) {
+                seq.moveIndex(matrix[index][4]);
+                seq.moveNext();
+            }
             int end = goAfterFirstNewLine(seq);
             return new int [] { begin, end };
         }
@@ -497,16 +516,19 @@ abstract class PositionEstimator {
     // todo (#pf): remove - used for debugging reasons, doesn't do good job
     public void tablePrint(int[][] matrix, TokenSequence seq) {
         for (int i = 0; i < matrix.length; i++) {
-            for (int j = 0; j < 5; j++) {
+            for (int j = 0; j < matrix[i].length; j++) {
                 int item = matrix[i][j];
                 String s = "(nothing)";
                 if (item > -1) {
                     seq.moveIndex(item);
+                    seq.moveNext();
                     s = "'" + seq.token().text();
                 }
                 s += "'                                           ";
-                System.err.print(s.substring(0, 25));
+    //            System.err.print(s.substring(0, 25));
+                System.err.print(item + "\t");
             }
+            System.err.println("");
         }
     }
 

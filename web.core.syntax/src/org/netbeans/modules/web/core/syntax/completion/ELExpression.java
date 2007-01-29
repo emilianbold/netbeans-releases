@@ -110,6 +110,7 @@ public class ELExpression {
             
             TokenSequence jspTokenSequence = hi.tokenSequence();
             jspTokenSequence.move(offset);
+            jspTokenSequence.moveNext();
             Token jspToken = jspTokenSequence.token();
             isDefferedExecution = jspToken.text().toString().startsWith("#{"); //NOI18N
             
@@ -119,7 +120,8 @@ public class ELExpression {
                 }
             }
             
-            if(ts.move(offset) == Integer.MAX_VALUE) {
+            ts.move(offset);
+            if (!ts.moveNext() && !ts.movePrevious()) {
                 return NOT_EL;
             }
             

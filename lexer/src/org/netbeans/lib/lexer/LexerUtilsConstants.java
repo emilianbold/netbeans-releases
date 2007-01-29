@@ -237,6 +237,16 @@ public final class LexerUtilsConstants {
             sb.append(": ");
             AbstractToken token = token(tokenOrEmbeddingContainer);
             sb.append(token.dumpInfo(tokenHierarchy));
+            int la = tokenList.lookahead(i);
+            if (la != 0) {
+                sb.append(", la=");
+                sb.append(la);
+            }
+            Object state= tokenList.state(i);
+            if (state != null) {
+                sb.append(", s=");
+                sb.append(state);
+            }
             sb.append('\n');
         }
         return sb;

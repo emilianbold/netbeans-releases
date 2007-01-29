@@ -300,20 +300,18 @@ skipped at the begining an end of the branch token).
         TokenHierarchy hi = TokenHierarchy.get(document);
         TokenSequence ts = hi.tokenSequence();
         // If necessary move ts to the requested offset
-        int diff = ts.move(offset);
-        if (diff != Integer.MAX_VALUE)) { // Some tokens exist
-            do {
-                Token t = ts.token();
-                if (t.id() == ...) { ... }
-                if (TokenUtilities.equals(t.text(), "mytext")) { ... }
-                if (ts.offset() == ...) { ... }
+        ts.move(offset);
+        while (ts.moveNext()) {
+            Token t = ts.token();
+            if (t.id() == ...) { ... }
+            if (TokenUtilities.equals(t.text(), "mytext")) { ... }
+            if (ts.offset() == ...) { ... }
 
-                // Possibly retrieve embedded token sequence
-                TokenSequence embedded = ts.embedded();
-                if (embedded != null) { // Token has a valid language embedding
-                    ...
-                }
-            } while (ts.moveNext());
+            // Possibly retrieve embedded token sequence
+            TokenSequence embedded = ts.embedded();
+            if (embedded != null) { // Token has a valid language embedding
+                ...
+            }
         }
     } finally {
         document.readUnlock();

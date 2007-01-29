@@ -76,7 +76,8 @@ public class TokenHierarchySnapshotTest extends TestCase {
 
         // Check that all the non-fly tokens are mutable
         ts = snapshot1.tokenSequence();
-        assertTrue(ts.moveIndex(0));
+        assertEquals(0, ts.moveIndex(0));
+        assertTrue(ts.moveNext());
         
         LexerTestUtilities.assertTokenSequencesEqual(hi1.tokenSequence(), hi1,
                 snapshot1.tokenSequence(), snapshot1, false);
@@ -84,7 +85,8 @@ public class TokenHierarchySnapshotTest extends TestCase {
         doc.insertString(4, "+", null);
 
         // Check that the snapshot token sequence can be further operated.
-        assertTrue(ts.moveIndex(0));
+        assertEquals(0, ts.moveIndex(0));
+        assertTrue(ts.moveNext());
         assertNotNull(ts.token());
 
         // Check that the tokens except '+' are live
@@ -101,7 +103,8 @@ public class TokenHierarchySnapshotTest extends TestCase {
 
         // Check that all the non-fly tokens are mutable
         ts = snapshot2.tokenSequence();
-        assertTrue(ts.moveIndex(0));
+        assertEquals(0, ts.moveIndex(0));
+        assertTrue(ts.moveNext());
 
         LexerTestUtilities.assertTokenSequencesEqual(hi2.tokenSequence(), hi2,
                 snapshot2.tokenSequence(), snapshot2, false);

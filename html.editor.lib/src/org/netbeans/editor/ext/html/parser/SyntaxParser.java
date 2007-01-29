@@ -70,17 +70,17 @@ public final class SyntaxParser {
                 return null;
             }
             
-            int diff = ts.move(offset);
-            if(diff == Integer.MAX_VALUE) return null; //no token found
+            ts.move(offset);
+            if(!ts.moveNext() && !ts.movePrevious()) return null; //no token found
             
             Token item = ts.token();
             
-            int beginning = item.offset(hi);
+            int beginning = ts.offset();
             
             if( item.id() == HTMLTokenId.CHARACTER ) {
                 do {
                     item = ts.token();
-                    beginning = item.offset(hi);
+                    beginning = ts.offset();
                 } while(item.id() == HTMLTokenId.CHARACTER && ts.movePrevious());
                 
                 // now item is either HTMLSyntax.VALUE or we're in text, or at BOF
@@ -97,7 +97,7 @@ public final class SyntaxParser {
             
             if( item.id() == HTMLTokenId.TEXT ) {
                 do {
-                    beginning = ts.token().offset(hi);
+                    beginning = ts.offset();
                 } while ( ts.movePrevious() && (ts.token().id() == HTMLTokenId.TEXT || ts.token().id() == HTMLTokenId.CHARACTER));
                 
                 return getNextElement(  beginning ); // from start of Commment
@@ -158,9 +158,8 @@ public final class SyntaxParser {
             return null;
         }
         
-        int diff = ts.move(offset);
-        
-        if (diff >= ts.token().length() || diff == java.lang.Integer.MAX_VALUE)
+        ts.move(offset);
+        if (!ts.moveNext())
             return null;
         org.netbeans.api.lexer.Token item = ts.token();
         int lastOffset = getTokenEnd(hi, item);
@@ -393,8 +392,8 @@ public final class SyntaxParser {
         if(ts == null) {
             //HTML language is not top level one
             ts = hi.tokenSequence();
-            int diff = ts.move(offset);
-            if(diff == Integer.MAX_VALUE) {
+            ts.move(offset);
+            if(!ts.moveNext() && !ts.movePrevious()) {
                 return null; //no token found
             } else {
                 ts = ts.embedded(HTMLTokenId.language());

@@ -98,7 +98,7 @@ public class SimplifiedJSPServlet {
         TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
         TokenSequence tokenSequence = tokenHierarchy.tokenSequence(); //get top level token sequence
         
-        if(!tokenSequence.moveFirst()) {
+        if(!tokenSequence.moveNext()) {
             return ; //no tokens in token sequence
         }
         

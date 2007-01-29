@@ -106,11 +106,11 @@ public class HTMLCompletionQuery implements CompletionQuery {
             if(ts == null) {
                 //HTML language is not top level one
                 ts = hi.tokenSequence();
-                int diff = ts.move(offset);
-                if(diff == Integer.MAX_VALUE) {
-                    return null; //no token found
-                } else {
+                ts.move(offset);
+                if (ts.moveNext() || ts.movePrevious()) {
                     ts = ts.embedded(HTMLTokenId.language());
+                } else { // no tokens
+                    return null;
                 }
             }
             
@@ -120,14 +120,14 @@ public class HTMLCompletionQuery implements CompletionQuery {
             }
             
             int diff = ts.move(offset);
-            if(diff == Integer.MAX_VALUE) {
+            if(!ts.moveNext() && !ts.movePrevious()) {
                 return null; //no token found
             }
             
             Token item = ts.token();
             
             // are we inside token or between tokens
-            boolean inside = item.offset(hi) < offset;
+            boolean inside = ts.offset() < offset;
             
             if(!inside) { //use the previous token
                 if(ts.movePrevious()) {
@@ -192,6 +192,7 @@ public class HTMLCompletionQuery implements CompletionQuery {
                         //there are some attributes or an end of the tag
                         
                         ts.move(offset);
+                        ts.moveNext();
                         Token t = ts.token();
                         
                         //test if next token is a whitespace and the next a tag token or an attribute token
@@ -324,6 +325,7 @@ public class HTMLCompletionQuery implements CompletionQuery {
                     if( tag == null ) return null; // unknown tag
                     
                     ts.move(item.offset(hi));
+                    ts.moveNext();
                     Token argItem = ts.token();
                     while(argItem.id() != HTMLTokenId.ARGUMENT && ts.movePrevious()) {
                         argItem = ts.token();

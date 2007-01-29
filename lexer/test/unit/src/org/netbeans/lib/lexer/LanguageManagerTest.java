@@ -130,7 +130,8 @@ public class LanguageManagerTest extends NbTestCase {
     public void testCachingE() {
         TokenHierarchy th = TokenHierarchy.create("abc", SimplePlainTokenId.language());
         TokenSequence tokens = th.tokenSequence();
-        tokens.moveFirst();
+        tokens.moveStart();
+        assertEquals(true, tokens.moveNext());
         
         TokenSequence embeddedA = tokens.embedded();
         assertNotNull("There should be an embedded language", embeddedA);
@@ -144,7 +145,8 @@ public class LanguageManagerTest extends NbTestCase {
     public void testGCedE() {
         TokenHierarchy th = TokenHierarchy.create("abc", SimplePlainTokenId.language());
         TokenSequence tokens = th.tokenSequence();
-        tokens.moveFirst();
+        tokens.moveStart();
+        assertEquals(true, tokens.moveNext());
         
         TokenSequence embedded = tokens.embedded();
         assertNotNull("There should be an embedded language", embedded);
@@ -164,7 +166,8 @@ public class LanguageManagerTest extends NbTestCase {
     public void testCacheRefreshedE() {
         TokenHierarchy th = TokenHierarchy.create("abc", SimplePlainTokenId.language());
         TokenSequence tokens = th.tokenSequence();
-        tokens.moveFirst();
+        tokens.moveStart();
+        assertEquals(true, tokens.moveNext());
         
         TokenSequence embeddedA = tokens.embedded();
         assertNotNull("There should be an embedded language", embeddedA);

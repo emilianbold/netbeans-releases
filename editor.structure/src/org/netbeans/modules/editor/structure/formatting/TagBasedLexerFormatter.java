@@ -86,16 +86,17 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter  {
          * e.g. <tag   |attr=
          * 
          */
-        do {
-            tokenSequence.moveNext();
+        while (tokenSequence.moveNext()) {
             token = tokenSequence.token();
-            tokenOffset = token.offset(tokenHierarchy);
-        } while (token != null && isWSTag(token) 
-                && tagStartLine == Utilities.getLineOffset(doc, tokenOffset));
-        
-        if (!isWSTag(token) && tagStartLine == Utilities.getLineOffset(doc, tokenOffset)){
-            return tokenOffset - Utilities.getRowIndent(doc, tokenOffset) - Utilities.getRowStart(doc, tokenOffset);
+            tokenOffset = tokenSequence.offset();
+            if (!isWSTag(token) || tagStartLine != Utilities.getLineOffset(doc, tokenOffset)) {
+                if (!isWSTag(token) && tagStartLine == Utilities.getLineOffset(doc, tokenOffset)){
+                    return tokenOffset - Utilities.getRowIndent(doc, tokenOffset) - Utilities.getRowStart(doc, tokenOffset);
+                }
+                break;
+            }
         }
+        
         
         return getShiftWidth(); // default;
     }
@@ -122,7 +123,9 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter  {
             int indentsWithinTags[] = new int[lastLine + 1];
             
             TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
-            boolean thereAreMoreTokens = tokenSequence.moveFirst();
+            tokenSequence.moveStart();
+            boolean thereAreMoreTokens = tokenSequence.moveNext();
+            
             
             if (tokenSequence != null){
                 // calc line indents - pass 1
@@ -435,14 +438,14 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter  {
         tokenSequence.move(offset);
         int currentOffset;
         
-        do{
+        while (tokenSequence.moveNext()) {
             currentOffset = tokenSequence.offset();
             
             if (isClosingTag(tokenHierarchy, currentOffset)){
                 return currentOffset;
             }
             
-        } while (tokenSequence.moveNext());
+        }
 
         return -1;
     }
@@ -459,8 +462,10 @@ public abstract class TagBasedLexerFormatter extends ExtFormatter  {
     protected Token getTokenAtOffset(TokenHierarchy tokenHierarchy, int tagTokenOffset){
         TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
         
-        if (tokenSequence != null && tokenSequence.move(tagTokenOffset) != Integer.MAX_VALUE){
-            return tokenSequence.token();
+        if (tokenSequence != null) {
+            tokenSequence.move(tagTokenOffset);
+            if (tokenSequence.moveNext())
+                return tokenSequence.token();
         }
         
         return null;

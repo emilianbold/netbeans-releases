@@ -158,7 +158,8 @@ public final class TreeUtilities {
             return path;
         
         TokenSequence<JavaTokenId> tokenList = tokensFor(path.getLeaf(), sourcePositions);
-        if (tokenList.moveLast() && tokenList.offset() < pos) {
+        tokenList.moveEnd();
+        if (tokenList.movePrevious() && tokenList.offset() < pos) {
             switch (tokenList.token().id()) {
                 case GTGTGT:
                 case GTGT:

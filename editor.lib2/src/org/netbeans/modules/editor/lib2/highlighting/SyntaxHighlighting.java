@@ -36,7 +36,6 @@ import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.api.lexer.TokenChange;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
@@ -102,57 +101,14 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
         synchronized (this) {
             version++;
         }
-        
-        TokenChange<? extends TokenId> tc = evt.tokenChange();
-        int addedLenght = 0;
-        int removedLength = 0;
-        
-        if (tc.addedTokenCount() > 0) {
-            addedLenght = getTokensLength(tc.currentTokenSequence(), tc.index(), tc.addedTokenCount());
-        }
-        
-        if (tc.removedTokenCount() > 0) {
-            removedLength = getTokensLength(tc.removedTokenSequence(), 0, tc.removedTokenCount());
-        }
 
-        int changeStart = tc.offset();
-        int changeEnd;
-        
-        if (addedLenght == 0 && removedLength == 0) {
-            // The real length couldn't be computed for some reason
-            changeEnd = Integer.MAX_VALUE;
-        } else {
-            changeEnd = changeStart + Math.max(addedLenght, removedLength);
-        }
-        
-        fireHighlightsChange(changeStart, changeEnd);
+        fireHighlightsChange(evt.affectedStartOffset(), evt.affectedEndOffset());
     }
 
     // ----------------------------------------------------------------------
     //  Private implementation
     // ----------------------------------------------------------------------
 
-    private int getTokensLength(TokenSequence<? extends TokenId> seq, int startIdx, int tokenCount) {
-        assert startIdx >= 0 && startIdx < seq.tokenCount() : 
-            "Invalid startIdx: " + startIdx + ", sequence lenght: " + seq.tokenCount();
-        assert tokenCount > 0 && startIdx + tokenCount <= seq.tokenCount() : 
-            "Invalid tokenCount: " + tokenCount + ", startIdx: " + startIdx + 
-            ", sequence lenght: " + seq.tokenCount();
-            
-        int startOffset = -1;
-        int endOffset = -1;
-        
-        if (seq.moveIndex(startIdx)) {
-            startOffset = seq.offset();
-        }
-        
-        if (seq.moveIndex(startIdx + tokenCount - 1)) {
-            endOffset = seq.offset() + seq.token().length();
-        }
-
-        return startOffset == -1 || endOffset == -1 ? 0 : endOffset - startOffset;
-    }
-    
     private final class HSImpl implements HighlightsSequence {
         
         private static final int S_NORMAL = 1;
@@ -196,7 +152,8 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                     case S_EMBEDDED_HEAD:
                         // The current token contains embedded language and we have processed it's head
                         TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
-                        if (seq.moveFirst()) {
+                        seq.moveStart();
+                        if (seq.moveNext()) {
                             state = S_NORMAL;
                         } else {
                             throw new IllegalStateException("Invalid state");
@@ -221,7 +178,7 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                     // We have moved to the next normal token, so look what it is
                     TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
                     TokenSequence<? extends TokenId> embeddedSeq = seq.embedded();
-                    while (embeddedSeq != null && embeddedSeq.moveFirst()) {
+                    while (embeddedSeq != null && embeddedSeq.moveNext()) {
                         sequences.add(sequences.size(), embeddedSeq);
                         if (embeddedSeq.offset() > seq.offset()) {
                             state = S_EMBEDDED_HEAD;
@@ -258,7 +215,8 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                     }
                     case S_EMBEDDED_TAIL: {
                         TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
-                        if (seq.moveLast()) {
+                        seq.moveEnd();
+                        if (seq.movePrevious()) {
                             return seq.offset() + seq.token().length();
                         } else {
                             throw new IllegalStateException("Invalid state");
@@ -288,7 +246,8 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
                     }
                     case S_EMBEDDED_HEAD: {
                         TokenSequence<? extends TokenId> seq = sequences.get(sequences.size() - 1);
-                        if (seq.moveFirst()) {
+                        seq.moveStart();
+                        if (seq.moveNext()) {
                             return seq.offset();
                         } else {
                             TokenSequence<? extends TokenId> embeddingSeq = sequences.get(sequences.size() - 2);
@@ -447,7 +406,8 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
             } else {
                 if (sequences.size() > 1) {
                     TokenSequence<? extends TokenId> embeddingSeq = sequences.get(sequences.size() - 2);
-                    if (seq.moveLast()) {
+                    seq.moveEnd();
+                    if (seq.movePrevious()) {
                         if ((seq.offset() + seq.token().length()) < (embeddingSeq.offset() + embeddingSeq.token().length())) {
                             return S_EMBEDDED_TAIL;
                         } else {

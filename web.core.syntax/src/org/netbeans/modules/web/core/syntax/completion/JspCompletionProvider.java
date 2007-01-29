@@ -203,8 +203,8 @@ public class JspCompletionProvider implements CompletionProvider {
         TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
         TokenSequence tokenSequence = JspSyntaxSupport.tokenSequence(tokenHierarchy, HTMLTokenId.language(), adjustedOffset);
         if(tokenSequence != null) {
-            int diff = tokenSequence.move(adjustedOffset);
-            if(diff >= tokenSequence.token().length() || diff == Integer.MAX_VALUE) {
+            tokenSequence.move(adjustedOffset);
+            if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) {
                 return; //no token found
             }
             

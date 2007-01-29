@@ -165,8 +165,9 @@ public class HTMLCompletionProvider implements CompletionProvider {
             TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
             TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
             
-            int diff = tokenSequence.move(caretOffset == 0 ? 0 : caretOffset - 1);
-            if(diff >= tokenSequence.token().length() || diff == Integer.MAX_VALUE) return; //no token found
+            tokenSequence.move(caretOffset == 0 ? 0 : caretOffset - 1);
+            if (!tokenSequence.moveNext())
+                return;
             
             Token tokenItem = tokenSequence.token();
             if(tokenItem.id() == HTMLTokenId.TEXT && !tokenItem.text().toString().startsWith("<") && !tokenItem.text().toString().startsWith("&")) {

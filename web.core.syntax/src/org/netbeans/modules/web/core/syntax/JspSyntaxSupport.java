@@ -2024,7 +2024,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             //HTML language is not top level one
             ts = hi.tokenSequence();
             int diff = ts.move(offset);
-            if(diff == Integer.MAX_VALUE) {
+            if(!ts.moveNext() && !ts.movePrevious()) {
                 return null; //no token found
             } else {
                 ts = ts.embedded(language);

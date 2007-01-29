@@ -122,8 +122,8 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 return null;
             }
             
-            int diff = ts.move(offset);
-            if(diff == Integer.MAX_VALUE) {
+            ts.move(offset);
+            if(!ts.moveNext() && !ts.movePrevious()) {
                 return null; //no token found
             }
             
@@ -131,7 +131,8 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             
             // if the carret is after HTML tag ( after char '>' ), ship inside the tag
             if (token.id() == HTMLTokenId.TAG_CLOSE_SYMBOL) {
-                if(ts.moveIndex(ts.index() - 2)) {
+                ts.moveIndex(ts.index() - 2);
+                if(ts.moveNext()) {
                     token = ts.token();
                 }
             }
@@ -192,6 +193,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                                     ts.movePrevious();
                                     start = ts.token().offset(hi);
                                     ts.moveIndex(ts.index() + 2);
+                                    ts.moveNext();
                                     Token tok = ts.token();
                                     end = tok.offset(hi)+ (tok.id() == HTMLTokenId.TAG_CLOSE_SYMBOL ? tok.text().length() : 0);
                                     return new int[] {start, end};
@@ -251,6 +253,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             }
             
             ts.move(offset); //reset the token sequence to the original position
+            ts.moveNext();
             token = ts.token();
             
             //match html comments
@@ -323,6 +326,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 } while(ts.moveNext());
             }finally{
                 ts.moveIndex(tsIndex); //backup the TokenSequence position
+                ts.moveNext();
             }
         } else {
             //ts is rewinded out of tokens
@@ -437,8 +441,8 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                         return COMPLETION_POST_REFRESH;
                     }
                     
-                    int diff = ts.move(dotPos-1);
-                    if(diff != Integer.MAX_VALUE) {
+                    ts.move(dotPos-1);
+                    if(ts.moveNext() || ts.movePrevious()) {
                         if(ts.token().id() == HTMLTokenId.WS) {
                             return COMPLETION_POPUP;
                         }
@@ -489,7 +493,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             //HTML language is not top level one
             ts = hi.tokenSequence();
             int diff = ts.move(offset);
-            if(diff == Integer.MAX_VALUE) {
+            if(!ts.moveNext() && !ts.movePrevious()) {
                 return null; //no token found
             } else {
                 ts = ts.embedded(HTMLTokenId.language());
