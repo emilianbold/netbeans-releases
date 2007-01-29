@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.Collection;
 import javax.swing.*;
 import javax.swing.ImageIcon;
 import javax.swing.border.EmptyBorder;
@@ -33,13 +34,16 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.*;
 import org.netbeans.modules.refactoring.api.*;
-import org.netbeans.modules.refactoring.spi.impl.ParametersPanel;
+import org.netbeans.modules.refactoring.api.impl.APIAccessor;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
+import org.netbeans.modules.refactoring.spi.ui.RefactoringCustomUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.LifecycleManager;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.util.NbBundle;
@@ -84,6 +88,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
     
     private transient JToggleButton logicalViewButton = null;
     private transient JToggleButton physicalViewButton = null;
+    private transient JToggleButton customViewButton = null;
     private transient ProgressListener progressListener;
 
     private transient JButton prevMatch = null;
@@ -252,6 +257,17 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         );
         physicalViewButton.addActionListener(getButtonListener());
 
+        
+        if (ui instanceof RefactoringCustomUI) {
+            customViewButton = new JToggleButton(((RefactoringCustomUI)ui).getCustomIcon());
+            customViewButton.setMaximumSize(dim);
+            customViewButton.setMinimumSize(dim);
+            customViewButton.setPreferredSize(dim);
+            customViewButton.setSelected(currentView==GRAPHICAL);
+            customViewButton.setToolTipText(((RefactoringCustomUI)ui).getCustomToolTip());
+            customViewButton.addActionListener(getButtonListener());
+        }
+        
         nextMatch = new JButton(
             new ImageIcon(Utilities.loadImage(
             "org/netbeans/modules/refactoring/api/resources/nextmatch.png")) // NOI18N
@@ -282,6 +298,9 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         toolBar.add(expandButton);
         toolBar.add(logicalViewButton);
         toolBar.add(physicalViewButton);
+        if (ui instanceof RefactoringCustomUI) {
+            toolBar.add(customViewButton);
+        }
         toolBar.add(prevMatch);
         toolBar.add(nextMatch);
         
@@ -322,6 +341,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
     
     private static final byte LOGICAL = 0;
     private static final byte PHYSICAL = 1;
+    private static final byte GRAPHICAL = 2;
     
     private byte currentView = PHYSICAL;
 
@@ -331,6 +351,12 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             return ;
         currentView = LOGICAL;
         physicalViewButton.setSelected(false);
+        if (customViewButton!=null) {
+            customViewButton.setSelected(false);
+            prevMatch.setEnabled(true);
+            nextMatch.setEnabled(true);
+            expandButton.setEnabled(true);
+        }
         refresh(false);
     }
     
@@ -340,8 +366,28 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             return ;
         currentView = PHYSICAL;
         logicalViewButton.setSelected(false);
+        if (customViewButton!=null) {
+            customViewButton.setSelected(false);
+            prevMatch.setEnabled(true);
+            nextMatch.setEnabled(true);
+            expandButton.setEnabled(true);
+        }
         refresh(false);
     }
+
+    void switchToCustomView() {
+        customViewButton.setSelected(true);
+        if (currentView == GRAPHICAL)
+            return ;
+        currentView = GRAPHICAL;
+        logicalViewButton.setSelected(false);
+        physicalViewButton.setSelected(false);
+        prevMatch.setEnabled(false);
+        nextMatch.setEnabled(false);
+        expandButton.setEnabled(false);
+        refresh(false);
+    }
+    
     private CheckNode createNode(TreeElement representedObject, HashMap nodes, CheckNode root) {
         //checkEventThread();
         boolean isLogical = currentView == LOGICAL;
@@ -520,11 +566,10 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             SwingUtilities.invokeLater(invalidate);
         }
     }
-    
     private void refresh(final boolean showParametersPanel) {
         checkEventThread();
-//[retouche]        if (!isQuery)
-//[retouche]            JavaMetamodel.getUndoManager().saveAll();
+        if (!isQuery)
+            LifecycleManager.getDefault().saveAll();
         
         if (showParametersPanel) {
             // create parameters panel for refactoring
@@ -548,133 +593,148 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         setToolTipText("<html>" + description + "</html>"); // NOI18N
         final Collection elements = session.getRefactoringElements();
         setName(ui.getName());
-        final ProgressHandle progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RefactoringPanel.class, isQuery ? "LBL_PreparingUsagesTree":"LBL_PreparingRefactoringTree"));
-       
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                HashSet editorSupports = new HashSet();
-                int errorsNum = 0;
-                if (!isQuery) {
-                    for (Iterator iter = elements.iterator(); iter.hasNext(); ) {
-                        RefactoringElement elem = (RefactoringElement) iter.next();
-                        if (elem.getStatus() == RefactoringElement.GUARDED || elem.getStatus() == RefactoringElement.READ_ONLY) {
-                            errorsNum++;
+        Component c=null;
+        if (ui instanceof RefactoringCustomUI) {
+            c = ((RefactoringCustomUI) ui).getCustomComponent(getImplCollection(elements));
+            this.left.remove(c);
+        }
+        if (currentView == GRAPHICAL) {
+            assert ui instanceof RefactoringCustomUI;
+            assert c != null;
+            RefactoringCustomUI cui = (RefactoringCustomUI) ui;
+            this.left.remove(scrollPane);
+            this.left.add(c, BorderLayout.CENTER);
+            tree=null;
+            this.repaint();
+        } else {
+            
+            final ProgressHandle progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RefactoringPanel.class, isQuery ? "LBL_PreparingUsagesTree":"LBL_PreparingRefactoringTree"));
+            
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    HashSet editorSupports = new HashSet();
+                    int errorsNum = 0;
+                    if (!isQuery) {
+                        for (Iterator iter = elements.iterator(); iter.hasNext(); ) {
+                            RefactoringElement elem = (RefactoringElement) iter.next();
+                            if (elem.getStatus() == RefactoringElement.GUARDED || elem.getStatus() == RefactoringElement.READ_ONLY) {
+                                errorsNum++;
+                            }
                         }
                     }
-                }
-                int occurencesNum = elements.size();
-                StringBuffer errorsDesc = new StringBuffer();
-                errorsDesc.append(" [" + occurencesNum); // NOI18N
-                errorsDesc.append(' ');
-                errorsDesc.append(occurencesNum == 1 ? 
-                    NbBundle.getMessage(RefactoringPanel.class, "LBL_Occurence") :
-                    NbBundle.getMessage(RefactoringPanel.class, "LBL_Occurences")
-                );
-                if (errorsNum > 0) {
-                    errorsDesc.append(',');
+                    int occurencesNum = elements.size();
+                    StringBuffer errorsDesc = new StringBuffer();
+                    errorsDesc.append(" [" + occurencesNum); // NOI18N
                     errorsDesc.append(' ');
-                    errorsDesc.append("<font color=#CC0000>" + errorsNum); // NOI18N
-                    errorsDesc.append(' ');
-                    errorsDesc.append(errorsNum == 1 ? 
-                        NbBundle.getMessage(RefactoringPanel.class, "LBL_Error") :
-                        NbBundle.getMessage(RefactoringPanel.class, "LBL_Errors")
-                    );
-                    errorsDesc.append("</font>"); // NOI18N
-                }
-                errorsDesc.append(']');
-                final CheckNode root = new CheckNode(null, description + errorsDesc.toString(), new ImageIcon(Utilities.loadImage("org/netbeans/modules/refactoring/api/resources/" + (isQuery ? "findusages.png" : "refactoring.gif"))));
-                HashMap nodes = new HashMap();
-                
-                final Cursor old = getCursor();
-                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-
-                progressHandle.start(elements.size()/10);
-                int i=0;
-                try {
-//[retouche]                    JavaModel.getJavaRepository().beginTrans(false);
+                    errorsDesc.append(occurencesNum == 1 ?
+                        NbBundle.getMessage(RefactoringPanel.class, "LBL_Occurence") :
+                        NbBundle.getMessage(RefactoringPanel.class, "LBL_Occurences")
+                        );
+                    if (errorsNum > 0) {
+                        errorsDesc.append(',');
+                        errorsDesc.append(' ');
+                        errorsDesc.append("<font color=#CC0000>" + errorsNum); // NOI18N
+                        errorsDesc.append(' ');
+                        errorsDesc.append(errorsNum == 1 ?
+                            NbBundle.getMessage(RefactoringPanel.class, "LBL_Error") :
+                            NbBundle.getMessage(RefactoringPanel.class, "LBL_Errors")
+                            );
+                        errorsDesc.append("</font>"); // NOI18N
+                    }
+                    errorsDesc.append(']');
+                    final CheckNode root = new CheckNode(null, description + errorsDesc.toString(), new ImageIcon(Utilities.loadImage("org/netbeans/modules/refactoring/api/resources/" + (isQuery ? "findusages.png" : "refactoring.gif"))));
+                    HashMap nodes = new HashMap();
+                    
+                    final Cursor old = getCursor();
+                    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    
+                    progressHandle.start(elements.size()/10);
+                    int i=0;
                     try {
-                        // ui.getRefactoring().setClassPath();
-                        for (Iterator it = elements.iterator(); it.hasNext();i++) {
-                            RefactoringElement e = (RefactoringElement) it.next();
-                            createNode(TreeElementFactory.getTreeElement(e), nodes, root);
-                            PositionBounds pb = e.getPosition();
-                            if (pb != null) {
-                                CloneableEditorSupport ces = pb.getBegin().getCloneableEditorSupport();
-                                editorSupports.add(ces);
+                        //[retouche]                    JavaModel.getJavaRepository().beginTrans(false);
+                        try {
+                            // ui.getRefactoring().setClassPath();
+                            for (Iterator it = elements.iterator(); it.hasNext();i++) {
+                                RefactoringElement e = (RefactoringElement) it.next();
+                                createNode(TreeElementFactory.getTreeElement(e), nodes, root);
+                                PositionBounds pb = e.getPosition();
+                                if (pb != null) {
+                                    CloneableEditorSupport ces = pb.getBegin().getCloneableEditorSupport();
+                                    editorSupports.add(ces);
+                                }
+                                
+                                if (i % 10 == 0)
+                                    progressHandle.progress(i/10);
+                            }
+                        } finally {
+                            //[retouche]                        JavaModel.getJavaRepository().endTrans();
+                        }
+                        UndoManager.getDefault().watch(editorSupports, RefactoringPanel.this);
+                    } catch (RuntimeException t) {
+                        TreeElementFactory.cleanUp();
+                        throw t;
+                    } catch (Error e) {
+                        TreeElementFactory.cleanUp();
+                        throw e;
+                    } finally {
+                        progressHandle.finish();
+                        setCursor(old);
+                    }
+                    
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            if (tree == null) {
+                                // add panel with appropriate content
+                                tree = new JTree(root) {
+                                    public TreePath getNextMatch(String prefix, int startingRow, Position.Bias bias) {
+                                        try {
+                                            return super.getNextMatch(prefix,startingRow, bias);
+                                        } catch (NullPointerException e) {
+                                            //Work around for 43112
+                                        }
+                                        return null;
+                                    }
+                                };
+                                ToolTipManager.sharedInstance().registerComponent(tree);
+                                tree.setCellRenderer(new CheckRenderer(isQuery));
+                                String s = NbBundle.getMessage(RefactoringPanel.class, "ACSD_usagesTree"); // NOI18N
+                                tree.getAccessibleContext().setAccessibleDescription(s);
+                                tree.getAccessibleContext().setAccessibleName(s);
+                                CheckNodeListener l = new CheckNodeListener(isQuery);
+                                tree.addMouseListener(l);
+                                tree.addKeyListener(l);
+                                tree.setToggleClickCount(0);
+                                scrollPane = new JScrollPane(tree);
+                                RefactoringPanel.this.left.add(scrollPane, BorderLayout.CENTER);
+                                RefactoringPanel.this.validate();
+                            } else {
+                                tree.setModel(new DefaultTreeModel(root));
+                            }
+                            tree.setRowHeight((int) ((CheckRenderer) tree.getCellRenderer()).getPreferredSize().getHeight());
+                            
+                            if (showParametersPanel) {
+                                splitPane.setDividerLocation(0.3);
+                                if (elements.size() < MAX_ROWS) {
+                                    expandAll();
+                                    selectNextUsage();
+                                } else
+                                    expandButton.setSelected(false);
+                            } else {
+                                if (expandButton.isSelected()) {
+                                    expandAll();
+                                    selectNextUsage();
+                                } else
+                                    expandButton.setSelected(false);
                             }
                             
-                            if (i % 10 == 0)
-                                progressHandle.progress(i/10);
+                            tree.setSelectionRow(0);
+                            requestFocus();
+                            setRefactoringEnabled(true, true);
                         }
-                    } finally {
-//[retouche]                        JavaModel.getJavaRepository().endTrans();
-                    }
-                    UndoManager.getDefault().watch(editorSupports, RefactoringPanel.this);
-                } catch (RuntimeException t) {
-                    TreeElementFactory.cleanUp();
-                    throw t;
-                } catch (Error e) {
-                    TreeElementFactory.cleanUp();
-                    throw e;
-                } finally {
-                    progressHandle.finish();
-                    setCursor(old);
+                    });
                 }
-                
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        if (tree == null) {
-                            // add panel with appropriate content
-                            tree = new JTree(root) {
-                                 public TreePath getNextMatch(String prefix, int startingRow, Position.Bias bias) {
-                                     try {
-                                         return super.getNextMatch(prefix,startingRow, bias);
-                                     } catch (NullPointerException e) {
-                                         //Work around for 43112 
-                                     }
-                                     return null;
-                                 }
-                            };
-                            ToolTipManager.sharedInstance().registerComponent(tree);
-                            tree.setCellRenderer(new CheckRenderer(isQuery));
-                            String s = NbBundle.getMessage(RefactoringPanel.class, "ACSD_usagesTree"); // NOI18N
-                            tree.getAccessibleContext().setAccessibleDescription(s);
-                            tree.getAccessibleContext().setAccessibleName(s);
-                            CheckNodeListener l = new CheckNodeListener(isQuery);
-                            tree.addMouseListener(l);
-                            tree.addKeyListener(l);
-                            tree.setToggleClickCount(0);
-                            scrollPane = new JScrollPane(tree);
-                            RefactoringPanel.this.left.add(scrollPane, BorderLayout.CENTER);
-                            RefactoringPanel.this.validate();
-                        } else {
-                            tree.setModel(new DefaultTreeModel(root));
-                        }
-                        tree.setRowHeight((int) ((CheckRenderer) tree.getCellRenderer()).getPreferredSize().getHeight());
-                        
-                        if (showParametersPanel) {
-                            splitPane.setDividerLocation(0.3);
-                            if (elements.size() < MAX_ROWS) {
-                                expandAll();
-                                selectNextUsage();
-                            } else
-                                expandButton.setSelected(false);
-                        } else {
-                            if (expandButton.isSelected()) {
-                                expandAll();
-                                selectNextUsage();
-                            } else
-                                expandButton.setSelected(false);
-                        }
-
-                        tree.setSelectionRow(0);
-                        requestFocus();
-                        setRefactoringEnabled(true, true);
-                    }
-                });
-            }
-        });
-        
+            });
+        }
         if (!isVisible) {
             // dock it into output window area and display
             RefactoringPanelContainer cont = isQuery ? RefactoringPanelContainer.getUsagesComponent() : RefactoringPanelContainer.getRefactoringComponent();
@@ -684,6 +744,15 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             isVisible = true;
         }
         setRefactoringEnabled(false, true);
+    }
+    
+    private Collection<RefactoringElementImplementation> getImplCollection(Collection<RefactoringElement> elements) {
+        Collection<RefactoringElementImplementation> result = new ArrayList();
+        for (RefactoringElement e:elements) {
+            result.add(APIAccessor.DEFAULT.getRefactoringElementImplementation(e));
+        }
+        return Collections.unmodifiableCollection(result);
+        
     }
     
     public void requestFocus() {
@@ -804,6 +873,8 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                 switchToPhysicalView();
             } else if (o == logicalViewButton) {
                 switchToLogicalView();
+            } else if (o == customViewButton) {
+                switchToCustomView();
             } else if (o == nextMatch) {
                 selectNextUsage();
             } else if (o == prevMatch) {
