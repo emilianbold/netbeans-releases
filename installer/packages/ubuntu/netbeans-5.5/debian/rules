@@ -50,6 +50,9 @@ build: build-stamp
 build-stamp: configure-stamp unpack-build-tarball
 	touch $@
 
+update-copyright: build-stamp
+	sh debian/mkcopy.sh debian/copyright debian/extra/PKG_PREAMBLE debian/extra/PKG_NOTICE debian/extra/MIT_LICENSE debian/extra/NETBEANS_NOTICE $(BUILD)/LICENSE.txt $(BUILD)/THIRDPARTYLICENSE.txt $(BUILD)/platform6/THIRDPARTYLICENSEREADME.txt $(BUILD)/enterprise3/apache-tomcat-5.5.17/LICENSE $(BUILD)/enterprise3/modules/ext/toplink/3RD-PARTY-LICENSE.txt
+
 clean:
 	dh_testdir
 	dh_testroot
@@ -57,10 +60,11 @@ clean:
 
 	# Add here commands to clean up after the build process.
 	rm -rf $(DEBIAN_TMP)
+	rm -f debian/copyright.1*
 
 	dh_clean 
 
-install: build
+install: build update-copyright
 	dh_testdir
 	dh_testroot
 
@@ -68,6 +72,14 @@ install: build
 	mkdir -p $(CURDIR)/debian/netbeans5.5-platform$(NBROOT)
 	#Remove Windows/OS2 specific files
 	rm $(BUILD)/platform6/lib/nbexec.cmd
+	# remove license files now in debian/copyright
+	rm $(BUILD)/LICENSE.txt
+	rm $(BUILD)/THIRDPARTYLICENSE.txt
+	rm $(BUILD)/platform6/LICENSE.txt # redundant with ../LICENSE.txt
+	rm $(BUILD)/platform6/THIRDPARTYLICENSEREADME.txt
+	rm $(BUILD)/enterprise3/apache-tomcat-5.5.17/LICENSE
+	rm $(BUILD)/enterprise3/modules/ext/toplink/3RD-PARTY-LICENSE.txt
+
 	cp -r $(BUILD)/platform6 $(CURDIR)/debian/netbeans5.5-platform$(NBROOT)/
 	mkdir -p $(CURDIR)/debian/netbeans5.5-platform/usr/share/doc/netbeans5.5-platform/
 	mv $(CURDIR)/debian/netbeans5.5-platform$(NBROOT)/platform6/*.txt $(CURDIR)/debian/netbeans5.5-platform/usr/share/doc/netbeans5.5-platform/
@@ -103,7 +115,8 @@ install: build
 
 	mkdir -p $(CURDIR)/debian/netbeans5.5/usr/bin
         #Created using alternatives
-	ln -sf $(NBROOT)/bin/netbeans $(CURDIR)/debian/netbeans5.5/usr/bin/netbeans
+	#now done in netbeans5.5-postinst
+	#ln -sf $(NBROOT)/bin/netbeans $(CURDIR)/debian/netbeans5.5/usr/bin/netbeans
 
 	# replace bundled jars with links to jars from packages
 	#cat $(CURDIR)/debian/extra/links.txt | while read FROM TO; do \
@@ -118,6 +131,12 @@ install: build
 	#	pack200 --no-gzip $$x.pack $$x ; \
 	#	rm $$x ; \
 	#done
+
+	# Installing lintian overrides
+	for LINTIAN in debian/lintian/*; \
+	do \
+		install -D -m 0644 $$LINTIAN debian/`basename $$LINTIAN`/usr/share/lintian/overrides/`basename $$LINTIAN` || exit 1; \
+	done
 
 # Build architecture-independent files here.
 binary-indep: build install
