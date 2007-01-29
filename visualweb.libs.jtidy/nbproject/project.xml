@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+            <code-name-base>org.netbeans.modules.visualweb.libs.jtidy</code-name-base>
+            <suite-component/>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.netbeans.libs.xerces</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.8</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
+            <friend-packages>
+                <friend>org.netbeans.modules.visualweb.designer.jsf</friend>
+                <friend>org.netbeans.modules.visualweb.project.importpage</friend>
+                <package>org.w3c.dom</package>
+                <package>org.w3c.tidy</package>
+                <package>org.xml.sax</package>
+            </friend-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/tidy-mod.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/tidy-mod.jar</binary-origin>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>
