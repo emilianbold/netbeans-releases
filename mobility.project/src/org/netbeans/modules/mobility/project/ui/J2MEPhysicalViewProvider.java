@@ -63,18 +63,16 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.ProxyLookup;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.ResourceBundle;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
 
@@ -89,6 +87,7 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
     protected final ProjectConfigurationsHelper pcp;
     protected final AntProjectHelper helper;
     protected final J2MEProject project;
+    protected J2MEProjectRootNode rootNode;
     
     public J2MEPhysicalViewProvider(Project project, AntProjectHelper helper, ReferenceHelper refHelper, ProjectConfigurationsHelper pcp) {
         this.project = (J2MEProject)project;
@@ -103,7 +102,7 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
     
     public Node createLogicalView() {
         try {
-            return new J2MEProjectRootNode();
+            return rootNode=new J2MEProjectRootNode();
         } catch (Exception e) {
             ErrorManager.getDefault().notify(e);
             return Node.EMPTY;
@@ -155,6 +154,16 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
         return s;
     }
     
+    public void refreshNode(String name)
+    {
+        if (rootNode != null)
+        {            
+            LogicalViewChildren children=(LogicalViewChildren)rootNode.getChildren();            
+            children.refreshNode(name);
+            rootNode.checkBroken();
+        }
+    }
+    
     public boolean hasBrokenLinks() {
         return BrokenReferencesSupport.isBroken( helper, refHelper, getBreakableProperties(), getBreakablePlatformProperties());
     }
@@ -166,7 +175,7 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
     }
 
     // Private innerclasses ----------------------------------------------------
-    final class LogicalViewChildren extends Children.Keys implements ChangeListener 
+    final class LogicalViewChildren extends Children.Keys  
     {
         final private J2MEProject project;
         final private NodeCache cache;
@@ -189,7 +198,7 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
             keyMap.put("Sources",new SourcesViewProvider());
             keyMap.put("Resources",new ResViewProvider(cache));
             keyMap.put("Configurations",new LibResViewProvider(cache));
-            project.getConfigurationHelper().addPropertyChangeListener(new CfgListener());
+            project.getConfigurationHelper().addPropertyChangeListener(new CfgListener());            
             setKeys(getKeys());            
         }
         
@@ -203,20 +212,18 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
             refreshKey("Configurations");
         }
         
+        public void refreshNode(String name)
+        {
+            cache.update(name);
+        }
+        
+        
         protected Node[] createNodes(final Object key)
         {
             ChildLookup creator=keyMap.get(key);
             return creator != null ? creator.createNodes(project) : null;
         }
-        
-        public void stateChanged(final ChangeEvent e)
-        {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    setKeys(getKeys());
-                }
-            }); 
-        }
+
         
         private Collection<String> getKeys() {
             //#60800, #61584 - when the project is deleted externally do not try to create children, the source groups
