@@ -483,9 +483,6 @@ public class MBeanPanel extends javax.swing.JPanel
                 templateWiz.getProperty(WizardConstants.PROP_MBEAN_NAME);
             String mbeanFilePath = (String) 
                 templateWiz.getProperty(WizardConstants.PROP_MBEAN_FILE_PATH);
-            System.out.println(" getPanel()" + getPanel());
-            System.out.println(" getPanel().generatedFileJLabel" + getPanel().generatedFileJLabel);
-            System.out.println(" bundle " + bundle);
             Mnemonics.setLocalizedText(getPanel().generatedFileJLabel,
             bundle.getString("LBL_mbean_other_created_interface"));//NOI18N
 

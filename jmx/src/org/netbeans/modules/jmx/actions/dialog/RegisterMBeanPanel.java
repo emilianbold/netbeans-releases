@@ -439,7 +439,6 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         stateLabel.setText( ""); // NOI18N
         
         mbeanClass = JavaModelHelper.findClassInProject(project, currentMBeanClass);
-        System.out.println("FOUND CLASS IN PROJECT " + mbeanClass);
         isMBean = false;
         if (mbeanClass != null) {
             isMBean = JavaModelHelper.testMBeanCompliance(mbeanClass);
@@ -474,8 +473,6 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
                 stateLabel.setText(bundle.getString("LBL_ClassWithNoConstructor")); // NOI18N
             }
         }
-        System.out.println("Is MBean " + isMBean);
-        System.out.println("currentMBeanClass " + currentMBeanClass);
         if ((!isMBean) && (!currentMBeanClass.equals(""))) { // NOI18N
             isValid = false;
             stateLabel.setText(bundle.getString("LBL_NotMBeanClass")); // NOI18N
