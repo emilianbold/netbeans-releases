@@ -31,16 +31,13 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Properties;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Property;
+import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
 import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider;
 import org.netbeans.modules.j2ee.persistence.unit.*;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
@@ -91,8 +88,16 @@ public class ProviderUtil {
     }
     
     /**
-     * @return the provider that given providerClass represents or null
-     *  if there was no matching provider.
+     * Gets the persistence provider identified by the given <code>providerClass</code>.
+     * If the given class was empty or null, will return the default persistence provider
+     * of the given project's target server, or null if a default provider is not supported
+     * in the given project.
+     * 
+     * @param providerClass the FQN of the class that specifies the persistence provider.
+     * 
+     * @return the provider that the given providerClass represents or null if it was 
+     * an empty string and the project doesn't suppport a default (container managed)
+     * persistence provider.
      */
     public static Provider getProvider(String providerClass, Project project){
         
@@ -105,35 +110,33 @@ public class ProviderUtil {
                 return PROVIDERS[i];
             }
         }
+        // some unknown provider
         return DEFAULT_PROVIDER;
         
     }
     
     
-    /**
-     * @return the default container managed provider for given project. If no specific
-     * provider can be resolved, returns {@link DefaultProvider}, never null.
+    /*
+     * Gets the default persistence provider of the target server 
+     * of the given <code>project</code>. 
+     * 
+     * @return the default container managed provider for the given project or <code>null</code> 
+     * no default provider could be resolved.
+     * 
      * @throws NullPointerException if the given project was null.
      */
-    public static Provider getContainerManagedProvider(Project project){
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-        String serverInstanceId = j2eeModuleProvider != null ? j2eeModuleProvider.getServerInstanceID() : null;
-        if (serverInstanceId == null) {
-            return DEFAULT_PROVIDER;
+    private static Provider getContainerManagedProvider(Project project){
+        
+        PersistenceProviderSupplier providerSupplier = project.getLookup().lookup(PersistenceProviderSupplier.class);
+
+        if (providerSupplier == null 
+                || !providerSupplier.supportsDefaultProvider()
+                || providerSupplier.getSupportedProviders().isEmpty()){
+            
+            return null;
         }
-        J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceId);
-        if (platform == null) {
-            return DEFAULT_PROVIDER;
-        }
-        if (platform.getSupportedSpecVersions(j2eeModuleProvider.getJ2eeModule().getModuleType()).contains(J2eeModule.JAVA_EE_5)) {
-            if ("J2EE".equals(j2eeModuleProvider.getServerID())) {
-                // should be GlassFish
-                return TOPLINK_PROVIDER;
-            } else if ("JBoss4".equals(j2eeModuleProvider.getServerID())){
-                return HIBERNATE_PROVIDER;
-            }
-        }
-        return DEFAULT_PROVIDER;
+        
+        return providerSupplier.getSupportedProviders().get(0);
     }
     
     public static DatabaseConnection getConnection(PersistenceUnit pu) {
@@ -662,6 +665,10 @@ public class ProviderUtil {
         }
         
         Provider defaultProvider = getContainerManagedProvider(project);
+        
+        if (defaultProvider == null){
+            return false;
+        }
         
         if (defaultProvider.getProviderClass().equals(persistenceUnit.getProvider())
                 && persistenceUnit.getProperties().sizeProperty2() == 0){

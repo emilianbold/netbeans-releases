@@ -36,8 +36,9 @@ public interface PersistenceProviderSupplier {
      * Gets the persistence providers that are supported in 
      * the project. The preferred provider should
      * be the first item in the returned list.
-     * @return a list of the providers, or an empty list if no
-     * providers were supported.
+     * 
+     * @return a list of the supported providers, or an empty list if no
+     * providers were supported; never null.
      */ 
     List<Provider> getSupportedProviders();
 
