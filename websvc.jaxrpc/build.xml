@@ -90,5 +90,6 @@
     
     <target name="clean-ddgen-src">
         <delete dir="${s2b_root_wscompile_config}"/>
+        <delete dir="${wsdevcodegenroot}"/>
     </target>
 </project>
