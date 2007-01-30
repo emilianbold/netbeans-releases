@@ -34,11 +34,9 @@ import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.modules.javacore.JMManager;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -590,19 +588,7 @@ class BluejActionProvider implements ActionProvider {
             // ??? maybe better should be thrown IAE
             return false;
         }
-        
-        boolean has = false;
-        JavaModel.getJavaRepository ().beginTrans (false);
-        
-        try {
-            JavaModel.setClassPath(fo);
-            Resource res = JavaModel.getResource (fo);
-            assert res != null : "Resource found for FileObject " + fo; //NOI18N
-            has = !res.getMain().isEmpty();
-        } finally {
-            JavaModel.getJavaRepository ().endTrans ();
-        }
-        return has;
+        return !SourceUtils.getMainClasses(fo).isEmpty();
     }
     
 }

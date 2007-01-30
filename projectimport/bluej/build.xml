@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="netbeans" name="ide/projectimport/bluej">
     <description>Builds, tests, and runs the project org.netbeans.bluej</description>
-    <import file="../../../nbbuild/templates/projectized.xml"/>
+    <loadproperties srcfile="../../bluej-suite/external-references.properties"/>
+    <import file="${nb_all_3_level}/nbbuild/templates/projectized.xml"/>
     
     <target name="nblib" depends="init">
         <mkdir dir="build/antclasses"/>

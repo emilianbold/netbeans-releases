@@ -3,7 +3,6 @@
 <toc version="2.0">
     <tocitem text="NetBeans IDE BlueJ Edition Help">
         <tocitem text="About Using NetBeans IDE BlueJ Edition" target="org.netbeans.bluej.about"/>
-        <tocitem text="About the Help in NetBeans IDE BlueJ Edition" target="bluej-about-help"/>
         <tocitem text="Importing a BlueJ Project" target="bluej-proj-import"/>
         <tocitem text="Creating a New Project" target="bluej-proj-new"/>
         <tocitem text="Converting a BlueJ Project to a Standard IDE Project" target="bluej-proj-convert"/>
@@ -11,4 +10,5 @@
         <tocitem text="Source Editor Tips" target="bluej-editor-quickref"/>
         <tocitem text="Differences in the BlueJ Edition of the IDE" target="bluej-ide-differences"/>
     </tocitem>
+    <tocitem text="Using General NetBeans IDE Help in the BlueJ Edition" target="bluej-about-help"/>
 </toc>

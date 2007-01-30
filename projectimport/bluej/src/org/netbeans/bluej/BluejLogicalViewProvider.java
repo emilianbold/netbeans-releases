@@ -27,12 +27,13 @@ import java.util.Enumeration;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.FileBuiltQuery;
 import org.netbeans.bluej.nodes.BluejLogicalViewRootNode;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileAttributeEvent;
@@ -40,6 +41,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
@@ -209,15 +211,11 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
                 if(!fo.isValid()) {
                     return false;
                 }
-                JavaModel.getJavaRepository().beginTrans(false);
-                try {
-                    JavaModel.setClassPath(fo);
-                    Resource r = JavaModel.getResource(fo);
-                    
-                    return r!=null && !r.getMain().isEmpty();
-                } finally {
-                    JavaModel.getJavaRepository().endTrans();
-                }
+                Project prj = FileOwnerQuery.getOwner(fo);
+                String path = FileUtil.getRelativePath(prj.getProjectDirectory(), fo);
+                path = path.replace('/', '.').replace('\\', '.');
+                path = path.substring(0, path.length() - (fo.getExt().length() + 1));
+                return SourceUtils.isMainClass(path, ClasspathInfo.create(fo));
             }
             return false;
         }
@@ -239,7 +237,7 @@ public class BluejLogicalViewProvider implements LogicalViewProvider, org.netbea
             }
         }
 
-        protected Node[] createNodes(Object object) {
+        protected Node[] createNodes(Node object) {
             Node orig = (Node)object;
             DataObject dobj = (DataObject)orig.getLookup().lookup(DataObject.class);
             if (dobj != null) {

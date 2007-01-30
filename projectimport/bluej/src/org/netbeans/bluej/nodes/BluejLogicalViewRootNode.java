@@ -157,8 +157,7 @@ public class BluejLogicalViewRootNode extends AbstractNode {
             super(original);
         }
         
-        protected Node[] createNodes(Object object) {
-            Node orig = (Node)object;
+        protected Node[] createNodes(Node orig) {
             DataObject dobj = (DataObject)orig.getLookup().lookup(DataObject.class);
             if (dobj != null) {
                 FileObject fo = dobj.getPrimaryFile();

@@ -9,9 +9,11 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Iterator;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -62,6 +64,7 @@ public class BluejProjectFactory implements ProjectFactory {
         String projectName = removeSpaces(fileObject.getName());
         
         if (fileObject.getFileObject("nbproject") == null) {  // NOI18N
+            String specVersion = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion().toString();
             FileObject nbfolder = fileObject.createFolder("nbproject");  // NOI18N
             InputStream str = BluejProjectFactory.class.getResourceAsStream("resources/build.xml");  // NOI18N
             FileObject buildxml = fileObject.createData("build.xml");  // NOI18N
@@ -81,7 +84,9 @@ public class BluejProjectFactory implements ProjectFactory {
             FileObject props = nbfolder.createData("project.properties");  // NOI18N
             lock = props.lock();
             out = props.getOutputStream(lock);
-            copyAndReplaceInStream(str, out, "@PROJECTNAME@", projectName);  // NOI18N
+            copyAndReplaceInStream(str, out, 
+                new String[] { "@PROJECTNAME@", "@JAVAVERSION@" },
+                new String[] { PropertyUtils.getUsablePropertyName(projectName), specVersion} );  // NOI18N
             out.close();
             lock.releaseLock();
             str = BluejProjectFactory.class.getResourceAsStream("resources/project.xml");  // NOI18N
@@ -119,16 +124,22 @@ public class BluejProjectFactory implements ProjectFactory {
             }
         }
     }
-    
     private void copyAndReplaceInStream(InputStream is, OutputStream os, 
             String ptrn, String rpl) throws IOException {
+        copyAndReplaceInStream(is, os, new String[] {ptrn}, new String[] {rpl});
+    }
+    
+    private void copyAndReplaceInStream(InputStream is, OutputStream os, 
+            String[] ptrn, String[] rpl) throws IOException {
         String sep = System.getProperty("line.separator");  // NOI18N
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
-        Writer writer = new OutputStreamWriter(os);
+        BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+        Writer writer = new OutputStreamWriter(os, "UTF-8");
         String line = br.readLine();
         while (line != null) {
             if (line.indexOf('@') != -1) {
-                line = line.replaceAll(ptrn, rpl);
+                for (int i = 0; i < ptrn.length; i++) {
+                    line = line.replaceAll(ptrn[i], rpl[i]);
+                }
             }
             writer.write(line + sep);
             line = br.readLine();

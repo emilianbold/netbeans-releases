@@ -6,15 +6,6 @@
             <code-name-base>org.netbeans.bluej</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>javax.jmi.reflect</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.7.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.apache.tools.ant.module</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -42,29 +33,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.api.mdr</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.4.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.api.progress</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.5</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.jmi.javamodel</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>2</release-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -86,19 +60,11 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.javacore</code-name-base>
+                    <code-name-base>org.netbeans.modules.java.source</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.jmiutils</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
+                        <specification-version>0.4</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -260,7 +226,6 @@
                 <built-to>build/antclasses</built-to>
                 <built-to>${cluster}/ant/nblib/${code.name.base.dashes}.jar</built-to>
             </extra-compilation-unit>
-            
         </data>
     </configuration>
 </project>

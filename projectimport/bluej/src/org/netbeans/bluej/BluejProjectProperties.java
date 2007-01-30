@@ -183,8 +183,8 @@ public class BluejProjectProperties {
   
     private void storeAdditionalProperties(EditableProperties projectProperties) {
         for (Iterator i = additionalProperties.keySet().iterator(); i.hasNext();) {
-            Object key = i.next();
-            projectProperties.put(key, additionalProperties.get(key));
+            String key = (String)i.next();
+            projectProperties.put(key, additionalProperties.getProperty(key));
         }
     }
     

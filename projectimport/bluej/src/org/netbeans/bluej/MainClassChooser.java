@@ -19,13 +19,15 @@
 
 package org.netbeans.bluej;
 
+import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.Comparator;
+import javax.lang.model.element.TypeElement;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
@@ -33,12 +35,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.JavaModelPackage;
-import org.netbeans.jmi.javamodel.Resource;
-import org.netbeans.modules.javacore.ClassIndex;
-import org.netbeans.modules.javacore.JMManager;
-import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.SourceUtils;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileObject;
@@ -54,7 +52,7 @@ public class MainClassChooser extends JPanel {
 
     private ChangeListener changeListener;
     private String dialogSubtitle = null;
-    private List/*<String>*/ possibleMainClasses;
+    private Collection<ElementHandle<TypeElement>> possibleMainClasses;
 
     private String selectedClass;
             
@@ -107,7 +105,8 @@ public class MainClassChooser extends JPanel {
         
         RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
-                possibleMainClasses = getMainClasses (sourcesRoots, true);
+                
+                possibleMainClasses = SourceUtils.getMainClasses(sourcesRoots);
                 if (possibleMainClasses.isEmpty ()) {                    
                     SwingUtilities.invokeLater( new Runnable () {
                         public void run () {
@@ -115,17 +114,13 @@ public class MainClassChooser extends JPanel {
                         }
                     });                    
                 } else {
-                    final Object[] arr = possibleMainClasses.toArray ();
+                    final ElementHandle<TypeElement>[] arr = possibleMainClasses.toArray(new ElementHandle[possibleMainClasses.size()]);
                     // #46861, sort name of classes
-                    Arrays.sort (arr);
+                    Arrays.sort (arr, new MainClassComparator());
                     SwingUtilities.invokeLater(new Runnable () {
                         public void run () {
                             jMainClassList.setListData (arr);
-                            if (selectedClass != null) {
-                                jMainClassList.setSelectedValue(selectedClass, true);
-                            } else {
-                                jMainClassList.setSelectedIndex(0);
-                            }
+                            jMainClassList.setSelectedIndex (0);
                         }
                     });                    
                 }
@@ -137,56 +132,8 @@ public class MainClassChooser extends JPanel {
         }
     }
     
-    public static List/*String*/ getMainClasses (FileObject[] roots, boolean wait) {
-        if (wait) {
-            JMManager.getManager().waitScanFinished();
-        }
-        List result = new ArrayList ();
-        for (int i=0; i<roots.length; i++) {
-            getMainClasses(roots[i], result);
-        }
-        return result;
-    }
-    
-    /** Returns list of FQN of classes contains the main method.
-     * 
-     * @param root the root of source to start find
-     * @param addInto list of names of classes, e.g, [sample.project1.Hello, sample.project.app.MainApp]
-     */
-    private static void getMainClasses (FileObject root, List/*<String>*/ addInto) {
-        JavaModel.getJavaRepository ().beginTrans (false);
-        try {
-            JavaModelPackage mofPackage = JavaModel.getJavaExtent(root);
-            ClassIndex index = ClassIndex.getIndex (mofPackage);
-            //Resource[] res = index.findResourcesForIdentifier ("main"); // NOI18N
-            Collection col = index.findResourcesForIdent ("main"); // NOI18N
-            Object[] arr = col.toArray ();
-
-            if (arr == null) {
-                // no main classes
-                return;
-            }
-
-            for (int i = 0; i < arr.length; i++) {
-                Resource res = (Resource)arr[i];
-                Iterator mainIt=res.getMain().iterator();
-                
-                while (mainIt.hasNext()) {
-                    JavaClass jcls=(JavaClass)mainIt.next();
-                    
-                    addInto.add(jcls.getName());
-                }
-            }
-        } finally {
-            JavaModel.getJavaRepository ().endTrans (false);
-        }        
-    }
-    
-    
     private Object[] getWarmupList () {        
-        return JMManager.getManager().isScanInProgress() ?
-            new Object[] {NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_SCANNING_MESSAGE")}:
-            new Object[] {NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_WARMUP_MESSAGE")}; // NOI18N
+          return new Object[] {NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_WARMUP_MESSAGE")};
     }
     
     private boolean isValidMainClassName (Object value) {
@@ -301,23 +248,6 @@ public class MainClassChooser extends JPanel {
     // End of variables declaration//GEN-END:variables
 
     
-
-    // Maybe useless renderer (fit if wanted to reneder Icons) // XXX
-//    private static final class MainClassRenderer extends DefaultListCellRenderer {
-//        public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-//            String displayName;
-//            if (value instanceof String) {
-//                displayName = (String) value;
-//            } if (value instanceof FileObject) {
-//                displayName = ((FileObject)value).getName ();
-//            } else {
-//                displayName = value.toString ();
-//            }
-//            return super.getListCellRendererComponent (list, displayName, index, isSelected, cellHasFocus);
-//        }
-//    }
-//
-
     void setSelectedMainClass(String clazz) {
         this.selectedClass = clazz;
     }
@@ -325,4 +255,26 @@ public class MainClassChooser extends JPanel {
     void setArguments(String args) {
         txtArguments.setText(args);
     }
+    
+    private static final class MainClassRenderer extends DefaultListCellRenderer {
+        public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            String displayName;
+            if (value instanceof String) {
+                displayName = (String) value;
+            } if (value instanceof ElementHandle) {
+                displayName = ((ElementHandle)value).getQualifiedName();
+            } else {
+                displayName = value.toString ();
+            }
+            return super.getListCellRendererComponent (list, displayName, index, isSelected, cellHasFocus);
+        }
+    }
+    
+    private static class MainClassComparator implements Comparator<ElementHandle> {
+            
+        public int compare(ElementHandle arg0, ElementHandle arg1) {
+            return arg0.getQualifiedName().compareTo(arg1.getQualifiedName());
+        }
+    }
+    
 }
