@@ -194,8 +194,9 @@ public class ExportPatchAndDiffTest extends JellyTestCase {
         btnExport.push();
         //        no output in output tab now
         //        oto.waitText("Diff Patch finished");
+        Thread.sleep(3000);
         cvss.stop();
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         //test file existence
         assertTrue("Diff Patch file wasn't created!", file.isFile());
         BufferedReader br = new BufferedReader(new FileReader(file));
