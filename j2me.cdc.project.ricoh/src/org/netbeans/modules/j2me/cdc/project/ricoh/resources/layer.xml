@@ -35,4 +35,15 @@
             <file name="ricoh-ant-utils.xml" url="Utils.xml"/>
         </folder>
     </folder>    
+
+    <folder name="RecommendedTemplates">
+        <folder name="org.netbeans.modules.kjava.j2meproject">
+            <attr name="cdc/ricoh" boolvalue="true"/>
+            <file name="ricoh">
+                <attr name="RecommendedTemplates" stringvalue="CDC/Ricoh"/>
+                <attr name="PriviledgedTemplates" stringvalue="Templates/CDC/RicohXlet.java"/>
+            </file>
+            <attr name="ricoh/core" boolvalue="true"/>
+        </folder>
+    </folder>
 </filesystem>

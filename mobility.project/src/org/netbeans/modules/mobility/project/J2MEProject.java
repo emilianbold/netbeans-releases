@@ -27,15 +27,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Set;
@@ -43,7 +42,6 @@ import java.util.WeakHashMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
-
 import org.netbeans.api.project.Project;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -63,7 +61,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
@@ -593,46 +590,30 @@ public final class J2MEProject implements Project, AntProjectListener {
     
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
         
-        private RecommendedTemplatesImpl()
-        {
-            // Just to avoid creating accessor class            
+        private static final String LOCATION = "RecommendedTemplates/org.netbeans.modules.kjava.j2meproject"; //NOI18N
+        
+        private RecommendedTemplatesImpl() {
         }
         
-        // List of primarily supported templates
-        
-        private static final String[] TYPES = new String[]{
-            "java-classes-basic", // NOI18N
-            // "java-classes", // NOI18N
-            // "java-main-class", // NOI18N
-            // "java-forms", // NOI18N
-            // "gui-java-application", // NOI18N
-            // "java-beans", // NOI18N
-            // "oasis-XML-catalogs", // NOI18N
-            "XML", // NOI18N
-            "ant-script", // NOI18N
-            // "ant-task", // NOI18N
-            // "servlet-types",     // NOI18N
-            // "web-types",         // NOI18N
-            // "junit", // NOI18N
-            "MIDP",              // NOI18N
-            "simple-files"          // NOI18N
-        };
-        
-        private static final String[] PRIVILEGED_NAMES = new String[] {
-            "Templates/MIDP/VisualMidlet.java", //NOI18N
-            "Templates/MIDP/Midlet.java", //NOI18N
-            "Templates/Classes/Class.java", //NOI18N
-            "Templates/MIDP/E2EWebApplication.wsclient", //NOI18N
-            "Templates/MIDP/Jsr172Application.wsclient", //NOI18N
-            "Templates/Classes/Package", //NOI18N
-        };
-        
         public String[] getRecommendedTypes() {
-            return TYPES;
+            FileObject root = Repository.getDefault().getDefaultFileSystem().findResource(LOCATION);
+            HashSet<String> result = new HashSet();
+            for (FileObject fo : root.getChildren()) {
+                String s = (String) fo.getAttribute("RecommendedTemplates"); //NOI18N
+                if (s != null) result.addAll(Arrays.asList(s.split(","))); //NOI18N
+            }
+            return result.toArray(new String[result.size()]);
         }
         
         public String[] getPrivilegedTemplates() {
-            return PRIVILEGED_NAMES;
+            //priviledged templates are ordered by module layer
+            DataFolder root = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource(LOCATION));
+            ArrayList<String> result = new ArrayList();
+            for (DataObject ch : root.getChildren()) {
+                String s = (String) ch.getPrimaryFile().getAttribute("PriviledgedTemplates"); //NOI18N
+                if (s != null) result.addAll(Arrays.asList(s.split(","))); //NOI18N
+            }
+            return result.toArray(new String[result.size()]);
         }
         
     }

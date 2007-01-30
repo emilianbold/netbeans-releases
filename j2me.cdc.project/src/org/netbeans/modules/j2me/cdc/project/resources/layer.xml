@@ -37,6 +37,16 @@
             </folder>
         </folder>
     </folder>
+    <folder name="RecommendedTemplates">
+        <folder name="org.netbeans.modules.kjava.j2meproject">
+            <attr name="midp/cdc" boolvalue="true"/>
+            <file name="cdc">
+                <attr name="RecommendedTemplates" stringvalue="CDC,CDC/AWT,CDC/AGUI,java-classes,java-main-class,java-forms,gui-java-application,java-beans,simple-files,XML"/>
+                <attr name="PriviledgedTemplates" stringvalue="Templates/CDC/AGUIXlet.java,Templates/CDC/AWTXlet.java,Templates/CDC/Xlet.java,Templates/GUIForms/JPanel.java"/>
+            </file>
+            <attr name="cdc/core" boolvalue="true"/>
+        </folder>
+    </folder>
 <!--
     <folder name="Templates">
         <folder name="Project">

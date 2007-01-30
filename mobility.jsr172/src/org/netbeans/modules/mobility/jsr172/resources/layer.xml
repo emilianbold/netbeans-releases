@@ -33,5 +33,14 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
     </folder>
+    <folder name="RecommendedTemplates">
+        <folder name="org.netbeans.modules.kjava.j2meproject">
+            <attr name="core/jsr172" boolvalue="true"/>
+            <attr name="e2e/jsr172" boolvalue="true"/>
+            <file name="jsr172">
+                <attr name="PriviledgedTemplates" stringvalue="Templates/MIDP/Jsr172Application.wsclient"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>
 

@@ -403,4 +403,18 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
+    
+    <folder name="RecommendedTemplates">
+        <folder name="org.netbeans.modules.kjava.j2meproject">
+            <file name="midp">
+                <attr name="RecommendedTemplates" stringvalue="MIDP"/>
+                <attr name="PriviledgedTemplates" stringvalue="Templates/MIDP/VisualMidlet.java,Templates/MIDP/Midlet.java"/>
+            </file>
+            <attr name="midp/core" boolvalue="true"/>
+            <file name="core">
+                <attr name="RecommendedTemplates" stringvalue="java-classes-basic,XML,ant-script,simple-files"/>
+                <attr name="PriviledgedTemplates" stringvalue="Templates/Classes/Class.java,Templates/Classes/Package,Templates/Classes/Interface.java"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>
