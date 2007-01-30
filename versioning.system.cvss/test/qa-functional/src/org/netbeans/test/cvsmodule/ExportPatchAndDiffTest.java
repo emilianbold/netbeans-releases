@@ -168,15 +168,15 @@ public class ExportPatchAndDiffTest extends JellyTestCase {
         oto = new OutputTabOperator(sessionCVSroot);
         oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         Node nodeClass = new Node(new SourcePackagesNode(projectName), pathToMain);
-        comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
-        Operator.setDefaultStringComparator(comOperator);
-        
+        comOperator = new Operator.DefaultStringComparator(true, true);
+              
         nodeClass.performPopupAction("Open");
         EditorOperator eo = new EditorOperator("Main.java");
         eo.insert("// EXPORT PATCH", 5, 1);
         eo.save();
-        nodeClass.performMenuActionNoBlock("Versioning|CVS|Export");
+        //nodeClass.performMenuActionNoBlock("Versioning|CVS|Export");
+        Operator.setDefaultStringComparator(comOperator);
         nodeClass.performMenuActionNoBlock("Versioning|CVS|Export \"Main.java\" Diff Patch...");
         Operator.setDefaultStringComparator(oldOperator);
         NbDialogOperator dialog = new NbDialogOperator("Export");
