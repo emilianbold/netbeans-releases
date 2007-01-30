@@ -305,7 +305,8 @@ Microsystems, Inc. All Rights Reserved.
             The module is used during runtime. 
             </api>
 </li>            
-<li><api type='import' group='java' category='private' name='org.netbeans.modules.classfile' url='@org-netbeans-modules-classfile@/overview-summary.html' >
+<!--XXX: should link to classfile-->
+<li><api type='import' group='java' category='private' name='org.netbeans.modules.classfile'>
             The module is needed for compilation. 
         
             The module is used during runtime. 

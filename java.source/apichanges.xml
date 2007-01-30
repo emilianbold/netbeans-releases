@@ -109,7 +109,7 @@ is the proper place.
 
 <h1>Introduction</h1>
 
-<p>This document lists changes made to the <a href="@org-netbeans-modules-java-source@/architecture-summary.html">Java Source API</a>.</p>
+<p>This document lists changes made to the <!--<a href="@org-netbeans-modules-java-source@/architecture-summary.html">-->Java Source API<!--</a>-->.</p>
 
 <!-- The actual lists of changes, as summaries and details: -->
       <hr/>
