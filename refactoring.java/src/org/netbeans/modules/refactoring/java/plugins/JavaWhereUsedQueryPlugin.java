@@ -166,7 +166,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         }
         for (ElementHandle<TypeElement> e : result) {
             FileObject fo = SourceUtils.getFile(e, cpInfo);
-            assert fo != null: "issue 90196" ;
+            assert fo != null: "issue 90196, Cannot find file for " + e + ". cpInfo=" + cpInfo ;
             set.add(fo);
         }
         return set;
