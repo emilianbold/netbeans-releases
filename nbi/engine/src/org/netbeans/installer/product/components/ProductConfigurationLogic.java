@@ -29,6 +29,7 @@ import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
+import org.netbeans.installer.utils.helper.RemovalMode;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.Text;
 import org.netbeans.installer.utils.helper.Text.ContentType;
@@ -52,11 +53,11 @@ public abstract class ProductConfigurationLogic {
     public abstract List<WizardComponent> getWizardComponents();
     
     // product getter/setter ////////////////////////////////////////////////////////
-    public final Product getProduct() {
+    protected final Product getProduct() {
         return product;
     }
     
-    public final void setProduct(final Product product) {
+    final void setProduct(final Product product) {
         this.product = product;
     }
     
@@ -81,11 +82,11 @@ public abstract class ProductConfigurationLogic {
     }
     
     // product properties ///////////////////////////////////////////////////////////
-    public final String getProperty(String name) {
+    protected final String getProperty(String name) {
         return getProperty(name, true);
     }
     
-    public final String getProperty(String name, boolean parse) {
+    protected final String getProperty(String name, boolean parse) {
         final String value = product.getProperty(name);
         
         if (parse) {
@@ -95,7 +96,7 @@ public abstract class ProductConfigurationLogic {
         }
     }
     
-    public final void setProperty(final String name, final String value) {
+    protected final void setProperty(final String name, final String value) {
         product.setProperty(name, value);
     }
     
@@ -140,24 +141,29 @@ public abstract class ProductConfigurationLogic {
         return null;
     }
     
+    // installation behavior ////////////////////////////////////////////////////////
+    public RemovalMode getRemovalMode() {
+        return RemovalMode.ALL;
+    }
+    
     // helper methods for system utils and resource utils ///////////////////////////
-    public final String parseString(String string) {
+    protected final String parseString(String string) {
         return SystemUtils.parseString(string, product.getClassLoader());
     }
     
-    public final File parsePath(String path) {
+    protected final File parsePath(String path) {
         return SystemUtils.parsePath(path, product.getClassLoader());
     }
     
-    public final String getString(String key) {
+    protected final String getString(String key) {
         return ResourceUtils.getString(getClass(), key);
     }
     
-    public final String getString(String key, Object... arguments) {
+    protected final String getString(String key, Object... arguments) {
         return ResourceUtils.getString(getClass(), key, arguments);
     }
     
-    public final InputStream getResource(String path) {
+    protected final InputStream getResource(String path) {
         return ResourceUtils.getResource(path, product.getClassLoader());
     }
 }

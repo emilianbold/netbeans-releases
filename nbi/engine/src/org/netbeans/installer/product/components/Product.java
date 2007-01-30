@@ -29,6 +29,7 @@ import java.util.Map;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
 import org.netbeans.installer.utils.helper.DetailedStatus;
+import org.netbeans.installer.utils.helper.RemovalMode;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.helper.ErrorLevel;
@@ -167,7 +168,7 @@ public final class Product extends RegistryNode {
         // product should be automatically wrapped, we first create the required
         // directories structure and then extract the product
         if (SystemUtils.isMacOS() && configurationLogic.wrapForMacOs()) {
-            setInstallationLocation(new File(resourcesDir, 
+            setInstallationLocation(new File(resourcesDir,
                     getInstallationLocation().getName().replaceAll("\\.app$","")));
             
             final UnixNativeUtils utils =
@@ -387,21 +388,33 @@ public final class Product extends RegistryNode {
         progress.setTitle("Uninstalling " + getDisplayName());
         
         // remove installation files
-        int total   = installedFiles.getSize();
-        int current = 0;
-        
-        for (FileEntry entry: installedFiles) {
-            current++;
-            
-            File file = entry.getFile();
-            
-            eraseProgress.setDetail("Deleting " + file);
-            eraseProgress.setPercentage(Progress.COMPLETE * current / total);
-            
+        if (configurationLogic.getRemovalMode() == RemovalMode.ALL) {
             try {
-                FileUtils.deleteFile(file);
+                FileUtils.deleteFile(getInstallationLocation(), true);
             } catch (IOException e) {
-                addUninstallationWarning(new UninstallationException("Cannot delete the file", e));
+                addUninstallationWarning(new UninstallationException(
+                        "Cannot delete the file",
+                        e));
+            }
+        } else {
+            int total   = installedFiles.getSize();
+            int current = 0;
+            
+            for (FileEntry entry: installedFiles) {
+                current++;
+                
+                final File file = entry.getFile();
+                
+                eraseProgress.setDetail("Deleting " + file);
+                eraseProgress.setPercentage(Progress.COMPLETE * current / total);
+                
+                try {
+                    FileUtils.deleteFile(file);
+                } catch (IOException e) {
+                    addUninstallationWarning(new UninstallationException(
+                            "Cannot delete the file",
+                            e));
+                }
             }
         }
         
@@ -445,7 +458,7 @@ public final class Product extends RegistryNode {
             overallProgress.addChild(currentProgress, percentageChunk);
             
             final File cache = FileProxy.getInstance().getFile(
-                    uri.getRemote(), 
+                    uri.getRemote(),
                     currentProgress);
             uri.setLocal(cache.toURI());
         }
@@ -520,7 +533,7 @@ public final class Product extends RegistryNode {
             overallProgress.addChild(currentProgress, percentageChunk);
             
             final File cache = FileProxy.getInstance().getFile(
-                    uri.getRemote(), 
+                    uri.getRemote(),
                     currentProgress);
             uri.setLocal(cache.toURI());
         }

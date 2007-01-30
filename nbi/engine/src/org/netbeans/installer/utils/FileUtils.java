@@ -138,8 +138,8 @@ public final class FileUtils {
     public static FilesList writeFile(File file, InputStream input, boolean append) throws IOException {
         FilesList list = new FilesList();
         
-        if (!file.exists()) {
-            if (!file.getParentFile().exists()) {
+        if (!exists(file)) {
+            if (!exists(file.getParentFile())) {
                 list.add(mkdirs(file.getParentFile()));
             }
             
@@ -164,13 +164,13 @@ public final class FileUtils {
         return list;
     }
     
-    public static Date getLastModified(File f) {
-        if(!f.exists()) {
+    public static Date getLastModified(File file) {
+        if(!exists(file)) {
             return null;
         }
         Date date = null;
         try {
-            long modif = f.lastModified();
+            long modif = file.lastModified();
             date = new Date(modif);
         }  catch (SecurityException ex) {
             ex=null;
@@ -181,7 +181,7 @@ public final class FileUtils {
     public static long getSize(File file) {
         long size = -1;
         
-        if ((file != null) && !file.isDirectory() && file.exists()) {
+        if ((file != null) && !file.isDirectory() && exists(file)) {
             try {
                 size = file.length();
             } catch (SecurityException e) {
@@ -342,7 +342,7 @@ public final class FileUtils {
             
             LogManager.log("    deleting " + type + ": " + file);
             
-            if (!file.exists()) {
+            if (!exists(file)) {
                 LogManager.log("    ... " + type + " does not exist");
             } else {
                 if (!file.delete()) {
@@ -386,7 +386,7 @@ public final class FileUtils {
     }
     
     public static void deleteEmptyParents(File file) throws IOException {
-        if (!file.exists()) {
+        if (!exists(file)) {
             deleteWithEmptyParents(file.getParentFile());
         }
     }
@@ -398,8 +398,8 @@ public final class FileUtils {
         
         File probe = file;
         do {
-            deleteFile(probe);            
-            probe = probe.getParentFile();            
+            deleteFile(probe);
+            probe = probe.getParentFile();
         } while ((probe != null) && isEmpty(probe));
     }
     
@@ -440,7 +440,7 @@ public final class FileUtils {
     }
     
     public static void modifyFile(File file, Map<String, Object> map, boolean regexp) throws IOException {
-        if (!file.exists()) {
+        if (!exists(file)) {
             return;
         }
         
@@ -505,7 +505,7 @@ public final class FileUtils {
     public static FilesList copyFile(File source, File target, boolean recurse) throws IOException {
         FilesList list = new FilesList();
         
-        if (!source.exists()) {
+        if (!exists(source)) {
             LogManager.log("    ... " + source + " does not exist");
             return list;
         }
@@ -517,16 +517,16 @@ public final class FileUtils {
                 throw new IOException("source is not readable");
             }
             
-            if (target.exists() && !target.isFile()) {
+            if (exists(target) && !target.isFile()) {
                 throw new IOException("destination is not a file");
             }
             
             File parent = target.getParentFile();
-            if (!parent.exists()) {
+            if (!exists(parent)) {
                 list.add(mkdirs(parent));
             }
             
-            if (!target.exists() && !target.createNewFile()) {
+            if (!exists(target) && !target.createNewFile()) {
                 throw new IOException("destination cannot be created");
             }
             
@@ -566,7 +566,7 @@ public final class FileUtils {
     }
     
     public static boolean isEmpty(File file) {
-        if (!file.exists()) {
+        if (!exists(file)) {
             return true;
         }
         
@@ -728,15 +728,15 @@ public final class FileUtils {
     public static FilesList mkdirs(File file) throws IOException {
         FilesList list = new FilesList();
         
-        if (!file.getParentFile().exists()) {
+        if (!exists(file.getParentFile())) {
             list.add(mkdirs(file.getParentFile()));
         }
         
-        if (file.exists() && file.isFile()) {
+        if (exists(file) && file.isFile()) {
             throw new IOException("Cannot create directory " + file + " it is an existing file");
         }
         
-        if (!file.exists()) {
+        if (!exists(file)) {
             if (file.mkdir()) {
                 list.add(file);
             } else {
@@ -826,6 +826,30 @@ public final class FileUtils {
                 (progress==null) ? new Progress() : progress);
     }
     
+    public static boolean exists(File file) {
+        if (file.exists()) {
+            return true;
+        } else if (!file.isFile() && !file.isDirectory()) {
+            final File parent = file.getParentFile();
+            if ((parent == null) || !parent.exists()) {
+                return false;
+            }
+            
+            final File[] children = parent.listFiles();
+            if (children == null) {
+                return false;
+            }
+            
+            for (File child: children) {
+                if (child.equals(file)) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+    
     // private //////////////////////////////////////////////////////////////////////
     private static boolean canAccessDirectoryReal(File file, boolean isReadNotWrite) {
         if(isReadNotWrite) {
@@ -877,13 +901,13 @@ public final class FileUtils {
     
     private static boolean canAccessFile(File checkingFile, boolean isReadNotWrite) {
         File file = checkingFile;
-        boolean existsingFile = file.exists();
+        boolean existsingFile = exists(file);
         //if file doesn`t exist then get it existing parent
         if(!existsingFile) {
             File parent = file;
             do {
                 parent = parent.getParentFile();
-            } while ((parent != null) && !parent.exists());
+            } while ((parent != null) && !exists(parent));
             
             if ((parent == null) || !parent.isDirectory()) {
                 return false;
@@ -940,9 +964,9 @@ public final class FileUtils {
         FilesList list = new FilesList();
         
         // first some basic validation of the destination directory
-        if (target.exists() && target.isFile()) {
+        if (exists(target) && target.isFile()) {
             throw new IOException("Directory is an existing file, cannot unjar.");
-        } else if (!target.exists()) {
+        } else if (!exists(target)) {
             list.add(mkdirs(target));
         }
         
@@ -1095,7 +1119,7 @@ public final class FileUtils {
             if (entry.getName().endsWith(SLASH)) {
                 // some validation (this is a directory entry and thus an existing
                 // file will definitely break things)
-                if (file.exists() && !file.isDirectory()) {
+                if (exists(file) && !file.isDirectory()) {
                     throw new IOException(
                             "An directory entry exists and is not a directory");
                 }
@@ -1103,18 +1127,18 @@ public final class FileUtils {
                 // if the directory does not exist, it will be created and added to
                 // the extracted files list (if it exists already, it will not
                 // appear in the list)
-                if (!file.exists()) {
+                if (!exists(file)) {
                     list.add(mkdirs(file));
                 }
             } else {
                 // some validation of the file's parent directory
                 final File parent = file.getParentFile();
-                if (!parent.exists()) {
+                if (!exists(parent)) {
                     list.add(mkdirs(parent));
                 }
                 
                 // some validation of the file itself
-                if (file.exists() && !file.isFile()) {
+                if (exists(file) && !file.isFile()) {
                     throw new IOException("An file entry exists and is not a file");
                 }
                 
