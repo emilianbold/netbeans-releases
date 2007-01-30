@@ -370,11 +370,12 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.websvc.core</package>
+                <package>org.netbeans.modules.websvc.core.dev.wizard</package>
+                <package>org.netbeans.modules.websvc.core.webservices.action</package>
                 <package>org.netbeans.modules.websvc.core.webservices.ui</package>
                 <package>org.netbeans.modules.websvc.core.webservices.ui.panels</package>
-                <package>org.netbeans.modules.websvc.core.webservices.action</package>
                 <package>org.netbeans.modules.websvc.core.wseditor.spi</package>
-                <package>org.netbeans.modules.websvc.core.wseditor.support</package>             
+                <package>org.netbeans.modules.websvc.core.wseditor.support</package>
                 <package>org.netbeans.modules.websvc.wsdl</package>
             </public-packages>
         </data>
