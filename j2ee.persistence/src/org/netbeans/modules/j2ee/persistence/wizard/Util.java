@@ -48,9 +48,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
-import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
-import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.wizard.entity.WrapperPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel;
@@ -365,9 +363,8 @@ public class Util {
     }
     
     /**
-     * Builds a persistence unit using wizard. Unlike {@link #createPersistenceUnitUsingWizard} 
-     * does not save the created persistence unit nor create the persistence.xml file if it
-     * does not exist. 
+     * Builds a persistence unit using wizard. Does not save the created persistence unit 
+     * nor create the persistence.xml file if it  does not exist. 
      * @param project the current project 
      * @param preselectedDB the name of the database connection that should be preselected in the wizard.
      * @tableGeneration the table generation strategy that should be preselected in the wizard.
@@ -447,22 +444,6 @@ public class Util {
         }
         return null;
         
-    }
-    public static boolean createPersistenceUnitUsingWizard(Project project) throws InvalidPersistenceXmlException {
-        return createPersistenceUnitUsingWizard(project, null, TableGeneration.CREATE);
-    }
-    
-    public static boolean createPersistenceUnitUsingWizard(Project project,
-            String preselectedDB, TableGeneration tableGeneration) throws InvalidPersistenceXmlException {
-        
-        PersistenceUnit punit = buildPersistenceUnitUsingWizard(project, preselectedDB, tableGeneration);
-        if (punit == null){
-            return false;
-        }
-        PUDataObject pud = ProviderUtil.getPUDataObject(project);
-        pud.addPersistenceUnit(punit);
-        pud.save();
-        return true;
     }
     
     public static void addLibraryToProject(Project project, Library library) {
