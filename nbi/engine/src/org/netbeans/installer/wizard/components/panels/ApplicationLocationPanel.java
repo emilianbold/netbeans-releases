@@ -54,6 +54,7 @@ import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiList;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
+import org.netbeans.installer.utils.helper.swing.NbiScrollPane;
 import org.netbeans.installer.utils.helper.swing.NbiTextField;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 import org.netbeans.installer.wizard.ui.SwingUi;
@@ -135,6 +136,7 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
         
         private NbiLabel       listLabel;
         private NbiList        list;
+        private NbiScrollPane  listScrollPane;
         
         private NbiPanel       spacer;
         private NbiPanel       listReplacement;
@@ -172,7 +174,7 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
                 }
                 
                 listLabel.setVisible(true);
-                list.setVisible(true);
+                listScrollPane.setVisible(true);
                 listReplacement.setVisible(false);
             } else {
                 if (selectedLocation != null) {
@@ -182,7 +184,7 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
                 }
                 
                 listLabel.setVisible(false);
-                list.setVisible(false);
+                listScrollPane.setVisible(false);
                 listReplacement.setVisible(true);
             }
             
@@ -226,6 +228,7 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
             spacer = new NbiPanel();
             
             list = new NbiList();
+            list.setBorder(new EmptyBorder(0, 0, 0, 0));
             list.setCellRenderer(new LocationsListCellRenderer());
             list.addListSelectionListener(new ListSelectionListener() {
                 public void valueChanged(ListSelectionEvent event) {
@@ -234,6 +237,8 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
                     }
                 }
             });
+            
+            listScrollPane = new NbiScrollPane(list);
             
             listLabel = new NbiLabel();
             listLabel.setLabelFor(list);
@@ -276,7 +281,7 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
                     GridBagConstraints.HORIZONTAL,    // fill
                     new Insets(11, 11, 0, 11),        // padding
                     0, 0));                           // padx, pady - ???
-            add(list, new GridBagConstraints(
+            add(listScrollPane, new GridBagConstraints(
                     0, 4,                             // x, y
                     2, 1,                             // width, height
                     1.0, 1.0,                         // weight-x, weight-y
