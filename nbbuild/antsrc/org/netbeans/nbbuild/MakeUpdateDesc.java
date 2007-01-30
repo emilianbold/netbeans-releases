@@ -42,7 +42,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
-import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.w3c.dom.Element;
@@ -60,7 +59,7 @@ public class MakeUpdateDesc extends MatchingTask {
     protected boolean usedMatchingTask = false;
     /** Set of NBMs presented as a folder in the Update Center. */
     public /*static*/ class Group {
-        public Vector<FileSet> filesets = new Vector<FileSet> ();
+        public List<FileSet> filesets = new ArrayList<FileSet>();
 	public String name;
 
         /** Displayed name of the group. */
