@@ -16,40 +16,42 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.api.visual.anchor;
+package org.netbeans.modules.visual.anchor;
 
-import org.netbeans.modules.visual.anchor.ImagePointShape;
-import org.netbeans.modules.visual.anchor.SquarePointShape;
+import org.netbeans.api.visual.anchor.PointShape;
 
 import java.awt.*;
 
 /**
- * The factory class of all built-in point shapes.
- * The instances of all built-in point shapes can be used multiple connection widgets.
- *
+ * Represents a square point shape.
  * @author David Kaspar
  */
-public class PointShapeFactory {
+public final class SquarePointShape implements PointShape {
 
-    private PointShapeFactory () {
-    }
+    private int size;
+    private boolean filled;
 
     /**
      * Creates a square shape.
-     * @param size the size
+     * @param size   the size
      * @param filled if true, then the shape is filled
      */
-    public static PointShape createPointShape (int size, boolean filled) {
-        return new SquarePointShape (size, filled);
+    public SquarePointShape (int size, boolean filled) {
+        this.size = size;
+        this.filled = filled;
     }
 
-    /**
-     * Creates an image point shape.
-     * @param image the image
-     * @return the point shape
-     */
-    public static PointShape createImagePointShape (Image image) {
-        return new ImagePointShape (image);
+    public int getRadius () {
+        return (int) Math.ceil (1.5f * size);
+    }
+
+    public void paint (Graphics2D graphics) {
+        int size2 = size + size;
+        Rectangle rect = new Rectangle (- size, - size, size2, size2);
+        if (filled)
+            graphics.fill (rect);
+        else
+            graphics.draw (rect);
     }
 
 }

@@ -18,8 +18,9 @@
  */
 package org.netbeans.api.visual.anchor;
 
+import org.netbeans.modules.visual.anchor.TriangleAnchorShape;
+
 import java.awt.*;
-import java.awt.geom.GeneralPath;
 
 /**
  * Represents an anchor shape which is rendered at the source and the target point of a connection widget where the shape is used.
@@ -41,6 +42,16 @@ public interface AnchorShape {
     public int getRadius ();
 
     /**
+     * Returns a distance by which a line at particular source or target point should be cut (not rendered).
+     * This is used for hollow-triangle shapes, to not paint the connection-line within the triangle.
+     * @return the cut distance in pixels;
+     *     if positive, then the line is cut by specified number of pixels, the line could be cut by radius pixels only;
+     *     if 0.0, then the line is not cut;
+     *     if negative, then the line is extended by specified number of pixels, the line could be extended by radius pixels only
+     */
+    public double getCutDistance ();
+
+    /**
      * Renders the shape into a graphics instance
      * @param graphics the graphics
      * @param source true, if the shape is used for a source point; false if the shape is used for a target point.
@@ -53,67 +64,23 @@ public interface AnchorShape {
     public static final AnchorShape NONE = new AnchorShape() {
         public boolean isLineOriented () { return false; }
         public int getRadius () { return 0; }
+        public double getCutDistance () { return 0; }
         public void paint (Graphics2D graphics, boolean source) { }
     };
 
     /**
+     * The hollow-triangle anchor shape.
+     */
+    public static final AnchorShape TRIANGLE_HOLLOW = new TriangleAnchorShape (12, false, false, true, 12.0);
+
+    /**
      * The filled-triangle anchor shape.
      */
-    public static final AnchorShape TRIANGLE_FILLED = new Triangle (12, true, false);
+    public static final AnchorShape TRIANGLE_FILLED = new TriangleAnchorShape (12, true, false, false, 11.0);
 
     /**
      * The output-triangle anchor shape.
      */
-    public static final AnchorShape TRIANGLE_OUT = new Triangle (12, true, true);
-
-    /**
-     * Represents triangular anchor shape.
-     */
-    public static final class Triangle implements AnchorShape {
-
-        private int size;
-        private boolean filled;
-
-        private GeneralPath generalPath;
-
-        /**
-         * Creates a triangular anchor shape.
-         * @param size the size of triangle
-         * @param filled if true, then the triangle is filled
-         * @param output if true, then it is output triangle
-         */
-        public Triangle (int size, boolean filled, boolean output) {
-            this.size = size;
-            this.filled = filled;
-
-            float side = size * 0.3f;
-            generalPath = new GeneralPath ();
-            if (output) {
-                generalPath.moveTo (size, 0.0f);
-                generalPath.lineTo (0.0f, -side);
-                generalPath.lineTo (0.0f, +side);
-            } else {
-                generalPath.moveTo (0.0f, 0.0f);
-                generalPath.lineTo (size, -side);
-                generalPath.lineTo (size, +side);
-            }
-        }
-
-        public boolean isLineOriented () {
-            return true;
-        }
-
-        public int getRadius () {
-            return (int) Math.ceil(1.5f * size);
-        }
-
-        public void paint (Graphics2D graphics, boolean source) {
-            if (filled)
-                graphics.fill (generalPath);
-            else
-                graphics.draw (generalPath);
-        }
-
-    }
+    public static final AnchorShape TRIANGLE_OUT = new TriangleAnchorShape (12, true, true, false, 11.0);
 
 }

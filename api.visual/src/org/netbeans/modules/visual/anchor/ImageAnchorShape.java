@@ -49,6 +49,10 @@ public class ImageAnchorShape implements AnchorShape {
         return radius;
     }
 
+    public double getCutDistance () {
+        return 0.0;
+    }
+
     public void paint (Graphics2D graphics, boolean source) {
         graphics.drawImage (image, x, y, null);
     }

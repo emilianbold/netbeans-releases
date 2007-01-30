@@ -18,6 +18,8 @@
  */
 package org.netbeans.api.visual.anchor;
 
+import org.netbeans.modules.visual.anchor.SquarePointShape;
+
 import java.awt.*;
 
 /**
@@ -49,43 +51,11 @@ public interface PointShape {
     /**
      * The 8px big filled-square shape.
      */
-    public static final PointShape SQUARE_FILLED_BIG = new Square (4, true);
+    public static final PointShape SQUARE_FILLED_BIG = new SquarePointShape (4, true);
 
     /**
      * The 6px big filled-square shape.
      */
-    public static final PointShape SQUARE_FILLED_SMALL = new Square (3, true);
-
-    /**
-     * Represents a square point shape.
-     */
-    public static final class Square implements PointShape {
-
-        private int size;
-        private boolean filled;
-
-        /**
-         * Creates a square shape.
-         * @param size the size
-         * @param filled if true, then the shape is filled
-         */
-        public Square (int size, boolean filled) {
-            this.size = size;
-            this.filled = filled;
-        }
-
-        public int getRadius () {
-            return (int) Math.ceil (1.5f * size);
-        }
-
-        public void paint (Graphics2D graphics) {
-            int size2 = size + size;
-            Rectangle rect = new Rectangle (- size, - size, size2, size2);
-            if (filled)
-                graphics.fill (rect);
-            else
-                graphics.draw (rect);
-        }
-    }
+    public static final PointShape SQUARE_FILLED_SMALL = new SquarePointShape (3, true);
 
 }

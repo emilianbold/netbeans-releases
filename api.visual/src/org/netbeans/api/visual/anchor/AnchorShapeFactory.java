@@ -19,6 +19,7 @@
 package org.netbeans.api.visual.anchor;
 
 import org.netbeans.modules.visual.anchor.ImageAnchorShape;
+import org.netbeans.modules.visual.anchor.TriangleAnchorShape;
 
 import java.awt.*;
 
@@ -40,6 +41,16 @@ public class AnchorShapeFactory {
      */
     public static AnchorShape createImageAnchorShape (Image image) {
         return new ImageAnchorShape (image);
+    }
+
+    /**
+     * Creates a triangular anchor shape.
+     * @param size the size of triangle
+     * @param filled if true, then the triangle is filled
+     * @param output if true, then it is output triangle
+     */
+    public static AnchorShape createTriangleAnchorShape (int size, boolean filled, boolean output) {
+        return new TriangleAnchorShape (size, filled, output, false, 0.0);
     }
 
 }

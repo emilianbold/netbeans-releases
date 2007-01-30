@@ -589,7 +589,31 @@ public class ConnectionWidget extends Widget {
         Graphics2D gr = getGraphics ();
         gr.setColor (getForeground ());
         GeneralPath path = null;
-        for (Point point : controlPoints) {
+
+        Point firstControlPoint = getFirstControlPoint ();
+        Point lastControlPoint = getLastControlPoint ();
+        boolean isSourceCutDistance = Math.abs (sourceAnchorShape.getCutDistance ()) != 0.0;
+        boolean isTargetCutDistance = Math.abs (targetAnchorShape.getCutDistance ()) != 0.0;
+        double firstControlPointRotation = firstControlPoint != null  &&  (sourceAnchorShape.isLineOriented ()  ||  isSourceCutDistance) ? getSourceAnchorShapeRotation () : 0.0;
+        double lastControlPointRotation = lastControlPoint != null  &&  (targetAnchorShape.isLineOriented ()  || isTargetCutDistance) ? getTargetAnchorShapeRotation () : 0.0;
+
+        List<Point> points;
+        if ((isSourceCutDistance  ||  isTargetCutDistance)  &&  controlPoints.size () >= 2) {
+            points = new ArrayList<Point> (controlPoints);
+            points.set (0, new Point (
+                firstControlPoint.x + (int) (sourceAnchorShape.getCutDistance () * Math.cos (firstControlPointRotation)),
+                firstControlPoint.y + (int) (sourceAnchorShape.getCutDistance () * Math.sin (firstControlPointRotation))
+            ));
+            points.set (controlPoints.size () - 1, new Point (
+                lastControlPoint.x + (int) (targetAnchorShape.getCutDistance () * Math.cos (lastControlPointRotation)),
+                lastControlPoint.y + (int) (targetAnchorShape.getCutDistance () * Math.sin (lastControlPointRotation))
+            ));
+        } else {
+            points = controlPoints;
+        }
+
+
+        for (Point point : points) {
             if (path == null) {
                 path = new GeneralPath ();
                 path.moveTo (point.x, point.y);
@@ -607,24 +631,21 @@ public class ConnectionWidget extends Widget {
 
 
         AffineTransform previousTransform;
-        Point controlPoint;
 
-        controlPoint = getFirstControlPoint ();
-        if (controlPoint != null) {
+        if (firstControlPoint != null) {
             previousTransform = gr.getTransform ();
-            gr.translate (controlPoint.x, controlPoint.y);
+            gr.translate (firstControlPoint.x, firstControlPoint.y);
             if (sourceAnchorShape.isLineOriented ())
-                gr.rotate (getSourceAnchorShapeRotation ());
+                gr.rotate (firstControlPointRotation);
             sourceAnchorShape.paint (gr, true);
             gr.setTransform (previousTransform);
         }
 
-        controlPoint = getLastControlPoint ();
-        if (controlPoint != null) {
+        if (lastControlPoint != null) {
             previousTransform = gr.getTransform ();
-            gr.translate (controlPoint.x, controlPoint.y);
+            gr.translate (lastControlPoint.x, lastControlPoint.y);
             if (targetAnchorShape.isLineOriented ())
-                gr.rotate (getTargetAnchorShapeRotation ());
+                gr.rotate (lastControlPointRotation);
             targetAnchorShape.paint (gr, false);
             gr.setTransform (previousTransform);
         }
