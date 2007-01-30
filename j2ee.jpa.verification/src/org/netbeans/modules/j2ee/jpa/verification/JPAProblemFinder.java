@@ -39,6 +39,8 @@ import org.openide.filesystems.FileObject;
 public class JPAProblemFinder implements CancellableTask<CompilationInfo> {
     private boolean cancelled = false;
     private FileObject file = null;
+    private Object cancellationLock = new Object();
+    private JPAProblemContext context = null;
     public final static Logger LOG = Logger.getLogger(JPAProblemFinder.class.getName());
     
     public JPAProblemFinder(FileObject file){
@@ -57,13 +59,18 @@ public class JPAProblemFinder implements CancellableTask<CompilationInfo> {
                 TreePath path = info.getTrees().getPath(info.getCompilationUnit(), tree);
                 TypeElement javaClass = (TypeElement) info.getTrees().getElement(path);
                 LOG.info("processing class" + javaClass.getSimpleName());
-                JPAProblemContext context = findProblemContext(info, javaClass);
+                context = findProblemContext(info, javaClass);
                 JPARulesEngine rulesEngine = new JPARulesEngine();
                 javaClass.accept(rulesEngine, context);
                 problemsFound.addAll(rulesEngine.getProblemsFound());
+                
+                synchronized(cancellationLock){
+                    context = null;
+                }
             }
         }
         
+        //TODO: should we really reset the errors if the task is cancelled? 
         HintsController.setErrors(file, "JPA Verification", problemsFound); //NOI18N
     }
     
@@ -77,6 +84,12 @@ public class JPAProblemFinder implements CancellableTask<CompilationInfo> {
     
     public void cancel(){
         cancelled = true;
+        
+        synchronized(cancellationLock){
+            if (context != null){
+                context.setCancelled(true);
+            }
+        }
     }
     
     public boolean isCancelled(){

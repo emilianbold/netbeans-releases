@@ -48,4 +48,15 @@ public class ProblemContext {
     public void setCompilationInfo(CompilationInfo info){
         this.info = info;
     }
+    
+    public void setCancelled(boolean cancelled){
+        this.cancelled = cancelled;
+    }
+    
+    /**
+     * @return true if the problem finding task was cancelled
+     */
+    public boolean isCancelled(){
+        return cancelled;
+    }
 }

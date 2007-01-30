@@ -37,6 +37,10 @@ public abstract class RulesEngine extends ElementKindVisitor6<Void, ProblemConte
     @Override public Void visitTypeAsClass(TypeElement javaClass, ProblemContext ctx){
         
         for (Rule<TypeElement> rule : getClassRules()){
+            if (ctx.isCancelled()){
+                break;
+            }
+            
             ErrorDescription problems[] = rule.apply(javaClass, ctx);
             
             if (problems != null){
