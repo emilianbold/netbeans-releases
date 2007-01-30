@@ -41,15 +41,15 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>com.sun.rave.project.jsfproject</friend>
                 <friend>org.netbeans.modules.j2ee.clientproject</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
+                <friend>org.netbeans.modules.j2ee.jpa.verification</friend>
                 <friend>org.netbeans.modules.j2ee.persistence</friend>
                 <friend>org.netbeans.modules.j2ee.refactoring</friend>
-                <friend>org.netbeans.modules.j2ee.verification</friend>
                 <friend>org.netbeans.modules.java.j2seproject</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.project</friend>
-                <friend>com.sun.rave.project.jsfproject</friend>
                 <package>org.netbeans.modules.j2ee.persistence.api</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.support</package>

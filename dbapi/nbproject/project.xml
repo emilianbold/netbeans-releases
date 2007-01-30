@@ -69,8 +69,8 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>com.sun.rave.dataconnectivity</friend>
                 <friend>com.sun.rave.queryeditor</friend>
                 <friend>org.netbeans.modules.db.sql.editor</friend>
+                <friend>org.netbeans.modules.j2ee.jpa.verification</friend>
                 <friend>org.netbeans.modules.j2ee.persistence</friend>
-                <friend>org.netbeans.modules.j2ee.verification</friend>
                 <package>org.netbeans.modules.db.api.explorer</package>
                 <package>org.netbeans.modules.db.api.sql</package>
             </friend-packages>

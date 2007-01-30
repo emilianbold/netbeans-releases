@@ -418,24 +418,24 @@ Microsystems, Inc. All Rights Reserved.
             <friend-packages>
                 <friend>org.netbeans.modules.j2ee.ejbcore</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
+                <friend>org.netbeans.modules.j2ee.jpa.verification</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
-                <friend>org.netbeans.modules.j2ee.verification</friend>
                 <friend>org.netbeans.modules.web.project</friend>
+                <package>org.netbeans.modules.j2ee.persistence.action.spi</package>
                 <package>org.netbeans.modules.j2ee.persistence.dd</package>
                 <package>org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0</package>
                 <package>org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0</package>
                 <package>org.netbeans.modules.j2ee.persistence.entitygenerator</package>
+                <package>org.netbeans.modules.j2ee.persistence.provider</package>
+                <package>org.netbeans.modules.j2ee.persistence.spi.datasource</package>
+                <package>org.netbeans.modules.j2ee.persistence.spi.provider</package>
+                <package>org.netbeans.modules.j2ee.persistence.spi.server</package>
                 <package>org.netbeans.modules.j2ee.persistence.ui</package>
                 <package>org.netbeans.modules.j2ee.persistence.unit</package>
-                <package>org.netbeans.modules.j2ee.persistence.provider</package>
                 <package>org.netbeans.modules.j2ee.persistence.wizard</package>
                 <package>org.netbeans.modules.j2ee.persistence.wizard.entity</package>
                 <package>org.netbeans.modules.j2ee.persistence.wizard.fromdb</package>
                 <package>org.netbeans.modules.j2ee.persistence.wizard.unit</package>
-                <package>org.netbeans.modules.j2ee.persistence.action.spi</package>
-                <package>org.netbeans.modules.j2ee.persistence.spi.provider</package>
-                <package>org.netbeans.modules.j2ee.persistence.spi.datasource</package>
-                <package>org.netbeans.modules.j2ee.persistence.spi.server</package>
             </friend-packages>
         </data>
     </configuration>

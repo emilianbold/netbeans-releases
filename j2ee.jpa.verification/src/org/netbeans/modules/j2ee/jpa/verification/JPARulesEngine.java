@@ -26,6 +26,7 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.jpa.verification.common.Rule;
 import org.netbeans.modules.j2ee.jpa.verification.common.RulesEngine;
 import org.netbeans.modules.j2ee.jpa.verification.rules.IdDefinedInHierarchy;
+import org.netbeans.modules.j2ee.jpa.verification.rules.PersistenceUnitPresent;
 
 /**
  *
@@ -35,6 +36,7 @@ public class JPARulesEngine extends RulesEngine {
     private static final List<Rule<TypeElement>> classRules = new LinkedList<Rule<TypeElement>>();
     
     static{
+        classRules.add(new PersistenceUnitPresent());
         classRules.add(new IdDefinedInHierarchy());
     }
     
