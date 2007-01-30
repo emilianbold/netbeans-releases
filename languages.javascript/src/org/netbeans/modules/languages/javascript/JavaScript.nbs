@@ -306,6 +306,13 @@ COLOR:RegularExpression {
     foreground_color: "0x99006b";
 }
 
+COLOR:js_identifier {
+    color_name: "localVariable";
+    default_coloring: "default";
+    condition:org.netbeans.modules.languages.javascript.JavaScript.isLocalVariable;
+    foreground_color: "0xA06001";
+}
+
 ########### indentation ########################################################
  
 
@@ -374,6 +381,11 @@ STORE:FunctionDeclaration {
     context:"Folder,Block";
     name:"$js_identifier$";
 }
+
+%STORE:FormalParameterList {
+%    context:"Folder,Block";
+%    name:"$js_identifier$";
+%}
 
 STORE:PropertyNameAndValue {
     context:"Folder,Block";

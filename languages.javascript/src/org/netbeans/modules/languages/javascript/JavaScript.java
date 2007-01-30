@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.languages.javascript;
 
+import java.util.ListIterator;
 import org.netbeans.api.languages.TokenInput;
 import org.netbeans.api.languages.DatabaseManager;
 import org.netbeans.api.languages.LibrarySupport;
@@ -49,7 +50,6 @@ import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
@@ -318,7 +318,7 @@ public class JavaScript {
         int position = comp.getCaretPosition();
         PTPath path = node.findPath(position);
         ASTNode methodNode = null;
-        for (Iterator iter = path.iterator(); iter.hasNext(); ) {
+        for (Iterator iter = path.listIterator(); iter.hasNext(); ) {
             Object obj = iter.next();
             if (!(obj instanceof ASTNode))
                 break;
@@ -341,7 +341,7 @@ public class JavaScript {
         int position = comp.getCaretPosition();
         PTPath path = node.findPath(position);
         if (path == null) return false;
-        for (Iterator iter = path.iterator(); iter.hasNext(); ) {
+        for (Iterator iter = path.listIterator(); iter.hasNext(); ) {
             Object obj = iter.next();
             if (!(obj instanceof ASTNode))
                 return false;
@@ -456,6 +456,41 @@ public class JavaScript {
         } catch (ClassNotFoundException ex) {
             return false;
         }
+    }
+    
+    public static boolean isLocalVariable(Cookie cookie) {
+        if (!(cookie instanceof SyntaxCookie)) {
+            return false;
+        }
+        SyntaxCookie scookie = (SyntaxCookie)cookie;
+        PTPath path = scookie.getPTPath();
+        int size = path.size();
+        ASTNode node = (ASTNode)path.get(size - 2);
+        String nt = node.getNT();
+        if ("FormalParameterList".equals(nt)) { // NOI18N
+            return true;
+        }
+        if ("MemberOperator".equals(nt)) { // NOI18N
+            return false;
+        }
+        SToken leaf = (SToken)path.getLeaf();
+        ListIterator iter = path.listIterator(size - 1);
+        while (iter.hasPrevious()) {
+            Object obj = iter.previous();
+            if (obj instanceof ASTNode) {
+                node = (ASTNode)obj;
+                if ("FunctionDeclaration".equals(node.getNT())) { // NOI18N
+                    for (Iterator it = node.getChildren().listIterator(1); it.hasNext(); ) {
+                        Object o = it.next();
+                        if (o instanceof ASTNode && "FormalParameterList".equals(((ASTNode)o).getNT())) { // NOI18N
+                            return ((ASTNode)o).findToken("js_identifier", leaf.getIdentifier()) != null; // NOI18N
+                        }
+                    } // for
+                    return false;
+                } // if
+            } // if
+        } // while
+        return false;
     }
     
     // helper methods ..........................................................
