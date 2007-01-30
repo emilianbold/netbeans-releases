@@ -23,7 +23,6 @@ package org.netbeans.modules.vmd.midpnb.producers;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.ComponentProducer.Result;
 import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
-import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 import org.netbeans.modules.vmd.midp.components.resources.ResourceCD;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.netbeans.modules.vmd.midpnb.components.displayables.SplashScreenCD;
@@ -31,8 +30,12 @@ import org.netbeans.modules.vmd.midpnb.components.displayables.WaitScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.items.TableItemCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.SVGSplashScreenCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.SVGWaitScreenCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.SvgAnimatorWrapperCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.SvgImageCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.SvgMenuCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.SvgMenuItemCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.SvgSplashScreenCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.SvgWaitScreenCD;
 
 /**
  *
@@ -66,15 +69,39 @@ public abstract class CustomComponentProducer extends ComponentProducer {
         }
     }
     
-    public static final class SVGSplashScreen extends CustomComponentProducer {
-        public SVGSplashScreen() {
-            super(SplashScreenCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVG Splash Screen", "SVG Splash Screen", SVGSplashScreenCD.ICON_PATH, SVGSplashScreenCD.ICON_LARGE_PATH)); // NOI18N
+    public static final class SvgSplashScreen extends CustomComponentProducer {
+        public SvgSplashScreen() {
+            super(SplashScreenCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVG Splash Screen", "SVG Splash Screen", SvgSplashScreenCD.ICON_PATH, SvgSplashScreenCD.ICON_LARGE_PATH)); // NOI18N
         }
     }
     
-    public static final class SVGWaitScreen extends CustomComponentProducer {
-        public SVGWaitScreen() {
-            super(SVGWaitScreenCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVG Wait Screen", "SVG Wait Screen", SVGWaitScreenCD.ICON_PATH, SVGWaitScreenCD.ICON_LARGE_PATH)); // NOI18N
+    public static final class SvgWaitScreen extends CustomComponentProducer {
+        public SvgWaitScreen() {
+            super(SvgWaitScreenCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVG Wait Screen", "SVG Wait Screen", SvgWaitScreenCD.ICON_PATH, SvgWaitScreenCD.ICON_LARGE_PATH)); // NOI18N
+        }
+    }
+    
+    public static final class SvgAnimatorWrapper extends CustomComponentProducer {
+        public SvgAnimatorWrapper() {
+            super(SvgAnimatorWrapperCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVG Animator Wrapper", "SVG Animator Wrapper", SvgAnimatorWrapperCD.ICON_PATH, SvgAnimatorWrapperCD.ICON_LARGE_PATH)); // NOI18N
+        }
+    }
+    
+    public static final class SvgImage extends CustomComponentProducer {
+        public SvgImage() {
+            super(SvgImageCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVG Image", "SVG Image", ResourceCD.ICON_PATH, null)); // NOI18N
+        }
+    }
+    
+    public static final class SvgMenu extends CustomComponentProducer {
+        public SvgMenu() {
+            super(SvgMenuCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVG Image", "SVG Image", SvgMenuCD.ICON_PATH, SvgMenuCD.ICON_LARGE_PATH)); // NOI18N
+        }
+    }
+    
+    public static final class SvgMenuItem extends CustomComponentProducer {
+        public SvgMenuItem() {
+            super(SvgMenuItemCD.TYPEID, new PaletteDescriptor(CATEGORY_SVG, "SVG Image Item", "SVG Image Item", SvgMenuItemCD.ICON_PATH, null)); // NOI18N
         }
     }
     

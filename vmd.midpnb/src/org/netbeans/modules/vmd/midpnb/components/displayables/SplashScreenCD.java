@@ -50,8 +50,8 @@ public class SplashScreenCD extends ComponentDescriptor {
     private String PROP_TIMEOUT = "Timeout"; //NOI18N
     private String PROP_ALLOW_TIMEOUT_INTERRUPT = "allowTimeoutInterrupt"; //NOI18N
     private String PROP_DISSMISS_ACTION = "dissmissAction"; //NOI18N
-    private String PROP_IMAGE = "image"; 
-    private String PROP_TEXT = "text";
+    private String PROP_IMAGE = "image"; //NOI18N
+    private String PROP_TEXT = "text"; //NOI18N
 
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
