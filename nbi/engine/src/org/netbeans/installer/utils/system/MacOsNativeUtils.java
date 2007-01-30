@@ -351,7 +351,7 @@ public class MacOsNativeUtils extends UnixNativeUtils {
                     array.removeChild(dct.getParentNode().getParentNode().getParentNode());
                 } else {
                     LogManager.log(ErrorLevel.DEBUG,
-                            "hortcut doesn`t exist in the dock.plist");
+                            "Shortcut doesn`t exist in the dock.plist");
                 }
                 LogManager.unindent();
                 LogManager.log(ErrorLevel.DEBUG,
