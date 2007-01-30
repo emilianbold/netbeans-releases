@@ -48,7 +48,6 @@ import org.openide.util.NbBundle;
 public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
     
     private Project project;
-    private Provider defaultProvider;
     
     public PersistenceUnitWizardPanelDS(Project project, ChangeListener changeListener, boolean editName) {
         this(project, changeListener, editName, TableGeneration.CREATE);
@@ -60,8 +59,6 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         initComponents();
         setTableGeneration(tg);
         this.project = project;
-        this.defaultProvider = ProviderUtil.getContainerManagedProvider(project);
-        
        
         if (ProviderUtil.isValidServerInstanceOrNone(project)){
             connectDatasources();
@@ -177,7 +174,7 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
     }
     
     public boolean isValidPanel() {
-        if (null == defaultProvider || isEmptyOrNull(getDatasource())){
+        if (isEmptyOrNull(getDatasource())){
             return false;
         }
         try{

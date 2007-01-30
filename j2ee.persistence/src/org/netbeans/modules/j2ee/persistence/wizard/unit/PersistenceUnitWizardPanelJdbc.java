@@ -48,7 +48,6 @@ import org.openide.util.NbBundle;
 public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
     
     private Project project;
-    private Provider defaultProvider;
     
     public PersistenceUnitWizardPanelJdbc(Project project, ChangeListener changeListener,  boolean editName) {
         this(project, changeListener, editName, TableGeneration.CREATE);
@@ -59,7 +58,6 @@ public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
         initComponents();
         setTableGeneration(tg);
         this.project = project;
-        this.defaultProvider = ProviderUtil.getContainerManagedProvider(project);
         
         PersistenceProviderComboboxHelper comboHelper = new PersistenceProviderComboboxHelper(project);
         comboHelper.connect(libraryCombo);
