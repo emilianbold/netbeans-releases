@@ -48,6 +48,8 @@ public class JPAProblemFinder implements CancellableTask<CompilationInfo> {
     }
     
     public void run(CompilationInfo info) throws Exception{
+        // the 'cancelled' flag must be reset as the instance of JPAProblemFinder is reused
+        cancelled = false;
         List<ErrorDescription> problemsFound = new ArrayList<ErrorDescription>();
         
         for (Tree tree : info.getCompilationUnit().getTypeDecls()){
@@ -58,7 +60,7 @@ public class JPAProblemFinder implements CancellableTask<CompilationInfo> {
             if (tree.getKind() == Tree.Kind.CLASS){
                 TreePath path = info.getTrees().getPath(info.getCompilationUnit(), tree);
                 TypeElement javaClass = (TypeElement) info.getTrees().getElement(path);
-                LOG.info("processing class" + javaClass.getSimpleName());
+                LOG.fine("processing class" + javaClass.getSimpleName());
                 context = findProblemContext(info, javaClass);
                 JPARulesEngine rulesEngine = new JPARulesEngine();
                 javaClass.accept(rulesEngine, context);
