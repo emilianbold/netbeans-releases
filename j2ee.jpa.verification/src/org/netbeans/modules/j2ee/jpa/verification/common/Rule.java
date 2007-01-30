@@ -91,11 +91,13 @@ public abstract class Rule<E> {
     protected ErrorDescription createProblem(Element subject, ProblemContext ctx){
         Tree elementTree = ctx.getCompilationInfo().getTrees().getTree(subject);
         SourcePositions srcPositions = ctx.getCompilationInfo().getTrees().getSourcePositions();
-        long startPos = srcPositions.getStartPosition(ctx.getCompilationInfo().getCompilationUnit(), elementTree);        
-        long endPos = srcPositions.getEndPosition(ctx.getCompilationInfo().getCompilationUnit(), elementTree);
         
-        ErrorDescription err = ErrorDescriptionFactory.createErrorDescription(getSeverity(),
-                getDescription(), ctx.getFileObject(), (int)startPos, (int)endPos);
+        Utilities.TextSpan underlineSpan = Utilities.getUnderlineSpan(
+                ctx.getCompilationInfo(), elementTree);
+        
+        ErrorDescription err = ErrorDescriptionFactory.createErrorDescription(
+                getSeverity(), getDescription(), ctx.getFileObject(),
+                underlineSpan.getStartOffset(), underlineSpan.getEndOffset());
         
         return err;
     }

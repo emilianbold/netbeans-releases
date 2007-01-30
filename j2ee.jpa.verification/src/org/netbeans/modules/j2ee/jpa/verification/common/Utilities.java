@@ -19,8 +19,17 @@
 
 package org.netbeans.modules.j2ee.jpa.verification.common;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
 
 /**
  *
@@ -35,5 +44,72 @@ public class Utilities {
         }
         
         return null;
+    }
+    
+    /**
+     * This method returns the part of the syntax tree to be highlighted.
+     * It will be usually the class/method/variable identifier.
+     */
+    public static TextSpan getUnderlineSpan(CompilationInfo info, Tree tree){
+        SourcePositions srcPos = info.getTrees().getSourcePositions();
+        
+        int startOffset = (int) srcPos.getStartPosition(info.getCompilationUnit(), tree);
+        int endOffset = (int) srcPos.getEndPosition(info.getCompilationUnit(), tree);
+        Tree modifiersTree = null;
+        
+        if (tree.getKind() == Tree.Kind.CLASS){
+            modifiersTree = ((ClassTree)tree).getModifiers();
+        } else
+            if (tree.getKind() == Tree.Kind.VARIABLE){
+                modifiersTree = ((VariableTree)tree).getModifiers();
+            } else
+                if (tree.getKind() == Tree.Kind.METHOD){
+                    modifiersTree = ((MethodTree)tree).getModifiers();
+                }
+        
+        
+        if (modifiersTree != null){
+            int searchStart = (int) srcPos.getEndPosition(info.getCompilationUnit(), modifiersTree);
+            
+            TokenSequence tokenSequence = info.getTreeUtilities().tokensFor(tree);
+            
+            if (tokenSequence != null){
+                boolean eob = false;
+                tokenSequence.move(searchStart);
+                
+                do{
+                    eob = !tokenSequence.moveNext();
+                }
+                while (!eob && tokenSequence.token().id() != JavaTokenId.IDENTIFIER);
+                
+                if (!eob){
+                    Token identifier = tokenSequence.token();
+                    startOffset = identifier.offset(info.getTokenHierarchy());
+                    endOffset = startOffset + identifier.length();
+                }
+            }
+        }
+        return new TextSpan(startOffset, endOffset);
+    }
+    
+    /**
+     * Represents a span of text
+     */
+    public static class TextSpan{
+        private int startOffset;
+        private int endOffset;
+        
+        public TextSpan(int startOffset, int endOffset){
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
+        }
+        
+        public int getStartOffset(){
+            return startOffset;
+        }
+        
+        public int getEndOffset(){
+            return endOffset;
+        }
     }
 }
