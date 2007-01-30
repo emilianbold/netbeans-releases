@@ -25,7 +25,7 @@ public class SchemaModelTest extends TestCase {
     private static String TEST_BAD_XSD = "resources/testBad.xsd";
     private static String TEST_BAD_INCLUDE_XSD = "resources/testBadInclude.xsd";
     private static String TEST_TYPES_XSD = "resources/testTypes.xsd";
-    private static String TEST_FAKE_XSD = "resources/address.xsd";
+    private static String TEST_FAKE_XSD = "resources/fakeSchema.xsd";
     
     public SchemaModelTest(String testName) {
         super(testName);
@@ -168,4 +168,8 @@ public class SchemaModelTest extends TestCase {
         assert(gst.getName() != null && gst.getName().equals("anyType"));
     }
 
+    public void testFakeSchema() throws Exception {
+        SchemaModel sm = Util.loadSchemaModel(TEST_FAKE_XSD);
+        assert(sm.getState() == State.NOT_WELL_FORMED);
+}
 }
