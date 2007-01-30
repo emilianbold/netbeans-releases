@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
 <bindings 
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
-    wsdlLocation="file:/space/home/mkuchtiak/cvs/nb_all/websvc/jaxwsmodel/test/work/sys/tests/unit/data/AddNumbers2.wsdl"
+    wsdlLocation="AddNumbers2.wsdl"
     xmlns="http://java.sun.com/xml/ns/jaxws">
     <package name="external_customize.client"/>
     <!-- default settings -->
