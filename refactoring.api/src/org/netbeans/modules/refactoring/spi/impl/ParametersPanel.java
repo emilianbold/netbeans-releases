@@ -79,6 +79,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     private final int INPUT_PARAMETERS = 1;
     private final int POST_CHECK = 2;
     private final int PROBLEM = 3;
+    private final int CHECK_PARAMETERS = 4;
     
     private transient int currentState = INPUT_PARAMETERS;
 
@@ -305,10 +306,11 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                     }
                     return;
                 }
-            } else if (currentState != POST_CHECK) {
+            } else if (currentState != POST_CHECK && currentState != CHECK_PARAMETERS) {
                 result = RefactoringSession.create(rui.getName());
-                
                 //setParameters and prepare is done asynchronously
+                rp.post(new Prepare());
+            } else if(currentState == CHECK_PARAMETERS) {
                 rp.post(new Prepare());
             }
         }
@@ -671,15 +673,19 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     
     private class Prepare implements Runnable {
         public void run() {
-            if (currentState != POST_CHECK) {
+            if (currentState != POST_CHECK && currentState != CHECK_PARAMETERS) {
                 problem = rui.setParameters();
                 if (problem != null) {
-                    currentState = POST_CHECK;
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            placeErrorPanel(problem);
-                        }});
-                        return;
+                    currentState = CHECK_PARAMETERS;
+                    try {
+                        SwingUtilities.invokeAndWait(new Runnable() {
+                            public void run() {
+                                placeErrorPanel(problem);
+                            }});
+                    } catch (Exception ie) {
+                        throw (RuntimeException) new RuntimeException().initCause(ie);
+                    }
+                    return;
                 }
             }
             
