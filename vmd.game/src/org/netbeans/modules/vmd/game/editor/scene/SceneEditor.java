@@ -19,10 +19,8 @@
 
 package org.netbeans.modules.vmd.game.editor.scene;
 
-import java.awt.Color;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 
 import org.netbeans.modules.vmd.game.model.Scene;
 

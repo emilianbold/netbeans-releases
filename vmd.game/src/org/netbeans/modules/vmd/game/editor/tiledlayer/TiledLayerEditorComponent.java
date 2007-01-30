@@ -35,6 +35,9 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
@@ -48,10 +51,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.DebugGraphics;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
@@ -85,18 +88,18 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	
 	public static final byte GRID_MODE_DOTS = 0;
 	public static final byte GRID_MODE_LINES = 1;
+	public static final byte GRID_MODE_NOGRID = 2;
 	
 	private static final Color GRID_COLOR = Color.LIGHT_GRAY;
 	private static final Color ANIMATED_TILE_GRID_COLOR = Color.CYAN;
 	private static final Color HILITE_COLOR = new Color(0, 0, 255, 20);
-	
-	
-	private static final int GRID_WIDTH = 1;
+		
 	private static final int CELL_BORDER_WIDTH = 0;
 	private static final int SELECTION_BORDER_WIDTH = 2;
 	
 	
 	private byte gridMode = GRID_MODE_LINES;
+	private int gridWidth = 1;
 	
 	private TiledLayer tiledLayer;
 	
@@ -108,11 +111,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	
 	private Position cellHiLited;
 	private Set<Position> cellsSelected = Collections.synchronizedSet(new HashSet<Position>());
-//	private Set<Integer> rowsSelected = Collections.synchronizedSet(new HashSet<Integer>());
-//	private Set<Integer> columnsSelected = Collections.synchronizedSet(new HashSet<Integer>());
-	
-	//private Point start = new Point(0, 0);
-	
+		
 	private Timer timer;
 	
 	RulerHorizontal rulerHorizontal;
@@ -126,7 +125,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		this.addMouseMotionListener(new PaintMotionListener());
 		this.setAutoscrolls(true);
 		this.timer = new Timer();
-		this.timer.schedule(new HiliteAnimator(), 0, 220);
+		this.timer.schedule(new HiliteAnimator(), 0, 100);
 		ToolTipManager.sharedInstance().registerComponent(this);
 		//DnD
 		DropTarget dropTarget = new DropTarget(this, new TiledLayerDropTargetListener());
@@ -143,6 +142,12 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	
 	public void setGridMode(byte gridMode) {
 		this.gridMode = gridMode;
+		if (this.gridMode == GRID_MODE_NOGRID) {
+			this.gridWidth = 0;
+		}
+		else {
+			this.gridWidth = 1;
+		}
 	}
 	
 	public String getToolTipText(MouseEvent event) {
@@ -156,8 +161,8 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	}
 	
 	public Dimension getPreferredSize() {
-		int width = GRID_WIDTH + (this.cellWidth + GRID_WIDTH) * this.tiledLayer.getColumnCount();
-		int height = GRID_WIDTH + (this.cellHeight + GRID_WIDTH) * this.tiledLayer.getRowCount();
+		int width = this.gridWidth + (this.cellWidth + this.gridWidth) * this.tiledLayer.getColumnCount();
+		int height = this.gridWidth + (this.cellHeight + this.gridWidth) * this.tiledLayer.getRowCount();
 		return new Dimension(width, height);
 	}
 	
@@ -187,10 +192,10 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	private void paintGridDots(Graphics2D g) {
 		//Rectangle rect = g.getClipBounds();
 		g.setColor(Color.BLACK);
-		for (int horizontal = 0; horizontal < this.getHeight(); horizontal += (this.cellHeight + GRID_WIDTH)) {
-			//g.fillRect(0, horizontal, this.getWidth(), GRID_WIDTH);
-			for (int vertical = 0; vertical < this.getWidth(); vertical += (cellWidth + GRID_WIDTH)) {
-				//g.fillRect(vertical, 0, GRID_WIDTH, this.getHeight());
+		for (int horizontal = 0; horizontal < this.getHeight(); horizontal += (this.cellHeight + this.gridWidth)) {
+			//g.fillRect(0, horizontal, this.getWidth(), this.gridWidth);
+			for (int vertical = 0; vertical < this.getWidth(); vertical += (cellWidth + this.gridWidth)) {
+				//g.fillRect(vertical, 0, this.gridWidth, this.getHeight());
 				g.fillRect(vertical, horizontal, 1, 1);
 			}
 		}
@@ -200,13 +205,13 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	private void paintGridLines(Graphics2D g) {
 		//Rectangle rect = g.getClipBounds();
 		g.setColor(GRID_COLOR);
-		for (int horizontal = 0; horizontal < this.getHeight(); horizontal += (this.cellHeight + GRID_WIDTH)) {
+		for (int horizontal = 0; horizontal < this.getHeight(); horizontal += (this.cellHeight + this.gridWidth)) {
 			//g.drawLine(0, horizontal, this.getWidth(), horizontal);
-			g.fillRect(0, horizontal, this.getWidth(), GRID_WIDTH);
+			g.fillRect(0, horizontal, this.getWidth(), this.gridWidth);
 		}
-		for (int vertical = 0; vertical < this.getWidth(); vertical += (cellWidth + GRID_WIDTH)) {
+		for (int vertical = 0; vertical < this.getWidth(); vertical += (cellWidth + this.gridWidth)) {
 			//g.drawLine(vertical, 0, vertical, this.getHeight());
-			g.fillRect(vertical, 0, GRID_WIDTH, this.getHeight());
+			g.fillRect(vertical, 0, this.gridWidth, this.getHeight());
 		}
 	}
 	
@@ -267,7 +272,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		Rectangle rect = this.getCellArea(cell);
 		g.setColor(color);
 		g.fillRect(rect.x, rect.y, rect.width, SELECTION_BORDER_WIDTH);
-		g.fillRect(rect.x, rect.y, SELECTION_BORDER_WIDTH, rect.height - (GRID_WIDTH * 2));
+		g.fillRect(rect.x, rect.y, SELECTION_BORDER_WIDTH, rect.height - (this.gridWidth * 2));
 		g.fillRect(rect.x + (rect.width - SELECTION_BORDER_WIDTH), rect.y, SELECTION_BORDER_WIDTH, rect.height);
 		g.fillRect(rect.x, rect.y + (rect.height - SELECTION_BORDER_WIDTH), rect.width, SELECTION_BORDER_WIDTH);
 	}
@@ -275,10 +280,10 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		//if (DEBUG) System.out.println("paintGridHiLite: " + cell.toString());
 		Rectangle rect = this.getCellArea(cell);
 		g.setColor(color);
-		g.fillRect(rect.x, rect.y, rect.width, GRID_WIDTH);
-		g.fillRect(rect.x, rect.y, GRID_WIDTH, rect.height);
-		g.fillRect(rect.x + (rect.width - GRID_WIDTH), rect.y, GRID_WIDTH, rect.height);
-		g.fillRect(rect.x, rect.y + (rect.height - GRID_WIDTH), rect.width, GRID_WIDTH);
+		g.fillRect(rect.x, rect.y, rect.width, this.gridWidth);
+		g.fillRect(rect.x, rect.y, this.gridWidth, rect.height);
+		g.fillRect(rect.x + (rect.width - this.gridWidth), rect.y, this.gridWidth, rect.height);
+		g.fillRect(rect.x, rect.y + (rect.height - this.gridWidth), rect.width, this.gridWidth);
 	}
 	
 	TiledLayer getTiledLayer() {
@@ -289,8 +294,8 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		return this.getCellAtCoordinates(p.x, p.y);
 	}
 	private Position getCellAtCoordinates(int x, int y) {
-		int row = (y - GRID_WIDTH) / (this.cellHeight + GRID_WIDTH);
-		int col = (x - GRID_WIDTH) / (this.cellWidth + GRID_WIDTH);
+		int row = (y - this.gridWidth) / (this.cellHeight + this.gridWidth);
+		int col = (x - this.gridWidth) / (this.cellWidth + this.gridWidth);
 		if (x < 0) {
 			col--;
 		}
@@ -305,7 +310,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		return this.getCellArea(cell.getRow(), cell.getCol());
 	}
 	private Rectangle getCellArea(int row, int col) {
-		Rectangle cellArea = new Rectangle( ( (this.cellWidth + GRID_WIDTH) * col) + GRID_WIDTH, ((this.cellHeight + GRID_WIDTH) * row) + GRID_WIDTH, this.cellWidth, this.cellHeight);
+		Rectangle cellArea = new Rectangle( ( (this.cellWidth + this.gridWidth) * col) + this.gridWidth, ((this.cellHeight + this.gridWidth) * row) + this.gridWidth, this.cellWidth, this.cellHeight);
 		return cellArea;
 	}
 	
@@ -524,7 +529,21 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		
 		TrimToSizeAction tts = new TrimToSizeAction();
 		
+		JCheckBoxMenuItem itemPaint = new JCheckBoxMenuItem("Paint", this.editMode == EDIT_MODE_PAINT);
+		itemPaint.addItemListener(new EditModeListener(EDIT_MODE_PAINT));
+
+		JCheckBoxMenuItem itemSelect = new JCheckBoxMenuItem("Select", this.editMode == EDIT_MODE_SELECT);
+		itemSelect.addItemListener(new EditModeListener(EDIT_MODE_SELECT));
+
+		JCheckBoxMenuItem itemErase = new JCheckBoxMenuItem("Erase", this.editMode == EDIT_MODE_ERASE);
+		itemErase.addItemListener(new EditModeListener(EDIT_MODE_ERASE));
+		
 		JPopupMenu menu = new JPopupMenu();
+		
+		menu.add(itemPaint);
+		menu.add(itemSelect);
+		menu.add(itemErase);		
+        menu.addSeparator();
 		menu.add(ctl);
 		menu.add(dtl);
 		List<Action> actions = this.tiledLayer.getActions();
@@ -559,6 +578,18 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		menu.show(this, e.getX(), e.getY());
 	}
 	
+	private class EditModeListener implements ItemListener {
+		private int mode;
+		public EditModeListener(int mode) {
+			this.mode = mode;
+		}
+        public void itemStateChanged(ItemEvent e) {
+			System.out.println("setting edit mode");
+			TiledLayerEditorComponent.this.setEditMode(this.mode);
+        }
+	}
+
+    
 	public class CreateTiledLayerAction extends AbstractAction {
 		{
 			this.putValue(NAME, "Create new");
@@ -846,12 +877,14 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	
 	private class HiliteAnimator extends TimerTask {
 		private Color[] colors = {
-			null, 
-			new Color(128, 220, 255, 50), 
-			new Color(128, 220, 255, 120),
-			new Color(128, 220, 255, 190),
-			//new Color(128, 220, 255, 250),
-		};
+			//null, 
+			new Color(0, 0, 255),
+			new Color(128, 0, 255),
+			new Color(255, 0, 255),
+			new Color(255, 0, 255),
+			new Color(255, 0, 128),
+			new Color(255, 0, 0),
+        };
 		private int i = 0;
 		
 		public void run() {
@@ -868,7 +901,12 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 						if (false) System.out.println("looking at: " + cell);
 						if (TiledLayerEditorComponent.this.cellsSelected.contains(cell)) {
 							if (false) System.out.println("selected cell repaint: " + cell);
-							TiledLayerEditorComponent.this.repaint(TiledLayerEditorComponent.this.getCellArea(cell));
+							Rectangle rect = TiledLayerEditorComponent.this.getCellArea(cell);
+                            
+							TiledLayerEditorComponent.this.repaint(rect.x, rect.y, rect.width, SELECTION_BORDER_WIDTH);
+							TiledLayerEditorComponent.this.repaint(rect.x, rect.y, SELECTION_BORDER_WIDTH, rect.height - (TiledLayerEditorComponent.this.gridWidth * 2));
+							TiledLayerEditorComponent.this.repaint(rect.x + (rect.width - SELECTION_BORDER_WIDTH), rect.y, SELECTION_BORDER_WIDTH, rect.height);
+							TiledLayerEditorComponent.this.repaint(rect.x, rect.y + (rect.height - SELECTION_BORDER_WIDTH), rect.width, SELECTION_BORDER_WIDTH);
 						}
 					}
 				}
@@ -971,7 +1009,6 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		this.revalidate();
 		this.repaint();
 		this.rulerHorizontal.repaint();
-		//this.rulerVertical.repaint();
 	}
 	
 	public void columnsRemoved(TiledLayer tiledLayer, int index, int count) {
@@ -979,14 +1016,12 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		this.revalidate();
 		this.repaint();
 		this.rulerHorizontal.repaint();
-		//this.rulerVertical.repaint();
 	}
 	
 	public void rowsInserted(TiledLayer tiledLayer, int index, int count) {
 		this.shiftSelectedCellRows(index, count);
 		this.revalidate();
 		this.repaint();
-		//this.rulerHorizontal.repaint();
 		this.rulerVertical.repaint();
 	}
 	
@@ -994,7 +1029,6 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		this.shiftSelectedCellRows(index, -count);
 		this.revalidate();
 		this.repaint();
-		//this.rulerHorizontal.repaint();
 		this.rulerVertical.repaint();
 	}
 	
@@ -1037,9 +1071,89 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 			}
 		}
 	}
+
+	private GridButton gridButton = new GridButton();
+	
+	public JComponent getGridButton() {
+		return this.gridButton;
+	}
+	
+	private class GridButton extends JComponent implements MouseListener {
+		private static final int BORDER = 2;
+		public GridButton() {
+			ToolTipManager.sharedInstance().registerComponent(this);
+			this.addMouseListener(this);
+		}
+		
+		@Override
+		public String getToolTipText() {
+			return "Toogle grid";
+		}
+		
+		@Override
+		protected void paintComponent(Graphics g) {
+			g.setColor(new Color(230, 230, 255));
+			g.fillRect(0, 0, this.getWidth(), this.getHeight());
+			g.setColor(Color.BLACK);
+			int startx = BORDER;
+			int starty = BORDER;
+			int x = startx;
+			int y = starty;
+			int w = this.getWidth() - (2*BORDER);
+			int h = this.getHeight() - (2*BORDER);
+			if (TiledLayerEditorComponent.this.gridWidth > 0) {
+				if (TiledLayerEditorComponent.this.gridMode == GRID_MODE_DOTS) {
+					g.setColor(Color.GRAY);
+				}
+				int offX = w / 2;
+				int offY = h / 2;
+				
+				x += offX;
+				g.drawLine(x, starty, x, starty + h);
+				
+				y += offY;
+				g.drawLine(startx, y, startx + w, y);
+				
+			}
+			g.setColor(Color.BLACK);
+			g.drawRoundRect(startx, starty, w, h, BORDER, BORDER);
+		}
+
+		public void mouseClicked(MouseEvent e) {
+			byte mode = TiledLayerEditorComponent.this.gridMode;
+			if (mode == GRID_MODE_LINES) {
+				if (TiledLayerEditorComponent.this.gridWidth == 0) {
+					TiledLayerEditorComponent.this.setGridMode(GRID_MODE_DOTS);
+				}
+				else {
+					TiledLayerEditorComponent.this.gridWidth = 0;
+				}
+			}
+			else {
+				TiledLayerEditorComponent.this.setGridMode(GRID_MODE_LINES);
+				TiledLayerEditorComponent.this.gridWidth = 1;
+			}
+			this.repaint();
+			TiledLayerEditorComponent.this.rulerHorizontal.repaint();
+			TiledLayerEditorComponent.this.rulerVertical.repaint();
+			TiledLayerEditorComponent.this.repaint();
+		}
+
+		public void mouseEntered(MouseEvent e) {
+		}
+
+		public void mouseExited(MouseEvent e) {
+		}
+
+		public void mousePressed(MouseEvent e) {
+		}
+
+		public void mouseReleased(MouseEvent e) {
+		}
+	}
 	
 	class RulerVertical extends JComponent implements MouseListener, MouseMotionListener {
-		private static final int SIZE = 12;
+		private static final int SIZE = 14;
 		private static final boolean DEBUG = false;
 		
 		private Set<Integer> pressed = new HashSet<Integer>();
@@ -1068,7 +1182,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 			Rectangle rect = g.getClipBounds();
 			if (DEBUG) System.out.println("RulerVertical.repaint " + rect);
 			
-			int unit = GRID_WIDTH + TiledLayerEditorComponent.this.cellHeight;
+			int unit = TiledLayerEditorComponent.this.gridWidth + TiledLayerEditorComponent.this.cellHeight;
 			
 			for (int y = (rect.y / unit) * unit; y <= rect.y + rect.height; y+= unit) {
 				int row = y/unit;
@@ -1086,11 +1200,11 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 				}
 				
 				
-				g.fill3DRect(0, y + GRID_WIDTH/2, SIZE, unit, raised);
+				g.fill3DRect(0, y + TiledLayerEditorComponent.this.gridWidth/2, SIZE, unit, raised);
 				
 				if (row == this.hilitedRowHeader) {
 					g.setColor(HILITE_COLOR);
-					g.fill3DRect(0, y + GRID_WIDTH/2, SIZE, unit, raised);
+					g.fill3DRect(0, y + TiledLayerEditorComponent.this.gridWidth/2, SIZE, unit, raised);
 				}
 			}
 		}
@@ -1099,15 +1213,15 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 			return this.getRowAtCoordinates(point.x, point.y);
 		}
 		private int getRowAtCoordinates(int x, int y) {
-			return (y - GRID_WIDTH) / (TiledLayerEditorComponent.this.cellHeight + GRID_WIDTH);
+			return (y - TiledLayerEditorComponent.this.gridWidth) / (TiledLayerEditorComponent.this.cellHeight + TiledLayerEditorComponent.this.gridWidth);
 		}
 		
 		private Rectangle getRowHeaderArea(int row) {
 			Rectangle area = new Rectangle( 
 					0,
-					((TiledLayerEditorComponent.this.cellHeight + GRID_WIDTH) * row) + GRID_WIDTH/2, 
+					((TiledLayerEditorComponent.this.cellHeight + TiledLayerEditorComponent.this.gridWidth) * row) + TiledLayerEditorComponent.this.gridWidth/2, 
 					SIZE,
-					TiledLayerEditorComponent.this.cellHeight + GRID_WIDTH
+					TiledLayerEditorComponent.this.cellHeight + TiledLayerEditorComponent.this.gridWidth
 					);
 			return area;
 		}
@@ -1219,7 +1333,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	}
 	
 	class RulerHorizontal  extends JComponent implements MouseListener, MouseMotionListener {
-		private static final int SIZE = 12;
+		private static final int SIZE = 14;
 		private static final boolean DEBUG = false;
 		
 		private Set<Integer> pressed = new HashSet<Integer>();
@@ -1247,7 +1361,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 			Rectangle rect = g.getClipBounds();
 			if (DEBUG) System.out.println("RulerHorizontal.repaint " + rect);
 			
-			int unit = GRID_WIDTH + TiledLayerEditorComponent.this.cellWidth;
+			int unit = TiledLayerEditorComponent.this.gridWidth + TiledLayerEditorComponent.this.cellWidth;
 			
 			for (int x = (rect.x / unit) * unit; x <= rect.x + rect.width; x+= unit) {
 				int col =  x / unit;
@@ -1265,11 +1379,11 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 					raised = false;
 				}
 
-				g.fill3DRect(x + GRID_WIDTH/2, 0, unit, SIZE, raised);
+				g.fill3DRect(x + TiledLayerEditorComponent.this.gridWidth/2, 0, unit, SIZE, raised);
 				
 				if (col == this.hilitedColumnHeader) {
 					g.setColor(HILITE_COLOR);
-					g.fill3DRect(x + GRID_WIDTH/2, 0, unit, SIZE, raised);
+					g.fill3DRect(x + TiledLayerEditorComponent.this.gridWidth/2, 0, unit, SIZE, raised);
 				}
 			}
 		}
@@ -1278,14 +1392,14 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 			return this.getColumnAtCoordinates(point.x, point.y);
 		}
 		private int getColumnAtCoordinates(int x, int y) {
-			return (x - GRID_WIDTH) / (TiledLayerEditorComponent.this.cellWidth + GRID_WIDTH);
+			return (x - TiledLayerEditorComponent.this.gridWidth) / (TiledLayerEditorComponent.this.cellWidth + TiledLayerEditorComponent.this.gridWidth);
 		}
 		
 		private Rectangle getColumnHeaderArea(int col) {
 			Rectangle area = new Rectangle( 
-					((TiledLayerEditorComponent.this.cellWidth + GRID_WIDTH) * col) + GRID_WIDTH/2, 
+					((TiledLayerEditorComponent.this.cellWidth + TiledLayerEditorComponent.this.gridWidth) * col) + TiledLayerEditorComponent.this.gridWidth/2, 
 					0,
-					TiledLayerEditorComponent.this.cellWidth + GRID_WIDTH,
+					TiledLayerEditorComponent.this.cellWidth + TiledLayerEditorComponent.this.gridWidth,
 					SIZE);
 			return area;
 		}

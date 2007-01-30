@@ -58,7 +58,7 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 		super(imageResource, index);
 		this.sequenceContainer = new SequenceContainerImpl(this, null, this.propertyChangeSupport, imageResource);
 		this.name = name;
-		Sequence sequence = this.createSequence(name, 1);
+		Sequence sequence = this.createSequence(name +  "SeqDefault", 1);
 		this.setDefaultSequence(sequence);
 	}
 

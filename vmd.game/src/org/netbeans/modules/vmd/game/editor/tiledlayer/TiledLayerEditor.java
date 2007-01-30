@@ -67,6 +67,7 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
 		});
 		this.editorScroll.setColumnHeaderView(this.editorComponent.rulerHorizontal);
 		this.editorScroll.setRowHeaderView(this.editorComponent.rulerVertical);
+		this.editorScroll.setCorner(JScrollPane.UPPER_LEFT_CORNER, this.editorComponent.getGridButton());
 		JScrollPane scrollAnimTiles = new JScrollPane(new AnimatedTileList(editorComponent));
 		scrollAnimTiles.setBorder(null);
 		this.panelAnimatedTiles.add(scrollAnimTiles, BorderLayout.CENTER);
