@@ -340,7 +340,7 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
     
     public static class LocationsListCellRenderer extends JLabel implements ListCellRenderer {
         public LocationsListCellRenderer() {
-            setBorder(new EmptyBorder(2, 2, 2, 2));
+            setBorder(new EmptyBorder(3, 3, 3, 3));
         }
         
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
