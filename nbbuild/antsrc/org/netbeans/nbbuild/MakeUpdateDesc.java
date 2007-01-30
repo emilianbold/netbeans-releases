@@ -21,7 +21,6 @@ package org.netbeans.nbbuild;
 
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.apache.tools.ant.types.FileSet;
@@ -29,10 +28,20 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.MatchingTask;
 import org.apache.tools.ant.DirectoryScanner;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.TimeZone;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -76,9 +85,9 @@ public class MakeUpdateDesc extends MatchingTask {
 	}
     }
 
-    private Vector<Entityinclude> entityincludes = new Vector<Entityinclude>();
-    private Vector<Group> groups = new Vector<Group> ();
-    private Vector<FileSet> filesets = new Vector<FileSet> ();
+    private List<Entityinclude> entityincludes = new ArrayList<Entityinclude>();
+    private List<Group> groups = new ArrayList<Group>();
+    private List<FileSet> filesets = new ArrayList<FileSet>();
 
     private File desc;
 
@@ -105,7 +114,7 @@ public class MakeUpdateDesc extends MatchingTask {
      * Adds a set of files (nested fileset attribute).
      */
     public void addFileset(FileSet set) {
-        filesets.addElement(set);
+        filesets.add(set);
     }
 
     
@@ -147,26 +156,24 @@ public class MakeUpdateDesc extends MatchingTask {
     public void execute () throws BuildException {
         Group root = new Group();
         root.setName("root"); //NOI18N
-        for (int i=0; i < filesets.size(); i++) {
-            root.addFileSet(filesets.elementAt(i));
+        for (FileSet fs : filesets) {
+            root.addFileSet(fs);
         }
-        groups.addElement(root);
+        groups.add(root);
 	if (desc.exists ()) {
 	    // Simple up-to-date check.
 	    long time = desc.lastModified ();
 	    boolean uptodate = true;
 
 	CHECK:
-            for (int i=0; i<groups.size(); i++) {
-		Group g = groups.elementAt(i);
-                for (int j=0; j<g.filesets.size(); j++) {
-		    FileSet n = g.filesets.elementAt(j);
+            for (Group g : groups) {
+                for (FileSet n : g.filesets) {
                     if ( n != null ) {
                         DirectoryScanner ds = n.getDirectoryScanner(getProject());
                         String[] files = ds.getIncludedFiles();
                         File bdir = ds.getBasedir();
-                        for (int k=0; k <files.length; k++) {
-                            File n_file = new File(bdir, files[k]);
+                        for (String file : files) {
+                            File n_file = new File(bdir, file);
                             if (n_file.lastModified () > time) {
                                 uptodate = false;
                                 break CHECK;
@@ -181,11 +188,8 @@ public class MakeUpdateDesc extends MatchingTask {
         
         Map<String,List<Module>> modulesByGroup = loadNBMs();
         boolean targetClustersDefined = false;
-        Iterator it1 = modulesByGroup.values().iterator();
-        while (it1.hasNext()) {
-            Iterator it2 = ((List) it1.next()).iterator();
-            while (it2.hasNext()) {
-                Module m = (Module) it2.next();
+        for (List<Module> modules : modulesByGroup.values()) {
+            for (Module m : modules) {
                 targetClustersDefined |= m.xml.getAttributeNode("targetcluster") != null;
             }
         }
@@ -193,15 +197,15 @@ public class MakeUpdateDesc extends MatchingTask {
         // XXX Apparently cannot create a doc with entities using DOM 2.
 	try {
             desc.delete();
-	    java.io.OutputStream os = new java.io.FileOutputStream (desc);
+            OutputStream os = new FileOutputStream(desc);
 	    try {
                 
-                java.io.PrintWriter pw = new java.io.PrintWriter (new java.io.OutputStreamWriter (os, "UTF-8")); //NOI18N
+                PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, "UTF-8")); //NOI18N
 		pw.println ("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"); //NOI18N
 		pw.println ();
-		java.text.SimpleDateFormat format = new java.text.SimpleDateFormat ("ss/mm/HH/dd/MM/yyyy"); //NOI18N
-		format.setTimeZone (java.util.TimeZone.getTimeZone ("GMT")); //NOI18N
-		String date = format.format (new java.util.Date ());
+                DateFormat format = new SimpleDateFormat("ss/mm/HH/dd/MM/yyyy"); //NOI18N
+                format.setTimeZone(TimeZone.getTimeZone("GMT")); //NOI18N
+                String date = format.format(new Date());
                 
             if ( entityincludes.size() > 0 ) {
                     // prepare .ent file
@@ -224,7 +228,7 @@ public class MakeUpdateDesc extends MatchingTask {
                     pw.println ("    <!ENTITY entity SYSTEM \"" + xmlEscape(desc_ent.getName()) + "\">"); //NOI18N
                     int inc_num=0;
                     for (int i=0; i<entityincludes.size(); i++) {
-                        Entityinclude ei = entityincludes.elementAt(i);
+                        Entityinclude ei = entityincludes.get(i);
                         pw.println ("    <!ENTITY include" + i + " SYSTEM \"" + xmlEscape(ei.file) + "\">"); //NOI18N
                     }
                     pw.println ("]>"); //NOI18N
@@ -239,8 +243,8 @@ public class MakeUpdateDesc extends MatchingTask {
                     pw.flush ();
                     pw.close ();
                 
-                    os = new java.io.FileOutputStream (desc_ent);
-                    pw = new java.io.PrintWriter (new java.io.OutputStreamWriter (os, "UTF-8")); //NOI18N
+                    os = new FileOutputStream(desc_ent);
+                    pw = new PrintWriter(new OutputStreamWriter(os, "UTF-8")); //NOI18N
                     pw.println ("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"); //NOI18N
                     pw.println ("<!-- external entity include " + date + " -->");
                     pw.println ();
@@ -257,11 +261,9 @@ public class MakeUpdateDesc extends MatchingTask {
 
                 pw.println ();
 		Map<String,Element> licenses = new HashMap<String,Element>();
-		java.util.Set<String> licenseNames = new java.util.HashSet<String> ();
+                Set<String> licenseNames = new HashSet<String>();
                 
-                Iterator<Map.Entry<String,List<Module>>> modulesByGroupIt = modulesByGroup.entrySet().iterator();
-                while (modulesByGroupIt.hasNext()) {
-                    Map.Entry<String,List<Module>> entry = modulesByGroupIt.next();
+                for (Map.Entry<String,List<Module>> entry : modulesByGroup.entrySet()) {
                     String groupName = entry.getKey();
                     // Don't indent; embedded descriptions would get indented otherwise.
                     log("Creating group \"" + groupName + "\"");
@@ -269,10 +271,7 @@ public class MakeUpdateDesc extends MatchingTask {
                         pw.println("<module_group name=\"" + xmlEscape(groupName) + "\">");
                         pw.println();
                     }
-                    List<Module> modules = entry.getValue();
-                    Iterator<Module> modulesIt = modules.iterator();
-                    while (modulesIt.hasNext()) {
-                        Module m = modulesIt.next();
+                    for (Module m : entry.getValue()) {
                         Element module = m.xml;
                         if (module.getAttribute("downloadsize").equals("0")) {
                             module.setAttribute("downloadsize", Long.toString(m.nbm.length()));
@@ -309,9 +308,7 @@ public class MakeUpdateDesc extends MatchingTask {
                     }
 		}
                 pw.flush();
-                Iterator it = licenses.values().iterator();
-                while (it.hasNext()) {
-                    Element license = (Element) it.next();
+                for (Element license : licenses.values()) {
                     XMLUtil.write(license, os);
                 }
                 if ( entityincludes.size() <= 0 ) {
@@ -341,12 +338,10 @@ public class MakeUpdateDesc extends MatchingTask {
         for (Group g : groups) {
             List<Module> modules = new ArrayList<Module>();
             r.put(g.name, modules);
-            for (int fsi = 0; fsi < g.filesets.size(); fsi++) {
-                FileSet fs = g.filesets.elementAt(fsi);
+            for (FileSet fs : g.filesets) {
                 DirectoryScanner ds = fs.getDirectoryScanner(getProject());
-                String[] files = ds.getIncludedFiles();
-                for (int fid = 0; fid < files.length; fid++) {
-                    File n_file = new File(fs.getDir(getProject()), files[fid]);
+                for (String file : ds.getIncludedFiles()) {
+                    File n_file = new File(fs.getDir(getProject()), file);
                     try {
                         ZipFile zip = new ZipFile(n_file);
                         try {
