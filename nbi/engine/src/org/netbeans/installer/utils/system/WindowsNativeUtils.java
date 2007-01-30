@@ -38,14 +38,14 @@ import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.helper.Shortcut;
 import org.netbeans.installer.utils.helper.ShortcutLocationType;
 import org.netbeans.installer.utils.SystemUtils;
-import static org.netbeans.installer.utils.StringUtils.*;
 import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.system.windows.SystemApplication;
 import org.netbeans.installer.utils.system.windows.FileExtension;
-import static org.netbeans.installer.utils.system.windows.WindowsRegistry.*;
 import org.netbeans.installer.utils.system.windows.WindowsRegistry;
 import org.netbeans.installer.wizard.components.panels.ComponentsSelectionPanel;
+import static org.netbeans.installer.utils.StringUtils.*;
+import static org.netbeans.installer.utils.system.windows.WindowsRegistry.*;
 
 /**
  *
@@ -318,8 +318,16 @@ public class WindowsNativeUtils extends NativeUtils {
             
             String uid         = getUidKey(product);
             String installPath = product.getInstallationLocation().getAbsolutePath();
-            String icon        = new File(product.getInstallationLocation(), product.getLogic().getIcon()).getAbsolutePath();
             String displayName = product.getDisplayName();
+            
+            String icon;
+            if (product.getLogic().getIcon() != null) {
+                icon = new File(
+                        product.getInstallationLocation(), 
+                        product.getLogic().getIcon()).getAbsolutePath();
+            } else {
+                icon = null;
+            }
             
             File executable   = JavaUtils.getExecutableW(
                     SystemUtils.getCurrentJavaHome());

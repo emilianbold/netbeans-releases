@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
+import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.helper.DetailedStatus;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
@@ -108,7 +109,7 @@ public class InstallAction extends WizardAction {
                 // is happening
                 SystemUtils.sleep(200);
             } catch (UninstallationException e) {
-                LogManager.log(ErrorLevel.ERROR, e);
+                ErrorManager.notifyError("Failed to rollback", e);
             } catch (Throwable e) {
                 if (!(e instanceof InstallationException)) {
                     e = new InstallationException("Unknown Error", e);

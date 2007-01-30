@@ -24,6 +24,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Locale;
@@ -244,17 +245,21 @@ public class Installer {
         final Properties properties = new Properties();
         
         try {
-            properties.load(
-                    getClass().getClassLoader().getResourceAsStream(ENGINE_PROPERTIES));
+            InputStream input =
+                    getClass().getClassLoader().getResourceAsStream(ENGINE_PROPERTIES);
             
-            for (Object key: properties.keySet()) {
-                System.setProperty(
-                        key.toString(),
-                        properties.get(key).toString());
+            if (input != null) {
+                properties.load(input);
+                
+                for (Object key: properties.keySet()) {
+                    System.setProperty(
+                            key.toString(),
+                            properties.get(key).toString());
+                }
             }
         } catch (IOException e) {
             ErrorManager.notifyWarning(
-                    "Could not load the engine properties file", 
+                    "Could not load the engine properties file",
                     e);
         }
     }
@@ -774,4 +779,5 @@ public class Installer {
     public static final String ENGINE_JAR_CONTENT_LIST = DATA_DIRECTORY + "/engine.list";
     
     public static final String ENGINE_PROPERTIES = DATA_DIRECTORY + "/engine.properties";
+    
 }
