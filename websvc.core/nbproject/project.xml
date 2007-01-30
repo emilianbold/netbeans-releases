@@ -369,6 +369,7 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <public-packages>
+                <friend>org.netbeans.modules.websvc.jaxrpc</friend>
                 <package>org.netbeans.modules.websvc.core</package>
                 <package>org.netbeans.modules.websvc.core.dev.wizard</package>
                 <package>org.netbeans.modules.websvc.core.webservices.action</package>
