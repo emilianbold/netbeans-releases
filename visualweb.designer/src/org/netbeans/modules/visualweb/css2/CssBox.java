@@ -3054,12 +3054,15 @@ public class CssBox {
         int minimum = getPrefMinWidth();
         int shrinkFit = Math.min(Math.max(minimum, availableWidth), preferred);
 
-        MarkupDesignBean bean = getMarkupDesignBeanForCssBox(this);
-        if ((shrinkFit <= (leftBorderWidth + rightBorderWidth)) && (bean != null)) { // XXX padding too?
+//        MarkupDesignBean bean = getMarkupDesignBeanForCssBox(this);
+        Element componentRootElement = getElementForComponentRootCssBox(this);
+//        if ((shrinkFit <= (leftBorderWidth + rightBorderWidth)) && (bean != null)) { // XXX padding too?
+        if ((shrinkFit <= (leftBorderWidth + rightBorderWidth)) && (componentRootElement != null)) { // XXX padding too?
             shrinkFit = MINIMUM_BEAN_SIZE;
 
 //            if ((border == null) && ((parent == null) || (parent.getDesignBean() != bean)) &&
-            if ((border == null) && ((parent == null) || (getMarkupDesignBeanForCssBox(parent) != bean)) &&
+//            if ((border == null) && ((parent == null) || (getMarkupDesignBeanForCssBox(parent) != bean)) &&
+            if ((border == null) && ((parent == null) || (getElementForComponentRootCssBox(parent) != componentRootElement)) &&
                     (tag != HtmlTag.FORM)) {
                 border = CssBorder.getDesignerBorder();
                 leftBorderWidth = border.getLeftBorderWidth();
@@ -3108,7 +3111,8 @@ public class CssBox {
             result = maxY - topPadding - topBorderWidth;
         }
 
-        MarkupDesignBean bean = getMarkupDesignBeanForCssBox(this);
+//        MarkupDesignBean bean = getMarkupDesignBeanForCssBox(this);
+        Element componentRootElement = getElementForComponentRootCssBox(this);
         // XXX TODO - gotta add in margins here?
         // XXX gotta add in min-heights too? Nope, if height has already
         // been computed we should be okay.
@@ -3116,7 +3120,8 @@ public class CssBox {
         // are computed at box creation time... I need to do more initialization
         // to compute additional heights from attributes, margin alignment, etc.
         // Design time borders for 0-sized components
-        if ((result <= topBorderWidth) && (bean != null) && // XXX add in padding too, not just borderwidth?
+//        if ((result <= topBorderWidth) && (bean != null) && // XXX add in padding too, not just borderwidth?
+        if ((result <= topBorderWidth) && (componentRootElement != null) && // XXX add in padding too, not just borderwidth?
                 !element.getTagName().equals(HtmlTag.HR.name)) { // <hr>'s COULD be 0 sized
             result = MINIMUM_BEAN_SIZE;
         }
