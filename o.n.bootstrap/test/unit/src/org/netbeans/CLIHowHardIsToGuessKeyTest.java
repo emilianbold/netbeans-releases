@@ -43,7 +43,7 @@ public class CLIHowHardIsToGuessKeyTest extends NbTestCase {
 
     @Override
     protected Level logLevel() {
-        return Level.FINE;
+        return Level.ALL;
     }
 
     protected void setUp() throws Exception {
@@ -103,7 +103,7 @@ public class CLIHowHardIsToGuessKeyTest extends NbTestCase {
             }
             Thread.sleep(500);
         }
-        assertTrue("Lock must contain the key now: " + lock.length(), lock.length() >= 14);
+        assertTrue("Lock must contain the key now: " + lock.length(), lock.length() >= 14);//fail("Ok");
         
         final byte[] arr = new byte[10]; // CLIHandler.KEY_LENGTH
         DataInputStream is = new DataInputStream(new FileInputStream(lock));
