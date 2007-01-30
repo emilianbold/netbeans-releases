@@ -47,8 +47,8 @@
             <attr name="cdc/core" boolvalue="true"/>
         </folder>
     </folder>
-<!--
     <folder name="Templates">
+<!--
         <folder name="Project">
             <attr name="Mobile/CDC" boolvalue="true"/>
             <attr name="CDC/Samples" boolvalue="true"/>
@@ -94,27 +94,27 @@
                 <file name="j2sefreeform.xml" url="Templates/Project/Standard/j2sefreeform.xml"/>
             </folder>
         </folder>
-    
-        <attr boolvalue="true" name="Classes/CDC"/>
-        <attr name="Folder/CDC" boolvalue="true"/>    
+-->    
+        <attr name="MIDP/CDC" boolvalue="true"/>    
+        <attr name="CDC//Classes" boolvalue="true"/>    
         <folder name="CDC">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.Bundle"/>
 
             <file name="Xlet.java" url="templates/Xlet_java">
                 <attr name="template" boolvalue="true" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/Xlet.html" />
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/Xlet.html" />
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" /> 
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/class.gif"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/class.gif"/>
                 <attr name="CDC" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="CDC"/>
             </file>
-
+            <attr name="Xlet.java/AWTXlet.java" boolvalue="true"/>
             <file name="AWTXlet.java" url="templates/AWTXlet_java">
                 <attr name="template" boolvalue="true" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/AWTXlet.html" />
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/AWTXlet.html" />
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />         
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.Bundle"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JPanelColor16.gif"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JPanelColor32.gif"/>
                 <attr name="CDC" boolvalue="true"/>
@@ -125,12 +125,12 @@
                 <attr name="CDC" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="CDC/AWT"/>
             </file>
-
+            <attr name="AWTXlet.java/AGUIXlet.java" boolvalue="true"/>
             <file name="AGUIXlet.java" url="templates/AGUIXlet_java">
                 <attr name="template" boolvalue="true" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/AGUIXlet.html" />
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/AGUIXlet.html" />
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />         
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.Bundle"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JPanelColor16.gif"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JPanelColor32.gif"/>
                 <attr name="CDC" boolvalue="true"/>
@@ -141,20 +141,9 @@
                 <attr name="CDC" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="CDC/AGUI"/>
             </file>
-
-            <file name="RicohXlet.java" url="templates/RicohXlet_java">
-                <attr name="template" boolvalue="true" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/Xlet.html" />
-                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" /> 
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ui.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ui/resources/class.gif"/>
-                <attr name="CDC" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="CDC/Ricoh"/>
-                <attr name="isXlet" stringvalue="true"/>
-            </file>            
         </folder>
     </folder>
-
+<!--
     <folder name="Services">
         <file name="org-netbeans-modules-j2me-cdc-project-ui-FoldersList.settings" url="foldersList.settings"/>
         <folder name="MIMEResolver">

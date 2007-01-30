@@ -36,6 +36,23 @@
         </folder>
     </folder>    
 
+    <folder name="Templates">
+        <folder name="CDC">
+            <attr name="AWTXlet.java/RicohXlet.java" boolvalue="true"/>
+            <attr name="AGUIXlet.java/RicohXlet.java" boolvalue="true"/>
+            <file name="RicohXlet.java" url="RicohXlet_java">
+                <attr name="template" boolvalue="true" />
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/RicohXlet.html" />
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" /> 
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/class.gif"/>
+                <attr name="CDC" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="CDC/Ricoh"/>
+                <attr name="isXlet" stringvalue="true"/>
+            </file>            
+        </folder>
+    </folder>
+    
     <folder name="RecommendedTemplates">
         <folder name="org.netbeans.modules.kjava.j2meproject">
             <attr name="cdc/ricoh" boolvalue="true"/>
