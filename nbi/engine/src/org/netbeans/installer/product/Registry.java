@@ -137,8 +137,8 @@ public class Registry {
         setRegistryProperties();
         
         loadProductRegistry(
-                file.toURI().toString(), 
-                new Progress(), 
+                file.toURI().toString(),
+                new Progress(),
                 RegistryType.REMOTE);
     }
     
@@ -149,8 +149,8 @@ public class Registry {
         
         for (File file: files) {
             loadProductRegistry(
-                    file.toURI().toString(), 
-                    new Progress(), 
+                    file.toURI().toString(),
+                    new Progress(),
                     RegistryType.REMOTE);
         }
     }
@@ -164,8 +164,8 @@ public class Registry {
         
         for (File file: files) {
             loadProductRegistry(
-                    file.toURI().toString(), 
-                    new Progress(), 
+                    file.toURI().toString(),
+                    new Progress(),
                     RegistryType.REMOTE);
         }
     }
@@ -433,13 +433,25 @@ public class Registry {
     private void changeStatuses() {
         if (System.getProperty(FORCE_CHANGE_STATUS_INSTALL_PROPERTY) != null) {
             for (Product product: getProducts(Status.NOT_INSTALLED)) {
-                product.setStatus(Status.TO_BE_INSTALLED);
+                // we should not change the status of components that are not 
+                // visible (were filtered out either at build time or runtime), as 
+                // this may cause unexpected results - these components are not
+                // expected to be dealt with
+                if (product.isVisible()) {
+                    product.setStatus(Status.TO_BE_INSTALLED);
+                }
             }
         }
         
         if (System.getProperty(FORCE_CHANGE_STATUS_UNINSTALL_PROPERTY) != null) {
             for (Product product: getProducts(Status.INSTALLED)) {
-                product.setStatus(Status.TO_BE_UNINSTALLED);
+                // we should not change the status of components that are not 
+                // visible (were filtered out either at build time or runtime), as 
+                // this may cause unexpected results - these components are not
+                // expected to be dealt with
+                if (product.isVisible()) {
+                    product.setStatus(Status.TO_BE_UNINSTALLED);
+                }
             }
         }
     }
@@ -598,7 +610,7 @@ public class Registry {
     public void loadProductRegistry(final String uri, final Progress progress, final RegistryType registryType) throws InitializationException {
         try {
             loadRegistryComponents(
-                    registryRoot, 
+                    registryRoot,
                     loadRegistryDocument(uri).getDocumentElement(),
                     registryType);
             
@@ -1303,9 +1315,9 @@ public class Registry {
     public static final String TARGET_PLATFORM_PROPERTY =
             "nbi.target.platform";
     
-    public static final String FORCE_CHANGE_STATUS_INSTALL_PROPERTY = 
+    public static final String FORCE_CHANGE_STATUS_INSTALL_PROPERTY =
             "nbi.force.change.status.install";
     
-    public static final String FORCE_CHANGE_STATUS_UNINSTALL_PROPERTY = 
+    public static final String FORCE_CHANGE_STATUS_UNINSTALL_PROPERTY =
             "nbi.force.change.status.uninstall";
 }

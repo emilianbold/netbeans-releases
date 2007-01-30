@@ -578,8 +578,12 @@ public class ManagerBean implements Manager {
             }
             key += platform.toString();
             
-            if (bundles.get(key) != null) {
+            if ((bundles.get(key) != null) && bundles.get(key).exists()) {
                 return bundles.get(key);
+            }
+            
+            if (bundles.get(key) != null) {
+                bundles.remove(key);
             }
             
             try {
