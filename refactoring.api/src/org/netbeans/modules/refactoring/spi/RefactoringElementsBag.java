@@ -164,6 +164,8 @@ public final class RefactoringElementsBag {
      * this solution has performance issues.
      */ 
     private boolean isGuarded(RefactoringElementImplementation el) {
+        if (el.getPosition()==null)
+            return false;
         try {
             DataObject dob = DataObject.find(el.getParentFile());
             EditorCookie e = dob.getCookie(EditorCookie.class);
