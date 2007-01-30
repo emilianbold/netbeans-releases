@@ -81,7 +81,7 @@ public final class PropertyDescriptor {
     }
 
     private PropertyDescriptor (String name, TypeID type, DefaultValueFactory defaultValueFactory, PropertyValue defaultValue, boolean allowNull, boolean allowUserCode, Versionable versionable, boolean useForSerialization, boolean readonly) {
-        assert name != null  &&  type != null  &&  (defaultValueFactory != null  ||  defaultValue != null);
+        assert name != null  &&  type != null  &&  (defaultValueFactory != null  ||  defaultValue != null) : "Name, type, defaultValueFactory or defaultValue could be null in PropertyDescriptor : " + this; //NOI18N
         this.name = name;
         this.type = type;
         this.defaultValueFactory = defaultValueFactory;

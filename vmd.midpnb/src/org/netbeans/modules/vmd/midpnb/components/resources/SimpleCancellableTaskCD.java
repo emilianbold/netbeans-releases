@@ -37,7 +37,12 @@ import org.netbeans.modules.vmd.midp.components.resources.ResourceCD;
 public class SimpleCancellableTaskCD extends ComponentDescriptor {
     
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTask"); // NOI18N
-
+    
+    
+    public SimpleCancellableTaskCD() {
+        
+    }
+    
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(ResourceCD.TYPEID, TYPEID, true, true);
     }

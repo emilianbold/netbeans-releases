@@ -91,7 +91,7 @@ public final class CanvasCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty("isFullScreen", "Controls whether the Canvas is in full-screen mode or in normal mode.", PropertyEditorBooleanUC.createInstance(), PROP_IS_FULL_SCREEN);
+                .addProperty("Full Screen", "Controls whether the Canvas is in full-screen mode or in normal mode.", PropertyEditorBooleanUC.createInstance(), PROP_IS_FULL_SCREEN);
     }
 
     private static Presenter createSetterPresenter() {
