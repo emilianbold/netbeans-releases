@@ -7,6 +7,7 @@ import java.util.Collection;
 import javax.swing.text.Document;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.Model.State;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 /*
  * SchemaModelTest.java
  * JUnit based test
@@ -22,7 +23,9 @@ public class SchemaModelTest extends TestCase {
     
     private static String TEST_XSD = "resources/testInclude.xsd";
     private static String TEST_BAD_XSD = "resources/testBad.xsd";
-	private static String TEST_BAD_INCLUDE_XSD = "resources/testBadInclude.xsd";
+    private static String TEST_BAD_INCLUDE_XSD = "resources/testBadInclude.xsd";
+    private static String TEST_TYPES_XSD = "resources/testTypes.xsd";
+    private static String TEST_FAKE_XSD = "resources/address.xsd";
     
     public SchemaModelTest(String testName) {
         super(testName);
@@ -152,4 +155,17 @@ public class SchemaModelTest extends TestCase {
             assertTrue("2 distinct schema", list.get(1) != list.get(0));
             assertEquals("http://www.example.com/testInclude", list.get(0).getTargetNamespace());
     }
+    
+    public void testTypes() throws Exception {
+        SchemaModel sm = Util.loadSchemaModel(TEST_TYPES_XSD);
+        GlobalComplexType gct = (GlobalComplexType)sm.getSchema().getChildren().get(0);
+        ComplexTypeDefinition ctd = gct.getDefinition();
+        ComplexExtension ce = (ComplexExtension)ctd.getChildren().get(0);
+        NamedComponentReference<GlobalType> ncr = ce.getBase();
+        GlobalType type = ncr.get();
+        assert(type != null && type instanceof GlobalSimpleType);
+        GlobalSimpleType gst = (GlobalSimpleType)type;
+        assert(gst.getName() != null && gst.getName().equals("anyType"));
+    }
+
 }

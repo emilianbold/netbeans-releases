@@ -23,7 +23,9 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
     targetNamespace="http://www.w3.org/2001/XMLSchema"
     elementFormDefault="qualified">
-
+    
+    <xs:simpleType name="anyType" id="anyType"/>
+    
     <xs:simpleType name="anyURI" id="anyURI">
         <xs:restriction base="xs:anySimpleType">
             <xs:whiteSpace value="collapse" fixed="true"/>
