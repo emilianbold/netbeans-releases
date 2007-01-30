@@ -149,7 +149,7 @@ public class PaletteKit implements Runnable {
                 // only creation is not enough, should be set NB attributes, see MidpPaletteProvider for example
                 Debug.warning(catID + "should be initialized! See MidpPaletteProvider.");
                 try {
-                    org.openide.loaders.DataFolder.create(rootFolder, catID);
+                    catFO = org.openide.loaders.DataFolder.create(rootFolder, catID).getPrimaryFile();
                 } catch (IOException ex) {
                     Debug.error("Can't create folder for palette category: " + ex);
                 }
