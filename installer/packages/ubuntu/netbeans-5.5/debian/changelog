@@ -1,3 +1,8 @@
+netbeans5.5 (5.5-0.4) java-test; urgency=low
+
+  * Fix alternatives - man page is installed using alternatives. netbeans.desktop is added
+    to alternatives.
+
 netbeans5.5 (5.5-0.3) java-test; urgency=low
 
   * Remove --verbose from netbeans5.5.postinst and netbeans5.5.postrm in command

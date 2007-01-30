@@ -43,7 +43,11 @@ case "$1" in
             --slave \
             /usr/share/man/man1/netbeans.1.gz \
             netbeans.1.gz \
-            /usr/share/netbeans/5.5/man/netbeans.1.gz
+            /usr/share/netbeans/5.5/man/netbeans.1.gz \
+            --slave \
+            /usr/share/applications/netbeans.desktop \
+            netbeans.desktop \
+            /usr/share/netbeans/5.5/nb5.5/netbeans.desktop
 
     ;;
 
