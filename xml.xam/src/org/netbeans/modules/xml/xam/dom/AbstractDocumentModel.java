@@ -515,7 +515,7 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
         } catch(Exception ex) {
             // document is not available when underlying model is broken
         }
-        if (lastStable != null) {
+        if (lastStable != null && lastStable.getDocumentElement() != null) {
             createRootComponent(lastStable.getDocumentElement());
             setState(State.VALID);
         }
