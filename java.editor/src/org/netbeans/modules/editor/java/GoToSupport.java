@@ -251,11 +251,15 @@ public class GoToSupport {
             return null;
         
         ts.move(offset);
+        if (!ts.moveNext())
+            return null;
         
         Token<JavaTokenId> t = ts.token();
         
         if (!USABLE_TOKEN_IDS.contains(t.id())) {
             ts.move(offset - 1);
+            if (!ts.moveNext())
+                return null;
             t = ts.token();
             if (!USABLE_TOKEN_IDS.contains(t.id()))
                 return null;
