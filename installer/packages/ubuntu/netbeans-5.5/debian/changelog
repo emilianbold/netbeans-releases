@@ -1,3 +1,11 @@
+netbeans5.5 (5.5-0.41) java-test; urgency=low
+
+  * removed netbeans5.5-platform.postinst which is no longer necessary
+  * fixed upstream spelling error in copyright file (removed override)
+  * Now removing alternative in prerm instead of postrm
+  
+ -- Tom Marble <tom.marble@sun.com>  Tue, 30 Jan 2007 13:58:21 -0600
+
 netbeans5.5 (5.5-0.4) java-test; urgency=low
 
   * Fix alternatives - man page is installed using alternatives. netbeans.desktop is added

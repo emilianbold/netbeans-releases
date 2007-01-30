@@ -51,7 +51,10 @@ build-stamp: configure-stamp unpack-build-tarball
 	touch $@
 
 update-copyright: build-stamp
-	sh debian/mkcopy.sh debian/copyright debian/extra/PKG_PREAMBLE debian/extra/PKG_NOTICE debian/extra/MIT_LICENSE debian/extra/NETBEANS_NOTICE $(BUILD)/LICENSE.txt $(BUILD)/THIRDPARTYLICENSE.txt $(BUILD)/platform6/THIRDPARTYLICENSEREADME.txt $(BUILD)/enterprise3/apache-tomcat-5.5.17/LICENSE $(BUILD)/enterprise3/modules/ext/toplink/3RD-PARTY-LICENSE.txt
+	# correct upstream license spelling error
+	sed 's/commerical/commercial/g' $(BUILD)/enterprise3/modules/ext/toplink/3RD-PARTY-LICENSE.txt > /tmp/3RD-PARTY-LICENSE.txt
+	sh debian/mkcopy.sh debian/copyright debian/extra/PKG_PREAMBLE debian/extra/PKG_NOTICE debian/extra/MIT_LICENSE debian/extra/NETBEANS_NOTICE $(BUILD)/LICENSE.txt $(BUILD)/THIRDPARTYLICENSE.txt $(BUILD)/platform6/THIRDPARTYLICENSEREADME.txt $(BUILD)/enterprise3/apache-tomcat-5.5.17/LICENSE /tmp/3RD-PARTY-LICENSE.txt
+	rm -f /tmp/3RD-PARTY-LICENSE.txt
 
 clean:
 	dh_testdir
