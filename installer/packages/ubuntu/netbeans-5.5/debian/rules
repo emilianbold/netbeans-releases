@@ -135,7 +135,7 @@ install: build update-copyright
 	#done
 
 	# Installing lintian overrides
-	for LINTIAN in debian/lintian/*; \
+	for LINTIAN in debian/lintian/netbeans*; \
 	do \
 		install -D -m 0644 $$LINTIAN debian/`basename $$LINTIAN`/usr/share/lintian/overrides/`basename $$LINTIAN` || exit 1; \
 	done
