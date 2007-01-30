@@ -117,6 +117,15 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         return canExecute();
     }
     
+    public void initialize() {
+        if (!isThereAnythingToInstall()) {
+            setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION_UNINSTALL);
+        }
+        if (!isThereAnythingToUninstall()) {
+            setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION_INSTALL);
+        }
+    }
+    
     private boolean canExecute() {
         return System.getProperty(Registry.FORCE_UNINSTALL_PROPERTY) == null;
     }
@@ -758,7 +767,13 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             "CSP.title"); // NOI18N
     public static final String DEFAULT_DESCRIPTION =
             ResourceUtils.getString(ComponentsSelectionPanel.class,
-            "CSP.description"); // NOI18N
+            "CSP.description.both"); // NOI18N
+    public static final String DEFAULT_DESCRIPTION_INSTALL =
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.description.install"); // NOI18N
+    public static final String DEFAULT_DESCRIPTION_UNINSTALL =
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.description.uninstall"); // NOI18N
     
     public static final String DESCRIPTION_TEXT_PROPERTY =
             "description.text"; // NOI18N
