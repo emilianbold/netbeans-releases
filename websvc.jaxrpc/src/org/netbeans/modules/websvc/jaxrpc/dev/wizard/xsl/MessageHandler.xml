@@ -1,0 +1,110 @@
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<xsl:stylesheet version="1.0"
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <xsl:output method="text" encoding="UTF-8"/>
+  <xsl:include href="SharedTransforms.xml"/>
+  <xsl:template name="generate-class">
+//&lt;editor-fold defaultstate="collapsed" desc="import statements. Click the + sign on the left to edit the code."&gt;
+import javax.xml.rpc.handler.MessageContext;
+import javax.xml.rpc.handler.HandlerInfo;
+import javax.xml.rpc.handler.soap.SOAPMessageContext;
+import javax.xml.namespace.QName;
+import javax.xml.soap.SOAPElement;
+import javax.xml.soap.SOAPMessage;
+import javax.xml.soap.SOAPPart;
+import javax.xml.soap.SOAPEnvelope;
+import javax.xml.soap.SOAPHeader;
+import javax.xml.soap.SOAPBody;
+import java.util.Date;
+//&lt;/editor-fold&gt;
+public class <xsl:value-of select="/bean/classname/@name"/> extends javax.xml.rpc.handler.GenericHandler {
+      // TODO Change and enhance the handle methods to suit individual needs.
+
+      private QName[] headers;
+
+      public void init(HandlerInfo config) {
+         headers = config.getHeaders();
+      }
+
+      public javax.xml.namespace.QName[] getHeaders() {
+          return headers;
+      }
+     
+      // Currently prints out the contents of the SOAP body plus some date information.  
+      public boolean handleRequest (MessageContext context) {
+      try{
+        SOAPMessageContext smc = (SOAPMessageContext) context;
+        SOAPMessage msg = smc.getMessage();
+        SOAPPart sp = msg.getSOAPPart();
+        SOAPEnvelope se = sp.getEnvelope();   
+        SOAPHeader shd = se.getHeader();
+  
+        SOAPBody sb = se.getBody();                
+        java.util.Iterator childElems = sb.getChildElements();
+        SOAPElement child;
+        StringBuffer message = new StringBuffer();
+        while (childElems.hasNext()) {
+            child = (SOAPElement) childElems.next();
+            message.append(new Date().toString() + "--");
+            formLogMessage(child, message);
+        }
+
+        System.out.println("Log message: " + message.toString());
+       }
+       catch(Exception e){
+          e.printStackTrace();
+       }
+        return true;
+      } 
+
+      public boolean handleResponse (MessageContext context) {
+         return true;
+      } 
+
+      public boolean handleFault(MessageContext context) {
+         return true;
+      }
+
+      public void destroy() {    
+      } 
+
+      private void formLogMessage (SOAPElement child, StringBuffer message) {
+        message.append(child.getElementName().getLocalName());
+        message.append(child.getValue() != null ? ":" + child.getValue() + " " : " ");
+        
+       try{
+        java.util.Iterator childElems = child.getChildElements();
+        while (childElems.hasNext()) {
+          Object c = childElems.next();
+          if(c instanceof SOAPElement)
+            formLogMessage((SOAPElement)c, message);
+        }
+       }catch(Exception e){
+           e.printStackTrace();
+       }    
+    }
+}
+  </xsl:template>
+  <xsl:template name="file-type">implementation</xsl:template>
+ 
+  <xsl:template name="class-type">SOAP Message Handler</xsl:template>
+</xsl:stylesheet> 
+

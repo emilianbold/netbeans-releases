@@ -2,46 +2,67 @@
 <project basedir="." default="netbeans" name="websvc/jaxrpcsupport">
     <description>Builds, tests, and runs the project org.netbeans.modules.websvc.jaxrpc</description>
     <import file="../../nbbuild/templates/projectized.xml"/>
-	<target name="build-init" depends="projectized.build-init"/>
-
-	<property name="s2b_root_wscompile_config" location="src/org/netbeans/modules/websvc/wsdl/config/impl/"/>
-	<property name="s2b_res_root" location="src/org/netbeans/modules/websvc/wsdl/config/resources"/>
-
-	<target name="s2binit" depends="build-init">
-		<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
-			<classpath>
-				<pathelement path="${schema2beans/rt.dir}/modules/org-netbeans-modules-schema2beans.jar" />
-				<pathelement path="${nb_all}/schema2beans/dev/schema2beansdev.jar" />
-				<pathelement path="${nb_all}/schema2beans/anttask/s2banttask.jar"/>
-			</classpath>
-		</taskdef>
-	</target>
-
-	<target name="dd2beansgen" depends="s2binit">
-		<echo message="Generating DDBeans for wscompile config file"/>
-		<schema2beans schema="${s2b_res_root}/jax-rpc-ri-config_1_1.xsd"
-			mddFile="${s2b_res_root}/jax-rpc-ri-config_1_1.mdd"
-			package="org.netbeans.modules.websvc.wsdl.config.impl"
-			schemaType="xmlschema"
-			useInterfaces="true"
-			validate="true"
-			attrProp="true"
-			removeUnreferencedNodes="true"
-			rootDir="src"/>
-
-		<replace dir="${s2b_root_wscompile_config}">
-			<include name="**/*.java"/>
-			<replacefilter token="CLASS2" value="ADDITIONAL_CLASS"/>
-			<replacefilter token="Class2" value="AdditionalClass"/>
-			<replacefilter token="PROPERTY2" value="HANDLER_PROPERTY"/>
-			<replacefilter token="Property2" value="HandlerProperty"/>
-		</replace>
-		<replace file="${s2b_root_wscompile_config}/Configuration.java" token="javax.xml.namespace.QName" value="java.lang.String(*QName*)"/>
-		<replace file="${s2b_root_wscompile_config}/Entry.java" token="javax.xml.namespace.QName" value="java.lang.String/*QName*/"/>
-	</target>
-
-	<target name="compile" depends="dd2beansgen, projectized-common.compile"/>
-<!--
+    <target name="build-init" depends="projectized.build-init"/>
+    
+    <property name="s2b_root_wscompile_config" location="src/org/netbeans/modules/websvc/wsdl/config/impl/"/>
+    <property name="s2b_res_root" location="src/org/netbeans/modules/websvc/wsdl/config/resources"/>
+    <property name="wsdevcodegenroot" location="src/org/netbeans/modules/websvc/jaxrpc/dev/dd/gen"/>
+    
+    <target name="s2binit" depends="build-init">
+        <taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
+            <classpath>
+                <pathelement path="${schema2beans/rt.dir}/modules/org-netbeans-modules-schema2beans.jar" />
+                <pathelement path="${nb_all}/schema2beans/dev/schema2beansdev.jar" />
+                <pathelement path="${nb_all}/schema2beans/anttask/s2banttask.jar"/>
+            </classpath>
+        </taskdef>
+    </target>
+    
+    <target name="dd2beansgen" depends="s2binit">
+        <echo message="Generating DDBeans for wscompile config file"/>
+        <schema2beans schema="${s2b_res_root}/jax-rpc-ri-config_1_1.xsd"
+                      mddFile="${s2b_res_root}/jax-rpc-ri-config_1_1.mdd"
+                      package="org.netbeans.modules.websvc.wsdl.config.impl"
+                      schemaType="xmlschema"
+                      useInterfaces="true"
+                      validate="true"
+                      attrProp="true"
+                      removeUnreferencedNodes="true"
+                      rootDir="src"/>
+        
+        <replace dir="${s2b_root_wscompile_config}">
+            <include name="**/*.java"/>
+            <replacefilter token="CLASS2" value="ADDITIONAL_CLASS"/>
+            <replacefilter token="Class2" value="AdditionalClass"/>
+            <replacefilter token="PROPERTY2" value="HANDLER_PROPERTY"/>
+            <replacefilter token="Property2" value="HandlerProperty"/>
+        </replace>
+        <replace file="${s2b_root_wscompile_config}/Configuration.java" token="javax.xml.namespace.QName" value="java.lang.String(*QName*)"/>
+        <replace file="${s2b_root_wscompile_config}/Entry.java" token="javax.xml.namespace.QName" value="java.lang.String/*QName*/"/>
+        
+        <mkdir dir="${wsdevcodegenroot}"/>
+        <!--mddFile="src/org/netbeans/modules/websvc/dev/dd/jax-rpc-ri-config.mdd" -->
+        <schema2beans schema="src/org/netbeans/modules/websvc/jaxrpc/dev/dd/jax-rpc-ri-config.xsd"
+                    readBeanGraph="src/org/netbeans/modules/websvc/jaxrpc/dev/dd/beangraph.xml" 
+                    
+                    package="org.netbeans.modules.websvc.jaxrpc.dev.dd.gen"
+                    rootDir="src"
+                    attrProp="true"
+                    schemaType="xmlschema" 
+                    outputType="javabeans"
+                    commonInterface="CommonBean"
+                    extendBaseBean="true"
+                    standalone="true"/>
+        <schema2beans schema="src/org/netbeans/modules/websvc/jaxrpc/dev/wizard/xsl/WSCreation.dtd"
+                      package="org.netbeans.modules.websvc.jaxrpc.dev.dd.gen.wscreation"
+                      rootDir="src"
+                      outputType="javabeans"
+                      attrProp="true"
+                      standalone="true"/>
+    </target>
+    
+    <target name="compile" depends="dd2beansgen, projectized-common.compile"/>
+    <!--
     <target name="ant-extra" depends="init">
         <mkdir dir="build/antclasses"/>
         <javac srcdir="antsrc" destdir="build/antclasses" source="1.4" debug="true" deprecation="true">
@@ -65,9 +86,9 @@
 
     <target name="netbeans-extra" depends="ant-extra"/>
 -->
-	<target name="clean" depends="projectized-common.clean,clean-ddgen-src"/>
-
-	<target name="clean-ddgen-src">
-		<delete dir="${s2b_root_wscompile_config}"/>
-	</target>
+    <target name="clean" depends="projectized-common.clean,clean-ddgen-src"/>
+    
+    <target name="clean-ddgen-src">
+        <delete dir="${s2b_root_wscompile_config}"/>
+    </target>
 </project>

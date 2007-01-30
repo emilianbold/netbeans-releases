@@ -9,4 +9,8 @@
             </file>
         </folder>
     </folder>
+    
+    <folder name="org-netbeans-modules-websvc-jaxrpc">
+        <file name="webservices.xml" url="webservices.xml"/>
+    </folder>
 </filesystem>
