@@ -94,6 +94,23 @@ if [ ! -z "$netbeans_extraclusters" ] ; then
     netbeans_clusters="$netbeans_clusters:$netbeans_extraclusters"
 fi
 
+readEndorsedDirs() {
+    grep -v "^#" "$progdir"/../etc/netbeans.clusters | grep -v "^$" | grep ide | while read X; do
+        if [ -d "$progdir"/../$X/modules/ext/jaxws21/api ]; then
+            echo -J-Djava.endorsed.dirs="$progdir/../$X/modules/ext/jaxws21/api"
+        fi
+    done
+}
+
+netbeans_endorsed_dirs=`grep -- -J-Djava\.endorsed\.dirs= <<EOF
+${netbeans_default_options}
+EOF`
+if [ ! -z "netbeans_endorsed_dirs" ] ; then
+    netbeans_endorsed_dirs=`readEndorsedDirs`
+else
+    netbeans_endorsed_dirs=""
+fi
+
 launchNbexec() {
     nbexec=`grep -v "^#" "$progdir"/../etc/netbeans.clusters | grep -v "^$" | grep platform | while read X; do
         if [ -f "$progdir"/../$X/lib/nbexec ]; then
@@ -121,6 +138,7 @@ case "`uname`" in
             -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade \
             -J-Dnetbeans.accept_license_class=org.netbeans.license.AcceptLicense \
             ${netbeans_default_options} \
+            "${netbeans_endorsed_dirs}" \
             "$@"
         ;;
     *)
@@ -131,6 +149,7 @@ case "`uname`" in
             -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade \
             -J-Dnetbeans.accept_license_class=org.netbeans.license.AcceptLicense \
             ${netbeans_default_options} \
+            "${netbeans_endorsed_dirs}" \
             "$@"
         ;;
 esac
