@@ -104,6 +104,9 @@ public class XDMAccess extends DocumentModelAccess {
             xdmModel.sync();
             if(xdmModel.getStatus() == XDMModel.Status.STABLE){
                 Element root = Element.class.cast(xdmModel.getDocument().getDocumentElement());
+                if (root == null) {
+                    throw new IOException("Cannot create model from non-XML document");
+                }
                 if (model.createRootComponent(root) == null) {
                     throw new IOException("Cannot create model with "+
                             new QName(root.getNamespaceURI(), root.getLocalName()));
