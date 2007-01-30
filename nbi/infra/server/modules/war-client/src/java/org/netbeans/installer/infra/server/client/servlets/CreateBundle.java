@@ -35,6 +35,11 @@ public class CreateBundle extends HttpServlet {
     private Manager manager;
     
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        if (request.getParameterValues("component") != null) {
+            doPost(request, response);
+            return;
+        }
+        
         response.setContentType("text/html; charset=UTF-8");
         
         String[] registries = request.getParameterValues("registry");
@@ -117,7 +122,6 @@ public class CreateBundle extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             e.printStackTrace(out);
         }
-        
         
         out.close();
     }
