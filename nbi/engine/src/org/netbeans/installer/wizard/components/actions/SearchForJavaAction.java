@@ -36,6 +36,7 @@ import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.applications.JavaUtils.JavaInfo;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.helper.Status;
+import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.WindowsNativeUtils;
 import org.netbeans.installer.utils.system.windows.WindowsRegistry;
@@ -49,80 +50,35 @@ import org.netbeans.installer.wizard.components.WizardAction;
  */
 public class SearchForJavaAction extends WizardAction {
     /////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    public static final String DEFAULT_TITLE =
-            ResourceUtils.getString(SearchForJavaAction.class,
-            "SFJA.title"); // NOI18N
-    public static final String DEFAULT_DESCRIPTION =
-            ResourceUtils.getString(SearchForJavaAction.class,
-            "SFJA.description"); // NOI18N
+    // Static
+    public static String getLabel(File javaHome) {
+        JavaInfo javaInfo = JavaUtils.getInfo(javaHome);
+        
+        return getLabel(javaHome, javaInfo);
+    }
     
-    public static final String [] JAVA_WINDOWS_REGISTRY_ENTRIES = new String [] {
-        "SOFTWARE\\JavaSoft\\Java Development Kit",                         // NOI18N
-        "SOFTWARE\\JRockit\\Java Development Kit",                          // NOI18N
-        "SOFTWARE\\IBM\\Java Development Kit",                              // NOI18N
-        "SOFTWARE\\IBM\\Java2 Development Kit",                             // NOI18N
-        
-        "SOFTWARE\\JavaSoft\\Java Runtime Environment",                     // NOI18N
-        "SOFTWARE\\JRockit\\Java Runtime Environment",                      // NOI18N
-        "SOFTWARE\\IBM\\Java Runtime Environment",                          // NOI18N
-        "SOFTWARE\\IBM\\Java2 Runtime Environment"                          // NOI18N
-    };
+    private static String getLabel(File javaHome, JavaInfo javaInfo) {
+        return "" + javaHome +
+                " (v. " + javaInfo.getVersion().toJdkStyle() +
+                " by " + javaInfo.getVendor() + ")";
+    }
     
-    public static final String[] JAVA_ENVIRONMENT_VARIABLES = new String[] {
-        "JAVA_HOME",                                                        // NOI18N
-        "JAVAHOME",                                                         // NOI18N
-        "JAVA_PATH",                                                        // NOI18N
-        "JDK_HOME",                                                         // NOI18N
-        "JDKHOME",                                                          // NOI18N
-        "ANT_JAVA",                                                         // NOI18N
-        "JAVA",                                                             // NOI18N
-        "JDK"                                                               // NOI18N
-    };
-    
-    public static final String[] JAVA_FILESYSTEM_LOCATIONS = new String[] {
-        "$S{java.home}", // NOI18N
-        "$S{java.home}/..", // NOI18N
-        
-        "$N{install}", // NOI18N
-        "$N{install}/Java", // NOI18N
-        
-        "$N{home}", // NOI18N
-        "$N{home}/Java", // NOI18N
-        
-        "/usr", // NOI18N
-        "/usr/jdk", // NOI18N
-        "/usr/jdk/instances", // NOI18N
-        "/usr/java", // NOI18N
-        
-        "/usr/local", // NOI18N
-        "/usr/local/jdk", // NOI18N
-        "/usr/local/jdk/instances", // NOI18N
-        "/usr/local/java", // NOI18N
-        
-        "/export", // NOI18N
-        "/export/jdk", // NOI18N
-        "/export/jdk/instances", // NOI18N
-        "/export/java", // NOI18N
-        
-        "/opt", // NOI18N
-        "/opt/jdk", // NOI18N
-        "/opt/jdk/instances", // NOI18N
-        "/opt/java", // NOI18N
-        
-        "/Library/Java", // NOI18N
-        "/System/Library/Frameworks/JavaVM.framework/Versions/1.5", // NOI18N
-        "/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0", // NOI18N
-        "/System/Library/Frameworks/JavaVM.framework/Versions/1.6", // NOI18N
-        "/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0", // NOI18N
-        "/System/Library/Frameworks/JavaVM.framework/Versions/1.7", // NOI18N
-        "/System/Library/Frameworks/JavaVM.framework/Versions/1.7.0" // NOI18N
-    };
+    private static String getLabel(File javaHome, Version version, String vendor) {
+        return "" +
+                javaHome +
+                " (v. " +
+                version.toJdkStyle() +
+                " by " +
+                vendor +
+                ")";
+    }
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public static List<File>   javaLocations = new LinkedList<File>();
     public static List<String> javaLabels    = new LinkedList<String>();
+    
+    public static File lastSelectedJava = null;
     
     public SearchForJavaAction() {
         setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
@@ -169,14 +125,7 @@ public class SearchForJavaAction extends WizardAction {
             // add the location to the list if it's not already there
             if ((javaInfo != null) && !javaLocations.contains(javaHome)) {
                 javaLocations.add(javaHome);
-                javaLabels.add(
-                        "" +
-                        javaHome +
-                        " (v. " +
-                        javaInfo.getVersion().toJdkStyle() +
-                        " by " +
-                        javaInfo.getVendor() +
-                        ")");
+                javaLabels.add(getLabel(javaHome));
             }
             
             progress.setPercentage(Progress.COMPLETE * i / locations.size());
@@ -193,19 +142,62 @@ public class SearchForJavaAction extends WizardAction {
                 for (Product jdk: Registry.getInstance().getProducts("jdk")) {
                     if (jdk.getStatus() == Status.TO_BE_INSTALLED) {
                         javaLocations.add(jdk.getInstallationLocation());
-                        javaLabels.add(
-                                "" +
-                                jdk.getInstallationLocation() +
-                                " (v. " +
-                                jdk.getVersion().toJdkStyle() +
-                                " by " +
-                                "Sun Microsystems Inc." +
-                                ")");
+                        javaLabels.add(getLabel(
+                                jdk.getInstallationLocation(),
+                                jdk.getVersion(),
+                                "Sun Microsystems Inc."));
                     }
                 }
                 
                 break;
             }
+        }
+        
+        // sort the found java installations:
+        //   1) by version descending
+        //   2) by path acending
+        //   3) by vendor descending (so Sun comes first, hehe)
+        for (int i = 0; i < javaLocations.size(); i++) {
+            for (int j = javaLocations.size() - 1; j > i ; j--) {
+                File file1 = javaLocations.get(j);
+                File file2 = javaLocations.get(j - 1);
+                
+                String label1 = javaLabels.get(j);
+                String label2 = javaLabels.get(j - 1);
+                
+                JavaInfo info1 = JavaUtils.getInfo(javaLocations.get(j));
+                JavaInfo info2 = JavaUtils.getInfo(javaLocations.get(j - 1));
+                
+                if (info1.getVersion().equals(info2.getVersion())) {
+                    if (file1.getPath().compareTo(file2.getPath()) == 0) {
+                        if (info1.getVendor().compareTo(info2.getVendor()) == 0) {
+                            continue;
+                        } else if (info1.getVendor().compareTo(info2.getVendor()) < 0) {
+                            javaLocations.set(j, file2);
+                            javaLocations.set(j - 1, file1);
+                            
+                            javaLabels.set(j, label2);
+                            javaLabels.set(j - 1, label1);
+                        }
+                    } else if (file1.getPath().compareTo(file2.getPath()) > 0) {
+                        javaLocations.set(j, file2);
+                        javaLocations.set(j - 1, file1);
+                        
+                        javaLabels.set(j, label2);
+                        javaLabels.set(j - 1, label1);
+                    }
+                } else if (info1.getVersion().newerThan(info2.getVersion())) {
+                    javaLocations.set(j, file2);
+                    javaLocations.set(j - 1, file1);
+                    
+                    javaLabels.set(j, label2);
+                    javaLabels.set(j - 1, label1);
+                }
+            }
+        }
+        
+        if (javaLocations.size() > 0) {
+            lastSelectedJava = javaLocations.get(0);
         }
         
         progress.setDetail("");
@@ -325,4 +317,75 @@ public class SearchForJavaAction extends WizardAction {
             }
         }
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String DEFAULT_TITLE =
+            ResourceUtils.getString(SearchForJavaAction.class,
+            "SFJA.title"); // NOI18N
+    public static final String DEFAULT_DESCRIPTION =
+            ResourceUtils.getString(SearchForJavaAction.class,
+            "SFJA.description"); // NOI18N
+    
+    public static final String [] JAVA_WINDOWS_REGISTRY_ENTRIES = new String [] {
+        "SOFTWARE\\JavaSoft\\Java Development Kit",                         // NOI18N
+        "SOFTWARE\\JRockit\\Java Development Kit",                          // NOI18N
+        "SOFTWARE\\IBM\\Java Development Kit",                              // NOI18N
+        "SOFTWARE\\IBM\\Java2 Development Kit",                             // NOI18N
+        
+        "SOFTWARE\\JavaSoft\\Java Runtime Environment",                     // NOI18N
+        "SOFTWARE\\JRockit\\Java Runtime Environment",                      // NOI18N
+        "SOFTWARE\\IBM\\Java Runtime Environment",                          // NOI18N
+        "SOFTWARE\\IBM\\Java2 Runtime Environment"                          // NOI18N
+    };
+    
+    public static final String[] JAVA_ENVIRONMENT_VARIABLES = new String[] {
+        "JAVA_HOME",                                                        // NOI18N
+        "JAVAHOME",                                                         // NOI18N
+        "JAVA_PATH",                                                        // NOI18N
+        "JDK_HOME",                                                         // NOI18N
+        "JDKHOME",                                                          // NOI18N
+        "ANT_JAVA",                                                         // NOI18N
+        "JAVA",                                                             // NOI18N
+        "JDK"                                                               // NOI18N
+    };
+    
+    public static final String[] JAVA_FILESYSTEM_LOCATIONS = new String[] {
+        "$S{java.home}", // NOI18N
+        "$S{java.home}/..", // NOI18N
+        
+        "$N{install}", // NOI18N
+        "$N{install}/Java", // NOI18N
+        
+        "$N{home}", // NOI18N
+        "$N{home}/Java", // NOI18N
+        
+        "/usr", // NOI18N
+        "/usr/jdk", // NOI18N
+        "/usr/jdk/instances", // NOI18N
+        "/usr/java", // NOI18N
+        
+        "/usr/local", // NOI18N
+        "/usr/local/jdk", // NOI18N
+        "/usr/local/jdk/instances", // NOI18N
+        "/usr/local/java", // NOI18N
+        
+        "/export", // NOI18N
+        "/export/jdk", // NOI18N
+        "/export/jdk/instances", // NOI18N
+        "/export/java", // NOI18N
+        
+        "/opt", // NOI18N
+        "/opt/jdk", // NOI18N
+        "/opt/jdk/instances", // NOI18N
+        "/opt/java", // NOI18N
+        
+        "/Library/Java", // NOI18N
+        "/System/Library/Frameworks/JavaVM.framework/Versions/1.5", // NOI18N
+        "/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0", // NOI18N
+        "/System/Library/Frameworks/JavaVM.framework/Versions/1.6", // NOI18N
+        "/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0", // NOI18N
+        "/System/Library/Frameworks/JavaVM.framework/Versions/1.7", // NOI18N
+        "/System/Library/Frameworks/JavaVM.framework/Versions/1.7.0" // NOI18N
+    };
 }
