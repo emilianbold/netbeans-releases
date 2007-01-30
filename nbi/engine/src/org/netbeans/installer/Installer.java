@@ -75,35 +75,6 @@ public class Installer {
         new Installer(arguments).start();
     }
     
-    /////////////////////////////////////////////////////////////////////////////////
-    // Constants
-    public static final String DEFAULT_LOCAL_DIRECTORY_PATH =
-            System.getProperty("user.home") + File.separator + ".nbi";
-    
-    public static final String LOCAL_DIRECTORY_PATH_PROPERTY =
-            "nbi.local.directory.path";
-    
-    public static final String DEFAULT_NBI_LOOK_AND_FEEL_CLASS_NAME =
-            UIManager.getSystemLookAndFeelClassName();
-    
-    public static final String NBI_LOOK_AND_FEEL_CLASS_NAME_PROPERTY =
-            "nbi.look.and.feel";
-    
-    public static final String CREATE_BUNDLE_PATH_PROPERTY =
-            "nbi.create.bundle.path";
-    
-    public static final String IGNORE_LOCK_FILE_PROPERTY =
-            "nbi.ignore.lock.file";
-    
-    private static final String DEFAULT_INSTALLER_MANIFEST =
-            "Manifest-Version: 1.0" + SystemUtils.getLineSeparator() +
-            "Main-Class: org.netbeans.installer.Installer" + SystemUtils.getLineSeparator() +
-            "Class-Path: " + SystemUtils.getLineSeparator();
-    
-    public static final String DATA_DIRECTORY = "data";
-    
-    public static final String ENGINE_JAR_CONTENT_LIST = DATA_DIRECTORY + "/engine.list";
-    
     /** Errorcode to be used at normal exit */
     public static final int NORMAL_ERRORCODE = 0;
     
@@ -155,7 +126,7 @@ public class Installer {
         Thread.currentThread().setUncaughtExceptionHandler(
                 ErrorManager.getExceptionHandler());
         
-        // check whether we can safely execute on the current platform, exit in 
+        // check whether we can safely execute on the current platform, exit in
         // panic otherwise
         if (SystemUtils.getCurrentPlatform() == null) {
             ErrorManager.notifyCritical("The current platform is not supported.");
@@ -165,8 +136,8 @@ public class Installer {
         
         dumpSystemInfo();
         
+        loadProperties();
         parseArguments(arguments);
-        
         setLocalDirectory();
         
         // once we have set the local directory we can start logging safely
@@ -267,6 +238,25 @@ public class Installer {
         
         LogManager.unindent();
         LogManager.log("... end of target system information");
+    }
+    
+    private void loadProperties() {
+        final Properties properties = new Properties();
+        
+        try {
+            properties.load(
+                    getClass().getClassLoader().getResourceAsStream(ENGINE_PROPERTIES));
+            
+            for (Object key: properties.keySet()) {
+                System.setProperty(
+                        key.toString(),
+                        properties.get(key).toString());
+            }
+        } catch (IOException e) {
+            ErrorManager.notifyWarning(
+                    "Could not load the engine properties file", 
+                    e);
+        }
     }
     
     /**
@@ -584,7 +574,7 @@ public class Installer {
         String [] entries = StreamUtils.readStream(
                 ResourceUtils.getResource(ENGINE_JAR_CONTENT_LIST)).
                 toString().split(StringUtils.NEW_LINE_PATTERN);
-                
+        
         File dest = getCacheExpectedFile();
         
         JarOutputStream jos = null;
@@ -605,9 +595,9 @@ public class Installer {
                 }
             }
             LogManager.log("... adding content list and some other stuff");
-            jos.putNextEntry(new JarEntry(DATA_DIRECTORY + StringUtils.FORWARD_SLASH));            
+            jos.putNextEntry(new JarEntry(DATA_DIRECTORY + StringUtils.FORWARD_SLASH));
             
-            jos.putNextEntry(new JarEntry(DATA_DIRECTORY + StringUtils.FORWARD_SLASH + 
+            jos.putNextEntry(new JarEntry(DATA_DIRECTORY + StringUtils.FORWARD_SLASH +
                     "bundled-registry.xml"));
             
             Document doc = Registry.getInstance().getEmptyRegistryDocument();
@@ -721,7 +711,7 @@ public class Installer {
                 LogManager.log("... lock file already exists");
                 
                 if(!UiUtils.showYesNoDialog(
-                        "NetBeans Installer is already running", 
+                        "NetBeans Installer is already running",
                         "It seems that another instance of installer is already " +
                         "running!\nIt can be dangerous running another one in " +
                         "the same time.\nAre you sure you want to run one more " +
@@ -753,4 +743,35 @@ public class Installer {
         NORMAL,
         CREATE_BUNDLE;
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String DEFAULT_LOCAL_DIRECTORY_PATH =
+            System.getProperty("user.home") + File.separator + ".nbi";
+    
+    public static final String LOCAL_DIRECTORY_PATH_PROPERTY =
+            "nbi.local.directory.path";
+    
+    public static final String DEFAULT_NBI_LOOK_AND_FEEL_CLASS_NAME =
+            UIManager.getSystemLookAndFeelClassName();
+    
+    public static final String NBI_LOOK_AND_FEEL_CLASS_NAME_PROPERTY =
+            "nbi.look.and.feel";
+    
+    public static final String CREATE_BUNDLE_PATH_PROPERTY =
+            "nbi.create.bundle.path";
+    
+    public static final String IGNORE_LOCK_FILE_PROPERTY =
+            "nbi.ignore.lock.file";
+    
+    private static final String DEFAULT_INSTALLER_MANIFEST =
+            "Manifest-Version: 1.0" + SystemUtils.getLineSeparator() +
+            "Main-Class: " + Installer.class.getName() + SystemUtils.getLineSeparator() +
+            "Class-Path: " + SystemUtils.getLineSeparator();
+    
+    public static final String DATA_DIRECTORY = "data";
+    
+    public static final String ENGINE_JAR_CONTENT_LIST = DATA_DIRECTORY + "/engine.list";
+    
+    public static final String ENGINE_PROPERTIES = DATA_DIRECTORY + "/engine.properties";
 }

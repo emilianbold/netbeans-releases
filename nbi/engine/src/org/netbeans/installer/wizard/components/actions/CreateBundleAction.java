@@ -20,6 +20,7 @@
  */
 package org.netbeans.installer.wizard.components.actions;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -130,13 +131,23 @@ public class CreateBundleAction extends WizardAction {
                 StreamUtils.transferData(engine.getInputStream(entry), output);
             }
             
-            // transfer the engine files list
             output.putNextEntry(new JarEntry(
                     Installer.DATA_DIRECTORY + "/"));
+            
+            // transfer the engine files list and engine properties
+            final String engineProperties = 
+                    Registry.FORCE_CHANGE_STATUS_INSTALL_PROPERTY + "=true\n";
+            
             output.putNextEntry(new JarEntry(
                     Installer.ENGINE_JAR_CONTENT_LIST));
             StreamUtils.transferData(
                     ResourceUtils.getResource(Installer.ENGINE_JAR_CONTENT_LIST), 
+                    output);
+            
+            output.putNextEntry(new JarEntry(
+                    Installer.ENGINE_PROPERTIES));
+            StreamUtils.transferData(
+                    new ByteArrayInputStream(engineProperties.getBytes("UTF-8")),
                     output);
             
             progress.addPercentage(percentageLeak);

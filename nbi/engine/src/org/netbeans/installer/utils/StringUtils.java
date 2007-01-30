@@ -40,6 +40,7 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.helper.DependencyType;
@@ -461,7 +462,7 @@ public abstract class StringUtils {
         
         throw new ParseException("Cannot parse dependency type: " + string);
     }
-    
+
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final String BACK_SLASH = "\\"; //NOI18N

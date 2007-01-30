@@ -591,10 +591,10 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             }
             
             public Object getCellEditorValue() {
-                if (checkBox.isSelected()) {
-                    return true;
+                if (System.getProperty(REVERSE_CHECKBOX_LOGIC_PROPERTY) == null) {
+                    return checkBox.isSelected();
                 } else {
-                    return false;
+                    return !checkBox.isSelected();
                 }
             }
             
