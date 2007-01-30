@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2ee.jpa.verification.common;
 
-import com.sun.source.tree.CompilationUnitTree;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.openide.filesystems.FileObject;
 
@@ -32,7 +31,7 @@ import org.openide.filesystems.FileObject;
 public class ProblemContext {
     private FileObject fileObject;
     private CompilationInfo info;
-    private CompilationUnitTree compilationUnitTree;
+    private boolean cancelled = false;
     
     public FileObject getFileObject(){
         return fileObject;
