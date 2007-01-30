@@ -278,7 +278,223 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="dep-nb">
-  <defaultanswer generate='here' />
+  <defaultanswer generate='none' />
+<ul>
+<li><api type='import' group='java' category='private' name='org.netbeans.api.java' url='@org-netbeans-api-java@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            </api>
+</li>            
+<li><api type='import' group='java' category='private' name='org.netbeans.api.progress' url='@org-netbeans-api-progress@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            </api>
+</li>            
+<!--XXX: should link to javac api-->
+<li><api type='import' group='java' category='private' name='org.netbeans.libs.javacapi' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            </api>
+</li>            
+<li><api type='import' group='java' category='private' name='org.netbeans.libs.javacimpl' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            </api>
+</li>            
+<li><api type='import' group='java' category='private' name='org.netbeans.modules.classfile' url='@org-netbeans-modules-classfile@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            </api>
+</li>            
+<li><api type='import' group='java' category='private' name='org.netbeans.modules.editor.lib' url='@org-netbeans-modules-editor-lib@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                1.10
+                is required.
+            </api>
+</li>
+<!--XXX: should link to java lexer-->
+<li><api type='import' group='java' category='private' name='org.netbeans.modules.java.lexer' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                1.0
+                is required.
+            </api>
+</li>            
+<li><api type='import' group='java' category='private' name='org.netbeans.modules.java.platform' url='@org-netbeans-modules-java-platform@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                1.8
+                is required.
+            </api>
+</li><!--XXX should link to java/source/preprocessorbridge:-->
+<li><api type='import' group='java' category='private' name='org.netbeans.modules.java.preprocessorbridge' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                1.0
+                is required.
+            </api>
+</li>            
+<li><api type='import' group='java' category='private' name='org.netbeans.modules.lexer' url='@org-netbeans-modules-lexer@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                1.4
+                is required.
+            </api>
+</li>            
+<li><api type='import' group='java' category='private' name='org.netbeans.modules.projectapi' url='@org-netbeans-modules-projectapi@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                1.10
+                is required.
+            </api>
+</li>            
+<li><api type='import' group='java' category='private' name='org.netbeans.modules.queries' url='@org-netbeans-modules-queries@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                1.8
+                is required.
+            </api>
+</li>            
+<li><api type='import' group='java' category='private' name='org.netbeans.modules.timers' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            </api>
+</li>            
+<li><api type='import' group='java' category='private' name='org.netbeans.spi.navigator' url='@org-netbeans-spi-navigator@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                1.0
+                is required.
+            </api>
+</li>            
+<li><api type='import' group='java' category='private' name='org.openide.actions' url='@org-openide-actions@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                6.2
+                is required.
+            </api>
+</li>            
+<li><api type='import' group='java' category='private' name='org.openide.awt' url='@org-openide-awt@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                6.2
+                is required.
+            </api>
+</li>            
+<li><api type='import' group='java' category='private' name='org.openide.dialogs' url='@org-openide-dialogs@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                7.1
+                is required.
+            </api>
+</li>            
+<li><api type='import' group='java' category='private' name='org.openide.filesystems' url='@org-openide-filesystems@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                6.2
+                is required.
+            </api>
+</li>            
+<li><api type='import' group='java' category='private' name='org.openide.loaders' url='@org-openide-loaders@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            </api>
+</li>            
+<li><api type='import' group='java' category='private' name='org.openide.modules' url='@org-openide-modules@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                6.2
+                is required.
+            </api>
+</li>            
+<li><api type='import' group='java' category='private' name='org.openide.nodes' url='@org-openide-nodes@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                6.2
+                is required.
+            </api>
+</li>            
+<li><api type='import' group='java' category='private' name='org.openide.text' url='@org-openide-text@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                6.2
+                is required.
+            </api>
+</li>            
+<li><api type='import' group='java' category='private' name='org.openide.util' url='@org-openide-util@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                6.2
+                is required.
+            </api>
+</li>            
+<li><api type='import' group='java' category='private' name='org.openide.windows' url='@org-openide-windows@/overview-summary.html' >
+            The module is needed for compilation. 
+        
+            The module is used during runtime. 
+            
+                Specification version 
+                6.2
+                is required.
+            </api>
+</li>            
+</ul>
  </answer>
 
 
