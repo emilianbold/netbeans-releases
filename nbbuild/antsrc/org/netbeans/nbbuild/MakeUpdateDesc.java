@@ -116,6 +116,14 @@ public class MakeUpdateDesc extends MatchingTask {
         filesets.add(set);
     }
 
+    private boolean automaticGrouping;
+    /**
+     * Turn on if you want modules added to the root fileset
+     * to be automatically added to a group based on their display category (if set).
+     */
+    public void setAutomaticgrouping(boolean b) {
+        automaticGrouping = b;
+    }
     
     private String dist_base;
    /**
@@ -154,7 +162,6 @@ public class MakeUpdateDesc extends MatchingTask {
 
     public void execute () throws BuildException {
         Group root = new Group();
-        root.setName("root"); //NOI18N
         for (FileSet fs : filesets) {
             root.addFileSet(fs);
         }
@@ -266,7 +273,7 @@ public class MakeUpdateDesc extends MatchingTask {
                     String groupName = entry.getKey();
                     // Don't indent; embedded descriptions would get indented otherwise.
                     log("Creating group \"" + groupName + "\"");
-                    if (!groupName.equals("root")) {
+                    if (groupName != null) {
                         pw.println("<module_group name=\"" + xmlEscape(groupName) + "\">");
                         pw.println();
                     }
@@ -301,7 +308,7 @@ public class MakeUpdateDesc extends MatchingTask {
                         XMLUtil.write(module, os);
                         pw.println();
                     }
-                    if (!groupName.equals("root")) {
+                    if (groupName != null) {
                         pw.println("</module_group>");
                         pw.println();
                     }
@@ -335,8 +342,11 @@ public class MakeUpdateDesc extends MatchingTask {
     private Map<String,List<Module>> loadNBMs() throws BuildException {
         Map<String,List<Module>> r = new LinkedHashMap<String,List<Module>>();
         for (Group g : groups) {
-            List<Module> modules = new ArrayList<Module>();
-            r.put(g.name, modules);
+            List<Module> modules = r.get(g.name);
+            if (modules == null) {
+                modules = new ArrayList<Module>();
+                r.put(g.name, modules);
+            }
             for (FileSet fs : g.filesets) {
                 DirectoryScanner ds = fs.getDirectoryScanner(getProject());
                 for (String file : ds.getIncludedFiles()) {
@@ -357,7 +367,18 @@ public class MakeUpdateDesc extends MatchingTask {
                                     }
                                 }).getDocumentElement();
                                 m.nbm = n_file;
-                                modules.add(m);
+                                List<Module> target = modules;
+                                if (automaticGrouping && g.name == null) {
+                                    String categ = ((Element) m.xml.getElementsByTagName("manifest").item(0)).getAttribute("OpenIDE-Module-Display-Category");
+                                    if (categ != null) {
+                                        target = r.get(categ);
+                                        if (target == null) {
+                                            target = new ArrayList<Module>();
+                                            r.put(categ, target);
+                                        }
+                                    }
+                                }
+                                target.add(m);
                             } finally {
                                 is.close();
                             }

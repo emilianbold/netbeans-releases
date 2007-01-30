@@ -90,7 +90,7 @@ Microsystems, Inc. All Rights Reserved.
             <property name="nbm.target.dir" location="${build.updates.dir}"/>
             <property name="${nbm.target.cluster.name}" value="${help.target.cluster}" />
         </subant>
-        <makeupdatedesc desc="${build.updates.dir}/updates.xml" distbase=".">
+        <makeupdatedesc desc="${build.updates.dir}/updates.xml" distbase="." automaticgrouping="true">
             <fileset dir="${build.updates.dir}">
                 <include name="*.nbm"/>
             </fileset>
