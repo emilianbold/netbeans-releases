@@ -106,11 +106,6 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="org-netbeans-modules-java-j2seproject-ui-SourceNodeFactory.instance"/>
                 <attr name="org-netbeans-modules-java-j2seproject-ui-SourceNodeFactory.instance/org-netbeans-modules-java-j2seproject-ui-LibrariesNodeFactory.instance" boolvalue="true"/>
                 <file name="org-netbeans-modules-java-j2seproject-ui-LibrariesNodeFactory.instance"/>
-                <!-- removing temporarly WebServicesNodeFactory until JAX-RPC support is implemented
-                <attr name="org-netbeans-modules-java-j2seproject-ui-LibrariesNodeFactory.instance/org-netbeans-modules-java-j2seproject-wsclient-WebServicesNodeFactory.instance" boolvalue="true"/>
-                <file name="org-netbeans-modules-java-j2seproject-wsclient-WebServicesNodeFactory.instance"/>
-                -->
-                
             </folder>
             
             <folder name="Lookup"/>
