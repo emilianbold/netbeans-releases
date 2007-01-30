@@ -41,6 +41,10 @@ import org.openide.util.LookupListener;
  * which considers a file owned by the project corresponding to the nearest enclosing
  * project directory or marked external owner, if such a directory exists. But
  * other implementations can be registered to lookup as well.
+ * <p>
+ * Warning: This class and it's methods may not be used within DataObject recognition in DataLoaders.
+ * eg. in {@link org.openide.loaders.MultiFileLoader#findPrimaryFile}
+ *  
  * @author Jesse Glick
  */
 public class FileOwnerQuery {
