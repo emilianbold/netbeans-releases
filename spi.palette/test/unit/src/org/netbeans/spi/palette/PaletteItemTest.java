@@ -24,7 +24,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import junit.framework.Assert;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.palette.Category;
@@ -87,6 +86,11 @@ public class PaletteItemTest extends NbTestCase {
 
     public void testReadItemWithBody() throws Exception {
         FileObject itemFile = createItemFileWithBody();
+        verifyPaletteItem(itemFile);
+    }
+    
+    public void testReadItemWithInlineDescription() throws Exception {
+        FileObject itemFile = createItemFileWithInLineDescription();
         verifyPaletteItem(itemFile);
     }
     
@@ -201,6 +205,31 @@ public class PaletteItemTest extends NbTestCase {
                 writer.write("<icon16 urlvalue='" + ICON16 + "' />");
                 writer.write("<icon32 urlvalue='" + ICON32 + "' />");
                 writer.write("<description localizing-bundle='" + BUNDLE_NAME + "' display-name-key='" + NAME_KEY + "' tooltip-key='" + TOOLTIP_KEY + "' />");
+                writer.write("</editor_palette_item>");
+            } finally {
+                writer.close();
+            }
+        } finally {
+            lock.releaseLock();
+        }           
+        return fo;
+    }
+    
+    private FileObject createItemFileWithInLineDescription() throws Exception {
+        FileObject fo = itemsFolder.createData(ITEM_FILE);
+        FileLock lock = fo.lock();
+        try {
+            OutputStreamWriter writer = new OutputStreamWriter(fo.getOutputStream(lock), "UTF-8");
+            try {
+                writer.write("<?xml version='1.0' encoding='UTF-8'?>");
+                writer.write("<!DOCTYPE editor_palette_item PUBLIC '-//NetBeans//Editor Palette Item 1.1//EN' 'http://www.netbeans.org/dtds/editor-palette-item-1_1.dtd'>");
+                writer.write("<editor_palette_item version='1.1'>");
+                writer.write("<body><![CDATA[" + BODY + "]]></body>");
+                writer.write("<icon16 urlvalue='" + ICON16 + "' />");
+                writer.write("<icon32 urlvalue='" + ICON32 + "' />");
+                writer.write("<inline-description> <display-name>"
+                        +NbBundle.getBundle(BUNDLE_NAME).getString(NAME_KEY)+"</display-name> <tooltip>"
+                        +NbBundle.getBundle(BUNDLE_NAME).getString(TOOLTIP_KEY)+"</tooltip>  </inline-description>");
                 writer.write("</editor_palette_item>");
             } finally {
                 writer.close();

@@ -163,7 +163,8 @@ public class PaletteEnvironmentProvider implements Environment.Provider {
                     ic.add(s, ActiveEditorDropDefaultProvider.getInstance());
             }
             
-            return new PaletteItemNode(
+            return (null == handler.getDisplayName())
+                ? new PaletteItemNode(
                     new DataNode(xmlDataObject, Children.LEAF), 
                     name, 
                     handler.getBundleName(), 
@@ -172,8 +173,15 @@ public class PaletteEnvironmentProvider implements Environment.Provider {
                     handler.getTooltipKey(), 
                     handler.getIcon16URL(), 
                     handler.getIcon32URL(), 
-                    ic
-            );
+                    ic )
+                : new PaletteItemNode(
+                        new DataNode(xmlDataObject, Children.LEAF), 
+                        name, 
+                        handler.getDisplayName(), 
+                        handler.getTooltip(), 
+                        handler.getIcon16URL(), 
+                        handler.getIcon32URL(), 
+                        ic );
         }
     }        
 

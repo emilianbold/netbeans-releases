@@ -83,6 +83,28 @@ public final class PaletteItemNode extends FilterNode {
         this.icon32URL = icon32URL;
     }
  
+    PaletteItemNode(DataNode original, 
+                    String name, 
+                    String displayName, 
+                    String tooltip, 
+                    String icon16URL, 
+                    String icon32URL, 
+                    InstanceContent content) 
+    {
+        super(original, Children.LEAF, new AbstractLookup(content));
+        
+        content.add( this );
+        this.name = name;
+        this.bundleName = bundleName; 
+        assert null != displayName;
+        this.displayName = displayName;
+        this.description = tooltip;
+        if( null == this.description )
+            description = displayName;
+        this.icon16URL = icon16URL;
+        this.icon32URL = icon32URL;
+    }
+    
     public String getName() {
         return name;
     }

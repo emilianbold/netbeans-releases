@@ -34,10 +34,6 @@ public final class PaletteItemHandler extends DefaultHandler {
 
     private static final String XML_ROOT = "editor_palette_item"; // NOI18N
     private static final String ATTR_VERSION = "version"; // NOI18N
-//    private static final String TAG_ATTRIBUTES = "attributes"; // NOI18N
-//    private static final String TAG_ATTRIBUTE = "attribute"; // NOI18N
-//    private static final String ATTR_ATTRIBNAME = "name"; // NOI18N
-//    private static final String ATTR_ATTRIBVALUE = "value"; // NOI18N
     private static final String TAG_BODY = "body"; // NOI18N
     private static final String TAG_CLASS = "class"; // NOI18N
     private static final String ATTR_CLASSNAME = "name"; // NOI18N
@@ -47,6 +43,9 @@ public final class PaletteItemHandler extends DefaultHandler {
     private static final String ATTR_URL = "urlvalue"; // NOI18N
     private static final String TAG_ICON32 = "icon32"; // NOI18N
     private static final String TAG_DESCRIPTION = "description"; // NOI18N
+    private static final String TAG_INLINE_DESCRIPTION = "inline-description"; // NOI18N
+    private static final String TAG_DISPLAY_NAME = "display-name"; // NOI18N
+    private static final String TAG_TOOLTIP = "tooltip"; // NOI18N
     private static final String ATTR_BUNDLE = "localizing-bundle"; // NOI18N
     private static final String ATTR_DISPLAY_NAME_KEY = "display-name-key"; // NOI18N
     private static final String ATTR_TOOLTIP_KEY = "tooltip-key"; // NOI18N
@@ -55,7 +54,6 @@ public final class PaletteItemHandler extends DefaultHandler {
     private boolean insideBody = false;
     
     //raw data read from the file
-//    private HashMap attributeMap;
     private String body;
     private String className;
     
@@ -64,8 +62,11 @@ public final class PaletteItemHandler extends DefaultHandler {
     private String bundleName;
     private String displayNameKey;
     private String tooltipKey;
+    private String displayName;
+    private String tooltip;
     
-//    public Map getAttributes() { return (attributeMap == null ? new HashMap() : attributeMap); }
+    private StringBuffer textBuffer;
+    
     public String getBody() { return body; }
     public String getClassName() { return className; }
     
@@ -74,6 +75,8 @@ public final class PaletteItemHandler extends DefaultHandler {
     public String getBundleName() { return bundleName; }
     public String getDisplayNameKey() { return displayNameKey; }
     public String getTooltipKey() { return tooltipKey; }
+    public String getDisplayName() { return displayName; }
+    public String getTooltip() { return tooltip; }
     
     public void startElement(String uri, String localName, String qName, Attributes attributes) 
         throws SAXException 
@@ -84,17 +87,11 @@ public final class PaletteItemHandler extends DefaultHandler {
                 String message = NbBundle.getBundle(PaletteItemHandler.class)
                     .getString("MSG_UnknownEditorPaletteItemVersion"); // NOI18N
                 throw new SAXException(message);
-            } else if (!"1.0".equals(version)) { // NOI18N
+            } else if (!("1.0".equals(version) || "1.1".equals(version))) { // NOI18N
                 String message = NbBundle.getBundle(PaletteItemHandler.class)
                     .getString("MSG_UnsupportedEditorPaletteItemVersion"); // NOI18N
                 throw new SAXException(message);
             }
-//        } else if (TAG_ATTRIBUTES.equals(qName)) {
-//            attributeMap = new HashMap();
-//        } else if (TAG_ATTRIBUTE.equals(qName)) {
-//            String name = attributes.getValue(ATTR_ATTRIBNAME);
-//            String value = attributes.getValue(ATTR_ATTRIBVALUE);
-//            attributeMap.put(name, value);
         } else if (TAG_BODY.equals(qName)) {
             bodyLines = new LinkedList<String>();
             insideBody = true;
@@ -110,6 +107,14 @@ public final class PaletteItemHandler extends DefaultHandler {
             bundleName = attributes.getValue(ATTR_BUNDLE);
             displayNameKey = attributes.getValue(ATTR_DISPLAY_NAME_KEY);
             tooltipKey = attributes.getValue(ATTR_TOOLTIP_KEY);
+        } else if (TAG_INLINE_DESCRIPTION.equals(qName)) {
+            bundleName = null;
+            displayNameKey = null;
+            tooltipKey = null;
+        } else if (TAG_DISPLAY_NAME.equals(qName)) {
+            textBuffer = new StringBuffer();
+        } else if (TAG_TOOLTIP.equals(qName)) {
+            textBuffer = new StringBuffer();
         }
     }
     
@@ -118,7 +123,14 @@ public final class PaletteItemHandler extends DefaultHandler {
         if (TAG_BODY.equals(qName)) {
             insideBody = false;
             body = trimSurroundingLines(bodyLines);
+        } else if( TAG_DISPLAY_NAME.equals(qName) ) {
+            displayName = textBuffer.toString();
+            textBuffer = null;
+        } else if( TAG_TOOLTIP.equals(qName) ) {
+            tooltip = textBuffer.toString();
+            textBuffer = null;
         }
+        System.err.println( qName + ">" );
     }
     
     public void characters(char buf[], int offset, int len)
@@ -127,6 +139,8 @@ public final class PaletteItemHandler extends DefaultHandler {
         if (insideBody) {
             String chars = new String(buf, offset, len).trim();
             bodyLines.add(chars + "\n");
+        } else if( null != textBuffer ) {
+            textBuffer.append( buf, offset, len );
         }
     }
 
