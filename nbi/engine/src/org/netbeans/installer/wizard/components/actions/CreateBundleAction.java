@@ -136,7 +136,7 @@ public class CreateBundleAction extends WizardAction {
             
             // transfer the engine files list and engine properties
             final String engineProperties = 
-                    Registry.FORCE_CHANGE_STATUS_INSTALL_PROPERTY + "=true\n";
+                    Registry.FORCE_INSTALL_PROPERTY + "=true\n";
             
             output.putNextEntry(new JarEntry(
                     Installer.ENGINE_JAR_CONTENT_LIST));

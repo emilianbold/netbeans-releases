@@ -392,25 +392,27 @@ public class Registry {
         //   * ancestors of any of the above
         if ((System.getProperty(TARGET_COMPONENT_UID_PROPERTY) != null) &&
                 (System.getProperty(TARGET_COMPONENT_VERSION_PROPERTY) != null)) {
-            final String uid = System.getProperty(TARGET_COMPONENT_UID_PROPERTY);
+            final String  uid = System.getProperty(TARGET_COMPONENT_UID_PROPERTY);
             final Version version = Version.getVersion(
                     System.getProperty(TARGET_COMPONENT_VERSION_PROPERTY));
             
             final Product target = getProduct(uid, version);
             
-            List<Product> dependents = new ArrayList<Product>();
-            for (Product product: getProducts()) {
-                if (target.satisfiesRequirement(product)) {
-                    dependents.add(product);
+            if (target != null) {
+                final List<Product> dependents = new ArrayList<Product>();
+                for (Product product: getProducts()) {
+                    if (target.satisfiesRequirement(product)) {
+                        dependents.add(product);
+                    }
                 }
-            }
-            
-            for (Product product: getProducts()) {
-                if (!target.equals(product) &&
-                        !dependents.contains(product) &&
-                        !product.isAncestor(target) &&
-                        !product.isAncestor(dependents)) {
-                    product.setVisible(false);
+                
+                for (Product product: getProducts()) {
+                    if (!target.equals(product) &&
+                            !dependents.contains(product) &&
+                            !product.isAncestor(target) &&
+                            !product.isAncestor(dependents)) {
+                        product.setVisible(false);
+                    }
                 }
             }
         }
@@ -431,10 +433,10 @@ public class Registry {
     }
     
     private void changeStatuses() {
-        if (System.getProperty(FORCE_CHANGE_STATUS_INSTALL_PROPERTY) != null) {
+        if (System.getProperty(FORCE_INSTALL_PROPERTY) != null) {
             for (Product product: getProducts(Status.NOT_INSTALLED)) {
-                // we should not change the status of components that are not 
-                // visible (were filtered out either at build time or runtime), as 
+                // we should not change the status of components that are not
+                // visible (were filtered out either at build time or runtime), as
                 // this may cause unexpected results - these components are not
                 // expected to be dealt with
                 if (product.isVisible()) {
@@ -443,10 +445,10 @@ public class Registry {
             }
         }
         
-        if (System.getProperty(FORCE_CHANGE_STATUS_UNINSTALL_PROPERTY) != null) {
+        if (System.getProperty(FORCE_UNINSTALL_PROPERTY) != null) {
             for (Product product: getProducts(Status.INSTALLED)) {
-                // we should not change the status of components that are not 
-                // visible (were filtered out either at build time or runtime), as 
+                // we should not change the status of components that are not
+                // visible (were filtered out either at build time or runtime), as
                 // this may cause unexpected results - these components are not
                 // expected to be dealt with
                 if (product.isVisible()) {
@@ -1315,9 +1317,9 @@ public class Registry {
     public static final String TARGET_PLATFORM_PROPERTY =
             "nbi.target.platform";
     
-    public static final String FORCE_CHANGE_STATUS_INSTALL_PROPERTY =
+    public static final String FORCE_INSTALL_PROPERTY =
             "nbi.force.change.status.install";
     
-    public static final String FORCE_CHANGE_STATUS_UNINSTALL_PROPERTY =
+    public static final String FORCE_UNINSTALL_PROPERTY =
             "nbi.force.change.status.uninstall";
 }

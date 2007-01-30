@@ -94,19 +94,11 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         setProperty(DEFAULT_DOWNLOAD_SIZE_PROPERTY, DEFAULT_DOWNLOAD_SIZE);
         
         setProperty(ERROR_NO_CHANGES_PROPERTY, DEFAULT_ERROR_NO_CHANGES);
+        setProperty(ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY, DEFAULT_ERROR_NO_CHANGES_INSTALL_ONLY);
+        setProperty(ERROR_NO_CHANGES_UNINSTALL_ONLY_PROPERTY, DEFAULT_ERROR_NO_CHANGES_UNINSTALL_ONLY);
         setProperty(ERROR_REQUIREMENT_INSTALL_PROPERTY, DEFAULT_ERROR_REQUIREMENT_INSTALL);
         setProperty(ERROR_CONFLICT_INSTALL_PROPERTY, DEFAULT_ERROR_CONFLICT_INSTALL);
         setProperty(ERROR_REQUIREMENT_UNINSTALL_PROPERTY, DEFAULT_ERROR_REQUIREMENT_UNINSTALL);
-    }
-    
-    public void initialize() {
-        super.initialize();
-        
-        if (isThereAnythingToInstall()) {
-            setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
-        } else {
-            setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION_UNINSTALL);
-        }
     }
     
     public WizardUi getWizardUi() {
@@ -117,11 +109,48 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
         return wizardUi;
     }
     
+    public boolean canExecuteForward() {
+        return canExecute();
+    }
+    
+    public boolean canExecuteBackward() {
+        return canExecute();
+    }
+    
+    private boolean canExecute() {
+        return System.getProperty(Registry.FORCE_UNINSTALL_PROPERTY) == null;
+    }
+    
     private boolean isThereAnythingToInstall() {
         final Registry registry = Registry.getInstance();
+        final List<Product> toInstall = new LinkedList<Product>();
         
-        return registry.getProducts(Status.NOT_INSTALLED).size() + 
-                registry.getProducts(Status.TO_BE_INSTALLED).size() > 0;
+        toInstall.addAll(registry.getProducts(Status.NOT_INSTALLED));
+        toInstall.addAll(registry.getProducts(Status.TO_BE_INSTALLED));
+        
+        for (Product product: toInstall) {
+            if (product.isVisible()) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    private boolean isThereAnythingToUninstall() {
+        final Registry registry = Registry.getInstance();
+        final List<Product> toUninstall = new LinkedList<Product>();
+        
+        toUninstall.addAll(registry.getProducts(Status.INSTALLED));
+        toUninstall.addAll(registry.getProducts(Status.TO_BE_UNINSTALLED));
+        
+        for (Product product: toUninstall) {
+            if (product.isVisible()) {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -190,6 +219,12 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                     registry.getProducts(Status.TO_BE_UNINSTALLED);
             
             if ((toInstall.size() == 0) && (toUninstall.size() == 0)) {
+                if (!component.isThereAnythingToInstall()) {
+                    return component.getProperty(ERROR_NO_CHANGES_UNINSTALL_ONLY_PROPERTY);
+                }
+                if (!component.isThereAnythingToUninstall()) {
+                    return component.getProperty(ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY);
+                }
                 return component.getProperty(ERROR_NO_CHANGES_PROPERTY);
             }
             
@@ -591,11 +626,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             }
             
             public Object getCellEditorValue() {
-                if (System.getProperty(REVERSE_CHECKBOX_LOGIC_PROPERTY) == null) {
-                    return checkBox.isSelected();
-                } else {
-                    return !checkBox.isSelected();
-                }
+                return checkBox.isSelected();
             }
             
             public boolean isCellEditable(EventObject event) {
@@ -699,14 +730,11 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
                     checkBox.setVisible(true);
                     checkBox.setToolTipText(title);
                     
-                    boolean trueValue = 
-                            System.getProperty(REVERSE_CHECKBOX_LOGIC_PROPERTY) == null ? true : false;
-                    
                     if ((product.getStatus() == Status.INSTALLED) ||
                             (product.getStatus() == Status.TO_BE_INSTALLED)) {
-                        checkBox.setSelected(trueValue);
+                        checkBox.setSelected(true);
                     } else {
-                        checkBox.setSelected(!trueValue);
+                        checkBox.setSelected(false);
                     }
                 } else if (value instanceof Group) {
                     final Group group = (Group) value;
@@ -731,9 +759,6 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
     public static final String DEFAULT_DESCRIPTION =
             ResourceUtils.getString(ComponentsSelectionPanel.class,
             "CSP.description"); // NOI18N
-    public static final String DEFAULT_DESCRIPTION_UNINSTALL =
-            ResourceUtils.getString(ComponentsSelectionPanel.class,
-            "CSP.description.uninstall"); // NOI18N
     
     public static final String DESCRIPTION_TEXT_PROPERTY =
             "description.text"; // NOI18N
@@ -768,7 +793,11 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             "CSP.default.download.size"); // NOI18N
     
     public static final String ERROR_NO_CHANGES_PROPERTY =
-            "error.no.changes"; // NOI18N
+            "error.no.changes.both"; // NOI18N
+    public static final String ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY =
+            "error.no.changes.install"; // NOI18N
+    public static final String ERROR_NO_CHANGES_UNINSTALL_ONLY_PROPERTY =
+            "error.no.changes.uninstall"; // NOI18N
     public static final String ERROR_REQUIREMENT_INSTALL_PROPERTY =
             "error.requirement.install"; // NOI18N
     public static final String ERROR_CONFLICT_INSTALL_PROPERTY =
@@ -778,7 +807,13 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
     
     public static final String DEFAULT_ERROR_NO_CHANGES =
             ResourceUtils.getString(ComponentsSelectionPanel.class,
-            "CSP.error.no.changes"); // NOI18N
+            "CSP.error.no.changes.both"); // NOI18N
+    public static final String DEFAULT_ERROR_NO_CHANGES_INSTALL_ONLY =
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.error.no.changes.install"); // NOI18N
+    public static final String DEFAULT_ERROR_NO_CHANGES_UNINSTALL_ONLY =
+            ResourceUtils.getString(ComponentsSelectionPanel.class,
+            "CSP.error.no.changes.uninstall"); // NOI18N
     public static final String DEFAULT_ERROR_REQUIREMENT_INSTALL =
             ResourceUtils.getString(ComponentsSelectionPanel.class,
             "CSP.error.requirement.install"); // NOI18N
@@ -788,7 +823,4 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
     public static final String DEFAULT_ERROR_REQUIREMENT_UNINSTALL =
             ResourceUtils.getString(ComponentsSelectionPanel.class,
             "CSP.error.requirement.uninstall"); // NOI18N
-    
-    public static final String REVERSE_CHECKBOX_LOGIC_PROPERTY = 
-            "nbi.wizard.reverse.checkbox.logic";
 }

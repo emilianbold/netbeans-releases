@@ -484,7 +484,7 @@ public class Installer {
                 LogManager.log("parsing command line parameter \"--force-install\"");
                 LogManager.indent();
                 
-                System.setProperty(Registry.FORCE_CHANGE_STATUS_INSTALL_PROPERTY, "true");
+                System.setProperty(Registry.FORCE_INSTALL_PROPERTY, "true");
                 
                 LogManager.unindent();
                 continue;
@@ -494,7 +494,7 @@ public class Installer {
                 LogManager.log("parsing command line parameter \"--force-uninstall\"");
                 LogManager.indent();
                 
-                System.setProperty(Registry.FORCE_CHANGE_STATUS_UNINSTALL_PROPERTY, "true");
+                System.setProperty(Registry.FORCE_UNINSTALL_PROPERTY, "true");
                 
                 LogManager.unindent();
                 continue;

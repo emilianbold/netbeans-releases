@@ -62,6 +62,8 @@ public class WindowsNativeUtils extends NativeUtils {
     public static final String DISPLAY_NAME     = "DisplayName";
     public static final String DISPLAY_ICON     = "DisplayIcon";
     public static final String UNINSTALL_STRING = "UninstallString";
+    public static final String MODIFY_STRING    = "ModifyPath";
+    public static final String NO_REPAIR        = "NoRepair";
     public static final String INSTALL_LOCATION = "InstallLocation";
     
     private static final String NBI_UID_PREFIX = "nbi-";
@@ -316,14 +318,14 @@ public class WindowsNativeUtils extends NativeUtils {
         try {
             LogManager.logIndent("adding component to windows registry uninstall section");
             
-            String uid         = getUidKey(product);
+            String key         = getUidKey(product);
             String installPath = product.getInstallationLocation().getAbsolutePath();
             String displayName = product.getDisplayName();
             
             String icon;
             if (product.getLogic().getIcon() != null) {
                 icon = new File(
-                        product.getInstallationLocation(), 
+                        product.getInstallationLocation(),
                         product.getLogic().getIcon()).getAbsolutePath();
             } else {
                 icon = null;
@@ -333,30 +335,29 @@ public class WindowsNativeUtils extends NativeUtils {
                     SystemUtils.getCurrentJavaHome());
             File cachedEngine = Installer.getInstance().getCachedEngine();
             
-            String uninstallString = null;
-            
             if (cachedEngine != null) {
-                String sp = " ";
-                String br = "\"";
-                uninstallString =
-                        br + executable.getPath() + br + sp +
-                        br + "-D" + ComponentsSelectionPanel.REVERSE_CHECKBOX_LOGIC_PROPERTY + br + sp +
-                        "-jar" + sp +
-                        br + cachedEngine.getPath() + br + sp +
-                        Installer.TARGET_ARG + sp +
-                        br + product.getUid() + br + sp +
-                        br + product.getVersion().toString() + br + sp +
+                String modifyString =
+                        QUOTE + executable.getPath() + QUOTE + SPACE +
+                        "-jar" + SPACE +
+                        QUOTE + cachedEngine.getPath() + QUOTE + SPACE +
+                        Installer.TARGET_ARG + SPACE +
+                        QUOTE + product.getUid() + QUOTE + SPACE +
+                        QUOTE + product.getVersion().toString() + QUOTE;
+                
+                String uninstallString =
+                        modifyString + SPACE +
                         "--force-uninstall";
                 
-                LogManager.logIndent("Adding entry to add/remove programs list with the following data:");
-                LogManager.log("uid             = " + uid);
-                LogManager.log("installPath     = " + installPath);
-                LogManager.log("icon            = " + icon);
+                LogManager.logIndent("adding entry to add/remove programs list with the following data:");
+                LogManager.log("key             = " + key);
                 LogManager.log("displayName     = " + displayName);
+                LogManager.log("icon            = " + icon);
+                LogManager.log("installPath     = " + installPath);
+                LogManager.log("modifyString    = " + modifyString);
                 LogManager.log("uninstallString = " + uninstallString);
                 LogManager.logUnindent("");
                 
-                addRemoveProgramsInstall(uid, displayName, icon, installPath, uninstallString, new HashMap<String, Object>());
+                addRemoveProgramsInstall(key, displayName, icon, installPath, modifyString, uninstallString);
             } else {
                 LogManager.log(ErrorLevel.WARNING, "Can't find cached engine.");
                 LogManager.log(ErrorLevel.WARNING, "The entry would not be added to the add/remove programs list");
@@ -571,6 +572,9 @@ public class WindowsNativeUtils extends NativeUtils {
     }
     
     // private //////////////////////////////////////////////////////////////////////
+    private void addRemoveProgramsInstall(String uid, String displayName, String displayIcon, String installLocation, String modifyString, String uninstallString) throws NativeException {
+        addRemoveProgramsInstall(uid, displayName, displayIcon, installLocation, modifyString, uninstallString, new HashMap<String, Object>());
+    }
     
     /**
      * Add new entry in Add/Remove programs.<br>
@@ -601,7 +605,7 @@ public class WindowsNativeUtils extends NativeUtils {
      *
      *      Other values would be set as REG_SZ with value .toString()
      */
-    private void addRemoveProgramsInstall(String uid, String displayName, String displayIcon, String installLocation, String uninstallString, HashMap<String, Object> parameters) throws NativeException {
+    private void addRemoveProgramsInstall(String uid, String displayName, String displayIcon, String installLocation, String modifyString, String uninstallString, HashMap<String, Object> parameters) throws NativeException {
         LogManager.log("Add new Add/Remove Programs entry with id [" + uid + "]");
         
         String vacantUid = getVacantUninstallUid(uid);
@@ -614,15 +618,24 @@ public class WindowsNativeUtils extends NativeUtils {
             
             registry.setStringValue(unistallSection, key, DISPLAY_NAME, displayName, false);
         }
+        if (displayIcon != null) {
+            LogManager.log("Set '" + DISPLAY_ICON + "' = [" + displayIcon+ "]");
+            
+            registry.setStringValue(unistallSection, key, DISPLAY_ICON, displayIcon, false);
+        }
         if (installLocation != null) {
             LogManager.log("Set '" + INSTALL_LOCATION + "' = [" + installLocation+ "]");
             
             registry.setStringValue(unistallSection, key, INSTALL_LOCATION, installLocation, false);
         }
-        if (displayIcon != null) {
-            LogManager.log("Set '" + DISPLAY_ICON + "' = [" + displayIcon+ "]");
+        if (modifyString != null) {
+            LogManager.log("Set '" + NO_REPAIR + "' = [" + 1 + "]");
             
-            registry.setStringValue(unistallSection, key, DISPLAY_ICON, displayIcon, false);
+            registry.set32BitValue(unistallSection, key, NO_REPAIR, 1);
+            
+            LogManager.log("Set '" + MODIFY_STRING + "' = [" + modifyString + "]");
+            
+            registry.setStringValue(unistallSection, key, MODIFY_STRING, modifyString, false);
         }
         if (uninstallString != null) {
             LogManager.log("Set '" + UNINSTALL_STRING + "' = [" + uninstallString+ "]");
