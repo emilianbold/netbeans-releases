@@ -91,29 +91,30 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-          <test-dependencies>
-              <test-type>
-                  <name>unit</name>
-                  <test-dependency>
-                      <code-name-base>org.netbeans.modules.queries</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.netbeans.modules.websvc.jaxwsapi</code-name-base>
-                      <recursive/>
-                      <compile-dependency/>
-                  </test-dependency>
-              </test-type>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.queries</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.websvc.jaxwsapi</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.sun.rave.project.jsfproject</friend>
                 <friend>org.netbeans.modules.identity.profile.ui</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.j2ee.refactoring</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>
                 <friend>org.netbeans.modules.websvc.customization</friend>
-                <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <friend>org.netbeans.modules.websvc.dev</friend>
-                <friend>com.sun.rave.project.jsfproject</friend>
+                <friend>org.netbeans.modules.websvc.jaxrpc</friend>
+                <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <package>org.netbeans.modules.websvc.jaxws.api</package>
                 <package>org.netbeans.modules.websvc.jaxws.spi</package>
             </friend-packages>
