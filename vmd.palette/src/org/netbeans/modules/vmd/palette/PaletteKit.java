@@ -33,7 +33,6 @@ import org.openide.loaders.DataFolder;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.ExTransferable;
-
 import javax.swing.*;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -64,9 +63,9 @@ public class PaletteKit implements Runnable {
         try {
             FileObject rootFolderFO = fs.findResource(rootFolderPath);
             if (rootFolderFO == null) {
-                FileObject projectTypeFO = fs.findResource (projectType);
+                FileObject projectTypeFO = fs.findResource(projectType);
                 if (projectTypeFO == null)
-                    projectTypeFO = fs.getRoot ().createFolder (projectType);
+                    projectTypeFO = fs.getRoot().createFolder(projectType);
                 rootFolderFO = FileUtil.createFolder(projectTypeFO, "palette"); // NOI18N
             }
             rootFolder = DataFolder.findFolder(rootFolderFO);
@@ -145,6 +144,17 @@ public class PaletteKit implements Runnable {
                 if (catFO == null)
                     continue;
             }
+            
+            if (catFO == null) { // if category folder was not initialized - create folder
+                // only creation is not enough, should be set NB attributes, see MidpPaletteProvider for example
+                Debug.warning(catID + "should be initialized! See MidpPaletteProvider.");
+                try {
+                    org.openide.loaders.DataFolder.create(rootFolder, catID);
+                } catch (IOException ex) {
+                    Debug.error("Can't create folder for palette category: " + ex);
+                }
+            }
+            
             String path = catFO.getPath() + '/' + producerID + '.' + PaletteItemDataLoader.EXTENSION; // NOI18N
             if (fs.findResource(path) == null) {
                 try {

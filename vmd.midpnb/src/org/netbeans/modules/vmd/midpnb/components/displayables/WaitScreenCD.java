@@ -25,7 +25,6 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 
 import java.util.*;
 import org.netbeans.modules.vmd.midp.components.displayables.CanvasCD;
-import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 
 /**
  * @author Karol Harezlak
