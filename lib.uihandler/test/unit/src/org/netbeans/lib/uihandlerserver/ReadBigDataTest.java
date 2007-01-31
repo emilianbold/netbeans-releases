@@ -18,21 +18,16 @@
 package org.netbeans.lib.uihandlerserver;
 
 import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Method;
-import java.util.Random;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.uihandler.LogRecords;
 
@@ -56,6 +51,42 @@ public class ReadBigDataTest extends NbTestCase {
     }
 
     protected void tearDown() throws Exception {
+    }
+
+    public void testAntonsOutOfMemExc() throws Exception {
+        String what = "antons.gz";
+        
+        InputStream is = new GZIPInputStream(getClass().getResourceAsStream(what));
+        
+        class H extends Handler {
+            int cnt;
+            LogRecord first;
+            
+            public void publish(LogRecord record) {
+                if (cnt == 0) {
+                    first = record;
+                }
+                cnt++;
+                if (record.getParameters() != null && record.getParameters().length > 500) {
+                    fail("Too many parameters: " + record.getParameters().length);
+                }
+            }
+
+            public void flush() {
+            }
+
+            public void close() throws SecurityException {
+            }
+        }
+        
+        H h = new H();
+        is = new GZIPInputStream(getClass().getResourceAsStream(what));
+        LogRecords.scan(is, h);
+        is.close();
+        
+        if (h.cnt != 322) {
+            fail("Invalid number of records: " + h.cnt);
+        }
     }
 
     public void testWriteAndRead() throws Exception {

@@ -378,7 +378,7 @@ public final class LogRecords {
                 LOG.log(Level.FINE, "Uknown tag " + qName, ex);
                 current = null;
             }
-            chars.setLength(0);
+            chars = new StringBuilder();
         }
 
         public void endElement(String uri, String localName, String qName) throws SAXException {
@@ -390,10 +390,17 @@ public final class LogRecords {
                         params = new ArrayList<String>();
                     }
                     params.add(v);
+                    if (params.size() > 500) {
+                        LOG.severe("Too long params when reading a record. Deleting the following:"); // NOI18N
+                        for (String p : params) {
+                            LOG.severe(p);
+                        }
+                        params.clear();
+                    }
                 }
             }
             current = null;
-            chars.setLength(0);
+            chars = new StringBuilder();
             
             if (currentEx != null && currentEx.values != null) {
                 if ("frame".equals(qName)) { // NOI18N
