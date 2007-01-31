@@ -370,7 +370,7 @@ public class MakeUpdateDesc extends MatchingTask {
                                 List<Module> target = modules;
                                 if (automaticGrouping && g.name == null) {
                                     String categ = ((Element) m.xml.getElementsByTagName("manifest").item(0)).getAttribute("OpenIDE-Module-Display-Category");
-                                    if (categ != null) {
+                                    if (categ.length() > 0) {
                                         target = r.get(categ);
                                         if (target == null) {
                                             target = new ArrayList<Module>();
