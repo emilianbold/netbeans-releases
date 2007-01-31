@@ -34,14 +34,19 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.text.Collator;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.w3c.dom.Element;
@@ -192,9 +197,9 @@ public class MakeUpdateDesc extends MatchingTask {
 	}
 	log ("Creating update description " + desc.getAbsolutePath ());
         
-        Map<String,List<Module>> modulesByGroup = loadNBMs();
+        Map<String,Collection<Module>> modulesByGroup = loadNBMs();
         boolean targetClustersDefined = false;
-        for (List<Module> modules : modulesByGroup.values()) {
+        for (Collection<Module> modules : modulesByGroup.values()) {
             for (Module m : modules) {
                 targetClustersDefined |= m.xml.getAttributeNode("targetcluster") != null;
             }
@@ -269,7 +274,7 @@ public class MakeUpdateDesc extends MatchingTask {
 		Map<String,Element> licenses = new HashMap<String,Element>();
                 Set<String> licenseNames = new HashSet<String>();
                 
-                for (Map.Entry<String,List<Module>> entry : modulesByGroup.entrySet()) {
+                for (Map.Entry<String,Collection<Module>> entry : modulesByGroup.entrySet()) {
                     String groupName = entry.getKey();
                     // Don't indent; embedded descriptions would get indented otherwise.
                     log("Creating group \"" + groupName + "\"");
@@ -339,12 +344,41 @@ public class MakeUpdateDesc extends MatchingTask {
         public File nbm;
     }
     
-    private Map<String,List<Module>> loadNBMs() throws BuildException {
-        Map<String,List<Module>> r = new LinkedHashMap<String,List<Module>>();
+    private Map<String,Collection<Module>> loadNBMs() throws BuildException {
+        final Collator COLL = Collator.getInstance(/* XXX any particular locale? */);
+        // like COLL but handles nulls ~ ungrouped modules (sorted to top):
+        Comparator<String> groupNameComparator = new Comparator<String>() {
+            public int compare(String gn1, String gn2) {
+                return gn1 != null ?
+                    (gn2 != null ? COLL.compare(gn1, gn2) : 1) :
+                    (gn2 != null ? -1 : 0);
+            }
+        };
+        Map<String,Collection<Module>> r = automaticGrouping ?
+            // generally will be creating groups on the fly, so sort them:
+            new TreeMap<String,Collection<Module>>(groupNameComparator) :
+            // preserve explicit order of <group>s:
+            new LinkedHashMap<String,Collection<Module>>();
+        // sort modules by display name (where available):
+        Comparator<Module> moduleDisplayNameComparator = new Comparator<Module>() {
+            public int compare(Module m1, Module m2) {
+                int res = COLL.compare(getName(m1), getName(m2));
+                return res != 0 ? res : System.identityHashCode(m1) - System.identityHashCode(m2);
+            }
+            String getName(Module m) {
+                Element mani = (Element) m.xml.getElementsByTagName("manifest").item(0);
+                String displayName = mani.getAttribute("OpenIDE-Module-Name");
+                if (displayName.length() > 0) {
+                    return displayName;
+                } else {
+                    return mani.getAttribute("OpenIDE-Module");
+                }
+            }
+        };
         for (Group g : groups) {
-            List<Module> modules = r.get(g.name);
+            Collection<Module> modules = r.get(g.name);
             if (modules == null) {
-                modules = new ArrayList<Module>();
+                modules = new TreeSet<Module>(moduleDisplayNameComparator);
                 r.put(g.name, modules);
             }
             for (FileSet fs : g.filesets) {
@@ -367,13 +401,14 @@ public class MakeUpdateDesc extends MatchingTask {
                                     }
                                 }).getDocumentElement();
                                 m.nbm = n_file;
-                                List<Module> target = modules;
+                                Collection<Module> target = modules;
                                 if (automaticGrouping && g.name == null) {
+                                    // insert modules with no explicit grouping into group acc. to manifest:
                                     String categ = ((Element) m.xml.getElementsByTagName("manifest").item(0)).getAttribute("OpenIDE-Module-Display-Category");
                                     if (categ.length() > 0) {
                                         target = r.get(categ);
                                         if (target == null) {
-                                            target = new ArrayList<Module>();
+                                            target = new TreeSet<Module>(moduleDisplayNameComparator);
                                             r.put(categ, target);
                                         }
                                     }
