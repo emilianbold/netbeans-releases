@@ -208,7 +208,7 @@ public class ResourceUtils implements WizardConstants{
          PropertyElement[] props = resource.getPropertyElement();
          Properties propsList = getProperties(props);
          Object[] params = new Object[]{attrList, propsList, null};
-         String operName = NbBundle.getMessage(ListServerInstances.class, "CreateJMS"); //NOI18N
+         String operName = NbBundle.getMessage(ResourceUtils.class, "CreateJMS"); //NOI18N
          String resourceName = resource.getJndiName();
          if(!isResourceUpdated(resourceName, mejb, attrList, propsList, WizardConstants.__GetJmsResource)){
              createResource(operName, params, mejb);
