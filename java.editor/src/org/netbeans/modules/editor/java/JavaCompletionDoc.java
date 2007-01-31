@@ -452,24 +452,27 @@ public class JavaCompletionDoc implements CompletionDocumentation {
             } else if (SEE_TAG.equals(tag.kind())) {
                 SeeTag stag = (SeeTag)tag;
                 ClassDoc refClass = stag.referencedClass();
+                String className = stag.referencedClassName();
                 String memberName = stag.referencedMemberName();
                 String label = stag.label();
                 if (memberName != null) {
                     if (refClass != null) {
                         createLink(see, eu.elementFor(stag.referencedMember()), "<code>" + (label != null && label.length() > 0 ? label : (refClass.simpleTypeName() + "." + memberName)) + "</code>"); //NOI18N
                     } else {
-                        see.append(stag.referencedClassName());
+                        see.append(className);
                         see.append('.'); //NOI18N
                         see.append(memberName);
                     }
                     see.append(", "); //NOI18N
-                } else {
+                } else if (className != null) {
                     if (refClass != null) {
                         createLink(see, eu.elementFor(refClass), "<code>" + (label != null && label.length() > 0 ? label : refClass.simpleTypeName()) + "</code>"); //NOI18N
                     } else {
-                        see.append(stag.referencedClassName());
+                        see.append(className);
                     }
                     see.append(", "); //NOI18N
+                } else {
+                    see.append(stag.text()).append(", "); //NOI18N
                 }
             } else if (SINCE_TAG.equals(tag.kind())) {
                 since = tag.text();
