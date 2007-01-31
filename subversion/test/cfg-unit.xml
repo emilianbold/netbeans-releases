@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <mconfig name="Subversion Test config">
 
-    <testbag testattribs="stable" executor="code" name="All Subversion unit tests">
+    <testbag testattribs="stable-subversion" executor="code" name="All Subversion unit tests">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/modules/subversion/**/*Test.class"/>
