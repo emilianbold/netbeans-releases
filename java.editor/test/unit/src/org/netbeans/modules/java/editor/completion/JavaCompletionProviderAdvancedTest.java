@@ -716,15 +716,15 @@ public class JavaCompletionProviderAdvancedTest extends CompletionTestBase {
     }
     
     public void testEmptyFileAfterTypingCaseKeywordAndSpace() throws Exception {
-        performTest("SimpleMethodBodyStart", 98, "switch (a) {\ncase ", "empty.pass");
+        performTest("SimpleMethodBodyStart", 98, "switch (a) {\ncase ", "declaredTypes.pass");
     }
     
     public void testAfterTypingCaseKeywordAndSpace() throws Exception {
-        performTest("SimpleEmptyMethodBody", 98, "switch (a) {\ncase ", "empty.pass");
+        performTest("SimpleEmptyMethodBody", 98, "switch (a) {\ncase ", "declaredTypes.pass");
     }
     
     public void testAfterCaseKeywordAndSpace() throws Exception {
-        performTest("Switch", 127, " ", "empty.pass");
+        performTest("Switch", 127, " ", "declaredTypes.pass");
     }
     
     public void testEmptyFileAfterTypingCaseKeywordAndColon() throws Exception {
