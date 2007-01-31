@@ -98,6 +98,10 @@ public class AnalyzerEditorView implements DataEditorView, DesignDocumentAwarene
         return DataEditorView.Kind.MODEL;
     }
 
+    public boolean canShowSideWindows () {
+        return true;
+    }
+
     public String preferredID () {
         return ANALYZER_ID;
     }

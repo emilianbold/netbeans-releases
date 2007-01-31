@@ -37,6 +37,7 @@ public interface DataEditorView extends Serializable {
 
     public DataObjectContext getContext ();
     public Kind getKind ();
+    public boolean canShowSideWindows ();
 
     public String preferredID ();
     public String getDisplayName ();

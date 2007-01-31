@@ -19,9 +19,6 @@
 
 package org.netbeans.modules.vmd.game;
 
-import java.awt.Component;
-import java.awt.Dialog;
-import java.awt.Font;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.game.dialog.NewSceneDialog;
@@ -32,15 +29,12 @@ import org.netbeans.modules.vmd.game.nbdialog.NewLayerDialog;
 import org.netbeans.modules.vmd.game.view.main.MainView;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JList;
-import javax.swing.JToolBar;
 
 /**
  *
@@ -75,6 +69,10 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
 
     public DataEditorView.Kind getKind() {
         return DataEditorView.Kind.MODEL;
+    }
+
+    public boolean canShowSideWindows () {
+        return false;
     }
 
     public String preferredID() {

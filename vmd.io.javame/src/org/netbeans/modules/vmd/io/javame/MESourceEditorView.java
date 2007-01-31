@@ -61,6 +61,10 @@ public final class MESourceEditorView implements DataEditorView {
         return Kind.CODE;
     }
 
+    public boolean canShowSideWindows () {
+        return true;
+    }
+
     public String preferredID () {
         return VIEW_ID;
     }

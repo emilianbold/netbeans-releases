@@ -55,6 +55,10 @@ public class DocumentEditorView implements DataEditorView {
         return Kind.MODEL;
     }
 
+    public boolean canShowSideWindows () {
+        return true;
+    }
+
     public String preferredID () {
         return DOCUMENT_ID;
     }

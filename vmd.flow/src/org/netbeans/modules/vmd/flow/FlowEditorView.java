@@ -53,6 +53,10 @@ public class FlowEditorView implements DataEditorView {
         return Kind.MODEL;
     }
 
+    public boolean canShowSideWindows () {
+        return true;
+    }
+
     public String preferredID () {
         return FlowViewController.FLOW_ID;
     }

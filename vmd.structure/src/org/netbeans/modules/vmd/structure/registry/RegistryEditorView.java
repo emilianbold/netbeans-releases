@@ -71,6 +71,10 @@ public class RegistryEditorView implements DataEditorView, DescriptorRegistryLis
         return Kind.MODEL;
     }
 
+    public boolean canShowSideWindows () {
+        return true;
+    }
+
     public String preferredID () {
         return REGISTRY_ID;
     }
