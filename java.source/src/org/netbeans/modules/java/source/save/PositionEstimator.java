@@ -566,7 +566,7 @@ abstract class PositionEstimator {
                 while (seq.moveNext() && set.contains(seq.token().id())) ;
                 break;
         }
-        return seq.token().id();
+        return seq.token() != null ? seq.token().id() : null;
     }
     
     private static int goAfterFirstNewLine(final TokenSequence<JavaTokenId> seq) {
