@@ -19,8 +19,10 @@
 
 package org.netbeans.modules.languages.javascript;
 
+import java.util.HashSet;
 import java.util.ListIterator;
-import org.netbeans.api.languages.TokenInput;
+import java.util.Set;
+import org.netbeans.api.languages.CharInput;
 import org.netbeans.api.languages.DatabaseManager;
 import org.netbeans.api.languages.LibrarySupport;
 import org.netbeans.api.languages.ASTNode;
@@ -37,7 +39,6 @@ import org.netbeans.api.languages.LibrarySupport;
 import org.netbeans.api.languages.SyntaxCookie;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.SToken;
-import org.netbeans.api.languages.TokenInput;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.ErrorManager;
@@ -59,7 +60,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Stack;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
@@ -76,36 +76,84 @@ public class JavaScript {
 
     private static final String DOC = "org/netbeans/modules/languages/javascript/Documentation.xml";
     
+    private static Set regExp = new HashSet ();
+    static {
+        regExp.add (new Integer (','));
+        regExp.add (new Integer (')'));
+        regExp.add (new Integer (';'));
+    }
     
-    public static ASTNode parseRegularExpression (
-        TokenInput input, 
-        Stack stack
-    ) {
-        List children = new ArrayList ();
-        children.add (input.read ());
-        while (!input.eof () && !input.next (1).getIdentifier ().equals ("/")) {
-            if (input.next (1).getIdentifier ().equals ("\\"))
-                children.add (input.read ());
-            String s = input.next (1).getIdentifier ();
-            if (s.equals ("\n") || s.equals ("\r")) 
-                return ASTNode.create (
-                    input.next (1).getMimeType (), 
-                    "RegularExpression", 
-                    100, 
-                    input.next (1).getOffset ()
-                );
-            children.add (input.read ());
+    public static Object[] parseRegularExpression (CharInput input, String mimeType) {
+        if (input.read () != '/')
+            throw new InternalError ();
+        int start = input.getIndex ();
+        while (!input.eof () &&
+                input.next () != '/'
+        ) {
+            if (input.next () == '\r' ||
+                input.next () == '\n'
+            ) {
+                input.setIndex (start);
+                return new Object[] {
+                    SToken.create (mimeType, "js_operator", ""),
+                    null
+                };
+            }
+            if (input.next () == '\\')
+                input.read ();
+            input.read ();
         }
-        if (!input.eof () && input.next (1).getIdentifier ().equals ("/"))
-            children.add (input.read ());
-        if (input.next (1).getType ().equals ("js_identifier"))
-            children.add (input.read ());
-        return ASTNode.create (
-            input.next (1).getMimeType (), 
-            "RegularExpression", 
-            100, 
-            input.next (1).getOffset ()
-        );
+        while (input.next () == '/') input.read ();
+        while (!input.eof ()) {
+            int ch = input.next ();
+            if (ch != 'g' && ch != 'i' && ch != 'm')
+                break;
+            input.read ();
+        }
+        int end = input.getIndex ();
+        while (
+            !input.eof () && (
+                input.next () == ' ' ||
+                input.next () == '\t'
+            )
+        )
+            input.read ();
+        if (
+            !input.eof () && 
+            input.next () == '.'
+        ) {
+            int h = input.getIndex ();
+            input.read ();
+            if (input.next () >= '0' &&
+                input.next () <= '9'
+            ) {
+                input.setIndex (start);
+                return new Object[] {
+                    SToken.create (mimeType, "js_operator", ""),
+                    null
+                };
+            } else {
+                input.setIndex (end);
+                return new Object[] {
+                    SToken.create (mimeType, "js_regularExpression", ""),
+                    null
+                };
+            }
+        }
+        if (
+            !input.eof () && regExp.contains (new Integer (input.next ()))
+        ) {
+            input.setIndex (end);
+            return new Object[] {
+                SToken.create (mimeType, "js_regularExpression", ""),
+                null
+            };
+        }
+        input.setIndex (start);
+        return new Object[] {
+            SToken.create (mimeType, "js_operator", ""),
+            null
+        };
     }
 
     public static Runnable hyperlink (SyntaxCookie cookie) {
@@ -138,7 +186,10 @@ public class JavaScript {
     public static String functionName (SyntaxCookie cookie) {
         PTPath path = cookie.getPTPath ();
         ASTNode n = (ASTNode) path.getLeaf ();
-        String name = n.getTokenTypeIdentifier ("js_identifier");
+        String name = null;
+        ASTNode nameNode = n.getNode ("FunctionName");
+        if (nameNode != null)
+            name = nameNode.getAsText ();
         String parameters = "";
         ASTNode parametersNode = n.getNode ("FormalParameterList");
         if (parametersNode != null)
