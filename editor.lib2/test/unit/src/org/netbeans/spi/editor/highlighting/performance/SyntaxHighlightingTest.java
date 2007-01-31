@@ -23,7 +23,6 @@ import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.SimpleAttributeSet;
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -79,65 +78,88 @@ public class SyntaxHighlightingTest extends NbTestCase {
     }
     
     public void testLexer() {
-        long timestamp1, timestamp2;
-        
-        timestamp1 = System.currentTimeMillis();
-        TokenHierarchy th = TokenHierarchy.get(document);
-        timestamp2 = System.currentTimeMillis();
-        System.out.println("TokenHierarchy.get(document) took " + (timestamp2 - timestamp1) + " msecs.");
-        
-        timestamp1 = System.currentTimeMillis();
-        TokenSequence ts = th.tokenSequence();
-        timestamp2 = System.currentTimeMillis();
-        System.out.println("TokenHierarchy.tokenSequence() took " + (timestamp2 - timestamp1) + " msecs.");
-
-        timestamp1 = System.currentTimeMillis();
-        iterateOver(ts, null);
-        timestamp2 = System.currentTimeMillis();
-        System.out.println("Iterating through TokenSequence took " + (timestamp2 - timestamp1) + " msecs.");
-        
-        timestamp1 = System.currentTimeMillis();
-        SyntaxHighlighting layer = new SyntaxHighlighting(document);
-        timestamp2 = System.currentTimeMillis();
-        System.out.println("SyntaxHighlighting creation took " + (timestamp2 - timestamp1) + " msecs.");
-        
-        timestamp1 = System.currentTimeMillis();
-        HighlightsSequence hs = layer.getHighlights(0, Integer.MAX_VALUE);
-        timestamp2 = System.currentTimeMillis();
-        System.out.println("SyntaxHighlighting.getHighlights() took " + (timestamp2 - timestamp1) + " msecs.");
-
-        timestamp1 = System.currentTimeMillis();
-        iterateOver(hs);
-        timestamp2 = System.currentTimeMillis();
-        System.out.println("Iterating through HighlightsSequence took " + (timestamp2 - timestamp1) + " msecs.");
+        lexerWarmUp();
+        highlightingCheck();
     }
     
-    private void iterateOver(TokenSequence ts, HashMap<String, Integer> distro) {
+    private void lexerWarmUp() {
+        long timestamp1, timestamp2;
+        for(int i = 0; i < 5; i++) {
+            timestamp1 = System.currentTimeMillis();
+            TokenHierarchy th = TokenHierarchy.get(document);
+            timestamp2 = System.currentTimeMillis();
+            System.out.println(i + ". TokenHierarchy.get(document) took " + (timestamp2 - timestamp1) + " msecs.");
+
+            timestamp1 = System.currentTimeMillis();
+            TokenSequence ts = th.tokenSequence();
+            timestamp2 = System.currentTimeMillis();
+            System.out.println(i + ". TokenHierarchy.tokenSequence() took " + (timestamp2 - timestamp1) + " msecs.");
+
+            timestamp1 = System.currentTimeMillis();
+            iterateOver(ts, null, null);
+            timestamp2 = System.currentTimeMillis();
+            System.out.println(i + ". Iterating through TokenSequence took " + (timestamp2 - timestamp1) + " msecs.");
+        }
+    }
+    
+    private void highlightingCheck() {
+        long timestamp1, timestamp2;
+        for(int i = 0; i < 5; i++) {
+            timestamp1 = System.currentTimeMillis();
+            SyntaxHighlighting layer = new SyntaxHighlighting(document);
+            timestamp2 = System.currentTimeMillis();
+            System.out.println(i + ". SyntaxHighlighting creation took " + (timestamp2 - timestamp1) + " msecs.");
+
+            timestamp1 = System.currentTimeMillis();
+            HighlightsSequence hs = layer.getHighlights(0, Integer.MAX_VALUE);
+            timestamp2 = System.currentTimeMillis();
+            System.out.println(i + ". SyntaxHighlighting.getHighlights() took " + (timestamp2 - timestamp1) + " msecs.");
+
+            timestamp1 = System.currentTimeMillis();
+            iterateOver(hs);
+            timestamp2 = System.currentTimeMillis();
+            System.out.println(i + ". Iterating through HighlightsSequence took " + (timestamp2 - timestamp1) + " msecs.");
+        }
+    }
+    
+    private void iterateOver(TokenSequence ts, HashMap<String, Integer> distro, HashMap<String, Integer> flyweightDistro) {
         for( ; ts.moveNext(); ) {
             String name = ts.token().id().name();
             assertNotNull("Token name must not be null", name);
             
             if (distro != null) {
                 String tokenId = ts.languagePath().mimePath() + ":" + name;
-                Integer freq = distro.get(tokenId);
-                if (freq == null) {
-                    freq = 1;
-                } else {
-                    freq++;
+                {
+                    Integer freq = distro.get(tokenId);
+                    if (freq == null) {
+                        freq = 1;
+                    } else {
+                        freq++;
+                    }
+                    distro.put(tokenId, freq);
                 }
-                distro.put(tokenId, freq);
                 
-                if (ts.token().id() == JavadocTokenId.IDENT) {
-                    System.out.println("Javadoc IDENT: '" + ts.token().text() + "'");
+                if (ts.token().isFlyweight()) {
+                    Integer freq = flyweightDistro.get(tokenId);
+                    if (freq == null) {
+                        freq = 1;
+                    } else {
+                        freq++;
+                    }
+                    flyweightDistro.put(tokenId, freq);
                 }
-                if (ts.token().id() == JavadocTokenId.OTHER_TEXT) {
-                    System.out.println("Javadoc OTHER_TEXT: '" + ts.token().text() + "'");
-                }
+                
+//                if (ts.token().id() == JavadocTokenId.IDENT) {
+//                    System.out.println("Javadoc IDENT: '" + ts.token().text() + "'");
+//                }
+//                if (ts.token().id() == JavadocTokenId.OTHER_TEXT) {
+//                    System.out.println("Javadoc OTHER_TEXT: '" + ts.token().text() + "'");
+//                }
             }
             
             TokenSequence embedded = ts.embedded();
             if (embedded != null) {
-                iterateOver(embedded, distro);
+                iterateOver(embedded, distro, flyweightDistro);
             }
         }
     }
@@ -183,24 +205,69 @@ public class SyntaxHighlightingTest extends NbTestCase {
         TokenHierarchy th = TokenHierarchy.get(document);
         TokenSequence ts = th.tokenSequence();
         HashMap<String, Integer> distro = new HashMap<String, Integer>();
-        iterateOver(ts, distro);
+        HashMap<String, Integer> flyweightDistro = new HashMap<String, Integer>();
+        iterateOver(ts, distro, flyweightDistro);
         
-        System.out.println("\nSorted by names:");
-        ArrayList<String> names = new ArrayList<String>(distro.keySet());
-        Collections.sort(names);
+        {
+            long totalTokens = 0;
+            
+            System.out.println("\nAll tokens sorted by names:");
+            ArrayList<String> names = new ArrayList<String>(distro.keySet());
+            Collections.sort(names);
+            for(String tokenId : names) {
+                Integer freq = distro.get(tokenId);
+                System.out.println(tokenId + " -> " + freq);
+                totalTokens += freq;
+            }
+            System.out.println("    Total tokens count: " + totalTokens);
+
+            totalTokens = 0;
+            System.out.println("\nAll tokens sorted by freq:");
+            ArrayList<Map.Entry<String, Integer>> entries = new ArrayList<Map.Entry<String, Integer>>(distro.entrySet());
+            Collections.sort(entries, new FreqCmp());
+            for(Map.Entry<String, Integer> entry : entries) {
+                System.out.println(entry.getKey() + " -> " + entry.getValue());
+                totalTokens += entry.getValue();
+            }
+            System.out.println("    Total tokens count: " + totalTokens);
+        }
         
-        for(String tokenId : names) {
+        {
+            long totalFlyweightTokens = 0;
+            
+            System.out.println("\nFlyweight tokens sorted by names:");
+            ArrayList<String> names = new ArrayList<String>(flyweightDistro.keySet());
+            Collections.sort(names);
+            for(String tokenId : names) {
+                Integer freq = flyweightDistro.get(tokenId);
+                System.out.println(tokenId + " -> " + freq);
+                totalFlyweightTokens += freq;
+            }
+            System.out.println("    Total tokens count: " + totalFlyweightTokens);
+
+            
+            totalFlyweightTokens = 0;
+            System.out.println("\nFlyweight tokens sorted by freq:");
+            ArrayList<Map.Entry<String, Integer>> entries = new ArrayList<Map.Entry<String, Integer>>(flyweightDistro.entrySet());
+            Collections.sort(entries, new FreqCmp());
+            for(Map.Entry<String, Integer> entry : entries) {
+                System.out.println(entry.getKey() + " -> " + entry.getValue());
+                totalFlyweightTokens += entry.getValue();
+            }
+            System.out.println("    Total flyweight tokens count: " + totalFlyweightTokens);
+        }
+
+        System.out.println("\nChecking flywights:");
+        for(String tokenId : flyweightDistro.keySet()) {
             Integer freq = distro.get(tokenId);
-            System.out.println(tokenId + " -> " + freq);
+            Integer flyweightFreq = flyweightDistro.get(tokenId);
+            assertNotNull("No freq for " + tokenId, freq);
+            assertNotNull("No flyweightDistro freq for " + tokenId, flyweightFreq);
+            if (freq.intValue() != flyweightFreq.intValue()) {
+                System.out.println(tokenId + " : freq = " + freq + " is different from flyweightFreq = " + flyweightFreq);
+            }
         }
-        
-        System.out.println("\nSorted by freq:");
-        ArrayList<Map.Entry<String, Integer>> entries = new ArrayList<Map.Entry<String, Integer>>(distro.entrySet());
-        Collections.sort(entries, new FreqCmp());
-        
-        for(Map.Entry<String, Integer> entry : entries) {
-            System.out.println(entry.getKey() + " -> " + entry.getValue());
-        }
+        System.out.println("Check done!");
     }
     
     private static final class FreqCmp implements Comparator<Map.Entry<String, Integer>> {
