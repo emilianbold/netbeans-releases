@@ -115,6 +115,7 @@ public class Parser {
         if (lastTT == null) {
             return null;
         }
+        cookie.setProperties (lastTT.getProperties ());
         return SToken.create (
             lastTT.getMimeType (),
             lastTT.getType (),
