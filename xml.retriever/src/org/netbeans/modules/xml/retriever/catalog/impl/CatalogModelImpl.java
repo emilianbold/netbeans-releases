@@ -626,19 +626,22 @@ public class CatalogModelImpl implements CatalogModel {
     
     private ModelSource getModelSourceFromSystemWideCatalog(URI locationURI,
             ModelSource modelSourceOfSourceDocument) {
-        if( (locationURI != null) && locationURI.isAbsolute()){
-            try {
-                Lookup.Template templ = new Lookup.Template(CatalogModel.class);
-                Lookup.Result res = Lookup.getDefault().lookup(templ);
-                Collection impls = res.allInstances();
-                for(Object obj : impls){
-                    CatalogModel cm = (CatalogModel) obj;
-                    return cm.getModelSource(locationURI,
-                            modelSourceOfSourceDocument);
-                }
-            } catch (CatalogModelException ex) {
+        if( locationURI == null)
+            return null;
+        
+        try {
+            Lookup.Template templ = new Lookup.Template(CatalogModel.class);
+            Lookup.Result res = Lookup.getDefault().lookup(templ);
+            Collection impls = res.allInstances();
+            for(Object obj : impls){
+                CatalogModel cm = (CatalogModel) obj;
+                return cm.getModelSource(locationURI,
+                        modelSourceOfSourceDocument);
             }
+        } catch (CatalogModelException ex) {
+            //return null
         }
+        
         return null;
     }
 }
