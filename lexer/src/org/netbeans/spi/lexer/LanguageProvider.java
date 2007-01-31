@@ -88,6 +88,10 @@ public abstract class LanguageProvider {
      * care about and <code>null</code> for the rest. The first non-null
      * <code>LanguageEmbedding</code> found will be used.
      * 
+     * <p><code>LanguageEmbedding</code> instances returned from this method
+     * <b>must not</b> reference any of the attributes passed in and especially not
+     * the <code>token</code> instance.
+     * 
      * @param token The <code>Token</code> to get the <code>Language</code>
      *   for.
      * @param languagePath The <code>LanguagePath</code> of the token, which
