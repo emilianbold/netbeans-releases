@@ -2012,19 +2012,9 @@ public class CasualDiff {
         int retVal = -1;
         int oldPos = getOldPos(oldT);
 
-        // todo (#pf): use this just for the non-rewritten places.
-        if ((oldT.tag != JCTree.TOPLEVEL && 
-             oldT.tag != JCTree.METHODDEF && 
-             oldT.tag != JCTree.CLASSDEF && 
-             oldT.tag != JCTree.VARDEF &&
-             oldT.tag != JCTree.IDENT &&
-             oldT.tag != JCTree.EXEC &&
-             oldT.tag != JCTree.NEWCLASS &&
-             oldT.getKind() != Kind.MEMBER_SELECT &&
-             oldT.getKind() != Kind.TYPE_PARAMETER) &&
-            (oldT.tag != newT.tag || newT.pos == Query.NOPOS || oldT.type != newT.type)) {
-            append(Diff.modify(oldT, oldPos, newT));
-            return oldPos;
+        if (oldT.tag != newT.tag) {
+            printer.print(newT);
+            return endPos(oldT);
         }
 
         switch (oldT.tag) {
