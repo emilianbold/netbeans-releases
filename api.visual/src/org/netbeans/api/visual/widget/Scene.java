@@ -60,6 +60,7 @@ public class Scene extends Widget {
 
     private JComponent component = null;
     private Graphics2D graphics = null;
+    private boolean viewShowing = false;
     private boolean paintEverything = true;
 
     private Rectangle repaintRegion = null;
@@ -128,6 +129,48 @@ public class Scene extends Widget {
      */
     public JComponent createSatelliteView () {
         return new SatelliteComponent (this);
+    }
+
+    void setViewShowing (boolean viewShowing) {
+        assert this.viewShowing != viewShowing : "Duplicate setViewShowing: " + viewShowing;
+        this.viewShowing = viewShowing;
+        if (viewShowing)
+            dispatchNotifyAddedCore ();
+        else
+            dispatchNotifyRemovedCore ();
+    }
+
+    void dispatchNotifyAdded (Widget widget) {
+        assert widget != null;
+        Widget w = widget;
+        for (; ;) {
+            if (w == this)
+                break;
+            w = w.getParentWidget ();
+            if (w == null)
+                return;
+        }
+        if (! viewShowing)
+            return;
+        widget.dispatchNotifyAddedCore ();
+    }
+
+    void dispatchNotifyRemoved (Widget widget) {
+        assert widget != null;
+        Widget w = widget;
+        for (;;) {
+            if (w == this) {
+                if (viewShowing)
+                    return;
+                break;
+            }
+            w = w.getParentWidget ();
+            if (w == null)
+                break;
+        }
+        if (! viewShowing)
+            return;
+        widget.dispatchNotifyRemovedCore ();
     }
 
     /**

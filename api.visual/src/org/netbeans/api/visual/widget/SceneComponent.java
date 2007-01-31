@@ -60,7 +60,13 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
         super.addNotify ();
         scene.setGraphics ((Graphics2D) getGraphics ());
         scene.revalidate ();
+        scene.setViewShowing (true);
         scene.validate ();
+    }
+
+    public void removeNotify () {
+        super.removeNotify ();
+        scene.setViewShowing (false);
     }
 
     public AccessibleContext getAccessibleContext () {

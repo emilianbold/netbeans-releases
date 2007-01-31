@@ -202,6 +202,7 @@ public class Widget {
         setChildConstraint (child, constraint);
         child.revalidate();
         revalidate ();
+        scene.dispatchNotifyAdded (child);
     }
 
     /**
@@ -223,9 +224,10 @@ public class Widget {
         assert child.parentWidget == null;
         children.add (index, child);
         child.parentWidget = this;
-        child.revalidate ();
         setChildConstraint (child, constraint);
+        child.revalidate ();
         revalidate ();
+        scene.dispatchNotifyAdded (child);
     }
 
     /**
@@ -239,6 +241,7 @@ public class Widget {
         children.remove (child);
         child.revalidate ();
         revalidate ();
+        scene.dispatchNotifyRemoved (child);
     }
 
     /**
@@ -273,6 +276,34 @@ public class Widget {
     public final void removeChildren (List<Widget> widgets) {
         for (Widget widget : widgets)
             removeChild (widget);
+    }
+
+    void dispatchNotifyAddedCore () {
+        notifyAdded ();
+        for (Widget widget : children)
+            widget.dispatchNotifyAddedCore ();
+    }
+
+    void dispatchNotifyRemovedCore () {
+        notifyRemoved ();
+        for (Widget widget : children)
+            widget.dispatchNotifyRemovedCore ();
+    }
+
+    /**
+     * This method is called to notify that the view is shown.
+     * Note: You must not modify a tree of widgets from within this method.
+     * It means: do not call addChild, removeChild and similar methods.
+     */
+    protected void notifyAdded () {
+    }
+
+    /**
+     * This method is called to notify that the view is hidden.
+     * Note: You must not modify a tree of widgets from within this method.
+     * It means: do not call addChild, removeChild and similar methods.
+     */
+    protected void notifyRemoved () {
     }
 
     /**
