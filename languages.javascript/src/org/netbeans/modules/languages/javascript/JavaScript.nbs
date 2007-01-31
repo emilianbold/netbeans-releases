@@ -382,11 +382,6 @@ STORE:FunctionDeclaration {
     name:"$js_identifier$";
 }
 
-%STORE:FormalParameterList {
-%    context:"Folder,Block";
-%    name:"$js_identifier$";
-%}
-
 STORE:PropertyNameAndValue {
     context:"Folder,Block";
     name:"$PropertyName$";
