@@ -92,6 +92,7 @@ public final class MethodModel {
         /**
          * Creates new instance of a model of class variable or method parameter
          * without final modifier. Same as calling {@link #create(String, String, boolean)}
+         * with 3rd argument set to false
          * 
          * @param type name of type as written in source code
          * for non-primitive types fully-qualfied name must be used,
