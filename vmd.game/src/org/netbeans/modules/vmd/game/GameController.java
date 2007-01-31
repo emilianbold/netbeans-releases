@@ -108,7 +108,9 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 	}
 	
 	public void setDesignDocument(final DesignDocument designDocument) {
-		this.panel.removeAll();
+		System.out.println(">>>> set design document to: " + designDocument);
+        
+        this.panel.removeAll();
 		
 		//if we already have a document then dereister listeners and clean game model
 		if (this.document != null) {

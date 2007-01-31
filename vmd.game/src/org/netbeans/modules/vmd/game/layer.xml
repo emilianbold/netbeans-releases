@@ -16,35 +16,20 @@
     The Original Software is NetBeans. The Initial Developer of the Original
     Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     Microsystems, Inc. All Rights Reserved.
-    -->
+-->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     
-    <folder name="Windows2">
-
-        <folder name="Modes">
-            <folder name="navigator">
-                <file name="GameBuilderInspector.wstcref" url="windowmanager/GameBuilderInspector.wstcref"/>
+     <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="midpgame">
+                <file name="org-netbeans-modules-vmd-game-GameBuilderNavigator.instance"/>
             </folder>
         </folder>
-
-        <folder name="Components">
-            <file name="GameBuilderInspector.settings" url="components/GameBuilderInspector.settings"/>
-        </folder>
-        <!--
-                <folder name="Groups">
-                    <file name="GameBuilderInspector.wsgrp" url="groups/GameBuilderInspector.wsgrp"/>
-                    <folder name="GameBuilderInspector">
-                        <file name="DesignInspector.wstcgrp" url="groups/GameBuilderInspector.wstcgrp"/>
-                    </folder>
-                </folder>
-        -->
     </folder>
-<!--
-    <folder name="Templates">
-
+    
+    <folder name="Templates">        
         <folder name="MIDP">
-
             <file name="EmptyGame.java" url="integration/res/emptygame_java.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.game.integration.res.Bundle"/>
                 <attr name="SystemFileSystem.icon" stringvalue="nbresloc:org/netbeans/modules/vmd/game/integration/res/canvas_16.png"/>
@@ -57,15 +42,13 @@
             <file name="EmptyGame.vmd" url="integration/res/emptygame_vmd.template">
                 <attr name="template" boolvalue="true"/>
             </file>
-
         </folder>
-
     </folder>
--->
+    
     <folder name="vmd-midp-game">
-
+        
         <folder name="components">
-
+            
             <file name="org-netbeans-modules-vmd-game-model-AnimatedTileCD.instance"/>
             <file name="org-netbeans-modules-vmd-game-model-GameRootCD.instance"/>
             <file name="org-netbeans-modules-vmd-game-model-ImageResourceCD.instance"/>
@@ -75,9 +58,9 @@
             <file name="org-netbeans-modules-vmd-game-model-SequenceCD.instance"/>
             <file name="org-netbeans-modules-vmd-game-model-SpriteCD.instance"/>
             <file name="org-netbeans-modules-vmd-game-model-TiledLayerCD.instance"/>
-
+            
         </folder>
-
+        
     </folder>
-
+    
 </filesystem>

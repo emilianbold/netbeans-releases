@@ -173,33 +173,12 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
     }
 
     public void componentShowing() {
-//        SwingUtilities.invokeLater (new Runnable() {
-//            public void run () {
-////                WindowManager.getDefault ().findTopComponentGroup (GameBuilderInspector.ID).open ();
-//                GameBuilderInspector instance = GameBuilderInspector.findInstance ();
-//                instance.open ();
-//                instance.requestVisible ();
-//            }
-//        });
     }
 
     public void componentHidden() {
-//        SwingUtilities.invokeLater (new Runnable() {
-//            public void run () {
-//                GameBuilderInspector instance = GameBuilderInspector.findInstance ();
-//                instance.close ();
-////                WindowManager.getDefault ().findTopComponentGroup (GameBuilderInspector.ID).close ();
-//            }
-//        });
     }
 
     public void componentActivated() {
-        if (DEBUG)
-            System.out.println("GameEditorView activated");
-//        WindowManager.getDefault ().findTopComponentGroup (GameBuilderInspector.ID).open ();
-        GameBuilderInspector instance = GameBuilderInspector.findInstance ();
-        instance.open ();
-        instance.requestVisible ();
     }
 
     public void componentDeactivated() {
