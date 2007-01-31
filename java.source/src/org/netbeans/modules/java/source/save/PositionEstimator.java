@@ -570,6 +570,11 @@ abstract class PositionEstimator {
     }
     
     private static int goAfterFirstNewLine(final TokenSequence<JavaTokenId> seq) {
+        // ensure that we are not after the last token, if so,
+        // go to last
+        if (seq.token() == null) 
+            seq.movePrevious();
+        
         int base = seq.offset();
         seq.movePrevious();
         while (seq.moveNext() && nonRelevant.contains(seq.token().id())) {
