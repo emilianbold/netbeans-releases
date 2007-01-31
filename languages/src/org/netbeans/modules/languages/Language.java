@@ -255,8 +255,6 @@ public class Language {
             return;
         }
         if (properties.containsKey ("start")) {
-            System.out.println("start " + properties.get ("start"));
-            System.out.println("end " + properties.get ("start"));
             addToken (
                 null,
                 mimeType,
