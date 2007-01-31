@@ -26,13 +26,14 @@ import java.text.Collator;
 import java.util.Arrays;
 import java.util.Comparator;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.plaf.UIResource;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -322,24 +323,21 @@ public class MoveClassPanel extends CustomRefactoringPanel implements ActionList
         rootComboBox.setSelectedIndex(preselectedItem);
     }
     
-    private static class GroupCellRenderer extends DefaultListCellRenderer/*<SourceGroup>*/ {
+    private abstract static class BaseCellRenderer extends JLabel implements ListCellRenderer, UIResource {
         
-        public Component getListCellRendererComponent(
-            JList list,
-            Object value,
-            int index,
-            boolean isSelected,
-            boolean cellHasFocus) {
+        public BaseCellRenderer () {
+            setOpaque(true);
+        }
         
-            DefaultListCellRenderer cbr = (DefaultListCellRenderer)super.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );   
-            SourceGroup g = (SourceGroup) value;
-            cbr.setText(g.getDisplayName());
-            cbr.setIcon(g.getIcon(false));
-            return cbr;
+        // #89393: GTK needs name to render cell renderer "natively"
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name;  // NOI18N
         }
     }
     
-    private static class ProjectCellRenderer extends DefaultListCellRenderer {
+    /** Groups combo renderer, used also in CopyClassPanel */
+    static class GroupCellRenderer extends BaseCellRenderer {
         
         public Component getListCellRendererComponent(
             JList list,
@@ -348,14 +346,55 @@ public class MoveClassPanel extends CustomRefactoringPanel implements ActionList
             boolean isSelected,
             boolean cellHasFocus) {
         
-            DefaultListCellRenderer cbr = (DefaultListCellRenderer)super.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );   
+            // #89393: GTK needs name to render cell renderer "natively"
+            setName("ComboBox.listRenderer"); // NOI18N
+            
+            SourceGroup g = (SourceGroup) value;
+            setText(g.getDisplayName());
+            setIcon(g.getIcon(false));
+            
+            if ( isSelected ) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());             
+            }
+            else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            
+            return this;
+        }
+    }
+    
+    /** Projects combo renderer, used also in CopyClassPanel */
+    static class ProjectCellRenderer extends BaseCellRenderer {
+        
+        public Component getListCellRendererComponent(
+            JList list,
+            Object value,
+            int index,
+            boolean isSelected,
+            boolean cellHasFocus) {
+        
+            // #89393: GTK needs name to render cell renderer "natively"
+            setName("ComboBox.listRenderer"); // NOI18N
             
             if ( value != null ) {
                 ProjectInformation pi = ProjectUtils.getInformation((Project)value);
-                cbr.setText(pi.getDisplayName());
-                cbr.setIcon(pi.getIcon());
+                setText(pi.getDisplayName());
+                setIcon(pi.getIcon());
             }
-            return cbr;
+            
+            if ( isSelected ) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());             
+            }
+            else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            
+            return this;
         }
     }
     //Copy/pasted from OpenProjectList

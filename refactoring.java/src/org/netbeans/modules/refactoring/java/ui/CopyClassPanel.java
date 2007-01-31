@@ -19,13 +19,9 @@
 
 package org.netbeans.modules.refactoring.java.ui;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
@@ -34,7 +30,6 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
@@ -49,8 +44,8 @@ import org.openide.filesystems.FileObject;
  */
 public class CopyClassPanel extends CustomRefactoringPanel implements ActionListener, DocumentListener {
   
-    private static final ListCellRenderer GROUP_CELL_RENDERER = new GroupCellRenderer();
-    private static final ListCellRenderer PROJECT_CELL_RENDERER = new ProjectCellRenderer();
+    private static final ListCellRenderer GROUP_CELL_RENDERER = new MoveClassPanel.GroupCellRenderer();
+    private static final ListCellRenderer PROJECT_CELL_RENDERER = new MoveClassPanel.ProjectCellRenderer();
     
     private Project project;
     private ChangeListener parent;
@@ -347,40 +342,4 @@ public class CopyClassPanel extends CustomRefactoringPanel implements ActionList
         rootComboBox.setSelectedIndex(preselectedItem);
     }
     
-    private static class GroupCellRenderer extends DefaultListCellRenderer/*<SourceGroup>*/ {
-        
-        public Component getListCellRendererComponent(
-            JList list,
-            Object value,
-            int index,
-            boolean isSelected,
-            boolean cellHasFocus) {
-        
-            DefaultListCellRenderer cbr = (DefaultListCellRenderer)super.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );   
-            SourceGroup g = (SourceGroup) value;
-            cbr.setText(g.getDisplayName());
-            cbr.setIcon(g.getIcon(false));
-            return cbr;
-        }
-    }
-    
-    private static class ProjectCellRenderer extends DefaultListCellRenderer {
-        
-        public Component getListCellRendererComponent(
-            JList list,
-            Object value,
-            int index,
-            boolean isSelected,
-            boolean cellHasFocus) {
-        
-            DefaultListCellRenderer cbr = (DefaultListCellRenderer)super.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );   
-            
-            if ( value != null ) {
-                ProjectInformation pi = ProjectUtils.getInformation((Project)value);
-                cbr.setText(pi.getDisplayName());
-                cbr.setIcon(pi.getIcon());
-            }
-            return cbr;
-        }
-    }
 }
