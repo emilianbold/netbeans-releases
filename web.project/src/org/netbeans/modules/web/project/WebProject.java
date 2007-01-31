@@ -346,7 +346,8 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             new WebPersistenceProviderSupplier(this),
             new WebEMGenStrategyResolver(),
             new WebJPADataSourceSupport(this), 
-            new WebServerStatusProvider(this)
+            new WebServerStatusProvider(this),
+            new WebJPAModuleInfo(this)
         });
     }
 
