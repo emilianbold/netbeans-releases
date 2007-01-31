@@ -22,8 +22,7 @@ Microsystems, Inc. All Rights Reserved.
         <fail unless="deployment.webdav.server">Property deployment.webdav.server is not set.</fail>
         <property name="deployment.webdav.port" value="80"/>
         <property name="deployment.webdav.remotedir" value=""/>
-        <fail unless="deployment.jad">Property deployment.jad is not set.</fail>
-        <fail unless="deployment.jar">Property deployment.jar is not set.</fail>
+        <fail unless="deployment.dir">Property deployment.dir is not set.</fail>
         <fail unless="libs.jakarta_slide_ant_webdav.classpath">Property libs.jakarta_slide_ant_webdav.classpath is not set. Please go to Library Manager and set the correct classpath for Jakarta Slide Ant WebDAV library.</fail>
         <condition property="skip-connection-input">
             <and>
@@ -54,8 +53,9 @@ Microsystems, Inc. All Rights Reserved.
              password="${deployment.webdav.password.eval}"
              overwrite="true"
              lock="false">
-             <fileset file="${deployment.jad}"/>
-             <fileset file="${deployment.jar}"/>
+             <fileset dir="${deployment.dir}">
+                 <patternset refid="deployment.patternset"/>
+             </fileset>
          </davput>
      </target>
 </project>

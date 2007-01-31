@@ -45,5 +45,10 @@
         <antcall target="add-configuration" inheritall="true" inheritrefs="true"/>
         <antcall target="add-profile" inheritall="true" inheritrefs="true"/>
         <property name="manifest.available" value="true"/>
+        <property name="deployment.dir" location="${{dist.dir}}"/>
+        <patternset id="deployment.patternset">
+            <include name="${{dist.jad}}"/>
+            <include name="${{dist.jar}}"/>
+        </patternset>
     </target>
     

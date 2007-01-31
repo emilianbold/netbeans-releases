@@ -22,8 +22,7 @@ Microsystems, Inc. All Rights Reserved.
         <fail unless="deployment.scp.server">Property deployment.scp.server is not set.</fail>
         <property name="deployment.scp.port" value="22"/>
         <property name="deployment.scp.remotedir" value=""/>
-        <fail unless="deployment.jad">Property deployment.jad is not set.</fail>
-        <fail unless="deployment.jar">Property deployment.jar is not set.</fail>
+        <fail unless="deployment.dir">Property deployment.dir is not set.</fail>
         <condition property="deployment.scp.usekeyfile.eval">
             <istrue value="${deployment.scp.usekeyfile}"/>
         </condition>
@@ -68,8 +67,9 @@ Microsystems, Inc. All Rights Reserved.
              port="${deployment.scp.port}"
              password="${deployment.scp.password.eval}"
              trust="yes">
-             <fileset file="${deployment.jad}"/>
-             <fileset file="${deployment.jar}"/>
+             <fileset dir="${deployment.dir}">
+                 <patternset refid="deployment.patternset"/>
+             </fileset>
          </scp>
     </target>
     <target name="set-passphrase" depends="init" unless="skip-passphrase-input">
@@ -94,8 +94,9 @@ Microsystems, Inc. All Rights Reserved.
              keyfile="${deployment.scp.keyfile}"
              passphrase="${deployment.scp.passphrase.eval}"
              trust="yes">
-             <fileset file="${deployment.jad}"/>
-             <fileset file="${deployment.jar}"/>
+             <fileset dir="${basedir}">
+                 <patternset refid="deployment.patternset"/>
+             </fileset>
          </scp>
     </target>
     <target name="deploy-scp" depends="deploy-scp-1,deploy-scp-2"/>
